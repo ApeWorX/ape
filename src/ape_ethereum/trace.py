@@ -219,22 +219,37 @@ class Trace(TraceAPI):
 
     @cached_property
     def return_value(self) -> Any:
-        if calltree := self._enriched_calltree:
-            # Only check enrichment output if was already enriched!
-            # Don't enrich ONLY for return value, as that is very bad
-            # performance.
-
-            # Check if was cached from enrichment.
-            if "return_value" in self.__dict__:
-                return self.__dict__["return_value"]
-
-            # If enriching too much, Ethereum places regular values in a key
-            # named "unenriched_return_values".
-            return calltree.get("unenriched_return_values") or calltree.get("returndata")
+        if self._enriched_calltree or (
+            self.provider.network.is_local and not self.provider.network.is_fork
+        ):
+            # For non-local network (including forks), only check enrichment
+            # output if was already enriched! Don't enrich ONLY for return value,
+            # as that is very bad performance for realistic contract interactions.
+            return self._return_value_from_enriched_calltree
 
         elif abi := self.root_method_abi:
+            # When using a fork or live network and we are not enriched yet, we always
+            # opt for the trace-logs parsing approach as it typically faster for realistic contracts.
             return_data = self._return_data_from_trace_frames
-            return self._ecosystem.decode_returndata(abi, return_data)
+            try:
+                return self._ecosystem.decode_returndata(abi, return_data)
+            except Exception as err:
+                logger.debug(f"Failed decoding return data from trace frames. Error: {err}")
+                # Use enrichment method. It is slow but it'll at least work.
+
+        return self._return_value_from_enriched_calltree
+
+    @cached_property
+    def _return_value_from_enriched_calltree(self) -> Any:
+        calltree = self.enriched_calltree
+
+        # Check if was cached from enrichment.
+        if "return_value" in self.__dict__:
+            return self.__dict__["return_value"]
+
+        # If enriching too much, Ethereum places regular values in a key
+        # named "unenriched_return_values".
+        return calltree.get("unenriched_return_values") or calltree.get("returndata")
 
     @cached_property
     def revert_message(self) -> Optional[str]:

@@ -14,11 +14,6 @@ def parity_trace_response():
 
 
 @pytest.fixture
-def geth_contract(geth_account, vyper_contract_container, geth_provider):
-    return geth_account.deploy(vyper_contract_container, 0)
-
-
-@pytest.fixture
 def contract_with_call_depth_geth(
     owner, geth_provider, get_contract_type, leaf_contract_geth, middle_contract_geth
 ):

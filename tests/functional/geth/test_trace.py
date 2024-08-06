@@ -320,3 +320,18 @@ def test_return_value(geth_contract, geth_account):
     # (unlike receipt.return_value)
     actual = trace.return_value[0]
     assert actual == expected
+
+
+@geth_process_test
+def test_return_value_forked_network(geth_contract, geth_account, geth_provider):
+    network_name = geth_provider.network.name
+    geth_provider.network.name = "sepolia-fork"
+
+    try:
+        tx = geth_contract.getFilledArray.transact(sender=geth_account)
+    finally:
+        geth_provider.network.name = network_name
+
+    # NOTE: This is very important from a performance perspective!
+    # (VERY IMPORTANT). We should need to enrich anything.
+    assert tx.trace._enriched_calltree is None

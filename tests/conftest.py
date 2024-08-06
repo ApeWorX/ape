@@ -92,7 +92,7 @@ def validate_cwd(start_dir):
 
 @pytest.fixture
 def project():
-    path = "functional/data/contracts/local"
+    path = "tests/functional/data/contracts/ethereum/local"
     with ape.project.temp_config(contracts_folder=path):
         yield ape.project
 
@@ -691,3 +691,8 @@ def shared_contracts_folder():
 @pytest.fixture
 def project_with_contracts(with_dependencies_project_path):
     return Project(with_dependencies_project_path)
+
+
+@pytest.fixture
+def geth_contract(geth_account, vyper_contract_container, geth_provider):
+    return geth_account.deploy(vyper_contract_container, 0)
