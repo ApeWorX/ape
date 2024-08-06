@@ -219,17 +219,13 @@ class Trace(TraceAPI):
 
     @cached_property
     def return_value(self) -> Any:
-        if self._enriched_calltree or (
-            self.provider.network.is_local and not self.provider.network.is_fork
-        ):
-            # For non-local network (including forks), only check enrichment
-            # output if was already enriched! Don't enrich ONLY for return value,
-            # as that is very bad performance for realistic contract interactions.
+        if self._enriched_calltree:
+            # Only check enrichment output if was already enriched!
+            # Don't enrich ONLY for return value, as that is very bad performance
+            # for realistic contract interactions.
             return self._return_value_from_enriched_calltree
 
         elif abi := self.root_method_abi:
-            # When using a fork or live network and we are not enriched yet, we always
-            # opt for the trace-logs parsing approach as it typically faster for realistic contracts.
             return_data = self._return_data_from_trace_frames
             try:
                 return self._ecosystem.decode_returndata(abi, return_data)
