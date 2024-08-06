@@ -133,6 +133,8 @@ class Web3Provider(ProviderAPI, ABC):
 
     _supports_debug_trace_call: Optional[bool] = None
 
+    _transaction_trace_cache: dict[str, TransactionTrace] = {}
+
     def __new__(cls, *args, **kwargs):
         assert_web3_provider_uri_env_var_not_set()
 
@@ -440,10 +442,15 @@ class Web3Provider(ProviderAPI, ABC):
             raise  # Raise original error
 
     def get_transaction_trace(self, transaction_hash: str, **kwargs) -> TraceAPI:
+        if transaction_hash in self._transaction_trace_cache:
+            return self._transaction_trace_cache[transaction_hash]
+
         if "call_trace_approach" not in kwargs:
             kwargs["call_trace_approach"] = self.call_trace_approach
 
-        return TransactionTrace(transaction_hash=transaction_hash, **kwargs)
+        trace = TransactionTrace(transaction_hash=transaction_hash, **kwargs)
+        self._transaction_trace_cache[transaction_hash] = trace
+        return trace
 
     def send_call(
         self,

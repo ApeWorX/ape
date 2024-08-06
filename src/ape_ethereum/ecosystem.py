@@ -1143,14 +1143,14 @@ class Ethereum(EcosystemAPI):
                 # Check if method name duplicated. If that is the case, use selector.
                 times = len([x for x in contract_type.methods if x.name == method_abi.name])
                 name = (method_abi.name if times == 1 else method_abi.selector) or call["method_id"]
-                call = self._enrich_calldata(call, method_abi, contract_type, **kwargs)
+                call = self._enrich_calldata(call, method_abi, **kwargs)
         else:
             name = call.get("method_id") or "0x"
 
         call["method_id"] = name
 
         if method_abi:
-            call = self._enrich_calldata(call, method_abi, contract_type, **kwargs)
+            call = self._enrich_calldata(call, method_abi, **kwargs)
 
             if kwargs.get("return_value"):
                 # Return value was separately enriched.
@@ -1207,7 +1207,6 @@ class Ethereum(EcosystemAPI):
         self,
         call: dict,
         method_abi: Union[MethodABI, ConstructorABI],
-        contract_type: ContractType,
         **kwargs,
     ) -> dict:
         calldata = call["calldata"]
@@ -1219,6 +1218,7 @@ class Ethereum(EcosystemAPI):
             # Already enriched.
             return call
 
+        contract_type = kwargs["contract_type"]
         if call.get("call_type") and "CREATE" in call.get("call_type", ""):
             # Strip off bytecode
             bytecode = (
