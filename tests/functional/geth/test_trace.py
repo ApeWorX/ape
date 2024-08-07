@@ -322,5 +322,5 @@ def test_return_value(geth_contract, geth_account):
     assert actual == expected
 
     # NOTE: This is very important from a performance perspective!
-    # (VERY IMPORTANT). We should need to enrich anything.
+    # (VERY IMPORTANT). We shouldn't need to enrich anything.
     assert trace._enriched_calltree is None
