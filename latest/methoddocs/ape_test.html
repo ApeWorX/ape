@@ -258,6 +258,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#ape_test.LocalProvider.get_contract_logs"><code class="docutils literal notranslate"><span class="pre">LocalProvider.get_contract_logs()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape_test.LocalProvider.get_nonce"><code class="docutils literal notranslate"><span class="pre">LocalProvider.get_nonce()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape_test.LocalProvider.get_test_account"><code class="docutils literal notranslate"><span class="pre">LocalProvider.get_test_account()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ape_test.LocalProvider.get_transaction_trace"><code class="docutils literal notranslate"><span class="pre">LocalProvider.get_transaction_trace()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape_test.LocalProvider.get_virtual_machine_error"><code class="docutils literal notranslate"><span class="pre">LocalProvider.get_virtual_machine_error()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape_test.LocalProvider.max_gas"><code class="docutils literal notranslate"><span class="pre">LocalProvider.max_gas</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ape_test.LocalProvider.mine"><code class="docutils literal notranslate"><span class="pre">LocalProvider.mine()</span></code></a></li>
@@ -588,6 +589,24 @@ for checking a previous account nonce.</p></li>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="api.html#ape.api.accounts.TestAccountAPI" title="ape.api.accounts.TestAccountAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">TestAccountAPI</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape_test.LocalProvider.get_transaction_trace">
+<span class="sig-name descname"><span class="pre">get_transaction_trace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transaction_hash</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">TraceAPI</span></span></span><a class="headerlink" href="#ape_test.LocalProvider.get_transaction_trace" title="Permalink to this definition"></a></dt>
+<dd><p>Provide a detailed description of opcodes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>transaction_hash</strong> (<em>Union</em><em>[</em><em>HexBytes</em><em>, </em><em>str</em><em>]</em>) – The hash of a transaction
+to trace.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A transaction trace.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">TraceAPI</span></code></p>
 </dd>
 </dl>
 </dd></dl>
