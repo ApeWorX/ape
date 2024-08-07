@@ -233,11 +233,14 @@ def test_fixture_docs(setup_pytester, integ_project, pytester, eth_tester_provid
 
 
 @skip_projects_except("with-contracts")
-def test_gas_flag_when_not_supported(setup_pytester, integ_project, pytester, eth_tester_provider):
+def test_gas_flag_when_not_supported(
+    setup_pytester, project, integ_project, pytester, eth_tester_provider
+):
     _ = eth_tester_provider  # Ensure using EthTester for this test.
     setup_pytester(integ_project)
-    path = f"{integ_project.path}/tests/test_contract.py::test_contract_interaction_in_tests"
-    result = pytester.runpytest(path, "--gas")
+    path = f"{integ_project.path}/tests/test_contract.py"
+    path_w_test = f"{path}::test_contract_interaction_in_tests"
+    result = pytester.runpytest(path_w_test, "--gas")
     actual = "\n".join(result.outlines)
     expected = (
         "Provider 'test' does not support transaction tracing. "

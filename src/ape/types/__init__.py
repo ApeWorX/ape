@@ -485,6 +485,9 @@ class CurrencyValueComparable(int):
         return NotImplemented
 
 
+CurrencyValueComparable.__name__ = int.__name__
+
+
 CurrencyValue: TypeAlias = CurrencyValueComparable
 """
 An alias to :class:`~ape.types.CurrencyValueComparable` for

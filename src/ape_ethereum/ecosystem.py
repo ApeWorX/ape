@@ -15,7 +15,9 @@ from eth_utils import (
     is_hex,
     is_hex_address,
     keccak,
+    to_bytes,
     to_checksum_address,
+    to_hex,
 )
 from ethpm_types import ContractType
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, MethodABI
@@ -57,7 +59,6 @@ from ape.utils import (
     StructParser,
     is_array,
     returns_array,
-    to_int,
 )
 from ape.utils.basemodel import _assert_not_ipython_check, only_raise_attribute_error
 from ape.utils.misc import DEFAULT_MAX_RETRIES_TX, DEFAULT_TRANSACTION_TYPE
@@ -161,7 +162,7 @@ class NetworkConfig(PluginConfig):
             return int(value)
 
         elif isinstance(value, str) and is_hex(value) and is_0x_prefixed(value):
-            return to_int(HexBytes(value))
+            return int(value, 16)
 
         elif is_hex(value):
             raise ValueError("Gas limit hex str must include '0x' prefix.")
@@ -400,7 +401,7 @@ class Ethereum(EcosystemAPI):
 
     @classmethod
     def encode_address(cls, address: AddressType) -> RawAddress:
-        return str(address)
+        return f"{address}"
 
     def decode_transaction_type(self, transaction_type_id: Any) -> type[TransactionAPI]:
         if isinstance(transaction_type_id, TransactionType):
@@ -721,15 +722,16 @@ class Ethereum(EcosystemAPI):
         ):
             # Array of structs or tuples: don't convert to list
             # Array of anything else: convert to single list
-            return (
-                (
-                    [
-                        output_values[0],
-                    ],
-                )
-                if issubclass(type(output_values[0]), Struct)
-                else ([o for o in output_values[0]],)  # type: ignore[union-attr]
-            )
+
+            if issubclass(type(output_values[0]), Struct):
+                return ([output_values[0]],)
+
+            else:
+                try:
+                    return ([o for o in output_values[0]],)  # type: ignore[union-attr]
+                except Exception:
+                    # On-chains transaction data errors.
+                    return (output_values,)
 
         elif returns_array(abi):
             # Tuple with single item as the array.
@@ -747,7 +749,7 @@ class Ethereum(EcosystemAPI):
                 if len(value) > 24:
                     return humanize_hash(cast(Hash32, value))
 
-                hex_str = HexBytes(value).hex()
+                hex_str = to_hex(value)
                 if is_hex_address(hex_str):
                     return self._enrich_value(hex_str, **kwargs)
 
@@ -1028,6 +1030,7 @@ class Ethereum(EcosystemAPI):
     def enrich_trace(self, trace: TraceAPI, **kwargs) -> TraceAPI:
         kwargs["trace"] = trace
         if not isinstance(trace, Trace):
+            # Can only enrich `ape_ethereum.trace.Trace` (or subclass) implementations.
             return trace
 
         elif trace._enriched_calltree is not None:
@@ -1047,11 +1050,8 @@ class Ethereum(EcosystemAPI):
                 # Return value was discovered already.
                 kwargs["return_value"] = return_value
 
-        enriched_calltree = self._enrich_calltree(data, **kwargs)
-
         # Cache the result back on the trace.
-        trace._enriched_calltree = enriched_calltree
-
+        trace._enriched_calltree = self._enrich_calltree(data, **kwargs)
         return trace
 
     def _enrich_calltree(self, call: dict, **kwargs) -> dict:
@@ -1080,10 +1080,10 @@ class Ethereum(EcosystemAPI):
             call["calls"] = [self._enrich_calltree(c, **kwargs) for c in subcalls]
 
         # Figure out the contract.
-        address = call.pop("address", "")
+        address: AddressType = call.pop("address", "")
         try:
-            call["contract_id"] = address = kwargs["contract_address"] = str(
-                self.decode_address(address)
+            call["contract_id"] = address = kwargs["contract_address"] = self.decode_address(
+                address
             )
         except Exception:
             # Tx was made with a weird address.
@@ -1104,10 +1104,11 @@ class Ethereum(EcosystemAPI):
         else:
             # Collapse pre-compile address calls
             if 1 <= address_int <= 9:
-                if len(call.get("calls", [])) == 1:
-                    return call["calls"][0]
-
-                return {"contract_id": f"{address_int}", "calls": call["calls"]}
+                return (
+                    call["calls"][0]
+                    if len(call.get("calls", [])) == 1
+                    else {"contract_id": f"{address_int}", "calls": call["calls"]}
+                )
 
         depth = call.get("depth", 0)
         if depth == 0 and address in self.account_manager:
@@ -1115,14 +1116,13 @@ class Ethereum(EcosystemAPI):
         else:
             call["contract_id"] = self._enrich_contract_id(call["contract_id"], **kwargs)
 
-        if not (contract_type := self.chain_manager.contracts.get(address)):
-            # Without a contract, we can enrich no further.
+        if not (contract_type := self._get_contract_type_for_enrichment(address, **kwargs)):
+            # Without a contract type, we can enrich no further.
             return call
 
+        kwargs["contract_type"] = contract_type
         if events := call.get("events"):
-            call["events"] = self._enrich_trace_events(
-                events, address=address, contract_type=contract_type
-            )
+            call["events"] = self._enrich_trace_events(events, address=address, **kwargs)
 
         method_abi: Optional[Union[MethodABI, ConstructorABI]] = None
         if is_create:
@@ -1131,24 +1131,26 @@ class Ethereum(EcosystemAPI):
 
         elif call["method_id"] != "0x":
             method_id_bytes = HexBytes(call["method_id"])
-            if method_id_bytes in contract_type.methods:
+
+            # perf: use try/except instead of __contains__ check.
+            try:
                 method_abi = contract_type.methods[method_id_bytes]
+            except KeyError:
+                name = call["method_id"]
+            else:
                 assert isinstance(method_abi, MethodABI)  # For mypy
 
                 # Check if method name duplicated. If that is the case, use selector.
                 times = len([x for x in contract_type.methods if x.name == method_abi.name])
                 name = (method_abi.name if times == 1 else method_abi.selector) or call["method_id"]
-                call = self._enrich_calldata(call, method_abi, contract_type, **kwargs)
-
-            else:
-                name = call["method_id"]
+                call = self._enrich_calldata(call, method_abi, **kwargs)
         else:
             name = call.get("method_id") or "0x"
 
         call["method_id"] = name
 
         if method_abi:
-            call = self._enrich_calldata(call, method_abi, contract_type, **kwargs)
+            call = self._enrich_calldata(call, method_abi, **kwargs)
 
             if kwargs.get("return_value"):
                 # Return value was separately enriched.
@@ -1172,10 +1174,12 @@ class Ethereum(EcosystemAPI):
         elif address == ZERO_ADDRESS:
             return "ZERO_ADDRESS"
 
-        if not (contract_type := self.chain_manager.contracts.get(address)):
+        elif not (contract_type := self._get_contract_type_for_enrichment(address, **kwargs)):
+            # Without a contract type, we can enrich no further.
             return address
 
-        elif kwargs.get("use_symbol_for_tokens") and "symbol" in contract_type.view_methods:
+        kwargs["contract_type"] = contract_type
+        if kwargs.get("use_symbol_for_tokens") and "symbol" in contract_type.view_methods:
             # Use token symbol as name
             contract = self.chain_manager.contracts.instance_at(
                 address, contract_type=contract_type
@@ -1203,17 +1207,18 @@ class Ethereum(EcosystemAPI):
         self,
         call: dict,
         method_abi: Union[MethodABI, ConstructorABI],
-        contract_type: ContractType,
         **kwargs,
     ) -> dict:
         calldata = call["calldata"]
-        if isinstance(calldata, (str, bytes, int)):
-            calldata_arg = HexBytes(calldata)
+        if isinstance(calldata, str):
+            calldata_arg = to_bytes(hexstr=calldata)
+        elif isinstance(calldata, bytes):
+            calldata_arg = calldata
         else:
-            # Not sure if we can get here.
-            # Mostly for mypy's sake.
+            # Already enriched.
             return call
 
+        contract_type = kwargs["contract_type"]
         if call.get("call_type") and "CREATE" in call.get("call_type", ""):
             # Strip off bytecode
             bytecode = (
@@ -1316,18 +1321,15 @@ class Ethereum(EcosystemAPI):
         self,
         events: list[dict],
         address: Optional[AddressType] = None,
-        contract_type: Optional[ContractType] = None,
+        **kwargs,
     ) -> list[dict]:
-        return [
-            self._enrich_trace_event(e, address=address, contract_type=contract_type)
-            for e in events
-        ]
+        return [self._enrich_trace_event(e, address=address, **kwargs) for e in events]
 
     def _enrich_trace_event(
         self,
         event: dict,
         address: Optional[AddressType] = None,
-        contract_type: Optional[ContractType] = None,
+        **kwargs,
     ) -> dict:
         if "topics" not in event or len(event["topics"]) < 1:
             # Already enriched or wrong.
@@ -1339,16 +1341,11 @@ class Ethereum(EcosystemAPI):
                 # Cannot enrich further w/o an address.
                 return event
 
-        if not contract_type:
-            try:
-                contract_type = self.chain_manager.contracts.get(address)
-            except Exception as err:
-                logger.debug(f"Error getting contract type during event enrichment: {err}")
-                return event
+        if not (contract_type := self._get_contract_type_for_enrichment(address, **kwargs)):
+            # Without a contract type, we can enrich no further.
+            return event
 
-            if not contract_type:
-                # Cannot enrich further w/o an contract type.
-                return event
+        kwargs["contract_type"] = contract_type
 
         # The selector is always the first topic.
         selector = event["topics"][0]
@@ -1392,6 +1389,17 @@ class Ethereum(EcosystemAPI):
             call["revert_message"] = decoded_result[0] if len(decoded_result) == 1 else ""
 
         return call
+
+    def _get_contract_type_for_enrichment(
+        self, address: AddressType, **kwargs
+    ) -> Optional[ContractType]:
+        if not (contract_type := kwargs.get("contract_type")):
+            try:
+                contract_type = self.chain_manager.contracts.get(address)
+            except Exception as err:
+                logger.debug(f"Error getting contract type during event enrichment: {err}")
+
+        return contract_type
 
     def get_python_types(self, abi_type: ABIType) -> Union[type, Sequence]:
         return self._python_type_for_abi_type(abi_type)
