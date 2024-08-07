@@ -302,6 +302,7 @@ def project_with_dependency_config(project):
             }
         ],
     }
+    project.clean()
     with project.isolate_in_tempdir(**dependencies_config) as tmp_project:
         yield tmp_project
 
