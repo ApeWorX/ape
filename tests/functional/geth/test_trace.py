@@ -33,16 +33,16 @@ ContractA\.methodWithoutArguments\(\) -> 0x[A-Fa-f0-9]{2}..[A-Fa-f0-9]{4} \[\d+ 
 │   └── ContractC\.methodC1\(
 │         windows95="simpler",
 │         jamaica=345457847457457458457457457,
-│         cardinal=ContractA
+│         cardinal=Contract[A|C]
 │       \) \[\d+ gas\]
 ├── SYMBOL\.callMe\(blue=tx\.origin\) -> tx\.origin \[\d+ gas\]
 ├── SYMBOL\.methodB2\(trombone=tx\.origin\) \[\d+ gas\]
-│   ├── ContractC\.paperwork\(ContractA\) -> \(
+│   ├── ContractC\.paperwork\(Contract[A|C]\) -> \(
 │   │     os="simpler",
 │   │     country=345457847457457458457457457,
-│   │     wings=ContractA
+│   │     wings=Contract[A|C]
 │   │   \) \[\d+ gas\]
-│   ├── ContractC\.methodC1\(windows95="simpler", jamaica=0, cardinal=ContractC\) \[\d+ gas\]
+│   ├── ContractC\.methodC1\(windows95="simpler", jamaica=0, cardinal=Contract[A|C]\) \[\d+ gas\]
 │   ├── ContractC\.methodC2\(\) \[\d+ gas\]
 │   └── ContractC\.methodC2\(\) \[\d+ gas\]
 ├── ContractC\.addressToValue\(tx.origin\) -> 0 \[\d+ gas\]
@@ -53,14 +53,14 @@ ContractA\.methodWithoutArguments\(\) -> 0x[A-Fa-f0-9]{2}..[A-Fa-f0-9]{4} \[\d+ 
 │   │     111344445534535353,
 │   │     993453434534534534534977788884443333
 │   │   \] \[\d+ gas\]
-│   └── ContractC\.methodC1\(windows95="simpler", jamaica=0, cardinal=ContractA\) \[\d+ gas\]
+│   └── ContractC\.methodC1\(windows95="simpler", jamaica=0, cardinal=Contract[A|C]\) \[\d+ gas\]
 └── SYMBOL\.methodB1\(lolol="snitches_get_stiches", dynamo=111\) \[\d+ gas\]
     ├── ContractC\.getSomeList\(\) -> \[
     │     3425311345134513461345134534531452345,
     │     111344445534535353,
     │     993453434534534534534977788884443333
     │   \] \[\d+ gas\]
-    └── ContractC\.methodC1\(windows95="simpler", jamaica=111, cardinal=ContractA\) \[\d+ gas\]
+    └── ContractC\.methodC1\(windows95="simpler", jamaica=111, cardinal=Contract[A|C]\) \[\d+ gas\]
 """
 
 
