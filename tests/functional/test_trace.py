@@ -219,6 +219,21 @@ def test_revert_message_custom_error(simple_trace_cls, setup_custom_error):
     assert trace.revert_message == expected
 
 
+def test_revert_message_empty(owner):
+    tx = owner.transfer(owner, 0)
+    trace = TransactionTrace.model_validate({"transaction_hash": tx.txn_hash})
+
+    # Hack in criteria to cause it to look for a revert message more.
+    trace._enriched_calltree = {"failed": True}
+
+    # Only testing private member here because it was related to the bug.
+    assert trace._revert_str_from_trace_frames is None
+
+    # For failed transactions with no available revert message, it should NOT crash!
+    # (It's None because there is no revert message).
+    assert trace.revert_message is None
+
+
 def test_enriched_calltree_adds_missing_gas(simple_trace_cls):
     compute_gas = 1234
     base_gas = 21_000
