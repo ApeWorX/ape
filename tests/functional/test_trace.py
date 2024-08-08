@@ -234,6 +234,19 @@ def test_revert_message_empty(owner):
     assert trace.revert_message is None
 
 
+def test_return_value_never_enriched(owner, solidity_contract_instance):
+    tx = solidity_contract_instance.myNumber.transact(sender=owner)
+    trace = TransactionTrace.model_validate({"transaction_hash": tx.txn_hash})
+
+    # Hack in criteria to cause it to look for a revert message more.
+    returndata = "0x0000000000000000000000000000000000000000000000bdbc41e0348b300000"
+    trace._enriched_calltree = {"failed": True, "returndata": returndata}
+
+    actual = trace.return_value
+    expected = 3500000000000000000000  # returndata as an int.
+    assert actual == (expected,)
+
+
 def test_enriched_calltree_adds_missing_gas(simple_trace_cls):
     compute_gas = 1234
     base_gas = 21_000
