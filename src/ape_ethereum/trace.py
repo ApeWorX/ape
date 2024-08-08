@@ -268,7 +268,10 @@ class Trace(TraceAPI):
             return message
 
         # Enrichment call-tree not available. Attempt looking in trace-frames.
-        return to_hex(self._revert_str_from_trace_frames)
+        if revert_str := self._revert_str_from_trace_frames:
+            return to_hex(revert_str)
+
+        return None
 
     @cached_property
     def _last_frame(self) -> Optional[dict]:
