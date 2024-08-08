@@ -108,22 +108,17 @@ class TestTransactionError:
         mock_exec.closure = mock_closure
         mock_tb.__getitem__.return_value = mock_exec
         mock_tb.__len__.return_value = 1
+        mock_tb.return_value = mock_tb
 
         err = TransactionError(source_traceback=mock_tb, project=project_with_contract)
 
         # Have to raise for sys.exc_info() to be available.
         try:
             raise err
-        except Exception:
-            pass
-
-        assert err.__traceback__ is not None
-
-        # The Vyper-frame gets injected at tb_next.
-        assert err.__traceback__.tb_next is not None
-
-        actual = str(err.__traceback__.tb_next.tb_frame)
-        assert src_path in actual
+        except Exception as same_err:
+            assert same_err.__traceback__ is not None
+            actual = str(same_err.__traceback__.tb_frame)
+            assert src_path in actual
 
 
 class TestNetworkNotFoundError:
