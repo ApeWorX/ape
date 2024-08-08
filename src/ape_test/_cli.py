@@ -12,6 +12,7 @@ from watchdog import events
 from watchdog.observers import Observer
 
 from ape.cli import ape_cli_context
+from ape.logging import LogLevel
 from ape.utils import ManagerAccessMixin, cached_property
 
 # Copied from https://github.com/olzhasar/pytest-watcher/blob/master/pytest_watcher/watcher.py
@@ -79,7 +80,7 @@ def _run_main_loop(delay: float, pytest_args: Sequence[str]) -> None:
     short_help="Launches pytest and runs the tests for a project",
     context_settings=dict(ignore_unknown_options=True),
 )
-@ape_cli_context()
+@ape_cli_context(default_log_level=LogLevel.WARNING)
 @click.option(
     "-w",
     "--watch",
