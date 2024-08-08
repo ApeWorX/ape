@@ -246,8 +246,8 @@ class Trace(TraceAPI):
 
         # If enriching too much, Ethereum places regular values in a key
         # named "unenriched_return_values".
-        if unenriched_return_values := calltree.get("unenriched_return_values"):
-            return unenriched_return_values
+        if "unenriched_return_values" in calltree:
+            return calltree["unenriched_return_values"]
 
         if raw_return_data := calltree.get("returndata"):
             if abi := self.root_method_abi:
