@@ -319,8 +319,8 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
                 HexBytes(message),
                 address,
                 base_err=err.base_err,
-                source_traceback=err.source_traceback,
-                trace=err.trace,
+                source_traceback=lambda: err.source_traceback,
+                trace=lambda: err.trace,
                 txn=err.txn,
             )
         except NotImplementedError:
