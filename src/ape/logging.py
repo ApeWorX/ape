@@ -141,7 +141,7 @@ class ApeLogger:
         fmt = fmt or DEFAULT_LOG_FORMAT
         _format_logger(self._logger, fmt)
 
-    def _load_from_sys_argv(self, default: Optional[Union[str, int]] = None):
+    def _load_from_sys_argv(self, default: Optional[Union[str, int, LogLevel]] = None):
         """
         Load from sys.argv to beat race condition with `click`.
         """
