@@ -356,6 +356,19 @@ def test_send_transaction_without_enough_funds(sender, receiver, eth_tester_prov
         sender.transfer(receiver, "10000000000000 ETH")
 
 
+def test_send_transaction_without_enough_funds_impersonated_account(
+    receiver, accounts, eth_tester_provider, convert
+):
+    address = "0x4838B106FCe9647Bdf1E7877BF73cE8B0BAD5f97"  # Not a test account!
+    impersonated_account = ImpersonatedAccount(raw_address=address)
+    accounts.test_accounts._impersonated_accounts[address] = impersonated_account
+
+    # Basically, it failed anywhere else besides the AccountsError you get from not
+    # enough balance.
+    with pytest.raises(SignatureError):
+        impersonated_account.transfer(receiver, "10000000000000 ETH")
+
+
 def test_send_transaction_sets_defaults(sender, receiver):
     receipt = sender.transfer(receiver, "1 GWEI", gas_limit=None, required_confirmations=None)
     assert receipt.gas_limit > 0
