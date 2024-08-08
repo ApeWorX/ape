@@ -203,7 +203,7 @@ def test_revert_allow(not_owner, contract_instance):
 
 
 def test_revert_handles_compiler_panic(owner, contract_instance):
-    # note: setBalance is a weird name - it actually adjust the balance.
+    # note: setBalance is a weird name - it actually adjusts the balance.
     # first, set it to be 1 less than an overflow.
     contract_instance.setBalance(owner, 2**256 - 1, sender=owner)
     # then, add 1 more, so it should no overflow and cause a compiler panic.

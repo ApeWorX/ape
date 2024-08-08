@@ -320,7 +320,7 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
                 address,
                 base_err=err.base_err,
                 source_traceback=lambda: err.source_traceback,
-                trace=lambda: err.trace,
+                trace=err.trace,
                 txn=err.txn,
             )
         except NotImplementedError:
