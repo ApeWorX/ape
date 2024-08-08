@@ -94,9 +94,9 @@ def validate_cwd(start_dir):
 def project():
     path = "tests/functional/data/contracts/ethereum/local"
     with ape.project.temp_config(contracts_folder=path):
-        ape.project.manifest_path.unlink(missing_ok=True)
+        ape.project.clean()
         yield ape.project
-        ape.project.manifest_path.unlink(missing_ok=True)
+        ape.project.clean()
 
 
 @pytest.fixture(scope="session")
