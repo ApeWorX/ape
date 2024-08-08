@@ -252,9 +252,10 @@ class Trace(TraceAPI):
         if raw_return_data := calltree.get("returndata"):
             if abi := self.root_method_abi:
                 try:
-                    return self._ecosystem.decode_returndata(abi, raw_return_data)
+                    return self._ecosystem.decode_returndata(abi, HexBytes(raw_return_data))
                 except Exception as err:
                     logger.debug(f"Failed decoding raw returndata. Error: {err}")
+                    return raw_return_data
 
         return None
 
