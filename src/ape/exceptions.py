@@ -198,6 +198,8 @@ class TransactionError(ApeException):
         self._project = project
         ex_message = f"({code}) {message}" if code else message
 
+        self.__tb: Optional[TracebackType] = None
+
         # Finalizes expected revert message.
         super().__init__(ex_message)
 
@@ -279,11 +281,15 @@ class TransactionError(ApeException):
 
     @property
     def __traceback__(self) -> Optional[TracebackType]:
-        return self._calculated_traceback
+        if self.__tb is None:
+            # Calculating for the first time (though may be appended to later).
+            self.__tb = self._calculated_traceback
+
+        return self.__tb
 
     @__traceback__.setter
     def __traceback__(self, value):
-        self.__traceback__ = value
+        self.__tb = value
 
 
 class VirtualMachineError(TransactionError):
