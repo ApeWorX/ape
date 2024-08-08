@@ -147,7 +147,7 @@ class InterfaceCompiler(CompilerAPI):
             abi,
             inputs,
             txn=err.txn,
-            trace=err.trace,
+            trace=lambda: err.trace,
             contract_address=address,
-            source_traceback=err.source_traceback,
+            source_traceback=lambda: err.source_traceback,
         )

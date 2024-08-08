@@ -59,7 +59,7 @@ from ape.types import (
     LogFilter,
     SourceTraceback,
 )
-from ape.utils import gas_estimation_error_message, to_int
+from ape.utils import ManagerAccessMixin, gas_estimation_error_message, to_int
 from ape.utils.misc import DEFAULT_MAX_RETRIES_TX
 from ape_ethereum._print import CONSOLE_ADDRESS, console_contract
 from ape_ethereum.trace import CallTrace, TraceApproach, TransactionTrace
@@ -348,11 +348,10 @@ class Web3Provider(ProviderAPI, ABC):
                 else:
                     tx_to_trace[key] = val
 
-            trace = CallTrace(tx=txn)
             tx_error = self.get_virtual_machine_error(
                 err,
                 txn=txn,
-                trace=trace,
+                trace=lambda: CallTrace(tx=txn),
             )
 
             # If this is the cause of a would-be revert,
@@ -362,7 +361,10 @@ class Web3Provider(ProviderAPI, ABC):
 
             message = gas_estimation_error_message(tx_error)
             raise TransactionError(
-                message, base_err=tx_error, txn=txn, source_traceback=tx_error.source_traceback
+                message,
+                base_err=tx_error,
+                txn=txn,
+                source_traceback=lambda: tx_error.source_traceback,
             ) from err
 
     @cached_property
@@ -541,30 +543,24 @@ class Web3Provider(ProviderAPI, ABC):
         try:
             result = self.make_request("eth_call", arguments)
         except Exception as err:
-            trace = None
-            tb = None
             contract_address = arguments[0].get("to")
+            _lazy_call_trace = _LazyCallTrace(arguments)
+
             if not skip_trace:
                 if address := contract_address:
                     try:
                         contract_type = self.chain_manager.contracts.get(address)
                     except RecursionError:
                         # Occurs when already in the middle of fetching this contract.
-                        contract_type = None
-                else:
-                    contract_type = None
-
-                trace = CallTrace(
-                    tx=arguments[0], arguments=arguments[1:], use_tokens_for_symbols=True
-                )
-                method_id = arguments[0].get("data", "")[:10] or None
-                tb = None
-                if contract_type and method_id:
-                    if contract_src := self.local_project._create_contract_source(contract_type):
-                        tb = SourceTraceback.create(contract_src, trace, method_id)
+                        pass
+                    else:
+                        _lazy_call_trace.contract_type = contract_type
 
             vm_err = self.get_virtual_machine_error(
-                err, trace=trace, contract_address=contract_address, source_traceback=tb
+                err,
+                trace=lambda: _lazy_call_trace.trace,
+                contract_address=contract_address,
+                source_traceback=lambda: _lazy_call_trace.source_traceback,
             )
             if raise_on_revert:
                 raise vm_err from err
@@ -1580,3 +1576,29 @@ def _is_ws_url(val: str) -> bool:
 
 def _is_ipc_path(val: str) -> bool:
     return val.endswith(".ipc")
+
+
+class _LazyCallTrace(ManagerAccessMixin):
+    def __init__(self, eth_call_args: list):
+        self._arguments = eth_call_args
+
+        self.contract_type = None
+
+    @cached_property
+    def trace(self) -> CallTrace:
+        return CallTrace(
+            tx=self._arguments[0], arguments=self._arguments[1:], use_tokens_for_symbols=True
+        )
+
+    @cached_property
+    def source_traceback(self) -> Optional[SourceTraceback]:
+        ct = self.contract_type
+        if ct is None:
+            return None
+
+        method_id = self._arguments[0].get("data", "")[:10] or None
+        if ct and method_id:
+            if contract_src := self.local_project._create_contract_source(ct):
+                return SourceTraceback.create(contract_src, self.trace, method_id)
+
+        return None

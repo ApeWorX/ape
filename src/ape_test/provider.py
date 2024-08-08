@@ -152,7 +152,10 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             else:
                 message = gas_estimation_error_message(ape_err)
                 raise TransactionError(
-                    message, base_err=ape_err, txn=txn, source_traceback=ape_err.source_traceback
+                    message,
+                    base_err=ape_err,
+                    txn=txn,
+                    source_traceback=lambda: ape_err.source_traceback,
                 ) from ape_err
 
     @property
