@@ -246,7 +246,17 @@ class Trace(TraceAPI):
 
         # If enriching too much, Ethereum places regular values in a key
         # named "unenriched_return_values".
-        return calltree.get("unenriched_return_values") or calltree.get("returndata")
+        if unenriched_return_values := calltree.get("unenriched_return_values"):
+            return unenriched_return_values
+
+        if raw_return_data := calltree.get("returndata"):
+            if abi := self.root_method_abi:
+                try:
+                    return self._ecosystem.decode_returndata(abi, raw_return_data)
+                except Exception as err:
+                    logger.debug(f"Failed decoding raw returndata. Error: {err}")
+
+        return None
 
     @cached_property
     def revert_message(self) -> Optional[str]:
