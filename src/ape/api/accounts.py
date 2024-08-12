@@ -393,7 +393,10 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
 
         txn = self.provider.prepare_transaction(txn)
 
-        if txn.total_transfer_value > self.balance:
+        if (
+            txn.sender not in self.account_manager.test_accounts._impersonated_accounts
+            and txn.total_transfer_value > self.balance
+        ):
             raise AccountsError(
                 f"Transfer value meets or exceeds account balance "
                 f"for account '{self.address}' on chain '{self.provider.chain_id}' "
