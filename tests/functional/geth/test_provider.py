@@ -589,6 +589,22 @@ def test_base_fee_no_history(geth_provider, mocker, ret):
 
 
 @geth_process_test
+def test_base_fee_hex_decode(geth_provider, mocker):
+    orig = geth_provider._web3.eth.fee_history
+    mock_fee_history = mocker.MagicMock()
+    mock_fee_history.return_value = {"baseFeePerGas": "0x7"}
+    expected = 7
+    geth_provider._web3.eth.fee_history = mock_fee_history
+
+    try:
+        actual = geth_provider.base_fee
+    finally:
+        geth_provider._web3.eth.fee_history = orig
+
+    assert actual == expected
+
+
+@geth_process_test
 def test_estimate_gas_cost(geth_contract, geth_provider, geth_account):
     txn = geth_contract.setNumber.as_transaction(900, sender=geth_account)
     estimate = geth_provider.estimate_gas_cost(txn)

@@ -260,7 +260,7 @@ class Web3Provider(ProviderAPI, ABC):
             # Non-EIP-1559 chains or we time-travelled pre-London fork.
             return self._get_last_base_fee()
 
-        return pending_base_fee
+        return to_int(pending_base_fee)
 
     @property
     def call_trace_approach(self) -> Optional[TraceApproach]:
@@ -284,7 +284,7 @@ class Web3Provider(ProviderAPI, ABC):
     def _get_last_base_fee(self) -> int:
         base_fee = self._get_latest_block_rpc().get("baseFeePerGas", None)
         if base_fee is not None:
-            return base_fee
+            return to_int(base_fee)
 
         raise APINotImplementedError("No base fee found in block.")
 
