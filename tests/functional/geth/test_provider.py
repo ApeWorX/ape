@@ -592,7 +592,7 @@ def test_base_fee_no_history(geth_provider, mocker, ret):
 def test_base_fee_hex_decode(geth_provider, mocker):
     orig = geth_provider._web3.eth.fee_history
     mock_fee_history = mocker.MagicMock()
-    mock_fee_history.return_value = {"baseFeePerGas": "0x7"}
+    mock_fee_history.return_value = {"baseFeePerGas": ["0x6", "0x7"]}
     expected = 7
     geth_provider._web3.eth.fee_history = mock_fee_history
 
