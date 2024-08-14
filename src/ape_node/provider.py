@@ -289,7 +289,6 @@ class NodeSoftwareNotInstalledError(ConnectionError):
 # NOTE: Using EthereumNodeProvider because of it's geth-derived default behavior.
 class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
     _process: Optional[GethDevProcess] = None
-    _supports_debug_set_head: bool = True
     name: str = "node"
 
     @property
@@ -388,8 +387,6 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
         return self._get_latest_block().number or 0
 
     def restore(self, snapshot_id: SnapshotID):
-        if not self._supports_debug_set_head:
-            return
 
         if isinstance(snapshot_id, int):
             block_number_int = snapshot_id
@@ -409,10 +406,7 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
             logger.error("Unable to set head to future block.")
             return
 
-        try:
-            self.make_request("debug_setHead", [block_number_hex_str])
-        except Exception:
-            self._supports_debug_set_head = False
+        self.make_request("debug_setHead", [block_number_hex_str])
 
     @raises_not_implemented
     def set_timestamp(self, new_timestamp: int):
