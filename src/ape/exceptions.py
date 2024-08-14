@@ -233,14 +233,12 @@ class TransactionError(ApeException):
     @property
     def trace(self) -> Optional["TraceAPI"]:
         tr = self._trace
-        result: Optional["TraceAPI"]
         if callable(tr):
             result = tr()
             self._trace = result
-        else:
-            result = tr
+            return result
 
-        return result
+        return tr
 
     @trace.setter
     def trace(self, value):
