@@ -131,12 +131,11 @@ class PytestApeFixtures(ManagerAccessMixin):
         try:
             return self.chain_manager.snapshot()
         except NotImplementedError:
-            if self._supports_snapshot:
-                logger.warning(
-                    "The connected provider does not support snapshotting. "
-                    "Tests will not be completely isolated."
-                )
-                self._supports_snapshot = False
+            logger.warning(
+                "The connected provider does not support snapshotting. "
+                "Tests will not be completely isolated."
+            )
+            self._supports_snapshot = False
 
         return None
 
