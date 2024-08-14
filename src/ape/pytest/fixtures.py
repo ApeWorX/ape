@@ -110,15 +110,7 @@ class PytestApeFixtures(ManagerAccessMixin):
             yield
 
         if snapshot_id is not None:
-            try:
-                self._restore(snapshot_id)
-            except NotImplementedError:
-                logger.warning(
-                    "The connected provider does not support snapshotting. "
-                    "Tests will not be completely isolated."
-                )
-                # Set to avoid trying again
-                self._supports_snapshot = False
+            self._restore(snapshot_id)
 
     # isolation fixtures
     _session_isolation = pytest.fixture(_isolation, scope="session")
@@ -136,6 +128,7 @@ class PytestApeFixtures(ManagerAccessMixin):
                 "The connected provider does not support snapshotting. "
                 "Tests will not be completely isolated."
             )
+            # To avoid trying again
             self._supports_snapshot = False
 
         return None
@@ -144,8 +137,15 @@ class PytestApeFixtures(ManagerAccessMixin):
     def _restore(self, snapshot_id: SnapshotID):
         if snapshot_id not in self.chain_manager._snapshots:
             return
-
-        self.chain_manager.restore(snapshot_id)
+        try:
+            self.chain_manager.restore(snapshot_id)
+        except NotImplementedError:
+            logger.warning(
+                "The connected provider does not support snapshotting. "
+                "Tests will not be completely isolated."
+            )
+            # To avoid trying again
+            self._supports_snapshot = False
 
 
 class ReceiptCapture(ManagerAccessMixin):
