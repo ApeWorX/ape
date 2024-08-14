@@ -23,7 +23,7 @@ class PytestApeFixtures(ManagerAccessMixin):
     # for fixtures, as they are used in output from the command
     # `ape test -q --fixture` (`pytest -q --fixture`).
 
-    _warned_for_unimplemented_snapshot = False
+    _supports_snapshot: bool = True
     receipt_capture: "ReceiptCapture"
 
     def __init__(self, config_wrapper: ConfigWrapper, receipt_capture: "ReceiptCapture"):
@@ -86,10 +86,13 @@ class PytestApeFixtures(ManagerAccessMixin):
         Isolation logic used to implement isolation fixtures for each pytest scope.
         When tracing support is available, will also assist in capturing receipts.
         """
-        try:
-            snapshot_id = self._snapshot()
-        except BlockNotFoundError:
-            snapshot_id = None
+        snapshot_id = None
+
+        if self._supports_snapshot:
+            try:
+                snapshot_id = self._snapshot()
+            except BlockNotFoundError:
+                self._supports_snapshot = False
 
         if self._track_transactions:
             did_yield = False
@@ -121,12 +124,12 @@ class PytestApeFixtures(ManagerAccessMixin):
         try:
             return self.chain_manager.snapshot()
         except NotImplementedError:
-            if not self._warned_for_unimplemented_snapshot:
-                logger.warning(
-                    "The connected provider does not support snapshotting. "
-                    "Tests will not be completely isolated."
-                )
-                self._warned_for_unimplemented_snapshot = True
+            logger.warning(
+                "The connected provider does not support snapshotting. "
+                "Tests will not be completely isolated."
+            )
+            # To avoid trying again
+            self._supports_snapshot = False
 
         return None
 
@@ -134,8 +137,15 @@ class PytestApeFixtures(ManagerAccessMixin):
     def _restore(self, snapshot_id: SnapshotID):
         if snapshot_id not in self.chain_manager._snapshots:
             return
-
-        self.chain_manager.restore(snapshot_id)
+        try:
+            self.chain_manager.restore(snapshot_id)
+        except NotImplementedError:
+            logger.warning(
+                "The connected provider does not support snapshotting. "
+                "Tests will not be completely isolated."
+            )
+            # To avoid trying again
+            self._supports_snapshot = False
 
 
 class ReceiptCapture(ManagerAccessMixin):
