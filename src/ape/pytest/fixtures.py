@@ -87,11 +87,12 @@ class PytestApeFixtures(ManagerAccessMixin):
         When tracing support is available, will also assist in capturing receipts.
         """
         snapshot_id = None
-        try:
-            if self._supports_snapshot:
+        
+        if self._supports_snapshot:
+            try:
                 snapshot_id = self._snapshot()
-        except BlockNotFoundError:
-            self._supports_snapshot = False
+            except BlockNotFoundError:
+                self._supports_snapshot = False
 
         if self._track_transactions:
             did_yield = False
@@ -116,7 +117,7 @@ class PytestApeFixtures(ManagerAccessMixin):
                     "The connected provider does not support snapshotting. "
                     "Tests will not be completely isolated."
                 )
-                # Set to early return future attempts
+                # Set to avoid trying again
                 self._supports_snapshot = False
 
     # isolation fixtures
