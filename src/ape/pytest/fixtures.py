@@ -87,7 +87,7 @@ class PytestApeFixtures(ManagerAccessMixin):
         When tracing support is available, will also assist in capturing receipts.
         """
         snapshot_id = None
-        
+
         if self._supports_snapshot:
             try:
                 snapshot_id = self._snapshot()
