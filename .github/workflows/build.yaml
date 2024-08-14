@@ -1,0 +1,44 @@
+name: Release
+on:
+  pull_request:
+  release:
+    types: [published]
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Log into GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push slim
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./Dockerfile.slim
+          push: true
+          tags: ${{ env.REGISTRY }}/apeworx/ape:latest-slim
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags ${{ env.Registry }}/apeworx/ape:latest
+
+
