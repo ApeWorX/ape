@@ -387,7 +387,6 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
         return self._get_latest_block().number or 0
 
     def restore(self, snapshot_id: SnapshotID):
-
         if isinstance(snapshot_id, int):
             block_number_int = snapshot_id
             block_number_hex_str = str(to_hex(snapshot_id))

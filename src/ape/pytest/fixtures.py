@@ -23,7 +23,6 @@ class PytestApeFixtures(ManagerAccessMixin):
     # for fixtures, as they are used in output from the command
     # `ape test -q --fixture` (`pytest -q --fixture`).
 
-    _warned_for_unimplemented_snapshot = False
     _supports_snapshot: bool = True
     receipt_capture: "ReceiptCapture"
 
@@ -87,13 +86,12 @@ class PytestApeFixtures(ManagerAccessMixin):
         Isolation logic used to implement isolation fixtures for each pytest scope.
         When tracing support is available, will also assist in capturing receipts.
         """
-        if not self._supports_snapshot:
-            return
-
+        snapshot_id = None
         try:
-            snapshot_id = self._snapshot()
+            if self._supports_snapshot:
+                snapshot_id = self._snapshot()
         except BlockNotFoundError:
-            snapshot_id = None
+            self._supports_snapshot = False
 
         if self._track_transactions:
             did_yield = False
@@ -133,12 +131,12 @@ class PytestApeFixtures(ManagerAccessMixin):
         try:
             return self.chain_manager.snapshot()
         except NotImplementedError:
-            if not self._warned_for_unimplemented_snapshot:
+            if self._supports_snapshot:
                 logger.warning(
                     "The connected provider does not support snapshotting. "
                     "Tests will not be completely isolated."
                 )
-                self._warned_for_unimplemented_snapshot = True
+                self._supports_snapshot = False
 
         return None
 
