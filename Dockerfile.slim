@@ -15,12 +15,6 @@ COPY . .
 
 RUN pip wheel .
 
-RUN mkdir /wheels/recommended_plugins
-
-COPY ./recommended-plugins.txt ./recommended-plugins.txt
-
-RUN pip wheel .[recommended-plugins] --wheel-dir=/wheels/recommended_plugins
-
 FROM python:${PYTHON_VERSION}-slim
 
 # See http://label-schema.org for metadata schema
@@ -40,7 +34,6 @@ COPY --from=builder /wheels/*.whl /wheels/
 RUN pip install --upgrade pip
 RUN pip install /wheels/*.whl
 
-COPY --from=builder /wheels/recommended_plugins/*.whl /wheels/
 RUN ape --version
 
 WORKDIR /home/harambe/project
