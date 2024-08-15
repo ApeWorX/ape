@@ -41,7 +41,7 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
 
       - name: PRINT METADATA TAGS
-        run: echo "TAGS: ${{ steps.meta.outputs.tags }}"
+        run: echo ${{ steps.meta.outputs.tags }}
 
       - name: Log into GitHub Container Registry
         if: github.event_name != 'pull_request'
