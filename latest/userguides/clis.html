@@ -50,6 +50,7 @@
               <option value="">Select version...</option>
               <option value="latest">latest</option>
               <option value="stable">stable</option>
+                <option value="v0.8.12">v0.8.12</option>
                 <option value="v0.8.11">v0.8.11</option>
                 <option value="v0.8.10">v0.8.10</option>
                 <option value="v0.8.9">v0.8.9</option>
@@ -343,17 +344,21 @@ Additionally, specify <code class="docutils literal notranslate"><span class="pr
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">click</span>
 <span class="kn">from</span> <span class="nn">ape.cli</span> <span class="kn">import</span> <span class="n">ConnectedProviderCommand</span>
 
-<span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="bp">cls</span><span class="o">=</span><span class="n">ConnectedProviderCommand</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">cmd</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">provider</span><span class="p">):</span>
+<span class="nd">@click</span><span class="o">.</span><span class="n">group</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">cli</span><span class="p">():</span>
+    <span class="k">pass</span>
+
+ <span class="nd">@cli</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="bp">cls</span><span class="o">=</span><span class="n">ConnectedProviderCommand</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">cmd_1</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">provider</span><span class="p">):</span>
    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">network</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">provider</span><span class="o">.</span><span class="n">is_connected</span><span class="p">)</span>  <span class="c1"># True</span>
 
-<span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="bp">cls</span><span class="o">=</span><span class="n">ConnectedProviderCommand</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">cmd</span><span class="p">(</span><span class="n">provider</span><span class="p">):</span>
+ <span class="nd">@cli</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="bp">cls</span><span class="o">=</span><span class="n">ConnectedProviderCommand</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">cmd_2</span><span class="p">(</span><span class="n">provider</span><span class="p">):</span>
    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">provider</span><span class="o">.</span><span class="n">is_connected</span><span class="p">)</span>  <span class="c1"># True</span>
 
-<span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="bp">cls</span><span class="o">=</span><span class="n">ConnectedProviderCommand</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">cmd</span><span class="p">():</span>
+ <span class="nd">@cli</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="bp">cls</span><span class="o">=</span><span class="n">ConnectedProviderCommand</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">cmd_3</span><span class="p">():</span>
    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s2">&quot;Using params from ConnectedProviderCommand is optional&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
