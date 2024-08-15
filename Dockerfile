@@ -12,8 +12,6 @@ RUN pip install --upgrade pip \
 
 COPY . .
 
-RUN mkdir /wheels
-
 COPY ./recommended-plugins.txt ./recommended-plugins.txt
 
 RUN pip wheel .[recommended-plugins] --wheel-dir=/wheels
@@ -21,6 +19,8 @@ RUN pip wheel .[recommended-plugins] --wheel-dir=/wheels
 FROM ape:latest-slim
 
 USER root
+
+COPY --from=builder /wheels/*.whl /wheels/
 
 RUN pip install --upgrade pip
 RUN pip install /wheels/*.whl
