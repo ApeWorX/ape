@@ -26,9 +26,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: PRINT GIT TAG
-        run: git tag
-
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@v5
@@ -39,9 +36,6 @@ jobs:
             type=ref,event=pr
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
-
-      - name: PRINT METADATA TAGS
-        run: echo ${{ steps.meta.outputs.tags }}
 
       - name: Log into GitHub Container Registry
         if: github.event_name != 'pull_request'
