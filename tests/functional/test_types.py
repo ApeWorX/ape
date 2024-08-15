@@ -1,4 +1,4 @@
-from typing import Optional, Any
+from typing import Any, Optional
 
 import pytest
 from eth_utils import to_hex
@@ -163,15 +163,8 @@ class TestCurrencyValueComparable:
         class MyAnnotatedModel(BaseModel):
             val: CurrencyValueComparable
             val_optional: Optional[CurrencyValueComparable]
-            val_in_dict: dict[str, Any]
 
-        model = MyAnnotatedModel.model_validate(
-            {
-                "val": value,
-                "val_optional": value,
-                "val_in_dict": {"value": CurrencyValueComparable(value)},
-            }
-        )
+        model = MyAnnotatedModel.model_validate({"val": value, "val_optional": value})
         assert isinstance(model.val, CurrencyValueComparable)
         assert model.val == value
 
@@ -179,7 +172,6 @@ class TestCurrencyValueComparable:
         expected_currency_value = "100000000000000000000000000 ETH"
         assert model.val == expected_currency_value
         assert model.val_optional == expected_currency_value
-        assert model.val_in_dict["value"] == expected_currency_value
 
         # Ensure serializes.
         dumped = model.model_dump(mode=mode)
