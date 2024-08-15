@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Any
 
 import pytest
 from eth_utils import to_hex
@@ -163,13 +163,23 @@ class TestCurrencyValueComparable:
         class MyAnnotatedModel(BaseModel):
             val: CurrencyValueComparable
             val_optional: Optional[CurrencyValueComparable]
+            val_in_dict: dict[str, Any]
 
-        model = MyAnnotatedModel.model_validate({"val": value, "val_optional": value})
+        model = MyAnnotatedModel.model_validate(
+            {
+                "val": value,
+                "val_optional": value,
+                "val_in_dict": {"value": CurrencyValueComparable(value)},
+            }
+        )
         assert isinstance(model.val, CurrencyValueComparable)
         assert model.val == value
 
         # Show can use currency-comparable
-        assert model.val == "100000000000000000000000000 ETH"
+        expected_currency_value = "100000000000000000000000000 ETH"
+        assert model.val == expected_currency_value
+        assert model.val_optional == expected_currency_value
+        assert model.val_in_dict["value"] == expected_currency_value
 
         # Ensure serializes.
         dumped = model.model_dump(mode=mode)
@@ -180,11 +190,16 @@ class TestCurrencyValueComparable:
         class MyAnnotatedModel(BaseModel):
             val: CurrencyValueComparable
             val_optional: Optional[CurrencyValueComparable]
+            val_in_dict: dict[str, Any]
 
         value = "100000000000000000000000000 ETH"
         expected = 100000000000000000000000000000000000000000000
-        data = {"val": value, "val_optional": value}
+        data = {
+            "val": value,
+            "val_optional": value,
+            "val_in_dict": {"value": CurrencyValueComparable(expected)},
+        }
         model = MyAnnotatedModel.model_validate(data)
-        for actual in (model.val, model.val_optional):
+        for actual in (model.val, model.val_optional, model.val_in_dict["value"]):
             for ex in (value, expected):
                 assert actual == ex
