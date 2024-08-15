@@ -6,7 +6,7 @@ from ethpm_types.abi import EventABI
 from hexbytes import HexBytes
 from pydantic import BaseModel, Field
 
-from ape.types import AddressType, ContractLog, HexInt, LogFilter
+from ape.types import AddressType, ContractLog, CurrencyValueComparable, HexInt, LogFilter
 from ape.utils import ZERO_ADDRESS
 
 TXN_HASH = "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa222222222222222222222222"
@@ -131,11 +131,27 @@ def test_address_type(owner):
 
 
 class TestHexInt:
-    class MyModel(BaseModel):
-        ual: HexInt = 0
-        ual_optional: Optional[HexInt] = Field(default=None, validate_default=True)
+    def test_model(self):
+        class MyModel(BaseModel):
+            ual: HexInt = 0
+            ual_optional: Optional[HexInt] = Field(default=None, validate_default=True)
 
-    act = MyModel.model_validate({"ual": "0x123"})
-    expected = 291  # Base-10 form of 0x123.
-    assert act.ual == expected
-    assert act.ual_optional is None
+        act = MyModel.model_validate({"ual": "0x123"})
+        expected = 291  # Base-10 form of 0x123.
+        assert act.ual == expected
+        assert act.ual_optional is None
+
+
+class TestCurrencyValueComparable:
+    def test_use_on_int_in_pydantic_model(self):
+        value = 100000000000000000000000000000000000000000000
+
+        class MyModel(BaseModel):
+            val: int
+
+        model = MyModel.model_validate({"val": CurrencyValueComparable(value)})
+        assert model.val == value
+
+        # Ensure serializes.
+        dumped = model.model_dump()
+        assert dumped["val"] == value
