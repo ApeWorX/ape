@@ -131,7 +131,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         try:
             return estimate_gas(txn_data, block_identifier=block_id)
         except (ValidationError, TransactionFailed, Web3ContractLogicError) as err:
-            ape_err = self.get_virtual_machine_error(err, txn=txn)
+            ape_err = self.get_virtual_machine_error(err, txn=txn, set_ape_traceback=False)
             gas_match = self._INVALID_NONCE_PATTERN.match(str(ape_err))
             if gas_match:
                 # Sometimes, EthTester is confused about the sender nonce
@@ -148,7 +148,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
                 return value
 
             elif isinstance(ape_err, ContractLogicError):
-                raise ape_err from err
+                raise ape_err.with_ape_traceback() from err
             else:
                 message = gas_estimation_error_message(ape_err)
                 raise TransactionError(
@@ -156,6 +156,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
                     base_err=ape_err,
                     txn=txn,
                     source_traceback=lambda: ape_err.source_traceback,
+                    set_ape_traceback=False,
                 ) from ape_err
 
     @property
@@ -227,7 +228,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
                 result = HexBytes("0x")
 
         except (TransactionFailed, Web3ContractLogicError) as err:
-            vm_err = self.get_virtual_machine_error(err, txn=txn)
+            vm_err = self.get_virtual_machine_error(err, txn=txn, set_ape_traceback=False)
             if raise_on_revert:
                 raise vm_err from err
             else:
@@ -247,7 +248,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
                 txn.serialize_transaction().hex()
             )
         except (ValidationError, TransactionFailed, Web3ContractLogicError) as err:
-            vm_err = self.get_virtual_machine_error(err, txn=txn)
+            vm_err = self.get_virtual_machine_error(err, txn=txn, set_ape_traceback=False)
             if txn.raise_on_revert:
                 raise vm_err from err
             else:
@@ -284,7 +285,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             try:
                 self.web3.eth.call(txn_params)
             except (ValidationError, TransactionFailed, Web3ContractLogicError) as err:
-                vm_err = self.get_virtual_machine_error(err, txn=receipt)
+                vm_err = self.get_virtual_machine_error(err, txn=receipt, set_ape_traceback=False)
                 receipt.error = vm_err
                 if txn.raise_on_revert:
                     raise vm_err from err

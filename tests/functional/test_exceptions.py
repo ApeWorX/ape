@@ -109,16 +109,46 @@ class TestTransactionError:
         mock_tb.__getitem__.return_value = mock_exec
         mock_tb.__len__.return_value = 1
         mock_tb.return_value = mock_tb
-
-        err = TransactionError(source_traceback=mock_tb, project=project_with_contract)
+        err = TransactionError(
+            source_traceback=mock_tb, project=project_with_contract, set_ape_traceback=True
+        )
 
         # Have to raise for sys.exc_info() to be available.
         try:
             raise err
-        except Exception as same_err:
-            assert same_err.__traceback__ is not None
-            actual = str(same_err.__traceback__.tb_frame)
+        except Exception:
+            pass
+
+        def assert_ape_traceback(err_arg):
+            assert err_arg.__traceback__ is not None
+            # The Vyper-frame gets injected at tb_next.
+            assert err_arg.__traceback__.tb_next is not None
+            actual = str(err_arg.__traceback__.tb_next.tb_frame)
             assert src_path in actual
+
+        assert_ape_traceback(err)
+
+        err2 = TransactionError(
+            source_traceback=mock_tb,
+            project=project_with_contract,
+            set_ape_traceback=False,
+        )
+        try:
+            raise err2
+        except Exception:
+            pass
+
+        # No Ape frames are here.
+        if err2.__traceback__:
+            assert err2.__traceback__.tb_next is None
+
+        err3 = ContractLogicError(source_traceback=mock_tb, project=project_with_contract)
+        try:
+            raise err3
+        except Exception:
+            pass
+
+        assert_ape_traceback(err3)
 
 
 class TestNetworkNotFoundError:

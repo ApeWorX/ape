@@ -186,6 +186,7 @@ class TransactionError(ApeException):
         contract_address: Optional["AddressType"] = None,
         source_traceback: _SOURCE_TRACEBACK_ARG = None,
         project: Optional["ProjectManager"] = None,
+        set_ape_traceback: bool = False,  # Overriden in ContractLogicError
     ):
         message = message or (str(base_err) if base_err else self.DEFAULT_MESSAGE)
         self.message = message
@@ -198,10 +199,11 @@ class TransactionError(ApeException):
         self._project = project
         ex_message = f"({code}) {message}" if code else message
 
-        self.__tb: Optional[TracebackType] = None
-
         # Finalizes expected revert message.
         super().__init__(ex_message)
+
+        if set_ape_traceback:
+            self.with_ape_traceback()
 
     @property
     def address(self) -> Optional["AddressType"]:
@@ -260,8 +262,7 @@ class TransactionError(ApeException):
     def source_traceback(self, value):
         self._source_traceback = value
 
-    @cached_property
-    def _calculated_traceback(self) -> Optional[TracebackType]:
+    def _get_ape_traceback(self) -> Optional[TracebackType]:
         source_tb = self.source_traceback
         if not source_tb and self.txn:
             source_tb = _get_ape_traceback_from_tx(self.txn)
@@ -274,20 +275,8 @@ class TransactionError(ApeException):
 
         return None
 
-    def reset_tb(self):
-        self.__dict__.pop("_calculated_traceback", None)
-
-    @property
-    def __traceback__(self) -> Optional[TracebackType]:
-        if self.__tb is None:
-            # Calculating for the first time (though may be appended to later).
-            self.__tb = self._calculated_traceback
-
-        return self.__tb
-
-    @__traceback__.setter
-    def __traceback__(self, value):
-        self.__tb = value
+    def with_ape_traceback(self):
+        return self.with_traceback(self._get_ape_traceback())
 
 
 class VirtualMachineError(TransactionError):
@@ -310,6 +299,8 @@ class ContractLogicError(VirtualMachineError):
         contract_address: Optional["AddressType"] = None,
         source_traceback: _SOURCE_TRACEBACK_ARG = None,
         base_err: Optional[Exception] = None,
+        project: Optional["ProjectManager"] = None,
+        set_ape_traceback: bool = True,  # Overriden default.
     ):
         self.txn = txn
         self.contract_address = contract_address
@@ -318,6 +309,8 @@ class ContractLogicError(VirtualMachineError):
             base_err=base_err,
             contract_address=contract_address,
             message=revert_message,
+            project=project,
+            set_ape_traceback=set_ape_traceback,
             source_traceback=source_traceback,
             trace=trace,
             txn=txn,

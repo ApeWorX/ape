@@ -352,6 +352,7 @@ class Web3Provider(ProviderAPI, ABC):
                 err,
                 txn=txn,
                 trace=lambda: CallTrace(tx=txn),
+                set_ape_traceback=False,
             )
 
             # If this is the cause of a would-be revert,
@@ -365,6 +366,7 @@ class Web3Provider(ProviderAPI, ABC):
                 base_err=tx_error,
                 txn=txn,
                 source_traceback=lambda: tx_error.source_traceback,
+                set_ape_traceback=True,
             ) from err
 
     @cached_property
@@ -561,9 +563,10 @@ class Web3Provider(ProviderAPI, ABC):
                 trace=lambda: _lazy_call_trace.trace,
                 contract_address=contract_address,
                 source_traceback=lambda: _lazy_call_trace.source_traceback,
+                set_ape_traceback=raise_on_revert,
             )
             if raise_on_revert:
-                raise vm_err from err
+                raise vm_err.with_ape_traceback() from err
 
             else:
                 logger.error(vm_err)
@@ -1005,7 +1008,9 @@ class Web3Provider(ProviderAPI, ABC):
                 txn_hash = to_hex(self.web3.eth.send_raw_transaction(txn.serialize_transaction()))
 
         except (ValueError, Web3ContractLogicError) as err:
-            vm_err = self.get_virtual_machine_error(err, txn=txn)
+            vm_err = self.get_virtual_machine_error(
+                err, txn=txn, set_ape_traceback=txn.raise_on_revert
+            )
             if txn.raise_on_revert:
                 raise vm_err from err
             else:
@@ -1053,7 +1058,9 @@ class Web3Provider(ProviderAPI, ABC):
             try:
                 self.web3.eth.call(txn_params)
             except Exception as err:
-                vm_err = self.get_virtual_machine_error(err, txn=txn)
+                vm_err = self.get_virtual_machine_error(
+                    err, txn=txn, set_ape_traceback=txn.raise_on_revert
+                )
                 receipt.error = vm_err
                 if txn.raise_on_revert:
                     raise vm_err from err
@@ -1217,6 +1224,7 @@ class Web3Provider(ProviderAPI, ABC):
         trace: Optional[TraceAPI] = None,
         contract_address: Optional[AddressType] = None,
         source_traceback: Optional[SourceTraceback] = None,
+        set_ape_traceback: Optional[bool] = None,
     ) -> ContractLogicError:
         if hasattr(exception, "args") and len(exception.args) == 2:
             message = exception.args[0].replace("execution reverted: ", "")
@@ -1230,6 +1238,9 @@ class Web3Provider(ProviderAPI, ABC):
             "contract_address": contract_address,
             "source_traceback": source_traceback,
         }
+        if set_ape_traceback is not None:
+            params["set_ape_traceback"] = set_ape_traceback
+
         no_reason = message == "execution reverted"
 
         if isinstance(exception, Web3ContractLogicError) and no_reason:
