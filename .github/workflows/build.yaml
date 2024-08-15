@@ -27,9 +27,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Get tags
-        run: git fetch --tags origin
-
       - name: Build and push slim
         uses: docker/build-push-action@v4
         with:
