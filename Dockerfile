@@ -2,8 +2,9 @@
 # See LICENSE in the project root for license information.
 #---------------------------------------------------------------------------------------------
 
+ARG SLIM_IMAGE
 ARG PYTHON_VERSION="3.11"
-FROM python:${PYTHON_VERSION} as builder
+FROM python:${PYTHON_VERSION} AS builder
 
 WORKDIR /wheels
 
@@ -16,7 +17,7 @@ COPY ./recommended-plugins.txt ./recommended-plugins.txt
 
 RUN pip wheel .[recommended-plugins] --wheel-dir=/wheels
 
-FROM ape:latest-slim
+FROM ${SLIM_IMAGE}
 
 USER root
 
