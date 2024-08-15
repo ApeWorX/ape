@@ -24,7 +24,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-tags: 'true'
+          fetch-depth: 0
 
       - name: PRINT GIT TAG
         run: git tag
