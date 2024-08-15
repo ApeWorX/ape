@@ -146,10 +146,10 @@ class TestCurrencyValueComparable:
     def test_use_for_int_in_pydantic_model(self):
         value = 100000000000000000000000000000000000000000000
 
-        class MyModel(BaseModel):
+        class MyBasicModel(BaseModel):
             val: int
 
-        model = MyModel.model_validate({"val": CurrencyValueComparable(value)})
+        model = MyBasicModel.model_validate({"val": CurrencyValueComparable(value)})
         assert model.val == value
 
         # Ensure serializes.
@@ -160,12 +160,16 @@ class TestCurrencyValueComparable:
     def test_use_in_model_annotation(self, mode):
         value = 100000000000000000000000000000000000000000000
 
-        class MyModel(BaseModel):
+        class MyAnnotatedModel(BaseModel):
             val: CurrencyValueComparable
             val_optional: Optional[CurrencyValueComparable]
 
-        model = MyModel.model_validate({"val": value, "val_optional": value})
+        model = MyAnnotatedModel.model_validate({"val": value, "val_optional": value})
+        assert isinstance(model.val, CurrencyValueComparable)
         assert model.val == value
+
+        # Show can use currency-comparable
+        assert model.val == "100000000000000000000000000 ETH"
 
         # Ensure serializes.
         dumped = model.model_dump(mode=mode)

@@ -22,9 +22,10 @@ from ethpm_types.source import Closure
 from pydantic import BaseModel, BeforeValidator, field_validator, model_validator
 from pydantic_core.core_schema import (
     CoreSchema,
+    ValidationInfo,
     int_schema,
+    no_info_after_validator_function,
     plain_serializer_function_ser_schema,
-    with_info_before_validator_function,
 )
 from typing_extensions import TypeAlias
 from web3.types import FilterParams
@@ -492,9 +493,29 @@ class CurrencyValueComparable(int):
 
     @classmethod
     def __get_pydantic_core_schema__(cls, value, handler=None) -> CoreSchema:
-        schema = with_info_before_validator_function(lambda x, y: int(x), int_schema())
-        schema["serialization"] = plain_serializer_function_ser_schema(function=lambda x: int(x))
-        return schema
+        return no_info_after_validator_function(
+            cls._validate,
+            int_schema(),
+            serialization=plain_serializer_function_ser_schema(
+                cls._serialize,
+                info_arg=False,
+                return_schema=int_schema(),
+            ),
+        )
+
+    @staticmethod
+    def _validate(value: Any, info: Optional[ValidationInfo] = None) -> "CurrencyValueComparable":
+        if value is None:
+            # Will fail if  not optional.
+            # Type ignore because this is an hacky and unlikely situation.
+            return None  # type: ignore
+
+        # For models annotating with this type, we validate all integers into it.
+        return CurrencyValueComparable(value)
+
+    @staticmethod
+    def _serialize(value):
+        return int(value)
 
 
 CurrencyValueComparable.__name__ = int.__name__
