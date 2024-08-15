@@ -105,17 +105,21 @@ Additionally, specify `ecosystem`, `network`, or `provider` in your command func
 import click
 from ape.cli import ConnectedProviderCommand
 
-@click.command(cls=ConnectedProviderCommand)
-def cmd(network, provider):
+@click.group()
+def cli():
+    pass
+
+ @cli.command(cls=ConnectedProviderCommand)
+def cmd_1(network, provider):
    click.echo(network.name)
    click.echo(provider.is_connected)  # True
 
-@click.command(cls=ConnectedProviderCommand)
-def cmd(provider):
+ @cli.command(cls=ConnectedProviderCommand)
+def cmd_2(provider):
    click.echo(provider.is_connected)  # True
 
-@click.command(cls=ConnectedProviderCommand)
-def cmd():
+ @cli.command(cls=ConnectedProviderCommand)
+def cmd_3():
    click.echo("Using params from ConnectedProviderCommand is optional")
 ```
 
