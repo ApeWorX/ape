@@ -22,11 +22,11 @@ FROM python:${PYTHON_VERSION}-slim
 LABEL maintainer="ApeWorX" \
       org.label-schema.schema-version="2.0" \
       org.label-schema.name="ape" \
-      org.label-schema.description="Ape Ethereum Framework." \
-      org.label-schema.url="https://docs.apeworx.io/ape/stable/" \
-      org.label-schema.usage="https://docs.apeworx.io/ape/stable/userguides/quickstart.html#via-docker" \
+      org.label-schema.description="Ape Framework." \
+      org.label-schema.url="https://apeworx.io/framework" \
+      org.label-schema.usage="https://docs.apeworx.io/ape/stable/userguides/quickstart.html\#via-docker" \
       org.label-schema.vcs-url="https://github.com/ApeWorX/ape" \
-      org.label-schema.docker.cmd="docker run --volume $HOME/.ape:/home/harambe/.ape --volume $HOME/.vvm:/home/harambe/.vvm --volume $HOME/.solcx:/home/harambe/.solcx --volume $PWD:/home/harambe/project --workdir /home/harambe/project apeworx/ape compile"
+      org.label-schema.docker.cmd="docker run --volume $PWD:/home/harambe/project --workdir /home/harambe/project apeworx/ape run my_script.py"
 
 RUN useradd --create-home --shell /bin/bash harambe
 COPY --from=builder /wheels/*.whl /wheels/
