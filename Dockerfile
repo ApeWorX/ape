@@ -17,7 +17,7 @@ COPY ./recommended-plugins.txt ./recommended-plugins.txt
 
 RUN pip wheel .[recommended-plugins] --wheel-dir=/wheels
 
-FROM ${SLIM_IMAGE}
+FROM ${SLIM_IMAGE} AS ape_slim
 
 USER root
 
