@@ -156,15 +156,18 @@ class TestCurrencyValueComparable:
         dumped = model.model_dump()
         assert dumped["val"] == value
 
-    def test_use_in_model_annotation(self):
+    @pytest.mark.parametrize("mode", ("json", "python"))
+    def test_use_in_model_annotation(self, mode):
         value = 100000000000000000000000000000000000000000000
 
         class MyModel(BaseModel):
             val: CurrencyValueComparable
+            val_optional: Optional[CurrencyValueComparable]
 
-        model = MyModel.model_validate({"val": value})
+        model = MyModel.model_validate({"val": value, "val_optional": value})
         assert model.val == value
 
         # Ensure serializes.
-        dumped = model.model_dump()
+        dumped = model.model_dump(mode=mode)
         assert dumped["val"] == value
+        assert dumped["val_optional"] == value
