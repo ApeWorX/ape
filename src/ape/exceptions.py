@@ -361,8 +361,15 @@ class OutOfGasError(VirtualMachineError):
         code: Optional[int] = None,
         txn: Optional[FailedTxn] = None,
         base_err: Optional[Exception] = None,
+        set_ape_traceback: bool = False,
     ):
-        super().__init__("The transaction ran out of gas.", code=code, txn=txn, base_err=base_err)
+        super().__init__(
+            "The transaction ran out of gas.",
+            code=code,
+            txn=txn,
+            base_err=base_err,
+            set_ape_traceback=set_ape_traceback,
+        )
 
 
 class NetworkError(ApeException):
