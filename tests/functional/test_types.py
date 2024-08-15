@@ -143,13 +143,26 @@ class TestHexInt:
 
 
 class TestCurrencyValueComparable:
-    def test_use_on_int_in_pydantic_model(self):
+    def test_use_for_int_in_pydantic_model(self):
         value = 100000000000000000000000000000000000000000000
 
         class MyModel(BaseModel):
             val: int
 
         model = MyModel.model_validate({"val": CurrencyValueComparable(value)})
+        assert model.val == value
+
+        # Ensure serializes.
+        dumped = model.model_dump()
+        assert dumped["val"] == value
+
+    def test_use_in_model_annotation(self):
+        value = 100000000000000000000000000000000000000000000
+
+        class MyModel(BaseModel):
+            val: CurrencyValueComparable
+
+        model = MyModel.model_validate({"val": value})
         assert model.val == value
 
         # Ensure serializes.

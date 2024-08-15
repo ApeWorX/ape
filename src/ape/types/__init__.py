@@ -20,6 +20,12 @@ from ethpm_types import (
 from ethpm_types.abi import EventABI
 from ethpm_types.source import Closure
 from pydantic import BaseModel, BeforeValidator, field_validator, model_validator
+from pydantic_core.core_schema import (
+    CoreSchema,
+    int_schema,
+    plain_serializer_function_ser_schema,
+    with_info_before_validator_function,
+)
 from typing_extensions import TypeAlias
 from web3.types import FilterParams
 
@@ -483,6 +489,12 @@ class CurrencyValueComparable(int):
 
         # Try from the other end, if hasn't already.
         return NotImplemented
+
+    @classmethod
+    def __get_pydantic_core_schema__(cls, value, handler=None) -> CoreSchema:
+        schema = with_info_before_validator_function(lambda x, y: int(x), int_schema())
+        schema["serialization"] = plain_serializer_function_ser_schema(function=lambda x: int(x))
+        return schema
 
 
 CurrencyValueComparable.__name__ = int.__name__
