@@ -175,3 +175,16 @@ class TestCurrencyValueComparable:
         dumped = model.model_dump(mode=mode)
         assert dumped["val"] == value
         assert dumped["val_optional"] == value
+
+    def test_validate_from_currency_value(self):
+        class MyAnnotatedModel(BaseModel):
+            val: CurrencyValueComparable
+            val_optional: Optional[CurrencyValueComparable]
+
+        value = "100000000000000000000000000 ETH"
+        expected = 100000000000000000000000000000000000000000000
+        data = {"val": value, "val_optional": value}
+        model = MyAnnotatedModel.model_validate(data)
+        for actual in (model.val, model.val_optional):
+            for ex in (value, expected):
+                assert actual == ex

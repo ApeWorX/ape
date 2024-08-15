@@ -24,7 +24,7 @@ from pydantic_core.core_schema import (
     CoreSchema,
     ValidationInfo,
     int_schema,
-    no_info_after_validator_function,
+    no_info_plain_validator_function,
     plain_serializer_function_ser_schema,
 )
 from typing_extensions import TypeAlias
@@ -493,9 +493,8 @@ class CurrencyValueComparable(int):
 
     @classmethod
     def __get_pydantic_core_schema__(cls, value, handler=None) -> CoreSchema:
-        return no_info_after_validator_function(
+        return no_info_plain_validator_function(
             cls._validate,
-            int_schema(),
             serialization=plain_serializer_function_ser_schema(
                 cls._serialize,
                 info_arg=False,
@@ -505,10 +504,15 @@ class CurrencyValueComparable(int):
 
     @staticmethod
     def _validate(value: Any, info: Optional[ValidationInfo] = None) -> "CurrencyValueComparable":
+        # NOTE: For some reason, for this to work, it has to happen
+        #   in an "after" validator, or else it always only `int` type on the model.
         if value is None:
             # Will fail if  not optional.
             # Type ignore because this is an hacky and unlikely situation.
             return None  # type: ignore
+
+        elif isinstance(value, str) and " " in value:
+            return ManagerAccessMixin.conversion_manager.convert(value, int)
 
         # For models annotating with this type, we validate all integers into it.
         return CurrencyValueComparable(value)
