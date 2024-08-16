@@ -177,13 +177,13 @@ class TransactionAPI(BaseInterfaceModel):
             if isinstance(data["data"], str):
                 data["data"] = (
                     "0x"
-                    + to_hex(bytes(data["data"][:3], encoding="utf8"))
+                    + bytes(data["data"][:3], encoding="utf8").hex()
                     + "..."
-                    + to_hex(bytes(data["data"][-3:], encoding="utf8"))
+                    + bytes(data["data"][-3:], encoding="utf8").hex()
                 )
             else:
                 data["data"] = (
-                    to_hex(tbytes(data["data"][:3])) + "..." + to_hex(bytes(data["data"][-3:]))
+                    to_hex(bytes(data["data"][:3])) + "..." + to_hex(bytes(data["data"][-3:]))
                 )
         else:
             if isinstance(data["data"], str):

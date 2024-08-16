@@ -10,7 +10,7 @@ from eth_account._utils.legacy_transactions import (
     serializable_unsigned_transaction_from_dict,
 )
 from eth_pydantic_types import HexBytes
-from eth_utils import decode_hex, encode_hex, keccak, to_int, to_hex
+from eth_utils import decode_hex, encode_hex, keccak, to_hex, to_int
 from ethpm_types import ContractType
 from ethpm_types.abi import EventABI, MethodABI
 from pydantic import BaseModel, Field, field_validator, model_validator

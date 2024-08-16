@@ -126,7 +126,7 @@ setup(
         "eth-abi>=5.1.0,<6",
         "eth-account>=0.13.0,<0.14",
         "eth-typing>=4.1.0,<5",
-        "eth-utils",
+        "eth-utils>=4.1.0,<5",
         "hexbytes",  # Peer
         "py-geth>=5.0.0-beta.2,<6",
         "trie>=3.0.0,<4",  # Peer: stricter pin needed for uv support.

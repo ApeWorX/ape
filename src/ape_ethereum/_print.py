@@ -23,7 +23,7 @@ from collections.abc import Iterable
 from typing import Any, cast
 
 from eth_abi import decode
-from eth_typing import ChecksumAddress, HexStr
+from eth_typing import ChecksumAddress
 from eth_utils import add_0x_prefix, decode_hex, to_hex
 from ethpm_types import ContractType, MethodABI
 from evm_trace import CallTreeNode

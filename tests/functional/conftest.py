@@ -7,6 +7,7 @@ from typing import Optional, cast
 
 import pytest
 from eth_pydantic_types import HexBytes
+from eth_utils import to_hex
 from ethpm_types import ContractType, ErrorABI, MethodABI
 from ethpm_types.abi import ABIType
 

@@ -4,8 +4,6 @@ from pathlib import Path
 from subprocess import DEVNULL, PIPE, Popen
 from typing import Any, Optional, Union
 
-from eth_pydantic_types import HexBytes
-from eth_typing import HexStr
 from eth_utils import add_0x_prefix, to_hex
 from evmchains import get_random_rpc
 from geth.chain import initialize_chain
@@ -152,9 +150,7 @@ class GethDevProcess(BaseGethProcess):
         mnemonic = kwargs.get("mnemonic", DEFAULT_TEST_MNEMONIC)
         number_of_accounts = kwargs.get("number_of_accounts", DEFAULT_NUMBER_OF_TEST_ACCOUNTS)
         balance = kwargs.get("initial_balance", DEFAULT_TEST_ACCOUNT_BALANCE)
-        extra_accounts = [
-            to_hex(a).lower() for a in kwargs.get("extra_funded_accounts", [])
-        ]
+        extra_accounts = [to_hex(a).lower() for a in kwargs.get("extra_funded_accounts", [])]
 
         return cls(
             data_folder,

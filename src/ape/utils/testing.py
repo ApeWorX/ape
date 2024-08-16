@@ -3,7 +3,6 @@ from collections import namedtuple
 from eth_account import Account
 from eth_account.hdaccount import HDPath
 from eth_account.hdaccount.mnemonic import Mnemonic
-from eth_pydantic_types import HexBytes
 from eth_utils import to_hex
 
 DEFAULT_NUMBER_OF_TEST_ACCOUNTS = 10
