@@ -319,7 +319,7 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
                 HexBytes(message),
                 address,
                 base_err=err.base_err,
-                source_traceback=err.source_traceback,
+                source_traceback=lambda: err.source_traceback,
                 trace=err.trace,
                 txn=err.txn,
             )

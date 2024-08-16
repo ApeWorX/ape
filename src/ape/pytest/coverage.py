@@ -1,6 +1,6 @@
 from collections.abc import Iterable
 from pathlib import Path
-from typing import Optional
+from typing import Callable, Optional, Union
 
 import click
 from ethpm_types.abi import MethodABI
@@ -23,16 +23,33 @@ from ape.utils.trace import parse_coverage_tables
 
 
 class CoverageData(ManagerAccessMixin):
-    def __init__(self, project: ProjectManager, sources: Iterable[ContractSource]):
+    def __init__(
+        self,
+        project: ProjectManager,
+        sources: Union[Iterable[ContractSource], Callable[[], Iterable[ContractSource]]],
+    ):
         self.project = project
-        self.sources = list(sources)
+        self._sources: Union[Iterable[ContractSource], Callable[[], Iterable[ContractSource]]] = (
+            sources
+        )
         self._report: Optional[CoverageReport] = None
-        self._init_coverage_profile()  # Inits self._report.
+
+    @property
+    def sources(self) -> list[ContractSource]:
+        if isinstance(self._sources, list):
+            return self._sources
+
+        elif callable(self._sources):
+            # Lazily evaluated.
+            self._sources = self._sources()
+
+        self._sources = [src for src in self._sources]
+        return self._sources
 
     @property
     def report(self) -> CoverageReport:
         if self._report is None:
-            return self._init_coverage_profile()
+            self._report = self._init_coverage_profile()
 
         return self._report
 
@@ -69,7 +86,6 @@ class CoverageData(ManagerAccessMixin):
         for project in report.projects:
             project.sources = [x for x in project.sources if len(x.statements) > 0]
 
-        self._report = report
         return report
 
     def cover(
@@ -142,11 +158,20 @@ class CoverageTracker(ManagerAccessMixin):
         else:
             self._output_path = Path.cwd()
 
-        sources = self._project._contract_sources
+        # Data gets initialized lazily (if coverage is needed).
+        self._data: Optional[CoverageData] = None
 
-        self.data: Optional[CoverageData] = (
-            CoverageData(self._project, sources) if self.config_wrapper.track_coverage else None
-        )
+    @property
+    def data(self) -> Optional[CoverageData]:
+        if not self.config_wrapper.track_coverage:
+            return None
+
+        elif self._data is None:
+            # First time being initialized.
+            self._data = CoverageData(self._project, lambda: self._project._contract_sources)
+            return self._data
+
+        return self._data
 
     @property
     def enabled(self) -> bool:

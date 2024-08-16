@@ -1514,7 +1514,7 @@ class ContractContainer(ContractTypeWrapper, ExtraAttributesMixin):
         except ContractLogicError as err:
             if address := err.address:
                 self.chain_manager.contracts[address] = self.contract_type
-                err._set_tb()  # Re-try setting source traceback
+                err = err.with_ape_traceback()  # Re-try setting source traceback
                 new_err = None
                 try:
                     # Try enrichment again now that the contract type is cached.

@@ -8,7 +8,7 @@ from functools import cached_property
 from inspect import getframeinfo, stack
 from pathlib import Path
 from types import CodeType, TracebackType
-from typing import TYPE_CHECKING, Any, Optional, Union, cast
+from typing import TYPE_CHECKING, Any, Callable, Optional, Union, cast
 
 import click
 from eth_typing import Hash32
@@ -163,6 +163,12 @@ class MethodNonPayableError(ContractDataError):
     """
 
 
+_TRACE_ARG = Optional[Union["TraceAPI", Callable[[], Optional["TraceAPI"]]]]
+_SOURCE_TRACEBACK_ARG = Optional[
+    Union["SourceTraceback", Callable[[], Optional["SourceTraceback"]]]
+]
+
+
 class TransactionError(ApeException):
     """
     Raised when issues occur related to transactions.
@@ -176,25 +182,28 @@ class TransactionError(ApeException):
         base_err: Optional[Exception] = None,
         code: Optional[int] = None,
         txn: Optional[FailedTxn] = None,
-        trace: Optional["TraceAPI"] = None,
+        trace: _TRACE_ARG = None,
         contract_address: Optional["AddressType"] = None,
-        source_traceback: Optional["SourceTraceback"] = None,
+        source_traceback: _SOURCE_TRACEBACK_ARG = None,
         project: Optional["ProjectManager"] = None,
+        set_ape_traceback: bool = False,  # Overriden in ContractLogicError
     ):
         message = message or (str(base_err) if base_err else self.DEFAULT_MESSAGE)
         self.message = message
         self.base_err = base_err
         self.code = code
         self.txn = txn
-        self.trace = trace
+        self._trace = trace
         self.contract_address = contract_address
-        self.source_traceback: Optional["SourceTraceback"] = source_traceback
+        self._source_traceback = source_traceback
         self._project = project
         ex_message = f"({code}) {message}" if code else message
 
         # Finalizes expected revert message.
         super().__init__(ex_message)
-        self._set_tb()
+
+        if set_ape_traceback:
+            self.with_ape_traceback()
 
     @property
     def address(self) -> Optional["AddressType"]:
@@ -223,15 +232,51 @@ class TransactionError(ApeException):
         except (RecursionError, ProviderNotConnectedError):
             return None
 
-    def _set_tb(self):
-        if not self.source_traceback and self.txn:
-            self.source_traceback = _get_ape_traceback_from_tx(self.txn)
+    @property
+    def trace(self) -> Optional["TraceAPI"]:
+        tr = self._trace
+        if callable(tr):
+            result = tr()
+            self._trace = result
+            return result
 
-        if src_tb := self.source_traceback:
+        return tr
+
+    @trace.setter
+    def trace(self, value):
+        self._trace = value
+
+    @property
+    def source_traceback(self) -> Optional["SourceTraceback"]:
+        tb = self._source_traceback
+        result: Optional["SourceTraceback"]
+        if callable(tb):
+            result = tb()
+            self._source_traceback = result
+        else:
+            result = tb
+
+        return result
+
+    @source_traceback.setter
+    def source_traceback(self, value):
+        self._source_traceback = value
+
+    def _get_ape_traceback(self) -> Optional[TracebackType]:
+        source_tb = self.source_traceback
+        if not source_tb and self.txn:
+            source_tb = _get_ape_traceback_from_tx(self.txn)
+
+        if src_tb := source_tb:
             # Create a custom Pythonic traceback using lines from the sources
             # found from analyzing the trace of the transaction.
             if py_tb := _get_custom_python_traceback(self, src_tb, project=self._project):
-                self.__traceback__ = py_tb
+                return py_tb
+
+        return None
+
+    def with_ape_traceback(self):
+        return self.with_traceback(self._get_ape_traceback())
 
 
 class VirtualMachineError(TransactionError):
@@ -250,19 +295,22 @@ class ContractLogicError(VirtualMachineError):
         self,
         revert_message: Optional[str] = None,
         txn: Optional[FailedTxn] = None,
-        trace: Optional["TraceAPI"] = None,
+        trace: _TRACE_ARG = None,
         contract_address: Optional["AddressType"] = None,
-        source_traceback: Optional["SourceTraceback"] = None,
+        source_traceback: _SOURCE_TRACEBACK_ARG = None,
         base_err: Optional[Exception] = None,
+        project: Optional["ProjectManager"] = None,
+        set_ape_traceback: bool = True,  # Overriden default.
     ):
         self.txn = txn
-        self.trace = trace
         self.contract_address = contract_address
 
         super().__init__(
             base_err=base_err,
             contract_address=contract_address,
             message=revert_message,
+            project=project,
+            set_ape_traceback=set_ape_traceback,
             source_traceback=source_traceback,
             trace=trace,
             txn=txn,
@@ -313,8 +361,15 @@ class OutOfGasError(VirtualMachineError):
         code: Optional[int] = None,
         txn: Optional[FailedTxn] = None,
         base_err: Optional[Exception] = None,
+        set_ape_traceback: bool = False,
     ):
-        super().__init__("The transaction ran out of gas.", code=code, txn=txn, base_err=base_err)
+        super().__init__(
+            "The transaction ran out of gas.",
+            code=code,
+            txn=txn,
+            base_err=base_err,
+            set_ape_traceback=set_ape_traceback,
+        )
 
 
 class NetworkError(ApeException):
@@ -786,10 +841,10 @@ class CustomError(ContractLogicError):
         abi: ErrorABI,
         inputs: dict[str, Any],
         txn: Optional[FailedTxn] = None,
-        trace: Optional["TraceAPI"] = None,
+        trace: _TRACE_ARG = None,
         contract_address: Optional["AddressType"] = None,
         base_err: Optional[Exception] = None,
-        source_traceback: Optional["SourceTraceback"] = None,
+        source_traceback: _SOURCE_TRACEBACK_ARG = None,
     ):
         self.abi = abi
         self.inputs = inputs
