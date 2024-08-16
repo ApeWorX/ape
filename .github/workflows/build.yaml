@@ -59,6 +59,9 @@ jobs:
           file: ./Dockerfile.slim
           tags: ${{ steps.meta.outputs.tags }}-slim
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            BUILD_DATE=${{ github.event.repository.updated_at }}
+            VCS_REF=${{ github.sha }}
 
       - name: Build and push
         uses: docker/build-push-action@v4
