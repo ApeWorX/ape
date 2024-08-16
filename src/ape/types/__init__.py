@@ -507,7 +507,7 @@ class CurrencyValueComparable(int):
         # NOTE: For some reason, for this to work, it has to happen
         #   in an "after" validator, or else it always only `int` type on the model.
         if value is None:
-            # Will fail if  not optional.
+            # Will fail if not optional.
             # Type ignore because this is an hacky and unlikely situation.
             return None  # type: ignore
 
