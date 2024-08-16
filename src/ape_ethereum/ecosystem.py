@@ -441,7 +441,7 @@ class Ethereum(EcosystemAPI):
     def get_proxy_info(self, address: AddressType) -> Optional[ProxyInfo]:
         contract_code = self.provider.get_code(address)
         if isinstance(contract_code, bytes):
-            contract_code = contract_code.hex()
+            contract_code = to_hex(contract_code)
 
         code = contract_code[2:]
         if not code:
@@ -473,7 +473,7 @@ class Ethereum(EcosystemAPI):
             return ProxyInfo(type=ProxyType.Sequence, target=target)
 
         def str_to_slot(text):
-            return int(keccak(text=text).hex(), 16)
+            return int(to_hex(keccak(text=text)), 16)
 
         slots = {
             ProxyType.Standard: str_to_slot("eip1967.proxy.implementation") - 1,
@@ -501,7 +501,7 @@ class Ethereum(EcosystemAPI):
         # safe >=1.1.0 provides `masterCopy()`, which is also stored in slot 0
         # detect safe-specific bytecode of push32 keccak256("masterCopy()")
         safe_pattern = b"\x7f" + keccak(text="masterCopy()")[:4] + bytes(28)
-        if safe_pattern.hex() in code:
+        if to_hex(safe_pattern) in code:
             try:
                 singleton = ContractCall(MASTER_COPY_ABI, address)(skip_trace=True)
                 slot_0 = self.provider.get_storage(address, 0)
@@ -515,7 +515,7 @@ class Ethereum(EcosystemAPI):
         # eip-897 delegate proxy, read `proxyType()` and `implementation()`
         # perf: only make a call when a proxyType() selector is mentioned in the code
         eip897_pattern = b"\x63" + keccak(text="proxyType()")[:4]
-        if eip897_pattern.hex() in code:
+        if to_hex(eip897_pattern) in code:
             try:
                 proxy_type = ContractCall(PROXY_TYPE_ABI, address)(skip_trace=True)
                 if proxy_type not in (1, 2):
@@ -547,7 +547,7 @@ class Ethereum(EcosystemAPI):
         )
         txn_hash = next((data[choice] for choice in hash_key_choices if choice in data), None)
         if txn_hash and isinstance(txn_hash, bytes):
-            txn_hash = txn_hash.hex()
+            txn_hash = to_hex(txn_hash)
 
         data_bytes = data.get("data")
         if data_bytes and isinstance(data_bytes, str):
@@ -1091,8 +1091,8 @@ class Ethereum(EcosystemAPI):
 
         if calldata := call.get("calldata"):
             calldata_bytes = HexBytes(calldata)
-            call["method_id"] = calldata_bytes[:4].hex()
-            call["calldata"] = calldata if is_create else calldata_bytes[4:].hex()
+            call["method_id"] = to_hex(calldata_bytes[:4])
+            call["calldata"] = calldata if is_create else to_hex(calldata_bytes[4:])
 
         else:
             call["method_id"] = "0x"
@@ -1350,7 +1350,7 @@ class Ethereum(EcosystemAPI):
         # The selector is always the first topic.
         selector = event["topics"][0]
         if not isinstance(selector, str):
-            selector = selector.hex()
+            selector = to_hex(selector)
 
         if selector not in contract_type.identifier_lookup:
             # Unable to enrich using this contract type.

@@ -13,7 +13,7 @@ from eth_account.messages import encode_defunct
 from eth_account.signers.local import LocalAccount
 from eth_keys import keys  # type: ignore
 from eth_pydantic_types import HexBytes
-from eth_utils import to_bytes
+from eth_utils import to_bytes, to_hex
 
 from ape.api import AccountAPI, AccountContainerAPI, TransactionAPI
 from ape.exceptions import AccountsError
@@ -166,10 +166,10 @@ class KeyfileAccount(AccountAPI):
 
         elif isinstance(msg, int):
             display_msg = f"Signing raw integer: {msg}"
-            msg = encode_defunct(hexstr=HexBytes(msg).hex())
+            msg = encode_defunct(hexstr=to_hex(msg))
 
         elif isinstance(msg, bytes):
-            display_msg = f"Signing raw bytes: '{msg.hex()}'"
+            display_msg = f"Signing raw bytes: '{to_hex(msg)}'"
             msg = encode_defunct(primitive=msg)
 
         elif isinstance(msg, EIP712Message):
@@ -187,13 +187,13 @@ class KeyfileAccount(AccountAPI):
             if msg._verifyingContract_:
                 display_msg += f"\tContract: {msg._verifyingContract_}\n"
             if msg._salt_:
-                display_msg += f"\tSalt: 0x{msg._salt_.hex()}\n"
+                display_msg += f"\tSalt: 0x{to_hex(msg._salt_)}\n"
 
             # Message Data
             display_msg += "Message\n"
             for field, value in msg._body_["message"].items():
                 if isinstance(value, bytes):
-                    value = HexBytes(value).hex()
+                    value = to_hex(value)
                 display_msg += f"\t{field}: {value}\n"
 
             # Convert EIP712Message to SignableMessage for handling below

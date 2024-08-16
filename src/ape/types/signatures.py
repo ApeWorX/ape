@@ -48,7 +48,7 @@ def _bytes_to_human_str(bytes_value: bytes) -> Optional[str]:
 
     try:
         # Try as hex
-        return HexBytes(bytes_value).hex()
+        return to_hex(bytes_value)
     except Exception:
         pass
 

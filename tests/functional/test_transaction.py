@@ -4,6 +4,7 @@ from typing import Optional
 
 import pytest
 from eth_pydantic_types import HexBytes
+from eth_utils import to_hex
 from hexbytes import HexBytes as BaseHexBytes
 
 from ape.api import TransactionAPI
@@ -224,7 +225,7 @@ def test_txn_hash_and_receipt(owner, eth_tester_provider, ethereum, kwargs):
     txn = owner.prepare_transaction(txn)
     txn = owner.sign_transaction(txn)
     assert txn
-    actual = txn.txn_hash.hex()
+    actual = to_hex(txn.txn_hash)
     receipt = eth_tester_provider.send_transaction(txn)
 
     # Show that we can access the receipt from the transaction.
@@ -253,7 +254,7 @@ def test_txn_hash_when_access_list_is_raw(ethereum, owner):
     # Ignore the Pydantic warning from access-list being the wrong type.
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        actual = txn.txn_hash.hex()
+        actual = to_hex(txn.txn_hash)
 
     assert actual.startswith("0x")
 

@@ -1,5 +1,6 @@
 import pytest
 from eth_pydantic_types import HexBytes
+from eth_utils import to_hex
 
 from ape.exceptions import ConversionError
 from ape.managers.converters import HexConverter, HexIntConverter
@@ -8,7 +9,7 @@ from ape.managers.converters import HexConverter, HexIntConverter
 @pytest.mark.parametrize("val", ("0xA100", "0x0A100", "0x00a100"))
 def test_hex_str(convert, val):
     assert convert(val, int) == 0xA100
-    assert int(convert(val, bytes).hex(), 16) == int(HexBytes(0xA100).hex(), 16)
+    assert int(to_hex(convert(val, bytes)), 16) == int(to_hex(0xA100), 16)
 
 
 def test_int_str(convert):

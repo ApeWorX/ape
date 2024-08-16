@@ -216,7 +216,7 @@ class ContractMethodHandler(ManagerAccessMixin):
         matching_abis = []
         rest_calldata = None
         err = ContractDataError(
-            f"Unable to find matching method ABI for calldata '{calldata.hex()}'. "
+            f"Unable to find matching method ABI for calldata '{to_hex(calldata)}'. "
             "Try prepending a method ID to the beginning of the calldata."
         )
         for abi in self.abis:
@@ -856,7 +856,7 @@ class ContractTypeWrapper(ManagerAccessMixin):
 
         if not method:
             raise ContractDataError(
-                f"Unable to find method ABI from calldata '{calldata.hex()}'. "
+                f"Unable to find method ABI from calldata '{to_hex(calldata)}'. "
                 "Try prepending the method ID to the beginning of the calldata."
             )
 

@@ -9,7 +9,7 @@ from eth.exceptions import HeaderNotFound
 from eth_pydantic_types import HexBytes
 from eth_tester.backends import PyEVMBackend  # type: ignore
 from eth_tester.exceptions import TransactionFailed  # type: ignore
-from eth_utils import is_0x_prefixed
+from eth_utils import is_0x_prefixed, to_hex
 from eth_utils.exceptions import ValidationError
 from eth_utils.toolz import merge
 from web3 import EthereumTesterProvider, Web3
@@ -245,14 +245,14 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         txn_dict = None
         try:
             txn_hash = self.tester.ethereum_tester.send_raw_transaction(
-                txn.serialize_transaction().hex()
+                to_hex(txn.serialize_transaction())
             )
         except (ValidationError, TransactionFailed, Web3ContractLogicError) as err:
             vm_err = self.get_virtual_machine_error(err, txn=txn, set_ape_traceback=False)
             if txn.raise_on_revert:
                 raise vm_err from err
             else:
-                txn_hash = txn.txn_hash.hex()
+                txn_hash = to_hex(txn.txn_hash)
 
         required_confirmations = txn.required_confirmations or 0
         if vm_err:
@@ -379,8 +379,8 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         address = private_key.public_key.to_canonical_address()
         return self.account_manager.init_test_account(
             index,
-            cast(AddressType, f"0x{address.hex()}"),
-            private_key.to_hex(),
+            cast(AddressType, to_hex(address)),
+            to_hex(private_key),
         )
 
     def add_account(self, private_key: str):
@@ -431,7 +431,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             if err_message and err_message.startswith("b'") and err_message.endswith("'"):
                 # Convert stringified bytes str like `"b'\\x82\\xb4)\\x00'"` to `"0x82b42900"`.
                 # (Notice the `b'` is within the `"` on the first str).
-                err_message = HexBytes(literal_eval(err_message)).hex()
+                err_message = to_hex(literal_eval(err_message))
 
             err_message = TransactionError.DEFAULT_MESSAGE if err_message == "0x" else err_message
             contract_err = ContractLogicError(

@@ -1,5 +1,6 @@
 import pytest
 from eth_pydantic_types import HexBytes
+from eth_utils import to_hex
 from web3.types import BlockData
 
 from ape_ethereum.ecosystem import Block
@@ -24,10 +25,10 @@ def test_block_dict(block):
         "difficulty": 0,
         "gasLimit": 30029122,
         "gasUsed": 0,
-        "hash": block.hash.hex(),
+        "hash": to_hex(block.hash),
         "num_transactions": 0,
         "number": 0,
-        "parentHash": block.parent_hash.hex(),
+        "parentHash": to_hex(block.parent_hash),
         "size": block.size,
         "timestamp": block.timestamp,
         "totalDifficulty": 0,
@@ -41,9 +42,9 @@ def test_block_json(block):
     actual = block.model_dump_json()
     expected = (
         '{"baseFeePerGas":1000000000,"difficulty":0,"gasLimit":30029122,"gasUsed":0,'
-        f'"hash":"{block.hash.hex()}",'
+        f'"hash":"{to_hex(block.hash)}",'
         '"num_transactions":0,"number":0,'
-        f'"parentHash":"{block.parent_hash.hex()}",'
+        f'"parentHash":"{to_hex(block.parent_hash)}",'
         f'"size":{block.size},"timestamp":{block.timestamp},'
         f'"totalDifficulty":0,"transactions":[],"uncles":[]}}'
     )

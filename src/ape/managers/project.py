@@ -9,6 +9,7 @@ from re import Pattern
 from typing import Any, Optional, Union, cast
 
 from eth_typing import HexStr
+from eth_utils import to_hex
 from ethpm_types import ContractInstance as EthPMContractInstance
 from ethpm_types import ContractType, PackageManifest, PackageMeta, Source
 from ethpm_types.source import Compiler, ContractSource
@@ -1975,7 +1976,7 @@ class DeploymentManager(ManagerAccessMixin):
                 f"at block_number={block_number} is unknown."
             )
 
-        block_hash = block_hash_bytes.hex()
+        block_hash = to_hex(block_hash_bytes)
         contract_type_str = (
             f"{contract.contract_type.source_id}:{contract_name}"
             if contract.contract_type.source_id
@@ -1992,7 +1993,7 @@ class DeploymentManager(ManagerAccessMixin):
         if not (block_0_hash := self.provider.get_block(0).hash):
             raise ProjectError("Chain missing hash for block 0 (required for BIP-122 chain ID).")
 
-        bip122_chain_id = f"{block_0_hash.hex()[2:]}"
+        bip122_chain_id = f"{to_hex(block_0_hash)[2:]}"
         deployments_folder = self.cache_folder / bip122_chain_id
         deployments_folder.mkdir(exist_ok=True, parents=True)
         destination = deployments_folder / f"{contract_name}.json"

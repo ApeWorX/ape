@@ -24,7 +24,7 @@ from typing import Any, cast
 
 from eth_abi import decode
 from eth_typing import ChecksumAddress, HexStr
-from eth_utils import add_0x_prefix, decode_hex
+from eth_utils import add_0x_prefix, decode_hex, to_hex
 from ethpm_types import ContractType, MethodABI
 from evm_trace import CallTreeNode
 from hexbytes import HexBytes
@@ -43,7 +43,7 @@ def is_console_log(call: CallTreeNode) -> TypeGuard[CallTreeNode]:
     """Determine if a call is a standard console.log() call"""
     return (
         call.address == HexBytes(CONSOLE_ADDRESS)
-        and call.calldata[:4].hex() in console_contract.identifier_lookup
+        and to_hex(call.calldata[:4]) in console_contract.identifier_lookup
     )
 
 
@@ -82,12 +82,12 @@ def vyper_print(calldata: str) -> tuple[Any]:
 def extract_debug_logs(call: CallTreeNode) -> Iterable[tuple[Any]]:
     """Filter calls to console.log() and print() from a transactions call tree"""
     if is_vyper_print(call) and call.calldata is not None:
-        yield vyper_print(add_0x_prefix(HexStr(call.calldata[4:].hex())))
+        yield vyper_print(add_0x_prefix(to_hex(call.calldata[4:])))
 
     elif is_console_log(call) and call.calldata is not None:
-        method_abi = console_contract.identifier_lookup.get(call.calldata[:4].hex())
+        method_abi = console_contract.identifier_lookup.get(to_hex(call.calldata[:4]))
         if isinstance(method_abi, MethodABI):
-            yield console_log(method_abi, call.calldata[4:].hex())
+            yield console_log(method_abi, to_hex(call.calldata[4:]))
 
     elif call.calls is not None:
         for sub_call in call.calls:

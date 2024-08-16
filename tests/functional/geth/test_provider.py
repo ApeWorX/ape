@@ -4,7 +4,7 @@ from typing import cast
 import pytest
 from eth_pydantic_types import HashBytes32
 from eth_typing import HexStr
-from eth_utils import keccak
+from eth_utils import keccak, to_hex
 from evmchains import PUBLIC_CHAIN_META
 from hexbytes import HexBytes
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
@@ -418,7 +418,7 @@ def test_send_transaction_when_no_error_and_receipt_fails(
     receipt_data = {
         "failed": True,
         "blockNumber": 0,
-        "txnHash": tx_hash.hex(),
+        "txnHash": to_hex(tx_hash),
         "status": TransactionStatusEnum.FAILING.value,
         "sender": owner.address,
         "receiver": geth_contract.address,

@@ -153,7 +153,7 @@ class GethDevProcess(BaseGethProcess):
         number_of_accounts = kwargs.get("number_of_accounts", DEFAULT_NUMBER_OF_TEST_ACCOUNTS)
         balance = kwargs.get("initial_balance", DEFAULT_TEST_ACCOUNT_BALANCE)
         extra_accounts = [
-            HexBytes(a).hex().lower() for a in kwargs.get("extra_funded_accounts", [])
+            to_hex(a).lower() for a in kwargs.get("extra_funded_accounts", [])
         ]
 
         return cls(
@@ -365,7 +365,7 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
         # Include extra accounts to allocated funds to at genesis.
         extra_accounts = self.settings.ethereum.local.get("extra_funded_accounts", [])
         extra_accounts.extend(self.provider_settings.get("extra_funded_accounts", []))
-        extra_accounts = list({HexBytes(a).hex().lower() for a in extra_accounts})
+        extra_accounts = list({to_hex(a).lower() for a in extra_accounts})
         test_config["extra_funded_accounts"] = extra_accounts
         test_config["initial_balance"] = self.test_config.balance
 
@@ -391,10 +391,10 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
             block_number_int = snapshot_id
             block_number_hex_str = str(to_hex(snapshot_id))
         elif isinstance(snapshot_id, bytes):
-            block_number_hex_str = add_0x_prefix(HexStr(snapshot_id.hex()))
+            block_number_hex_str = add_0x_prefix(to_hex(snapshot_id))
             block_number_int = int(block_number_hex_str, 16)
         else:
-            block_number_hex_str = add_0x_prefix(HexStr(snapshot_id))
+            block_number_hex_str = to_hex(snapshot_id)
             block_number_int = int(snapshot_id, 16)
 
         current_block = self._get_latest_block().number

@@ -10,6 +10,7 @@ from eip712.messages import SignableMessage as EIP712SignableMessage
 from eth_account import Account
 from eth_account.messages import encode_defunct
 from eth_pydantic_types import HexBytes
+from eth_utils import to_hex
 from ethpm_types import ContractType
 
 from ape.api.address import BaseAddress
@@ -346,7 +347,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         if isinstance(data, str):
             data = encode_defunct(text=data)
         elif isinstance(data, int):
-            data = encode_defunct(hexstr=HexBytes(data).hex())
+            data = encode_defunct(hexstr=to_hex(data))
         elif isinstance(data, bytes) and (len(data) != 32 or recover_using_eip191):
             data = encode_defunct(data)
         elif isinstance(data, EIP712Message):

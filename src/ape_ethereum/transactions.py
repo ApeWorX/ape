@@ -10,7 +10,7 @@ from eth_account._utils.legacy_transactions import (
     serializable_unsigned_transaction_from_dict,
 )
 from eth_pydantic_types import HexBytes
-from eth_utils import decode_hex, encode_hex, keccak, to_int
+from eth_utils import decode_hex, encode_hex, keccak, to_int, to_hex
 from ethpm_types import ContractType
 from ethpm_types.abi import EventABI, MethodABI
 from pydantic import BaseModel, Field, field_validator, model_validator
@@ -80,7 +80,7 @@ class BaseTransaction(TransactionAPI):
 
             for item in txn_data["accessList"]:
                 adjusted_item = {**item}
-                storage_keys_corrected = [HexBytes(k).hex() for k in item.get("storageKeys", [])]
+                storage_keys_corrected = [to_hex(k) for k in item.get("storageKeys", [])]
 
                 if storage_keys_corrected:
                     adjusted_item["storageKeys"] = storage_keys_corrected
@@ -253,7 +253,7 @@ class Receipt(ReceiptAPI):
             err = OutOfGasError(txn=self)
 
         elif self.status != TransactionStatusEnum.NO_ERROR:
-            txn_hash = HexBytes(self.txn_hash).hex()
+            txn_hash = to_hex(self.txn_hash)
             err = TransactionError(f"Transaction '{txn_hash}' failed.", txn=self)
 
         self.error = err
@@ -383,7 +383,7 @@ class Receipt(ReceiptAPI):
         try:
             method_abi = contract_type.mutable_methods[selector]
         except KeyError:
-            #  selector {selector.hex()} not found in {log['address']}
+            #  selector {to_hex(selector)} not found in {log['address']}
             return None
 
         # ds-note data field uses either (uint256,bytes) or (bytes) encoding

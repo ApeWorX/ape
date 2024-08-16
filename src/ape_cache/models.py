@@ -1,3 +1,4 @@
+from eth_utils import to_hex
 from sqlalchemy import JSON, BigInteger, Column, ForeignKey, Integer, LargeBinary, Numeric
 from sqlalchemy.types import String, TypeDecorator
 
@@ -14,10 +15,10 @@ class HexByteString(TypeDecorator):
 
     def process_bind_param(self, value, dialect):
         if isinstance(value, bytes):
-            return value.hex()
+            return to_hex(value)
 
         elif isinstance(value, str):
-            return bytes.fromhex(value.replace("0x", "").lower()).hex()
+            return to_hex(bytes.fromhex(value.replace("0x", "").lower()))
 
         else:
             raise TypeError(f"HexByteString columns support only bytes values: {value}")

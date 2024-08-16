@@ -648,7 +648,7 @@ def mock_compiler(mocker):
         for path in paths:
             if path.suffix == mock.ext:
                 name = path.stem
-                code = HexBytes(123).hex()
+                code = to_hex(123)
                 data = {
                     "contractName": name,
                     "abi": mock.abi,

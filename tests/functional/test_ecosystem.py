@@ -5,6 +5,7 @@ from typing import Any, ClassVar, cast
 import pytest
 from eth_pydantic_types import HashBytes32, HexBytes
 from eth_typing import HexAddress, HexStr
+from eth_utils import to_hex
 from ethpm_types import ContractType, ErrorABI
 from ethpm_types.abi import ABIType, EventABI, MethodABI
 from evm_trace import CallTreeNode, CallType
@@ -847,7 +848,7 @@ def test_create_transaction_shared_blob(tx_kwargs, ethereum):
 def test_create_transaction_max_fee_per_blob_gas(kwarg_name, value, ethereum):
     tx = ethereum.create_transaction(**{kwarg_name: value})
     assert isinstance(tx, SharedBlobTransaction)
-    expected = value if isinstance(value, int) else int(HexBytes(value).hex(), 16)
+    expected = value if isinstance(value, int) else int(to_hex(value), 16)
     assert tx.max_fee_per_blob_gas == expected
 
 

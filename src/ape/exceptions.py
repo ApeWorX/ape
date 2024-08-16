@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, Any, Callable, Optional, Union, cast
 
 import click
 from eth_typing import Hash32
-from eth_utils import humanize_hash
+from eth_utils import humanize_hash, to_hex
 from ethpm_types import ContractType
 from ethpm_types.abi import ConstructorABI, ErrorABI, MethodABI
 from rich import print as rich_print
@@ -520,7 +520,7 @@ class BlockNotFoundError(ProviderError):
 
     def __init__(self, block_id: "BlockID", reason: Optional[str] = None):
         if isinstance(block_id, bytes):
-            block_id_str = block_id.hex()
+            block_id_str = to_hex(block_id)
         else:
             block_id_str = str(block_id)
 

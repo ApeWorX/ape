@@ -3,6 +3,7 @@ import shutil
 from pathlib import Path
 
 import pytest
+from eth_utils import to_hex
 from ethpm_types import Compiler, ContractType, PackageManifest, Source
 from ethpm_types.manifest import PackageName
 from pydantic_core import Url
@@ -40,7 +41,7 @@ def manifest(contract_type):
 @pytest.fixture
 def contract_block_hash(eth_tester_provider, vyper_contract_instance):
     block_number = vyper_contract_instance.creation_metadata.block
-    return eth_tester_provider.get_block(block_number).hash.hex()
+    return to_hex(eth_tester_provider.get_block(block_number).hash)
 
 
 @pytest.fixture
@@ -258,7 +259,7 @@ def test_extract_manifest(tmp_project, mock_sepolia, vyper_contract_instance):
     assert type(manifest) is PackageManifest
     assert manifest.meta == tmp_project.meta
     assert PackageName("manifest-dependency") in (manifest.dependencies or {})
-    bip122_chain_id = tmp_project.provider.get_block(0).hash.hex()
+    bip122_chain_id = to_hex(tmp_project.provider.get_block(0).hash)
     expected_uri = f"blockchain://{bip122_chain_id[2:]}"
     for key in manifest.deployments or {}:
         if key.startswith(expected_uri):
@@ -905,7 +906,7 @@ class TestDeploymentManager:
         project.deployments.track(vyper_contract_instance)
         assert project.deployments.instance_map != {}
 
-        bip122_chain_id = project.provider.get_block(0).hash.hex()
+        bip122_chain_id = to_hex(project.provider.get_block(0).hash)
         expected_uri = f"blockchain://{bip122_chain_id[2:]}/block/"
         for key in project.deployments.instance_map.keys():
             if key.startswith(expected_uri):

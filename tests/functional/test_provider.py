@@ -6,7 +6,7 @@ import pytest
 from eth_pydantic_types import HashBytes32
 from eth_tester.exceptions import TransactionFailed  # type: ignore
 from eth_typing import HexStr
-from eth_utils import ValidationError
+from eth_utils import ValidationError, to_hex
 from hexbytes import HexBytes
 from requests import HTTPError
 from web3.exceptions import ContractPanicError
@@ -53,7 +53,7 @@ def test_get_block_transaction(vyper_contract_instance, owner, eth_tester_provid
     # Ensure a transaction in latest block
     receipt = vyper_contract_instance.setNumber(900, sender=owner)
     block = eth_tester_provider.get_block(receipt.block_number)
-    assert block.transactions[-1].txn_hash.hex() == receipt.txn_hash
+    assert to_hex(block.transactions[-1].txn_hash) == receipt.txn_hash
 
 
 def test_estimate_gas(vyper_contract_instance, eth_tester_provider, owner):
@@ -318,7 +318,7 @@ def test_send_transaction_when_no_error_and_receipt_fails(
         receipt_data = {
             "failed": True,
             "blockNumber": 0,
-            "txnHash": tx_hash.hex(),
+            "txnHash": to_hex(tx_hash),
             "status": TransactionStatusEnum.FAILING.value,
             "sender": owner.address,
             "receiver": vyper_contract_instance.address,

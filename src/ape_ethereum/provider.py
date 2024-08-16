@@ -324,7 +324,7 @@ class Web3Provider(ProviderAPI, ABC):
 
         # Force the use of hex values to support a wider range of nodes.
         if isinstance(txn_dict.get("type"), int):
-            txn_dict["type"] = HexBytes(txn_dict["type"]).hex()
+            txn_dict["type"] = to_hex(txn_dict["type"])
 
         # NOTE: "auto" means to enter this method, so remove it from dict
         if "gas" in txn_dict and (
@@ -536,7 +536,7 @@ class Web3Provider(ProviderAPI, ABC):
         # Force the usage of hex-type to support a wider-range of nodes.
         txn_dict = copy(arguments[0])
         if isinstance(txn_dict.get("type"), int):
-            txn_dict["type"] = HexBytes(txn_dict["type"]).hex()
+            txn_dict["type"] = to_hex(txn_dict["type"])
 
         # Remove unnecessary values to support a wider-range of nodes.
         txn_dict.pop("chainId", None)
@@ -725,7 +725,7 @@ class Web3Provider(ProviderAPI, ABC):
             for txn in self.get_transactions_by_block(stop_block):
                 assert isinstance(txn.nonce, int)  # NOTE: just satisfying mypy here
                 if txn.sender == account and txn.nonce >= start_nonce:
-                    yield self.get_receipt(txn.txn_hash.hex())
+                    yield self.get_receipt(to_hex(txn.txn_hash))
 
             # Nothing else to search for
 
@@ -1251,7 +1251,7 @@ class Web3Provider(ProviderAPI, ABC):
 
             else:
                 if trace is None and txn is not None:
-                    trace = self.provider.get_transaction_trace(txn.txn_hash.hex())
+                    trace = self.provider.get_transaction_trace(to_hex(txn.txn_hash))
 
                 if trace is not None and (revert_message := trace.revert_message):
                     message = revert_message
