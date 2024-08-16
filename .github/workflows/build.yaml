@@ -62,7 +62,7 @@ jobs:
           build-args: |
             VERSION=${{ version }}
             BUILD_DATE=$(date +"%Y-%m-%dT%H:%M:%SZ")
-            VCS_REF={{ github.sha }}
+            VCS_REF=${{ github.sha }}
 
       - name: Build and push
         uses: docker/build-push-action@v4
