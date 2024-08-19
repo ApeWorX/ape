@@ -13,7 +13,7 @@ from geth.wrapper import construct_test_chain_kwargs
 from pydantic import field_validator
 from pydantic_settings import SettingsConfigDict
 from requests.exceptions import ConnectionError
-from web3.middleware import geth_poa_middleware
+from web3.middleware import ExtraDataToPOAMiddleware
 from yarl import URL
 
 from ape.api import PluginConfig, SubprocessProvider, TestAccountAPI, TestProviderAPI
@@ -328,7 +328,7 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
             geth_dev.disconnect()
             raise ConnectionError("Unable to connect to locally running geth.")
         else:
-            self.web3.middleware_onion.inject(geth_poa_middleware, layer=0)
+            self.web3.middleware_onion.inject(ExtraDataToPOAMiddleware, layer=0)
 
         self._process = geth_dev
 

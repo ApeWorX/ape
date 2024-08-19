@@ -63,7 +63,7 @@ class KeyfileAccount(AccountAPI):
     keyfile_path: Path
     locked: bool = True
     __autosign: bool = False
-    __cached_key: Optional[HexBytes] = None
+    __cached_key: Optional[bytes] = None
 
     @log_instead_of_fail(default="<KeyfileAccount>")
     def __repr__(self) -> str:
@@ -85,7 +85,7 @@ class KeyfileAccount(AccountAPI):
         return self.network_manager.ethereum.decode_address(self.keyfile["address"])
 
     @property
-    def __key(self) -> HexBytes:
+    def __key(self) -> bytes:
         if self.__cached_key is not None:
             if not self.locked:
                 logger.warning("Using cached key for %s", self.alias)
@@ -241,14 +241,14 @@ class KeyfileAccount(AccountAPI):
         )
 
         # NOTE: Signing a raw hash is so dangerous, we don't want to allow autosigning it
-        if not click.confirm("Please confirm you wish to sign using `EthAccount.signHash`"):
+        if not click.confirm("Please confirm you wish to sign using `EthAccount.unsafe_sign_hash`"):
             return None
 
         # Ignoring misleading deprecated warning from web3.py.
         # Also, we have already warned the user about the safety.
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            signed_msg = EthAccount.signHash(msghash, self.__key)
+            signed_msg = EthAccount.unsafe_sign_hash(msghash, self.__key)
 
         return MessageSignature(
             v=signed_msg.v,
@@ -283,7 +283,7 @@ class KeyfileAccount(AccountAPI):
             **kwargs,
         )
 
-    def __decrypt_keyfile(self, passphrase: str) -> HexBytes:
+    def __decrypt_keyfile(self, passphrase: str) -> bytes:
         try:
             return EthAccount.decrypt(self.keyfile, passphrase)
         except ValueError as err:

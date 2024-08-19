@@ -19,7 +19,7 @@ from ethpm_types import EventABI
 from evmchains import get_random_rpc
 from pydantic.dataclasses import dataclass
 from requests import HTTPError
-from web3 import HTTPProvider, IPCProvider, Web3, WebsocketProvider
+from web3 import HTTPProvider, IPCProvider, Web3, WebSocketProvider
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.exceptions import (
     ExtraDataLengthError,
@@ -28,7 +28,7 @@ from web3.exceptions import (
     TransactionNotFound,
 )
 from web3.gas_strategies.rpc import rpc_gas_price_strategy
-from web3.middleware import geth_poa_middleware
+from web3.middleware import ExtraDataToPOAMiddleware
 from web3.middleware.validation import MAX_EXTRADATA_LENGTH
 from web3.providers import AutoProvider
 from web3.providers.auto import load_provider_from_environment
@@ -1489,8 +1489,8 @@ class EthereumNodeProvider(Web3Provider, ABC):
                 if is_likely_poa:
                     break
 
-        if is_likely_poa and geth_poa_middleware not in self.web3.middleware_onion:
-            self.web3.middleware_onion.inject(geth_poa_middleware, layer=0)
+        if is_likely_poa and ExtraDataToPOAMiddleware not in self.web3.middleware_onion:
+            self.web3.middleware_onion.inject(ExtraDataToPOAMiddleware, layer=0)
 
         self.network.verify_chain_id(chain_id)
 
@@ -1549,7 +1549,7 @@ def _create_web3(
             lambda: HTTPProvider(endpoint_uri=http, request_kwargs={"timeout": 30 * 60})
         )
     if ws := ws_uri:
-        providers.append(lambda: WebsocketProvider(endpoint_uri=ws))
+        providers.append(lambda: WebSocketProvider(endpoint_uri=ws))
 
     provider = AutoProvider(potential_providers=providers)
     return Web3(provider)

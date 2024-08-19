@@ -11,7 +11,7 @@ from types import CodeType, TracebackType
 from typing import TYPE_CHECKING, Any, Callable, Optional, Union, cast
 
 import click
-from eth_typing import Hash32
+from eth_typing import Hash32, HexStr
 from eth_utils import humanize_hash, to_hex
 from ethpm_types import ContractType
 from ethpm_types.abi import ConstructorABI, ErrorABI, MethodABI
@@ -522,7 +522,7 @@ class BlockNotFoundError(ProviderError):
         if isinstance(block_id, bytes):
             block_id_str = to_hex(block_id)
         else:
-            block_id_str = str(block_id)
+            block_id_str = HexStr(str(block_id))
 
         message = (
             "Missing latest block."
