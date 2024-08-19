@@ -96,7 +96,7 @@ docker run \
 ```
 
 > **Note:**
-> The above command requires the full install with the recommended-plugins.
+> The above command requires the full install which includes `recommended-plugins` installation extra.
 
 ## Quickstart
 
