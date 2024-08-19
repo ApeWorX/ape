@@ -13,7 +13,7 @@ from geth.wrapper import construct_test_chain_kwargs
 from pydantic import field_validator
 from pydantic_settings import SettingsConfigDict
 from requests.exceptions import ConnectionError
-from web3.middleware import geth_poa_middleware as ExtraDataToPOAMiddleware
+from web3.middleware import ExtraDataToPOAMiddleware
 from yarl import URL
 
 from ape.api import PluginConfig, SubprocessProvider, TestAccountAPI, TestProviderAPI

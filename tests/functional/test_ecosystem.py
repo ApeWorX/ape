@@ -1153,11 +1153,11 @@ def test_enrich_trace_handles_events(ethereum, vyper_contract_instance, owner):
         {
             "name": "NumberChange",
             "calldata": {
-                "b": "0x3e..404b",
+                "b": "0x3ee0..404b",
                 "prevNum": 0,
                 "dynData": '"Dynamic"',
                 "newNum": 123,
-                "dynIndexed": "0x9f..a94d",
+                "dynIndexed": "0x9f3d..a94d",
             },
         }
     ]

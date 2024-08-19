@@ -115,15 +115,15 @@ setup(
         "urllib3>=2.0.0,<3",
         "watchdog>=3.0,<4",
         # ** Dependencies maintained by Ethereum Foundation **
-        # All version pins dependent on web3[tester]
-        "eth-abi",
-        "eth-account",
-        "eth-typing",
-        "eth-utils",
-        "hexbytes",
-        "py-geth>=5.0.0-beta.2,<6",
-        "trie>=3.0.1,<4",  # Peer: stricter pin needed for uv support.
-        "web3[tester]>=6.17.2,<7",
+        "eth-abi>=5.1.0,<6",
+        "eth-account>=0.13.3,<0.14",
+        "eth-tester>=0.12.0b1",
+        "eth-typing>=5.0.0,<6",
+        "eth-utils>=5.0.0,<6",
+        "hexbytes>=1.2.1,<2",
+        "py-geth>=5.0.0,<6",
+        "trie>=3.0.1,<4",
+        "web3>=7.2.0,<8",
         # ** Dependencies maintained by ApeWorX **
         "eip712>=0.2.10,<0.3",
         "ethpm-types>=0.6.17,<0.7",
