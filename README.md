@@ -69,11 +69,13 @@ $ docker pull ghcr.io/apeworx/ape:latest  # installs with recommended-plugins
 ```
 
 or pull the slim if you have specific needs that you'd like to build from:
+
 ```bash
 $ docker pull ghcr.io/apeworx/ape:latest-slim  # installs ape with required packages
 ```
 
 or build the image locally from source:
+
 ```bash
 $ docker build -t ape:latest-slim -f Dockerfile.slim .
 $ docker build -t ape:latest .
