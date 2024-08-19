@@ -312,7 +312,24 @@ With our <a class="reference external" href="#plugin-system">modular plugin syst
 <section id="installing-with-docker">
 <h3>Installing with <code class="docutils literal notranslate"><span class="pre">docker</span></code><a class="headerlink" href="#installing-with-docker" title="Permalink to this heading"></a></h3>
 <p>Ape can also run in a docker container.</p>
-<p>Please visit our <a class="reference external" href="https://hub.docker.com/repository/docker/apeworx/ape">Dockerhub</a> for more details on using Ape with Docker.</p>
+<p>You can pull our images from <a class="reference external" href="https://ghcr.io/apeworx/ape">ghcr</a>.
+This image is built using our <code class="docutils literal notranslate"><span class="pre">recommended-plugins</span></code> extra, so it is a great starting point for running ape in a containerized environment.</p>
+<p>We also have a <code class="docutils literal notranslate"><span class="pre">slim</span></code> docker image that is built without any installed plugins.
+This image is meant for production support and must be further configured if any plugins are in use.</p>
+<p>You can pull the image:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>docker<span class="w"> </span>pull<span class="w"> </span>ghcr.io/apeworx/ape:latest<span class="w">  </span><span class="c1"># installs with recommended-plugins</span>
+</pre></div>
+</div>
+<p>or pull the slim if you have specific needs that you’d like to build from:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>docker<span class="w"> </span>pull<span class="w"> </span>ghcr.io/apeworx/ape:latest-slim<span class="w">  </span><span class="c1"># installs ape with required packages</span>
+</pre></div>
+</div>
+<p>or build the image locally from source:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>ape:latest-slim<span class="w"> </span>-f<span class="w"> </span>Dockerfile.slim<span class="w"> </span>.
+$<span class="w"> </span>docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>ape:latest<span class="w"> </span>.
+</pre></div>
+</div>
+<p>An example of running a command from the container would be:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>run<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--volume<span class="w"> </span><span class="nv">$HOME</span>/.ape:/home/harambe/.ape<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--volume<span class="w"> </span><span class="nv">$HOME</span>/.vvm:/home/harambe/.vvm<span class="w"> </span><span class="se">\</span>
@@ -321,6 +338,10 @@ With our <a class="reference external" href="#plugin-system">modular plugin syst
 <span class="w">  </span>apeworx/ape<span class="w"> </span>compile
 </pre></div>
 </div>
+<blockquote>
+<div><p><strong>Note:</strong>
+The above command requires the full install which includes <code class="docutils literal notranslate"><span class="pre">recommended-plugins</span></code> installation extra.</p>
+</div></blockquote>
 </section>
 </section>
 <section id="quickstart">
