@@ -23,7 +23,7 @@ from ape.cli import (
 from ape.cli.choices import _NONE_NETWORK, _get_networks_sequence_from_cache
 from ape.cli.commands import get_param_from_ctx, parse_network
 from ape.exceptions import AccountsError
-from ape.logging import logger
+from ape.logging import logger, LogLevel
 from tests.conftest import geth_process_test, skip_if_plugin_installed
 
 OUTPUT_FORMAT = "__TEST__{0}:{1}:{2}_"
@@ -417,6 +417,17 @@ def test_verbosity_option(runner):
 
     result = runner.invoke(cmd, ["--verbosity", logger.level])
     assert f"__expected_{logger.level}" in result.output
+
+
+@pytest.mark.parametrize("level", (LogLevel.WARNING, LogLevel.WARNING.name, LogLevel.WARNING.value))
+def test_verbosity_option_change_default(runner, level):
+    @click.command()
+    @verbosity_option(default=level)
+    def cmd():
+        pass
+
+    verbosity_parameter = cmd.params[0]
+    assert verbosity_parameter.default == level
 
 
 def test_account_prompt_name():
