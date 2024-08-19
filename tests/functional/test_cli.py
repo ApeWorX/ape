@@ -23,7 +23,7 @@ from ape.cli import (
 from ape.cli.choices import _NONE_NETWORK, _get_networks_sequence_from_cache
 from ape.cli.commands import get_param_from_ctx, parse_network
 from ape.exceptions import AccountsError
-from ape.logging import logger, LogLevel
+from ape.logging import LogLevel, logger
 from tests.conftest import geth_process_test, skip_if_plugin_installed
 
 OUTPUT_FORMAT = "__TEST__{0}:{1}:{2}_"

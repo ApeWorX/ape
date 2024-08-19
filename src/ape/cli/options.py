@@ -56,7 +56,7 @@ class ApeCliContextObject(ManagerAccessMixin, dict):
 
 
 def verbosity_option(
-    cli_logger: Optional[ApeLogger] = None, default: Union[str, LogLevel] = DEFAULT_LOG_LEVEL
+    cli_logger: Optional[ApeLogger] = None, default: Union[str, int, LogLevel] = DEFAULT_LOG_LEVEL
 ) -> Callable:
     """A decorator that adds a `--verbosity, -v` option to the decorated
     command.
@@ -67,7 +67,7 @@ def verbosity_option(
 
 
 def _create_verbosity_kwargs(
-    _logger: Optional[ApeLogger] = None, default: Union[str, LogLevel] = DEFAULT_LOG_LEVEL
+    _logger: Optional[ApeLogger] = None, default: Union[str, int, LogLevel] = DEFAULT_LOG_LEVEL
 ) -> dict:
     cli_logger = _logger or logger
 
@@ -87,7 +87,7 @@ def _create_verbosity_kwargs(
 
 
 def ape_cli_context(
-    default_log_level: Union[str, LogLevel] = DEFAULT_LOG_LEVEL,
+    default_log_level: Union[str, int, LogLevel] = DEFAULT_LOG_LEVEL,
     obj_type: type = ApeCliContextObject,
 ) -> Callable:
     """
@@ -96,7 +96,7 @@ def ape_cli_context(
     such as logging or accessing managers.
 
     Args:
-        default_log_level (Union[str, :class:`~ape.logging.LogLevel`]): The log-level
+        default_log_level (Union[str, int, :class:`~ape.logging.LogLevel`]): The log-level
           value to pass to :meth:`~ape.cli.options.verbosity_option`.
         obj_type (Type): The context object type. Defaults to
           :class:`~ape.cli.options.ApeCliContextObject`. Sub-class
