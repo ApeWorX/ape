@@ -90,9 +90,8 @@ docker run \
   apeworx/ape compile
 ```
 
-:::note
+> **Note:**
 > The above command requires the full install with the recommended-plugins.
-:::
 
 ## Quickstart
 
