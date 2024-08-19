@@ -1,0 +1,47 @@
+#---------------------------------------------------------------------------------------------
+# See LICENSE in the project root for license information.
+#---------------------------------------------------------------------------------------------
+
+ARG PYTHON_VERSION="3.11"
+
+FROM python:${PYTHON_VERSION} AS builder
+
+WORKDIR /wheels
+
+RUN pip install --upgrade pip \
+    && pip install wheel
+
+COPY . .
+
+RUN pip wheel .
+
+FROM python:${PYTHON_VERSION}-slim
+
+# See http://label-schema.org for metadata schema
+# TODO: Add `build-date` and `version`
+LABEL org.opencontainers.image.title="ape" \
+    org.opencontainers.image.description="Ape Framework" \
+    org.opencontainers.image.url="https://apeworx.io/framework" \
+    org.opencontainers.image.documentation="https://docs.apeworx.io/ape/stable/userguides/quickstart.html\#installation" \
+    org.opencontainers.image.source="https://github.com/ApeWorX/ape" \
+    org.opencontainers.image.vendor="ApeWorX" \
+    org.opencontainers.image.licenses="Apache-2.0" \
+    org.opencontainers.image.version="${VERSION:-latest}" \
+    org.opencontainers.image.created="${BUILD_DATE}" \
+    org.opencontainers.image.revision="${VCS_REF}" \
+    org.opencontainers.image.authors="ApeWorX" \
+    org.opencontainers.image.base.name="python:${PYTHON_VERSION}-slim"
+
+
+RUN useradd --create-home --shell /bin/bash harambe
+COPY --from=builder /wheels/*.whl /wheels/
+
+RUN pip install --upgrade pip
+RUN pip install /wheels/*.whl
+
+RUN ape --version
+
+WORKDIR /home/harambe/project
+RUN chown --recursive harambe:harambe /home/harambe
+USER harambe
+ENTRYPOINT ["ape"]
