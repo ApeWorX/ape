@@ -748,7 +748,7 @@ class Ethereum(EcosystemAPI):
             except UnicodeDecodeError:
                 # Truncate bytes if very long.
                 if len(value) > 24:
-                    return f"{add_0x_prefix(humanize_hash(cast(Hash32, value)))}"
+                    return f"{add_0x_prefix(HexStr(humanize_hash(cast(Hash32, value))))}"
 
                 hex_str = to_hex(value)
                 if is_hex_address(hex_str):
