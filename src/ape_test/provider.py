@@ -380,7 +380,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         return self.account_manager.init_test_account(
             index,
             cast(AddressType, to_hex(address)),
-            to_hex(private_key),
+            str(private_key),
         )
 
     def add_account(self, private_key: str):

@@ -515,7 +515,7 @@ class Ethereum(EcosystemAPI):
         # eip-897 delegate proxy, read `proxyType()` and `implementation()`
         # perf: only make a call when a proxyType() selector is mentioned in the code
         eip897_pattern = b"\x63" + keccak(text="proxyType()")[:4]
-        if to_hex(eip897_pattern) in code:
+        if eip897_pattern.hex() in code:
             try:
                 proxy_type = ContractCall(PROXY_TYPE_ABI, address)(skip_trace=True)
                 if proxy_type not in (1, 2):
@@ -747,7 +747,7 @@ class Ethereum(EcosystemAPI):
             except UnicodeDecodeError:
                 # Truncate bytes if very long.
                 if len(value) > 24:
-                    return humanize_hash(cast(Hash32, value))
+                    return f"0x{humanize_hash(cast(Hash32, value))}"
 
                 hex_str = to_hex(value)
                 if is_hex_address(hex_str):

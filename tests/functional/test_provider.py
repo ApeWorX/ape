@@ -332,6 +332,7 @@ def test_send_transaction_when_no_error_and_receipt_fails(
         mock_web3.eth.call.return_value = HexBytes("")
 
         # Execute test.
+        mock_transaction.serialize_transaction.return_value = HexBytes(123123123123)
         with pytest.raises(TransactionError):
             eth_tester_provider.send_transaction(mock_transaction)
 

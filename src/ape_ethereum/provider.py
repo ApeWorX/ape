@@ -1,3 +1,4 @@
+import json
 import os
 import re
 import sys
@@ -26,6 +27,7 @@ from web3.exceptions import (
     MethodUnavailable,
     TimeExhausted,
     TransactionNotFound,
+    Web3RPCError,
 )
 from web3.gas_strategies.rpc import rpc_gas_price_strategy
 from web3.middleware import ExtraDataToPOAMiddleware
@@ -1007,7 +1009,7 @@ class Web3Provider(ProviderAPI, ABC):
             if txn_hash is None:
                 txn_hash = to_hex(self.web3.eth.send_raw_transaction(txn.serialize_transaction()))
 
-        except (ValueError, Web3ContractLogicError) as err:
+        except (ValueError, Web3ContractLogicError, Web3RPCError) as err:
             vm_err = self.get_virtual_machine_error(
                 err, txn=txn, set_ape_traceback=txn.raise_on_revert
             )
@@ -1200,9 +1202,14 @@ class Web3Provider(ProviderAPI, ABC):
             return self._handle_execution_reverted(exception, **kwargs)
 
         elif not isinstance(err_data, dict):
-            return VirtualMachineError(base_err=exception, **kwargs)
+            # Maybe it is a JSON-str.
+            # NOTE: For some reason, it comes back with single quotes though.
+            try:
+                err_data = json.loads(err_data.replace("'", '"'))
+            except Exception:
+                return VirtualMachineError(base_err=exception, **kwargs)
 
-        elif not (err_msg := err_data.get("message")):
+        if not (err_msg := err_data.get("message")):
             return VirtualMachineError(base_err=exception, **kwargs)
 
         elif txn is not None and "nonce too low" in str(err_msg):

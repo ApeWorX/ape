@@ -150,7 +150,7 @@ class GethDevProcess(BaseGethProcess):
         mnemonic = kwargs.get("mnemonic", DEFAULT_TEST_MNEMONIC)
         number_of_accounts = kwargs.get("number_of_accounts", DEFAULT_NUMBER_OF_TEST_ACCOUNTS)
         balance = kwargs.get("initial_balance", DEFAULT_TEST_ACCOUNT_BALANCE)
-        extra_accounts = [to_hex(a).lower() for a in kwargs.get("extra_funded_accounts", [])]
+        extra_accounts = [a.lower() for a in kwargs.get("extra_funded_accounts", [])]
 
         return cls(
             data_folder,
@@ -361,7 +361,7 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
         # Include extra accounts to allocated funds to at genesis.
         extra_accounts = self.settings.ethereum.local.get("extra_funded_accounts", [])
         extra_accounts.extend(self.provider_settings.get("extra_funded_accounts", []))
-        extra_accounts = list({to_hex(a).lower() for a in extra_accounts})
+        extra_accounts = list({a.lower() for a in extra_accounts})
         test_config["extra_funded_accounts"] = extra_accounts
         test_config["initial_balance"] = self.test_config.balance
 

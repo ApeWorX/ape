@@ -821,7 +821,6 @@ class ContractCache(BaseManager):
             proxy_info (:class:`~ape.api.networks.ProxyInfo`): The proxy info class
               to cache.
         """
-
         if self.get_proxy_info(address) and self._is_live_network:
             return
 
@@ -860,7 +859,6 @@ class ContractCache(BaseManager):
         Returns:
             Optional[:class:`~ape.api.networks.ProxyInfoAPI`]
         """
-
         return self._local_proxies.get(address) or self._get_proxy_info_from_disk(address)
 
     def get_creation_metadata(self, address: AddressType) -> Optional[ContractCreation]:

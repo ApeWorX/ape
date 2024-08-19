@@ -80,7 +80,9 @@ class BaseTransaction(TransactionAPI):
 
             for item in txn_data["accessList"]:
                 adjusted_item = {**item}
-                storage_keys_corrected = [to_hex(k) for k in item.get("storageKeys", [])]
+                storage_keys_corrected = [
+                    to_hex(k) if isinstance(k, bytes) else k for k in item.get("storageKeys", [])
+                ]
 
                 if storage_keys_corrected:
                     adjusted_item["storageKeys"] = storage_keys_corrected
@@ -253,7 +255,7 @@ class Receipt(ReceiptAPI):
             err = OutOfGasError(txn=self)
 
         elif self.status != TransactionStatusEnum.NO_ERROR:
-            txn_hash = to_hex(self.txn_hash)
+            txn_hash = self.txn_hash
             err = TransactionError(f"Transaction '{txn_hash}' failed.", txn=self)
 
         self.error = err
