@@ -59,7 +59,8 @@ There are three ways to install ape: `pipx`, `pip`, or `Docker`.
 
 Ape can also run in a docker container.
 
-You can pull our images from [ghcr](https://ghcr.io/apeworx/ape). We currently have a `slim` docker image as well as an image that is built with the recommended-plugins.
+You can pull our images from [ghcr](https://ghcr.io/apeworx/ape).
+We currently have a `slim` docker image that is built without any installed plugins, as well as an image that is built with all plugins included from our `recommended-plugins` extra.
 
 You can pull the image:
 
