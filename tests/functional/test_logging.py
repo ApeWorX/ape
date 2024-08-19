@@ -3,6 +3,7 @@ import pytest
 from click.testing import CliRunner
 
 from ape.cli import ape_cli_context
+from ape.logging import LogLevel, logger
 
 
 @pytest.fixture
@@ -98,3 +99,9 @@ def test_format(simple_runner):
 
     result = simple_runner.invoke(group_for_testing, ("cmd", "-v", "SUCCESS"))
     assert "SUCCESS" not in result.output
+
+
+@pytest.mark.parametrize("level", (LogLevel.INFO, LogLevel.INFO.value, LogLevel.INFO.name))
+def test_set_level(level):
+    logger.set_level(level)
+    assert logger.level == LogLevel.INFO.value

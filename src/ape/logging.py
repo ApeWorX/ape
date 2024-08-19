@@ -166,16 +166,18 @@ class ApeLogger:
     def level(self) -> int:
         return self._logger.level
 
-    def set_level(self, level: Union[str, int]):
+    def set_level(self, level: Union[str, int, LogLevel]):
         """
         Change the global ape logger log-level.
 
         Args:
             level (str): The name of the level or the value of the log-level.
         """
-
         if level == self._logger.level:
             return
+
+        elif isinstance(level, LogLevel):
+            level = level.value
 
         self._logger.setLevel(level)
         for _logger in self._extra_loggers.values():
@@ -267,9 +269,11 @@ def get_logger(
     return _logger
 
 
-def _get_level(level: Optional[Union[str, int]] = None) -> str:
+def _get_level(level: Optional[Union[str, int, LogLevel]] = None) -> str:
     if level is None:
         return DEFAULT_LOG_LEVEL
+    elif isinstance(level, LogLevel):
+        return level.name
     elif isinstance(level, int) or level.isnumeric():
         return LogLevel(int(level)).name
 
