@@ -9,6 +9,7 @@ from eth_abi.exceptions import InsufficientDataBytes, NonEmptyPaddingBytes
 from eth_pydantic_types import HexBytes
 from eth_typing import Hash32, HexStr
 from eth_utils import (
+    add_0x_prefix,
     encode_hex,
     humanize_hash,
     is_0x_prefixed,
@@ -747,7 +748,7 @@ class Ethereum(EcosystemAPI):
             except UnicodeDecodeError:
                 # Truncate bytes if very long.
                 if len(value) > 24:
-                    return f"0x{humanize_hash(cast(Hash32, value))}"
+                    return f"{add_0x_prefix(humanize_hash(cast(Hash32, value)))}"
 
                 hex_str = to_hex(value)
                 if is_hex_address(hex_str):
