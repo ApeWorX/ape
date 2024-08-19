@@ -4,8 +4,6 @@ from pathlib import Path
 from subprocess import DEVNULL, PIPE, Popen
 from typing import Any, Optional, Union
 
-from eth_pydantic_types import HexBytes
-from eth_typing import HexStr
 from eth_utils import add_0x_prefix, to_hex
 from evmchains import get_random_rpc
 from geth.chain import initialize_chain
@@ -15,7 +13,7 @@ from geth.wrapper import construct_test_chain_kwargs
 from pydantic import field_validator
 from pydantic_settings import SettingsConfigDict
 from requests.exceptions import ConnectionError
-from web3.middleware import geth_poa_middleware
+from web3.middleware import geth_poa_middleware as ExtraDataToPOAMiddleware
 from yarl import URL
 
 from ape.api import PluginConfig, SubprocessProvider, TestAccountAPI, TestProviderAPI
@@ -152,9 +150,7 @@ class GethDevProcess(BaseGethProcess):
         mnemonic = kwargs.get("mnemonic", DEFAULT_TEST_MNEMONIC)
         number_of_accounts = kwargs.get("number_of_accounts", DEFAULT_NUMBER_OF_TEST_ACCOUNTS)
         balance = kwargs.get("initial_balance", DEFAULT_TEST_ACCOUNT_BALANCE)
-        extra_accounts = [
-            HexBytes(a).hex().lower() for a in kwargs.get("extra_funded_accounts", [])
-        ]
+        extra_accounts = [a.lower() for a in kwargs.get("extra_funded_accounts", [])]
 
         return cls(
             data_folder,
@@ -332,7 +328,7 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
             geth_dev.disconnect()
             raise ConnectionError("Unable to connect to locally running geth.")
         else:
-            self.web3.middleware_onion.inject(geth_poa_middleware, layer=0)
+            self.web3.middleware_onion.inject(ExtraDataToPOAMiddleware, layer=0)
 
         self._process = geth_dev
 
@@ -365,7 +361,7 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
         # Include extra accounts to allocated funds to at genesis.
         extra_accounts = self.settings.ethereum.local.get("extra_funded_accounts", [])
         extra_accounts.extend(self.provider_settings.get("extra_funded_accounts", []))
-        extra_accounts = list({HexBytes(a).hex().lower() for a in extra_accounts})
+        extra_accounts = list({a.lower() for a in extra_accounts})
         test_config["extra_funded_accounts"] = extra_accounts
         test_config["initial_balance"] = self.test_config.balance
 
@@ -391,10 +387,10 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
             block_number_int = snapshot_id
             block_number_hex_str = str(to_hex(snapshot_id))
         elif isinstance(snapshot_id, bytes):
-            block_number_hex_str = add_0x_prefix(HexStr(snapshot_id.hex()))
+            block_number_hex_str = add_0x_prefix(to_hex(snapshot_id))
             block_number_int = int(block_number_hex_str, 16)
         else:
-            block_number_hex_str = add_0x_prefix(HexStr(snapshot_id))
+            block_number_hex_str = to_hex(snapshot_id)
             block_number_int = int(snapshot_id, 16)
 
         current_block = self._get_latest_block().number

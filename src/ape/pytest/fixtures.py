@@ -4,6 +4,7 @@ from functools import cached_property
 from typing import Optional
 
 import pytest
+from eth_utils import to_hex
 
 from ape.api.accounts import TestAccountAPI
 from ape.api.transactions import ReceiptAPI
@@ -178,7 +179,7 @@ class ReceiptCapture(ManagerAccessMixin):
 
         for txn in transactions:
             try:
-                txn_hash = txn.txn_hash.hex()
+                txn_hash = to_hex(txn.txn_hash)
             except Exception:
                 # Might have been from an impersonated account.
                 # Those txns need to be added separately, same as tracing calls.

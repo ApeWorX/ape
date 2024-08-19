@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar, Optional, Union
 
 from eth_account import Account as EthAccount
-from eth_account._utils.legacy_transactions import (
+from eth_account._utils.signing import (
     encode_transaction,
     serializable_unsigned_transaction_from_dict,
 )

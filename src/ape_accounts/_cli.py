@@ -4,7 +4,7 @@ from typing import Optional
 import click
 from eth_account import Account as EthAccount
 from eth_account.hdaccount import ETHEREUM_DEFAULT_PATH
-from eth_utils import to_checksum_address
+from eth_utils import to_checksum_address, to_hex
 
 from ape.cli import ape_cli_context, existing_alias_argument, non_existing_alias_argument
 from ape.logging import HIDDEN_MESSAGE
@@ -178,7 +178,7 @@ def export(cli_ctx, alias):
     private_key = EthAccount.decrypt(account, password)
     address = to_checksum_address(account["address"])
     cli_ctx.logger.success(
-        f"Account {address} private key: {click.style(private_key.hex(), bold=True)}"
+        f"Account {address} private key: {click.style(to_hex(private_key), bold=True)}"
     )
 
 

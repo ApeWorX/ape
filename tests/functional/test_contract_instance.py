@@ -703,7 +703,7 @@ def test_decode_ambiguous_input(solidity_contract_instance, calldata_with_addres
     anonymous_calldata = calldata_with_address[4:]
     method = solidity_contract_instance.setNumber
     expected = (
-        f"Unable to find matching method ABI for calldata '{anonymous_calldata.hex()}'. "
+        f"Unable to find matching method ABI for calldata '{to_hex(anonymous_calldata)}'. "
         "Try prepending a method ID to the beginning of the calldata."
     )
     with pytest.raises(ContractDataError, match=expected):
