@@ -20,8 +20,8 @@ from ethpm_types import EventABI
 from evmchains import get_random_rpc
 from pydantic.dataclasses import dataclass
 from requests import HTTPError
-from web3 import HTTPProvider, IPCProvider, Web3, WebsocketProvider
-from web3 import WebsocketProvider as WebSocketProvider  # Matching newer API name
+from web3 import HTTPProvider, IPCProvider, Web3
+from web3 import WebsocketProvider as WebSocketProvider
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.exceptions import (
     ExtraDataLengthError,
