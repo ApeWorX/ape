@@ -766,7 +766,7 @@ def _get_inputs_str(inputs: Any, stylize: bool = False) -> str:
         return _dict_to_str(inputs, color=color)
 
     elif isinstance(inputs, bytes):
-        return HexBytes(inputs).hex()
+        return to_hex(inputs)
 
     return f"({inputs})"
 

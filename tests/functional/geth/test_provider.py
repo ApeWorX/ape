@@ -4,12 +4,12 @@ from typing import cast
 import pytest
 from eth_pydantic_types import HashBytes32
 from eth_typing import HexStr
-from eth_utils import keccak
+from eth_utils import keccak, to_hex
 from evmchains import PUBLIC_CHAIN_META
 from hexbytes import HexBytes
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.exceptions import ExtraDataLengthError
-from web3.middleware import geth_poa_middleware
+from web3.middleware import geth_poa_middleware as ExtraDataToPOAMiddleware
 
 from ape.exceptions import (
     APINotImplementedError,
@@ -228,7 +228,7 @@ def test_connect_to_chain_that_started_poa(mock_web3, web3_factory, ethereum):
     provider.connect()
 
     # Verify PoA middleware was added.
-    assert mock_web3.middleware_onion.inject.call_args[0] == (geth_poa_middleware,)
+    assert mock_web3.middleware_onion.inject.call_args[0] == (ExtraDataToPOAMiddleware,)
     assert mock_web3.middleware_onion.inject.call_args[1] == {"layer": 0}
 
 
@@ -418,7 +418,7 @@ def test_send_transaction_when_no_error_and_receipt_fails(
     receipt_data = {
         "failed": True,
         "blockNumber": 0,
-        "txnHash": tx_hash.hex(),
+        "txnHash": to_hex(tx_hash),
         "status": TransactionStatusEnum.FAILING.value,
         "sender": owner.address,
         "receiver": geth_contract.address,

@@ -123,20 +123,22 @@ setup(
         "urllib3>=2.0.0,<3",
         "watchdog>=3.0,<4",
         # ** Dependencies maintained by Ethereum Foundation **
-        "eth-abi>=5.1.0,<6",
-        "eth-account>=0.11.2,<0.12",
-        "eth-typing>=3.5.2,<4",
-        "eth-utils>=2.3.1,<3",
-        "hexbytes",  # Peer
+        # All version pins dependent on web3[tester]
+        "eth-abi",
+        "eth-account",
+        "eth-typing",
+        "eth-utils",
+        "hexbytes",
         "py-geth>=5.0.0-beta.2,<6",
-        "trie>=3.0.0,<4",  # Peer: stricter pin needed for uv support.
+        "trie>=3.0.1,<4",  # Peer: stricter pin needed for uv support.
         "web3[tester]>=6.17.2,<7",
         # ** Dependencies maintained by ApeWorX **
-        "eip712>=0.2.7,<0.3",
-        "ethpm-types>=0.6.14,<0.7",
-        "eth_pydantic_types>=0.1.0,<0.2",
+        # Missing pins are dependent on ETH-prefixed dependencies.
+        "eip712",
+        "ethpm-types",
+        "eth_pydantic_types",
         "evmchains>=0.0.10,<0.1",
-        "evm-trace>=0.2.0,<0.3",
+        "evm-trace",
     ],
     entry_points={
         "console_scripts": ["ape=ape._cli:cli"],

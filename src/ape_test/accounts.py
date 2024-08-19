@@ -111,7 +111,7 @@ class TestAccount(TestAccountAPI):
         if isinstance(msg, str):
             msg = encode_defunct(text=msg)
         elif isinstance(msg, int):
-            msg = HexBytes(msg).hex()
+            msg = to_hex(msg)
             msg = encode_defunct(hexstr=msg)
         elif isinstance(msg, EIP712Message):
             # Convert EIP712Message to SignableMessage for handling below

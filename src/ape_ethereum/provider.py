@@ -1,3 +1,4 @@
+import json
 import os
 import re
 import sys
@@ -19,7 +20,8 @@ from ethpm_types import EventABI
 from evmchains import get_random_rpc
 from pydantic.dataclasses import dataclass
 from requests import HTTPError
-from web3 import HTTPProvider, IPCProvider, Web3, WebsocketProvider
+from web3 import HTTPProvider, IPCProvider, Web3
+from web3 import WebsocketProvider as WebSocketProvider
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.exceptions import (
     ExtraDataLengthError,
@@ -28,7 +30,7 @@ from web3.exceptions import (
     TransactionNotFound,
 )
 from web3.gas_strategies.rpc import rpc_gas_price_strategy
-from web3.middleware import geth_poa_middleware
+from web3.middleware import geth_poa_middleware as ExtraDataToPOAMiddleware
 from web3.middleware.validation import MAX_EXTRADATA_LENGTH
 from web3.providers import AutoProvider
 from web3.providers.auto import load_provider_from_environment
@@ -324,7 +326,7 @@ class Web3Provider(ProviderAPI, ABC):
 
         # Force the use of hex values to support a wider range of nodes.
         if isinstance(txn_dict.get("type"), int):
-            txn_dict["type"] = HexBytes(txn_dict["type"]).hex()
+            txn_dict["type"] = to_hex(txn_dict["type"])
 
         # NOTE: "auto" means to enter this method, so remove it from dict
         if "gas" in txn_dict and (
@@ -536,7 +538,7 @@ class Web3Provider(ProviderAPI, ABC):
         # Force the usage of hex-type to support a wider-range of nodes.
         txn_dict = copy(arguments[0])
         if isinstance(txn_dict.get("type"), int):
-            txn_dict["type"] = HexBytes(txn_dict["type"]).hex()
+            txn_dict["type"] = to_hex(txn_dict["type"])
 
         # Remove unnecessary values to support a wider-range of nodes.
         txn_dict.pop("chainId", None)
@@ -725,7 +727,7 @@ class Web3Provider(ProviderAPI, ABC):
             for txn in self.get_transactions_by_block(stop_block):
                 assert isinstance(txn.nonce, int)  # NOTE: just satisfying mypy here
                 if txn.sender == account and txn.nonce >= start_nonce:
-                    yield self.get_receipt(txn.txn_hash.hex())
+                    yield self.get_receipt(to_hex(txn.txn_hash))
 
             # Nothing else to search for
 
@@ -1200,9 +1202,14 @@ class Web3Provider(ProviderAPI, ABC):
             return self._handle_execution_reverted(exception, **kwargs)
 
         elif not isinstance(err_data, dict):
-            return VirtualMachineError(base_err=exception, **kwargs)
+            # Maybe it is a JSON-str.
+            # NOTE: For some reason, it comes back with single quotes though.
+            try:
+                err_data = json.loads(err_data.replace("'", '"'))
+            except Exception:
+                return VirtualMachineError(base_err=exception, **kwargs)
 
-        elif not (err_msg := err_data.get("message")):
+        if not (err_msg := err_data.get("message")):
             return VirtualMachineError(base_err=exception, **kwargs)
 
         elif txn is not None and "nonce too low" in str(err_msg):
@@ -1251,7 +1258,7 @@ class Web3Provider(ProviderAPI, ABC):
 
             else:
                 if trace is None and txn is not None:
-                    trace = self.provider.get_transaction_trace(txn.txn_hash.hex())
+                    trace = self.provider.get_transaction_trace(to_hex(txn.txn_hash))
 
                 if trace is not None and (revert_message := trace.revert_message):
                     message = revert_message
@@ -1489,8 +1496,8 @@ class EthereumNodeProvider(Web3Provider, ABC):
                 if is_likely_poa:
                     break
 
-        if is_likely_poa and geth_poa_middleware not in self.web3.middleware_onion:
-            self.web3.middleware_onion.inject(geth_poa_middleware, layer=0)
+        if is_likely_poa and ExtraDataToPOAMiddleware not in self.web3.middleware_onion:
+            self.web3.middleware_onion.inject(ExtraDataToPOAMiddleware, layer=0)
 
         self.network.verify_chain_id(chain_id)
 
@@ -1549,7 +1556,7 @@ def _create_web3(
             lambda: HTTPProvider(endpoint_uri=http, request_kwargs={"timeout": 30 * 60})
         )
     if ws := ws_uri:
-        providers.append(lambda: WebsocketProvider(endpoint_uri=ws))
+        providers.append(lambda: WebSocketProvider(endpoint_uri=ws))
 
     provider = AutoProvider(potential_providers=providers)
     return Web3(provider)

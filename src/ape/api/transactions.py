@@ -153,7 +153,7 @@ class TransactionAPI(BaseInterfaceModel):
             :class:`~ape.exceptions.APINotImplementedError`: When using a provider
               that does not support tracing.
         """
-        return self.provider.get_transaction_trace(self.txn_hash.hex())
+        return self.provider.get_transaction_trace(to_hex(self.txn_hash))
 
     @abstractmethod
     def serialize_transaction(self) -> bytes:
@@ -183,13 +183,13 @@ class TransactionAPI(BaseInterfaceModel):
                 )
             else:
                 data["data"] = (
-                    "0x" + bytes(data["data"][:3]).hex() + "..." + bytes(data["data"][-3:]).hex()
+                    to_hex(bytes(data["data"][:3])) + "..." + to_hex(bytes(data["data"][-3:]))
                 )
         else:
             if isinstance(data["data"], str):
-                data["data"] = "0x" + bytes(data["data"], encoding="utf8").hex()
+                data["data"] = to_hex(bytes(data["data"], encoding="utf8"))
             else:
-                data["data"] = "0x" + bytes(data["data"]).hex()
+                data["data"] = to_hex(bytes(data["data"]))
         params = "\n  ".join(f"{k}: {v}" for k, v in data.items())
         cls_name = getattr(type(self), "__name__", TransactionAPI.__name__)
         return f"{cls_name}:\n  {params}"

@@ -357,6 +357,7 @@ class ProviderAPI(BaseInterfaceModel):
             An iterator of items.
         """
 
+    # TODO: In 0.9, delete this method.
     def get_storage_at(self, *args, **kwargs) -> HexBytes:
         warnings.warn(
             "'provider.get_storage_at()' is deprecated. Use 'provider.get_storage()'.",

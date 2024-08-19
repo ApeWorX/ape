@@ -847,7 +847,7 @@ def test_create_transaction_shared_blob(tx_kwargs, ethereum):
 def test_create_transaction_max_fee_per_blob_gas(kwarg_name, value, ethereum):
     tx = ethereum.create_transaction(**{kwarg_name: value})
     assert isinstance(tx, SharedBlobTransaction)
-    expected = value if isinstance(value, int) else int(HexBytes(value).hex(), 16)
+    expected = value if isinstance(value, int) else int(value, 16)
     assert tx.max_fee_per_blob_gas == expected
 
 

@@ -3,7 +3,7 @@ from collections import namedtuple
 from eth_account import Account
 from eth_account.hdaccount import HDPath
 from eth_account.hdaccount.mnemonic import Mnemonic
-from eth_pydantic_types import HexBytes
+from eth_utils import to_hex
 
 DEFAULT_NUMBER_OF_TEST_ACCOUNTS = 10
 DEFAULT_TEST_MNEMONIC = "test test test test test test test test test test test junk"
@@ -60,7 +60,7 @@ def generate_dev_accounts(
 def _generate_dev_account(hd_path, index: int, seed: bytes) -> GeneratedDevAccount:
     return GeneratedDevAccount(
         address=Account.from_key(
-            private_key := HexBytes(HDPath(hd_path.format(index)).derive(seed)).hex()
+            private_key := to_hex(HDPath(hd_path.format(index)).derive(seed))
         ).address,
         private_key=private_key,
     )
