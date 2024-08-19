@@ -65,23 +65,18 @@ We currently have a `slim` docker image that is built without any installed plug
 You can pull the image:
 
 ```bash
-docker pull ghcr.io/apeworx/ape:latest-slim  # installs ape with required packages
+$ docker pull ghcr.io/apeworx/ape:latest  # installs with recommended-plugins
 ```
 
-or pull with the recommended-plugins:
+or pull the slim if you have specific needs that you'd like to build from:
 ```bash
-docker pull ghcr.io/apeworx/ape:latest  # installs with recommended-plugins
+$ docker pull ghcr.io/apeworx/ape:latest-slim  # installs ape with required packages
 ```
 
 or build the image locally from source:
 ```bash
-docker build -t ape:latest-slim -f Dockerfile.slim .
-```
-
-If you want the recommended plugins as well:
-
-```python
-docker build -t ape:latest .
+$ docker build -t ape:latest-slim -f Dockerfile.slim .
+$ docker build -t ape:latest .
 ```
 
 An example of running a command from the container would be:
@@ -95,7 +90,9 @@ docker run \
   apeworx/ape compile
 ```
 
-The above command requires the full install with the recommended-plugins.
+:::note
+> The above command requires the full install with the recommended-plugins.
+:::
 
 ## Quickstart
 
