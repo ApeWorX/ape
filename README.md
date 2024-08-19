@@ -59,7 +59,31 @@ There are three ways to install ape: `pipx`, `pip`, or `Docker`.
 
 Ape can also run in a docker container.
 
-Please visit our [Dockerhub](https://hub.docker.com/repository/docker/apeworx/ape) for more details on using Ape with Docker.
+You can pull our images from [ghcr](https://ghcr.io/apeworx/ape). We currently have a `slim` docker image as well as an image that is built with the recommended-plugins.
+
+You can pull the image:
+
+```bash
+docker pull ghcr.io/apeworx/ape:latest-slim  # installs ape with required packages
+```
+
+or pull with the recommended-plugins:
+```bash
+docker pull ghcr.io/apeworx/ape:latest  # installs with recommended-plugins
+```
+
+or build the image locally from source:
+```bash
+docker build -t ape:latest-slim -f Dockerfile.slim .
+```
+
+If you want the recommended plugins as well:
+
+```python
+docker build -t ape:latest .
+```
+
+An example of running a command from the container would be:
 
 ```bash
 docker run \
@@ -69,6 +93,8 @@ docker run \
   --volume $PWD:/home/harambe/project \
   apeworx/ape compile
 ```
+
+The above command requires the full install with the recommended-plugins.
 
 ## Quickstart
 
