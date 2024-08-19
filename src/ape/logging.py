@@ -166,14 +166,13 @@ class ApeLogger:
     def level(self) -> int:
         return self._logger.level
 
-    def set_level(self, level: Union[str, int]):
+    def set_level(self, level: Union[str, int, LogLevel]):
         """
         Change the global ape logger log-level.
 
         Args:
             level (str): The name of the level or the value of the log-level.
         """
-
         if level == self._logger.level:
             return
 
