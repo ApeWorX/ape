@@ -9,7 +9,7 @@ from evmchains import PUBLIC_CHAIN_META
 from hexbytes import HexBytes
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.exceptions import ExtraDataLengthError
-from web3.middleware import ExtraDataToPOAMiddleware
+from web3.middleware import geth_poa_middleware as ExtraDataToPOAMiddleware
 
 from ape.exceptions import (
     APINotImplementedError,

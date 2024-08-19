@@ -20,17 +20,17 @@ from ethpm_types import EventABI
 from evmchains import get_random_rpc
 from pydantic.dataclasses import dataclass
 from requests import HTTPError
-from web3 import HTTPProvider, IPCProvider, Web3, WebSocketProvider
+from web3 import HTTPProvider, IPCProvider, Web3, WebsocketProvider
+from web3 import WebsocketProvider as WebSocketProvider  # Matching newer API name
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.exceptions import (
     ExtraDataLengthError,
     MethodUnavailable,
     TimeExhausted,
     TransactionNotFound,
-    Web3RPCError,
 )
 from web3.gas_strategies.rpc import rpc_gas_price_strategy
-from web3.middleware import ExtraDataToPOAMiddleware
+from web3.middleware import geth_poa_middleware as ExtraDataToPOAMiddleware
 from web3.middleware.validation import MAX_EXTRADATA_LENGTH
 from web3.providers import AutoProvider
 from web3.providers.auto import load_provider_from_environment
@@ -1009,7 +1009,7 @@ class Web3Provider(ProviderAPI, ABC):
             if txn_hash is None:
                 txn_hash = to_hex(self.web3.eth.send_raw_transaction(txn.serialize_transaction()))
 
-        except (ValueError, Web3ContractLogicError, Web3RPCError) as err:
+        except (ValueError, Web3ContractLogicError) as err:
             vm_err = self.get_virtual_machine_error(
                 err, txn=txn, set_ape_traceback=txn.raise_on_revert
             )

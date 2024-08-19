@@ -126,13 +126,12 @@ setup(
         # All version pins dependent on web3[tester]
         "eth-abi",
         "eth-account",
-        "eth-tester",
         "eth-typing",
         "eth-utils",
         "hexbytes",
         "py-geth",
-        "trie",  # Peer: stricter pin needed for uv support.
-        "web3>=7.0.0b9,<8",
+        "trie>=3.0.1,<4",  # Peer: stricter pin needed for uv support.
+        "web3[tester]>=6.20.2,<7",
         # ** Dependencies maintained by ApeWorX **
         # Missing pins are dependent on ETH-prefixed dependencies.
         "eip712",
