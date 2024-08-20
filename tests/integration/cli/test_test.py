@@ -89,19 +89,21 @@ def setup_pytester(pytester, owner):
         test_files = {}
         if tests_path.is_dir():
             for file_path in tests_path.iterdir():
-                if file_path.name.startswith("test_") and file_path.suffix == ".py":
-                    content = file_path.read_text()
-                    test_files[file_path.name] = content
-                    num_passes += len(
-                        [
-                            x
-                            for x in content.splitlines()
-                            if x.startswith("def test_") and not x.startswith("def test_fail_")
-                        ]
-                    )
-                    num_failed += len(
-                        [x for x in content.splitlines() if x.startswith("def test_fail_")]
-                    )
+                if not file_path.name.startswith("test_") or file_path.suffix != ".py":
+                    continue
+
+                content = file_path.read_text(encoding="utf8")
+                test_files[file_path.name] = content
+                num_passes += len(
+                    [
+                        x
+                        for x in content.splitlines()
+                        if x.startswith("def test_") and not x.startswith("def test_fail_")
+                    ]
+                )
+                num_failed += len(
+                    [x for x in content.splitlines() if x.startswith("def test_fail_")]
+                )
 
             pytester.makepyfile(**test_files)
 
@@ -111,16 +113,16 @@ def setup_pytester(pytester, owner):
                 return
 
             for file in base.iterdir():
-                if file.is_dir() and not file.name == "tests":
+                if file.is_dir() and file.name != "tests":
                     _make_all_files(file, prefix=Path(file.name))
-                elif file.is_file():
+                elif file.is_file() and file.suffix not in (".sol", ".vy"):
                     name = (prefix / file.name).as_posix() if prefix else file.name
 
                     if name == "ape-config.yaml":
                         # Hack in in-memory overrides for testing purposes.
                         text = str(project.config)
                     else:
-                        text = file.read_text()
+                        text = file.read_text(encoding="utf8")
 
                     src = {name: text.splitlines()}
                     pytester.makefile(file.suffix, **src)
