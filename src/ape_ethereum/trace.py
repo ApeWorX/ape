@@ -239,8 +239,8 @@ class Trace(TraceAPI):
                 # Barely enrich a calltree for performance reasons
                 # (likely not a need to enrich the whole thing).
                 calltree = self.get_raw_calltree()
-                enriched_return = self._ecosystem._enrich_returndata(calltree, abi)
-                return enriched_return["returndata"]
+                enriched_calltree = self._ecosystem._enrich_returndata(calltree, abi)
+                return self._get_return_value_from_calltree(enriched_calltree)
 
         return self._return_value_from_enriched_calltree
 
@@ -252,6 +252,9 @@ class Trace(TraceAPI):
         if "return_value" in self.__dict__:
             return self.__dict__["return_value"]
 
+        return self._get_return_value_from_calltree(calltree)
+
+    def _get_return_value_from_calltree(self, calltree: dict) -> Any:
         # If enriching too much, Ethereum places regular values in a key
         # named "unenriched_return_values".
         if "unenriched_return_values" in calltree:

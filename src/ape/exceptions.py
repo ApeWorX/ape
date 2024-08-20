@@ -186,7 +186,7 @@ class TransactionError(ApeException):
         contract_address: Optional["AddressType"] = None,
         source_traceback: _SOURCE_TRACEBACK_ARG = None,
         project: Optional["ProjectManager"] = None,
-        set_ape_traceback: bool = False,  # Overriden in ContractLogicError
+        set_ape_traceback: bool = False,  # Overridden in ContractLogicError
     ):
         message = message or (str(base_err) if base_err else self.DEFAULT_MESSAGE)
         self.message = message
