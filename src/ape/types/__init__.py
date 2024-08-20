@@ -19,7 +19,7 @@ from ethpm_types import (
 )
 from ethpm_types.abi import EventABI
 from ethpm_types.source import Closure
-from pydantic import BaseModel, BeforeValidator, field_validator, model_validator
+from pydantic import BaseModel, BeforeValidator, field_serializer, field_validator, model_validator
 from pydantic_core.core_schema import (
     CoreSchema,
     ValidationInfo,
@@ -257,6 +257,15 @@ class BaseContractLog(BaseInterfaceModel):
                 return False
 
         return True
+
+    @field_serializer("event_arguments")
+    def _serialize_event_arguments(self, event_arguments, info):
+        """
+        Because of an issue with BigInt in Pydantic,
+        (https://github.com/pydantic/pydantic/issues/10152)
+        we have to ensure these are regular ints.
+        """
+        return {k: int(v) if isinstance(v, int) else v for k, v in event_arguments.items()}
 
 
 class ContractLog(ExtraAttributesMixin, BaseContractLog):
