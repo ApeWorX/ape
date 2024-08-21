@@ -226,13 +226,21 @@ class Trace(TraceAPI):
             return self._return_value_from_enriched_calltree
 
         elif abi := self.root_method_abi:
-            return_data = self._return_data_from_trace_frames
-            if return_data is not None:
-                try:
-                    return self._ecosystem.decode_returndata(abi, return_data)
-                except Exception as err:
-                    logger.debug(f"Failed decoding return data from trace frames. Error: {err}")
-                    # Use enrichment method. It is slow but it'll at least work.
+            if self.call_trace_approach is TraceApproach.GETH_STRUCT_LOG_PARSE:
+                return_data = self._return_data_from_trace_frames
+                if return_data is not None:
+                    try:
+                        return self._ecosystem.decode_returndata(abi, return_data)
+                    except Exception as err:
+                        logger.debug(f"Failed decoding return data from trace frames. Error: {err}")
+                        # Use enrichment method. It is slow but it'll at least work.
+
+            else:
+                # Barely enrich a calltree for performance reasons
+                # (likely not a need to enrich the whole thing).
+                calltree = self.get_raw_calltree()
+                enriched_calltree = self._ecosystem._enrich_returndata(calltree, abi)
+                return self._get_return_value_from_calltree(enriched_calltree)
 
         return self._return_value_from_enriched_calltree
 
@@ -244,6 +252,9 @@ class Trace(TraceAPI):
         if "return_value" in self.__dict__:
             return self.__dict__["return_value"]
 
+        return self._get_return_value_from_calltree(calltree)
+
+    def _get_return_value_from_calltree(self, calltree: dict) -> Any:
         # If enriching too much, Ethereum places regular values in a key
         # named "unenriched_return_values".
         if "unenriched_return_values" in calltree:

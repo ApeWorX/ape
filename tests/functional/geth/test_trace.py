@@ -310,8 +310,13 @@ def test_call_trace_supports_debug_trace_call(geth_contract, geth_account):
 
 
 @geth_process_test
-def test_return_value(geth_contract, geth_account):
-    receipt = geth_contract.getFilledArray.transact(sender=geth_account)
+def test_return_value(benchmark, geth_contract, geth_account):
+    receipt = benchmark.pedantic(
+        geth_contract.getFilledArray.transact,
+        kwargs={"sender": geth_account},
+        rounds=5,
+        warmup_rounds=1,
+    )
     trace = receipt.trace
     expected = [1, 2, 3]  # Hardcoded in contract
     assert receipt.return_value == expected
@@ -324,3 +329,9 @@ def test_return_value(geth_contract, geth_account):
     # NOTE: This is very important from a performance perspective!
     # (VERY IMPORTANT). We shouldn't need to enrich anything.
     assert trace._enriched_calltree is None
+
+    # Seeing 0.14.
+    # Before https://github.com/ApeWorX/ape/pull/2225, was seeing 0.17.
+    # In CI, can see up to 0.4 though.
+    avg = benchmark.stats["mean"]
+    assert avg < 0.6
