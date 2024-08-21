@@ -389,8 +389,7 @@ def test_account_option_alias_not_found(runner, keyfile_account):
 
     result = runner.invoke(cmd, ("--account", "THIS ALAS IS NOT FOUND"))
     expected = (
-        "Invalid value for '--account': "
-        "Account with alias 'THIS ALAS IS NOT FOUND' not found"
+        "Invalid value for '--account': " "Account with alias 'THIS ALAS IS NOT FOUND' not found"
     )
     assert expected in result.output
 
