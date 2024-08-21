@@ -1173,7 +1173,7 @@ class ContractCache(BaseManager):
             # Always attempt to get an existing contract type to update caches
             contract_type = self.get(contract_address, default=contract_type)
         except Exception as err:
-            if contract_type:
+            if contract_type or abi:
                 # If a default contract type was provided, don't error and use it.
                 logger.error(str(err))
             else:
