@@ -189,7 +189,7 @@ def get_package_version(obj: Any) -> str:
             if found_paths:
                 message = f"{message}\nInstallation paths:\n\t{found_paths_str}"
 
-            logger.warning(message)
+            logger.debug(message)
 
     try:
         return str(version_metadata(pkg_name))
