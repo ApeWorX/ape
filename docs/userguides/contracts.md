@@ -79,7 +79,7 @@ Simply copy your Python logic into an Ape script and run it via:
 ape run <my-deploy-script>
 ```
 
-Learn how to do this and scripting in its entirity by reviewing [the scripting user-guide](./scripts.html).
+Learn how to do this and scripting in its entirety by reviewing [the scripting user-guide](./scripts.html).
 
 **There is no root `ape` command to deploy contracts; only the scripting-system, the `console`, or merely using Ape as a Python library**.
 

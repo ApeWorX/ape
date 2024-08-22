@@ -365,7 +365,8 @@ def test_account_prompts_when_more_than_one_keyfile_account(
     assert expected in result.output
 
 
-def test_account_option_can_use_test_account(runner, test_accounts):
+@pytest.mark.parametrize("test_key", ("test", "TEST"))
+def test_account_option_can_use_test_account(runner, test_accounts, test_key):
     index = 7
     test_account = test_accounts[index]
 
@@ -376,7 +377,20 @@ def test_account_option_can_use_test_account(runner, test_accounts):
         click.echo(_expected)
 
     expected = get_expected_account_str(test_account)
-    result = runner.invoke(cmd, ("--account", f"TEST::{index}"))
+    result = runner.invoke(cmd, ("--account", f"{test_key}::{index}"))
+    assert expected in result.output
+
+
+def test_account_option_alias_not_found(runner, keyfile_account):
+    @click.command()
+    @account_option()
+    def cmd(account):
+        pass
+
+    result = runner.invoke(cmd, ("--account", "THIS ALAS IS NOT FOUND"))
+    expected = (
+        "Invalid value for '--account': " "Account with alias 'THIS ALAS IS NOT FOUND' not found"
+    )
     assert expected in result.output
 
 

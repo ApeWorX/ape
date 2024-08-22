@@ -95,6 +95,7 @@ def test_uri_when_configured(geth_provider, project, ethereum):
     assert actual_mainnet_uri == expected
 
 
+@geth_process_test
 def test_uri_non_dev_and_not_configured(mocker, ethereum):
     """
     If the URI was not configured and we are not using a dev
@@ -547,6 +548,7 @@ def test_make_request_not_exists(geth_provider):
         geth_provider.make_request("ape_thisDoesNotExist")
 
 
+@geth_process_test
 def test_geth_bin_not_found():
     bin_name = "__NOT_A_REAL_EXECUTABLE_HOPEFULLY__"
     with pytest.raises(NodeSoftwareNotInstalledError):
@@ -677,6 +679,7 @@ def test_trace_approach_config(project):
         assert provider.call_trace_approach is TraceApproach.GETH_STRUCT_LOG_PARSE
 
 
+@geth_process_test
 def test_start(mocker, convert, project, geth_provider):
     amount = convert("100_000 ETH", int)
     spy = mocker.spy(GethDevProcess, "from_uri")

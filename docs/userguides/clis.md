@@ -74,7 +74,7 @@ To specify the network option, use values like:
 ```
 
 To use default values automatically, omit sections of the choice, but leave the semi-colons for parsing.
-For example, `::test` means use the default ecosystem and network and the `test` provider.
+For example, `::test` means to use the default ecosystem and network and the `test` provider.
 
 Use `ecosystem`, `network`, and `provider` argument names in your command implementation to access their corresponding class instances:
 

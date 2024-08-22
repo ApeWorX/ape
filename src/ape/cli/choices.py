@@ -195,9 +195,13 @@ class AccountAliasPromptChoice(PromptChoice):
         else:
             alias = value
 
-        if isinstance(alias, str) and alias.startswith("TEST::"):
-            idx_str = value.replace("TEST::", "")
+        if isinstance(alias, str) and alias.upper().startswith("TEST::"):
+            idx_str = alias.upper().replace("TEST::", "")
             if not idx_str.isnumeric():
+                if alias in ManagerAccessMixin.account_manager.aliases:
+                    # Was actually a similar-alias.
+                    return ManagerAccessMixin.account_manager.load(alias)
+
                 self.fail(f"Cannot reference test account by '{value}'.", param=param)
 
             account_idx = int(idx_str)
@@ -209,7 +213,7 @@ class AccountAliasPromptChoice(PromptChoice):
         elif alias and alias in ManagerAccessMixin.account_manager.aliases:
             return ManagerAccessMixin.account_manager.load(alias)
 
-        return None
+        self.fail(f"Account with alias '{alias}' not found.", param=param)
 
     def print_choices(self):
         choices = dict(enumerate(self.choices, 0))
