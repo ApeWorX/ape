@@ -177,20 +177,7 @@ def get_package_version(obj: Any) -> str:
     # NOTE: In case the distribution and package name differ
     dists = _get_distributions(pkg_name)
     if dists:
-        num_packages = len(dists)
         pkg_name = dists[0].metadata["Name"]
-
-        if num_packages != 1:
-            # Warn that there are more than 1 package with this name,
-            # which can lead to odd behaviors.
-            found_paths = [str(d._path) for d in dists if hasattr(d, "_path")]
-            found_paths_str = ",\n\t".join(found_paths)
-            message = f"Found {num_packages} packages named '{pkg_name}'."
-            if found_paths:
-                message = f"{message}\nInstallation paths:\n\t{found_paths_str}"
-
-            logger.warning(message)
-
     try:
         return str(version_metadata(pkg_name))
 
