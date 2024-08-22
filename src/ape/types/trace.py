@@ -336,7 +336,6 @@ class SourceTraceback(RootModel[list[ControlFlow]]):
         The revert type, such as a builtin-error code or a user dev-message,
         if there is one.
         """
-
         return self.statements[-1].type if self.statements[-1].type != "source" else None
 
     def append(self, __object) -> None:

@@ -202,6 +202,7 @@ class TransactionError(ApeException):
         # Finalizes expected revert message.
         super().__init__(ex_message)
 
+        self._attempted_source_traceback = False
         if set_ape_traceback:
             self.with_ape_traceback()
 
@@ -250,12 +251,16 @@ class TransactionError(ApeException):
     def source_traceback(self) -> Optional["SourceTraceback"]:
         tb = self._source_traceback
         result: Optional["SourceTraceback"]
-        if callable(tb):
+        if not self._attempted_source_traceback and tb is None and self.txn is not None:
+            result = _get_ape_traceback_from_tx(self.txn)
+            # Prevent re-trying.
+            self._attempted_source_traceback = True
+        elif callable(tb):
             result = tb()
-            self._source_traceback = result
         else:
             result = tb
 
+        self._source_traceback = result
         return result
 
     @source_traceback.setter
@@ -263,11 +268,7 @@ class TransactionError(ApeException):
         self._source_traceback = value
 
     def _get_ape_traceback(self) -> Optional[TracebackType]:
-        source_tb = self.source_traceback
-        if not source_tb and self.txn:
-            source_tb = _get_ape_traceback_from_tx(self.txn)
-
-        if src_tb := source_tb:
+        if src_tb := self.source_traceback:
             # Create a custom Pythonic traceback using lines from the sources
             # found from analyzing the trace of the transaction.
             if py_tb := _get_custom_python_traceback(self, src_tb, project=self._project):
@@ -335,7 +336,6 @@ class ContractLogicError(VirtualMachineError):
         Raises:
             ``ValueError``: When unable to get dev message.
         """
-
         return self.source_traceback.revert_type if self.source_traceback else None
 
     @classmethod
