@@ -463,7 +463,7 @@ class ProviderNotFoundError(NetworkError):
         if options:
             close_matches = difflib.get_close_matches(provider, options, cutoff=0.6)
             if close_matches:
-                message = f"{message} Did you mean '{', '.join(close_matches)}'?"
+                message = f"{message}. Did you mean '{', '.join(close_matches)}'?"
             else:
                 # No close matches. Show all provider options.
                 options_str = "\n".join(sorted(options))

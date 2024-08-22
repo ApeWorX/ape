@@ -4,6 +4,7 @@ from pathlib import Path
 
 import click
 import pytest
+from click import BadParameter
 
 from ape.cli import (
     AccountAliasPromptChoice,
@@ -839,49 +840,66 @@ def test_parse_network_when_explicit_none(mocker):
     assert network_ctx is None
 
 
-def test_network_choice():
-    network_choice = NetworkChoice()
-    actual = network_choice.convert("ethereum:local:test", None, None)
-    assert actual.name == "test"
-    assert actual.network.name == "local"
+class TestNetworkChoice:
+    @pytest.fixture
+    def network_choice(self):
+        return NetworkChoice()
 
+    def test_test(self, network_choice):
+        actual = network_choice.convert("ethereum:local:test", None, None)
+        assert actual.name == "test"
+        assert actual.network.name == "local"
 
-@pytest.mark.parametrize("prefix", ("", "ethereum:custom:"))
-def test_network_choice_custom_adhoc_network(prefix):
-    network_choice = NetworkChoice()
-    uri = "https://example.com"
-    actual = network_choice.convert(f"{prefix}{uri}", None, None)
-    assert actual.uri == uri
-    assert actual.network.name == "custom"
+    @pytest.mark.parametrize("prefix", ("", "ethereum:custom:"))
+    def test_adhoc(self, network_choice, prefix):
+        uri = "https://example.com"
+        actual = network_choice.convert(f"{prefix}{uri}", None, None)
+        assert actual.uri == uri
+        assert actual.network.name == "custom"
 
+    def test_custom_config_network(self, custom_networks_config_dict, project, network_choice):
+        data = copy.deepcopy(custom_networks_config_dict)
 
-def test_network_choice_custom_config_network(custom_networks_config_dict, project):
-    data = copy.deepcopy(custom_networks_config_dict)
+        # Was a bug where couldn't have this name.
+        data["networks"]["custom"][0]["name"] = "custom"
 
-    # Was a bug where couldn't have this name.
-    data["networks"]["custom"][0]["name"] = "custom"
+        _get_networks_sequence_from_cache.cache_clear()
 
-    _get_networks_sequence_from_cache.cache_clear()
+        with project.temp_config(**data):
+            actual = network_choice.convert("ethereum:custom", None, None)
 
-    network_choice = NetworkChoice()
-    with project.temp_config(**data):
-        actual = network_choice.convert("ethereum:custom", None, None)
+        assert actual.network.name == "custom"
 
-    assert actual.network.name == "custom"
+    def test_custom_local_network(self, network_choice):
+        uri = "https://example.com"
+        actual = network_choice.convert(f"ethereum:local:{uri}", None, None)
+        assert actual.uri == uri
+        assert actual.network.name == "local"
 
+    def test_explicit_none(self, network_choice):
+        actual = network_choice.convert("None", None, None)
+        assert actual == _NONE_NETWORK
 
-def test_network_choice_when_custom_local_network():
-    network_choice = NetworkChoice()
-    uri = "https://example.com"
-    actual = network_choice.convert(f"ethereum:local:{uri}", None, None)
-    assert actual.uri == uri
-    assert actual.network.name == "local"
+    def test_bad_ecosystem(self, network_choice):
+        # NOTE: "ethereum" is spelled wrong.
+        expected = r"No ecosystem named 'etheruem'\. Did you mean 'ethereum'\?"
+        with pytest.raises(BadParameter, match=expected):
+            network_choice.convert("etheruem:local:test", None, None)
 
+    def test_bad_network(self, network_choice):
+        # NOTE: "local" is spelled wrong.
+        expected = r"No network in 'ethereum' named 'lokal'\. Did you mean 'local'\?"
+        with pytest.raises(BadParameter, match=expected):
+            network_choice.convert("ethereum:lokal:test", None, None)
 
-def test_network_choice_explicit_none():
-    network_choice = NetworkChoice()
-    actual = network_choice.convert("None", None, None)
-    assert actual == _NONE_NETWORK
+    def test_bad_provider(self, network_choice):
+        # NOTE: "test" is spelled wrong.
+        expected = (
+            r"No provider named 'teest' in network 'local' in "
+            r"ecosystem 'ethereum'\. Did you mean 'test'\?"
+        )
+        with pytest.raises(BadParameter, match=expected):
+            network_choice.convert("ethereum:local:teest", None, None)
 
 
 def test_config_override_option(runner):
