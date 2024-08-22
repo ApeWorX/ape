@@ -4,6 +4,7 @@ from pathlib import Path
 
 import click
 import pytest
+from click import BadParameter
 
 from ape.cli import (
     AccountAliasPromptChoice,
@@ -878,6 +879,27 @@ class TestNetworkChoice:
     def test_explicit_none(self, network_choice):
         actual = network_choice.convert("None", None, None)
         assert actual == _NONE_NETWORK
+
+    def test_bad_ecosystem(self, network_choice):
+        # NOTE: "ethereum" is spelled wrong.
+        expected = r"No ecosystem named 'etheruem'\. Did you mean 'ethereum'\?"
+        with pytest.raises(BadParameter, match=expected):
+            network_choice.convert("etheruem:local:test", None, None)
+
+    def test_bad_network(self, network_choice):
+        # NOTE: "local" is spelled wrong.
+        expected = r"No network in 'ethereum' named 'lokal'\. Did you mean 'local'\?"
+        with pytest.raises(BadParameter, match=expected):
+            network_choice.convert("ethereum:lokal:test", None, None)
+
+    def test_bad_provider(self, network_choice):
+        # NOTE: "test" is spelled wrong.
+        expected = (
+            r"No provider named 'teest' in network 'local' in "
+            r"ecosystem 'ethereum'\. Did you mean 'test'\?"
+        )
+        with pytest.raises(BadParameter, match=expected):
+            network_choice.convert("ethereum:local:teest", None, None)
 
 
 def test_config_override_option(runner):
