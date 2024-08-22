@@ -627,6 +627,22 @@ class TestProject:
         assert "site-packages" in str(web3.path)
         assert web3.path.name == "web3"
 
+    def test_hash(self, with_dependencies_project_path, project_from_manifest):
+        """
+        Show we can use projects in sets.
+        """
+        project_0 = Project(with_dependencies_project_path)
+        project_1 = Project.from_python_library("web3")
+        project_2 = project_from_manifest
+
+        # Show we can use in sets.
+        project_set = {project_0, project_1, project_2}
+        assert len(project_set) == 3
+
+        # Show we can use as dict-keys:
+        project_dict = {project_0: 123}
+        assert project_dict[project_0] == 123
+
 
 class TestBrownieProject:
     """
