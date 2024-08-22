@@ -2,6 +2,7 @@ import pytest
 
 from ape.exceptions import ProviderNotConnectedError
 from ape.logging import logger
+from ape.managers.project import DependencyManager
 from ape.utils.basemodel import ManagerAccessMixin, only_raise_attribute_error
 
 
@@ -50,3 +51,8 @@ def test_only_raise_attribute_error_when_already_raises(mocker, ape_caplog):
 
     # Does not log because is already an attr err
     assert not spy.call_count
+
+
+def test_dependency_manager():
+    actual = ManagerAccessMixin.dependency_manager
+    assert isinstance(actual, DependencyManager)

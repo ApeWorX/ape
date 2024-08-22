@@ -26,11 +26,11 @@ def _list(cli_ctx, list_all):
     List installed packages
     """
 
-    pm = cli_ctx.local_project
+    dm = cli_ctx.dependency_manager
     packages = []
-    dependencies = [*list(pm.dependencies.specified)]
+    dependencies = [*list(dm.specified)]
     if list_all:
-        dependencies = list({*dependencies, *pm.dependencies.installed})
+        dependencies = list({*dependencies, *dm.installed})
 
     for dependency in dependencies:
         try:
