@@ -32,9 +32,9 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=ref,event=pr,value=test
-            type=ref,event=branch,branch=main,tag=latest
-            type=ref,event=tag,tag=stable
+            type=raw,value=testing
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=stable,enable={{tag}}
 
       - name: Show tags
         run: |
