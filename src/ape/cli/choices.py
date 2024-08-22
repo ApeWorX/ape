@@ -9,7 +9,12 @@ from click import BadParameter, Choice, Context, Parameter
 
 from ape.api.accounts import AccountAPI
 from ape.api.providers import ProviderAPI
-from ape.exceptions import AccountsError
+from ape.exceptions import (
+    AccountsError,
+    EcosystemNotFoundError,
+    NetworkNotFoundError,
+    ProviderNotFoundError,
+)
 from ape.types import _LazySequence
 from ape.utils.basemodel import ManagerAccessMixin
 
@@ -369,6 +374,12 @@ class NetworkChoice(click.Choice):
                 # (as-is the case for custom-forked networks).
                 try:
                     choice = networks.get_provider_from_choice(network_choice=value)
+
+                except (EcosystemNotFoundError, NetworkNotFoundError, ProviderNotFoundError) as err:
+                    # This error makes more sense, as it has attempted parsing.
+                    # Show this message as the BadParameter message.
+                    raise click.BadParameter(str(err)) from err
+
                 except Exception as err:
                     # If an error was not raised for some reason, raise a simpler error.
                     # NOTE: Still avoid showing the massive network options list.

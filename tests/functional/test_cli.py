@@ -839,49 +839,45 @@ def test_parse_network_when_explicit_none(mocker):
     assert network_ctx is None
 
 
-def test_network_choice():
-    network_choice = NetworkChoice()
-    actual = network_choice.convert("ethereum:local:test", None, None)
-    assert actual.name == "test"
-    assert actual.network.name == "local"
+class TestNetworkChoice:
+    @pytest.fixture
+    def network_choice(self):
+        return NetworkChoice()
 
+    def test_test(self, network_choice):
+        actual = network_choice.convert("ethereum:local:test", None, None)
+        assert actual.name == "test"
+        assert actual.network.name == "local"
 
-@pytest.mark.parametrize("prefix", ("", "ethereum:custom:"))
-def test_network_choice_custom_adhoc_network(prefix):
-    network_choice = NetworkChoice()
-    uri = "https://example.com"
-    actual = network_choice.convert(f"{prefix}{uri}", None, None)
-    assert actual.uri == uri
-    assert actual.network.name == "custom"
+    @pytest.mark.parametrize("prefix", ("", "ethereum:custom:"))
+    def test_adhoc(self, network_choice, prefix):
+        uri = "https://example.com"
+        actual = network_choice.convert(f"{prefix}{uri}", None, None)
+        assert actual.uri == uri
+        assert actual.network.name == "custom"
 
+    def test_custom_config_network(self, custom_networks_config_dict, project, network_choice):
+        data = copy.deepcopy(custom_networks_config_dict)
 
-def test_network_choice_custom_config_network(custom_networks_config_dict, project):
-    data = copy.deepcopy(custom_networks_config_dict)
+        # Was a bug where couldn't have this name.
+        data["networks"]["custom"][0]["name"] = "custom"
 
-    # Was a bug where couldn't have this name.
-    data["networks"]["custom"][0]["name"] = "custom"
+        _get_networks_sequence_from_cache.cache_clear()
 
-    _get_networks_sequence_from_cache.cache_clear()
+        with project.temp_config(**data):
+            actual = network_choice.convert("ethereum:custom", None, None)
 
-    network_choice = NetworkChoice()
-    with project.temp_config(**data):
-        actual = network_choice.convert("ethereum:custom", None, None)
+        assert actual.network.name == "custom"
 
-    assert actual.network.name == "custom"
+    def test_custom_local_network(self, network_choice):
+        uri = "https://example.com"
+        actual = network_choice.convert(f"ethereum:local:{uri}", None, None)
+        assert actual.uri == uri
+        assert actual.network.name == "local"
 
-
-def test_network_choice_when_custom_local_network():
-    network_choice = NetworkChoice()
-    uri = "https://example.com"
-    actual = network_choice.convert(f"ethereum:local:{uri}", None, None)
-    assert actual.uri == uri
-    assert actual.network.name == "local"
-
-
-def test_network_choice_explicit_none():
-    network_choice = NetworkChoice()
-    actual = network_choice.convert("None", None, None)
-    assert actual == _NONE_NETWORK
+    def test_explicit_none(self, network_choice):
+        actual = network_choice.convert("None", None, None)
+        assert actual == _NONE_NETWORK
 
 
 def test_config_override_option(runner):
