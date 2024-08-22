@@ -261,11 +261,41 @@ def test_extract_manifest(tmp_project, mock_sepolia, vyper_contract_instance):
     assert PackageName("manifest-dependency") in (manifest.dependencies or {})
     bip122_chain_id = to_hex(tmp_project.provider.get_block(0).hash)
     expected_uri = f"blockchain://{bip122_chain_id[2:]}"
-    for key in manifest.deployments or {}:
-        if key.startswith(expected_uri):
-            return
 
-    assert False, "Failed to find expected deployment URI"
+    # Prove that deployments are available on an extract-manifest.
+    found = False
+    for key, val in (manifest.deployments or {}).items():
+        if key.startswith(expected_uri):
+            assert "VyperContract.json" in val
+            actual_deployment = val["VyperContract.json"]
+            assert actual_deployment.contract_type == "contracts/VyperContract.vy:VyperContract"
+            assert actual_deployment.address == vyper_contract_instance.address
+            found = True
+            break
+
+    assert found, "Failed to find expected deployment URI"
+
+    # Prove that dependencies works.
+    # NOTE: tmp_project has several dependencies!
+    expected_dependencies = (
+        "default",
+        "renamed-contracts-folder",
+        "renamed-complex-contracts-folder",
+        "containing-sub-dependencies",
+        "renamed-contracts-folder-specified-in-config",
+        "manifest-dependency",
+        "empty-dependency",
+    )
+    actual_dependencies = manifest.dependencies or {}
+    for expected_dependency in expected_dependencies:
+        pkg_name = PackageName(expected_dependency)
+        assert pkg_name in actual_dependencies
+        # Show str works too.
+        assert expected_dependency in actual_dependencies
+        actual_dependency = actual_dependencies[pkg_name]
+        assert isinstance(actual_dependency, Url)
+        # NOTE: These dependencies are all local-file based.
+        assert str(actual_dependency).startswith("file://")
 
 
 def test_extract_manifest_when_sources_missing(tmp_project):
