@@ -137,7 +137,7 @@ Commands:
   cache     Query from caching database
   compile   Compile select contract source files
   console   Load the console
-  init      Initalize an ape project
+  init      Initialize an ape project
   networks  Manage networks
   plugins   Manage ape plugins
   run       Run scripts from the `scripts/` folder
