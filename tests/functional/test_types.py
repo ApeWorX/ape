@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Any, Optional
 
 import pytest
 from eth_utils import to_hex
@@ -6,7 +6,7 @@ from ethpm_types.abi import EventABI
 from hexbytes import HexBytes
 from pydantic import BaseModel, Field
 
-from ape.types import AddressType, ContractLog, HexInt, LogFilter
+from ape.types import AddressType, ContractLog, CurrencyValueComparable, HexInt, LogFilter
 from ape.utils import ZERO_ADDRESS
 
 TXN_HASH = "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa222222222222222222222222"
@@ -131,11 +131,67 @@ def test_address_type(owner):
 
 
 class TestHexInt:
-    class MyModel(BaseModel):
-        ual: HexInt = 0
-        ual_optional: Optional[HexInt] = Field(default=None, validate_default=True)
+    def test_model(self):
+        class MyModel(BaseModel):
+            ual: HexInt = 0
+            ual_optional: Optional[HexInt] = Field(default=None, validate_default=True)
 
-    act = MyModel.model_validate({"ual": "0x123"})
-    expected = 291  # Base-10 form of 0x123.
-    assert act.ual == expected
-    assert act.ual_optional is None
+        act = MyModel.model_validate({"ual": "0x123"})
+        expected = 291  # Base-10 form of 0x123.
+        assert act.ual == expected
+        assert act.ual_optional is None
+
+
+class TestCurrencyValueComparable:
+    def test_use_for_int_in_pydantic_model(self):
+        value = 100000000000000000000000000000000000000000000
+
+        class MyBasicModel(BaseModel):
+            val: int
+
+        model = MyBasicModel.model_validate({"val": CurrencyValueComparable(value)})
+        assert model.val == value
+
+        # Ensure serializes.
+        dumped = model.model_dump()
+        assert dumped["val"] == value
+
+    @pytest.mark.parametrize("mode", ("json", "python"))
+    def test_use_in_model_annotation(self, mode):
+        value = 100000000000000000000000000000000000000000000
+
+        class MyAnnotatedModel(BaseModel):
+            val: CurrencyValueComparable
+            val_optional: Optional[CurrencyValueComparable]
+
+        model = MyAnnotatedModel.model_validate({"val": value, "val_optional": value})
+        assert isinstance(model.val, CurrencyValueComparable)
+        assert model.val == value
+
+        # Show can use currency-comparable
+        expected_currency_value = "100000000000000000000000000 ETH"
+        assert model.val == expected_currency_value
+        assert model.val_optional == expected_currency_value
+
+        # Ensure serializes.
+        dumped = model.model_dump(mode=mode)
+        assert dumped["val"] == value
+        assert dumped["val_optional"] == value
+
+    def test_validate_from_currency_value(self):
+        class MyAnnotatedModel(BaseModel):
+            val: CurrencyValueComparable
+            val_optional: Optional[CurrencyValueComparable]
+            val_in_dict: dict[str, Any]
+
+        value = "100000000000000000000000000 ETH"
+        expected = 100000000000000000000000000000000000000000000
+        data = {
+            "val": value,
+            "val_optional": value,
+            "val_in_dict": {"value": CurrencyValueComparable(expected)},
+        }
+        model = MyAnnotatedModel.model_validate(data)
+        for actual in (model.val, model.val_optional, model.val_in_dict["value"]):
+            for ex in (value, expected):
+                assert actual == ex

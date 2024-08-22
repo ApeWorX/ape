@@ -19,7 +19,14 @@ from ethpm_types import (
 )
 from ethpm_types.abi import EventABI
 from ethpm_types.source import Closure
-from pydantic import BaseModel, BeforeValidator, field_validator, model_validator
+from pydantic import BaseModel, BeforeValidator, field_serializer, field_validator, model_validator
+from pydantic_core.core_schema import (
+    CoreSchema,
+    ValidationInfo,
+    int_schema,
+    no_info_plain_validator_function,
+    plain_serializer_function_ser_schema,
+)
 from typing_extensions import TypeAlias
 from web3.types import FilterParams
 
@@ -250,6 +257,15 @@ class BaseContractLog(BaseInterfaceModel):
                 return False
 
         return True
+
+    @field_serializer("event_arguments")
+    def _serialize_event_arguments(self, event_arguments, info):
+        """
+        Because of an issue with BigInt in Pydantic,
+        (https://github.com/pydantic/pydantic/issues/10152)
+        we have to ensure these are regular ints.
+        """
+        return {k: int(v) if isinstance(v, int) else v for k, v in event_arguments.items()}
 
 
 class ContractLog(ExtraAttributesMixin, BaseContractLog):
@@ -483,6 +499,36 @@ class CurrencyValueComparable(int):
 
         # Try from the other end, if hasn't already.
         return NotImplemented
+
+    @classmethod
+    def __get_pydantic_core_schema__(cls, value, handler=None) -> CoreSchema:
+        return no_info_plain_validator_function(
+            cls._validate,
+            serialization=plain_serializer_function_ser_schema(
+                cls._serialize,
+                info_arg=False,
+                return_schema=int_schema(),
+            ),
+        )
+
+    @staticmethod
+    def _validate(value: Any, info: Optional[ValidationInfo] = None) -> "CurrencyValueComparable":
+        # NOTE: For some reason, for this to work, it has to happen
+        #   in an "after" validator, or else it always only `int` type on the model.
+        if value is None:
+            # Will fail if not optional.
+            # Type ignore because this is an hacky and unlikely situation.
+            return None  # type: ignore
+
+        elif isinstance(value, str) and " " in value:
+            return ManagerAccessMixin.conversion_manager.convert(value, int)
+
+        # For models annotating with this type, we validate all integers into it.
+        return CurrencyValueComparable(value)
+
+    @staticmethod
+    def _serialize(value):
+        return int(value)
 
 
 CurrencyValueComparable.__name__ = int.__name__

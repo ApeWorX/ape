@@ -8,7 +8,7 @@ from ethpm_types import ContractType
 
 from ape.api import ReceiptAPI
 from ape.exceptions import ProviderError
-from ape.types import ContractLog
+from ape.types import ContractLog, CurrencyValueComparable
 
 
 @pytest.fixture
@@ -363,3 +363,22 @@ def test_info(solidity_contract_instance):
   {spec}
 """.strip()
     assert actual == expected
+
+
+def test_model_dump(solidity_contract_container, owner):
+    # NOTE: deploying a new contract with a new number to lessen x-dist conflicts.
+    contract = owner.deploy(solidity_contract_container, 29620000000003)
+
+    # First, get an event (a normal way).
+    number = int(10e18)
+    tx = contract.setNumber(number, sender=owner)
+    event = tx.events[0]
+
+    # Next, invoke `.model_dump()` to get the serialized version.
+    log = event.model_dump()
+    actual = log["event_arguments"]
+    assert actual["newNum"] == number
+
+    # This next assertion is important because of this Pydantic bug:
+    # https://github.com/pydantic/pydantic/issues/10152
+    assert not isinstance(actual["newNum"], CurrencyValueComparable)
