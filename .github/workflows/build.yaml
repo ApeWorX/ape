@@ -33,11 +33,8 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=ref,event=pr
-            type=ref,event=branch,branch=main,latest=true
             type=ref,event=branch,branch=main,tag=latest
-            type=ref,event=branch,branch!=main
-            type=semver,pattern={{version}},branch=main,latest=false,tag=stable
-            type=ref,event=tag,tag={{ tag }}
+            type=ref,event=tag,tag=stable
 
       - name: Show tags
         run: |
