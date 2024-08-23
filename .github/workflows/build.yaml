@@ -33,6 +33,7 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+            type=ref,event=tag
             type=raw,value=stable,enable=${{ startsWith(github.ref, 'refs/tags/') }}
             type=ref,event=pr
 
