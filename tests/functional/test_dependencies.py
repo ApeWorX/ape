@@ -7,6 +7,7 @@ from ethpm_types import PackageManifest
 from pydantic import ValidationError
 
 import ape
+from ape.exceptions import ProjectError
 from ape.managers.project import Dependency, LocalProject, PackagesCache, Project, ProjectManager
 from ape.utils import create_tempdir
 from ape_pm.dependency import GithubDependency, LocalDependency, NpmDependency, PythonDependency
@@ -593,6 +594,13 @@ class TestPythonDependency:
         assert len(actual) > 0
         assert actual[0].isnumeric()
         assert "." in actual  # sep from minor / major / patch
+
+    def test_version_id_not_found(self):
+        name = "xxthisnameisnotarealpythonpackagexx"
+        dependency = PythonDependency.model_validate({"python": name})
+        expected = f"Dependency '{name}' not installed."
+        with pytest.raises(ProjectError, match=expected):
+            _ = dependency.version_id
 
     def test_fetch(self, web3_dependency):
         with create_tempdir() as temp_dir:
