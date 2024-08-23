@@ -654,10 +654,15 @@ class CallTrace(Trace):
 def parse_rich_tree(call: dict, verbose: bool = False) -> Tree:
     tree = _create_tree(call, verbose=verbose)
     for event in call.get("events", []):
+        if "calldata" not in event and "name" not in event:
+            # Not sure; or not worth showing.
+            logger.debug(f"Unknown event data: '{event}'.")
+            continue
+
         event_tree = _create_event_tree(event)
         tree.add(event_tree)
 
-    for sub_call in call["calls"]:
+    for sub_call in call.get("calls", []):
         sub_tree = parse_rich_tree(sub_call, verbose=verbose)
         tree.add(sub_tree)
 
@@ -671,6 +676,8 @@ def _events_to_trees(events: list[dict]) -> list[Tree]:
         calldata = evt.get("calldata")
 
         if not name or not calldata:
+            # Not sure; or not worth showing.
+            logger.debug(f"Unknown event data: '{evt}'.")
             continue
 
         tuple_key = (
@@ -682,9 +689,15 @@ def _events_to_trees(events: list[dict]) -> list[Tree]:
     result = []
     for evt_tup, events in event_counter.items():
         count = len(events)
+        evt = events[0]
+        if "name" not in evt and "calldata" not in evt:
+            # Not sure; or not worth showing.
+            logger.debug(f"Unknown event data: '{evt}'.")
+            continue
+
         # NOTE: Using similar style to gas-cost on purpose.
         suffix = f"[[{TraceStyles.GAS_COST}]x{count}[/]]" if count > 1 else ""
-        evt_tree = _create_event_tree(events[0], suffix=suffix)
+        evt_tree = _create_event_tree(evt, suffix=suffix)
         result.append(evt_tree)
 
     return result
@@ -757,8 +770,9 @@ def _call_to_str(call: dict, stylize: bool = False, verbose: bool = False) -> st
 def _event_to_str(event: dict, stylize: bool = False, suffix: str = "") -> str:
     # NOTE: Some of the styles are matching others parts of the trace,
     #  even though the 'name' is a bit misleading.
-    name = f"[{TraceStyles.METHODS}]{event['name']}[/]" if stylize else event["name"]
-    arguments_str = _get_inputs_str(event.get("calldata"), stylize=stylize)
+    event_name = event.get("name", "ANONYMOUS_EVENT")
+    name = f"[{TraceStyles.METHODS}]{event_name}[/]" if stylize else event_name
+    arguments_str = _get_inputs_str(event.get("calldata", "0x"), stylize=stylize)
     prefix = f"[{TraceStyles.CONTRACTS}]log[/]" if stylize else "log"
     return f"{prefix} {name}{arguments_str}{suffix}"
 
