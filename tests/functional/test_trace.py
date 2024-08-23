@@ -88,6 +88,13 @@ def test_parse_rich_tree(vyper_contract_instance):
     assert actual == expected
 
 
+def test_parse_rich_tree_handles_anon_events():
+    data = {"events": [{"calldata": "0x123"}]}
+    tree = parse_rich_tree(data)
+    actual = tree.children[0].label.label  # type: ignore
+    assert actual == "[#ff8c00]log[/] [bright_green]ANONYMOUS_EVENT[/](0x123)"
+
+
 def test_get_gas_report(gas_tracker, owner, vyper_contract_instance):
     tx = vyper_contract_instance.setNumber(924, sender=owner)
     trace = tx.trace

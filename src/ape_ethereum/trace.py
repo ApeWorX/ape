@@ -657,7 +657,7 @@ def parse_rich_tree(call: dict, verbose: bool = False) -> Tree:
         event_tree = _create_event_tree(event)
         tree.add(event_tree)
 
-    for sub_call in call["calls"]:
+    for sub_call in call.get("calls", []):
         sub_tree = parse_rich_tree(sub_call, verbose=verbose)
         tree.add(sub_tree)
 
@@ -757,7 +757,8 @@ def _call_to_str(call: dict, stylize: bool = False, verbose: bool = False) -> st
 def _event_to_str(event: dict, stylize: bool = False, suffix: str = "") -> str:
     # NOTE: Some of the styles are matching others parts of the trace,
     #  even though the 'name' is a bit misleading.
-    name = f"[{TraceStyles.METHODS}]{event['name']}[/]" if stylize else event["name"]
+    event_name = event.get("name", "ANONYMOUS_EVENT")
+    name = f"[{TraceStyles.METHODS}]{event_name}[/]" if stylize else event_name
     arguments_str = _get_inputs_str(event.get("calldata"), stylize=stylize)
     prefix = f"[{TraceStyles.CONTRACTS}]log[/]" if stylize else "log"
     return f"{prefix} {name}{arguments_str}{suffix}"
