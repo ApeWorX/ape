@@ -293,7 +293,6 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.config.ApeConfig.deployment_data"><code class="docutils literal notranslate"><span class="pre">ApeConfig.deployment_data</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.config.ApeConfig.interfaces_folder"><code class="docutils literal notranslate"><span class="pre">ApeConfig.interfaces_folder</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.config.ApeConfig.meta"><code class="docutils literal notranslate"><span class="pre">ApeConfig.meta</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ape.api.config.ApeConfig.model_dump"><code class="docutils literal notranslate"><span class="pre">ApeConfig.model_dump()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.config.ApeConfig.name"><code class="docutils literal notranslate"><span class="pre">ApeConfig.name</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.config.ApeConfig.version"><code class="docutils literal notranslate"><span class="pre">ApeConfig.version</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.api.config.ApeConfig.write_to_disk"><code class="docutils literal notranslate"><span class="pre">ApeConfig.write_to_disk()</span></code></a></li>
@@ -1544,36 +1543,6 @@ Note: The actual dependency classes are decoded later.</p>
 <a class="reference external" href="https://eips.ethereum.org/EIPS/eip-2678#the-package-meta-object">https://eips.ethereum.org/EIPS/eip-2678#the-package-meta-object</a></p>
 </dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py" id="ape.api.config.ApeConfig.model_dump">
-<span class="sig-name descname"><span class="pre">model_dump</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.config.ApeConfig.model_dump" title="Permalink to this definition"></a></dt>
-<dd><p>Usage docs: <a class="reference external" href="https://docs.pydantic.dev/2.8/concepts/serialization/#modelmodel_dump">https://docs.pydantic.dev/2.8/concepts/serialization/#modelmodel_dump</a></p>
-<p>Generate a dictionary representation of the model, optionally specifying which fields to include or exclude.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>mode</strong> – The mode in which <cite>to_python</cite> should run.
-If mode is ‘json’, the output will only contain JSON serializable types.
-If mode is ‘python’, the output may contain non-JSON-serializable Python objects.</p></li>
-<li><p><strong>include</strong> – A set of fields to include in the output.</p></li>
-<li><p><strong>exclude</strong> – A set of fields to exclude from the output.</p></li>
-<li><p><strong>context</strong> – Additional context to pass to the serializer.</p></li>
-<li><p><strong>by_alias</strong> – Whether to use the field’s alias in the dictionary key if defined.</p></li>
-<li><p><strong>exclude_unset</strong> – Whether to exclude fields that have not been explicitly set.</p></li>
-<li><p><strong>exclude_defaults</strong> – Whether to exclude fields that are set to their default value.</p></li>
-<li><p><strong>exclude_none</strong> – Whether to exclude fields that have a value of <cite>None</cite>.</p></li>
-<li><p><strong>round_trip</strong> – If True, dumped values should be valid as input for non-idempotent types such as Json[T].</p></li>
-<li><p><strong>warnings</strong> – How to handle serialization errors. False/”none” ignores them, True/”warn” logs errors,
-“error” raises a [<cite>PydanticSerializationError</cite>][pydantic_core.PydanticSerializationError].</p></li>
-<li><p><strong>serialize_as_any</strong> – Whether to serialize fields with duck-typing serialization behavior.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A dictionary representation of the model.</p>
-</dd>
-</dl>
-</dd></dl>
-
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.api.config.ApeConfig.name">
 <span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape.api.config.ApeConfig.name" title="Permalink to this definition"></a></dt>
@@ -1680,10 +1649,10 @@ when the item fails to convert properly.</p>
 <span class="n">convert</span><span class="p">(</span><span class="s2">&quot;1 ETH&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
 <span class="c1"># 1000000000000000000</span>
 
-<span class="n">convert</span><span class="p">(</span><span class="s2">&quot;283Af0B28c62C092C9727F1Ee09c02CA627EB7F5&quot;</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span>
+<span class="n">convert</span><span class="p">(</span><span class="s2">&quot;0x283Af0B28c62C092C9727F1Ee09c02CA627EB7F5&quot;</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span>
 <span class="c1"># HexBytes(&#39;0x283af0b28c62c092c9727f1ee09c02ca627eb7f5&#39;)</span>
 
-<span class="n">convert</span><span class="p">(</span><span class="s2">&quot;vitalik.eth&quot;</span><span class="p">,</span> <span class="n">AddressType</span><span class="p">)</span>
+<span class="n">convert</span><span class="p">(</span><span class="s2">&quot;vitalik.eth&quot;</span><span class="p">,</span> <span class="n">AddressType</span><span class="p">)</span> <span class="c1"># with ape-ens plugin installed</span>
 <span class="c1"># &#39;0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&#39;</span>
 </pre></div>
 </div>
