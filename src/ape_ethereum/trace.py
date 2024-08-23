@@ -654,6 +654,11 @@ class CallTrace(Trace):
 def parse_rich_tree(call: dict, verbose: bool = False) -> Tree:
     tree = _create_tree(call, verbose=verbose)
     for event in call.get("events", []):
+        if "calldata" not in event and "name" not in event:
+            # Not sure; or not worth showing.
+            logger.debug(f"Unknown event data: '{event}'.")
+            continue
+
         event_tree = _create_event_tree(event)
         tree.add(event_tree)
 
@@ -671,6 +676,8 @@ def _events_to_trees(events: list[dict]) -> list[Tree]:
         calldata = evt.get("calldata")
 
         if not name or not calldata:
+            # Not sure; or not worth showing.
+            logger.debug(f"Unknown event data: '{evt}'.")
             continue
 
         tuple_key = (
@@ -682,9 +689,15 @@ def _events_to_trees(events: list[dict]) -> list[Tree]:
     result = []
     for evt_tup, events in event_counter.items():
         count = len(events)
+        evt = events[0]
+        if "name" not in evt and "calldata" not in evt:
+            # Not sure; or not worth showing.
+            logger.debug(f"Unknown event data: '{evt}'.")
+            continue
+
         # NOTE: Using similar style to gas-cost on purpose.
         suffix = f"[[{TraceStyles.GAS_COST}]x{count}[/]]" if count > 1 else ""
-        evt_tree = _create_event_tree(events[0], suffix=suffix)
+        evt_tree = _create_event_tree(evt, suffix=suffix)
         result.append(evt_tree)
 
     return result
