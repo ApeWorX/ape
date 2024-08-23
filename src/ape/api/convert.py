@@ -37,7 +37,7 @@ class ConverterAPI(BaseInterfaceModel, Generic[ConvertedType]):
             convert("1 ETH", int)
             # 1000000000000000000
 
-            convert("283Af0B28c62C092C9727F1Ee09c02CA627EB7F5", bytes)
+            convert("0x283Af0B28c62C092C9727F1Ee09c02CA627EB7F5", bytes)
             # HexBytes('0x283af0b28c62c092c9727f1ee09c02ca627eb7f5')
 
             convert("vitalik.eth", AddressType)
