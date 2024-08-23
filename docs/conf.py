@@ -84,8 +84,8 @@ myst_all_links_external = True
 autodoc_default_options = {
     "exclude-members": (
         "__repr__, __weakref__, __metaclass__, __init__, __format__,  __new__, __str__, __dir__,"
-        "model_config, model_fields, model_post_init, model_computed_fields,"
-        "__ape_extra_attributes__,"
+        "model_config, model_dump, model_fields, model_post_init, model_computed_fields,"
+        "__ape_extra_attributes__, __get_item__, __contains__, __iter__, __len__, __eq__, __hash__,"
     )
 }
 
