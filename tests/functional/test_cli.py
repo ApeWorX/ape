@@ -315,9 +315,13 @@ def test_network_option_specify_custom_network(
             click.echo(f"Value is '{getattr(network, 'name', network)}'")
 
         result = runner.invoke(cmd, ("--network", f"ethereum:{network_name}:node"))
+        assert result.exit_code == 0
         assert f"Value is '{network_name}'" in result.output
+
+        # Fails because node is not a fork provider.
         result = runner.invoke(cmd, ("--network", f"ethereum:{network_name}-fork:node"))
-        assert f"Value is '{network_name}-fork'" in result.output
+        assert result.exit_code != 0
+        assert f"No provider named 'node' in network '{network_name}-fork'" in result.output
 
 
 def test_account_option(runner, keyfile_account):

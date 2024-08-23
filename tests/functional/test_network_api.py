@@ -195,3 +195,44 @@ def test_create_network_type_fork():
     actual = create_network_type(chain_id, chain_id, is_fork=True)
     assert issubclass(actual, NetworkAPI)
     assert issubclass(actual, ForkedNetworkAPI)
+
+
+def test_providers(ethereum):
+    network = ethereum.local
+    providers = network.providers
+    assert "test" in providers
+    assert "node" in providers
+
+
+def test_providers_custom_network(project, custom_networks_config_dict, ethereum):
+    with project.temp_config(**custom_networks_config_dict):
+        network = ethereum.apenet
+        actual = network.providers
+        assert "node" in actual
+
+
+def test_providers_custom_non_fork_network_does_not_use_fork_provider(
+    mocker, project, custom_networks_config_dict, ethereum
+):
+    # NOTE: Have to a mock a Fork provider since none ship with Ape core.
+    with project.temp_config(**custom_networks_config_dict):
+        network = ethereum.apenet
+        network.__dict__.pop("providers", None)  # de-cache
+
+        # Setup mock fork provider.
+        orig = network._get_plugin_providers
+        network._get_plugin_providers = mocker.MagicMock()
+        name = "foobar"
+
+        class MyForkProvider:
+            __module__ = "foobar.test"
+
+        network._get_plugin_providers.return_value = iter(
+            [(name, ("ethereum", "local", MyForkProvider))]
+        )
+        try:
+            actual = network.providers
+            assert name not in actual
+        finally:
+            network._get_plugin_providers = orig
+            network.__dict__.pop("providers", None)  # de-cache
