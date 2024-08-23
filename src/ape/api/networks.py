@@ -1020,12 +1020,23 @@ class NetworkAPI(BaseInterfaceModel):
         for _, plugin_tuple in self.plugin_manager.providers:
             ecosystem_name, network_name, provider_class = plugin_tuple
             provider_name = clean_plugin_name(provider_class.__module__.split(".")[0])
-
+            is_custom_with_config = self._is_custom and self.default_provider_name == provider_name
             # NOTE: Custom networks that are NOT from config must work with any provider.
+            #    Also, ensure we are only added forked providers for forked networks and
+            #    non-forking providers for non-forked networks. For custom networks, it
+            #    can be trickier (see last condition).
+            # TODO: In 0.9, add a better way for class-level ForkedProviders to defines
+            #   themselves as "Fork" providers.
             if (
                 self.is_adhoc
                 or (self.ecosystem.name == ecosystem_name and self.name == network_name)
-                or (self._is_custom and self.default_provider_name == provider_name)
+                or (
+                    is_custom_with_config
+                    and (
+                        (self.is_fork and "Fork" in provider_class.__name__)
+                        or (not self.is_fork and "Fork" not in provider_class.__name__)
+                    )
+                )
             ):
                 # NOTE: Lazily load provider config
                 providers[provider_name] = partial(
@@ -1080,7 +1091,6 @@ class NetworkAPI(BaseInterfaceModel):
         # If it can fork Ethereum (and we are asking for it) assume it can fork this one.
         # TODO: Refactor this approach to work for custom-forked non-EVM networks.
         common_forking_providers = self.network_manager.ethereum.mainnet_fork.providers
-
         if provider_name in self.providers:
             provider = self.providers[provider_name](provider_settings=provider_settings)
             return _set_provider(provider)
