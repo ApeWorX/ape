@@ -226,21 +226,11 @@ class Trace(TraceAPI):
             return self._return_value_from_enriched_calltree
 
         elif abi := self.root_method_abi:
-            if self.call_trace_approach is TraceApproach.GETH_STRUCT_LOG_PARSE:
-                return_data = self._return_data_from_trace_frames
-                if return_data is not None:
-                    try:
-                        return self._ecosystem.decode_returndata(abi, return_data)
-                    except Exception as err:
-                        logger.debug(f"Failed decoding return data from trace frames. Error: {err}")
-                        # Use enrichment method. It is slow but it'll at least work.
-
-            else:
-                # Barely enrich a calltree for performance reasons
-                # (likely not a need to enrich the whole thing).
-                calltree = self.get_raw_calltree()
-                enriched_calltree = self._ecosystem._enrich_returndata(calltree, abi)
-                return self._get_return_value_from_calltree(enriched_calltree)
+            # Barely enrich a calltree for performance reasons
+            # (likely not a need to enrich the whole thing).
+            calltree = self.get_raw_calltree()
+            enriched_calltree = self._ecosystem._enrich_returndata(calltree, abi)
+            return self._get_return_value_from_calltree(enriched_calltree)
 
         return self._return_value_from_enriched_calltree
 
@@ -254,21 +244,24 @@ class Trace(TraceAPI):
 
         return self._get_return_value_from_calltree(calltree)
 
-    def _get_return_value_from_calltree(self, calltree: dict) -> Any:
+    def _get_return_value_from_calltree(self, calltree: dict) -> tuple[Optional[Any], ...]:
         # If enriching too much, Ethereum places regular values in a key
         # named "unenriched_return_values".
         if "unenriched_return_values" in calltree:
             return calltree["unenriched_return_values"]
 
+        num_outputs = 1
         if raw_return_data := calltree.get("returndata"):
             if abi := self.root_method_abi:
+                # Ensure we return a tuple with the correct length, even if fails.
+                num_outputs = len(abi.outputs)
                 try:
                     return self._ecosystem.decode_returndata(abi, HexBytes(raw_return_data))
                 except Exception as err:
-                    logger.debug(f"Failed decoding raw returndata. Error: {err}")
-                    return raw_return_data
+                    logger.debug(f"Failed decoding raw returndata: {raw_return_data}. Error: {err}")
+                    return tuple([None for _ in range(num_outputs)])
 
-        return None
+        return tuple([None for _ in range(num_outputs)])
 
     @cached_property
     def revert_message(self) -> Optional[str]:
