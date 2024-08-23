@@ -427,7 +427,7 @@ class PythonDependency(DependencyAPI):
         try:
             vers = f"{metadata.version(self.python)}"
         except metadata.PackageNotFoundError as err:
-            raise ProjectError(f"Dependency '{self.python}' not found installed.") from err
+            raise ProjectError(f"Dependency '{self.python}' not installed.") from err
 
         if spec_vers := self.version:
             if spec_vers != vers:
