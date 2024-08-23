@@ -235,3 +235,4 @@ def test_providers_custom_non_fork_network_does_not_use_fork_provider(
             assert name not in actual
         finally:
             network._get_plugin_providers = orig
+            network.__dict__.pop("providers", None)  # de-cache
