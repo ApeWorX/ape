@@ -214,7 +214,7 @@ def test_providers_custom_network(project, custom_networks_config_dict, ethereum
 def test_providers_custom_non_fork_network_does_not_use_fork_provider(
     mocker, project, custom_networks_config_dict, ethereum
 ):
-    # NOTE: Have to a mock a Fork providers since none ship with Ape core.
+    # NOTE: Have to a mock a Fork provider since none ship with Ape core.
     with project.temp_config(**custom_networks_config_dict):
         network = ethereum.apenet
         network.__dict__.pop("providers", None)  # de-cache

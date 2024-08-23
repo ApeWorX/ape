@@ -1022,10 +1022,10 @@ class NetworkAPI(BaseInterfaceModel):
             provider_name = clean_plugin_name(provider_class.__module__.split(".")[0])
             is_custom_with_config = self._is_custom and self.default_provider_name == provider_name
             # NOTE: Custom networks that are NOT from config must work with any provider.
-            #    Also, ensure we are only added forked providers for forked networks and
+            #    Also, ensure we are only adding forked providers for forked networks and
             #    non-forking providers for non-forked networks. For custom networks, it
             #    can be trickier (see last condition).
-            # TODO: In 0.9, add a better way for class-level ForkedProviders to defines
+            # TODO: In 0.9, add a better way for class-level ForkedProviders to define
             #   themselves as "Fork" providers.
             if (
                 self.is_adhoc
