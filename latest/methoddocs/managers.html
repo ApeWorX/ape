@@ -1696,6 +1696,23 @@ cached to disk will not persist.</p>
 <dd><p>Convert the given value to the type specified as the generic for this class.
 Implementations of this API must throw a <a class="reference internal" href="exceptions.html#ape.exceptions.ConversionError" title="ape.exceptions.ConversionError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConversionError</span></code></a>
 when the item fails to convert properly.</p>
+<p>Usage example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">convert</span>
+<span class="kn">from</span> <span class="nn">ape.types</span> <span class="kn">import</span> <span class="n">AddressType</span>
+
+<span class="n">convert</span><span class="p">(</span><span class="s2">&quot;1 gwei&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+<span class="c1"># 1000000000</span>
+
+<span class="n">convert</span><span class="p">(</span><span class="s2">&quot;1 ETH&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+<span class="c1"># 1000000000000000000</span>
+
+<span class="n">convert</span><span class="p">(</span><span class="s2">&quot;283Af0B28c62C092C9727F1Ee09c02CA627EB7F5&quot;</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span>
+<span class="c1"># HexBytes(&#39;0x283af0b28c62c092c9727f1ee09c02ca627eb7f5&#39;)</span>
+
+<span class="n">convert</span><span class="p">(</span><span class="s2">&quot;vitalik.eth&quot;</span><span class="p">,</span> <span class="n">AddressType</span><span class="p">)</span>
+<span class="c1"># &#39;0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&#39;</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -1771,6 +1788,23 @@ to a :class`~ape.types.address.AddressType`.</p>
 <dd><p>Convert the given value to the type specified as the generic for this class.
 Implementations of this API must throw a <a class="reference internal" href="exceptions.html#ape.exceptions.ConversionError" title="ape.exceptions.ConversionError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConversionError</span></code></a>
 when the item fails to convert properly.</p>
+<p>Usage example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">convert</span>
+<span class="kn">from</span> <span class="nn">ape.types</span> <span class="kn">import</span> <span class="n">AddressType</span>
+
+<span class="n">convert</span><span class="p">(</span><span class="s2">&quot;1 gwei&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+<span class="c1"># 1000000000</span>
+
+<span class="n">convert</span><span class="p">(</span><span class="s2">&quot;1 ETH&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+<span class="c1"># 1000000000000000000</span>
+
+<span class="n">convert</span><span class="p">(</span><span class="s2">&quot;283Af0B28c62C092C9727F1Ee09c02CA627EB7F5&quot;</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span>
+<span class="c1"># HexBytes(&#39;0x283af0b28c62c092c9727f1ee09c02ca627eb7f5&#39;)</span>
+
+<span class="n">convert</span><span class="p">(</span><span class="s2">&quot;vitalik.eth&quot;</span><span class="p">,</span> <span class="n">AddressType</span><span class="p">)</span>
+<span class="c1"># &#39;0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&#39;</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -1945,6 +1979,23 @@ NOTE: This utility converter ensures that all bytes args can accept hex too</p>
 <dd><p>Convert the given value to the type specified as the generic for this class.
 Implementations of this API must throw a <a class="reference internal" href="exceptions.html#ape.exceptions.ConversionError" title="ape.exceptions.ConversionError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConversionError</span></code></a>
 when the item fails to convert properly.</p>
+<p>Usage example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">convert</span>
+<span class="kn">from</span> <span class="nn">ape.types</span> <span class="kn">import</span> <span class="n">AddressType</span>
+
+<span class="n">convert</span><span class="p">(</span><span class="s2">&quot;1 gwei&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+<span class="c1"># 1000000000</span>
+
+<span class="n">convert</span><span class="p">(</span><span class="s2">&quot;1 ETH&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+<span class="c1"># 1000000000000000000</span>
+
+<span class="n">convert</span><span class="p">(</span><span class="s2">&quot;283Af0B28c62C092C9727F1Ee09c02CA627EB7F5&quot;</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span>
+<span class="c1"># HexBytes(&#39;0x283af0b28c62c092c9727f1ee09c02ca627eb7f5&#39;)</span>
+
+<span class="n">convert</span><span class="p">(</span><span class="s2">&quot;vitalik.eth&quot;</span><span class="p">,</span> <span class="n">AddressType</span><span class="p">)</span>
+<span class="c1"># &#39;0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&#39;</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -1977,6 +2028,23 @@ when the item fails to convert properly.</p>
 <dd><p>Convert the given value to the type specified as the generic for this class.
 Implementations of this API must throw a <a class="reference internal" href="exceptions.html#ape.exceptions.ConversionError" title="ape.exceptions.ConversionError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConversionError</span></code></a>
 when the item fails to convert properly.</p>
+<p>Usage example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">convert</span>
+<span class="kn">from</span> <span class="nn">ape.types</span> <span class="kn">import</span> <span class="n">AddressType</span>
+
+<span class="n">convert</span><span class="p">(</span><span class="s2">&quot;1 gwei&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+<span class="c1"># 1000000000</span>
+
+<span class="n">convert</span><span class="p">(</span><span class="s2">&quot;1 ETH&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+<span class="c1"># 1000000000000000000</span>
+
+<span class="n">convert</span><span class="p">(</span><span class="s2">&quot;283Af0B28c62C092C9727F1Ee09c02CA627EB7F5&quot;</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span>
+<span class="c1"># HexBytes(&#39;0x283af0b28c62c092c9727f1ee09c02ca627eb7f5&#39;)</span>
+
+<span class="n">convert</span><span class="p">(</span><span class="s2">&quot;vitalik.eth&quot;</span><span class="p">,</span> <span class="n">AddressType</span><span class="p">)</span>
+<span class="c1"># &#39;0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&#39;</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -2009,6 +2077,23 @@ when the item fails to convert properly.</p>
 <dd><p>Convert the given value to the type specified as the generic for this class.
 Implementations of this API must throw a <a class="reference internal" href="exceptions.html#ape.exceptions.ConversionError" title="ape.exceptions.ConversionError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConversionError</span></code></a>
 when the item fails to convert properly.</p>
+<p>Usage example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">convert</span>
+<span class="kn">from</span> <span class="nn">ape.types</span> <span class="kn">import</span> <span class="n">AddressType</span>
+
+<span class="n">convert</span><span class="p">(</span><span class="s2">&quot;1 gwei&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+<span class="c1"># 1000000000</span>
+
+<span class="n">convert</span><span class="p">(</span><span class="s2">&quot;1 ETH&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+<span class="c1"># 1000000000000000000</span>
+
+<span class="n">convert</span><span class="p">(</span><span class="s2">&quot;283Af0B28c62C092C9727F1Ee09c02CA627EB7F5&quot;</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span>
+<span class="c1"># HexBytes(&#39;0x283af0b28c62c092c9727f1ee09c02ca627eb7f5&#39;)</span>
+
+<span class="n">convert</span><span class="p">(</span><span class="s2">&quot;vitalik.eth&quot;</span><span class="p">,</span> <span class="n">AddressType</span><span class="p">)</span>
+<span class="c1"># &#39;0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&#39;</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -2040,6 +2125,23 @@ when the item fails to convert properly.</p>
 <dd><p>Convert the given value to the type specified as the generic for this class.
 Implementations of this API must throw a <a class="reference internal" href="exceptions.html#ape.exceptions.ConversionError" title="ape.exceptions.ConversionError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConversionError</span></code></a>
 when the item fails to convert properly.</p>
+<p>Usage example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">convert</span>
+<span class="kn">from</span> <span class="nn">ape.types</span> <span class="kn">import</span> <span class="n">AddressType</span>
+
+<span class="n">convert</span><span class="p">(</span><span class="s2">&quot;1 gwei&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+<span class="c1"># 1000000000</span>
+
+<span class="n">convert</span><span class="p">(</span><span class="s2">&quot;1 ETH&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+<span class="c1"># 1000000000000000000</span>
+
+<span class="n">convert</span><span class="p">(</span><span class="s2">&quot;283Af0B28c62C092C9727F1Ee09c02CA627EB7F5&quot;</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span>
+<span class="c1"># HexBytes(&#39;0x283af0b28c62c092c9727f1ee09c02ca627eb7f5&#39;)</span>
+
+<span class="n">convert</span><span class="p">(</span><span class="s2">&quot;vitalik.eth&quot;</span><span class="p">,</span> <span class="n">AddressType</span><span class="p">)</span>
+<span class="c1"># &#39;0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&#39;</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -2073,6 +2175,23 @@ No timezone required, but should be formatted to UTC.</p>
 <dd><p>Convert the given value to the type specified as the generic for this class.
 Implementations of this API must throw a <a class="reference internal" href="exceptions.html#ape.exceptions.ConversionError" title="ape.exceptions.ConversionError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConversionError</span></code></a>
 when the item fails to convert properly.</p>
+<p>Usage example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">convert</span>
+<span class="kn">from</span> <span class="nn">ape.types</span> <span class="kn">import</span> <span class="n">AddressType</span>
+
+<span class="n">convert</span><span class="p">(</span><span class="s2">&quot;1 gwei&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+<span class="c1"># 1000000000</span>
+
+<span class="n">convert</span><span class="p">(</span><span class="s2">&quot;1 ETH&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+<span class="c1"># 1000000000000000000</span>
+
+<span class="n">convert</span><span class="p">(</span><span class="s2">&quot;283Af0B28c62C092C9727F1Ee09c02CA627EB7F5&quot;</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span>
+<span class="c1"># HexBytes(&#39;0x283af0b28c62c092c9727f1ee09c02ca627eb7f5&#39;)</span>
+
+<span class="n">convert</span><span class="p">(</span><span class="s2">&quot;vitalik.eth&quot;</span><span class="p">,</span> <span class="n">AddressType</span><span class="p">)</span>
+<span class="c1"># &#39;0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&#39;</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
