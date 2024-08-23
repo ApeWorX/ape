@@ -1017,7 +1017,7 @@ class NetworkAPI(BaseInterfaceModel):
         from ape.plugins._utils import clean_plugin_name
 
         providers = {}
-        for _, plugin_tuple in self.plugin_manager.providers:
+        for _, plugin_tuple in self._get_plugin_providers():
             ecosystem_name, network_name, provider_class = plugin_tuple
             provider_name = clean_plugin_name(provider_class.__module__.split(".")[0])
             is_custom_with_config = self._is_custom and self.default_provider_name == provider_name
@@ -1047,6 +1047,10 @@ class NetworkAPI(BaseInterfaceModel):
                 )
 
         return providers
+
+    def _get_plugin_providers(self):
+        # NOTE: Abstracted for testing purposes.
+        return self.plugin_manager.providers
 
     def get_provider(
         self,
