@@ -40,6 +40,7 @@
 .. automodule:: ape.api.convert
     :members:
     :show-inheritance:
+    :special-members:
 ```
 
 ## Explorers
