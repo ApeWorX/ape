@@ -772,7 +772,7 @@ def _event_to_str(event: dict, stylize: bool = False, suffix: str = "") -> str:
     #  even though the 'name' is a bit misleading.
     event_name = event.get("name", "ANONYMOUS_EVENT")
     name = f"[{TraceStyles.METHODS}]{event_name}[/]" if stylize else event_name
-    arguments_str = _get_inputs_str(event.get("calldata"), stylize=stylize)
+    arguments_str = _get_inputs_str(event.get("calldata", "0x"), stylize=stylize)
     prefix = f"[{TraceStyles.CONTRACTS}]log[/]" if stylize else "log"
     return f"{prefix} {name}{arguments_str}{suffix}"
 
