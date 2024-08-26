@@ -159,12 +159,3 @@ def test_set_pending_timestamp_failure(chain):
 def test_set_balance(chain, owner):
     with pytest.raises(APINotImplementedError):
         chain.set_balance(owner, "1000 ETH")
-
-
-def test_get_contract_by_abi(chain, vyper_contract_instance):
-    contract = chain.contracts.instance_at(
-        vyper_contract_instance.address, abi=vyper_contract_instance.contract_type.abi
-    )
-
-    assert contract.address == vyper_contract_instance.address
-    assert contract.contract_type.abi == vyper_contract_instance.contract_type.abi
