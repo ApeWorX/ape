@@ -486,7 +486,6 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
         Obtain the final return value of the call. Requires tracing to function,
         since this is not available from the receipt object.
         """
-
         if trace := self.trace:
             ret_val = trace.return_value
             return ret_val[0] if isinstance(ret_val, tuple) and len(ret_val) == 1 else ret_val
