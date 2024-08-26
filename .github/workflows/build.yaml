@@ -39,7 +39,6 @@ jobs:
 
       - name: Show tags
         run: |
-          git tag
           echo ${{ steps.meta.outputs.tags }}
 
       - name: Extract version from tag
