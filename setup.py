@@ -133,11 +133,11 @@ setup(
         "trie>=3.0.1,<4",  # Peer: stricter pin needed for uv support.
         "web3[tester]>=6.17.2,<7",
         # ** Dependencies maintained by ApeWorX **
-        "eip712>=0.2.7,<0.3",
+        "eip712>=0.2.10,<0.3",
         "ethpm-types>=0.6.17,<0.7",
-        "eth_pydantic_types>=0.1.0,<0.2",
+        "eth_pydantic_types>=0.1.3,<0.2",
         "evmchains>=0.0.10,<0.1",
-        "evm-trace>=0.2.0,<0.3",
+        "evm-trace>=0.2.3,<0.3",
     ],
     entry_points={
         "console_scripts": ["ape=ape._cli:cli"],
