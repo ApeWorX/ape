@@ -150,6 +150,16 @@ class TestTransactionError:
 
         assert_ape_traceback(err3)
 
+    def test_source_traceback_from_txn(self, owner):
+        """
+        Was not given a source-traceback but showing we can deduce one from
+        the given transaction.
+        """
+        tx = owner.transfer(owner, 0)
+        err = TransactionError(txn=tx)
+        _ = err.source_traceback
+        assert err._attempted_source_traceback
+
 
 class TestNetworkNotFoundError:
     def test_close_match(self):

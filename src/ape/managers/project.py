@@ -652,7 +652,7 @@ class Dependency(BaseManager, ExtraAttributesMixin):
         Args:
             use_cache (bool): To force a re-install, like a refresh, set this
               to ``False``.
-            config_override (dict): Optionally change the configurtion during install.
+            config_override (dict): Optionally change the configuration during install.
 
         Returns:
             :class:`~ape.managers.project.ProjectManager`: The resulting project, ready

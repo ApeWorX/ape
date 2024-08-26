@@ -225,16 +225,10 @@ class Trace(TraceAPI):
             # for realistic contract interactions.
             return self._return_value_from_enriched_calltree
 
-        elif abi := self.root_method_abi:
-            return_data = self._return_data_from_trace_frames
-            if return_data is not None:
-                try:
-                    return self._ecosystem.decode_returndata(abi, return_data)
-                except Exception as err:
-                    logger.debug(f"Failed decoding return data from trace frames. Error: {err}")
-                    # Use enrichment method. It is slow but it'll at least work.
-
-        return self._return_value_from_enriched_calltree
+        # Barely enrich a calltree for performance reasons
+        # (likely not a need to enrich the whole thing).
+        calltree = self.get_raw_calltree()
+        return self._get_return_value_from_calltree(calltree)
 
     @cached_property
     def _return_value_from_enriched_calltree(self) -> Any:
@@ -244,20 +238,21 @@ class Trace(TraceAPI):
         if "return_value" in self.__dict__:
             return self.__dict__["return_value"]
 
-        # If enriching too much, Ethereum places regular values in a key
-        # named "unenriched_return_values".
-        if "unenriched_return_values" in calltree:
-            return calltree["unenriched_return_values"]
+        return self._get_return_value_from_calltree(calltree)
 
+    def _get_return_value_from_calltree(self, calltree: dict) -> tuple[Optional[Any], ...]:
+        num_outputs = 1
         if raw_return_data := calltree.get("returndata"):
-            if abi := self.root_method_abi:
+            if abi := self._get_abi(calltree):
+                # Ensure we return a tuple with the correct length, even if fails.
+                num_outputs = len(abi.outputs)
                 try:
                     return self._ecosystem.decode_returndata(abi, HexBytes(raw_return_data))
                 except Exception as err:
-                    logger.debug(f"Failed decoding raw returndata. Error: {err}")
-                    return raw_return_data
+                    logger.debug(f"Failed decoding raw returndata: {raw_return_data}. Error: {err}")
+                    return tuple([None for _ in range(num_outputs)])
 
-        return None
+        return tuple([None for _ in range(num_outputs)])
 
     @cached_property
     def revert_message(self) -> Optional[str]:
@@ -434,6 +429,18 @@ class Trace(TraceAPI):
 
     def _get_tree(self, verbose: bool = False) -> Tree:
         return parse_rich_tree(self.enriched_calltree, verbose=verbose)
+
+    def _get_abi(self, call: dict) -> Optional[MethodABI]:
+        if not (addr := call.get("address")):
+            return self.root_method_abi
+        if not (calldata := call.get("calldata")):
+            return self.root_method_abi
+        if not (contract_type := self.chain_manager.contracts.get(addr)):
+            return self.root_method_abi
+        if not (calldata[:10] in contract_type.methods):
+            return self.root_method_abi
+
+        return contract_type.methods[calldata[:10]]
 
 
 class TransactionTrace(Trace):
@@ -643,10 +650,15 @@ class CallTrace(Trace):
 def parse_rich_tree(call: dict, verbose: bool = False) -> Tree:
     tree = _create_tree(call, verbose=verbose)
     for event in call.get("events", []):
+        if "calldata" not in event and "name" not in event:
+            # Not sure; or not worth showing.
+            logger.debug(f"Unknown event data: '{event}'.")
+            continue
+
         event_tree = _create_event_tree(event)
         tree.add(event_tree)
 
-    for sub_call in call["calls"]:
+    for sub_call in call.get("calls", []):
         sub_tree = parse_rich_tree(sub_call, verbose=verbose)
         tree.add(sub_tree)
 
@@ -660,6 +672,8 @@ def _events_to_trees(events: list[dict]) -> list[Tree]:
         calldata = evt.get("calldata")
 
         if not name or not calldata:
+            # Not sure; or not worth showing.
+            logger.debug(f"Unknown event data: '{evt}'.")
             continue
 
         tuple_key = (
@@ -671,9 +685,15 @@ def _events_to_trees(events: list[dict]) -> list[Tree]:
     result = []
     for evt_tup, events in event_counter.items():
         count = len(events)
+        evt = events[0]
+        if "name" not in evt and "calldata" not in evt:
+            # Not sure; or not worth showing.
+            logger.debug(f"Unknown event data: '{evt}'.")
+            continue
+
         # NOTE: Using similar style to gas-cost on purpose.
         suffix = f"[[{TraceStyles.GAS_COST}]x{count}[/]]" if count > 1 else ""
-        evt_tree = _create_event_tree(events[0], suffix=suffix)
+        evt_tree = _create_event_tree(evt, suffix=suffix)
         result.append(evt_tree)
 
     return result
@@ -746,8 +766,9 @@ def _call_to_str(call: dict, stylize: bool = False, verbose: bool = False) -> st
 def _event_to_str(event: dict, stylize: bool = False, suffix: str = "") -> str:
     # NOTE: Some of the styles are matching others parts of the trace,
     #  even though the 'name' is a bit misleading.
-    name = f"[{TraceStyles.METHODS}]{event['name']}[/]" if stylize else event["name"]
-    arguments_str = _get_inputs_str(event.get("calldata"), stylize=stylize)
+    event_name = event.get("name", "ANONYMOUS_EVENT")
+    name = f"[{TraceStyles.METHODS}]{event_name}[/]" if stylize else event_name
+    arguments_str = _get_inputs_str(event.get("calldata", "0x"), stylize=stylize)
     prefix = f"[{TraceStyles.CONTRACTS}]log[/]" if stylize else "log"
     return f"{prefix} {name}{arguments_str}{suffix}"
 

@@ -456,4 +456,21 @@ class EthTesterTransactionTrace(TransactionTrace):
     def return_value(self) -> Any:
         # perf: skip trying anything else, because eth-tester doesn't
         # yet implement any tracing RPCs.
-        return self._return_value_from_enriched_calltree
+        init_kwargs = self._get_tx_calltree_kwargs()
+        receipt = self.chain_manager.get_receipt(self.transaction_hash)
+        init_kwargs["gas_cost"] = receipt.gas_used
+
+        if not (abi := self.root_method_abi):
+            return (None,)
+
+        num_return = len(self.root_method_abi.outputs)
+
+        # Figure out the 'returndata' using 'eth_call' RPC.
+        tx = receipt.transaction.model_copy(update={"nonce": None})
+        try:
+            returndata = self.provider.send_call(tx, block_id=receipt.block_number)
+        except ContractLogicError:
+            # Unable to get the return value because even as a call, it fails.
+            return tuple([None for _ in range(num_return)])
+
+        return self._ecosystem.decode_returndata(abi, returndata)

@@ -1254,7 +1254,6 @@ class Ethereum(EcosystemAPI):
         default_return_value = "<?>"
         returndata = call.get("returndata", "")
         is_hexstr = isinstance(returndata, str) and is_0x_prefixed(returndata)
-        return_value_bytes = None
 
         # Check if return is only a revert string.
         call = self._enrich_revert_message(call)
