@@ -51,6 +51,11 @@ reverts = RevertsContextManager
 Catch and expect contract logic reverts. Resembles ``pytest.raises()``.
 """
 
+queries = _ManagerAccessMixin.query_manager
+"""
+Query chain data.
+"""
+
 
 __all__ = [
     "accounts",
@@ -63,4 +68,5 @@ __all__ = [
     "project",
     "Project",  # So you can load other projects
     "reverts",
+    "queries",
 ]
