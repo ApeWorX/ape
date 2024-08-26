@@ -1,0 +1,23 @@
+name: Retain Images
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * 6"
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  clean:
+    name: Delete package versions
+    runs-on: ubuntu-latest
+    steps:
+      - uses: snok/container-retention-policy@v3
+        with: 
+          account: ApeWorX
+          token: ${{ secrets.GITHUB_TOKEN }}
+          image-names: "ape"
+          image-tags: "!stable* !latest* !v0.7* !v0.8*"
+          cut-off: 4w
+          dry-run: true
