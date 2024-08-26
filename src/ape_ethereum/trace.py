@@ -432,13 +432,13 @@ class Trace(TraceAPI):
 
     def _get_abi(self, call: dict) -> Optional[MethodABI]:
         if not (addr := call.get("address")):
-            return None
+            return self.root_method_abi
         if not (calldata := call.get("calldata")):
-            return None
+            return self.root_method_abi
         if not (contract_type := self.chain_manager.contracts.get(addr)):
-            return None
+            return self.root_method_abi
         if not (calldata[:10] in contract_type.methods):
-            return None
+            return self.root_method_abi
 
         return contract_type.methods[calldata[:10]]
 
