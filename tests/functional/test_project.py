@@ -293,6 +293,12 @@ def test_extract_manifest_excludes_cache(tmp_project):
     assert ".cache/subdir/CacheFile.json" not in (manifest.sources or {})
 
 
+def test_extract_manifest_compiles(tmp_project):
+    tmp_project.manifest.contract_types = {}  # Not compiled.
+    actual = tmp_project.extract_manifest()
+    assert actual.contract_types  # Fails if empty
+
+
 def test_exclusions(tmp_project):
     exclusions = ["Other.json", "*Excl*"]
     exclude_config = {"compile": {"exclude": exclusions}}

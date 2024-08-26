@@ -2461,7 +2461,7 @@ class LocalProject(Project):
         sources = dict(self.sources)
         contract_types = {
             n: ct
-            for n, ct in (self.manifest.contract_types or {}).items()
+            for n, ct in self.load_contracts().items()
             if ct.source_id in sources
         }
 
