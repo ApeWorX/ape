@@ -40,6 +40,28 @@ def test_Contract_from_json_str(contract_instance):
     assert contract.myNumber() == 0
 
 
+def test_Contract_from_json_str_retrieval_check_fails(mocker, chain, vyper_contract_instance):
+    """
+    Tests a bug when providing an abi= but fetch-attempt raises that we don't
+    raise since the abi was already given.
+    """
+    # Make `.get()` fail.
+    orig = chain.contracts.get
+    mock_get = mocker.MagicMock()
+    mock_get.side_effect = Exception
+
+    abi_str = json.dumps([abi.model_dump() for abi in vyper_contract_instance.contract_type.abi])
+
+    chain.contracts.get = mock_get
+    try:
+        contract = Contract(vyper_contract_instance.address, abi=abi_str)
+    finally:
+        chain.contracts.get = orig
+
+    # Mostly, we are asserting it did not fail.
+    assert isinstance(contract, ContractInstance)
+
+
 def test_Contract_from_file(contract_instance):
     """
     need feedback about the json file specifications
