@@ -225,14 +225,10 @@ class Trace(TraceAPI):
             # for realistic contract interactions.
             return self._return_value_from_enriched_calltree
 
-        elif abi := self.root_method_abi:
-            # Barely enrich a calltree for performance reasons
-            # (likely not a need to enrich the whole thing).
-            calltree = self.get_raw_calltree()
-            enriched_calltree = self._ecosystem._enrich_returndata(calltree, abi)
-            return self._get_return_value_from_calltree(enriched_calltree)
-
-        return self._return_value_from_enriched_calltree
+        # Barely enrich a calltree for performance reasons
+        # (likely not a need to enrich the whole thing).
+        calltree = self.get_raw_calltree()
+        return self._get_return_value_from_calltree(calltree)
 
     @cached_property
     def _return_value_from_enriched_calltree(self) -> Any:
@@ -245,14 +241,9 @@ class Trace(TraceAPI):
         return self._get_return_value_from_calltree(calltree)
 
     def _get_return_value_from_calltree(self, calltree: dict) -> tuple[Optional[Any], ...]:
-        # If enriching too much, Ethereum places regular values in a key
-        # named "unenriched_return_values".
-        if "unenriched_return_values" in calltree:
-            return calltree["unenriched_return_values"]
-
         num_outputs = 1
         if raw_return_data := calltree.get("returndata"):
-            if abi := self.root_method_abi:
+            if abi := self._get_abi(calltree):
                 # Ensure we return a tuple with the correct length, even if fails.
                 num_outputs = len(abi.outputs)
                 try:
@@ -438,6 +429,18 @@ class Trace(TraceAPI):
 
     def _get_tree(self, verbose: bool = False) -> Tree:
         return parse_rich_tree(self.enriched_calltree, verbose=verbose)
+
+    def _get_abi(self, call: dict) -> Optional[MethodABI]:
+        if not (addr := call.get("address")):
+            return None
+        if not (calldata := call.get("calldata")):
+            return None
+        if not (contract_type := self.chain_manager.contracts.get(addr)):
+            return None
+        if not (calldata[:10] in contract_type.methods):
+            return None
+
+        return contract_type.methods[calldata[:10]]
 
 
 class TransactionTrace(Trace):
