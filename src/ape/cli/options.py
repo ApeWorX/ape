@@ -73,10 +73,8 @@ def _create_verbosity_kwargs(
 
     def set_level(ctx, param, value):
         if isinstance(value, str):
-            if "." in value:
-                # Handle "LogLevel" prefix that exists in some environments.
-                # TODO: Figure out why this happens (seen in github_action in a few projects).
-                value = value.split(".")[-1]
+            if value.lower().startswith("loglevel."):
+                value = value.split(".")[-1].strip()
 
             value = value.upper()
 

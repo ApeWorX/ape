@@ -274,8 +274,11 @@ def _get_level(level: Optional[Union[str, int, LogLevel]] = None) -> str:
         return DEFAULT_LOG_LEVEL
     elif isinstance(level, LogLevel):
         return level.name
-    elif isinstance(level, int) or level.isnumeric():
+    elif isinstance(level, int) or (isinstance(level, str) and level.isnumeric()):
         return LogLevel(int(level)).name
+    elif isinstance(level, str) and level.lower().startswith("loglevel."):
+        # Handle 'LogLevel.' prefix.
+        return level.split(".")[-1].strip()
 
     return level
 
