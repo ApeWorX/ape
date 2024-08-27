@@ -189,6 +189,27 @@ request_header:
   Content-Type: application/json
 ```
 
+You can also specify request headers at the ecosystem, network, and provider levels:
+
+```yaml
+# NOTE: All the headers are the same only for demo purposes.
+# You can use headers you want for any of these config locations.
+ethereum:
+  # Apply to all requests made to ethereum networks.
+  request_headers:
+    Content-Type: application/json
+  
+  mainnet:
+    # Apply to all requests made to ethereum:mainnet (using any provider)
+    request_headers:
+      Content-Type: application/json
+  
+node:
+  # Apply to any request using the `node` provider.
+  request_headers:
+    Content-Type: application/json
+```
+
 ## Testing
 
 Configure your test accounts:
