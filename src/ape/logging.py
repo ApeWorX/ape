@@ -175,9 +175,11 @@ class ApeLogger:
         """
         if level == self._logger.level:
             return
-
         elif isinstance(level, LogLevel):
             level = level.value
+        elif isinstance(level, str) and level.lower().startswith("loglevel."):
+            # Seen in some environments.
+            level = level.split(".")[-1].strip()
 
         self._logger.setLevel(level)
         for _logger in self._extra_loggers.values():
