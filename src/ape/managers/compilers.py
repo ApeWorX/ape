@@ -157,10 +157,17 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
                 errors.append(err)
                 continue
 
-        if errors:
+        if len(errors) == 1:
+            # If only 1 error, just raise that.
+            raise errors[0]
+
+        elif len(errors) > 1:
+            # Raise a combined error.
             formatted_errors = [f"{e}" for e in errors]
             error_message = "\n\n".join(formatted_errors)
             raise CompilerError(error_message)
+
+        # else: successfully compiled everything!
 
     def compile_source(
         self,
