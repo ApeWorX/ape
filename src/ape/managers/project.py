@@ -18,7 +18,7 @@ from pydantic_core import Url
 
 from ape.api.projects import ApeProject, DependencyAPI, ProjectAPI
 from ape.contracts import ContractContainer, ContractInstance
-from ape.exceptions import APINotImplementedError, ChainError, ProjectError
+from ape.exceptions import APINotImplementedError, ChainError, CompilerError, ProjectError
 from ape.logging import logger
 from ape.managers.base import BaseManager
 from ape.managers.config import ApeConfig
@@ -1891,6 +1891,12 @@ class Project(ProjectManager):
         self.account_manager.test_accounts.reset()
 
     def extract_manifest(self) -> PackageManifest:
+        # Ensure it compiled (at least attempt).
+        try:
+            self.load_contracts()
+        except CompilerError as err:
+            logger.debug(err)
+
         return self.manifest
 
     def clean(self):

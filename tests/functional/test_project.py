@@ -299,6 +299,12 @@ def test_extract_manifest_compiles(tmp_project):
     assert actual.contract_types  # Fails if empty
 
 
+def test_extract_manifest_from_manifest_project(project_from_manifest):
+    project_from_manifest.manifest.contract_types = {}  # Not compiled.
+    manifest = project_from_manifest.extract_manifest()
+    assert "FooContractFromManifest" in manifest.contract_types
+
+
 def test_exclusions(tmp_project):
     exclusions = ["Other.json", "*Excl*"]
     exclude_config = {"compile": {"exclude": exclusions}}
