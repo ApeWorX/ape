@@ -7,9 +7,11 @@ from eth_typing import HexStr
 from eth_utils import keccak, to_hex
 from evmchains import PUBLIC_CHAIN_META
 from hexbytes import HexBytes
+from web3 import AutoProvider
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.exceptions import ExtraDataLengthError
 from web3.middleware import geth_poa_middleware as ExtraDataToPOAMiddleware
+from web3.providers import HTTPProvider
 
 from ape.exceptions import (
     APINotImplementedError,
@@ -239,6 +241,49 @@ def test_connect_using_only_ipc_for_uri(project, networks, geth_provider):
     with project.temp_config(node={"ethereum": {"local": {"uri": f"{ipc_path}"}}}):
         with networks.ethereum.local.use_provider("node") as node:
             assert node.uri == f"{ipc_path}"
+
+
+@geth_process_test
+def test_connect_request_headers(project, geth_provider, networks):
+    http_provider = None
+    config = {
+        "request_header": {"h0": 0},
+        "ethereum": {
+            "request_header": {"h1": 1},
+            "local": {
+                "request_header": {"h2": 2},
+            },
+        },
+        "node": {"request_header": {"h3": 3}},
+    }
+    with project.temp_config(**config):
+        with networks.ethereum.local.use_provider("node") as geth:
+            w3_provider = geth.web3.provider
+            if isinstance(w3_provider, AutoProvider):
+                for pot_provider_fn in w3_provider._potential_providers:
+                    pot_provider = pot_provider_fn()
+                    if not isinstance(pot_provider, HTTPProvider):
+                        continue
+                    else:
+                        http_provider = pot_provider
+
+            elif isinstance(w3_provider, HTTPProvider):
+                http_provider = w3_provider
+
+            else:
+                pytest.fail("Not using HTTP. Please adjust test.")
+
+            assert http_provider is not None, "Setup failed - HTTP Provider still None."
+
+            assert isinstance(http_provider._request_kwargs, dict)
+            actual = http_provider._request_kwargs["headers"]
+            assert actual["h0"] == 0  # top-level
+            assert actual["h1"] == 1  # ecosystem
+            assert actual["h2"] == 2  # network
+            assert actual["h3"] == 3  # provider
+            # Also, assert Ape's default.
+            assert actual["User-Agent"].startswith("Ape/")
+            assert "Python" in actual["User-Agent"]
 
 
 @geth_process_test

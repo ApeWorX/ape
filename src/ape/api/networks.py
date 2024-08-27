@@ -68,6 +68,8 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
     The name of the ecosystem. This should be set the same name as the plugin.
     """
 
+    # TODO: In 0.9, make @property that returns value from config,
+    #   and use REQUEST_HEADER as plugin-defined constants.
     request_header: dict
     """A shareable HTTP header for network requests."""
 
@@ -647,6 +649,13 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
             Optional[CustomError]: If it able to decode one, else ``None``.
         """
 
+    def _get_request_header(self) -> dict:
+        # Internal helper method called by NetworkManager
+        return {
+            **self.request_header,
+            **self.config.get("request_header", {}),
+        }
+
 
 class ProviderContextManager(ManagerAccessMixin):
     """
@@ -809,6 +818,8 @@ class NetworkAPI(BaseInterfaceModel):
     ecosystem: EcosystemAPI
     """The ecosystem of the network."""
 
+    # TODO: In 0.9, make @property that returns value from config,
+    #   and use REQUEST_HEADER as plugin-defined constants.
     request_header: dict
     """A shareable network HTTP header."""
 
@@ -1284,6 +1295,13 @@ class NetworkAPI(BaseInterfaceModel):
         """
         if self.name not in ("custom", LOCAL_NETWORK_NAME) and self.chain_id != chain_id:
             raise NetworkMismatchError(chain_id, self)
+
+    def _get_request_header(self) -> dict:
+        # Internal helper method called by NetworkManager
+        return {
+            **self.request_header,
+            **self.config.get("request_header", {}),
+        }
 
 
 class ForkedNetworkAPI(NetworkAPI):

@@ -85,6 +85,23 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         """
         return self.network.ecosystem
 
+    def get_request_header(
+        self, ecosystem_name: str, network_name: str, provider_name: str
+    ) -> dict:
+        """
+        All request headers to be used when connecting to this network.
+        """
+        ecosystem = self.get_ecosystem(ecosystem_name)
+        network = ecosystem.get_network(network_name)
+        provider = network.get_provider(provider_name)
+        return {
+            **self.config_manager.REQUEST_HEADER,
+            **self.config_manager.request_header,
+            **ecosystem._get_request_header(),
+            **network._get_request_header(),
+            **provider._get_request_header(),
+        }
+
     def fork(
         self,
         provider_name: Optional[str] = None,

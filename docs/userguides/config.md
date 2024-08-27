@@ -179,6 +179,16 @@ Install these plugins by running command:
 ape plugins install .
 ```
 
+## Request Headers
+
+For Ape's HTTP usage, such as requests made via `web3.py`, optionally specify extra request headers.
+
+```yaml
+request_header:
+  # NOTE: Only using Content-Type as an example; can be any header key/value.
+  Content-Type: application/json
+```
+
 ## Testing
 
 Configure your test accounts:

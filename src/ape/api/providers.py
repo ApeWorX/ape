@@ -177,6 +177,8 @@ class ProviderAPI(BaseInterfaceModel):
     provider_settings: dict = {}
     """The settings for the provider, as overrides to the configuration."""
 
+    # TODO: In 0.9, make @property that returns value from config,
+    #   and use REQUEST_HEADER as plugin-defined constants.
     request_header: dict
     """A header to set on HTTP/RPC requests."""
 
@@ -844,6 +846,13 @@ class ProviderAPI(BaseInterfaceModel):
                went wrong in the call.
         """
         return VirtualMachineError(base_err=exception, **kwargs)
+
+    def _get_request_header(self) -> dict:
+        # Internal helper method called by NetworkManager
+        return {
+            **self.request_header,
+            **self.config.get("request_header", {}),
+        }
 
 
 class TestProviderAPI(ProviderAPI):
