@@ -434,11 +434,13 @@ def test_verbosity_option(runner):
     def cmd():
         click.echo(f"__expected_{logger.level}")
 
-    result = runner.invoke(cmd, ["--verbosity", logger.level])
+    result = runner.invoke(cmd, ("--verbosity", logger.level))
     assert f"__expected_{logger.level}" in result.output
 
 
-@pytest.mark.parametrize("level", (LogLevel.WARNING, LogLevel.WARNING.name, LogLevel.WARNING.value))
+@pytest.mark.parametrize(
+    "level", (LogLevel.WARNING, LogLevel.WARNING.name, LogLevel.WARNING.value, "LogLevel.WARNING")
+)
 def test_verbosity_option_change_default(runner, level):
     @click.command()
     @verbosity_option(default=level)

@@ -101,7 +101,9 @@ def test_format(simple_runner):
     assert "SUCCESS" not in result.output
 
 
-@pytest.mark.parametrize("level", (LogLevel.INFO, LogLevel.INFO.value, LogLevel.INFO.name))
+@pytest.mark.parametrize(
+    "level", (LogLevel.INFO, LogLevel.INFO.value, LogLevel.INFO.name, "LogLevel.INFO")
+)
 def test_set_level(level):
     logger.set_level(level)
     assert logger.level == LogLevel.INFO.value
