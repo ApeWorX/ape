@@ -1891,11 +1891,13 @@ class Project(ProjectManager):
         self.account_manager.test_accounts.reset()
 
     def extract_manifest(self) -> PackageManifest:
-        # Ensure it compiled (at least attempt).
+        # Attempt to compile, if needed.
         try:
             self.load_contracts()
         except CompilerError as err:
-            logger.debug(err)
+            # Some manifest-based projects may not require compiling,
+            # such as OpenZeppelin or snekmate.
+            logger.warning(err)
 
         return self.manifest
 
