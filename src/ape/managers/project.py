@@ -2460,7 +2460,9 @@ class LocalProject(Project):
 
         sources = dict(self.sources)
         contract_types = {
-            n: ct for n, ct in self.load_contracts().items() if ct.source_id in sources
+            n: c.contract_type
+            for n, c in self.load_contracts().items()
+            if c.contract_type.source_id in sources
         }
 
         # Add any remaining data to the manifest here.
