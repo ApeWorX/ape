@@ -80,7 +80,7 @@ def _run_main_loop(delay: float, pytest_args: Sequence[str]) -> None:
     short_help="Launches pytest and runs the tests for a project",
     context_settings=dict(ignore_unknown_options=True),
 )
-@ape_cli_context(default_log_level=LogLevel.WARNING)
+@ape_cli_context(default_log_level=LogLevel.WARNING.value)
 @click.option(
     "-w",
     "--watch",
