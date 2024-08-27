@@ -72,7 +72,12 @@ def _create_verbosity_kwargs(
     cli_logger = _logger or logger
 
     def set_level(ctx, param, value):
-        cli_logger._load_from_sys_argv(default=value.upper() if isinstance(value, str) else value)
+        if isinstance(value, str):
+            value = value.upper()
+            if value.startswith("LOGLEVEL."):
+                value = value.split(".")[-1].strip()
+
+        cli_logger._load_from_sys_argv(default=value)
 
     level_names = [lvl.name for lvl in LogLevel]
     names_str = f"{', '.join(level_names[:-1])}, or {level_names[-1]}"

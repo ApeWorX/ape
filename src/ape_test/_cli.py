@@ -12,7 +12,7 @@ from watchdog import events
 from watchdog.observers import Observer
 
 from ape.cli import ape_cli_context
-from ape.logging import LogLevel
+from ape.logging import LogLevel, _get_level
 from ape.utils import ManagerAccessMixin, cached_property
 
 # Copied from https://github.com/olzhasar/pytest-watcher/blob/master/pytest_watcher/watcher.py
@@ -75,12 +75,38 @@ def _run_main_loop(delay: float, pytest_args: Sequence[str]) -> None:
     time.sleep(delay)
 
 
+def _validate_pytest_args(*pytest_args) -> list[str]:
+    threshold = len(pytest_args) - 1
+    args_iter = iter(pytest_args)
+    valid_args = []
+    for idx, argument in enumerate(args_iter):
+        if idx >= threshold:
+            # If the last arg is -v without a value, it is a valid
+            # pytest arg.
+            valid_args.append(argument)
+            break
+
+        elif argument == "-v":
+            # Ensure this is a pytest -v and not ape's -v.
+            next_arg = next(args_iter)
+            lvl_name = _get_level(next_arg)
+            if lvl_name in [x.name for x in LogLevel]:
+                # Ape log level found, cannot use.
+                continue
+
+        else:
+            valid_args.append(argument)
+
+    return valid_args
+
+
 @click.command(
     add_help_option=False,  # NOTE: This allows pass-through to pytest's help
     short_help="Launches pytest and runs the tests for a project",
     context_settings=dict(ignore_unknown_options=True),
 )
-@ape_cli_context(default_log_level=LogLevel.WARNING)
+# NOTE: Using '.value' because more performant.
+@ape_cli_context(default_log_level=LogLevel.WARNING.value)
 @click.option(
     "-w",
     "--watch",
@@ -119,6 +145,7 @@ def cli(cli_ctx, watch, watch_folders, watch_delay, pytest_args):
                 cli_ctx.logger.warning(f"Folder '{folder}' doesn't exist or isn't a folder.")
 
         observer.start()
+        pytest_args = _validate_pytest_args(pytest_args)
 
         try:
             _run_ape_test(pytest_args)
