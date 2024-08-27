@@ -423,6 +423,35 @@ def test_load_contracts_output_abi(tmp_project):
         assert isinstance(data[0], dict)
 
 
+def test_load_contracts_use_cache(mocker, tmp_project):
+    """
+    Showing the 'use_cache=bool' kwarg works.
+    """
+    compile_spy = mocker.spy(tmp_project.contracts, "_compile")
+
+    tmp_project.manifest.contract_types = {}  # Force initial compile.
+    contracts = tmp_project.load_contracts(use_cache=True)
+    assert "Other" in contracts  # Other.json contract.
+    assert "Project" in contracts  # Project.json contract.
+    assert compile_spy.call_args_list[-1][-1]["use_cache"] is True
+
+    # Show they get added to the manifest.
+    assert "Other" in tmp_project.manifest.contract_types
+    assert "Project" in tmp_project.manifest.contract_types
+
+    # Showe we can use the cache again (no compiling!)
+    contracts = tmp_project.load_contracts(use_cache=True)
+    assert "Other" in contracts  # Other.json contract.
+    assert "Project" in contracts  # Project.json contract.
+    assert compile_spy.call_args_list[-1][-1]["use_cache"] is True
+
+    # Show force-recompiles.
+    contracts = tmp_project.load_contracts(use_cache=False)
+    assert "Other" in contracts  # Other.json contract.
+    assert "Project" in contracts  # Project.json contract.
+    assert compile_spy.call_args_list[-1][-1]["use_cache"] is False
+
+
 def test_manifest_path(tmp_project):
     assert tmp_project.manifest_path == tmp_project.path / ".build" / "__local__.json"
 
