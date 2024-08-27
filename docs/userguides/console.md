@@ -1,4 +1,4 @@
-# Ape Console
+# Console
 
 Ape provides an [IPython](https://ipython.readthedocs.io/) interactive console with useful pre-defined locals to interact with your project.
 
@@ -56,14 +56,14 @@ You can also create scripts to be included in the console namespace by adding a 
 An example file might look something like this:
 
 ```python
+from ape import networks
 from eth_utils import encode_hex, decode_hex
-
 
 def latest(key):
     return getattr(networks.active_provider.get_block("latest"), key)
 ```
 
-Then both imported util functions and `WETH_ADDRESS` will be available when you launch the console.
+Then both imported util functions and `latest()` will be available when you launch the console.
 
 ```python
 In [1]: latest('number')
