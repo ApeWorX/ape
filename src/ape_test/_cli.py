@@ -80,6 +80,8 @@ def _run_main_loop(delay: float, pytest_args: Sequence[str]) -> None:
     short_help="Launches pytest and runs the tests for a project",
     context_settings=dict(ignore_unknown_options=True),
 )
+# NOTE: 'default_log_level=LogLevel.WARNING' fails in some situations, and we don't know why.
+#  Thus, we use 'default_log_level=LogLevel.WARNING.value' to be safer.
 @ape_cli_context(default_log_level=LogLevel.WARNING.value)
 @click.option(
     "-w",
