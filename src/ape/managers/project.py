@@ -18,7 +18,7 @@ from pydantic_core import Url
 
 from ape.api.projects import ApeProject, DependencyAPI, ProjectAPI
 from ape.contracts import ContractContainer, ContractInstance
-from ape.exceptions import APINotImplementedError, ChainError, ProjectError
+from ape.exceptions import APINotImplementedError, ChainError, CompilerError, ProjectError
 from ape.logging import logger
 from ape.managers.base import BaseManager
 from ape.managers.config import ApeConfig
@@ -1891,6 +1891,14 @@ class Project(ProjectManager):
         self.account_manager.test_accounts.reset()
 
     def extract_manifest(self) -> PackageManifest:
+        # Attempt to compile, if needed.
+        try:
+            self.load_contracts()
+        except CompilerError as err:
+            # Some manifest-based projects may not require compiling,
+            # such as OpenZeppelin or snekmate.
+            logger.warning(err)
+
         return self.manifest
 
     def clean(self):
@@ -2460,9 +2468,9 @@ class LocalProject(Project):
 
         sources = dict(self.sources)
         contract_types = {
-            n: ct
-            for n, ct in (self.manifest.contract_types or {}).items()
-            if ct.source_id in sources
+            n: c.contract_type
+            for n, c in self.load_contracts().items()
+            if c.contract_type.source_id in sources
         }
 
         # Add any remaining data to the manifest here.

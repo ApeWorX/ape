@@ -293,6 +293,18 @@ def test_extract_manifest_excludes_cache(tmp_project):
     assert ".cache/subdir/CacheFile.json" not in (manifest.sources or {})
 
 
+def test_extract_manifest_compiles(tmp_project):
+    tmp_project.manifest.contract_types = {}  # Not compiled.
+    actual = tmp_project.extract_manifest()
+    assert actual.contract_types  # Fails if empty
+
+
+def test_extract_manifest_from_manifest_project(project_from_manifest):
+    project_from_manifest.manifest.contract_types = {}  # Not compiled.
+    manifest = project_from_manifest.extract_manifest()
+    assert "FooContractFromManifest" in manifest.contract_types
+
+
 def test_exclusions(tmp_project):
     exclusions = ["Other.json", "*Excl*"]
     exclude_config = {"compile": {"exclude": exclusions}}
@@ -415,6 +427,35 @@ def test_load_contracts_output_abi(tmp_project):
         assert len(data) >= 1
         # There was bug where this was a str.
         assert isinstance(data[0], dict)
+
+
+def test_load_contracts_use_cache(mocker, tmp_project):
+    """
+    Showing the 'use_cache=bool' kwarg works.
+    """
+    compile_spy = mocker.spy(tmp_project.contracts, "_compile")
+
+    tmp_project.manifest.contract_types = {}  # Force initial compile.
+    contracts = tmp_project.load_contracts(use_cache=True)
+    assert "Other" in contracts  # Other.json contract.
+    assert "Project" in contracts  # Project.json contract.
+    assert compile_spy.call_args_list[-1][-1]["use_cache"] is True
+
+    # Show they get added to the manifest.
+    assert "Other" in tmp_project.manifest.contract_types
+    assert "Project" in tmp_project.manifest.contract_types
+
+    # Showe we can use the cache again (no compiling!)
+    contracts = tmp_project.load_contracts(use_cache=True)
+    assert "Other" in contracts  # Other.json contract.
+    assert "Project" in contracts  # Project.json contract.
+    assert compile_spy.call_args_list[-1][-1]["use_cache"] is True
+
+    # Show force-recompiles.
+    contracts = tmp_project.load_contracts(use_cache=False)
+    assert "Other" in contracts  # Other.json contract.
+    assert "Project" in contracts  # Project.json contract.
+    assert compile_spy.call_args_list[-1][-1]["use_cache"] is False
 
 
 def test_manifest_path(tmp_project):
