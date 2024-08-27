@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Ape Console &mdash; ape  documentation</title>
+  <title>Console &mdash; ape  documentation</title>
       <link rel="stylesheet" href="/ape/latest/_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="/ape/latest/_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="/ape/latest/_static/custom.css" type="text/css" />
@@ -177,7 +177,7 @@
 <li class="toctree-l1"><a class="reference internal" href="developing_plugins.html">Developing Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="config.html">Configure Ape</a></li>
 <li class="toctree-l1"><a class="reference internal" href="transactions.html">Transactions</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Ape Console</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Console</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#ape-namespace">Ape Namespace</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#namespace-extras">Namespace Extras</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#init-function">Init Function</a></li>
@@ -250,7 +250,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Ape Console</li>
+      <li class="breadcrumb-item active">Console</li>
       <li class="wy-breadcrumbs-aside">
               <a href="https://github.com/ApeWorX/ape/blob/main/docs/userguides/console.md" class="fa fa-github"> Edit on GitHub</a>
       </li>
@@ -260,8 +260,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="ape-console">
-<h1>Ape Console<a class="headerlink" href="#ape-console" title="Permalink to this heading"></a></h1>
+  <section id="console">
+<h1>Console<a class="headerlink" href="#console" title="Permalink to this heading"></a></h1>
 <p>Ape provides an <a class="reference external" href="https://ipython.readthedocs.io/">IPython</a> interactive console with useful pre-defined locals to interact with your project.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>console<span class="w"> </span>--network<span class="w"> </span>ethereum:mainnet
 
@@ -327,14 +327,14 @@ If you need to make changes to your contract, you must re-start your console ses
 <h2>Namespace Extras<a class="headerlink" href="#namespace-extras" title="Permalink to this heading"></a></h2>
 <p>You can also create scripts to be included in the console namespace by adding a file (<code class="docutils literal notranslate"><span class="pre">ape_console_extras.py</span></code>) to your root project directory.  All non-internal symbols from this file will be included in the console namespace.  Internal symbols are prefixed by an underscore (<code class="docutils literal notranslate"><span class="pre">_</span></code>).</p>
 <p>An example file might look something like this:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">eth_utils</span> <span class="kn">import</span> <span class="n">encode_hex</span><span class="p">,</span> <span class="n">decode_hex</span>
-
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">networks</span>
+<span class="kn">from</span> <span class="nn">eth_utils</span> <span class="kn">import</span> <span class="n">encode_hex</span><span class="p">,</span> <span class="n">decode_hex</span>
 
 <span class="k">def</span> <span class="nf">latest</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
     <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">networks</span><span class="o">.</span><span class="n">active_provider</span><span class="o">.</span><span class="n">get_block</span><span class="p">(</span><span class="s2">&quot;latest&quot;</span><span class="p">),</span> <span class="n">key</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Then both imported util functions and <code class="docutils literal notranslate"><span class="pre">WETH_ADDRESS</span></code> will be available when you launch the console.</p>
+<p>Then both imported util functions and <code class="docutils literal notranslate"><span class="pre">latest()</span></code> will be available when you launch the console.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="n">latest</span><span class="p">(</span><span class="s1">&#39;number&#39;</span><span class="p">)</span>
 <span class="n">Out</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="mi">14388241</span>
 
