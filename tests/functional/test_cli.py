@@ -438,7 +438,9 @@ def test_verbosity_option(runner):
     assert f"__expected_{logger.level}" in result.output
 
 
-@pytest.mark.parametrize("level", (LogLevel.WARNING, LogLevel.WARNING.name, LogLevel.WARNING.value))
+@pytest.mark.parametrize(
+    "level", (LogLevel.WARNING, LogLevel.WARNING.name, LogLevel.WARNING.value, "LogLevel.WARNING")
+)
 def test_verbosity_option_change_default(runner, level):
     @click.command()
     @verbosity_option(default=level)
