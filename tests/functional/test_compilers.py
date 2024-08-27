@@ -191,8 +191,9 @@ def test_compile_multiple_errors(
             list(compilers.compile([new_contract_0, new_contract_1], project=project_with_contract))
 
     finally:
-        if mock_compiler.ext in compilers.__dict__.get("registered_compilers", {}):
-            del compilers.__dict__["registered_compilers"][mock_compiler.ext]
+        for ext in (mock_compiler.ext, second_mock_compiler.ext):
+            if ext in compilers.__dict__.get("registered_compilers", {}):
+                del compilers.__dict__["registered_compilers"][ext]
 
 
 def test_compile_source(compilers):
