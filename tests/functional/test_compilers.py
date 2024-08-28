@@ -71,7 +71,18 @@ def test_flatten_contract(compilers, project_with_contract):
         compilers.flatten_contract(Path("contract.foo"))
 
 
-def test_contract_type_collision(compilers, project_with_contract, mock_compiler):
+@pytest.mark.parametrize("factory", (str, Path))
+def test_compile(compilers, project_with_contract, factory):
+    """
+    Testing both stringified paths and path-object paths.
+    """
+    path = next(iter(project_with_contract.sources.paths))
+    actual = compilers.compile((factory(path),))
+    contract_name = path.stem
+    assert contract_name in [x.name for x in actual]
+
+
+def test_compile_contract_type_collision(compilers, project_with_contract, mock_compiler):
     _ = compilers.registered_compilers  # Ensures cached property is set.
 
     # Hack in our mock compiler.
@@ -98,13 +109,16 @@ def test_contract_type_collision(compilers, project_with_contract, mock_compiler
             del compilers.__dict__["registered_compilers"][mock_compiler.ext]
 
 
+def test_compile_empty(compilers):
+    # Also, we are asserting it does no fail.
+    assert list(compilers.compile([])) == []
+
+
 def test_compile_with_settings(mock_compiler, compilers, project_with_contract):
     new_contract = project_with_contract.path / f"AMockContract{mock_compiler.ext}"
     new_contract.write_text("foobar", encoding="utf8")
     settings = {"mock": {"foo": "bar"}}
-
     _ = compilers.registered_compilers  # Ensures cached property is set.
-
     # Hack in our mock compiler.
     compilers.__dict__["registered_compilers"][mock_compiler.ext] = mock_compiler
 
@@ -119,11 +133,67 @@ def test_compile_with_settings(mock_compiler, compilers, project_with_contract):
     assert actual == settings["mock"]
 
 
-def test_compile_str_path(compilers, project_with_contract):
-    path = next(iter(project_with_contract.sources.paths))
-    actual = compilers.compile((str(path),))
-    contract_name = path.stem
-    assert contract_name in [x.name for x in actual]
+def test_compile_errors(mock_compiler, compilers, project_with_contract):
+    new_contract = project_with_contract.path / f"AMockContract{mock_compiler.ext}"
+    new_contract.write_text("foobar", encoding="utf8")
+
+    class MyCustomCompilerError(CompilerError):
+        pass
+
+    mock_compiler.compile.side_effect = MyCustomCompilerError
+    _ = compilers.registered_compilers  # Ensures cached property is set.
+    # Hack in our mock compiler.
+    compilers.__dict__["registered_compilers"][mock_compiler.ext] = mock_compiler
+
+    try:
+        with pytest.raises(MyCustomCompilerError):
+            list(compilers.compile([new_contract], project=project_with_contract))
+
+    finally:
+        if mock_compiler.ext in compilers.__dict__.get("registered_compilers", {}):
+            del compilers.__dict__["registered_compilers"][mock_compiler.ext]
+
+
+def test_compile_multiple_errors(
+    mock_compiler, make_mock_compiler, compilers, project_with_contract
+):
+    """
+    Simulating getting errors from multiple compilers.
+    We should get all the errors.
+    """
+    second_mock_compiler = make_mock_compiler("mock2")
+    new_contract_0 = project_with_contract.path / f"AMockContract{mock_compiler.ext}"
+    new_contract_0.write_text("foobar", encoding="utf8")
+    new_contract_1 = project_with_contract.path / f"AMockContract{second_mock_compiler.ext}"
+    new_contract_1.write_text("foobar2", encoding="utf8")
+
+    expected_0 = "this is expected message 0"
+    expected_1 = "this is expected message 1"
+
+    class MyCustomCompilerError0(CompilerError):
+        def __init__(self):
+            super().__init__(expected_0)
+
+    class MyCustomCompilerError1(CompilerError):
+        def __init__(self):
+            super().__init__(expected_1)
+
+    mock_compiler.compile.side_effect = MyCustomCompilerError0
+    second_mock_compiler.compile.side_effect = MyCustomCompilerError1
+    _ = compilers.registered_compilers  # Ensures cached property is set.
+    # Hack in our mock compilers.
+    compilers.__dict__["registered_compilers"][mock_compiler.ext] = mock_compiler
+    compilers.__dict__["registered_compilers"][second_mock_compiler.ext] = second_mock_compiler
+
+    try:
+        match = rf"{expected_0}\n\n{expected_1}"
+        with pytest.raises(CompilerError, match=match):
+            list(compilers.compile([new_contract_0, new_contract_1], project=project_with_contract))
+
+    finally:
+        for ext in (mock_compiler.ext, second_mock_compiler.ext):
+            if ext in compilers.__dict__.get("registered_compilers", {}):
+                del compilers.__dict__["registered_compilers"][ext]
 
 
 def test_compile_source(compilers):

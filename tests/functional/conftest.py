@@ -634,45 +634,53 @@ def method_abi_with_struct_input():
 
 
 @pytest.fixture
-def mock_compiler(mocker):
-    mock = mocker.MagicMock()
-    mock.name = "mock"
-    mock.ext = ".__mock__"
-    mock.tracked_settings = []
-    mock.ast = None
-    mock.pcmap = None
+def mock_compiler(make_mock_compiler):
+    return make_mock_compiler()
 
-    def mock_compile(paths, project=None, settings=None):
-        settings = settings or {}
-        mock.tracked_settings.append(settings)
-        result = []
-        for path in paths:
-            if path.suffix == mock.ext:
-                name = path.stem
-                code = to_hex(123)
-                data = {
-                    "contractName": name,
-                    "abi": mock.abi,
-                    "deploymentBytecode": code,
-                    "sourceId": f"{project.contracts_folder.name}/{path.name}",
-                }
-                if ast := mock.ast:
-                    data["ast"] = ast
-                if pcmap := mock.pcmap:
-                    data["pcmap"] = pcmap
 
-                # Check for mocked overrides
-                overrides = mock.overrides
-                if isinstance(overrides, dict):
-                    data = {**data, **overrides}
+@pytest.fixture
+def make_mock_compiler(mocker):
+    def fn(name="mock"):
+        mock = mocker.MagicMock()
+        mock.name = "mock"
+        mock.ext = f".__{name}__"
+        mock.tracked_settings = []
+        mock.ast = None
+        mock.pcmap = None
 
-                contract_type = ContractType.model_validate(data)
-                result.append(contract_type)
+        def mock_compile(paths, project=None, settings=None):
+            settings = settings or {}
+            mock.tracked_settings.append(settings)
+            result = []
+            for path in paths:
+                if path.suffix == mock.ext:
+                    name = path.stem
+                    code = to_hex(123)
+                    data = {
+                        "contractName": name,
+                        "abi": mock.abi,
+                        "deploymentBytecode": code,
+                        "sourceId": f"{project.contracts_folder.name}/{path.name}",
+                    }
+                    if ast := mock.ast:
+                        data["ast"] = ast
+                    if pcmap := mock.pcmap:
+                        data["pcmap"] = pcmap
 
-        return result
+                    # Check for mocked overrides
+                    overrides = mock.overrides
+                    if isinstance(overrides, dict):
+                        data = {**data, **overrides}
 
-    mock.compile.side_effect = mock_compile
-    return mock
+                    contract_type = ContractType.model_validate(data)
+                    result.append(contract_type)
+
+            return result
+
+        mock.compile.side_effect = mock_compile
+        return mock
+
+    return fn
 
 
 @pytest.fixture
