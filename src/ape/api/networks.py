@@ -13,6 +13,7 @@ from eth_pydantic_types import HexBytes
 from eth_utils import keccak, to_int
 from ethpm_types import BaseModel, ContractType
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, MethodABI
+from pydantic import model_validator
 
 from ape.exceptions import (
     CustomError,
@@ -82,6 +83,14 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
 
     _default_network: Optional[str] = None
     """The default network of the ecosystem, such as ``local``."""
+
+    @model_validator(mode="after")
+    @classmethod
+    def _validate_ecosystem(cls, model):
+        headers = RPCHeaders(**model.request_header)
+        headers["User-Agent"] = f"ape-{model.name}"
+        model.request_header = dict(**headers)
+        return model
 
     @log_instead_of_fail(default="<EcosystemAPI>")
     def __repr__(self) -> str:

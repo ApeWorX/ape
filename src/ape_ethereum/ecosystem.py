@@ -384,9 +384,6 @@ class Ethereum(EcosystemAPI):
 
     fee_token_symbol: str = "ETH"
 
-    # NOTE: This gets appended to Ape's root User-Agent string.
-    request_header: dict = {"User-Agent": "ape-ethereum"}
-
     @property
     def config(self) -> EthereumConfig:
         return cast(EthereumConfig, super().config)
