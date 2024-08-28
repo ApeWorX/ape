@@ -183,6 +183,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#node">Node</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#networks">Networks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#plugins">Plugins</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#request-headers">Request Headers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#testing">Testing</a></li>
 </ul>
 </li>
@@ -407,6 +408,35 @@ For example, to change the URI for an Ethereum network, do:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>plugins<span class="w"> </span>install<span class="w"> </span>.
 </pre></div>
 </div>
+</section>
+<section id="request-headers">
+<h2>Request Headers<a class="headerlink" href="#request-headers" title="Permalink to this heading"></a></h2>
+<p>For Ape’s HTTP usage, such as requests made via <code class="docutils literal notranslate"><span class="pre">web3.py</span></code>, optionally specify extra request headers.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">request_headers</span><span class="p">:</span>
+<span class="w">  </span><span class="c1"># NOTE: Only using Content-Type as an example; can be any header key/value.</span>
+<span class="w">  </span><span class="nt">Content-Type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">application/json</span>
+</pre></div>
+</div>
+<p>You can also specify request headers at the ecosystem, network, and provider levels:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># NOTE: All the headers are the same only for demo purposes.</span>
+<span class="c1"># You can use headers you want for any of these config locations.</span>
+<span class="nt">ethereum</span><span class="p">:</span>
+<span class="w">  </span><span class="c1"># Apply to all requests made to ethereum networks.</span>
+<span class="w">  </span><span class="nt">request_headers</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">Content-Type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">application/json</span>
+<span class="w">  </span>
+<span class="w">  </span><span class="nt">mainnet</span><span class="p">:</span>
+<span class="w">    </span><span class="c1"># Apply to all requests made to ethereum:mainnet (using any provider)</span>
+<span class="w">    </span><span class="nt">request_headers</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">Content-Type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">application/json</span>
+<span class="w">  </span>
+<span class="nt">node</span><span class="p">:</span>
+<span class="w">  </span><span class="c1"># Apply to any request using the `node` provider.</span>
+<span class="w">  </span><span class="nt">request_headers</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">Content-Type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">application/json</span>
+</pre></div>
+</div>
+<p>To learn more about how request headers work in Ape, see <a class="reference external" href="./networks.html#request-headers">this section of the Networking guide</a>.</p>
 </section>
 <section id="testing">
 <h2>Testing<a class="headerlink" href="#testing" title="Permalink to this heading"></a></h2>

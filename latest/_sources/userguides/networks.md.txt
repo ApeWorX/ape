@@ -340,6 +340,43 @@ You may use one of:
 
 For the local network configuration, the default is `"max"`. Otherwise, it is `"auto"`.
 
+## Request Headers
+
+There are several layers of request-header configuration.
+They get merged into each-other in this order, with the exception being `User-Agent`, which has an append-behavior.
+
+- Default Ape headers (includes `User-Agent`)
+- Top-level configuration for headers (using `request_headers:` key)
+- Per-ecosystem configuration
+- Per-network configuration
+- Per-provider configuration
+
+Use the top-level `request_headers:` config to specify headers for every request.
+Use ecosystem-level specification for only requests made when connected to that ecosystem.
+Network and provider configurations work similarly; they are only used when connecting to that network or provider.
+
+Here is an example using each layer:
+
+```yaml
+request_headers:
+  Top-Level: "UseThisOnEveryRequest"
+
+ethereum:
+  request_headers:
+    Ecosystem-Level: "UseThisOnEveryEthereumRequest"
+  
+  mainnet:
+    request_headers:
+      Network-Level: "UseThisOnAllRequestsToEthereumMainnet"
+
+node:
+  request_headers:
+    Provider-Level: "UseThisOnAllRequestsUsingNodeProvider"
+```
+
+When using `User-Agent`, it will not override Ape's default `User-Agent` nor will each layer override each-other's.
+Instead, they are carefully appended to each other, allowing you to have a very customizable `User-Agent`.
+
 ## Local Network
 
 The default network in Ape is the local network (keyword `"local"`).

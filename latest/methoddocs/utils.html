@@ -239,6 +239,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#ape.utils.JoinableQueue.join"><code class="docutils literal notranslate"><span class="pre">JoinableQueue.join()</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#ape.utils.RPCHeaders"><code class="docutils literal notranslate"><span class="pre">RPCHeaders</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.Struct"><code class="docutils literal notranslate"><span class="pre">Struct</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ape.utils.Struct.items"><code class="docutils literal notranslate"><span class="pre">Struct.items()</span></code></a></li>
 </ul>
@@ -506,6 +507,15 @@ to indicate the item was retrieved and all work on it is complete.</p>
 <p>When the count of unfinished tasks drops to zero, join() unblocks.</p>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.utils.RPCHeaders">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.utils.</span></span><span class="sig-name descname"><span class="pre">RPCHeaders</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.RPCHeaders" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">CaseInsensitiveDict</span></code></p>
+<p>A dict-like data-structure for HTTP-headers.
+It is case-insensitive and appends user-agent strings
+rather than overrides.</p>
 </dd></dl>
 
 <dl class="py class">

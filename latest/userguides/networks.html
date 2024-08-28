@@ -187,6 +187,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#configuring-networks">Configuring Networks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#request-headers">Request Headers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#local-network">Local Network</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#live-networks">Live Networks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#network-config">Network Config</a></li>
@@ -585,6 +586,40 @@ Place the identical name in the config to configure that ecosystem or network.</
 <li><p>A number or numeric string, base 10 or 16 (e.g. <code class="docutils literal notranslate"><span class="pre">1234</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;1234&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">0x1234</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;0x1234&quot;</span></code>)</p></li>
 </ul>
 <p>For the local network configuration, the default is <code class="docutils literal notranslate"><span class="pre">&quot;max&quot;</span></code>. Otherwise, it is <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code>.</p>
+</section>
+<section id="request-headers">
+<h2>Request Headers<a class="headerlink" href="#request-headers" title="Permalink to this heading"></a></h2>
+<p>There are several layers of request-header configuration.
+They get merged into each-other in this order, with the exception being <code class="docutils literal notranslate"><span class="pre">User-Agent</span></code>, which has an append-behavior.</p>
+<ul class="simple">
+<li><p>Default Ape headers (includes <code class="docutils literal notranslate"><span class="pre">User-Agent</span></code>)</p></li>
+<li><p>Top-level configuration for headers (using <code class="docutils literal notranslate"><span class="pre">request_headers:</span></code> key)</p></li>
+<li><p>Per-ecosystem configuration</p></li>
+<li><p>Per-network configuration</p></li>
+<li><p>Per-provider configuration</p></li>
+</ul>
+<p>Use the top-level <code class="docutils literal notranslate"><span class="pre">request_headers:</span></code> config to specify headers for every request.
+Use ecosystem-level specification for only requests made when connected to that ecosystem.
+Network and provider configurations work similarly; they are only used when connecting to that network or provider.</p>
+<p>Here is an example using each layer:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">request_headers</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">Top-Level</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;UseThisOnEveryRequest&quot;</span>
+
+<span class="nt">ethereum</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">request_headers</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">Ecosystem-Level</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;UseThisOnEveryEthereumRequest&quot;</span>
+<span class="w">  </span>
+<span class="w">  </span><span class="nt">mainnet</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">request_headers</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">Network-Level</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;UseThisOnAllRequestsToEthereumMainnet&quot;</span>
+
+<span class="nt">node</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">request_headers</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">Provider-Level</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;UseThisOnAllRequestsUsingNodeProvider&quot;</span>
+</pre></div>
+</div>
+<p>When using <code class="docutils literal notranslate"><span class="pre">User-Agent</span></code>, it will not override Ape’s default <code class="docutils literal notranslate"><span class="pre">User-Agent</span></code> nor will each layer override each-other’s.
+Instead, they are carefully appended to each other, allowing you to have a very customizable <code class="docutils literal notranslate"><span class="pre">User-Agent</span></code>.</p>
 </section>
 <section id="local-network">
 <h2>Local Network<a class="headerlink" href="#local-network" title="Permalink to this heading"></a></h2>
