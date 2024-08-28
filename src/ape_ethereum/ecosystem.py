@@ -147,7 +147,7 @@ class NetworkConfig(PluginConfig):
     base_fee_multiplier: float = 1.0
     """A multiplier to apply to a transaction base fee."""
 
-    request_header: dict = {}
+    request_headers: dict = {}
     """Optionally config extra request headers whenever using this network."""
 
     @field_validator("gas_limit", mode="before")
@@ -222,7 +222,7 @@ class BaseEthereumConfig(PluginConfig):
     default_network: str = LOCAL_NETWORK_NAME
     _forked_configs: dict[str, ForkedNetworkConfig] = {}
     _custom_networks: dict[str, NetworkConfig] = {}
-    request_header: dict = {}
+    request_headers: dict = {}
 
     model_config = SettingsConfigDict(extra="allow")
 
@@ -251,7 +251,7 @@ class BaseEthereumConfig(PluginConfig):
                 key != LOCAL_NETWORK_NAME
                 and key not in cls.NETWORKS
                 and isinstance(obj, dict)
-                and key not in ("request_header",)
+                and key not in ("request_headers",)
             ):
                 # Custom network.
                 default_network_model = create_network_config(

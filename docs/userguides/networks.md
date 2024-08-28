@@ -344,26 +344,26 @@ For the local network configuration, the default is `"max"`. Otherwise, it is `"
 
 There are several layers of request-header configuration.
 Use the top-level request header config to configure headers for every request.
-Also, EVM-based and custom-ecosystems offer their own `request_header:` config that gets used whenever using that ecosystem (regardless of network or provider).
-Then, each network, plugin or otherwise, has its own `request_header:` config that gets used when using this network (regardless of provider).
-Finally, providers (such as the default `node` provider) typically offer a `request_header:` config that gets used whenever using this provider (regardless of what network you are connecting to).
+Also, EVM-based and custom-ecosystems offer their own `request_headers:` config that gets used whenever using that ecosystem (regardless of network or provider).
+Then, each network, plugin or otherwise, has its own `request_headers:` config that gets used when using this network (regardless of provider).
+Finally, providers (such as the default `node` provider) typically offer a `request_headers:` config that gets used whenever using this provider (regardless of what network you are connecting to).
 
 Here is an example using each layer:
 
 ```yaml
-request_header:
+request_headers:
   Top-Level: "UseThisOnEveryRequest"
 
 ethereum:
-  request_header:
+  request_headers:
     Ecosystem-Level: "UseThisOnEveryEthereumRequest"
   
   mainnet:
-    request_header:
+    request_headers:
       Network-Level: "UseThisOnAllRequestsToEthereumMainnet"
 
 node:
-  request_header:
+  request_headers:
     Provider-Level: "UseThisOnAllRequestsUsingNodeProvider"
 ```
 

@@ -1444,7 +1444,7 @@ class EthereumNodeProvider(Web3Provider, ABC):
     def _set_web3(self):
         # Clear cached version when connecting to another URI.
         self._client_version = None
-        headers = self.network_manager.get_request_header(
+        headers = self.network_manager.get_request_headers(
             self.network.ecosystem.name, self.network.name, self.name
         )
         self._web3 = _create_web3(

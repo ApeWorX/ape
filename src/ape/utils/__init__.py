@@ -25,10 +25,8 @@ from ape.utils.misc import (
     DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT,
     EMPTY_BYTES32,
     SOURCE_EXCLUDE_PATTERNS,
-    USER_AGENT,
     ZERO_ADDRESS,
     add_padding_to_strings,
-    allow_disconnected,
     as_our_module,
     cached_property,
     extract_nested_value,
@@ -44,7 +42,6 @@ from ape.utils.misc import (
     raises_not_implemented,
     run_until_complete,
     singledispatchmethod,
-    stream_response,
     to_int,
 )
 from ape.utils.os import (
@@ -61,6 +58,7 @@ from ape.utils.os import (
     use_temp_sys_path,
 )
 from ape.utils.process import JoinableQueue, spawn
+from ape.utils.rpc import USER_AGENT, RPCHeaders, allow_disconnected, stream_response
 from ape.utils.testing import (
     DEFAULT_NUMBER_OF_TEST_ACCOUNTS,
     DEFAULT_TEST_ACCOUNT_BALANCE,
@@ -125,6 +123,7 @@ __all__ = [
     "path_match",
     "raises_not_implemented",
     "returns_array",
+    "RPCHeaders",
     "run_in_tempdir",
     "run_until_complete",
     "singledispatchmethod",

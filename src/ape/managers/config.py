@@ -17,6 +17,7 @@ from ape.utils.basemodel import (
     get_item_with_extras,
     only_raise_attribute_error,
 )
+from ape.utils.rpc import RPCHeaders
 
 CONFIG_FILE_NAME = "ape-config.yaml"
 
@@ -124,6 +125,9 @@ class ConfigManager(ExtraAttributesMixin, BaseManager):
 
             finally:
                 self.DATA_FOLDER = original_data_folder
+
+    def _get_request_headers(self) -> RPCHeaders:
+        return RPCHeaders(**self.REQUEST_HEADER, **self.request_headers)
 
 
 def merge_configs(*cfgs: dict) -> dict:

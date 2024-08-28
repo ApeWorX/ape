@@ -247,14 +247,14 @@ def test_connect_using_only_ipc_for_uri(project, networks, geth_provider):
 def test_connect_request_headers(project, geth_provider, networks):
     http_provider = None
     config = {
-        "request_header": {"h0": 0},
+        "request_headers": {"h0": 0, "User-Agent": "myapp/2.0"},
         "ethereum": {
-            "request_header": {"h1": 1},
+            "request_headers": {"h1": 1, "User-Agent": "ETH/1.0"},
             "local": {
-                "request_header": {"h2": 2},
+                "request_headers": {"h2": 2, "user-agent": "MyPrivateNetwork/0.0.1"},
             },
         },
-        "node": {"request_header": {"h3": 3}},
+        "node": {"request_headers": {"h3": 3, "USER-AGENT": "custom-geth-client/v100"}},
     }
     with project.temp_config(**config):
         with networks.ethereum.local.use_provider("node") as geth:
@@ -284,6 +284,12 @@ def test_connect_request_headers(project, geth_provider, networks):
             # Also, assert Ape's default.
             assert actual["User-Agent"].startswith("Ape/")
             assert "Python" in actual["User-Agent"]
+            assert actual["Content-Type"] == "application/json"
+            # Show appended user-agents strings.
+            assert "myapp/2.0" in actual["User-Agent"]
+            assert "ETH/1.0" in actual["User-Agent"]
+            assert "MyPrivateNetwork/0.0.1" in actual["User-Agent"]
+            assert "custom-geth-client/v100" in actual["User-Agent"]
 
 
 @geth_process_test

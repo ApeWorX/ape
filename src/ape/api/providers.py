@@ -41,6 +41,7 @@ from ape.utils.misc import (
     log_instead_of_fail,
     raises_not_implemented,
 )
+from ape.utils.rpc import RPCHeaders
 
 if TYPE_CHECKING:
     from ape.api.accounts import TestAccountAPI
@@ -847,12 +848,12 @@ class ProviderAPI(BaseInterfaceModel):
         """
         return VirtualMachineError(base_err=exception, **kwargs)
 
-    def _get_request_header(self) -> dict:
+    def _get_request_headers(self) -> RPCHeaders:
         # Internal helper method called by NetworkManager
-        return {
+        return RPCHeaders(
             **self.request_header,
-            **self.config.get("request_header", {}),
-        }
+            **self.config.get("request_headers", {}),
+        )
 
 
 class TestProviderAPI(ProviderAPI):

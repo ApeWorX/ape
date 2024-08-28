@@ -16,7 +16,7 @@ from ape.managers.project import ProjectManager
 from ape.pytest.config import ConfigWrapper
 from ape.types import SnapshotID
 from ape.utils.basemodel import ManagerAccessMixin
-from ape.utils.misc import allow_disconnected
+from ape.utils.rpc import allow_disconnected
 
 
 class PytestApeFixtures(ManagerAccessMixin):

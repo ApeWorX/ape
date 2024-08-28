@@ -31,6 +31,7 @@ from ape.utils import (
     ExtraAttributesMixin,
     ExtraModelAttributes,
     ManagerAccessMixin,
+    RPCHeaders,
     abstractmethod,
     cached_property,
     log_instead_of_fail,
@@ -649,12 +650,12 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
             Optional[CustomError]: If it able to decode one, else ``None``.
         """
 
-    def _get_request_header(self) -> dict:
+    def _get_request_headers(self) -> RPCHeaders:
         # Internal helper method called by NetworkManager
-        return {
+        return RPCHeaders(
             **self.request_header,
-            **self.config.get("request_header", {}),
-        }
+            **self.config.get("request_headers", {}),
+        )
 
 
 class ProviderContextManager(ManagerAccessMixin):
@@ -1296,12 +1297,12 @@ class NetworkAPI(BaseInterfaceModel):
         if self.name not in ("custom", LOCAL_NETWORK_NAME) and self.chain_id != chain_id:
             raise NetworkMismatchError(chain_id, self)
 
-    def _get_request_header(self) -> dict:
+    def _get_request_headers(self) -> RPCHeaders:
         # Internal helper method called by NetworkManager
-        return {
+        return RPCHeaders(
             **self.request_header,
-            **self.config.get("request_header", {}),
-        }
+            **self.config.get("request_headers", {}),
+        )
 
 
 class ForkedNetworkAPI(NetworkAPI):
