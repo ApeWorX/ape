@@ -147,6 +147,9 @@ class NetworkConfig(PluginConfig):
     base_fee_multiplier: float = 1.0
     """A multiplier to apply to a transaction base fee."""
 
+    request_headers: dict = {}
+    """Optionally config extra request headers whenever using this network."""
+
     @field_validator("gas_limit", mode="before")
     @classmethod
     def validate_gas_limit(cls, value):
@@ -220,6 +223,9 @@ class BaseEthereumConfig(PluginConfig):
     _forked_configs: dict[str, ForkedNetworkConfig] = {}
     _custom_networks: dict[str, NetworkConfig] = {}
 
+    # NOTE: This gets appended to Ape's root User-Agent string.
+    request_headers: dict = {}
+
     model_config = SettingsConfigDict(extra="allow")
 
     @model_validator(mode="before")
@@ -243,7 +249,12 @@ class BaseEthereumConfig(PluginConfig):
                 data = merge_configs(default_fork_model, obj)
                 cfg_forks[key] = ForkedNetworkConfig.model_validate(data)
 
-            elif key != LOCAL_NETWORK_NAME and key not in cls.NETWORKS and isinstance(obj, dict):
+            elif (
+                key != LOCAL_NETWORK_NAME
+                and key not in cls.NETWORKS
+                and isinstance(obj, dict)
+                and key not in ("request_headers",)
+            ):
                 # Custom network.
                 default_network_model = create_network_config(
                     default_transaction_type=cls.DEFAULT_TRANSACTION_TYPE

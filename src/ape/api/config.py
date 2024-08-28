@@ -333,6 +333,11 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
     The name of the project.
     """
 
+    request_headers: dict = {}
+    """
+    Extra request headers for all HTTP requests.
+    """
+
     version: str = ""
     """
     The version of the project.

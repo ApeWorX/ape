@@ -6,6 +6,7 @@ from ape.api import EcosystemAPI, ProviderAPI, ProviderContextManager
 from ape.api.networks import NetworkAPI
 from ape.exceptions import EcosystemNotFoundError, NetworkError, NetworkNotFoundError
 from ape.managers.base import BaseManager
+from ape.utils import RPCHeaders
 from ape.utils.basemodel import (
     ExtraAttributesMixin,
     ExtraModelAttributes,
@@ -84,6 +85,22 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
             :class:`~ape.api.providers.ProviderAPI`
         """
         return self.network.ecosystem
+
+    def get_request_headers(
+        self, ecosystem_name: str, network_name: str, provider_name: str
+    ) -> RPCHeaders:
+        """
+        All request headers to be used when connecting to this network.
+        """
+        ecosystem = self.get_ecosystem(ecosystem_name)
+        network = ecosystem.get_network(network_name)
+        provider = network.get_provider(provider_name)
+        headers = self.config_manager._get_request_headers()
+        for obj in (ecosystem, network, provider):
+            for key, value in obj._get_request_headers().items():
+                headers[key] = value
+
+        return headers
 
     def fork(
         self,
@@ -225,12 +242,9 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
 
     @cached_property
     def _plugin_ecosystems(self) -> dict[str, EcosystemAPI]:
-        def to_kwargs(name: str) -> dict:
-            return {"name": name, "request_header": self.config_manager.REQUEST_HEADER}
-
         # Load plugins.
         plugins = self.plugin_manager.ecosystems
-        return {n: cls(**to_kwargs(n)) for n, cls in plugins}  # type: ignore[operator]
+        return {n: cls(name=n) for n, cls in plugins}  # type: ignore[operator]
 
     def create_custom_provider(
         self,
@@ -287,7 +301,6 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
             network=network,
             provider_settings=provider_settings,
             data_folder=self.ethereum.data_folder / name,
-            request_header=network.request_header,
         )
 
     def __iter__(self) -> Iterator[str]:

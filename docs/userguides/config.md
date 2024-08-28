@@ -179,6 +179,39 @@ Install these plugins by running command:
 ape plugins install .
 ```
 
+## Request Headers
+
+For Ape's HTTP usage, such as requests made via `web3.py`, optionally specify extra request headers.
+
+```yaml
+request_headers:
+  # NOTE: Only using Content-Type as an example; can be any header key/value.
+  Content-Type: application/json
+```
+
+You can also specify request headers at the ecosystem, network, and provider levels:
+
+```yaml
+# NOTE: All the headers are the same only for demo purposes.
+# You can use headers you want for any of these config locations.
+ethereum:
+  # Apply to all requests made to ethereum networks.
+  request_headers:
+    Content-Type: application/json
+  
+  mainnet:
+    # Apply to all requests made to ethereum:mainnet (using any provider)
+    request_headers:
+      Content-Type: application/json
+  
+node:
+  # Apply to any request using the `node` provider.
+  request_headers:
+    Content-Type: application/json
+```
+
+To learn more about how request headers work in Ape, see [this section of the Networking guide](./networks.html#request-headers).
+
 ## Testing
 
 Configure your test accounts:

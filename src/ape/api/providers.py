@@ -41,6 +41,7 @@ from ape.utils.misc import (
     log_instead_of_fail,
     raises_not_implemented,
 )
+from ape.utils.rpc import RPCHeaders
 
 if TYPE_CHECKING:
     from ape.api.accounts import TestAccountAPI
@@ -177,7 +178,9 @@ class ProviderAPI(BaseInterfaceModel):
     provider_settings: dict = {}
     """The settings for the provider, as overrides to the configuration."""
 
-    request_header: dict
+    # TODO: In 0.9, make @property that returns value from config,
+    #   and use REQUEST_HEADER as plugin-defined constants.
+    request_header: dict = {}
     """A header to set on HTTP/RPC requests."""
 
     block_page_size: int = 100
@@ -844,6 +847,16 @@ class ProviderAPI(BaseInterfaceModel):
                went wrong in the call.
         """
         return VirtualMachineError(base_err=exception, **kwargs)
+
+    def _get_request_headers(self) -> RPCHeaders:
+        # Internal helper method called by NetworkManager
+        headers = RPCHeaders(**self.request_header)
+        # Have to do it this way to avoid "multiple-keys" error.
+        configured_headers: dict = self.config.get("request_headers", {})
+        for key, value in configured_headers.items():
+            headers[key] = value
+
+        return headers
 
 
 class TestProviderAPI(ProviderAPI):

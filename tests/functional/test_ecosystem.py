@@ -14,7 +14,7 @@ from ape.exceptions import CustomError, DecodingError, NetworkError, NetworkNotF
 from ape.types import AddressType, CurrencyValueComparable
 from ape.utils import DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT
 from ape_ethereum import TransactionTrace
-from ape_ethereum.ecosystem import BLUEPRINT_HEADER, BaseEthereumConfig, Block
+from ape_ethereum.ecosystem import BLUEPRINT_HEADER, BaseEthereumConfig, Block, Ethereum
 from ape_ethereum.transactions import (
     DynamicFeeTransaction,
     Receipt,
@@ -78,6 +78,22 @@ def configured_custom_ecosystem(
 
 def test_name(ethereum):
     assert ethereum.name == "ethereum"
+
+
+def test_request_header(ethereum):
+    actual = ethereum.request_header
+    expected = {"User-Agent": "ape-ethereum"}
+    assert actual == expected
+
+
+def test_request_header_subclass():
+    class L2(Ethereum):
+        name: str = "l2"
+
+    l2 = L2()
+    actual = l2.request_header
+    expected = {"User-Agent": "ape-l2"}
+    assert actual == expected
 
 
 def test_name_when_custom(configured_custom_ecosystem, networks):

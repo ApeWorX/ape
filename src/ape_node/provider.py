@@ -262,6 +262,11 @@ class EthereumNodeConfig(PluginConfig):
     based on your node's client-version and available RPCs.
     """
 
+    request_headers: dict = {}
+    """
+    Optionally specify request headers to use whenever using this provider.
+    """
+
     model_config = SettingsConfigDict(extra="allow")
 
     @field_validator("call_trace_approach", mode="before")

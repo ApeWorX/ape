@@ -14,7 +14,8 @@ from urllib3.util.retry import Retry
 
 from ape.exceptions import CompilerError, ProjectError, UnknownVersionError
 from ape.logging import logger
-from ape.utils.misc import USER_AGENT, cached_property, stream_response
+from ape.utils.misc import cached_property
+from ape.utils.rpc import USER_AGENT, stream_response
 
 
 class GitProcessWrapper:

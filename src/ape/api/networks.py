@@ -13,6 +13,7 @@ from eth_pydantic_types import HexBytes
 from eth_utils import keccak, to_int
 from ethpm_types import BaseModel, ContractType
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, MethodABI
+from pydantic import model_validator
 
 from ape.exceptions import (
     CustomError,
@@ -31,6 +32,7 @@ from ape.utils import (
     ExtraAttributesMixin,
     ExtraModelAttributes,
     ManagerAccessMixin,
+    RPCHeaders,
     abstractmethod,
     cached_property,
     log_instead_of_fail,
@@ -68,7 +70,9 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
     The name of the ecosystem. This should be set the same name as the plugin.
     """
 
-    request_header: dict
+    # TODO: In 0.9, make @property that returns value from config,
+    #   and use REQUEST_HEADER as plugin-defined constants.
+    request_header: dict = {}
     """A shareable HTTP header for network requests."""
 
     fee_token_symbol: str
@@ -79,6 +83,14 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
 
     _default_network: Optional[str] = None
     """The default network of the ecosystem, such as ``local``."""
+
+    @model_validator(mode="after")
+    @classmethod
+    def _validate_ecosystem(cls, model):
+        headers = RPCHeaders(**model.request_header)
+        headers["User-Agent"] = f"ape-{model.name}"
+        model.request_header = dict(**headers)
+        return model
 
     @log_instead_of_fail(default="<EcosystemAPI>")
     def __repr__(self) -> str:
@@ -289,9 +301,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
     @cached_property
     def _networks_from_plugins(self) -> dict[str, "NetworkAPI"]:
         return {
-            network_name: network_class(
-                name=network_name, ecosystem=self, request_header=self.request_header
-            )
+            network_name: network_class(name=network_name, ecosystem=self)
             for _, (ecosystem_name, network_name, network_class) in self.plugin_manager.networks
             if ecosystem_name == self.name
         }
@@ -647,6 +657,16 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
             Optional[CustomError]: If it able to decode one, else ``None``.
         """
 
+    def _get_request_headers(self) -> RPCHeaders:
+        # Internal helper method called by NetworkManager
+        headers = RPCHeaders(**self.request_header)
+        # Have to do it this way to avoid "multiple-keys" error.
+        configured_headers: dict = self.config.get("request_headers", {})
+        for key, value in configured_headers.items():
+            headers[key] = value
+
+        return headers
+
 
 class ProviderContextManager(ManagerAccessMixin):
     """
@@ -809,7 +829,9 @@ class NetworkAPI(BaseInterfaceModel):
     ecosystem: EcosystemAPI
     """The ecosystem of the network."""
 
-    request_header: dict
+    # TODO: In 0.9, make @property that returns value from config,
+    #   and use REQUEST_HEADER as plugin-defined constants.
+    request_header: dict = {}
     """A shareable network HTTP header."""
 
     # See ``.default_provider`` which is the proper field.
@@ -1043,7 +1065,6 @@ class NetworkAPI(BaseInterfaceModel):
                     provider_class,
                     name=provider_name,
                     network=self,
-                    request_header=self.request_header,
                 )
 
         return providers
@@ -1284,6 +1305,16 @@ class NetworkAPI(BaseInterfaceModel):
         """
         if self.name not in ("custom", LOCAL_NETWORK_NAME) and self.chain_id != chain_id:
             raise NetworkMismatchError(chain_id, self)
+
+    def _get_request_headers(self) -> RPCHeaders:
+        # Internal helper method called by NetworkManager
+        headers = RPCHeaders(**self.request_header)
+        # Have to do it this way to avoid multiple-keys error.
+        configured_headers: dict = self.config.get("request_headers", {})
+        for key, value in configured_headers.items():
+            headers[key] = value
+
+        return headers
 
 
 class ForkedNetworkAPI(NetworkAPI):

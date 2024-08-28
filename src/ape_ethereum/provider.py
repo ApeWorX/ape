@@ -22,6 +22,7 @@ from pydantic.dataclasses import dataclass
 from requests import HTTPError
 from web3 import HTTPProvider, IPCProvider, Web3
 from web3 import WebsocketProvider as WebSocketProvider
+from web3._utils.http import construct_user_agent
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.exceptions import (
     ExtraDataLengthError,
@@ -1297,6 +1298,11 @@ class EthereumNodeProvider(Web3Provider, ABC):
 
     name: str = "node"
 
+    # NOTE: Appends user-agent to base User-Agent string.
+    request_header: dict = {
+        "User-Agent": construct_user_agent(str(HTTPProvider)),
+    }
+
     @property
     def uri(self) -> str:
         if "url" in self.provider_settings:
@@ -1444,8 +1450,14 @@ class EthereumNodeProvider(Web3Provider, ABC):
     def _set_web3(self):
         # Clear cached version when connecting to another URI.
         self._client_version = None
+        headers = self.network_manager.get_request_headers(
+            self.network.ecosystem.name, self.network.name, self.name
+        )
         self._web3 = _create_web3(
-            http_uri=self.http_uri, ipc_path=self.ipc_path, ws_uri=self.ws_uri
+            http_uri=self.http_uri,
+            ipc_path=self.ipc_path,
+            ws_uri=self.ws_uri,
+            request_kwargs={"headers": headers},
         )
 
     def _complete_connect(self):
@@ -1544,7 +1556,10 @@ class EthereumNodeProvider(Web3Provider, ABC):
 
 
 def _create_web3(
-    http_uri: Optional[str] = None, ipc_path: Optional[Path] = None, ws_uri: Optional[str] = None
+    http_uri: Optional[str] = None,
+    ipc_path: Optional[Path] = None,
+    ws_uri: Optional[str] = None,
+    request_kwargs: Optional[dict] = None,
 ):
     # NOTE: This list is ordered by try-attempt.
     # Try ENV, then IPC, and then HTTP last.
@@ -1552,9 +1567,11 @@ def _create_web3(
     if ipc := ipc_path:
         providers.append(lambda: IPCProvider(ipc_path=ipc))
     if http := http_uri:
-        providers.append(
-            lambda: HTTPProvider(endpoint_uri=http, request_kwargs={"timeout": 30 * 60})
-        )
+        request_kwargs = request_kwargs or {}
+        if "timeout" not in request_kwargs:
+            request_kwargs["timeout"] = 30 * 60
+
+        providers.append(lambda: HTTPProvider(endpoint_uri=http, request_kwargs=request_kwargs))
     if ws := ws_uri:
         providers.append(lambda: WebSocketProvider(endpoint_uri=ws))
 

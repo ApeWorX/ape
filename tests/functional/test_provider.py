@@ -478,7 +478,7 @@ def test_new_when_web3_provider_uri_set():
 
     try:
         with pytest.raises(ProviderError, match=expected):
-            _ = MyProvider(data_folder=None, name=None, network=None, request_header=None)
+            _ = MyProvider(data_folder=None, name=None, network=None)
 
     finally:
         if WEB3_PROVIDER_URI_ENV_VAR_NAME in os.environ:
@@ -494,7 +494,6 @@ def test_account_balance_state(project, eth_tester_provider, owner):
         provider = LocalProvider(
             name="test",
             network=eth_tester_provider.network,
-            request_header=eth_tester_provider.request_header,
         )
         provider.connect()
         bal = provider.get_balance(owner.address)

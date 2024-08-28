@@ -4,7 +4,7 @@ import inspect
 import json
 import sys
 from asyncio import gather
-from collections.abc import Callable, Coroutine, Mapping
+from collections.abc import Coroutine, Mapping
 from datetime import datetime, timezone
 from functools import cached_property, lru_cache, singledispatchmethod, wraps
 from importlib.metadata import PackageNotFoundError, distributions
@@ -12,14 +12,12 @@ from importlib.metadata import version as version_metadata
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional, TypeVar, cast
 
-import requests
 import yaml
 from eth_pydantic_types import HexBytes
 from eth_utils import is_0x_prefixed
 from packaging.specifiers import SpecifierSet
-from tqdm.auto import tqdm  # type: ignore
 
-from ape.exceptions import APINotImplementedError, ProviderNotConnectedError
+from ape.exceptions import APINotImplementedError
 from ape.logging import logger
 from ape.utils.os import expand_environment_variables
 
@@ -187,7 +185,6 @@ def get_package_version(obj: Any) -> str:
 
 
 __version__ = get_package_version(__name__)
-USER_AGENT = f"Ape/{__version__} (Python/{_python_version})"
 
 
 def load_config(path: Path, expand_envars=True, must_exist=False) -> dict:
@@ -308,33 +305,6 @@ def add_padding_to_strings(
     return spaced_items
 
 
-def stream_response(download_url: str, progress_bar_description: str = "Downloading") -> bytes:
-    """
-    Download HTTP content by streaming and returning the bytes.
-    Progress bar will be displayed in the CLI.
-
-    Args:
-        download_url (str): String to get files to download.
-        progress_bar_description (str): Downloading word.
-
-    Returns:
-        bytes: Content in bytes to show the progress.
-    """
-    response = requests.get(download_url, stream=True)
-    response.raise_for_status()
-
-    total_size = int(response.headers.get("content-length", 0))
-    progress_bar = tqdm(total=total_size, unit="iB", unit_scale=True, leave=False)
-    progress_bar.set_description(progress_bar_description)
-    content = b""
-    for data in response.iter_content(1024, decode_unicode=True):
-        progress_bar.update(len(data))
-        content += data
-
-    progress_bar.close()
-    return content
-
-
 def raises_not_implemented(fn):
     """
     Decorator for raising helpful not implemented error.
@@ -398,33 +368,6 @@ def run_until_complete(*item: Any) -> Any:
     loop = asyncio.get_event_loop()
     result = loop.run_until_complete(task)
     return result
-
-
-def allow_disconnected(fn: Callable):
-    """
-    A decorator that instead of raising :class:`~ape.exceptions.ProviderNotConnectedError`
-    warns and returns ``None``.
-
-    Usage example::
-
-        from typing import Optional
-        from ape.types import SnapshotID
-        from ape.utils import return_none_when_disconnected
-
-        @allow_disconnected
-        def try_snapshot(self) -> Optional[SnapshotID]:
-            return self.chain.snapshot()
-
-    """
-
-    def inner(*args, **kwargs):
-        try:
-            return fn(*args, **kwargs)
-        except ProviderNotConnectedError:
-            logger.warning("Provider is not connected.")
-            return None
-
-    return inner
 
 
 def nonreentrant(key_fn):
@@ -568,7 +511,6 @@ def as_our_module(cls_or_def: _MOD_T, doc_str: Optional[str] = None) -> _MOD_T:
 
 
 __all__ = [
-    "allow_disconnected",
     "cached_property",
     "_dict_overlay",
     "extract_nested_value",
@@ -584,7 +526,5 @@ __all__ = [
     "raises_not_implemented",
     "run_until_complete",
     "singledispatchmethod",
-    "stream_response",
     "to_int",
-    "USER_AGENT",
 ]
