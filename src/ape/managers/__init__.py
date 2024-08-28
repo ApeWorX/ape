@@ -14,7 +14,7 @@ from .query import QueryManager
 
 ManagerAccessMixin.plugin_manager = PluginManager()
 ManagerAccessMixin.config_manager = ConfigManager(
-    request_header={"User-Agent": USER_AGENT},
+    request_header={"User-Agent": USER_AGENT, "Content-Type": "application/json"},
 )
 ManagerAccessMixin.compiler_manager = CompilerManager()
 ManagerAccessMixin.network_manager = NetworkManager()
