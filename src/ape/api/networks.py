@@ -652,10 +652,13 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
 
     def _get_request_headers(self) -> RPCHeaders:
         # Internal helper method called by NetworkManager
-        return RPCHeaders(
-            **self.request_header,
-            **self.config.get("request_headers", {}),
-        )
+        headers = RPCHeaders(**self.request_header)
+        # Have to do it this way to avoid "multiple-keys" error.
+        configured_headers: dict = self.config.get("request_headers", {})
+        for key, value in configured_headers.items():
+            headers[key] = value
+
+        return headers
 
 
 class ProviderContextManager(ManagerAccessMixin):
@@ -1299,10 +1302,13 @@ class NetworkAPI(BaseInterfaceModel):
 
     def _get_request_headers(self) -> RPCHeaders:
         # Internal helper method called by NetworkManager
-        return RPCHeaders(
-            **self.request_header,
-            **self.config.get("request_headers", {}),
-        )
+        headers = RPCHeaders(**self.request_header)
+        # Have to do it this way to avoid multiple-keys error.
+        configured_headers: dict = self.config.get("request_headers", {})
+        for key, value in configured_headers.items():
+            headers[key] = value
+
+        return headers
 
 
 class ForkedNetworkAPI(NetworkAPI):

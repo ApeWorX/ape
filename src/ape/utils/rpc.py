@@ -78,8 +78,14 @@ class RPCHeaders(CaseInsensitiveDict):
 
         # Handle appending the user-agent (without replacing).
         existing_user_agent = self.__getitem__("user-agent")
-        if value in existing_user_agent:
-            # Already added.
-            return
+        parts = [a.strip() for a in value.split(" ")]
+        new_parts = []
+        for part in parts:
+            if part in existing_user_agent:
+                # Already added.
+                continue
+            else:
+                new_parts.append(part)
 
-        super().__setitem__(key, f"{existing_user_agent} {value}")
+        if new_user_agent := " ".join(new_parts):
+            super().__setitem__(key, f"{existing_user_agent} {new_user_agent}")

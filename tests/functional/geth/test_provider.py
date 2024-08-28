@@ -281,10 +281,14 @@ def test_connect_request_headers(project, geth_provider, networks):
             assert actual["h1"] == 1  # ecosystem
             assert actual["h2"] == 2  # network
             assert actual["h3"] == 3  # provider
-            # Also, assert Ape's default.
+
+            # Also, assert Ape's default user-agent strings.
             assert actual["User-Agent"].startswith("Ape/")
             assert "Python" in actual["User-Agent"]
+
+            # Show other default headers.
             assert actual["Content-Type"] == "application/json"
+
             # Show appended user-agents strings.
             assert "myapp/2.0" in actual["User-Agent"]
             assert "ETH/1.0" in actual["User-Agent"]

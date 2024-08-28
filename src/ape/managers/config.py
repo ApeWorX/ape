@@ -127,7 +127,12 @@ class ConfigManager(ExtraAttributesMixin, BaseManager):
                 self.DATA_FOLDER = original_data_folder
 
     def _get_request_headers(self) -> RPCHeaders:
-        return RPCHeaders(**self.REQUEST_HEADER, **self.request_headers)
+        # Avoid multiple keys error by not initializing with both dicts.
+        headers = RPCHeaders(**self.REQUEST_HEADER)
+        for key, value in self.request_headers.items():
+            headers[key] = value
+
+        return headers
 
 
 def merge_configs(*cfgs: dict) -> dict:

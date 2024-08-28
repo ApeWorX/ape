@@ -222,7 +222,9 @@ class BaseEthereumConfig(PluginConfig):
     default_network: str = LOCAL_NETWORK_NAME
     _forked_configs: dict[str, ForkedNetworkConfig] = {}
     _custom_networks: dict[str, NetworkConfig] = {}
-    request_headers: dict = {}
+
+    # NOTE: This gets appended to Ape's root User-Agent string.
+    request_headers: dict = {"User-Agent": "ape-ethereum"}
 
     model_config = SettingsConfigDict(extra="allow")
 
