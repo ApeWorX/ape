@@ -242,12 +242,9 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
 
     @cached_property
     def _plugin_ecosystems(self) -> dict[str, EcosystemAPI]:
-        def to_kwargs(name: str) -> dict:
-            return {"name": name, "request_header": self.config_manager.REQUEST_HEADER}
-
         # Load plugins.
         plugins = self.plugin_manager.ecosystems
-        return {n: cls(**to_kwargs(n)) for n, cls in plugins}  # type: ignore[operator]
+        return {n: cls(name=n) for n, cls in plugins}  # type: ignore[operator]
 
     def create_custom_provider(
         self,
@@ -304,7 +301,6 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
             network=network,
             provider_settings=provider_settings,
             data_folder=self.ethereum.data_folder / name,
-            request_header=network.request_header,
         )
 
     def __iter__(self) -> Iterator[str]:

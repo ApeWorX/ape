@@ -224,7 +224,7 @@ class BaseEthereumConfig(PluginConfig):
     _custom_networks: dict[str, NetworkConfig] = {}
 
     # NOTE: This gets appended to Ape's root User-Agent string.
-    request_headers: dict = {"User-Agent": "ape-ethereum"}
+    request_headers: dict = {}
 
     model_config = SettingsConfigDict(extra="allow")
 
@@ -383,6 +383,9 @@ class Ethereum(EcosystemAPI):
     #   if the chain doesn't support EIP-1559.
 
     fee_token_symbol: str = "ETH"
+
+    # NOTE: This gets appended to Ape's root User-Agent string.
+    request_header: dict = {"User-Agent": "ape-ethereum"}
 
     @property
     def config(self) -> EthereumConfig:

@@ -71,7 +71,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
 
     # TODO: In 0.9, make @property that returns value from config,
     #   and use REQUEST_HEADER as plugin-defined constants.
-    request_header: dict
+    request_header: dict = {}
     """A shareable HTTP header for network requests."""
 
     fee_token_symbol: str
@@ -292,9 +292,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
     @cached_property
     def _networks_from_plugins(self) -> dict[str, "NetworkAPI"]:
         return {
-            network_name: network_class(
-                name=network_name, ecosystem=self, request_header=self.request_header
-            )
+            network_name: network_class(name=network_name, ecosystem=self)
             for _, (ecosystem_name, network_name, network_class) in self.plugin_manager.networks
             if ecosystem_name == self.name
         }
@@ -824,7 +822,7 @@ class NetworkAPI(BaseInterfaceModel):
 
     # TODO: In 0.9, make @property that returns value from config,
     #   and use REQUEST_HEADER as plugin-defined constants.
-    request_header: dict
+    request_header: dict = {}
     """A shareable network HTTP header."""
 
     # See ``.default_provider`` which is the proper field.
@@ -1058,7 +1056,6 @@ class NetworkAPI(BaseInterfaceModel):
                     provider_class,
                     name=provider_name,
                     network=self,
-                    request_header=self.request_header,
                 )
 
         return providers

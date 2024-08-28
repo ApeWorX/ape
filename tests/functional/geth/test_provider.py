@@ -111,7 +111,7 @@ def test_uri_non_dev_and_not_configured(mocker, ethereum):
     network.name = "gorillanet"
     network.ecosystem.name = "gorillas"
 
-    provider = Node.model_construct(network=network, request_header={})
+    provider = Node.model_construct(network=network)
 
     with pytest.raises(ProviderError):
         _ = provider.uri
@@ -285,6 +285,8 @@ def test_connect_request_headers(project, geth_provider, networks):
             # Also, assert Ape's default user-agent strings.
             assert actual["User-Agent"].startswith("Ape/")
             assert "Python" in actual["User-Agent"]
+            assert "ape-ethereum" in actual["User-Agent"]
+            assert "web3.py/" in actual["User-Agent"]
 
             # Show other default headers.
             assert actual["Content-Type"] == "application/json"

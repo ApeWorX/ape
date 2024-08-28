@@ -180,7 +180,7 @@ class ProviderAPI(BaseInterfaceModel):
 
     # TODO: In 0.9, make @property that returns value from config,
     #   and use REQUEST_HEADER as plugin-defined constants.
-    request_header: dict
+    request_header: dict = {}
     """A header to set on HTTP/RPC requests."""
 
     block_page_size: int = 100

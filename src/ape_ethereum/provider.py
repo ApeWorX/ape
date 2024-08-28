@@ -22,6 +22,7 @@ from pydantic.dataclasses import dataclass
 from requests import HTTPError
 from web3 import HTTPProvider, IPCProvider, Web3
 from web3 import WebsocketProvider as WebSocketProvider
+from web3._utils.http import construct_user_agent
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.exceptions import (
     ExtraDataLengthError,
@@ -1296,6 +1297,11 @@ class EthereumNodeProvider(Web3Provider, ABC):
     concurrency: int = 16
 
     name: str = "node"
+
+    # NOTE: Appends user-agent to base User-Agent string.
+    request_header: dict = {
+        "User-Agent": construct_user_agent(str(HTTPProvider)),
+    }
 
     @property
     def uri(self) -> str:
