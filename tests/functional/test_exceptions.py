@@ -1,5 +1,6 @@
 import re
 from pathlib import Path
+from typing import Optional
 
 import pytest
 
@@ -11,6 +12,7 @@ from ape.exceptions import (
     TransactionError,
     handle_ape_exception,
 )
+from ape.types import SourceTraceback
 from ape_ethereum.transactions import DynamicFeeTransaction, Receipt
 
 
@@ -207,3 +209,18 @@ def test_handle_ape_exception_hides_home_dir(mocker):
     # We expect the same only the home dir has been hidden.
     expected = "\n" + tb_str.replace(str(Path.home()), "$HOME")
     assert actual == expected
+
+
+class TestContractLogicError:
+    @pytest.mark.parametrize("revert_message", (None, ""))
+    def test_message_uses_revert_type_when_no_revert_message(self, mocker, revert_message):
+        class TB(SourceTraceback):
+            @property
+            def revert_type(self) -> Optional[str]:
+                return "CUSTOM_ERROR"
+
+        tb = TB([{"statements": [], "closure": {"name": "fn"}, "depth": 0}])  # type: ignore
+        error = ContractLogicError(revert_message=revert_message, source_traceback=tb)
+        actual = error.message
+        expected = "CUSTOM_ERROR"
+        assert actual == expected

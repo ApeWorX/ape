@@ -305,7 +305,6 @@ class ContractLogicError(VirtualMachineError):
     ):
         self.txn = txn
         self.contract_address = contract_address
-
         super().__init__(
             base_err=base_err,
             contract_address=contract_address,
@@ -316,8 +315,7 @@ class ContractLogicError(VirtualMachineError):
             trace=trace,
             txn=txn,
         )
-
-        if revert_message is None and source_traceback is not None and (dev := self.dev_message):
+        if not revert_message and source_traceback is not None and (dev := self.dev_message):
             try:
                 # Attempt to use dev message as main exception message.
                 self.message = dev
