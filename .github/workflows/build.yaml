@@ -79,20 +79,30 @@ jobs:
 
       - name: Retain last two minor versions
         run: |
-          # Get all tags in the format X.Y.Z and sort them
-          tags=$(git tag -l --sort=-v:refname | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$')
+          # Fetch all tags in the format X.Y.Z
+          echo "Fetching all tags..."
+          tags=$(git tag -l | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$')
+          echo "All tags:"
+          echo "$tags"
           
-          # Extract the last two minor versions
-          latest_two_minors=$(echo "$tags" | awk -F. '{print $1"."$2}' | uniq -u | head -n 2)
+          # Extract the last two unique minor versions
+          echo "Extracting the last two minor versions..."
+          latest_two_minors=$(echo "$tags" | awk -F. '{print $1"."$2}' | uniq | tail -n 2)
+          echo "Last two minor versions:"
+          echo "$latest_two_minors"
           
           keep_tags=""
           for minor in $latest_two_minors; do
+            echo "Processing minor version: $minor"
             latest_patch=$(echo "$tags" | grep "^$minor" | sort -V | tail -n 1)
+            echo "Latest patch for $minor: $latest_patch"
             keep_tags="$keep_tags $latest_patch"
           done
           
-          echo "keep_tags=$(echo $keep_tags | tr ' ' '\n' | paste -sd ',' -)" >> $GITHUB_ENV
+          # Store the tags in the environment variable
+          keep_tags=$(echo $keep_tags | tr ' ' '\n' | paste -sd ',' -)
           echo "Tags to keep: $keep_tags"
+          echo "keep_tags=$keep_tags"
 
       - name: Run container retention policy
         if: github.ref == 'refs/heads/main'
