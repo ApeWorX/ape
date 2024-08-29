@@ -76,3 +76,24 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             SLIM_IMAGE=${{ steps.meta.outputs.tags }}-slim
+
+      - name: Retain last two minor versions
+        run: |
+          latest_two_minors=$(git tag -l | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | awk -F. '{print $1"."$2}' | uniq | tail -n 2)
+          keep_tags=""
+          for minor in $latest_two_minors; do
+            latest_patch=$(git tag -l "${minor}.*" | sort -V | tail -n 1)
+            keep_tags="$keep_tags $latest_patch"
+          done
+          echo "keep_tags=$(echo $keep_tags)"
+
+      - name: Run container retention policy
+        if: github.ref == 'refs/heads/main'
+        uses: snok/container-retention-policy@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          keep-tag-names: |
+            stable
+            latest
+            ${{ env.keep_tags }}
+
