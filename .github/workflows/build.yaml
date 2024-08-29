@@ -89,7 +89,7 @@ jobs:
 
       - name: Run container retention policy
         if: github.ref == 'refs/heads/main'
-        uses: snok/container-retention-policy@v3
+        uses: snok/container-retention-policy@v3.0.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           keep-tag-names: |
