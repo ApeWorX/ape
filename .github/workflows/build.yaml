@@ -77,13 +77,21 @@ jobs:
           build-args: |
             SLIM_IMAGE=${{ steps.meta.outputs.tags }}-slim
 
-      - name: Retain last two minor versions
+      - name: Fetch all tags and store them
         run: |
-          # Fetch all tags in the format X.Y.Z
-          echo "Fetching all tags..."
+          git fetch --tags
           tags=$(git tag -l | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$')
           echo "All tags:"
           echo "$tags"
+          echo "ALL_TAGS=$(echo $tags | tr '\n' ' ')" >> $GITHUB_ENV
+
+      - name: Retain last two minor versions
+        run: |
+          # Fetch all tags in the format X.Y.Z
+          echo "Using stored tags..."
+          all_tags="${{ env.ALL_TAGS }}"
+          echo "All tags:"
+          echo "$all_tags"
           
           # Extract the last two unique minor versions
           echo "Extracting the last two minor versions..."
