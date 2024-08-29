@@ -94,26 +94,25 @@ jobs:
           all_tags="${{ env.ALL_TAGS }}"
           echo "All tags:"
           echo "$all_tags"
-          
-          # Extract the last two unique minor versions
-          echo "Extracting the last two minor versions..."
-          latest_two_minors=$(echo "$all_tags" | tr ' ' '\n' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | awk -F. '{print $1"."$2}' | sed 's/v//' | uniq | tail -n 2)
+
+          # Extract the minor versions (X.Y) from tags in the format vX.X.X
+          latest_two_minors=$(echo "$all_tags" | tr ' ' '\n' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sed -E 's/^v([0-9]+\.[0-9]+)\.[0-9]+$/\1/' | uniq | tail -n 2)
           echo "Last two minor versions:"
           echo "$latest_two_minors"
-          
+
           keep_tags=""
           for minor in $latest_two_minors; do
             echo "Processing minor version: $minor"
-            latest_patch=$(echo "$all_tags" | tr ' ' '\n' | grep "^v$minor" | sort -V | tail -n 1)
+            latest_patch=$(echo "$all_tags" | tr ' ' '\n' | grep "^v$minor\." | sort -V | tail -n 1)
             echo "Latest patch for $minor: $latest_patch"
             keep_tags="$keep_tags $latest_patch"
           done
-          
+
           # Store the tags in the environment variable
           keep_tags=$(echo $keep_tags | tr ' ' '\n' | paste -sd ',' -)
           echo "Tags to keep: $keep_tags"
-          echo "keep_tags=$keep_tags"
           echo "keep_tags=$keep_tags" >> $GITHUB_ENV
+          echo "keep_tags=$keep_tags"
 
       - name: Run container retention policy
         if: github.ref == 'refs/heads/main'
