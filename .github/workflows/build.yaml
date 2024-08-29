@@ -79,10 +79,12 @@ jobs:
 
       - name: Fetch all tags and store them
         run: |
-          git fetch --tags
-          tags=$(git tag -l | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$')
+          # List all tags
+          tags=$(git tag -l)
           echo "All tags:"
           echo "$tags"
+
+          # Save tags in an environment variable for later use
           echo "ALL_TAGS=$(echo $tags | tr '\n' ' ')" >> $GITHUB_ENV
 
       - name: Retain last two minor versions
