@@ -72,7 +72,7 @@ class HexIntConverter(ConverterAPI):
 
 class HexListConverter(ConverterAPI):
     """
-    Convert list of hex values to single concatenated hex value.
+    Convert list of hex values to single concatenated ``HexBytes`` value.
     """
 
     def is_convertible(self, value: Any) -> bool:
