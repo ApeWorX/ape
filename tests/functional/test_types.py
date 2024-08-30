@@ -195,3 +195,9 @@ class TestCurrencyValueComparable:
         for actual in (model.val, model.val_optional, model.val_in_dict["value"]):
             for ex in (value, expected):
                 assert actual == ex
+
+    def test_hashable(self):
+        mapping: dict[int, str] = {0: "0", 1: "1"}
+        key = CurrencyValueComparable(0)
+        assert key in mapping
+        assert mapping[key] == "0"
