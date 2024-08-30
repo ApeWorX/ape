@@ -120,8 +120,8 @@ jobs:
         with:
           account: ApeWorX
           token: ${{ secrets.GITHUB_TOKEN }}
-          image-tags: "!stable* !latest* !${{ env.keep_tags }}"
+          image-tags: "!latest* !${{ env.keep_tags }}"
           tag-selection: both
-          cut-off: 4w
+          cut-off: 1w
           dry-run: true
 
