@@ -472,3 +472,32 @@ def test_delete_proxy(vyper_contract_instance, chain, ethereum, owner):
     # Ensure we can't access the target either.
     with pytest.raises(KeyError):
         _ = chain.contracts[proxy_info.target]
+
+
+def test_clear_local_caches(chain, vyper_contract_instance, proxy_contract_container, owner):
+    # Ensure contract type exists.
+    address = vyper_contract_instance.address
+    # Ensure blueprint exists.
+    chain.contracts._local_blueprints[address] = vyper_contract_instance.contract_type
+    # Ensure proxy exists.
+    proxy = proxy_contract_container.deploy(address, sender=owner)
+    # Ensure creation exists.
+    _ = chain.contracts.get_creation_metadata(address)
+
+    # Test setup verification.
+    assert (
+        address in chain.contracts._local_contract_types
+    ), "Setup failed - no contract type(s) cached"
+    assert proxy.address in chain.contracts._local_proxies, "Setup failed - no proxy cached"
+    assert (
+        address in chain.contracts._local_contract_creation
+    ), "Setup failed - no creation(s) cached"
+
+    # This is the method we are testing.
+    chain.contracts.clear_local_caches()
+
+    # Assertions - everything should be empty.
+    assert chain.contracts._local_proxies == {}
+    assert chain.contracts._local_blueprints == {}
+    assert chain.contracts._local_deployments_mapping == {}
+    assert chain.contracts._local_contract_creation == {}
