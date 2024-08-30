@@ -115,13 +115,13 @@ jobs:
           echo "keep_tags=$keep_tags"
 
       - name: Run container retention policy
-        # if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main'
         uses: snok/container-retention-policy@v3.0.0
         with:
           account: ApeWorX
           token: ${{ secrets.GITHUB_TOKEN }}
-          image-tags: "!latest* !${{ env.keep_tags }}"
+          image-tags: "!stable* !latest* !${{ env.keep_tags }}"
           tag-selection: both
-          cut-off: 0w
+          cut-off: 4w
           dry-run: true
 
