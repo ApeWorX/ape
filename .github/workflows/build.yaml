@@ -103,9 +103,9 @@ jobs:
           keep_tags=""
           for minor in $latest_two_minors; do
             echo "Processing minor version: $minor"
-            latest_patch=$(echo "$all_tags" | tr ' ' '\n' | grep "^v$minor\." | sort -V | tail -n 1)
-            echo "Latest patch for $minor: $latest_patch"
-            keep_tags="$keep_tags $latest_patch"
+            patches=$(echo "$all_tags" | tr ' ' '\n' | grep "^v$minor\.")
+            echo "Latest patch for $minor: $patches"
+            keep_tags="$keep_tags $patches"
           done
 
           # Store the tags in the environment variable
