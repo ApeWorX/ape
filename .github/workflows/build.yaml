@@ -119,8 +119,7 @@ jobs:
         uses: snok/container-retention-policy@v3.0.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          keep-tag-names: |
-            stable
-            latest
-            ${{ env.keep_tags }}
+          image-tags: "!stable* !latest* !${{ env.keep_tags }}"
+          tag-selection: both
+          dry-run: true
 
