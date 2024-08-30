@@ -1,7 +1,6 @@
 from pathlib import Path
 
 import click
-from click import BadArgumentUsage, argument, command
 
 from ape.cli import ape_cli_context
 
@@ -16,12 +15,12 @@ def _contract_callback(ctx, param, val):
         if path.is_file():
             return path
 
-    raise BadArgumentUsage(f"Contract not found: {val}")
+    raise click.BadArgumentUsage(f"Contract not found: {val}")
 
 
-@command()
+@click.command()
 @ape_cli_context()
-@argument("contract", callback=_contract_callback)
+@click.argument("contract", callback=_contract_callback)
 def cli(cli_ctx, contract):
     cm = cli_ctx.compiler_manager
     compiler = "vyper" if contract.suffix == ".vy" else "solidity"
