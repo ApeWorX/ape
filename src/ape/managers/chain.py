@@ -1313,7 +1313,7 @@ class ContractCache(BaseManager):
         self._local_proxies = {}
         self._local_blueprints = {}
         self._local_deployments_mapping = {}
-        self._local_creation_metadata = {}
+        self._local_contract_creation = {}
 
     def _get_contract_type_from_disk(self, address: AddressType) -> Optional[ContractType]:
         address_file = self._contract_types_cache / f"{address}.json"
