@@ -118,8 +118,10 @@ jobs:
         if: github.ref == 'refs/heads/main'
         uses: snok/container-retention-policy@v3.0.0
         with:
+          account: ApeWorX
           token: ${{ secrets.GITHUB_TOKEN }}
           image-tags: "!stable* !latest* !${{ env.keep_tags }}"
           tag-selection: both
+          cut-off: 4w
           dry-run: true
 
