@@ -310,6 +310,10 @@ contract SolidityContract {
 
     }
 
+    function functionWithCalldata(bytes calldata data) public {
+        
+    }
+
     function setStruct(MyStruct memory _my_struct) public pure {
 
     }

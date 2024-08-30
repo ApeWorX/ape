@@ -70,6 +70,18 @@ class HexIntConverter(ConverterAPI):
         return to_int(HexBytes(value))
 
 
+class HexListConverter(ConverterAPI):
+    """
+    Convert list of hex values to single concatenated hex value.
+    """
+
+    def is_convertible(self, value: Any) -> bool:
+        return isinstance(value, list) and all(is_hex(v) or isinstance(v, bytes) for v in value)
+
+    def convert(self, value: Any) -> bytes:
+        return HexBytes(b"".join([HexBytes(v) for v in value]))
+
+
 class StringIntConverter(ConverterAPI):
     def is_convertible(self, value: Any) -> bool:
         return isinstance(value, str) and not is_0x_prefixed(value) and value.isnumeric()
@@ -263,7 +275,10 @@ class ConversionManager(BaseManager):
                 HexAddressConverter(),
                 IntAddressConverter(),
             ],
-            bytes: [HexConverter()],
+            bytes: [
+                HexConverter(),
+                HexListConverter(),
+            ],
             int: [
                 TimestampConverter(),
                 HexIntConverter(),

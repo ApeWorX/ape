@@ -287,6 +287,10 @@ def functionWithUniqueAmountOfArguments(
 ):
     pass
 
+@external
+def functionWithCalldata(data: Bytes[1_024]=b""):
+    pass
+
 @pure
 @external
 def setStruct(_my_struct: MyStruct):
