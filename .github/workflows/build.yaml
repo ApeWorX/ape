@@ -122,6 +122,6 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           image-tags: "!latest* !${{ env.keep_tags }}"
           tag-selection: both
-          cut-off: 1w
+          cut-off: 0w
           dry-run: true
 
