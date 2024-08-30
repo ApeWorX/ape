@@ -79,7 +79,7 @@ class HexListConverter(ConverterAPI):
         return isinstance(value, list) and all(is_hex(v) or isinstance(v, bytes) for v in value)
 
     def convert(self, value: Any) -> bytes:
-        return HexBytes(b"".join([HexBytes(v) for v in value]))
+        return HexBytes(b"".join(HexBytes(v) for v in value))
 
 
 class StringIntConverter(ConverterAPI):
