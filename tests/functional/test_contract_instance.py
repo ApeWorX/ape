@@ -993,15 +993,29 @@ def test_as_transaction(tx_type, vyper_contract_instance, owner, eth_tester_prov
 
 
 @pytest.mark.parametrize(
-    "calldata",
-    (
+    "calldata,expected",
+    ((
         "0x123456",
-        HexBytes("0x123456"),
-        ["0x123456", "0xabcd"],
-        [HexBytes("0x123456"), "0xabcd"],
-        ("0x123456", "0xabcd"),
+        "0x123456",
     ),
+    (
+        HexBytes("0x123456"),
+        "0x123456",
+    ),
+    (
+        ["0x123456", "0xabcd"],
+        "0x123456abcd",
+    ),
+    (
+        [HexBytes("0x123456"), "0xabcd"],
+        "0x123456abcd",
+    ),
+    (
+        ("0x123456", "0xabcd"),
+        "0x123456abcd",
+    ),)
 )
-def test_calldata_arg(calldata, contract_instance, owner):
+def test_calldata_arg(calldata, expected, contract_instance, owner):
     tx = contract_instance.functionWithCalldata(calldata, sender=owner)
     assert not tx.failed
+    assert HexBytes(expected) in tx.data

@@ -70,7 +70,7 @@ class HexIntConverter(ConverterAPI):
         return to_int(HexBytes(value))
 
 
-class HexListConverter(ConverterAPI):
+class HexIterableConverter(ConverterAPI):
     """
     Convert list of hex values to single concatenated ``HexBytes`` value.
     """
@@ -277,7 +277,7 @@ class ConversionManager(BaseManager):
             ],
             bytes: [
                 HexConverter(),
-                HexListConverter(),
+                HexIterableConverter(),
             ],
             int: [
                 TimestampConverter(),
