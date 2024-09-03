@@ -1,5 +1,5 @@
 import re
-from collections.abc import Sequence
+from collections.abc import Iterable, Sequence
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from typing import Any, Union
@@ -76,7 +76,7 @@ class HexListConverter(ConverterAPI):
     """
 
     def is_convertible(self, value: Any) -> bool:
-        return isinstance(value, list) and all(is_hex(v) or isinstance(v, bytes) for v in value)
+        return isinstance(value, Iterable) and all(isinstance(v, bytes) or is_hex(v) for v in value)
 
     def convert(self, value: Any) -> bytes:
         return HexBytes(b"".join(HexBytes(v) for v in value))

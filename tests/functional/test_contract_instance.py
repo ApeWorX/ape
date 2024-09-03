@@ -992,7 +992,16 @@ def test_as_transaction(tx_type, vyper_contract_instance, owner, eth_tester_prov
     assert tx.gas_limit == eth_tester_provider.max_gas
 
 
-@pytest.mark.parametrize("calldata", ("0x123456", ["0x123456", "0xabcd"]))
+@pytest.mark.parametrize(
+    "calldata",
+    (
+        "0x123456",
+        HexBytes("0x123456"),
+        ["0x123456", "0xabcd"],
+        [HexBytes("0x123456"), "0xabcd"],
+        ("0x123456", "0xabcd"),
+    ),
+)
 def test_calldata_arg(calldata, contract_instance, owner):
     tx = contract_instance.functionWithCalldata(calldata, sender=owner)
     assert not tx.failed
