@@ -1,8 +1,9 @@
 import pytest
+from eth_pydantic_types import HexBytes
 from eth_utils import to_hex
 
 from ape.exceptions import ConversionError
-from ape.managers.converters import HexConverter, HexIntConverter
+from ape.managers.converters import HexConverter, HexIntConverter, HexIterableConverter
 
 
 @pytest.mark.parametrize("val", ("0xA100", "0x0A100", "0x00a100"))
@@ -23,3 +24,25 @@ def test_missing_prefix(convert):
 
     with pytest.raises(ConversionError):
         convert(hex_value, int)
+
+
+@pytest.mark.parametrize(
+    "calldata,expected",
+    (
+        (
+            ["0x123456", "0xabcd"],
+            "0x123456abcd",
+        ),
+        (
+            [HexBytes("0x123456"), "0xabcd"],
+            "0x123456abcd",
+        ),
+        (
+            ("0x123456", "0xabcd"),
+            "0x123456abcd",
+        ),
+    ),
+)
+def test_hex_concat(calldata, expected, convert):
+    assert HexIterableConverter().is_convertible(calldata)
+    assert convert(calldata, bytes) == HexBytes(expected)

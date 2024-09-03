@@ -1,5 +1,5 @@
 import re
-from collections.abc import Sequence
+from collections.abc import Iterable, Sequence
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from typing import Any, Union
@@ -68,6 +68,18 @@ class HexIntConverter(ConverterAPI):
 
     def convert(self, value: Any) -> int:
         return to_int(HexBytes(value))
+
+
+class HexIterableConverter(ConverterAPI):
+    """
+    Convert list of hex values to single concatenated ``HexBytes`` value.
+    """
+
+    def is_convertible(self, value: Any) -> bool:
+        return isinstance(value, Iterable) and all(isinstance(v, bytes) or is_hex(v) for v in value)
+
+    def convert(self, value: Any) -> bytes:
+        return HexBytes(b"".join(HexBytes(v) for v in value))
 
 
 class StringIntConverter(ConverterAPI):
@@ -263,7 +275,10 @@ class ConversionManager(BaseManager):
                 HexAddressConverter(),
                 IntAddressConverter(),
             ],
-            bytes: [HexConverter()],
+            bytes: [
+                HexConverter(),
+                HexIterableConverter(),
+            ],
             int: [
                 TimestampConverter(),
                 HexIntConverter(),
