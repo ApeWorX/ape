@@ -5,14 +5,17 @@ from typing import Optional
 import pytest
 
 from ape.api import ReceiptAPI
+from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.exceptions import (
     Abort,
     ContractLogicError,
+    ContractNotFoundError,
     NetworkNotFoundError,
     TransactionError,
     handle_ape_exception,
 )
 from ape.types import SourceTraceback
+from ape.utils import ZERO_ADDRESS
 from ape_ethereum.transactions import DynamicFeeTransaction, Receipt
 
 
@@ -224,3 +227,14 @@ class TestContractLogicError:
         actual = error.message
         expected = "CUSTOM_ERROR"
         assert actual == expected
+
+
+@pytest.mark.parametrize("network", (LOCAL_NETWORK_NAME, "foobar-fork"))
+def test_contract_not_found_error_dev_networks(network):
+    """
+    Testing we are NOT mentioning explorer plugins
+    for dev-networks, as 99.9% of the time it is
+    confusing.
+    """
+    err = ContractNotFoundError(ZERO_ADDRESS, False, f"ethereum:{network}:test")
+    assert str(err) == f"Failed to get contract type for address '{ZERO_ADDRESS}'."
