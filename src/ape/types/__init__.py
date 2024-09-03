@@ -500,6 +500,9 @@ class CurrencyValueComparable(int):
         # Try from the other end, if hasn't already.
         return NotImplemented
 
+    def __hash__(self) -> int:
+        return hash(int(self))
+
     @classmethod
     def __get_pydantic_core_schema__(cls, value, handler=None) -> CoreSchema:
         return no_info_plain_validator_function(

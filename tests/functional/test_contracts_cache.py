@@ -75,17 +75,32 @@ def test_instance_at_uses_given_contract_type_when_retrieval_fails(mocker, chain
 
 
 @explorer_test
-def test_instance_at_contract_type_not_found(chain, eth_tester_provider):
+def test_instance_at_contract_type_not_found_local_network(chain, eth_tester_provider):
     eth_tester_provider.network.__dict__["explorer"] = None
     new_address = "0x4a986a6dca6dbF99Bc3D17F8d71aFB0D60E740F9"
-    expected = (
-        rf"Failed to get contract type for address '{new_address}'. "
-        r"Current network 'ethereum:local:test' has no associated explorer plugin. "
-        "Try installing an explorer plugin using .*ape plugins install etherscan.*, "
-        r"or using a network with explorer support\."
-    )
+    expected = rf"Failed to get contract type for address '{new_address}'."
     with pytest.raises(ContractNotFoundError, match=expected):
         chain.contracts.instance_at(new_address)
+
+
+@explorer_test
+def test_instance_at_contract_type_not_found_live_network(chain, eth_tester_provider):
+    eth_tester_provider.network.__dict__["explorer"] = None
+    real_name = eth_tester_provider.network.name
+    eth_tester_provider.network.name = "sepolia"
+    try:
+        new_address = "0x4a986a6dca6dbF99Bc3D17F8d71aFB0D60E740F9"
+        expected = (
+            rf"Failed to get contract type for address '{new_address}'. "
+            r"Current network 'ethereum:sepolia:test' has no associated explorer plugin. "
+            "Try installing an explorer plugin using .*ape plugins install etherscan.*, "
+            r"or using a network with explorer support\."
+        )
+        with pytest.raises(ContractNotFoundError, match=expected):
+            chain.contracts.instance_at(new_address)
+
+    finally:
+        eth_tester_provider.network.name = real_name
 
 
 def test_instance_at_use_abi(chain, solidity_fallback_contract, owner):
@@ -161,14 +176,20 @@ def test_cache_default_contract_type_when_used(solidity_contract_instance, chain
 def test_contracts_getitem_contract_not_found(chain, eth_tester_provider):
     eth_tester_provider.network.__dict__["explorer"] = None
     new_address = "0x4a986a6dca6dbF99Bc3D17F8d71aFB0D60E740F9"
-    expected = (
-        rf"Failed to get contract type for address '{new_address}'. "
-        r"Current network 'ethereum:local:test' has no associated explorer plugin. "
-        "Try installing an explorer plugin using .*ape plugins install etherscan.*, "
-        r"or using a network with explorer support\."
-    )
-    with pytest.raises(KeyError, match=expected):
-        _ = chain.contracts[new_address]
+    real_name = eth_tester_provider.network.name
+    eth_tester_provider.network.name = "sepolia"
+    try:
+        expected = (
+            rf"Failed to get contract type for address '{new_address}'. "
+            r"Current network 'ethereum:sepolia:test' has no associated explorer plugin. "
+            "Try installing an explorer plugin using .*ape plugins install etherscan.*, "
+            r"or using a network with explorer support\."
+        )
+        with pytest.raises(KeyError, match=expected):
+            _ = chain.contracts[new_address]
+
+    finally:
+        eth_tester_provider.network.name = real_name
 
 
 def test_deployments_mapping_cache_location(chain):
@@ -472,3 +493,32 @@ def test_delete_proxy(vyper_contract_instance, chain, ethereum, owner):
     # Ensure we can't access the target either.
     with pytest.raises(KeyError):
         _ = chain.contracts[proxy_info.target]
+
+
+def test_clear_local_caches(chain, vyper_contract_instance, proxy_contract_container, owner):
+    # Ensure contract type exists.
+    address = vyper_contract_instance.address
+    # Ensure blueprint exists.
+    chain.contracts._local_blueprints[address] = vyper_contract_instance.contract_type
+    # Ensure proxy exists.
+    proxy = proxy_contract_container.deploy(address, sender=owner)
+    # Ensure creation exists.
+    _ = chain.contracts.get_creation_metadata(address)
+
+    # Test setup verification.
+    assert (
+        address in chain.contracts._local_contract_types
+    ), "Setup failed - no contract type(s) cached"
+    assert proxy.address in chain.contracts._local_proxies, "Setup failed - no proxy cached"
+    assert (
+        address in chain.contracts._local_contract_creation
+    ), "Setup failed - no creation(s) cached"
+
+    # This is the method we are testing.
+    chain.contracts.clear_local_caches()
+
+    # Assertions - everything should be empty.
+    assert chain.contracts._local_proxies == {}
+    assert chain.contracts._local_blueprints == {}
+    assert chain.contracts._local_deployments_mapping == {}
+    assert chain.contracts._local_contract_creation == {}

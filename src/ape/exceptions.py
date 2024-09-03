@@ -587,18 +587,28 @@ class ContractNotFoundError(ChainError):
     Raised when a contract is not found at an address.
     """
 
-    def __init__(self, address: "AddressType", has_explorer: bool, network_name: str):
+    # TODO: In 0.9, pass in provider object directly (instead of network choice + name)
+    def __init__(self, address: "AddressType", has_explorer: bool, network_choice: str):
         msg = f"Failed to get contract type for address '{address}'."
-        msg += (
-            " Contract may need verification."
-            if has_explorer
-            else (
-                f" Current network '{network_name}' has no associated "
+
+        # NOTE: Network name is optional to avoid breaking change.
+        choice_parts = network_choice.split(":")
+        if len(choice_parts) > 1:
+            network_name = network_choice.split(":")[1]
+        else:
+            network_name = network_choice
+
+        if has_explorer:
+            msg += " Contract may need verification."
+        elif network_name != "local":
+            # Only bother mentioning explorer plugins if we are not the local network.
+            msg += (
+                f" Current network '{network_choice}' has no associated "
                 "explorer plugin. Try installing an explorer plugin using "
                 f"{click.style(text='ape plugins install etherscan', fg='green')}, "
                 "or using a network with explorer support."
             )
-        )
+
         super().__init__(msg)
 
 
