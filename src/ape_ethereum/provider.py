@@ -1120,7 +1120,7 @@ class Web3Provider(ProviderAPI, ABC):
 
             if (
                 "does not exist/is not available" in str(message)
-                or re.match(r"Method .*?not found", message)
+                or re.match(r"[m|M]ethod .*?not found", message)
                 or message.startswith("Unknown RPC Endpoint")
                 or "RPC Endpoint has not been implemented" in message
             ):
