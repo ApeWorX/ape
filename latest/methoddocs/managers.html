@@ -351,6 +351,11 @@
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.HexIntConverter.is_convertible"><code class="docutils literal notranslate"><span class="pre">HexIntConverter.is_convertible()</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="#ape.managers.converters.HexIterableConverter"><code class="docutils literal notranslate"><span class="pre">HexIterableConverter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.HexIterableConverter.convert"><code class="docutils literal notranslate"><span class="pre">HexIterableConverter.convert()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.HexIterableConverter.is_convertible"><code class="docutils literal notranslate"><span class="pre">HexIterableConverter.is_convertible()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="#ape.managers.converters.IntAddressConverter"><code class="docutils literal notranslate"><span class="pre">IntAddressConverter</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.IntAddressConverter.convert"><code class="docutils literal notranslate"><span class="pre">IntAddressConverter.convert()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ape.managers.converters.IntAddressConverter.is_convertible"><code class="docutils literal notranslate"><span class="pre">IntAddressConverter.is_convertible()</span></code></a></li>
@@ -2003,6 +2008,55 @@ when the item fails to convert properly.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.managers.converters.HexIntConverter.is_convertible">
 <span class="sig-name descname"><span class="pre">is_convertible</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#ape.managers.converters.HexIntConverter.is_convertible" title="Permalink to this definition"></a></dt>
+<dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if string value provided by <code class="docutils literal notranslate"><span class="pre">value</span></code> is convertible using
+<a class="reference internal" href="api.html#ape.api.convert.ConverterAPI.convert" title="ape.api.convert.ConverterAPI.convert"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ape.api.convert.ConverterAPI.convert()</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>value</strong> (<em>Any</em>) – The value to check.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> when the given value can be converted.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.managers.converters.HexIterableConverter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.managers.converters.</span></span><span class="sig-name descname"><span class="pre">HexIterableConverter</span></span><a class="headerlink" href="#ape.managers.converters.HexIterableConverter" title="Permalink to this definition"></a></dt>
+<dd><p>Convert list of hex values to single concatenated <code class="docutils literal notranslate"><span class="pre">HexBytes</span></code> value.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.converters.HexIterableConverter.convert">
+<span class="sig-name descname"><span class="pre">convert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bytes</span></span></span><a class="headerlink" href="#ape.managers.converters.HexIterableConverter.convert" title="Permalink to this definition"></a></dt>
+<dd><p>Convert the given value to the type specified as the generic for this class.
+Implementations of this API must throw a <a class="reference internal" href="exceptions.html#ape.exceptions.ConversionError" title="ape.exceptions.ConversionError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConversionError</span></code></a>
+when the item fails to convert properly.</p>
+<p>Usage example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">convert</span>
+<span class="kn">from</span> <span class="nn">ape.types</span> <span class="kn">import</span> <span class="n">AddressType</span>
+
+<span class="n">convert</span><span class="p">(</span><span class="s2">&quot;1 gwei&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+<span class="c1"># 1000000000</span>
+
+<span class="n">convert</span><span class="p">(</span><span class="s2">&quot;1 ETH&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+<span class="c1"># 1000000000000000000</span>
+
+<span class="n">convert</span><span class="p">(</span><span class="s2">&quot;0x283Af0B28c62C092C9727F1Ee09c02CA627EB7F5&quot;</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span>
+<span class="c1"># HexBytes(&#39;0x283af0b28c62c092c9727f1ee09c02ca627eb7f5&#39;)</span>
+
+<span class="n">convert</span><span class="p">(</span><span class="s2">&quot;vitalik.eth&quot;</span><span class="p">,</span> <span class="n">AddressType</span><span class="p">)</span> <span class="c1"># with ape-ens plugin installed</span>
+<span class="c1"># &#39;0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.converters.HexIterableConverter.is_convertible">
+<span class="sig-name descname"><span class="pre">is_convertible</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#ape.managers.converters.HexIterableConverter.is_convertible" title="Permalink to this definition"></a></dt>
 <dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if string value provided by <code class="docutils literal notranslate"><span class="pre">value</span></code> is convertible using
 <a class="reference internal" href="api.html#ape.api.convert.ConverterAPI.convert" title="ape.api.convert.ConverterAPI.convert"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ape.api.convert.ConverterAPI.convert()</span></code></a>.</p>
 <dl class="field-list simple">
