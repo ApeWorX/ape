@@ -229,12 +229,21 @@ class TestContractLogicError:
         assert actual == expected
 
 
-@pytest.mark.parametrize("network", (LOCAL_NETWORK_NAME, "foobar-fork"))
-def test_contract_not_found_error_dev_networks(network):
-    """
-    Testing we are NOT mentioning explorer plugins
-    for dev-networks, as 99.9% of the time it is
-    confusing.
-    """
-    err = ContractNotFoundError(ZERO_ADDRESS, False, f"ethereum:{network}:test")
-    assert str(err) == f"Failed to get contract type for address '{ZERO_ADDRESS}'."
+class TestContractNotFoundError:
+    def test_local_network(self):
+        """
+        Testing we are NOT mentioning explorer plugins
+        for the local-network, as 99.9% of the time it is
+        confusing.
+        """
+        err = ContractNotFoundError(ZERO_ADDRESS, False, f"ethereum:{LOCAL_NETWORK_NAME}:test")
+        assert str(err) == f"Failed to get contract type for address '{ZERO_ADDRESS}'."
+
+    def test_fork_network(self):
+        err = ContractNotFoundError(ZERO_ADDRESS, False, "ethereum:sepolia-fork:test")
+        assert str(err) == (
+            f"Failed to get contract type for address '{ZERO_ADDRESS}'. "
+            "Current network 'ethereum:sepolia-fork:test' has no associated explorer plugin. "
+            "Try installing an explorer plugin using \x1b[32mape plugins install etherscan"
+            "\x1b[0m, or using a network with explorer support."
+        )

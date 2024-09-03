@@ -600,8 +600,8 @@ class ContractNotFoundError(ChainError):
 
         if has_explorer:
             msg += " Contract may need verification."
-        elif network_name != "local" and not network_name.endswith("-fork"):
-            # Only bother mentioning explorer plugins if we are not using dev-networks.
+        elif network_name != "local":
+            # Only bother mentioning explorer plugins if we are not the local network.
             msg += (
                 f" Current network '{network_choice}' has no associated "
                 "explorer plugin. Try installing an explorer plugin using "
