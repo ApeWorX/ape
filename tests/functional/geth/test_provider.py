@@ -7,7 +7,7 @@ from eth_typing import HexStr
 from eth_utils import keccak, to_hex
 from evmchains import PUBLIC_CHAIN_META
 from hexbytes import HexBytes
-from web3 import AutoProvider
+from web3 import AutoProvider, Web3
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.exceptions import ExtraDataLengthError
 from web3.middleware import geth_poa_middleware as ExtraDataToPOAMiddleware
@@ -603,6 +603,35 @@ def test_make_request_not_exists(geth_provider):
         match="RPC method 'ape_thisDoesNotExist' is not implemented by this node instance.",
     ):
         geth_provider.make_request("ape_thisDoesNotExist")
+
+
+@geth_process_test
+@pytest.mark.parametrize(
+    "message",
+    (
+        "ape_thisDoesNotExist does not exist/is not available",
+        "method not found",
+        "Method ape_thisDoesNotExist not found",
+        "Unknown RPC Endpoint ape_thisDoesNotExist",
+    ),
+)
+def test_make_request_not_exists_different_messages(message, mock_web3, geth_provider):
+    def mock_make_request(*args, **kwargs):
+        return {"error": message}
+
+    mock_web3.provider.make_request.side_effect = mock_make_request
+
+    class MyProvider(EthereumNodeProvider):
+        @property
+        def web3(self) -> Web3:
+            return mock_web3
+
+    provider = MyProvider(network=geth_provider.network)
+    with pytest.raises(
+        APINotImplementedError,
+        match="RPC method 'ape_thisDoesNotExist' is not implemented by this node instance.",
+    ):
+        provider.make_request("ape_thisDoesNotExist")
 
 
 @geth_process_test
