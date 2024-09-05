@@ -1054,7 +1054,21 @@ class SubprocessProvider(ProviderAPI):
             self.stop()
 
     def start(self, timeout: int = 20):
-        """Start the process and wait for its RPC to be ready."""
+        """
+        Start the process and wait for its RPC to be ready.
+
+        This method initializes the provider process and waits until it is
+        connected and ready. It logs messages based on the connection status
+        and the chain ID.
+
+        Args:
+            timeout (int): The time in seconds to wait for the RPC to be ready.
+                        Defaults to 20 seconds.
+
+        Raises:
+            RPCTimeoutError: If the RPC does not become ready within the timeout
+                            period.
+    """
 
         if self.is_connected:
             logger.info(f"Connecting to existing '{self.process_name}' process.")
@@ -1075,7 +1089,12 @@ class SubprocessProvider(ProviderAPI):
             with RPCTimeoutError(self, seconds=timeout) as _timeout:
                 while True:
                     if self.is_connected:
-                        break
+                        chain_id = self.chain_id  # Ensure this is how chain_id is accessed
+                    if chain_id == 1337:
+                        logger.info(f"Connecting to Test chain with chain_id={chain_id}")
+                    else:
+                        logger.info(f"Connected to {self.process_name} network with chain_id={chain_id}")
+                    break
 
                     time.sleep(0.1)
                     _timeout.check()
