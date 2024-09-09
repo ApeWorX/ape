@@ -2359,16 +2359,11 @@ class LocalProject(Project):
             yield self
 
         else:
-            # Add sources to manifest memory, in case they are missing.
-            original_sources = self._manifest.sources
-            self._manifest.sources = dict(self.sources.items())
-            try:
-                with super().isolate_in_tempdir(**config_override) as project:
-                    yield project
-
-            finally:
-                # Restore original manifest sources in case compile failed.
-                self._manifest.sources = original_sources
+            sources = dict(self.sources.items())
+            with super().isolate_in_tempdir(**config_override) as project:
+                # Add sources to manifest memory, in case they are missing.
+                project.manifest.sources = sources
+                yield project
 
     def unpack(self, destination: Path, config_override: Optional[dict] = None) -> "LocalProject":
         config_override = {**self._config_override, **(config_override or {})}
