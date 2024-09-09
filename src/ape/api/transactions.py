@@ -425,9 +425,8 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
         Returns:
             :class:`~ape.api.ReceiptAPI`: The receipt that is now confirmed.
         """
-        # NOTE: Event when required_confs is 0, we want to wait for the nonce to increment,
-        #   else in tests, you may end up with invalid nonce, seen when using ape-node locally
-        #   but potentially can happen to other providers.
+        # NOTE: Even when required_confirmations is `0`, we want to wait for the nonce to
+        #   increment. Otherwise, users may end up with invalid nonce errors in tests.
         self._await_sender_nonce_increment()
         if self.required_confirmations == 0 or self._check_error_status() or self.confirmed:
             return self
