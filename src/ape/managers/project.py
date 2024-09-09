@@ -2125,34 +2125,37 @@ class LocalProject(Project):
             message = getattr(err, "message", str(err))
             did_append = False
 
-            all_files = get_all_files_in_directory(self.contracts_folder)
-            for path in all_files:
-                # Possibly, the user was trying to use a file name instead.
-                if path.stem != item:
-                    continue
+            if item not in (self.manifest.contract_types or {}):
+                all_files = get_all_files_in_directory(self.contracts_folder)
+                for path in all_files:
+                    # Possibly, the user was trying to use a file name instead.
+                    if path.stem != item:
+                        continue
 
-                if message and message[-1] not in (".", "?", "!"):
-                    message = f"{message}."
-                message = (
-                    f"{message} However, there is a source file named '{path.name}', "
-                    "did you mean to reference a contract name from this source file?"
-                )
-                did_append = True
-                break
+                    if message and message[-1] not in (".", "?", "!"):
+                        message = f"{message}."
 
-            # Possibly, the user does not have compiler plugins installed or working.
-            missing_exts = set()
-            for path in all_files:
-                if ext := get_full_extension(path):
-                    if ext not in self.compiler_manager.registered_compilers:
-                        missing_exts.add(ext)
+                    message = (
+                        f"{message} However, there is a source file named '{path.name}', "
+                        "this file may no be compiling (see error above), or maybe you meant "
+                        "to reference a contract name from this source file?"
+                    )
+                    did_append = True
+                    break
 
-            if missing_exts:
-                start = "Else, could" if did_append else "Could"
-                message = (
-                    f"{message} {start} it be from one of the "
-                    "missing compilers for extensions: " + f'{", ".join(sorted(missing_exts))}?'
-                )
+                # Possibly, the user does not have compiler plugins installed or working.
+                missing_exts = set()
+                for path in all_files:
+                    if ext := get_full_extension(path):
+                        if ext not in self.compiler_manager.registered_compilers:
+                            missing_exts.add(ext)
+
+                if missing_exts:
+                    start = "Else, could" if did_append else "Could"
+                    message = (
+                        f"{message} {start} it be from one of the "
+                        "missing compilers for extensions: " + f'{", ".join(sorted(missing_exts))}?'
+                    )
 
             err.args = (message,)
             raise  # The same exception (keep the stack the same height).
@@ -2357,9 +2360,15 @@ class LocalProject(Project):
 
         else:
             # Add sources to manifest memory, in case they are missing.
+            original_sources = self._manifest.sources
             self._manifest.sources = dict(self.sources.items())
-            with super().isolate_in_tempdir(**config_override) as project:
-                yield project
+            try:
+                with super().isolate_in_tempdir(**config_override) as project:
+                    yield project
+
+            finally:
+                # Restore original manifest sources in case compile failed.
+                self._manifest.sources = original_sources
 
     def unpack(self, destination: Path, config_override: Optional[dict] = None) -> "LocalProject":
         config_override = {**self._config_override, **(config_override or {})}
