@@ -2136,8 +2136,8 @@ class LocalProject(Project):
                         message = f"{message}."
 
                     message = (
-                        f"{message} However, there is a source file named '{path.name}', "
-                        "this file may no be compiling (see error above), or maybe you meant "
+                        f"{message} However, there is a source file named '{path.name}'. "
+                        "This file may no be compiling (see error above), or maybe you meant "
                         "to reference a contract name from this source file?"
                     )
                     did_append = True

@@ -150,18 +150,21 @@ def test_isolate_in_tempdir(project):
 
 def test_isolate_in_tempdir_does_not_alter_sources(project):
     # First, create a bad source.
-    new_src = project.contracts_folder / "newsource.json"
-    new_src.write_text("this is not json, oops")
+    with project.temp_config(contracts_folder="tests"):
+        new_src = project.contracts_folder / "newsource.json"
+        new_src.write_text("this is not json, oops")
+        project.sources.refresh()  # Only need to be called when run with other tests.
 
-    try:
-        with project.isolate_in_tempdir() as tmp_project:
-            # The new (bad) source should be in the temp project.
-            assert "src/newsource.json" in (tmp_project.manifest.sources or {})
-    finally:
-        new_src.unlink()
+        try:
+            with project.isolate_in_tempdir() as tmp_project:
+                # The new (bad) source should be in the temp project.
+                assert "tests/newsource.json" in (tmp_project.manifest.sources or {}), project.path
+        finally:
+            new_src.unlink()
+            project.sources.refresh()
 
-    # Ensure "newsource" did not persist in the in-memory manifest.
-    assert "src/newsource.json" not in (project.manifest.sources or {})
+        # Ensure "newsource" did not persist in the in-memory manifest.
+        assert "tests/newsource.json" not in (project.manifest.sources or {})
 
 
 def test_in_tempdir(project, tmp_project):
@@ -216,8 +219,9 @@ def test_getattr_same_name_as_source_file(project_with_source_files_contract):
     expected = (
         r"'LocalProject' object has no attribute 'ContractA'\. "
         r"Also checked extra\(s\) 'contracts'\. "
-        r"However, there is a source file named 'ContractA\.sol', "
-        r"did you mean to reference a contract name from this source file\? "
+        r"However, there is a source file named 'ContractA\.sol'\. "
+        r"This file may no be compiling (see error above), "
+        r"or maybe you meant to reference a contract name from this source file\? "
         r"Else, could it be from one of the missing compilers for extensions: .*"
     )
     with pytest.raises(AttributeError, match=expected):
@@ -603,7 +607,7 @@ def test_project_api_foundry_and_ape_config_found(foundry_toml):
 
 def test_get_contract(project_with_contracts):
     actual = project_with_contracts.get_contract("Other")
-    assert isinstance(actual, ContractContainer)
+    assert isinstance(actual, ContractContainer), f"{type(actual)}"
     assert actual.contract_type.name == "Other"
 
     # Ensure manifest is only loaded once by none-ing out the path.
