@@ -40,9 +40,7 @@ extras_require = {
         "mdformat-frontmatter>=0.4.1",  # Needed for frontmatters-style headers in issue templates
         "mdformat-pyproject>=0.0.1",  # Allows configuring in pyproject.toml
     ],
-    "doc": [
-        "sphinx-ape @ git+ssh://git@github.com/ApeWorX/sphinx-ape@feat/actionable"
-    ],
+    "doc": ["sphinx-ape"],
     "release": [  # `release` GitHub Action job uses this
         "setuptools",  # Installation tool
         "wheel",  # Packaging tool
