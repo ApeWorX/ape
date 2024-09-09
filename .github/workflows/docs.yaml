@@ -25,3 +25,5 @@ jobs:
 
     - name: Ape Docs
       uses: antazoey/sphinx-ape@feat/actionable
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
