@@ -148,6 +148,22 @@ def test_isolate_in_tempdir(project):
         assert not tmp_project.manifest_path.is_file()
 
 
+def test_isolate_in_tempdir_does_not_alter_sources(project):
+    # First, create a bad source.
+    new_src = project.contracts_folder / "newsource.json"
+    new_src.write_text("this is not json, oops")
+
+    try:
+        with project.isolate_in_tempdir() as tmp_project:
+            # The new (bad) source should be in the temp project.
+            assert "src/newsource.json" in (tmp_project.manifest.sources or {})
+    finally:
+        new_src.unlink()
+
+    # Ensure "newsource" did not persist in the in-memory manifest.
+    assert "src/newsource.json" not in (project.manifest.sources or {})
+
+
 def test_in_tempdir(project, tmp_project):
     assert not project.in_tempdir
     assert tmp_project.in_tempdir
