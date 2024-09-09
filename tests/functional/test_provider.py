@@ -543,3 +543,21 @@ def test_ipc_per_network(project, key):
         # TODO: 0.9 investigate not using random if ipc set.
 
         assert node.ipc_path == Path(ipc)
+
+@mock.patch('ape_ethereum.provider.logger')
+def test_start_logging_local_test_chain(mock_logger, ethereum):
+    """Test logging when connecting to a local test chain."""
+
+    # Use the provider with custom settings
+    with ethereum.local.use_provider("test", provider_settings={"chain_id": 1337}) as provider:
+        # Ensure provider is disconnected initially
+        provider.disconnect()
+        assert not provider.is_connected
+        # Start the provider
+        provider.connect()
+
+        # Verify connection and chain_id
+        assert provider.is_connected
+        assert provider.chain_id == 1337
+        # Check logging output
+        mock_logger.info.assert_any_call("Connecting to Test chain with chain_id=1337")
