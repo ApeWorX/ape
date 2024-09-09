@@ -326,6 +326,14 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
         return False
 
     @property
+    def confirmed(self) -> bool:
+        """
+        ``True`` when the number of confirmations is equal or greater
+        to the required amount of confirmations.
+        """
+        return self._confirmations_occurred == self.required_confirmations
+
+    @property
     @abstractmethod
     def total_fees_paid(self) -> int:
         """
@@ -417,40 +425,39 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
         Returns:
             :class:`~ape.api.ReceiptAPI`: The receipt that is now confirmed.
         """
-        # perf: avoid *everything* if required_confirmations is 0, as this is likely a
-        #   dev environment or the user doesn't care.
-        if self.required_confirmations == 0:
-            # The transaction might not yet be confirmed but
-            # the user is aware of this. Or, this is a development environment.
+        # NOTE: Even when required_confirmations is `0`, we want to wait for the nonce to
+        #   increment. Otherwise, users may end up with invalid nonce errors in tests.
+        self._await_sender_nonce_increment()
+        if self.required_confirmations == 0 or self._check_error_status() or self.confirmed:
             return self
 
-        try:
-            self.raise_for_status()
-        except TransactionError:
-            # Skip waiting for confirmations when the transaction has failed.
-            return self
+        # Confirming now.
+        self._log_submission()
+        self._await_confirmations()
+        return self
+
+    def _await_sender_nonce_increment(self):
+        if not self.sender:
+            return
 
         iterations_timeout = 20
         iteration = 0
-        # Wait for nonce from provider to increment.
-        if self.sender:
+        sender_nonce = self.provider.get_nonce(self.sender)
+        while sender_nonce == self.nonce:
+            time.sleep(1)
             sender_nonce = self.provider.get_nonce(self.sender)
+            iteration += 1
+            if iteration != iterations_timeout:
+                continue
 
-            while sender_nonce == self.nonce:
-                time.sleep(1)
-                sender_nonce = self.provider.get_nonce(self.sender)
-                iteration += 1
-                if iteration == iterations_timeout:
-                    tx_err = TransactionError("Timeout waiting for sender's nonce to increase.")
-                    self.error = tx_err
-                    if self.transaction.raise_on_revert:
-                        raise tx_err
+            tx_err = TransactionError("Timeout waiting for sender's nonce to increase.")
+            self.error = tx_err
+            if self.transaction.raise_on_revert:
+                raise tx_err
+            else:
+                break
 
-        confirmations_occurred = self._confirmations_occurred
-        if self.required_confirmations and confirmations_occurred >= self.required_confirmations:
-            return self
-
-        # If we get here, that means the transaction has been recently submitted.
+    def _log_submission(self):
         if explorer_url := self._explorer and self._explorer.get_transaction_url(self.txn_hash):
             log_message = f"Submitted {explorer_url}"
         else:
@@ -458,26 +465,34 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
 
         logger.info(log_message)
 
-        if self.required_confirmations:
-            with ConfirmationsProgressBar(self.required_confirmations) as progress_bar:
-                while confirmations_occurred < self.required_confirmations:
-                    confirmations_occurred = self._confirmations_occurred
-                    progress_bar.confs = confirmations_occurred
+    def _check_error_status(self) -> bool:
+        try:
+            self.raise_for_status()
+        except TransactionError:
+            # Skip waiting for confirmations when the transaction has failed.
+            return True
 
-                    if confirmations_occurred == self.required_confirmations:
-                        break
+        return False
 
-                    time_to_sleep = int(self._block_time / 2)
-                    time.sleep(time_to_sleep)
+    def _await_confirmations(self):
+        if self.required_confirmations <= 0:
+            return
 
-        return self
+        with ConfirmationsProgressBar(self.required_confirmations) as progress_bar:
+            while not self.confirmed:
+                confirmations_occurred = self._confirmations_occurred
+                if confirmations_occurred >= self.required_confirmations:
+                    break
+
+                progress_bar.confs = confirmations_occurred
+                time_to_sleep = int(self._block_time / 2)
+                time.sleep(time_to_sleep)
 
     @property
     def method_called(self) -> Optional[MethodABI]:
         """
         The method ABI of the method called to produce this receipt.
         """
-
         return None
 
     @property
