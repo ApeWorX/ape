@@ -52,3 +52,24 @@ def test_track_gas(mocker, geth_account, geth_contract, gas_tracker):
     contract_name = geth_contract.contract_type.name
     assert contract_name in report
     assert "getNestedStructWithTuple1" in report[contract_name]
+
+
+@geth_process_test
+def test_await_confirmations(geth_account, geth_contract):
+    tx = geth_contract.setNumber(235921972943759, sender=geth_account)
+    tx.await_confirmations()
+    assert tx.confirmed
+
+
+@geth_process_test
+def test_await_confirmations_zero_confirmations(mocker, geth_account, geth_contract):
+    """
+    We still need to wait for the nonce to increase when required confirmations is 0.
+    Otherwise, we sometimes ran into nonce-issues when transacting too fast with
+    the same account.
+    """
+    tx = geth_contract.setNumber(545921972923759, sender=geth_account, required_confirmations=0)
+    spy = mocker.spy(tx, "_await_sender_nonce_increment")
+    tx.await_confirmations()
+    assert tx.confirmed
+    assert spy.call_count == 1
