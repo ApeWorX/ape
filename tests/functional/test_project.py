@@ -220,7 +220,7 @@ def test_getattr_same_name_as_source_file(project_with_source_files_contract):
         r"'LocalProject' object has no attribute 'ContractA'\. "
         r"Also checked extra\(s\) 'contracts'\. "
         r"However, there is a source file named 'ContractA\.sol'\. "
-        r"This file may no be compiling (see error above), "
+        r"This file may not be compiling \(see error above\), "
         r"or maybe you meant to reference a contract name from this source file\? "
         r"Else, could it be from one of the missing compilers for extensions: .*"
     )
