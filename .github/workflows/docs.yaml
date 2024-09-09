@@ -24,6 +24,6 @@ jobs:
         python-version: "3.10"
 
     - name: Ape Docs
-      uses: antazoey/sphinx-ape@feat/actionable
+      uses: apeworx/sphinx-ape@main
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
