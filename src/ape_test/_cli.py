@@ -58,8 +58,8 @@ class EventHandler(events.FileSystemEventHandler, ManagerAccessMixin):
             emit_trigger()
 
 
-def _run_ape_test(pytest_args):
-    return subprocess.run(["ape", "test", *pytest_args])
+def _run_ape_test(*pytest_args):
+    return subprocess.run(["ape", "test", *[f"{a}" for a in pytest_args]])
 
 
 def _run_main_loop(delay: float, pytest_args: Sequence[str]) -> None:
@@ -67,7 +67,7 @@ def _run_main_loop(delay: float, pytest_args: Sequence[str]) -> None:
 
     now = datetime.now()
     if trigger and now - trigger > timedelta(seconds=delay):
-        _run_ape_test(pytest_args)
+        _run_ape_test(*pytest_args)
 
         with trigger_lock:
             trigger = None
@@ -145,10 +145,10 @@ def cli(cli_ctx, watch, watch_folders, watch_delay, pytest_args):
                 cli_ctx.logger.warning(f"Folder '{folder}' doesn't exist or isn't a folder.")
 
         observer.start()
-        pytest_args = _validate_pytest_args(pytest_args)
+        pytest_args = _validate_pytest_args(*pytest_args)
 
         try:
-            _run_ape_test(pytest_args)
+            _run_ape_test(*pytest_args)
 
             while True:
                 _run_main_loop(watch_delay, pytest_args)
