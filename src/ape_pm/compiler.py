@@ -54,15 +54,7 @@ class InterfaceCompiler(CompilerAPI):
 
             code = src_path.read_text()
             source_id = source_ids[path]
-            try:
-                # NOTE: Always set the source ID to the source of the JSON file
-                #   to avoid manifest corruptions later on.
-                contract_type = self.compile_code(code, project=project, sourceId=source_id)
-            except CompilerError as err:
-                logger.warning(
-                    f"Unable to parse {ContractType.__name__} from '{source_id}'. Reason: {err}"
-                )
-                continue
+            contract_type = self.compile_code(code, project=project, sourceId=source_id)
 
             # NOTE: Try getting name/ ID from code-JSON first.
             #   That's why this is not part of `**kwargs` in `compile_code()`.
