@@ -148,6 +148,33 @@ def test_compile_when_sources_change(ape_cli, runner, integ_project, clean_cache
 
 
 @skip_projects_except("multiple-interfaces")
+def test_compile_when_sources_change_problematically(ape_cli, runner, integ_project, clean_cache):
+    """
+    There was a bug when sources changes but had errors, that the old sources continued
+    to be used and the errors were swallowed.
+    """
+    source_path = integ_project.contracts_folder / "Interface.json"
+    content = source_path.read_text()
+    assert "bar" in content, "Test setup failed - unexpected content"
+
+    result = runner.invoke(
+        ape_cli, ("compile", "--project", f"{integ_project.path}"), catch_exceptions=False
+    )
+    assert result.exit_code == 0, result.output
+
+    # Change the contents of a file in a problematic way.
+    source_path = integ_project.contracts_folder / "Interface.json"
+    modified_source_text = source_path.read_text().replace("{", "BRACKET")
+    source_path.unlink()
+    source_path.touch()
+    source_path.write_text(modified_source_text, encoding="utf8")
+    result = runner.invoke(
+        ape_cli, ("compile", "--project", f"{integ_project.path}"), catch_exceptions=False
+    )
+    assert result.exit_code != 0, result.output
+
+
+@skip_projects_except("multiple-interfaces")
 def test_compile_when_contract_type_collision(ape_cli, runner, integ_project, clean_cache):
     source_path = integ_project.contracts_folder / "Interface.json"
     temp_dir = integ_project.contracts_folder / "temp"
