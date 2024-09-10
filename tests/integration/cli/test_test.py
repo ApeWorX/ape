@@ -383,7 +383,7 @@ def test_fails():
 
 
 @skip_projects_except("with-contracts")
-def test_test_watch(mocker, integ_project, runner, ape_cli):
+def test_watch(mocker, integ_project, runner, ape_cli):
     mock_event_handler = mocker.MagicMock()
     event_handler_patch = mocker.patch("ape_test._cli._create_event_handler")
     event_handler_patch.return_value = mock_event_handler
