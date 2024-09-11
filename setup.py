@@ -110,7 +110,7 @@ setup(
         "pandas>=2.2.2,<3",
         "pluggy>=1.3,<2",
         "pydantic>=2.6.4,<3",
-        "pydantic-settings>=2.5.2,<2.6",
+        "pydantic-settings>=2.5.2,<3",
         "pytest>=8.0,<9.0",
         "python-dateutil>=2.8.2,<3",
         "PyYAML>=5.0,<7",
