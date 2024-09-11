@@ -7,10 +7,10 @@ body:
     id: describe
     attributes:
       label: Describe
-      description: "Provide a simple overview of what you wish to see added. Please include:"
+      description: "Provide a simple overview of what you wish to see added."
       placeholder: |
-        - What you are trying to do
-        - Why Ape's current functionality is inadequate to address your goal
+        I am trying to ...
+        Ape's current functionality is inadequate because ...
     validations:
       required: false
   - type: textarea
@@ -18,7 +18,7 @@ body:
     attributes:
       label: Specification
       description: |
-        Describe the syntax and semantics of how you would like to see this feature implemented. The more detailed the better!"
+        Describe the syntax and semantics of how you would like to see this feature implemented. The more detailed the better!
         Remember, your feature is much more likely to be included if it does not involve any breaking changes.
     validations:
       required: false
