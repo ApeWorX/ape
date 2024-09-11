@@ -85,3 +85,25 @@ class TestPytestApeFixtures:
         next(isolation_context)  # Enter again.
         # This time, snapshotting is NOT attempted.
         assert mock_evm.take_snapshot.call_count == 0
+
+    def test_isolation_supports_flag_set_after_successful_snapshot(
+        self, networks, use_mock_provider, fixtures, mock_evm
+    ):
+        """
+        Testing the unusual case where `._supports_snapshot` was changed manually after
+        a successful snapshot and before the restore attempt.
+        """
+        mock_evm.take_snapshot.return_value = 123
+        isolation_context = fixtures._isolation()
+        next(isolation_context)  # Enter.
+        assert mock_evm.take_snapshot.call_count == 1
+        assert mock_evm.revert_to_snapshot.call_count == 0
+
+        # HACK: Change the flag manually to show it will avoid
+        #   the restore.
+        fixtures._supports_snapshot = False
+
+        next(isolation_context, None)  # Exit.
+        # Even though snapshotting worked, the flag was changed,
+        # and so the restore never gets attempted.
+        assert mock_evm.revert_to_snapshot.call_count == 0
