@@ -277,8 +277,5 @@ def _insert_isolation_fixtures(item):
         scopes.insert(idx, scope)
 
     # insert function isolation by default
-    try:
-        item.fixturenames.insert(scopes.index("function"), "_function_isolation")
-    except ValueError:
-        # no fixtures with function scope, so append function isolation
+    if "_function_isolation" not in item.fixturenames:
         item.fixturenames.append("_function_isolation")

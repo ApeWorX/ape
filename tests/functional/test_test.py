@@ -29,6 +29,7 @@ def test_insert_isolation_fixtures(mocker):
         "other_random_fixture": [_create_fixture_entry("other_random_fixture", "function")],
         # Show case where fixture is already present.
         "_class_isolation": [_create_fixture_entry("_class_isolation", "class")],
+        "_function_isolation": [_create_fixture_entry("_function_isolation", "function")],
     }
 
     mock_item.session._fixturemanager._arg2fixturedefs = fixtures
