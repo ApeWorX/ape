@@ -158,12 +158,13 @@ def test_isolate_in_tempdir_does_not_alter_sources(project):
         try:
             with project.isolate_in_tempdir() as tmp_project:
                 # The new (bad) source should be in the temp project.
-                assert "tests/newsource.json" in (tmp_project.manifest.sources or {}), project.path
+                actual = {**(tmp_project.manifest.sources or {})}
         finally:
             new_src.unlink()
             project.sources.refresh()
 
         # Ensure "newsource" did not persist in the in-memory manifest.
+        assert "tests/newsource.json" in actual, project.path
         assert "tests/newsource.json" not in (project.manifest.sources or {})
 
 
