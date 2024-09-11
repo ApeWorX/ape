@@ -132,7 +132,7 @@ class PytestApeRunner(ManagerAccessMixin):
         https://docs.pytest.org/en/6.2.x/reference.html#pytest.hookspec.pytest_runtest_setup
         """
         if (
-            self.config_wrapper.isolation is False
+            not self.config_wrapper.isolation
             # doctests don't have fixturenames
             or (hasattr(pytest, "DoctestItem") and isinstance(item, pytest.DoctestItem))
             or "_function_isolation" in item.fixturenames  # prevent double injection
@@ -260,6 +260,8 @@ def _insert_isolation_fixtures(item):
         for definition in definitions
     }
 
+    # NOTE: The order of this loop is very important!
+    #  The order of the fixurenames determines the order they run.
     for scope in ("session", "package", "module", "class"):
         # iterate through scope levels and insert the isolation fixture
         # prior to the first fixture with that scope
