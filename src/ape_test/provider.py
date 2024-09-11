@@ -305,13 +305,17 @@ class LocalProvider(TestProviderAPI, Web3Provider):
 
     def restore(self, snapshot_id: SnapshotID):
         # NOTE: Snapshot ID can be 0!
-        if snapshot_id is not None:
-            current_hash = self._get_latest_block_rpc().get("hash")
-            if current_hash != snapshot_id:
-                try:
-                    return self.evm_backend.revert_to_snapshot(snapshot_id)
-                except HeaderNotFound:
-                    raise UnknownSnapshotError(snapshot_id)
+        if snapshot_id is None:
+            return
+
+        current_hash = self._get_latest_block_rpc().get("hash")
+        if current_hash == snapshot_id:
+            return
+
+        try:
+            return self.evm_backend.revert_to_snapshot(snapshot_id)
+        except HeaderNotFound:
+            raise UnknownSnapshotError(snapshot_id)
 
     def set_timestamp(self, new_timestamp: int):
         current_timestamp = self.evm_backend.get_block_by_number("pending")["timestamp"]
