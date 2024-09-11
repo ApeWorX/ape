@@ -212,7 +212,7 @@ E   ape.exceptions.ContractLogicError: Transaction failed.
 
 
 @skip_projects_except("test", "with-contracts")
-def test_test_isolation_disabled(setup_pytester, integ_project, pytester, eth_tester_provider):
+def test_isolation_disabled(setup_pytester, integ_project, pytester, eth_tester_provider):
     # check the disable isolation option actually disables built-in isolation
     _ = eth_tester_provider  # Ensure using EthTester for this test.
     setup_pytester(integ_project)

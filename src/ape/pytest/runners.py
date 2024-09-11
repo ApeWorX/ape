@@ -253,27 +253,35 @@ class PytestApeRunner(ManagerAccessMixin):
 def _insert_isolation_fixtures(item):
     # Abstracted for testing purposes.
     fixture_map = item.session._fixturemanager._arg2fixturedefs
-    scopes = {
-        definition.scope
+    scope_map = {
+        name: definition.scope
         for name, definitions in fixture_map.items()
         if name in item.fixturenames
         for definition in definitions
     }
+    scopes = [scope_map[n] for n in item.fixturenames if n in scope_map]
 
-    # NOTE: The order of this loop is very important!
-    #  The order of the fixurenames determines the order they run.
     for scope in ("session", "package", "module", "class"):
-        # iterate through scope levels and insert the isolation fixture
-        # prior to the first fixture with that scope
-        if scope not in scopes:
+        try:
+            index = scopes.index(scope)
+        except ValueError:
+            # Intermediate scope isolations aren't filled in
             continue
 
+        # For non-function scoped isolation, the fixtures
+        # must go after the last fixture with that scope
+        # to ensure contracts deployed in fixtures persist.
         name = f"_{scope}_isolation"
-
-        # Don't let isolation fixtures get added more than once!
         if name not in item.fixturenames:
-            item.fixturenames.append(name)
+            item.fixturenames.insert(index, f"_{scope}_isolation")
 
-    # insert function isolation by default
-    if "_function_isolation" not in item.fixturenames:
-        item.fixturenames.append("_function_isolation")
+        # This line is needed to fix the calculation on subsequent checks
+        scopes.insert(index, scope)
+
+    # Function-isolation must go last.
+
+    try:
+        item.fixturenames.insert(scopes.index("function"), "_function_isolation")
+    except ValueError:
+        # No fixtures with function scope, so append function isolation.
+        item.fixturenames.insert(0, "_function_isolation")
