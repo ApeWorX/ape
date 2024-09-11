@@ -89,9 +89,13 @@ class TestPytestApeFixtures:
         }
         orig_provider = networks.active_provider
         networks.active_provider = mock_provider
-        mock_provider._evm_backend = mock_evm
-        yield mock_provider
-        networks.active_provider = orig_provider
+        orig_backend = mock_provider._evm_backend
+        try:
+            mock_provider._evm_backend = mock_evm
+            yield mock_provider
+        finally:
+            mock_provider._evm_backend = orig_backend
+            networks.active_provider = orig_provider
 
     @pytest.mark.parametrize("snapshot_id", (0, 1, "123"))
     def test_isolation(self, snapshot_id, networks, use_mock_provider, fixtures, mock_evm):
