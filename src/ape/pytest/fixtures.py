@@ -110,7 +110,7 @@ class PytestApeFixtures(ManagerAccessMixin):
         else:
             yield
 
-        if snapshot_id is not None:
+        if self._supports_snapshot and snapshot_id is not None:
             self._restore(snapshot_id)
 
     # isolation fixtures
