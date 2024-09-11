@@ -304,7 +304,8 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         return self.evm_backend.take_snapshot()
 
     def restore(self, snapshot_id: SnapshotID):
-        if snapshot_id:
+        # NOTE: Snapshot ID can be 0!
+        if snapshot_id is not None:
             current_hash = self._get_latest_block_rpc().get("hash")
             if current_hash != snapshot_id:
                 try:
