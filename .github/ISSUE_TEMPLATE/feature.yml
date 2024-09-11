@@ -3,7 +3,7 @@ description: Request a new feature, or an improvement to existing functionality.
 labels: 'category: feature'
 
 body:
-  - type: input
+  - type: textarea
     id: describe
     attributes:
       label: Describe
@@ -13,7 +13,7 @@ body:
         - Why Ape's current functionality is inadequate to address your goal
     validations:
       required: false
-  - type: input
+  - type: textarea
     id: specification
     attributes:
       label: Specification
@@ -22,7 +22,7 @@ body:
         Remember, your feature is much more likely to be included if it does not involve any breaking changes.
     validations:
       required: false
-  - type: input
+  - type: textarea
     id: dependencies
     attributes:
       label: Dependencies
