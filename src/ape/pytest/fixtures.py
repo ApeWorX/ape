@@ -111,7 +111,7 @@ class PytestApeFixtures(ManagerAccessMixin):
             yield
 
         # NOTE: self._supports_snapshot may have gotten set to False
-        #   during snapshot check.
+        #   someplace else _after_ snapshotting succeeded.
         if self._supports_snapshot and snapshot_id is not None:
             self._restore(snapshot_id)
 
