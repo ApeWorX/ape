@@ -265,11 +265,16 @@ def _insert_isolation_fixtures(item):
         # prior to the first fixture with that scope
         try:
             idx = scopes.index(scope)  # will raise ValueError if `scope` not found
-            item.fixturenames.append(f"_{scope}_isolation")
-            scopes.insert(idx, scope)
         except ValueError:
-            # intermediate scope isolations aren't filled in
             continue
+
+        name = f"_{scope}_isolation"
+
+        # Don't let isolation fixtures get added more than once!
+        if name not in item.fixturenames:
+            item.fixturenames.append(name)
+
+        scopes.insert(idx, scope)
 
     # insert function isolation by default
     try:
