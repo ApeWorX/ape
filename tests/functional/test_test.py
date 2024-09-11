@@ -25,20 +25,25 @@ def test_insert_isolation_fixtures(mocker):
         "fixture_at_function": [_create_fixture_entry("fixture_at_function", "function")],
         "fixture_at_session": [_create_fixture_entry("fixture_at_session", "session")],
         "fixture_at_module": [_create_fixture_entry("fixture_at_module", "module")],
+        "fixture_at_class": [_create_fixture_entry("fixture_at_class", "class")],
         "other_random_fixture": [_create_fixture_entry("other_random_fixture", "function")],
+        # Show case where fixture is already present.
+        "_class_isolation": [_create_fixture_entry("_class_isolation", "class")],
     }
 
     mock_item.session._fixturemanager._arg2fixturedefs = fixtures
     mock_item.fixturenames = [*list(fixtures.keys()), "otheriteminnames"]
     _insert_isolation_fixtures(mock_item)
-    actual = mock_item.fixturenames
+    actual = sorted(mock_item.fixturenames)
     expected = [
+        "_class_isolation",
         "_function_isolation",
         "_module_isolation",
         "_session_isolation",
+        "fixture_at_class",
         "fixture_at_function",
-        "fixture_at_session",
         "fixture_at_module",
+        "fixture_at_session",
         "other_random_fixture",
         "otheriteminnames",
     ]
