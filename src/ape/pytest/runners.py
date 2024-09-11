@@ -148,7 +148,7 @@ class PytestApeRunner(ManagerAccessMixin):
             for definition in definitions
         ]
 
-        for scope in ["session", "package", "module", "class"]:
+        for scope in ("session", "package", "module", "class"):
             # iterate through scope levels and insert the isolation fixture
             # prior to the first fixture with that scope
             try:
