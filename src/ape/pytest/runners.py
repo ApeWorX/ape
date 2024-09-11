@@ -137,34 +137,10 @@ class PytestApeRunner(ManagerAccessMixin):
             or (hasattr(pytest, "DoctestItem") and isinstance(item, pytest.DoctestItem))
             or "_function_isolation" in item.fixturenames  # prevent double injection
         ):
-            # isolation is disabled via cmdline option
+            # isolation is disabled via cmdline option or running doc-tests.
             return
 
-        fixture_map = item.session._fixturemanager._arg2fixturedefs
-        scopes = [
-            definition.scope
-            for name, definitions in fixture_map.items()
-            if name in item.fixturenames
-            for definition in definitions
-        ]
-
-        for scope in ("session", "package", "module", "class"):
-            # iterate through scope levels and insert the isolation fixture
-            # prior to the first fixture with that scope
-            try:
-                idx = scopes.index(scope)  # will raise ValueError if `scope` not found
-                item.fixturenames.insert(idx, f"_{scope}_isolation")
-                scopes.insert(idx, scope)
-            except ValueError:
-                # intermediate scope isolations aren't filled in
-                continue
-
-        # insert function isolation by default
-        try:
-            item.fixturenames.insert(scopes.index("function"), "_function_isolation")
-        except ValueError:
-            # no fixtures with function scope, so append function isolation
-            item.fixturenames.append("_function_isolation")
+        _insert_isolation_fixtures(item)
 
     def pytest_sessionstart(self):
         """
@@ -272,3 +248,32 @@ class PytestApeRunner(ManagerAccessMixin):
         self.chain_manager.contracts.clear_local_caches()
         self.gas_tracker.session_gas_report = None
         self.coverage_tracker.reset()
+
+
+def _insert_isolation_fixtures(item):
+    # Abstracted for testing purposes.
+    fixture_map = item.session._fixturemanager._arg2fixturedefs
+    scopes = [
+        definition.scope
+        for name, definitions in fixture_map.items()
+        if name in item.fixturenames
+        for definition in definitions
+    ]
+
+    for scope in ("session", "package", "module", "class"):
+        # iterate through scope levels and insert the isolation fixture
+        # prior to the first fixture with that scope
+        try:
+            idx = scopes.index(scope)  # will raise ValueError if `scope` not found
+            item.fixturenames.append(f"_{scope}_isolation")
+            scopes.insert(idx, scope)
+        except ValueError:
+            # intermediate scope isolations aren't filled in
+            continue
+
+    # insert function isolation by default
+    try:
+        item.fixturenames.insert(scopes.index("function"), "_function_isolation")
+    except ValueError:
+        # no fixtures with function scope, so append function isolation
+        item.fixturenames.append("_function_isolation")
