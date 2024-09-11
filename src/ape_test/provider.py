@@ -314,7 +314,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
 
         try:
             return self.evm_backend.revert_to_snapshot(snapshot_id)
-        except HeaderNotFound:
+        except (HeaderNotFound, ValidationError):
             raise UnknownSnapshotError(snapshot_id)
 
     def set_timestamp(self, new_timestamp: int):
