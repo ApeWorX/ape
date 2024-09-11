@@ -253,19 +253,17 @@ class PytestApeRunner(ManagerAccessMixin):
 def _insert_isolation_fixtures(item):
     # Abstracted for testing purposes.
     fixture_map = item.session._fixturemanager._arg2fixturedefs
-    scopes = [
+    scopes = {
         definition.scope
         for name, definitions in fixture_map.items()
         if name in item.fixturenames
         for definition in definitions
-    ]
+    }
 
     for scope in ("session", "package", "module", "class"):
         # iterate through scope levels and insert the isolation fixture
         # prior to the first fixture with that scope
-        try:
-            idx = scopes.index(scope)  # will raise ValueError if `scope` not found
-        except ValueError:
+        if scope not in scopes:
             continue
 
         name = f"_{scope}_isolation"
@@ -273,8 +271,6 @@ def _insert_isolation_fixtures(item):
         # Don't let isolation fixtures get added more than once!
         if name not in item.fixturenames:
             item.fixturenames.append(name)
-
-        scopes.insert(idx, scope)
 
     # insert function isolation by default
     if "_function_isolation" not in item.fixturenames:

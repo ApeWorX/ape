@@ -35,8 +35,8 @@ def test_insert_isolation_fixtures(mocker):
     mock_item.session._fixturemanager._arg2fixturedefs = fixtures
     mock_item.fixturenames = [*list(fixtures.keys()), "otheriteminnames"]
     _insert_isolation_fixtures(mock_item)
-    actual = sorted(mock_item.fixturenames)
-    expected = [
+    actual_fixturenames = sorted(mock_item.fixturenames)
+    expected_fixturenames = [
         "_class_isolation",
         "_function_isolation",
         "_module_isolation",
@@ -48,4 +48,4 @@ def test_insert_isolation_fixtures(mocker):
         "other_random_fixture",
         "otheriteminnames",
     ]
-    assert actual == expected
+    assert actual_fixturenames == expected_fixturenames
