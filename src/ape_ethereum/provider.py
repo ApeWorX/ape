@@ -635,7 +635,12 @@ class Web3Provider(ProviderAPI, ABC):
 
         if kwargs.get("private"):
             # Bail before confirmation because it won't be on chain yet.
-            receipt = self._create_receipt(required_confirmations=0, **txn)
+            data = {
+                "required_confirmations": 0,
+                "block_number": -1,
+                **txn,
+            }
+            receipt = self._create_receipt(**data)
             return receipt.await_confirmations()  # But do need to await nonce increment.
 
         try:
