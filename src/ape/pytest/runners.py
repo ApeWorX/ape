@@ -10,8 +10,9 @@ from ape.api.networks import ProviderContextManager
 from ape.logging import LogLevel
 from ape.pytest.config import ConfigWrapper
 from ape.pytest.coverage import CoverageTracker
-from ape.pytest.fixtures import ReceiptCapture
+from ape.pytest.fixtures import IsolationManager, ReceiptCapture
 from ape.pytest.gas import GasTracker
+from ape.pytest.utils import Scope
 from ape.types.coverage import CoverageReport
 from ape.utils.basemodel import ManagerAccessMixin
 from ape_console._cli import console
@@ -21,11 +22,13 @@ class PytestApeRunner(ManagerAccessMixin):
     def __init__(
         self,
         config_wrapper: ConfigWrapper,
+        isolation_manager: IsolationManager,
         receipt_capture: ReceiptCapture,
         gas_tracker: GasTracker,
         coverage_tracker: CoverageTracker,
     ):
         self.config_wrapper = config_wrapper
+        self.isolation_manager = isolation_manager
         self.receipt_capture = receipt_capture
         self._provider_is_connected = False
 
@@ -140,7 +143,59 @@ class PytestApeRunner(ManagerAccessMixin):
             # isolation is disabled via cmdline option or running doc-tests.
             return
 
-        _insert_isolation_fixtures(item)
+        # Abstracted for testing purposes.
+        fixture_map = item.session._fixturemanager._arg2fixturedefs
+        scope_map = {
+            name: definition.scope
+            for name, definitions in fixture_map.items()
+            if name in item.fixturenames
+            for definition in definitions
+        }
+        scopes = [scope_map[n] for n in item.fixturenames if n in scope_map]
+        for scope in (Scope.SESSION, Scope.PACKAGE, Scope.MODULE, Scope.CLASS):
+            try:
+                index = len(scopes) - 1 - scopes[::-1].index(scope)
+            except ValueError:
+                # Intermediate scope isolations aren't filled in
+                continue
+
+            fixtures_used = {
+                n
+                for n, scp in scope_map.items()
+                if scp == scope and n not in self.isolation_manager.builtin_ape_fixtures
+            }
+            if not fixtures_used:
+                # Potentially only using built-ape fixtures and nothing else.
+                continue
+
+            # For non-function scoped isolation, the fixtures
+            # must go after the last fixture with that scope
+            # to ensure contracts deployed in fixtures persist.
+            name = f"_{scope}_isolation"
+            if name not in item.fixturenames:
+                item.fixturenames.insert(index + 1, f"_{scope}_isolation")
+
+            # This line is needed to fix the calculation on subsequent checks
+            scopes.insert(index, scope)
+            fixtures_used = self._get_fixtures(scope_map, scope)
+            self.isolation_manager.update_fixtures(scope, fixtures_used)
+
+        # Function-isolation must go last.
+        try:
+            item.fixturenames.insert(scopes.index(Scope.FUNCTION), f"_{Scope.FUNCTION}_isolation")
+        except ValueError:
+            # No fixtures with function scope, so append function isolation.
+            item.fixturenames.append("_function_isolation")
+
+        fixtures_used = self._get_fixtures(scope_map, Scope.FUNCTION)
+        self.isolation_manager.update_fixtures(Scope.FUNCTION, fixtures_used)
+
+    def _get_fixtures(self, scope_map: dict, scope: Scope) -> set[str]:
+        return {
+            n
+            for n, scp in scope_map.items()
+            if scp == scope and n not in self.isolation_manager.builtin_ape_fixtures
+        }
 
     def pytest_sessionstart(self):
         """
@@ -248,40 +303,3 @@ class PytestApeRunner(ManagerAccessMixin):
         self.chain_manager.contracts.clear_local_caches()
         self.gas_tracker.session_gas_report = None
         self.coverage_tracker.reset()
-
-
-def _insert_isolation_fixtures(item):
-    # Abstracted for testing purposes.
-    fixture_map = item.session._fixturemanager._arg2fixturedefs
-    scope_map = {
-        name: definition.scope
-        for name, definitions in fixture_map.items()
-        if name in item.fixturenames
-        for definition in definitions
-    }
-    scopes = [scope_map[n] for n in item.fixturenames if n in scope_map]
-
-    for scope in ("session", "package", "module", "class"):
-        try:
-            index = scopes.index(scope)
-        except ValueError:
-            # Intermediate scope isolations aren't filled in
-            continue
-
-        # For non-function scoped isolation, the fixtures
-        # must go after the last fixture with that scope
-        # to ensure contracts deployed in fixtures persist.
-        name = f"_{scope}_isolation"
-        if name not in item.fixturenames:
-            item.fixturenames.insert(index, f"_{scope}_isolation")
-
-        # This line is needed to fix the calculation on subsequent checks
-        scopes.insert(index, scope)
-
-    # Function-isolation must go last.
-
-    try:
-        item.fixturenames.insert(scopes.index("function"), "_function_isolation")
-    except ValueError:
-        # No fixtures with function scope, so append function isolation.
-        item.fixturenames.insert(0, "_function_isolation")
