@@ -624,6 +624,7 @@ class Web3Provider(ProviderAPI, ABC):
         )
         hex_hash = HexBytes(txn_hash)
 
+        txn = {}
         if transaction := kwargs.get("transaction"):
             # perf: If called `send_transaction()`, we should already have the data!
             txn = (
@@ -659,7 +660,6 @@ class Web3Provider(ProviderAPI, ABC):
                 receipt_data["gasPrice"] = receipt_data["effectiveGasPrice"]
 
         else:
-            txn = {}
             for attempt in range(max_retries):
                 try:
                     txn = dict(self.web3.eth.get_transaction(HexStr(txn_hash)))
