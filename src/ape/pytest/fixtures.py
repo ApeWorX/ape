@@ -103,6 +103,19 @@ class Snapshot:
     fixtures: list = field(default_factory=list)
 
 
+def _get_lower_scopes(scope: Scope) -> tuple[Scope, ...]:
+    if scope is Scope.SESSION:
+        return (Scope.FUNCTION, Scope.CLASS, Scope.MODULE, Scope.PACKAGE)
+    elif scope is Scope.PACKAGE:
+        return (Scope.FUNCTION, Scope.CLASS, Scope.MODULE)
+    elif scope is Scope.MODULE:
+        return (Scope.FUNCTION, Scope.CLASS)
+    elif scope is Scope.CLASS:
+        return (Scope.FUNCTION,)
+
+    return ()
+
+
 class IsolationManager(ManagerAccessMixin):
     INVALID_KEY = "__invalid_snapshot__"
 
@@ -151,8 +164,9 @@ class IsolationManager(ManagerAccessMixin):
         # If the snapshot is already set, we have to invalidate it.
         # We need to replace the snapshot with one that happens after
         # the new fixtures.
-        if snapshot is not None:
-            self._snapshot_registry[scope].identifier = self.INVALID_KEY
+        # if snapshot is not None:
+        #     breakpoint()
+        #     self._snapshot_registry[scope].identifier = self.INVALID_KEY
 
         # Add or update peer-fixtures.
         self._snapshot_registry[scope].fixtures.extend(new_fixtures)
@@ -196,20 +210,18 @@ class IsolationManager(ManagerAccessMixin):
         # Else, it falls apart.
         snapshot_id = None
         if scope is not Scope.FUNCTION:
-            lower_scopes: tuple[Scope, ...] = ()
-            if scope is Scope.SESSION:
-                lower_scopes = (Scope.PACKAGE, Scope.MODULE, Scope.CLASS, Scope.FUNCTION)
-            elif scope is Scope.PACKAGE:
-                lower_scopes = (Scope.MODULE, Scope.CLASS, Scope.FUNCTION)
-            elif scope is Scope.MODULE:
-                lower_scopes = (Scope.CLASS, Scope.FUNCTION)
-            elif scope is Scope.CLASS:
-                lower_scopes = (Scope.FUNCTION,)
+            lower_scopes = _get_lower_scopes(scope)
             for lower_scope in lower_scopes:
                 snapshot = self._snapshot_registry[lower_scope]
                 if snapshot.identifier is not None:
                     snapshot_id = snapshot.identifier
                     break
+
+            if snapshot_id is not None:
+                # Clear out others
+                for lower_scope in lower_scopes:
+                    snapshot = self._snapshot_registry[lower_scope]
+                    snapshot.identifier = None
 
         if snapshot_id is None:
             try:
@@ -256,6 +268,13 @@ class IsolationManager(ManagerAccessMixin):
             self._supported = False
 
         self._snapshot_registry[scope].identifier = None
+
+        # If we are reverting to a session-state, there is no
+        # reason to revert back to a function state (if one exists).
+        # and so forth.
+        lower_scopes = _get_lower_scopes(scope)
+        for lower_scope in lower_scopes:
+            self._snapshot_registry[lower_scope].identifier = None
 
 
 class ReceiptCapture(ManagerAccessMixin):
