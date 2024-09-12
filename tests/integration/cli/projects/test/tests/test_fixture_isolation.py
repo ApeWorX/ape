@@ -1,5 +1,12 @@
 import pytest
 
+INITIAL_BALANCE = 1_000_1 * 10**18
+
+
+@pytest.fixture(scope="function")
+def function_one(chain):
+    chain.mine(1)
+
 
 @pytest.fixture(scope="module", autouse=True)
 def module_one(chain):
@@ -30,9 +37,10 @@ def start_block_number(chain):
     return chain.blocks.height
 
 
-@pytest.fixture(scope="function")
-def function_one(chain):
-    chain.mine(1)
+def test_noop():
+    # This forces auto-use fixtures to fire off before
+    # any requested fixtures, for testing purposes.
+    assert True
 
 
 def test_isolation_first(alice, bob, chain, start_block_number):
@@ -41,10 +49,9 @@ def test_isolation_first(alice, bob, chain, start_block_number):
     alice.transfer(bob, "1 ether")
 
 
-#
-# def test_isolation_second(bob, chain, start_block_number):
-#     assert chain.provider.get_block("latest").number == start_block_number
-#     assert bob.balance == INITIAL_BALANCE
+def test_isolation_second(bob, chain, start_block_number):
+    assert chain.provider.get_block("latest").number == start_block_number
+    assert bob.balance == INITIAL_BALANCE
 
 
 def test_isolation_with_session_module_and_function(chain, session_one, session_two, function_one):

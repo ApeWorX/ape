@@ -1,4 +1,12 @@
-def test_session(chain, session_one, session_two):
+"""
+'test_fixture_isolation.py' runs before this module.
+We are testing that we go back to an expected session-level
+state without any of the module-level state from
+'test_fixture_isolation.py'.
+"""
+
+
+def test_session(chain):
     """
     `session_one` mines 4 and `session_two` mines 2,
     so we expected 6.
