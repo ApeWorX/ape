@@ -624,6 +624,19 @@ class Web3Provider(ProviderAPI, ABC):
         )
         hex_hash = HexBytes(txn_hash)
 
+        if transaction := kwargs.get("transaction"):
+            # perf: If called `send_transaction()`, we should already have the data!
+            txn = (
+                transaction
+                if isinstance(transaction, dict)
+                else transaction.model_dump(by_alias=True, mode="json")
+            )
+
+        if kwargs.get("private"):
+            # Bail before confirmation because it won't be on chain yet.
+            receipt = self._create_receipt(required_confirmations=0, **txn)
+            return receipt.await_confirmations()  # But do need to await nonce increment.
+
         try:
             receipt_data = dict(
                 self.web3.eth.wait_for_transaction_receipt(hex_hash, timeout=timeout)
@@ -641,13 +654,7 @@ class Web3Provider(ProviderAPI, ABC):
         network_config: dict = ecosystem_config.get(self.network.name, {})
         max_retries = network_config.get("max_get_transaction_retries", DEFAULT_MAX_RETRIES_TX)
 
-        if transaction := kwargs.get("transaction"):
-            # perf: If called `send_transaction()`, we should already have the data!
-            txn = (
-                transaction
-                if isinstance(transaction, dict)
-                else transaction.model_dump(by_alias=True, mode="json")
-            )
+        if transaction:
             if "effectiveGasPrice" in receipt_data:
                 receipt_data["gasPrice"] = receipt_data["effectiveGasPrice"]
 

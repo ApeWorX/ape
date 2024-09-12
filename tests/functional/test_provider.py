@@ -128,6 +128,18 @@ def test_get_receipt_exists_with_timeout(eth_tester_provider, vyper_contract_ins
     assert receipt_from_provider.receiver == vyper_contract_instance.address
 
 
+def test_get_receipt_for_private_bypasses_confirmations(
+    eth_tester_provider, vyper_contract_instance, owner
+):
+    receipt_from_invoke = vyper_contract_instance.setNumber(888, sender=owner)
+    receipt_from_provider = eth_tester_provider.get_receipt(
+        receipt_from_invoke.txn_hash, timeout=0, private=True
+    )
+    assert receipt_from_provider.txn_hash == receipt_from_invoke.txn_hash
+    assert receipt_from_provider.receiver == vyper_contract_instance.address
+    assert not receipt_from_provider.confirmed
+
+
 def test_get_contracts_logs_all_logs(chain, contract_instance, owner, eth_tester_provider):
     start_block = chain.blocks.height
     stop_block = start_block + 100
