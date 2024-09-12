@@ -82,7 +82,7 @@ class PytestApeFixtures(ManagerAccessMixin):
         """
         return self.chain_manager.contracts.instance_at
 
-    def _isolation(self) -> Iterator[None]:
+    def _isolation(self, request=None) -> Iterator[None]:
         """
         Isolation logic used to implement isolation fixtures for each pytest scope.
         When tracing support is available, will also assist in capturing receipts.
@@ -116,9 +116,18 @@ class PytestApeFixtures(ManagerAccessMixin):
             self._restore(snapshot_id)
 
     # isolation fixtures
-    _session_isolation = pytest.fixture(_isolation, scope="session")
-    _package_isolation = pytest.fixture(_isolation, scope="package")
-    _module_isolation = pytest.fixture(_isolation, scope="module")
+    @pytest.fixture(scope="session")
+    def _session_isolation(self, request) -> Iterator[None]:
+        yield from self._isolation(request)
+
+    @pytest.fixture(scope="package")
+    def _package_isolation(self, request) -> Iterator[None]:
+        yield from self._isolation(request)
+
+    @pytest.fixture(scope="module")
+    def _module_isolation(self, request) -> Iterator[None]:
+        yield from self._isolation(request)
+
     _class_isolation = pytest.fixture(_isolation, scope="class")
     _function_isolation = pytest.fixture(_isolation, scope="function")
 
