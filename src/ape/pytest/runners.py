@@ -251,9 +251,10 @@ class PytestApeRunner(ManagerAccessMixin):
                     new_fixtures.append(custom_fixture)
                     continue
 
-                # Check if it is the next iteration of a parametrized fixture.
                 if custom_fixture in fixture_defs:
                     fixture_infos = fixture_defs[custom_fixture]
+
+                    # Check for parametrized fixtures, which have special handling.
                     for fixture_info in fixture_infos:
                         params = fixture_info.params
                         if params is None:
@@ -262,20 +263,21 @@ class PytestApeRunner(ManagerAccessMixin):
 
                         cached_result = fixture_info.cached_result
                         if cached_result is None:
-                            # Already added but not yet ran?
+                            # If we get here, we already checked we hadn't seen this
+                            # fixture before. Yet, it has no cached result and is not
+                            # function-scoped fixture. Is it even possible to get
+                            # to this state? It would require hitting the same iteration of
+                            # a parametrized fixture twice. Ignore for now.
                             continue
 
                         last_known_fixture_param = cached_result[1]
-                        if last_known_fixture_param == params[-1]:
-                            # We have already updated since the last iteration.
-                            continue
-
-                        # Else, this fixture has come up again, meaning we are now
-                        # on the next iteration. This is basically the same situation
-                        # as more fixtures of a certain scope coming in late, and
-                        # has all the same performance problems. Thus, it is highly
-                        # not recommended to use parametrized fixtures in Ape.
-                        new_fixtures.append(custom_fixture)
+                        number_of_parameters = len(params)
+                        if number_of_parameters > 1 or last_known_fixture_param == params[-2]:
+                            # If we here, this parametrized fixture has multiple returns (params>1),
+                            # and this is the last iteration of that return. We can treat this
+                            # situation the same as if a more fixtures of a certain scope coming
+                            # in late.
+                            new_fixtures.append(custom_fixture)
 
             # Check for fixtures that are now invalid. For example, imagine a session
             # fixtures comes into play after the module snapshot has been set.
