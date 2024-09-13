@@ -68,7 +68,7 @@ def test_snapshot_and_restore_unknown_snapshot_id(chain):
 
 
 def test_snapshot_and_restore_no_snapshots(chain):
-    chain.snapshots = []  # Ensure empty (gets set in test setup)
+    chain._snapshots = []  # Ensure empty (gets set in test setup)
     with pytest.raises(ChainError, match="There are no snapshots to revert to."):
         chain.restore()
 

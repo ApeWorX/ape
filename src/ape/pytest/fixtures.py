@@ -73,7 +73,6 @@ class PytestApeFixtures(ManagerAccessMixin):
         """
         return self.chain_manager.contracts.instance_at
 
-    # isolation fixtures
     @pytest.fixture(scope=Scope.SESSION.value)
     def _session_isolation(self) -> Iterator[None]:
         yield from self.isolation_manager.isolation(Scope.SESSION)
@@ -101,7 +100,7 @@ class Snapshot:
     All the data necessary for accurately supporting isolation.
     """
 
-    scope: "Scope"  # Assuming 'Scope' is defined elsewhere
+    scope: Scope
     """Corresponds to fixture scope."""
 
     identifier: Optional[SnapshotID] = None
