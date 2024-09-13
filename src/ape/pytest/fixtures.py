@@ -30,7 +30,7 @@ class PytestApeFixtures(ManagerAccessMixin):
         self.config_wrapper = config_wrapper
         self.isolation_manager = isolation_manager
 
-    @pytest.fixture(scope=Scope.SESSION.value)
+    @pytest.fixture(scope="session")
     def accounts(self) -> list[TestAccountAPI]:
         """
         A collection of pre-funded accounts.
@@ -44,28 +44,28 @@ class PytestApeFixtures(ManagerAccessMixin):
         """
         return self.compiler_manager
 
-    @pytest.fixture(scope=Scope.SESSION.value)
+    @pytest.fixture(scope="session")
     def chain(self) -> ChainManager:
         """
         Manipulate the blockchain, such as mine or change the pending timestamp.
         """
         return self.chain_manager
 
-    @pytest.fixture(scope=Scope.SESSION.value)
+    @pytest.fixture(scope="session")
     def networks(self) -> NetworkManager:
         """
         Connect to other networks in your tests.
         """
         return self.network_manager
 
-    @pytest.fixture(scope=Scope.SESSION.value)
+    @pytest.fixture(scope="session")
     def project(self) -> ProjectManager:
         """
         Access contract types and dependencies.
         """
         return self.local_project
 
-    @pytest.fixture(scope=Scope.SESSION.value)
+    @pytest.fixture(scope="session")
     def Contract(self):
         """
         Instantiate a reference to an on-chain contract
@@ -73,23 +73,23 @@ class PytestApeFixtures(ManagerAccessMixin):
         """
         return self.chain_manager.contracts.instance_at
 
-    @pytest.fixture(scope=Scope.SESSION.value)
+    @pytest.fixture(scope="session")
     def _session_isolation(self) -> Iterator[None]:
         yield from self.isolation_manager.isolation(Scope.SESSION)
 
-    @pytest.fixture(scope=Scope.PACKAGE.value)
+    @pytest.fixture(scope="package")
     def _package_isolation(self) -> Iterator[None]:
         yield from self.isolation_manager.isolation(Scope.PACKAGE)
 
-    @pytest.fixture(scope=Scope.MODULE.value)
+    @pytest.fixture(scope="module")
     def _module_isolation(self) -> Iterator[None]:
         yield from self.isolation_manager.isolation(Scope.MODULE)
 
-    @pytest.fixture(scope=Scope.CLASS.value)
+    @pytest.fixture(scope="class")
     def _class_isolation(self) -> Iterator[None]:
         yield from self.isolation_manager.isolation(Scope.CLASS)
 
-    @pytest.fixture(scope=Scope.FUNCTION.value)
+    @pytest.fixture(scope="function")
     def _function_isolation(self) -> Iterator[None]:
         yield from self.isolation_manager.isolation(Scope.FUNCTION)
 
@@ -139,8 +139,8 @@ class SnapshotRegistry(dict[Scope, Snapshot]):
         self[scope].identifier = None
 
     def next_snapshots(self, scope: Scope) -> Iterator[Snapshot]:
-        for lower_scope in scope.lower_scopes:
-            yield self[lower_scope]
+        for scope_value in range(scope + 1, Scope.FUNCTION + 1):
+            yield self[scope_value]  # type: ignore
 
     def extend_fixtures(self, scope: Scope, fixtures: Iterable[str]):
         self[scope].fixtures.extend(fixtures)
