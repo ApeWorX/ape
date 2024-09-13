@@ -1,7 +1,7 @@
 import inspect
 from collections import defaultdict
 from collections.abc import Iterable
-from functools import cached_property
+from functools import cached_property, singledispatchmethod
 from pathlib import Path
 from typing import Optional
 
@@ -33,6 +33,47 @@ class FixturesByScope(dict[Scope, list[str]]):
                 Scope.FUNCTION: [],
             }
         )
+
+    @singledispatchmethod
+    def __setitem__(self, key, value):
+        raise NotImplementedError(type(key))
+
+    @__setitem__.register
+    def __setitem_int(self, key: int, value: list[str]):
+        super().__setitem__(Scope(key), value)
+
+    @__setitem__.register
+    def __setitem_str(self, key: str, value: list[str]):
+        for scope in Scope:
+            if f"{scope}" == key:
+                super().__setitem__(scope, value)
+                return
+
+        raise KeyError(key)
+
+    @__setitem__.register
+    def __setitem_scope(self, key: Scope, value: list[str]):
+        super().__setitem__(key, value)
+
+    @singledispatchmethod
+    def __getitem__(self, key):
+        raise NotImplementedError(type(key))
+
+    @__getitem__.register
+    def __getitem_int(self, key: int) -> list[str]:
+        return super().__getitem__(Scope(key))
+
+    @__getitem__.register
+    def __getitem_str(self, key: str) -> list[str]:
+        for scope in Scope:
+            if f"{scope}" == key:
+                return super().__getitem__(scope)
+
+        raise KeyError(key)
+
+    @__getitem__.register
+    def __getitem_scope(self, key: Scope) -> list[str]:
+        return super().__getitem__(key)
 
     @classmethod
     def from_test_item(cls, item) -> "FixturesByScope":
@@ -288,7 +329,7 @@ class PytestApeRunner(ManagerAccessMixin):
             if new_fixtures and snapshot.fixtures:
                 invalid_fixtures = defaultdict(list)
                 scope_to_revert = None
-                for next_snapshot in self.isolation_manager.snapshots.next_snapshots(scope):
+                for next_snapshot in self.isolation_manager.next_snapshots(scope):
                     if next_snapshot.identifier is None:
                         # Thankfully, we haven't reached this scope yet.
                         # In this case, things are running in a performant order.
