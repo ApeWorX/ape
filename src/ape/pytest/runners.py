@@ -242,7 +242,7 @@ class PytestApeRunner(ManagerAccessMixin):
 
             snapshot = self.isolation_manager.get_snapshot(scope)
 
-            # Check for fixtures are now invalid. For example, imagine a session
+            # Check for fixtures that are now invalid. For example, imagine a session
             # fixtures comes into play after the module snapshot has been set.
             # Once we restore the module's state and move to the next module,
             # that session fixture will no longer exist. To remedy this situation,
