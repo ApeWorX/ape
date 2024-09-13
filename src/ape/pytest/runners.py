@@ -334,7 +334,8 @@ class PytestApeRunner(ManagerAccessMixin):
                         # Thankfully, we haven't reached this scope yet.
                         # In this case, things are running in a performant order.
                         continue
-                    elif scope_to_revert is None:
+
+                    if scope_to_revert is None:
                         # Revert to the closest scope to use. For example, a new
                         # session comes in but we have already calculated a module
                         # and a class, revert to pre-module and invalidate the module
@@ -343,9 +344,6 @@ class PytestApeRunner(ManagerAccessMixin):
 
                     # All fixtures downward need to be invalidated.
                     invalid_fixtures[next_snapshot.scope].extend(next_snapshot.fixtures)
-                    # Also, force include the fixtures in this test so they run again
-                    # (as if this never happened!)
-                    fixture_by_scope.prepend(next_snapshot.scope, next_snapshot.fixtures)
 
                 # Restore the state now.
                 if scope_to_revert is not None:
