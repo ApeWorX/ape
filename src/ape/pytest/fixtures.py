@@ -168,6 +168,9 @@ class IsolationManager(ManagerAccessMixin):
     def extend_fixtures(self, scope: Scope, fixtures: Iterable[str]):
         self.snapshots.extend_fixtures(scope, fixtures)
 
+    def next_snapshots(self, scope: Scope) -> Iterator[Snapshot]:
+        yield from self.snapshots.next_snapshots(scope)
+
     def isolation(self, scope: Scope) -> Iterator[None]:
         """
         Isolation logic used to implement isolation fixtures for each pytest scope.
