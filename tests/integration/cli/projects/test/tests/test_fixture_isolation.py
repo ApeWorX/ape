@@ -98,3 +98,21 @@ def test_isolation_module_ran_after(chain):
 
 def test_parametrized_fixtures(start_block_number, chain, parametrized_mining):
     assert chain.blocks.height == start_block_number + parametrized_mining
+
+
+@pytest.fixture(scope="session", params=(5, 6, 7))
+def parametrized_transaction(request, alice, bob):
+    """
+    2 more get added to the session here!
+    """
+    return alice.transfer(bob, f"{request.param} wei")
+
+
+def test_use_parametrized_transaction(parametrized_transaction):
+    """
+    The real test is in the next file `test_iso_session.py`.
+    The session fixtures should know about these and add an additional
+    `3` to the `6` to make `9.`
+    """
+    _ = parametrized_transaction
+    assert True  # Testing isolation after the fixture runs.

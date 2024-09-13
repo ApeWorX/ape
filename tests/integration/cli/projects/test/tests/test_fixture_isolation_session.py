@@ -9,14 +9,16 @@ state without any of the module-level state from
 def test_session(chain):
     """
     `session_one` mines 4 and `session_two` mines 2,
-    so we expected 6.
+    so we expected 6. Then, at the end of the module,
+    3 more get added to the session.
     """
-    assert chain.blocks.height == 6
+    assert chain.blocks.height == 9
 
 
 def test_session2(chain):
     """
     Session isolation doesn't revert other session fixtures,
-    so we are still at 6.
+    so we are still at 6. Then, at the end of the module,
+    3 more get added to the session.
     """
-    assert chain.blocks.height == 6
+    assert chain.blocks.height == 9
