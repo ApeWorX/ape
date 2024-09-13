@@ -314,18 +314,17 @@ class PytestApeRunner(ManagerAccessMixin):
                         last_known_fixture_param = cached_result[1]
                         number_of_parameters = len(params)
                         if number_of_parameters > 1 or last_known_fixture_param == params[-2]:
-                            # If we here, this parametrized fixture has multiple returns (params>1),
+                            # If we are here, this parametrized fixture has multiple returns (params>1),
                             # and this is the last iteration of that return. We can treat this
                             # situation the same as if a more fixtures of a certain scope coming
                             # in late.
                             new_fixtures.append(custom_fixture)
 
             # Check for fixtures that are now invalid. For example, imagine a session
-            # fixtures comes into play after the module snapshot has been set.
+            # fixture comes into play after the module snapshot has been set.
             # Once we restore the module's state and move to the next module,
             # that session fixture will no longer exist. To remedy this situation,
-            # we invalidate the lower-scoped fixtures and re-run them and re-snapshot
-            # everything (mega performance loss, unfortunately).
+            # we invalidate the lower-scoped fixtures and re-snapshot everything.
             if new_fixtures and snapshot.fixtures:
                 invalid_fixtures = defaultdict(list)
                 scope_to_revert = None
