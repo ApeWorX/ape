@@ -1,3 +1,7 @@
+import inspect
+from collections import defaultdict
+from collections.abc import Iterable
+from functools import cached_property
 from pathlib import Path
 from typing import Optional
 
@@ -10,12 +14,69 @@ from ape.api.networks import ProviderContextManager
 from ape.logging import LogLevel
 from ape.pytest.config import ConfigWrapper
 from ape.pytest.coverage import CoverageTracker
-from ape.pytest.fixtures import IsolationManager, ReceiptCapture
+from ape.pytest.fixtures import IsolationManager, PytestApeFixtures, ReceiptCapture
 from ape.pytest.gas import GasTracker
 from ape.pytest.utils import Scope
 from ape.types.coverage import CoverageReport
 from ape.utils.basemodel import ManagerAccessMixin
 from ape_console._cli import console
+
+
+class FixturesByScope(dict[Scope, list[str]]):
+    def __init__(self):
+        super().__init__(
+            {
+                Scope.SESSION: [],
+                Scope.PACKAGE: [],
+                Scope.MODULE: [],
+                Scope.CLASS: [],
+                Scope.FUNCTION: [],
+            }
+        )
+
+    @classmethod
+    def from_test_item(cls, item) -> "FixturesByScope":
+        obj = cls()
+        info_dict = item.session._fixturemanager._arg2fixturedefs
+        for name, info_ls in info_dict.items():
+            if not info_ls or name not in item.fixturenames:
+                continue
+
+            for info in info_ls:
+                obj[info.scope].append(name)
+
+        return obj
+
+    @property
+    def fixturenames(self) -> list[str]:
+        """
+        Outputs in correct order for item.fixturenames.
+        Also, injects isolation fixtures if needed.
+        """
+        result = []
+        for scope, ls in self.items():
+            # NOTE: For function scoped, we always add the isolation fixture.
+            if not ls and scope is not Scope.FUNCTION:
+                continue
+
+            result.append(scope.isolation_fixturename)
+            result.extend(ls)
+
+        return result
+
+    def prepend(self, scope: Scope, fixtures: Iterable[str]):
+        existing = self[scope]
+        result = []
+        for new_fixture in fixtures:
+            if new_fixture in existing:
+                existing.remove(new_fixture)
+
+            result.append(new_fixture)
+
+        for existing_fixture in existing:
+            result.append(existing_fixture)
+
+        self[scope] = result
 
 
 class PytestApeRunner(ManagerAccessMixin):
@@ -31,6 +92,7 @@ class PytestApeRunner(ManagerAccessMixin):
         self.isolation_manager = isolation_manager
         self.receipt_capture = receipt_capture
         self._provider_is_connected = False
+        self._builtin_fixtures: list[str] = []
 
         # Ensure the gas report starts off None for this runner.
         gas_tracker.session_gas_report = None
@@ -127,6 +189,27 @@ class PytestApeRunner(ManagerAccessMixin):
             # tests had stopped here.
             pytest.exit("`ape test` exited.")
 
+    @cached_property
+    def _ape_fixtures(self) -> tuple[str, ...]:
+        return tuple(
+            [
+                n
+                for n, itm in inspect.getmembers(PytestApeFixtures)
+                if callable(itm) and not n.startswith("_")
+            ]
+        )
+
+    def _get_builtin_fixtures(self, item) -> list[str]:
+        if self._builtin_fixtures:
+            return self._builtin_fixtures
+
+        self._builtin_fixtures = [
+            fixture_name
+            for fixture_name, defs in item.session._fixturemanager._arg2fixturedefs.items()
+            if any("pytest" in fixture.func.__module__ for fixture in defs)
+        ]
+        return self._builtin_fixtures
+
     def pytest_runtest_setup(self, item):
         """
         By default insert isolation fixtures into each test cases list of fixtures
@@ -143,59 +226,78 @@ class PytestApeRunner(ManagerAccessMixin):
             # isolation is disabled via cmdline option or running doc-tests.
             return
 
-        # Abstracted for testing purposes.
-        fixture_map = item.session._fixturemanager._arg2fixturedefs
-        scope_map = {
-            name: definition.scope
-            for name, definitions in fixture_map.items()
-            if name in item.fixturenames
-            for definition in definitions
-        }
-        scopes = [scope_map[n] for n in item.fixturenames if n in scope_map]
+        fixture_defs = item.session._fixturemanager._arg2fixturedefs
+        fixture_by_scope = FixturesByScope.from_test_item(item)
+        builtin_fixtures = self._get_builtin_fixtures(item)
         for scope in (Scope.SESSION, Scope.PACKAGE, Scope.MODULE, Scope.CLASS):
-            try:
-                index = len(scopes) - 1 - scopes[::-1].index(scope)
-            except ValueError:
-                # Intermediate scope isolations aren't filled in
+            custom_fixtures = [
+                f
+                for f in fixture_by_scope[scope]
+                if f not in self._ape_fixtures and f not in builtin_fixtures
+            ]
+            if not custom_fixtures:
+                # Intermediate scope isolations aren't filled in, or only using
+                # built-in Ape fixtures.
                 continue
 
-            fixtures_used = {
-                n
-                for n, scp in scope_map.items()
-                if scp == scope and n not in self.isolation_manager.builtin_ape_fixtures
-            }
-            if not fixtures_used:
-                # Potentially only using built-ape fixtures and nothing else.
-                continue
+            snapshot = self.isolation_manager.get_snapshot(scope)
 
-            # For non-function scoped isolation, the fixtures
-            # must go after the last fixture with that scope
-            # to ensure contracts deployed in fixtures persist.
-            name = f"_{scope}_isolation"
-            if name not in item.fixturenames:
-                item.fixturenames.insert(index + 1, f"_{scope}_isolation")
+            # Check for fixtures are now invalid. For example, imagine a session
+            # fixtures comes into play after the module snapshot has been set.
+            # Once we restore the module's state and move to the next module,
+            # that session fixture will no longer exist. To remedy this situation,
+            # we invalidate the lower-scoped fixtures and re-run them and re-snapshot
+            # everything (mega performance loss, unfortunately).
+            new_fixtures = [f for f in custom_fixtures if f not in snapshot.fixtures]
+            if new_fixtures and snapshot.fixtures:
+                invalid_fixtures = defaultdict(list)
+                scope_to_revert = None
+                for next_snapshot in self.isolation_manager.snapshots.next_snapshots(scope):
+                    if next_snapshot.identifier is None:
+                        # Thankfully, we haven't reached this scope yet.
+                        # In this case, things are running in a performant order.
+                        continue
+                    elif scope_to_revert is None:
+                        # Revert to the closest scope to use. For example, a new
+                        # session comes in but we have already calculated a module
+                        # and a class, revert to pre-module and invalidate the module
+                        # and class fixtures.
+                        scope_to_revert = next_snapshot.scope
 
-            # This line is needed to fix the calculation on subsequent checks
-            scopes.insert(index, scope)
-            fixtures_used = self._get_fixtures(scope_map, scope)
-            self.isolation_manager.update_fixtures(scope, fixtures_used)
+                    # All fixtures downward need to be invalidated.
+                    invalid_fixtures[next_snapshot.scope].extend(next_snapshot.fixtures)
+                    # Also, force include the fixtures in this test so they run again
+                    # (as if this never happened!)
+                    fixture_by_scope.prepend(next_snapshot.scope, next_snapshot.fixtures)
 
-        # Function-isolation must go last.
-        try:
-            item.fixturenames.insert(scopes.index(Scope.FUNCTION), f"_{Scope.FUNCTION}_isolation")
-        except ValueError:
-            # No fixtures with function scope, so append function isolation.
-            item.fixturenames.append("_function_isolation")
+                # Restore the state now.
+                if scope_to_revert is not None:
+                    self.isolation_manager.restore(scope_to_revert)
 
-        fixtures_used = self._get_fixtures(scope_map, Scope.FUNCTION)
-        self.isolation_manager.update_fixtures(Scope.FUNCTION, fixtures_used)
+                # Invalidate fixtures by clearing out their cached result.
+                for invalid_scope, invalid_fixture_ls in invalid_fixtures.items():
+                    for invalid_fixture in invalid_fixture_ls:
+                        if invalid_fixture not in fixture_defs:
+                            continue
 
-    def _get_fixtures(self, scope_map: dict, scope: Scope) -> set[str]:
-        return {
-            n
-            for n, scp in scope_map.items()
-            if scp == scope and n not in self.isolation_manager.builtin_ape_fixtures
-        }
+                        info_ls = fixture_defs[invalid_fixture]
+                        for info in info_ls:
+                            info.cached_result = None
+
+                    # Also, invalidate the corresponding isolation fixture.
+                    if invalid_isolation_fixture_ls := fixture_defs.get(
+                        invalid_scope.isolation_fixturename
+                    ):
+                        for invalid_isolation_fixture in invalid_isolation_fixture_ls:
+                            invalid_isolation_fixture.cached_result = None
+
+            # Append these fixtures so we know when new ones arrive
+            # and need to trigger the invalidation logic above.
+            snapshot.append_fixtures(new_fixtures)
+
+        # Finally, setting the fixturenames in the order they should be used.
+        # Pytest runs the fixtures in this order.
+        item.fixturenames = fixture_by_scope.fixturenames
 
     def pytest_sessionstart(self):
         """
