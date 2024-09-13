@@ -23,6 +23,12 @@ def bob(accounts):
     yield accounts[1]
 
 
+@pytest.fixture(params=(5, 6, 7))
+def parametrized_mining(chain, request):
+    chain.mine(request.param)
+    return request.param
+
+
 @pytest.fixture(scope="module", autouse=True)
 def setup(alice, bob, chain):
     start_number = chain.provider.get_block("latest").number
@@ -88,3 +94,7 @@ def test_isolation_module_ran_after(chain):
     Expected = sessions + module = 4 + 2 + 3 + 1 (from setup) = 10
     """
     assert chain.blocks.height == 10
+
+
+def test_parametrized_fixtures(start_block_number, chain, parametrized_mining):
+    assert chain.blocks.height == start_block_number + parametrized_mining
