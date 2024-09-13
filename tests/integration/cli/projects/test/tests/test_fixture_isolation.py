@@ -43,6 +43,21 @@ def test_noop():
     assert True
 
 
+class TestClass:
+    @pytest.fixture(scope="class", autouse=True)
+    def classminer(self, chain):
+        chain.mine(9)
+
+    def test_chain(self, chain):
+        """
+        Sessions haven't run yet.
+        Module mined 3 + 1 = 4 total.
+        Class mined 9.
+        4 + 9 = 13
+        """
+        assert chain.blocks.height == 13
+
+
 def test_isolation_first(alice, bob, chain, start_block_number):
     assert chain.provider.get_block("latest").number == start_block_number
     assert bob.balance == INITIAL_BALANCE

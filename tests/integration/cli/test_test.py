@@ -98,7 +98,7 @@ def setup_pytester(pytester, owner):
                     [
                         x
                         for x in content.splitlines()
-                        if x.startswith("def test_") and not x.startswith("def test_fail_")
+                        if x.lstrip().startswith("def test_") and not x.startswith("def test_fail_")
                     ]
                 )
                 num_failed += len(
