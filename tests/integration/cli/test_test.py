@@ -177,6 +177,10 @@ def run_gas_test(
 def test_test(setup_pytester, integ_project, pytester, eth_tester_provider):
     _ = eth_tester_provider  # Ensure using EthTester for this test.
     passed, failed = setup_pytester(integ_project)
+
+    if integ_project.name == "test":
+        passed += 4  # Correct tests being added from parametrized fixtures
+
     from ape.logging import logger
 
     logger.set_level("DEBUG")

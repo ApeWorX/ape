@@ -242,13 +242,47 @@ class PytestApeRunner(ManagerAccessMixin):
 
             snapshot = self.isolation_manager.get_snapshot(scope)
 
+            # Gather new fixtures. Also, be mindful of parametrized fixtures
+            # which strangely have the same name.
+            new_fixtures = []
+            for custom_fixture in custom_fixtures:
+                if custom_fixture not in snapshot.fixtures:
+                    # Is simply a new a fixture.
+                    new_fixtures.append(custom_fixture)
+                    continue
+
+                # Check if it is the next iteration of a parametrized fixture.
+                if custom_fixture in fixture_defs:
+                    fixture_infos = fixture_defs[custom_fixture]
+                    for fixture_info in fixture_infos:
+                        params = fixture_info.params
+                        if params is None:
+                            # Not a parametrized fixture.
+                            continue
+
+                        cached_result = fixture_info.cached_result
+                        if cached_result is None:
+                            # Already added but not yet ran?
+                            continue
+
+                        last_known_fixture_param = cached_result[1]
+                        if last_known_fixture_param == params[-1]:
+                            # We have already updated since the last iteration.
+                            continue
+
+                        # Else, this fixture has come up again, meaning we are now
+                        # on the next iteration. This is basically the same situation
+                        # as more fixtures of a certain scope coming in late, and
+                        # has all the same performance problems. Thus, it is highly
+                        # not recommended to use parametrized fixtures in Ape.
+                        new_fixtures.append(custom_fixture)
+
             # Check for fixtures that are now invalid. For example, imagine a session
             # fixtures comes into play after the module snapshot has been set.
             # Once we restore the module's state and move to the next module,
             # that session fixture will no longer exist. To remedy this situation,
             # we invalidate the lower-scoped fixtures and re-run them and re-snapshot
             # everything (mega performance loss, unfortunately).
-            new_fixtures = [f for f in custom_fixtures if f not in snapshot.fixtures]
             if new_fixtures and snapshot.fixtures:
                 invalid_fixtures = defaultdict(list)
                 scope_to_revert = None
