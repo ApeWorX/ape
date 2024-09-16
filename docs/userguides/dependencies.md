@@ -57,6 +57,8 @@ Often times, the `v` prefix is required when using tags.
 However, if cloning the tag fails, `ape` will retry with a `v` prefix.
 Bypass the original failing attempt by including a `v` in your dependency config.
 
+**By knowing if the release is from the version API or only available via tag, and whether the version is v-prefixed or not, you save Ape some time and complexity when installing dependencies.**
+
 ### Python
 
 You can use dependencies to PyPI by using the `python:` keyed dependency type.
