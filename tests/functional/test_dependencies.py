@@ -533,7 +533,7 @@ class TestGitHubDependency:
         # The second call does not have the v!
         assert calls[1][0] == ("ApeWorX", "ApeNotAThing", "3.0.0", path)
 
-    def test_fetch_given_version_but_expects_reference(self, mock_client):
+    def test_fetch_given_version_when_expects_reference(self, mock_client):
         """
         Show that if a user configures `version:`, but version fails, it
         tries `ref:` instead as a backup.
