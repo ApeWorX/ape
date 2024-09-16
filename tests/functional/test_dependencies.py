@@ -467,7 +467,7 @@ class TestGitHubDependency:
         with pytest.raises(ValidationError, match=expected):
             _ = GithubDependency(name="foo", github="asdf")
 
-    def test_fetch(self, mock_client):
+    def test_fetch_given_version(self, mock_client):
         dependency = GithubDependency(
             github="ApeWorX/ApeNotAThing", version="3.0.0", name="apetestdep"
         )
@@ -546,7 +546,11 @@ class TestGitHubDependency:
         mock_client.download_package.side_effect = ValueError("nope")
 
         # Simulate only the non-v prefix ref working (for a fuller flow)
-        def needs_non_v_prefix_ref(n0, n1, path, branch):
+        def needs_non_v_prefix_ref(n0, n1, dst_path, branch):
+            # NOTE: This assertion is very important!
+            #  We must only give it non-existing directories.
+            assert not dst_path.is_dir()
+
             if branch.startswith("v"):
                 raise ValueError("nope")
 
