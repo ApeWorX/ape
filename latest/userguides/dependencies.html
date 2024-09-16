@@ -322,6 +322,7 @@ The <code class="docutils literal notranslate"><span class="pre">ref:</span></co
 Often times, the <code class="docutils literal notranslate"><span class="pre">v</span></code> prefix is required when using tags.
 However, if cloning the tag fails, <code class="docutils literal notranslate"><span class="pre">ape</span></code> will retry with a <code class="docutils literal notranslate"><span class="pre">v</span></code> prefix.
 Bypass the original failing attempt by including a <code class="docutils literal notranslate"><span class="pre">v</span></code> in your dependency config.</p>
+<p><strong>By knowing if the release is from the version API or only available via tag, and whether the version is v-prefixed or not, you save Ape some time and complexity when installing dependencies.</strong></p>
 </section>
 <section id="python">
 <h3>Python<a class="headerlink" href="#python" title="Permalink to this heading"></a></h3>
