@@ -292,33 +292,38 @@ class PytestApeRunner(ManagerAccessMixin):
                     new_fixtures.append(custom_fixture)
                     continue
 
-                if custom_fixture in fixture_defs:
-                    fixture_infos = fixture_defs[custom_fixture]
+                elif custom_fixture not in fixture_defs:
+                    # Unknown fixture?
+                    continue
 
-                    # Check for parametrized fixtures, which have special handling.
-                    for fixture_info in fixture_infos:
-                        params = fixture_info.params
-                        if params is None:
-                            # Not a parametrized fixture.
-                            continue
+                fixture_infos = fixture_defs[custom_fixture]
 
-                        cached_result = fixture_info.cached_result
-                        if cached_result is None:
-                            # If we get here, we already checked we hadn't seen this
-                            # fixture before. Yet, it has no cached result and is not
-                            # function-scoped fixture. Is it even possible to get
-                            # to this state? It would require hitting the same iteration of
-                            # a parametrized fixture twice. Ignore for now.
-                            continue
+                # Check for parametrized fixtures, which have special handling.
+                for fixture_info in fixture_infos:
+                    params = fixture_info.params
+                    if params is None:
+                        # Not a parametrized fixture.
+                        continue
 
-                        last_known_fixture_param = cached_result[1]
-                        number_of_parameters = len(params)
-                        if number_of_parameters > 1 or last_known_fixture_param == params[-2]:
-                            # If we are here, this parametrized fixture has multiple returns (params>1),
-                            # and this is the last iteration of that return. We can treat this
-                            # situation the same as if a more fixtures of a certain scope coming
-                            # in late.
-                            new_fixtures.append(custom_fixture)
+                    cached_result = fixture_info.cached_result
+                    if cached_result is None:
+                        # If we get here, we already checked we hadn't seen this
+                        # fixture before. Yet, it has no cached result and is not
+                        # function-scoped fixture. Is it even possible to get
+                        # to this state? It would require hitting the same iteration of
+                        # a parametrized fixture twice. Ignore for now.
+                        continue
+
+                    last_known_fixture_param = cached_result[1]
+                    number_of_parameters = len(params)
+                    if number_of_parameters <= 1 and last_known_fixture_param != params[-2]:
+                        continue
+
+                    # If we are here, this parametrized fixture has multiple returns (params>1),
+                    # and this is the last iteration of that return. We can treat this
+                    # situation the same as if a more fixtures of a certain scope coming
+                    # in late.
+                    new_fixtures.append(custom_fixture)
 
             # Check for fixtures that are now invalid. For example, imagine a session
             # fixture comes into play after the module snapshot has been set.
