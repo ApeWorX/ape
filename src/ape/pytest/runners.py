@@ -305,7 +305,12 @@ class PytestApeRunner(ManagerAccessMixin):
                         # Not a parametrized fixture.
                         continue
 
-                    new_fixtures.append(custom_fixture)
+                    if (
+                        fixture_info.cached_result is not None
+                        and len(fixture_info.cached_result) >= 2
+                        and fixture_info.cached_result[1] != params[-1]
+                    ):
+                        new_fixtures.append(custom_fixture)
 
             # Check for fixtures that are now invalid. For example, imagine a session
             # fixture comes into play after the module snapshot has been set.
