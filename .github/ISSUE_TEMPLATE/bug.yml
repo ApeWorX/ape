@@ -32,6 +32,8 @@ body:
         - macOS (Intel)
         - macOS (Apple Silicon)
         - Linux
+      validations:
+        required: true
   - type: textarea
     attributes:
       label: ape-config.yaml file
