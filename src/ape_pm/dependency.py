@@ -206,6 +206,11 @@ class GithubDependency(DependencyAPI):
                     "Use `ref:` instead of `version:` for release tags. "
                     "Checking for matching tags..."
                 )
+
+                # NOTE: When using ref-from-a-version, ensure
+                #   it didn't create the destination along the way;
+                #   else, the ref is cloned in the wrong spot.
+                shutil.rmtree(destination, ignore_errors=True)
                 try:
                     self._fetch_ref(version, destination)
                 except Exception:
