@@ -137,6 +137,7 @@ def test_decode_dependency_with_config_override(project):
 def test_uri_map(project_with_dependency_config):
     actual = project_with_dependency_config.dependencies.uri_map
     here = Path(__file__).parent
+    # Wrap in Path to handle Windows.
     expected = Path(f"file://{here}/data/projects/LongContractsFolder")
     assert "testdependency" in actual
     assert Path(str(actual["testdependency"])) == expected
