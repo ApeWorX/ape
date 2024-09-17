@@ -127,8 +127,8 @@ ape pm list
 You should see information like:
 
 ```shell
-NAME          VERSION  COMPILED
-openzeppelin  4.9.3    -
+NAME                                 VERSION  INSTALLED  COMPILED
+OpenZeppelin/openzeppelin-contracts  4.9.3    True       False
 ```
 
 ### install
