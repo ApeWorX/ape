@@ -283,4 +283,8 @@ def test_list(pm_runner, integ_project):
     package_name = "dependency-in-project-only"
     result = pm_runner.invoke("list")
     assert result.exit_code == 0, result.output
-    assert package_name in result.output
+    expected = """
+NAME                        VERSION  INSTALLED  COMPILED
+dependency-in-project-only  local    False      False
+    """.strip()
+    assert expected in result.output
