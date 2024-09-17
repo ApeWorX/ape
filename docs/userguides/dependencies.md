@@ -179,10 +179,14 @@ project.dependencies.install(
 
 ### uninstall
 
-Remove previously installed packages using the `uninstall` command:
+Remove previously installed packages using the `uninstall` command, providing it either the dependency's name or package_id:
 
 ```shell
 ape pm uninstall OpenZeppelin
+```
+
+```shell
+ape pm uninstall OpenZeppelin/openzeppelin-contracts
 ```
 
 If there is a single version installed, the command will remove the single version.
