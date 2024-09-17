@@ -267,6 +267,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.clean_path"><code class="docutils literal notranslate"><span class="pre">clean_path()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.create_tempdir"><code class="docutils literal notranslate"><span class="pre">create_tempdir()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.expand_environment_variables"><code class="docutils literal notranslate"><span class="pre">expand_environment_variables()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ape.utils.extract_archive"><code class="docutils literal notranslate"><span class="pre">extract_archive()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.extract_nested_value"><code class="docutils literal notranslate"><span class="pre">extract_nested_value()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.gas_estimation_error_message"><code class="docutils literal notranslate"><span class="pre">gas_estimation_error_message()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ape.utils.generate_dev_accounts"><code class="docutils literal notranslate"><span class="pre">generate_dev_accounts()</span></code></a></li>
@@ -750,6 +751,21 @@ representing a path.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ape.utils.extract_archive">
+<span class="sig-prename descclassname"><span class="pre">ape.utils.</span></span><span class="sig-name descname"><span class="pre">extract_archive</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">archive_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">destination</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.extract_archive" title="Permalink to this definition"></a></dt>
+<dd><p>Extract an archive file. Supports <code class="docutils literal notranslate"><span class="pre">.zip</span></code> or <code class="docutils literal notranslate"><span class="pre">.tar.gz</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>archive_file</strong> (<a class="reference internal" href="cli.html#ape.cli.paramtype.Path" title="ape.cli.paramtype.Path"><em>Path</em></a>) – The file-path to the archive.</p></li>
+<li><p><strong>destination</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="cli.html#ape.cli.paramtype.Path" title="ape.cli.paramtype.Path"><em>Path</em></a><em>]</em>) – Optionally provide a destination.
+Defaults to the parent directory of the archive file.</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
