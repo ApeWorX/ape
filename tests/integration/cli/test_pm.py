@@ -281,10 +281,29 @@ def test_uninstall_cancel(pm_runner, integ_project):
 def test_list(pm_runner, integ_project):
     pm_runner.project = integ_project
     package_name = "dependency-in-project-only"
+    dependency = integ_project.dependencies.get_dependency(package_name, "local")
+
+    # Ensure we are not installed.
+    dependency.uninstall()
+
     result = pm_runner.invoke("list")
     assert result.exit_code == 0, result.output
+
+    # NOTE: Not using f-str here so we can see the spacing.
     expected = """
 NAME                        VERSION  INSTALLED  COMPILED
 dependency-in-project-only  local    False      False
     """.strip()
+    assert expected in result.output
+
+    # Install and show it change.
+    dependency = integ_project.dependencies.get_dependency(package_name, "local")
+    dependency.install()
+
+    expected = """
+NAME                        VERSION  INSTALLED  COMPILED
+dependency-in-project-only  local    True       False
+    """.strip()
+    result = pm_runner.invoke("list")
+    assert result.exit_code == 0, result.output
     assert expected in result.output
