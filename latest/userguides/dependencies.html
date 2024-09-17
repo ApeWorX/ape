@@ -426,8 +426,11 @@ For local dependencies, you give it a path to the local dependency.
 </section>
 <section id="uninstall">
 <h3>uninstall<a class="headerlink" href="#uninstall" title="Permalink to this heading"></a></h3>
-<p>Remove previously installed packages using the <code class="docutils literal notranslate"><span class="pre">uninstall</span></code> command:</p>
+<p>Remove previously installed packages using the <code class="docutils literal notranslate"><span class="pre">uninstall</span></code> command, providing it either the dependency’s name or package_id:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>pm<span class="w"> </span>uninstall<span class="w"> </span>OpenZeppelin
+</pre></div>
+</div>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>pm<span class="w"> </span>uninstall<span class="w"> </span>OpenZeppelin/openzeppelin-contracts
 </pre></div>
 </div>
 <p>If there is a single version installed, the command will remove the single version.
