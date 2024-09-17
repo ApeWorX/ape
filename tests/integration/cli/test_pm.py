@@ -207,6 +207,20 @@ def test_uninstall(pm_runner, integ_project):
 
 
 @skip_projects_except("only-dependencies")
+def test_uninstall_by_long_name(pm_runner, integ_project):
+    pm_runner.project = integ_project
+    package_name = "dependency-in-project-only"
+    package_long_name = integ_project.dependencies.get_dependency(package_name, "local").package_id
+
+    # Install packages
+    pm_runner.invoke("install", ".", "--force")
+    result = pm_runner.invoke("uninstall", package_long_name, "--yes")
+    expected_message = f"Uninstalled '{package_name}=local'."
+    assert result.exit_code == 0, result.output or result._completed_process.stderr
+    assert expected_message in result.output or result._completed_process.stderr
+
+
+@skip_projects_except("only-dependencies")
 def test_uninstall_not_exists(pm_runner, integ_project):
     pm_runner.project = integ_project
     package_name = "_this_does_not_exist_"

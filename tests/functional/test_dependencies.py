@@ -137,9 +137,10 @@ def test_decode_dependency_with_config_override(project):
 def test_uri_map(project_with_dependency_config):
     actual = project_with_dependency_config.dependencies.uri_map
     here = Path(__file__).parent
-    expected = f"file://{here}/data/projects/LongContractsFolder"
+    # Wrap in Path to handle Windows.
+    expected = Path(f"file://{here}/data/projects/LongContractsFolder")
     assert "testdependency" in actual
-    assert str(actual["testdependency"]) == expected
+    assert Path(str(actual["testdependency"])) == expected
 
 
 def test_get_dependency_by_package_id(project_with_downloaded_dependencies):
@@ -254,13 +255,15 @@ def test_install_dependencies_of_dependencies(project, with_dependencies_project
     # deps_of_deps = [x for x in actual.project.dependencies.specified]
 
 
-def test_uninstall(project_with_downloaded_dependencies):
-    name = "openzeppelin"
+@pytest.mark.parametrize("name", ("openzeppelin", "OpenZeppelin/openzeppelin-contracts"))
+def test_uninstall(name, project_with_downloaded_dependencies):
     version = "4.4.2"
     dm = project_with_downloaded_dependencies.dependencies
     dependency = dm.get_dependency(name, version)
     dependency.uninstall()
-    assert not any(d.name == name and d.version == version for d in dm.installed)
+    assert not any(
+        (d.name == name or d.package_id == name) and d.version == version for d in dm.installed
+    )
 
 
 def test_unpack(project_with_downloaded_dependencies):

@@ -216,9 +216,9 @@ def uninstall(cli_ctx, name, versions, yes):
     versions to remove. You can also choose to remove all versions of the package.
 
     Examples:\n
-    - Remove specific versions: ape pm remove <PackageName> "1.0.0" "2.0.0"\n
-    - Prompt to choose versions: ape pm remove <PackageName>\n
-    - Remove all versions: ape pm remove <PackageName> -y
+    - Remove specific versions: ape pm uninstall <PackageName> "1.0.0" "2.0.0"\n
+    - Prompt to choose versions: ape pm uninstall <PackageName>\n
+    - Remove all versions: ape pm uninstall <PackageName> -y
     """
 
     pm = cli_ctx.local_project
@@ -248,7 +248,10 @@ def uninstall(cli_ctx, name, versions, yes):
 
     else:
         deps_to_remove = {
-            d for d in installed if d.name == name and (d.version in versions if versions else True)
+            d
+            for d in installed
+            if (d.name == name or d.package_id == name)
+            and (d.version in versions if versions else True)
         }
         for dependency in deps_to_remove:
             did_find = True
