@@ -222,7 +222,7 @@ def test_install(project, mocker):
         contracts_path.mkdir(exist_ok=True, parents=True)
         (contracts_path / "contract.json").write_text('{"abi": []}', encoding="utf8")
         data = {"name": "FooBar", "local": f"{tmp_project.path}"}
-        get_spec_spy = mocker.spy(tmp_project.dependencies, "_get_specified")
+        get_spec_spy = mocker.spy(tmp_project.dependencies, "get_project_dependencies")
         install_dep_spy = mocker.spy(tmp_project.dependencies, "install_dependency")
 
         # Show can install from DependencyManager.
@@ -648,6 +648,12 @@ class TestDependency:
         name = dependency.api.package_id.replace("/", "_")
         expected = data_folder / "packages" / "manifests" / name / "1_0_0.json"
         assert actual == expected
+
+    def test_installed(self, dependency):
+        dependency.uninstall()
+        assert not dependency.installed
+        dependency.install()
+        assert dependency.installed
 
     def test_compile(self, project):
         with create_tempdir() as path:

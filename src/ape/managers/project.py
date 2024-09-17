@@ -626,15 +626,41 @@ class Dependency(BaseManager, ExtraAttributesMixin):
 
     @property
     def project_path(self) -> Path:
+        """
+        The path to the dependency's project root. When installing, this
+        is where the project files go.
+        """
         return self._cache.get_project_path(self.package_id, self.version)
 
     @property
     def manifest_path(self) -> Path:
+        """
+        The path to the dependency's manifest. When compiling, the artifacts go here.
+        """
         return self._cache.get_manifest_path(self.package_id, self.version)
 
     @property
     def api_path(self) -> Path:
+        """
+        The path to the dependency's API data-file. This data is necessary
+        for managing the install of the dependency.
+        """
         return self._cache.get_api_path(self.package_id, self.version)
+
+    @property
+    def installed(self) -> bool:
+        """
+        ``True`` when a project is available. Note: Installed does not mean
+        the dependency is compiled!
+        """
+        if self._installation is not None:
+            return True
+
+        elif self.project_path.is_dir():
+            if any(x for x in self.project_path.iterdir() if not x.name.startswith(".")):
+                return True
+
+        return False
 
     @property
     def uri(self) -> str:
@@ -667,7 +693,11 @@ class Dependency(BaseManager, ExtraAttributesMixin):
 
             return self._installation
 
-        elif (not self.project_path.is_dir()) or not use_cache:
+        elif (
+            not self.project_path.is_dir()
+            or len([x for x in self.project_path.iterdir() if not x.name.startswith(".")]) == 0
+            or not use_cache
+        ):
             unpacked = False
             if use_cache and self.manifest_path.is_file():
                 # Attempt using sources from manifest. This may happen
@@ -749,7 +779,7 @@ class Dependency(BaseManager, ExtraAttributesMixin):
         # Also, install dependencies of dependencies, if fetching for the
         # first time.
         if did_fetch:
-            spec = project.dependencies._get_specified(use_cache=use_cache)
+            spec = project.dependencies.get_project_dependencies(use_cache=use_cache)
             list(spec)
 
         return project
@@ -1083,7 +1113,7 @@ class DependencyManager(BaseManager):
         result = DependencyVersionMap(name)
 
         # Always ensure the specified are included, even if not yet installed.
-        if versions := {d.version: d.project for d in self._get_specified(name=name)}:
+        if versions := {d.version: d.project for d in self.get_project_dependencies(name=name)}:
             result.extend(versions)
 
         # Add remaining installed versions.
@@ -1141,15 +1171,32 @@ class DependencyManager(BaseManager):
         """
         All dependencies specified in the config.
         """
-        yield from self._get_specified()
+        yield from self.get_project_dependencies()
 
-    def _get_specified(
+    def get_project_dependencies(
         self,
         use_cache: bool = True,
         config_override: Optional[dict] = None,
         name: Optional[str] = None,
         version: Optional[str] = None,
+        allow_install: bool = True,
     ) -> Iterator[Dependency]:
+        """
+        Get dependencies specified in the project's ``ape-config.yaml`` file.
+
+        Args:
+            use_cache (bool): Set to ``False`` to force-reinstall dependencies.
+               Defaults to ``True``. Does not work with ``allow_install=False``.
+            config_override (Optional[dict]): Override shared configuration for each dependency.
+            name (Optional[str]): Optionally only get dependencies with a certain name.
+            version (Optional[str]): Optionally only get dependencies with certain version.
+            allow_install (bool): Set to ``False`` to not allow installing uninstalled
+              specified dependencies.
+
+        Returns:
+            Iterator[:class:`~ape.managers.project.Dependency`]
+        """
+
         for api in self.config_apis:
             if (name is not None and api.name != name and api.package_id != name) or (
                 version is not None and api.version_id != version
@@ -1159,14 +1206,15 @@ class DependencyManager(BaseManager):
             # Ensure the dependency API data is known.
             dependency = self.add(api)
 
-            try:
-                dependency.install(use_cache=use_cache, config_override=config_override)
-            except ProjectError:
-                # This dependency has issues. Let's wait to until the user
-                # actually requests something before failing, and
-                # yield an uninstalled version of the specified dependency for
-                # them to fix.
-                pass
+            if allow_install:
+                try:
+                    dependency.install(use_cache=use_cache, config_override=config_override)
+                except ProjectError:
+                    # This dependency has issues. Let's wait to until the user
+                    # actually requests something before failing, and
+                    # yield an uninstalled version of the specified dependency for
+                    # them to fix.
+                    pass
 
             yield dependency
 
@@ -1284,7 +1332,7 @@ class DependencyManager(BaseManager):
         """
         # First, check specified. Note: installs if needed.
         versions_yielded = set()
-        for dependency in self._get_specified(name=name):
+        for dependency in self.get_project_dependencies(name=name):
             if dependency.version in versions_yielded:
                 continue
 
@@ -1454,7 +1502,7 @@ class DependencyManager(BaseManager):
         result: list[Dependency] = []
 
         # Log the errors as they happen but don't crash the full install.
-        for dep in self._get_specified(use_cache=use_cache):
+        for dep in self.get_project_dependencies(use_cache=use_cache):
             result.append(dep)
 
         return result
