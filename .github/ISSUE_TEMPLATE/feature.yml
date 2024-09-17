@@ -1,0 +1,32 @@
+name: Feature Request
+description: Request a new feature, or an improvement to existing functionality.
+labels: 'category: feature'
+
+body:
+  - type: textarea
+    id: describe
+    attributes:
+      label: Describe
+      description: "Provide a simple overview of what you wish to see added."
+      placeholder: |
+        I am trying to ...
+        Ape's current functionality is inadequate because ...
+    validations:
+      required: false
+  - type: textarea
+    id: specification
+    attributes:
+      label: Specification
+      description: |
+        Describe the syntax and semantics of how you would like to see this feature implemented. The more detailed the better!
+        Remember, your feature is much more likely to be included if it does not involve any breaking changes.
+    validations:
+      required: false
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies
+      description: |
+        Include links to any open issues that must be resolved before this feature can be implemented.
+    validations:
+      required: false
