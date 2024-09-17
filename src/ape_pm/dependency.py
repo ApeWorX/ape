@@ -425,7 +425,7 @@ class PythonDependency(DependencyAPI):
     @classmethod
     def validate_model(cls, values):
         if "name" not in values:
-            if name := values.get("python") or values.geth("pypi"):
+            if name := values.get("python") or values.get("pypi"):
                 values["name"] = name
             else:
                 raise ValueError(
