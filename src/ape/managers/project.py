@@ -1185,7 +1185,7 @@ class DependencyManager(BaseManager):
         Get dependencies specified in the project's ``ape-config.yaml`` file.
 
         Args:
-            use_cache (bool): Set to ``False`` to force-reinstalling dependencies.
+            use_cache (bool): Set to ``False`` to force-reinstall dependencies.
                Defaults to ``True``. Does not work with ``allow_install=False``.
             config_override (Optional[dict]): Override shared configuration for each dependency.
             name (Optional[str]): Optionally only get dependencies with a certain name.
