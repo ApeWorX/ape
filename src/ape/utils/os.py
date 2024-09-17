@@ -1,6 +1,8 @@
 import os
 import re
 import sys
+import tarfile
+import zipfile
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from fnmatch import fnmatch
@@ -324,3 +326,51 @@ def get_package_path(package_name: str) -> Path:
         raise ValueError(f"Package '{package_name}' not found in site-packages.")
 
     return package_path
+
+
+def extract_archive(archive_file: Path, destination: Optional[Path] = None):
+    """
+    Extract an archive file. Supports ``.zip`` or ``.tar.gz``.
+
+    Args:
+        archive_file (Path): The file-path to the archive.
+        destination (Optional[Path]): Optionally provide a destination.
+          Defaults to the parent directory of the archive file.
+    """
+    destination = destination or archive_file.parent
+    if archive_file.suffix == ".zip":
+        with zipfile.ZipFile(archive_file, "r") as zip_ref:
+            zip_members = zip_ref.namelist()
+            if top_level_dir := os.path.commonpath(zip_members):
+                for zip_member in zip_members:
+                    # Modify the member name to remove the top-level directory.
+                    member_path = Path(zip_member)
+                    relative_path = (
+                        member_path.relative_to(top_level_dir) if top_level_dir else member_path
+                    )
+                    target_path = destination / relative_path
+
+                    if member_path.is_dir():
+                        target_path.mkdir(parents=True, exist_ok=True)
+                    else:
+                        target_path.parent.mkdir(parents=True, exist_ok=True)
+                        with zip_ref.open(member_path.as_posix()) as source:
+                            target_path.write_bytes(source.read())
+
+            else:
+                zip_ref.extractall(f"{destination}")
+
+    elif archive_file.name.endswith(".tar.gz"):
+        with tarfile.open(archive_file, "r:gz") as tar_ref:
+            tar_members = tar_ref.getmembers()
+            if top_level_dir := os.path.commonpath([m.name for m in tar_members]):
+                for tar_member in tar_members:
+                    # Modify the member name to remove the top-level directory.
+                    tar_member.name = os.path.relpath(tar_member.name, top_level_dir)
+                    tar_ref.extract(tar_member, path=destination)
+
+            else:
+                tar_ref.extractall(path=f"{destination}")
+
+    else:
+        raise ValueError(f"Unsupported zip format: '{archive_file.suffix}'.")

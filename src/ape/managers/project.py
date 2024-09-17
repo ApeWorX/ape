@@ -1162,7 +1162,12 @@ class DependencyManager(BaseManager):
 
         for _, (config_key, dependency_class) in self.plugin_manager.dependencies:
             assert issubclass(dependency_class, DependencyAPI)  # For mypy
-            dependency_classes[config_key] = dependency_class
+            if isinstance(config_key, tuple):
+                for sub_key in config_key:
+                    dependency_classes[sub_key] = dependency_class
+            else:
+                # Single str-given.
+                dependency_classes[config_key] = dependency_class
 
         return dependency_classes
 
@@ -1442,7 +1447,7 @@ class DependencyManager(BaseManager):
             if key in item:
                 return cls.model_validate(item)
 
-        name = item.get("name") or json.dumps(item)  # NOTE: Using 'or' for short-circuit eval
+        name = item.get("name") or f"{item}"  # NOTE: Using 'or' for short-circuit eval
         raise ProjectError(
             f"No installed dependency API that supports '{name}'. "
             f"Keys={', '.join([x for x in item.keys()])}"
