@@ -27,7 +27,7 @@ from ape.cli.options import (
     skip_confirmation_option,
     verbosity_option,
 )
-from ape.cli.paramtype import JSON, Path
+from ape.cli.paramtype import JSON, Noop, Path
 
 __all__ = [
     "account_option",
@@ -45,6 +45,7 @@ __all__ = [
     "network_option",
     "NetworkChoice",
     "NetworkOption",
+    "Noop",
     "non_existing_alias_argument",
     "output_format_choice",
     "output_format_option",

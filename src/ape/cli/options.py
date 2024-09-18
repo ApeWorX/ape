@@ -18,7 +18,7 @@ from ape.cli.choices import (
     output_format_choice,
 )
 from ape.cli.commands import ConnectedProviderCommand
-from ape.cli.paramtype import JSON
+from ape.cli.paramtype import JSON, Noop
 from ape.exceptions import Abort, ProjectError
 from ape.logging import DEFAULT_LOG_LEVEL, ApeLogger, LogLevel, logger
 from ape.utils.basemodel import ManagerAccessMixin
@@ -88,7 +88,7 @@ def _create_verbosity_kwargs(
         "expose_value": False,
         "help": f"One of {names_str}",
         "is_eager": True,
-        "type": lambda x: x,  # Ignores weird typing-issues
+        "type": Noop(),
     }
 
 
