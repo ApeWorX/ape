@@ -116,3 +116,12 @@ def test_use_parametrized_transaction(parametrized_transaction):
     """
     _ = parametrized_transaction
     assert True  # Testing isolation after the fixture runs.
+
+
+@pytest.mark.parametrize("foo", (1, 2, 3))
+def test_parametrized_test(foo):
+    """
+    Ensuring parametrized tests don't mess up our isolation-fixture logic
+    (it was the case at one point!)
+    """
+    assert isinstance(foo, int)
