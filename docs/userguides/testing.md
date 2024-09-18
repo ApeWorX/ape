@@ -257,7 +257,9 @@ def test_my_contract_1(my_contract):
 
 To disable isolation, run `ape test` with the `--disable-isolation` flag.
 When isolation is disabled, the blockchain's state persists as the tests run.
-This will be more performant and less complex, but will also cause you to have to be state-cognizant in your tests.
+This will be more performant and less complex, but will also cause non-deterministic results in your tests as each test inherits the state of whatever was run before it.
+
+This may be further complicated when running with other pytest plugins such as `pytest-xdist` or `pytest-split` which re-arranges the order that tests are executed in (not recommended to use these plugins together with ape).
 
 ```shell
 ape test --disable-isolation
