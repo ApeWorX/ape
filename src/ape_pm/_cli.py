@@ -55,7 +55,10 @@ def _list(cli_ctx, list_all):
         packages.append(item)
 
     if not packages:
-        click.echo("No packages installed.")
+        if list_all:
+            click.echo("No packages installed.")
+        else:
+            click.echo("No packages installed. Use `--all` to list all installed dependencies.")
         return
 
     # Output gathered packages.
