@@ -222,7 +222,7 @@ def test_install(project, mocker):
         contracts_path.mkdir(exist_ok=True, parents=True)
         (contracts_path / "contract.json").write_text('{"abi": []}', encoding="utf8")
         data = {"name": "FooBar", "local": f"{tmp_project.path}"}
-        get_spec_spy = mocker.spy(tmp_project.dependencies, "_get_specified")
+        get_spec_spy = mocker.spy(tmp_project.dependencies, "get_project_dependencies")
         install_dep_spy = mocker.spy(tmp_project.dependencies, "install_dependency")
 
         # Show can install from DependencyManager.
@@ -588,15 +588,15 @@ class TestGitHubDependency:
 
 
 class TestPythonDependency:
-    @pytest.fixture(scope="class")
-    def web3_dependency(self):
-        return PythonDependency.model_validate({"python": "web3"})
+    @pytest.fixture(scope="class", params=("python", "pypi"))
+    def python_dependency(self, request):
+        return PythonDependency.model_validate({request.param: "web3"})
 
-    def test_name(self, web3_dependency):
-        assert web3_dependency.name == "web3"
+    def test_name(self, python_dependency):
+        assert python_dependency.name == "web3"
 
-    def test_version_id(self, web3_dependency):
-        actual = web3_dependency.version_id
+    def test_version_id(self, python_dependency):
+        actual = python_dependency.version_id
         assert isinstance(actual, str)
         assert len(actual) > 0
         assert actual[0].isnumeric()
@@ -609,9 +609,9 @@ class TestPythonDependency:
         with pytest.raises(ProjectError, match=expected):
             _ = dependency.version_id
 
-    def test_fetch(self, web3_dependency):
+    def test_fetch(self, python_dependency):
         with create_tempdir() as temp_dir:
-            web3_dependency.fetch(temp_dir)
+            python_dependency.fetch(temp_dir)
             files = [x for x in temp_dir.iterdir()]
             assert len(files) > 0
 
@@ -648,6 +648,12 @@ class TestDependency:
         name = dependency.api.package_id.replace("/", "_")
         expected = data_folder / "packages" / "manifests" / name / "1_0_0.json"
         assert actual == expected
+
+    def test_installed(self, dependency):
+        dependency.uninstall()
+        assert not dependency.installed
+        dependency.install()
+        assert dependency.installed
 
     def test_compile(self, project):
         with create_tempdir() as path:

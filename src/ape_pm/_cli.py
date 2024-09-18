@@ -28,15 +28,21 @@ def _list(cli_ctx, list_all):
 
     dm = cli_ctx.dependency_manager
     packages = []
-    dependencies = [*list(dm.specified)]
+    dependencies = [*list(dm.get_project_dependencies(use_cache=True, allow_install=False))]
     if list_all:
         dependencies = list({*dependencies, *dm.installed})
 
     for dependency in dependencies:
-        try:
-            is_compiled = dependency.project.is_compiled
-        except ProjectError:
-            # Project may not even be installed right.
+        if dependency.installed:
+            is_installed = True
+            try:
+                is_compiled = dependency.project.is_compiled
+            except ProjectError:
+                # Project may not even be installed right.
+                is_compiled = False
+
+        else:
+            is_installed = False
             is_compiled = False
 
         # For local dependencies, use the short name.
@@ -50,6 +56,7 @@ def _list(cli_ctx, list_all):
         item = {
             "name": name,
             "version": dependency.version,
+            "installed": is_installed,
             "compiled": is_compiled,
         }
         packages.append(item)
@@ -64,23 +71,31 @@ def _list(cli_ctx, list_all):
     # Output gathered packages.
     longest_name = max([4, *[len(p["name"]) for p in packages]])
     longest_version = max([7, *[len(p["version"]) for p in packages]])
+    longest_installed = max([9, *[len(f"{p['installed']}") for p in packages]])
     tab = "  "
 
     header_name_space = ((longest_name - len("NAME")) + 2) * " "
     version_name_space = ((longest_version - len("VERSION")) + 2) * " "
 
     def get_package_str(_package) -> str:
-        name = click.style(_package["name"], bold=True)
+        dep_name = click.style(_package["name"], bold=True)
         version = _package["version"]
+        installed = (
+            click.style(_package["installed"], fg="green") if _package.get("installed") else "False"
+        )
         compiled = (
-            click.style(_package["compiled"], fg="green") if _package.get("compiled") else "-"
+            click.style(_package["compiled"], fg="green") if _package.get("compiled") else "False"
         )
         spacing_name = ((longest_name - len(_package["name"])) + len(tab)) * " "
         spacing_version = ((longest_version - len(version)) + len(tab)) * " "
-        return f"{name}{spacing_name}{version}{spacing_version + compiled}"
+        spacing_installed = ((longest_installed - len(f"{_package['installed']}")) + len(tab)) * " "
+        return (
+            f"{dep_name}{spacing_name}{version}{spacing_version}"
+            f"{installed}{spacing_installed}{compiled}"
+        )
 
     def rows():
-        yield f"NAME{header_name_space}VERSION{version_name_space}COMPILED\n"
+        yield f"NAME{header_name_space}VERSION{version_name_space}INSTALLED  COMPILED\n"
         for _package in sorted(packages, key=lambda p: f"{p['name']}{p['version']}"):
             yield f"{get_package_str(_package)}\n"
 
