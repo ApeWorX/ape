@@ -179,7 +179,7 @@ def test_test(setup_pytester, integ_project, pytester, eth_tester_provider):
     passed, failed = setup_pytester(integ_project)
 
     if integ_project.name == "test":
-        passed += 4  # Correct tests being added from parametrized fixtures
+        passed += 6  # Correct tests being added from parametrized fixtures
 
     from ape.logging import logger
 
