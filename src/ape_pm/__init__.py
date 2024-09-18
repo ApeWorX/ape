@@ -15,7 +15,7 @@ def dependencies():
     yield "github", GithubDependency
     yield "local", LocalDependency
     yield "npm", NpmDependency
-    yield "python", PythonDependency
+    yield ("python", "pypi"), PythonDependency
 
 
 @plugins.register(plugins.ProjectPlugin)

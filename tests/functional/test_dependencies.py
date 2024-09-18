@@ -137,9 +137,10 @@ def test_decode_dependency_with_config_override(project):
 def test_uri_map(project_with_dependency_config):
     actual = project_with_dependency_config.dependencies.uri_map
     here = Path(__file__).parent
-    expected = f"file://{here}/data/projects/LongContractsFolder"
+    # Wrap in Path to handle Windows.
+    expected = Path(f"file://{here}/data/projects/LongContractsFolder")
     assert "testdependency" in actual
-    assert str(actual["testdependency"]) == expected
+    assert Path(str(actual["testdependency"])) == expected
 
 
 def test_get_dependency_by_package_id(project_with_downloaded_dependencies):
@@ -221,7 +222,7 @@ def test_install(project, mocker):
         contracts_path.mkdir(exist_ok=True, parents=True)
         (contracts_path / "contract.json").write_text('{"abi": []}', encoding="utf8")
         data = {"name": "FooBar", "local": f"{tmp_project.path}"}
-        get_spec_spy = mocker.spy(tmp_project.dependencies, "_get_specified")
+        get_spec_spy = mocker.spy(tmp_project.dependencies, "get_project_dependencies")
         install_dep_spy = mocker.spy(tmp_project.dependencies, "install_dependency")
 
         # Show can install from DependencyManager.
@@ -254,13 +255,15 @@ def test_install_dependencies_of_dependencies(project, with_dependencies_project
     # deps_of_deps = [x for x in actual.project.dependencies.specified]
 
 
-def test_uninstall(project_with_downloaded_dependencies):
-    name = "openzeppelin"
+@pytest.mark.parametrize("name", ("openzeppelin", "OpenZeppelin/openzeppelin-contracts"))
+def test_uninstall(name, project_with_downloaded_dependencies):
     version = "4.4.2"
     dm = project_with_downloaded_dependencies.dependencies
     dependency = dm.get_dependency(name, version)
     dependency.uninstall()
-    assert not any(d.name == name and d.version == version for d in dm.installed)
+    assert not any(
+        (d.name == name or d.package_id == name) and d.version == version for d in dm.installed
+    )
 
 
 def test_unpack(project_with_downloaded_dependencies):
@@ -467,7 +470,7 @@ class TestGitHubDependency:
         with pytest.raises(ValidationError, match=expected):
             _ = GithubDependency(name="foo", github="asdf")
 
-    def test_fetch(self, mock_client):
+    def test_fetch_given_version(self, mock_client):
         dependency = GithubDependency(
             github="ApeWorX/ApeNotAThing", version="3.0.0", name="apetestdep"
         )
@@ -533,7 +536,7 @@ class TestGitHubDependency:
         # The second call does not have the v!
         assert calls[1][0] == ("ApeWorX", "ApeNotAThing", "3.0.0", path)
 
-    def test_fetch_given_version_but_expects_reference(self, mock_client):
+    def test_fetch_given_version_when_expects_reference(self, mock_client):
         """
         Show that if a user configures `version:`, but version fails, it
         tries `ref:` instead as a backup.
@@ -546,7 +549,11 @@ class TestGitHubDependency:
         mock_client.download_package.side_effect = ValueError("nope")
 
         # Simulate only the non-v prefix ref working (for a fuller flow)
-        def needs_non_v_prefix_ref(n0, n1, path, branch):
+        def needs_non_v_prefix_ref(n0, n1, dst_path, branch):
+            # NOTE: This assertion is very important!
+            #  We must only give it non-existing directories.
+            assert not dst_path.is_dir()
+
             if branch.startswith("v"):
                 raise ValueError("nope")
 
@@ -581,15 +588,15 @@ class TestGitHubDependency:
 
 
 class TestPythonDependency:
-    @pytest.fixture(scope="class")
-    def web3_dependency(self):
-        return PythonDependency.model_validate({"python": "web3"})
+    @pytest.fixture(scope="class", params=("python", "pypi"))
+    def python_dependency(self, request):
+        return PythonDependency.model_validate({request.param: "web3"})
 
-    def test_name(self, web3_dependency):
-        assert web3_dependency.name == "web3"
+    def test_name(self, python_dependency):
+        assert python_dependency.name == "web3"
 
-    def test_version_id(self, web3_dependency):
-        actual = web3_dependency.version_id
+    def test_version_id(self, python_dependency):
+        actual = python_dependency.version_id
         assert isinstance(actual, str)
         assert len(actual) > 0
         assert actual[0].isnumeric()
@@ -602,9 +609,9 @@ class TestPythonDependency:
         with pytest.raises(ProjectError, match=expected):
             _ = dependency.version_id
 
-    def test_fetch(self, web3_dependency):
+    def test_fetch(self, python_dependency):
         with create_tempdir() as temp_dir:
-            web3_dependency.fetch(temp_dir)
+            python_dependency.fetch(temp_dir)
             files = [x for x in temp_dir.iterdir()]
             assert len(files) > 0
 
@@ -641,6 +648,12 @@ class TestDependency:
         name = dependency.api.package_id.replace("/", "_")
         expected = data_folder / "packages" / "manifests" / name / "1_0_0.json"
         assert actual == expected
+
+    def test_installed(self, dependency):
+        dependency.uninstall()
+        assert not dependency.installed
+        dependency.install()
+        assert dependency.installed
 
     def test_compile(self, project):
         with create_tempdir() as path:

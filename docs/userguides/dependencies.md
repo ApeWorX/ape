@@ -57,9 +57,22 @@ Often times, the `v` prefix is required when using tags.
 However, if cloning the tag fails, `ape` will retry with a `v` prefix.
 Bypass the original failing attempt by including a `v` in your dependency config.
 
-### Python
+**By knowing if the release is from the version API or only available via tag, and whether the version is v-prefixed or not, you save Ape some time and complexity when installing dependencies.**
 
-You can use dependencies to PyPI by using the `python:` keyed dependency type.
+### PyPI
+
+You can use dependencies from [PyPI](https://pypi.org/) by using the `pypi:` key.
+
+```yaml
+dependencies:
+   - pypi: snekmate
+     config_override:
+       contracts_folder: src
+```
+
+When using the `pypi:` key, dependencies are downloaded and extracted from PyPI using an HTTP requests library.
+
+You can also specify the `python:` key for already-installed dependencies:
 
 ```yaml
 dependencies:
@@ -67,6 +80,14 @@ dependencies:
      config_override:
        contracts_folder: .
 ```
+
+Using `python:` requires the package to be installed in your `sys.path` (site-packages) folder, generally via `pip` or some other tool.
+The `contracts_folder` override, in this case, is often needed because the site-package does not have the root source-folder included.
+Additionally, `python:` specified dependencies may also be lacking project-configuration files, such as the `ape-config.yaml`.
+Compilers such as `vyper` encourage users to use `pip` to publish and install smart-contract dependencies (other vyper files), but some features in Ape may be limited if the dependency is not also specified in your config somewhere.
+
+If wanting to use a dependency from `PyPI`, we recommend using the `pypi:` key instead of the `python:` key.
+However, the `python:` key works great if you already used `pip` to install the dependency, especially if the dependency is not available on `PyPI`.
 
 ### Local
 
@@ -125,8 +146,8 @@ ape pm list
 You should see information like:
 
 ```shell
-NAME          VERSION  COMPILED
-openzeppelin  4.9.3    -
+NAME                                 VERSION  INSTALLED  COMPILED
+OpenZeppelin/openzeppelin-contracts  4.9.3    True       False
 ```
 
 ### install
@@ -177,10 +198,14 @@ project.dependencies.install(
 
 ### uninstall
 
-Remove previously installed packages using the `uninstall` command:
+Remove previously installed packages using the `uninstall` command, providing it either the dependency's name or package_id:
 
 ```shell
 ape pm uninstall OpenZeppelin
+```
+
+```shell
+ape pm uninstall OpenZeppelin/openzeppelin-contracts
 ```
 
 If there is a single version installed, the command will remove the single version.

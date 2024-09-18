@@ -1,0 +1,49 @@
+name: Bug report
+description: File a bug report
+labels: 'category: bug'
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please ensure that the bug has not already been filed in the issue tracker.
+
+        Thanks for taking the time to report this bug!
+  - type: checkboxes
+    attributes:
+      label: Have you ensured that all of these are up to date?
+      options:
+        - label: Ape
+        - label: Ape plugins
+  - type: input
+    attributes:
+      label: What version of Ape are you on?
+      placeholder: "Run `ape --version` and paste the output here"
+  - type: input
+    attributes:
+      label: What command(s) is the bug in?
+      description: Leave empty if not relevant
+      placeholder: "For example: ape test"
+  - type: dropdown
+    attributes:
+      label: Operating System
+      description: What operating system are you on?
+      options:
+        - Windows
+        - macOS (Intel)
+        - macOS (Apple Silicon)
+        - Linux
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: ape-config.yaml file
+      description: "Please paste your `ape-config.yaml` contents here (NOTE: do not post anything private like RPC urls or secrets!)"
+      placeholder: "Run `cat ape-config.yaml` and copy and paste the result here"
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Reproduction code
+      description: Please include a simple reproduction code-snippet.
+    validations:
+      required: true

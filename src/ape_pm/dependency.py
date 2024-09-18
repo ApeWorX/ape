@@ -7,6 +7,7 @@ from importlib import metadata
 from pathlib import Path
 from typing import Optional, Union
 
+import requests
 from pydantic import model_validator
 
 from ape.api.projects import DependencyAPI
@@ -15,6 +16,7 @@ from ape.logging import logger
 from ape.managers.project import _version_to_options
 from ape.utils import ManagerAccessMixin, clean_path, get_package_path, in_tempdir
 from ape.utils._github import _GithubClient, github_client
+from ape.utils.os import extract_archive
 
 
 def _fetch_local(src: Path, destination: Path, config_override: Optional[dict] = None):
@@ -206,6 +208,11 @@ class GithubDependency(DependencyAPI):
                     "Use `ref:` instead of `version:` for release tags. "
                     "Checking for matching tags..."
                 )
+
+                # NOTE: When using ref-from-a-version, ensure
+                #   it didn't create the destination along the way;
+                #   else, the ref is cloned in the wrong spot.
+                shutil.rmtree(destination, ignore_errors=True)
                 try:
                     self._fetch_ref(version, destination)
                 except Exception:
@@ -388,14 +395,25 @@ def _get_version_from_package_json(
     return data.get("version")
 
 
+# TODO: Rename to `PyPIDependency` in 0.9.
 class PythonDependency(DependencyAPI):
     """
-    A dependency installed from Python, such as files published to PyPI.
+    A dependency installed from Python tooling, such as `pip`.
     """
 
-    python: str
+    # TODO: Rename this `site_package_name` in 0.9.
+    python: Optional[str] = None
     """
-    The Python site-package name.
+    The Python site-package name, such as ``"snekmate"``. Cannot use
+    with ``pypi:``. Requires the dependency to have been installed
+    either via ``pip`` or something alike.
+    """
+
+    pypi: Optional[str] = None
+    """
+    The ``pypi`` reference, such as ``"snekmate"``. Cannot use with
+    ``python:``. When set, downloads the dependency from ``pypi``
+    using HTTP directly (not ``pip``).
     """
 
     version: Optional[str] = None
@@ -406,41 +424,148 @@ class PythonDependency(DependencyAPI):
     @model_validator(mode="before")
     @classmethod
     def validate_model(cls, values):
-        if "name" not in values and "python" in values:
-            values["name"] = values["python"]
+        if "name" not in values:
+            if name := values.get("python") or values.get("pypi"):
+                values["name"] = name
+            else:
+                raise ValueError(
+                    "Must set either 'pypi:' or 'python': when using Python dependencies"
+                )
 
         return values
 
     @cached_property
-    def path(self) -> Path:
-        try:
-            return get_package_path(self.python)
-        except ValueError as err:
-            raise ProjectError(str(err)) from err
+    def path(self) -> Optional[Path]:
+        if self.pypi:
+            # Is pypi: specified; has no special path.
+            return None
+
+        elif python := self.python:
+            try:
+                return get_package_path(python)
+            except ValueError as err:
+                raise ProjectError(str(err)) from err
+
+        return None
 
     @property
     def package_id(self) -> str:
-        return self.python
+        if pkg_id := (self.pypi or self.python):
+            return pkg_id
+
+        raise ProjectError("Must provide either 'pypi:' or 'python:' for python-base dependencies.")
 
     @property
     def version_id(self) -> str:
-        try:
-            vers = f"{metadata.version(self.python)}"
-        except metadata.PackageNotFoundError as err:
-            raise ProjectError(f"Dependency '{self.python}' not installed.") from err
+        if self.pypi:
+            # Version available in package data.
+            if not (vers := self.version_from_package_data or ""):
+                # I doubt this is a possible condition, but just in case.
+                raise ProjectError(f"Missing version from PyPI for package '{self.package_id}'.")
 
-        if spec_vers := self.version:
-            if spec_vers != vers:
-                raise ProjectError(
-                    "Dependency installed with mismatched version. "
-                    f"Expecting '{self.version}' but has '{vers}'"
-                )
+        elif self.python:
+            try:
+                vers = f"{metadata.version(self.package_id)}"
+            except metadata.PackageNotFoundError as err:
+                raise ProjectError(f"Dependency '{self.package_id}' not installed.") from err
+
+            if spec_vers := self.version:
+                if spec_vers != vers:
+                    raise ProjectError(
+                        "Dependency installed with mismatched version. "
+                        f"Expecting '{self.version}' but has '{vers}'"
+                    )
+
+        else:
+            raise ProjectError(
+                "Must provide either 'pypi:' or 'python:' for python-base dependencies."
+            )
 
         return vers
 
     @property
     def uri(self) -> str:
-        return self.path.as_uri()
+        if self.pypi:
+            return self.download_archive_url
+
+        elif self.python and (path := self.path):
+            # Local site-package path.
+            return path.as_uri()
+
+        else:
+            raise ProjectError(
+                "Must provide either 'pypi:' or 'python:' for python-base dependencies."
+            )
+
+    @cached_property
+    def package_data(self) -> dict:
+        url = f"https://pypi.org/pypi/{self.package_id}/json"
+        response = requests.get(url)
+
+        try:
+            response.raise_for_status()
+        except requests.HTTPError as err:
+            if err.response.status_code == 404:
+                raise ProjectError(
+                    f"Unknown dependency '{self.package_id}'. "
+                    "Is it spelled correctly and available on PyPI? "
+                    "For local Python packages, use the `python:` key."
+                )
+            else:
+                raise ProjectError(
+                    f"Problem downloading package data for '{self.package_id}': {err}"
+                )
+
+        return response.json()
+
+    @cached_property
+    def version_from_package_data(self) -> Optional[str]:
+        return self.package_data.get("info", {}).get("version")
+
+    @cached_property
+    def download_archive_url(self) -> str:
+        if not (version := self.version):
+            if not (version := self.version_from_package_data):
+                # Not sure this is possible, but just in case API data changes or something.
+                raise ProjectError(f"Unable to find version for package '{self.package_id}'.")
+
+        releases = self.package_data.get("releases", {})
+        if version not in releases:
+            raise ProjectError(f"Version '{version}' not found for package '{self.package_id}'.")
+
+        # Find the first zip file in the specified release.
+        for file_info in releases[version]:
+            if file_info.get("packagetype") != "sdist":
+                continue
+
+            return file_info["url"]
+
+        raise ProjectError(
+            f"No zip file found for package '{self.package_id}' with version '{version}' on PyPI."
+        )
 
     def fetch(self, destination: Path):
-        _fetch_local(self.path, destination, config_override=self.config_override)
+        if self.pypi:
+            self._fetch_from_pypi(destination)
+        elif path := self.path:
+            # 'python:' key.
+            _fetch_local(path, destination, config_override=self.config_override)
+
+    def _fetch_from_pypi(self, destination: Path):
+        archive_path = self._fetch_archive_file(destination)
+        extract_archive(archive_path)
+        archive_path.unlink(missing_ok=True)
+
+    def _fetch_archive_file(self, destination) -> Path:
+        logger.info(f"Fetching python dependency '{self.package_id}' from 'pypi.")
+        download_url = self.download_archive_url
+        filename = download_url.split("/")[-1]
+        destination.mkdir(exist_ok=True, parents=True)
+        archive_destination = destination / filename
+        with requests.get(download_url, stream=True) as response:
+            response.raise_for_status()
+            with open(archive_destination, "wb") as file:
+                for chunk in response.iter_content(chunk_size=8192):  # 8 KB
+                    file.write(chunk)
+
+        return archive_destination
