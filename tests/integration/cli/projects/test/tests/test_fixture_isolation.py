@@ -100,22 +100,23 @@ def test_parametrized_fixtures(start_block_number, chain, parametrized_mining):
     assert chain.blocks.height == start_block_number + parametrized_mining
 
 
-@pytest.fixture(scope="session", params=(5, 6, 7))
+@pytest.fixture(scope="session", params=(1, 2, 3))
 def parametrized_transaction(request, alice, bob):
     """
     2 more get added to the session here!
     """
-    return alice.transfer(bob, f"{request.param} wei")
+    alice.transfer(bob, f"{request.param} wei")
+    return request.param
 
 
-def test_use_parametrized_transaction(parametrized_transaction):
+def test_use_parametrized_transaction(chain, parametrized_transaction):
     """
     The real test is in the next file `test_iso_session.py`.
     The session fixtures should know about these and add an additional
     `3` to the `6` to make `9.`
     """
-    _ = parametrized_transaction
-    assert True  # Testing isolation after the fixture runs.
+    starting = 10  # All session + module
+    assert chain.blocks.height == starting + parametrized_transaction
 
 
 @pytest.mark.parametrize("foo", (1, 2, 3))
