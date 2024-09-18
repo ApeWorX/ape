@@ -109,6 +109,24 @@ def parametrized_transaction(request, alice, bob):
     return request.param
 
 
+@pytest.fixture
+def functional_fixture_using_session(chain, session_one):
+    """
+    Showing the transactions in a functional-scoped
+    fixture that use a session-scoped fixture don't
+    persist on-chain.
+    """
+    _ = session_one
+    chain.mine()
+    return 11  # expected: 10 built up plus this 1.
+
+
+# Parametrized to show it works more than once.
+@pytest.mark.parametrize("it", (0, 1, 2))
+def test_functional_fixture_using_session(chain, functional_fixture_using_session, it):
+    assert chain.blocks.height == functional_fixture_using_session
+
+
 def test_use_parametrized_transaction(chain, parametrized_transaction):
     """
     The real test is in the next file `test_iso_session.py`.
@@ -117,6 +135,18 @@ def test_use_parametrized_transaction(chain, parametrized_transaction):
     """
     starting = 10  # All session + module
     assert chain.blocks.height == starting + parametrized_transaction
+
+
+@pytest.fixture
+def functional_fixture_using_parametrized_session(chain, parametrized_transaction):
+    chain.mine()
+    return 11 + parametrized_transaction
+
+
+def test_functional_fixture_using_parametrized_session(
+    chain, functional_fixture_using_parametrized_session
+):
+    assert chain.blocks.height == functional_fixture_using_parametrized_session
 
 
 @pytest.mark.parametrize("foo", (1, 2, 3))
