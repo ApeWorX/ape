@@ -2,7 +2,7 @@ import inspect
 from collections.abc import Callable
 from functools import partial
 from pathlib import Path
-from typing import NoReturn, Optional, Union
+from typing import NoReturn, Optional, Union, Any
 
 import click
 from click import Option
@@ -88,6 +88,7 @@ def _create_verbosity_kwargs(
         "expose_value": False,
         "help": f"One of {names_str}",
         "is_eager": True,
+        "type": lambda x: x,  # Ignores weird typing-issues
     }
 
 
