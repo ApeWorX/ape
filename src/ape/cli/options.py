@@ -2,7 +2,7 @@ import inspect
 from collections.abc import Callable
 from functools import partial
 from pathlib import Path
-from typing import NoReturn, Optional, Union, Any
+from typing import NoReturn, Optional, Union
 
 import click
 from click import Option
