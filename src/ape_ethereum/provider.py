@@ -633,21 +633,25 @@ class Web3Provider(ProviderAPI, ABC):
                 else transaction.model_dump(by_alias=True, mode="json")
             )
 
-        if kwargs.get("private"):
-            # Bail before confirmation because it won't be on chain yet.
-            data = {
-                "required_confirmations": 0,
-                "block_number": -1,
-                **txn,
-            }
-            receipt = self._create_receipt(**data)
-            return receipt.await_confirmations()  # But do need to await nonce increment.
+        private = kwargs.get("private")
 
         try:
             receipt_data = dict(
                 self.web3.eth.wait_for_transaction_receipt(hex_hash, timeout=timeout)
             )
         except TimeExhausted as err:
+            # We don't auto-wait for acceptance or confirmations for private transactions.
+            # TODO: Update comment with instructions for how to manually wait
+            #   once the feature is ready in core Ape.
+            if private:
+                # Return with a partial receipt
+                data = {
+                    "block_number": -1,
+                    "required_confirmations": required_confirmations,
+                    **txn,
+                }
+                receipt = self._create_receipt(**data)
+                return receipt
             msg_str = str(err)
             if f"HexBytes('{txn_hash}')" in msg_str:
                 msg_str = msg_str.replace(f"HexBytes('{txn_hash}')", f"'{txn_hash}'")
