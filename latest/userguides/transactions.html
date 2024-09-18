@@ -1,223 +1,109 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html lang="en" data-accent-color="lime" data-content_root="../">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
-
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Transactions &mdash; ape  documentation</title>
-      <link rel="stylesheet" href="/ape/latest/_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="/ape/latest/_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="/ape/latest/_static/custom.css" type="text/css" />
-    <link rel="shortcut icon" href="../_static/favicon.ico"/>
-    <link rel="canonical" href="/ape/userguides/transactions.html" />
-  <!--[if lt IE 9]>
-    <script src="../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script src="../_static/sphinx_highlight.js"></script>
-        <script data-domain="docs.apeworx.io" defer="defer" src="https://plausible.io/js/script.js"></script>
-    <script src="../_static/js/theme.js"></script>
-    <script src="../_static/custom.js"></script>
-  <script>
-      var PROJECT = "ape";
-  </script>
-    <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Console" href="console.html" />
-    <link rel="prev" title="Configure Ape" href="config.html" /> 
-</head>
-
-<body class="wy-body-for-nav"> 
-  <div class="wy-grid-for-nav">
-    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
-      <div class="wy-side-scroll">
-        <div class="wy-side-nav-search" >
-
-          
-          
-          <a href="../index.html" class="icon icon-home">
-            ape
-              <img src="../_static/logo.gif" class="logo" alt="Logo"/>
-          </a>
-
-          <div class="version">
-            <label for="version-picker" id="version-picker-label">Version:</label>
-            <select id="version-picker">
-              <option value="">Select version...</option>
-              <option value="latest">latest</option>
-              <option value="stable">stable</option>
-                <option value="v0.8.14">v0.8.14</option>
-                <option value="v0.8.13">v0.8.13</option>
-                <option value="v0.8.12">v0.8.12</option>
-                <option value="v0.8.11">v0.8.11</option>
-                <option value="v0.8.10">v0.8.10</option>
-                <option value="v0.8.9">v0.8.9</option>
-                <option value="v0.8.8">v0.8.8</option>
-                <option value="v0.8.7">v0.8.7</option>
-                <option value="v0.8.6">v0.8.6</option>
-                <option value="v0.8.5">v0.8.5</option>
-                <option value="v0.8.4">v0.8.4</option>
-                <option value="v0.8.3">v0.8.3</option>
-                <option value="v0.8.2">v0.8.2</option>
-                <option value="v0.8.1">v0.8.1</option>
-                <option value="v0.8.0">v0.8.0</option>
-                <option value="v0.7.23">v0.7.23</option>
-                <option value="v0.7.22">v0.7.22</option>
-                <option value="v0.7.21">v0.7.21</option>
-                <option value="v0.7.20">v0.7.20</option>
-                <option value="v0.7.19">v0.7.19</option>
-                <option value="v0.7.18">v0.7.18</option>
-                <option value="v0.7.17">v0.7.17</option>
-                <option value="v0.7.16">v0.7.16</option>
-                <option value="v0.7.15">v0.7.15</option>
-                <option value="v0.7.14">v0.7.14</option>
-                <option value="v0.7.12">v0.7.12</option>
-                <option value="v0.7.11">v0.7.11</option>
-                <option value="v0.7.10">v0.7.10</option>
-                <option value="v0.7.9">v0.7.9</option>
-                <option value="v0.7.8">v0.7.8</option>
-                <option value="v0.7.7">v0.7.7</option>
-                <option value="v0.7.6">v0.7.6</option>
-                <option value="v0.7.5">v0.7.5</option>
-                <option value="v0.7.4">v0.7.4</option>
-                <option value="v0.7.3">v0.7.3</option>
-                <option value="v0.7.2">v0.7.2</option>
-                <option value="v0.7.1">v0.7.1</option>
-                <option value="v0.7.0">v0.7.0</option>
-                <option value="v0.6.27">v0.6.27</option>
-                <option value="v0.6.26">v0.6.26</option>
-                <option value="v0.6.25">v0.6.25</option>
-                <option value="v0.6.24">v0.6.24</option>
-                <option value="v0.6.23">v0.6.23</option>
-                <option value="v0.6.22">v0.6.22</option>
-                <option value="v0.6.21">v0.6.21</option>
-                <option value="v0.6.20">v0.6.20</option>
-                <option value="v0.6.19">v0.6.19</option>
-                <option value="v0.6.18">v0.6.18</option>
-                <option value="v0.6.17">v0.6.17</option>
-                <option value="v0.6.16">v0.6.16</option>
-                <option value="v0.6.15">v0.6.15</option>
-                <option value="v0.6.14">v0.6.14</option>
-                <option value="v0.6.13">v0.6.13</option>
-                <option value="v0.6.12">v0.6.12</option>
-                <option value="v0.6.11">v0.6.11</option>
-                <option value="v0.6.10">v0.6.10</option>
-                <option value="v0.6.9">v0.6.9</option>
-                <option value="v0.6.8">v0.6.8</option>
-                <option value="v0.6.7">v0.6.7</option>
-                <option value="v0.6.6">v0.6.6</option>
-                <option value="v0.6.5">v0.6.5</option>
-                <option value="v0.6.4">v0.6.4</option>
-                <option value="v0.6.3">v0.6.3</option>
-                <option value="v0.6.2">v0.6.2</option>
-                <option value="v0.6.1">v0.6.1</option>
-                <option value="v0.6.0">v0.6.0</option>
-                <option value="v0.5.9">v0.5.9</option>
-                <option value="v0.5.8">v0.5.8</option>
-                <option value="v0.5.7">v0.5.7</option>
-                <option value="v0.5.6">v0.5.6</option>
-                <option value="v0.5.5">v0.5.5</option>
-                <option value="v0.5.4">v0.5.4</option>
-                <option value="v0.5.3">v0.5.3</option>
-                <option value="v0.5.2">v0.5.2</option>
-                <option value="v0.5.1">v0.5.1</option>
-                <option value="v0.5.0">v0.5.0</option>
-                <option value="v0.4.5">v0.4.5</option>
-                <option value="v0.4.4">v0.4.4</option>
-                <option value="v0.4.3">v0.4.3</option>
-                <option value="v0.4.2">v0.4.2</option>
-                <option value="v0.4.1">v0.4.1</option>
-                <option value="v0.4.0">v0.4.0</option>
-                <option value="v0.3.5">v0.3.5</option>
-                <option value="v0.3.4">v0.3.4</option>
-                <option value="v0.3.3">v0.3.3</option>
-                <option value="v0.3.2">v0.3.2</option>
-                <option value="v0.3.1">v0.3.1</option>
-                <option value="v0.3.0">v0.3.0</option>
-                <option value="v0.2.8">v0.2.8</option>
-                <option value="v0.2.7">v0.2.7</option>
-                <option value="v0.2.6">v0.2.6</option>
-                <option value="v0.2.5">v0.2.5</option>
-                <option value="v0.2.4">v0.2.4</option>
-                <option value="v0.2.3">v0.2.3</option>
-                <option value="v0.2.2">v0.2.2</option>
-                <option value="v0.2.1">v0.2.1</option>
-                <option value="v0.2.0">v0.2.0</option>
-                <option value="v0.1.6">v0.1.6</option>
-                <option value="v0.1.5">v0.1.5</option>
-                <option value="v0.1.4">v0.1.4</option>
-                <option value="v0.1.3">v0.1.3</option>
-                <option value="v0.1.1">v0.1.1</option>
-                <option value="v0.1.0">v0.1.0</option>
-            </select>
-          </div>
-<div role="search">
-  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
-    <input type="hidden" name="check_keywords" value="yes" />
-    <input type="hidden" name="area" value="default" />
-  </form>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Transactions - ape documentation</title><link rel="shortcut icon" href="../_static/favicon.ico"/><link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="accounts" href="../commands/accounts.html" /><link rel="prev" title="Traces" href="trace.html" />
+      <link rel="canonical" href="ape/userguides/transactions.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=397bb51e" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=36d120a7" />
+    <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    <meta property="og:type" content="website"/>
+<meta property="og:url" content="ape/userguides/transactions.html"/>
+<meta property="og:title" content="Transactions"/>
+<meta name="twitter:card" content="summary"/>
+  </head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="../index.html">
+      <img class="light-logo" src="../_static/logo_grey.svg" alt="ape" height="28" loading="lazy" />
+      <img class="dark-logo" src="../_static/logo_green.svg" alt="ape" height="28" loading="lazy" />
+      <strong>ape</strong>
+    </a>
+    <div class="sy-head-nav" id="HeadNav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials"></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="HeadNav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2 -translate-x-2"></span>
+          <span class="hamburger_3 -translate-x-1"></span>
+        </div>
+      </button>
+    </div>
+  </div>
 </div>
-        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">User Guides</span></p>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading" aria-level="3"><span class="caption-text">User Guides</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="accounts.html">Accounts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="installing_plugins.html">Plugins</a></li>
-<li class="toctree-l1"><a class="reference internal" href="projects.html">Developing Projects with Ape</a></li>
-<li class="toctree-l1"><a class="reference internal" href="dependencies.html">Dependencies</a></li>
-<li class="toctree-l1"><a class="reference internal" href="compile.html">Compile</a></li>
 <li class="toctree-l1"><a class="reference internal" href="clis.html">CLIs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="data.html">Querying Data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="networks.html">Networks</a></li>
-<li class="toctree-l1"><a class="reference internal" href="forking_networks.html">Forking Networks</a></li>
-<li class="toctree-l1"><a class="reference internal" href="developing_plugins.html">Developing Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="compile.html">Compile</a></li>
 <li class="toctree-l1"><a class="reference internal" href="config.html">Configure Ape</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Transactions</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#deployment">Deployment</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#deployment-from-ape-console">Deployment from Ape Console</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#deployment-metadata">Deployment Metadata</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#dynamic-fee-transactions">Dynamic-Fee Transactions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#static-fee-transactions">Static-Fee Transactions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#access-list-transactions">Access List Transactions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#payable-transactions">Payable Transactions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#transaction-logs">Transaction Logs</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#transaction-acceptance-timeout">Transaction Acceptance Timeout</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#traces">Traces</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#estimate-gas-cost">Estimate Gas Cost</a></li>
-</ul>
-</li>
 <li class="toctree-l1"><a class="reference internal" href="console.html">Console</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contracts.html">Contracts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="reverts.html">Reverts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="proxy.html">Proxy Contracts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="testing.html">Testing</a></li>
-<li class="toctree-l1"><a class="reference internal" href="scripts.html">Scripting</a></li>
-<li class="toctree-l1"><a class="reference internal" href="publishing.html">Publishing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="data.html">Querying Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="developing_plugins.html">Developing Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="forking_networks.html">Forking Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installing_plugins.html">Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="logging.html">Logging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="networks.html">Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="projects.html">Developing Projects with Ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="proxy.html">Proxy Contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="publishing.html">Publishing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reverts.html">Reverts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scripts.html">Scripting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="testing.html">Testing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="trace.html">Traces</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Transactions</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">CLI Reference</span></p>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">CLI Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../commands/accounts.html">accounts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../commands/compile.html">compile</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../commands/pm.html">pm</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../commands/console.html">console</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../commands/init.html">init</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../commands/networks.html">networks</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../commands/plugins.html">plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/pm.html">pm</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../commands/run.html">run</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../commands/test.html">test</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Core Python Reference</span></p>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Python Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape.html">ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_accounts.html">ape-accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_compile.html">ape-compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_ethereum.html">ape-ethereum</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_ethereum.html#module-ape_ethereum.multicall">ape-ethereum.multicall</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_node.html">ape-node</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_pm.html">ape-pm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_test.html">ape-test</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/api.html">ape.api</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/cli.html">ape.cli</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/contracts.html">ape.contracts</a></li>
@@ -227,109 +113,126 @@
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/types.html">ape.types</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/utils.html">ape.utils</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Plugin Python Reference</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_accounts.html">ape-accounts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_compile.html">ape-compile</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_ethereum.html">ape-ethereum</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_ethereum.html#module-ape_ethereum.multicall">ape-ethereum.multicall</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_node.html">ape-node</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_pm.html">ape-pm</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_test.html">ape-test</a></li>
-</ul>
 
         </div>
-      </div>
-    </nav>
-
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../index.html">ape</a>
-      </nav>
-
-      <div class="wy-nav-content">
-        <div class="rst-content">
-          <div role="navigation" aria-label="Page navigation">
-  <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Transactions</li>
-      <li class="wy-breadcrumbs-aside">
-              <a href="https://github.com/ApeWorX/ape/blob/main/docs/userguides/transactions.md" class="fa fa-github"> Edit on GitHub</a>
-      </li>
-  </ul>
-  <hr/>
-</div>
-          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
-           <div itemprop="articleBody">
-             
-  <section id="transactions">
-<h1>Transactions<a class="headerlink" href="#transactions" title="Permalink to this heading"></a></h1>
+      </div></div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#deployment">Deployment</a><ul>
+<li><a class="reference internal" href="#deployment-from-ape-console">Deployment from Ape Console</a></li>
+<li><a class="reference internal" href="#deployment-metadata">Deployment Metadata</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#dynamic-fee-transactions">Dynamic-Fee Transactions</a></li>
+<li><a class="reference internal" href="#static-fee-transactions">Static-Fee Transactions</a></li>
+<li><a class="reference internal" href="#access-list-transactions">Access List Transactions</a></li>
+<li><a class="reference internal" href="#payable-transactions">Payable Transactions</a></li>
+<li><a class="reference internal" href="#transaction-logs">Transaction Logs</a></li>
+<li><a class="reference internal" href="#transaction-acceptance-timeout">Transaction Acceptance Timeout</a></li>
+<li><a class="reference internal" href="#traces">Traces</a></li>
+<li><a class="reference internal" href="#estimate-gas-cost">Estimate Gas Cost</a></li>
+</ul>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6"><div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../index.html"><span itemprop="name">ape</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">Transactions</strong>
+        <meta itemprop="position" content="2" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+        <article class="yue" role="main">
+          <section id="transactions">
+<h1>Transactions<a class="headerlink" href="#transactions" title="Link to this heading"></a></h1>
 <p>Regardless of how you are using <code class="docutils literal notranslate"><span class="pre">ape</span></code>, you will likely be making transactions.
 There are various types of transactions you can make with <code class="docutils literal notranslate"><span class="pre">ape</span></code>. A simple example is deploying a contract.</p>
 <section id="deployment">
-<h2>Deployment<a class="headerlink" href="#deployment" title="Permalink to this heading"></a></h2>
+<h2>Deployment<a class="headerlink" href="#deployment" title="Link to this heading"></a></h2>
 <p>Deploying a smart contract is a unique type of transaction where we don’t necessarily care about the receipt as much
 as we care about the contract instance. That is why the return value from
 <a class="reference external" href="../methoddocs/api.html?highlight=accountapi#ape.api.accounts.AccountAPI.deploy">the deploy method</a> is a
 <a class="reference external" href="../methoddocs/contracts.html?highlight=contractinstance#ape.contracts.base.ContractInstance">ContractInstance</a>.</p>
 <p>The following example demonstrates a simple deployment script:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">project</span>
-
-<span class="k">def</span> <span class="nf">deploy</span><span class="p">():</span>
-    <span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;MyAccount&quot;</span><span class="p">)</span>
-    <span class="c1"># Assume you have a contract named `MyContract` in your project&#39;s contracts folder.</span>
-    <span class="k">return</span> <span class="n">account</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="p">)</span>
-</pre></div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">project</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="k">def</span> <span class="nf">deploy</span><span class="p">():</span>
+</span><span data-line="4">    <span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;MyAccount&quot;</span><span class="p">)</span>
+</span><span data-line="5">    <span class="c1"># Assume you have a contract named `MyContract` in your project&#39;s contracts folder.</span>
+</span><span data-line="6">    <span class="k">return</span> <span class="n">account</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="p">)</span>
+</span></pre></div>
 </div>
 <section id="deployment-from-ape-console">
-<h3>Deployment from Ape Console<a class="headerlink" href="#deployment-from-ape-console" title="Permalink to this heading"></a></h3>
+<h3>Deployment from Ape Console<a class="headerlink" href="#deployment-from-ape-console" title="Link to this heading"></a></h3>
 <p>Deploying from <a class="reference external" href="./console.html">ape console</a> allows you to interact with a contract in real time. You can also use the <code class="docutils literal notranslate"><span class="pre">--network</span></code> flag to connect a live network.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>console<span class="w"> </span>--network<span class="w"> </span>ethereum:sepolia:alchemy
-</pre></div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>console<span class="w"> </span>--network<span class="w"> </span>ethereum:sepolia:alchemy
+</span></pre></div>
 </div>
 <p>This will launch an IPython shell:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="n">dev</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;dev&quot;</span><span class="p">)</span>
-<span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="n">token</span> <span class="o">=</span> <span class="n">dev</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">Token</span><span class="p">)</span>
-<span class="n">In</span> <span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="n">token</span><span class="o">.</span><span class="n">contract_method_defined_in_contract</span><span class="p">()</span>
-</pre></div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="n">dev</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;dev&quot;</span><span class="p">)</span>
+</span><span data-line="2"><span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="n">token</span> <span class="o">=</span> <span class="n">dev</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">Token</span><span class="p">)</span>
+</span><span data-line="3"><span class="n">In</span> <span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="n">token</span><span class="o">.</span><span class="n">contract_method_defined_in_contract</span><span class="p">()</span>
+</span></pre></div>
 </div>
 <p>For an in depth tutorial on how to deploy, please visit <a class="reference external" href="https://academy.apeworx.io/">ApeAcademy</a>.</p>
 </section>
 <section id="deployment-metadata">
-<h3>Deployment Metadata<a class="headerlink" href="#deployment-metadata" title="Permalink to this heading"></a></h3>
+<h3>Deployment Metadata<a class="headerlink" href="#deployment-metadata" title="Link to this heading"></a></h3>
 <p>To get the receipt of a <code class="docutils literal notranslate"><span class="pre">deploy</span></code> transaction, use the <a class="reference external" href="../methoddocs/contracts.html#ape.contracts.base.ContractInstance.creation_metadata">ContractInstance.creation_metadata</a> property:</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Use <code class="docutils literal notranslate"><span class="pre">ape-etherscan</span></code> or a node with Otterscan for increased support for these features.</p>
 </div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">project</span>
-
-<span class="n">dev</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;dev&quot;</span><span class="p">)</span>
-<span class="n">contract</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">dev</span><span class="p">)</span>
-
-<span class="c1"># The receipt is available on the contract instance and has the expected sender.</span>
-<span class="n">receipt</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">creation_metadata</span><span class="o">.</span><span class="n">receipt</span>
-<span class="k">assert</span> <span class="n">receipt</span><span class="o">.</span><span class="n">sender</span> <span class="o">==</span> <span class="n">dev</span>
-</pre></div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">project</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="n">dev</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;dev&quot;</span><span class="p">)</span>
+</span><span data-line="4"><span class="n">contract</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">dev</span><span class="p">)</span>
+</span><span data-line="5">
+</span><span data-line="6"><span class="c1"># The receipt is available on the contract instance and has the expected sender.</span>
+</span><span data-line="7"><span class="n">receipt</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">creation_metadata</span><span class="o">.</span><span class="n">receipt</span>
+</span><span data-line="8"><span class="k">assert</span> <span class="n">receipt</span><span class="o">.</span><span class="n">sender</span> <span class="o">==</span> <span class="n">dev</span>
+</span></pre></div>
 </div>
 <p><strong>NOTE</strong>: The <code class="docutils literal notranslate"><span class="pre">creation_metadata</span></code> contains other information as well, such as <code class="docutils literal notranslate"><span class="pre">.factory</span></code> for factory-deployed contracts.</p>
 </section>
 </section>
 <section id="dynamic-fee-transactions">
-<h2>Dynamic-Fee Transactions<a class="headerlink" href="#dynamic-fee-transactions" title="Permalink to this heading"></a></h2>
+<h2>Dynamic-Fee Transactions<a class="headerlink" href="#dynamic-fee-transactions" title="Link to this heading"></a></h2>
 <p>Before <a class="reference external" href="https://eips.ethereum.org/EIPS/eip-1559">EIP-1559</a>, all transactions used a <code class="docutils literal notranslate"><span class="pre">gas_price</span></code>.
 After the London fork of Ethereum, the <code class="docutils literal notranslate"><span class="pre">gas_price</span></code> got broken up into two values, <code class="docutils literal notranslate"><span class="pre">max_fee</span></code> and <code class="docutils literal notranslate"><span class="pre">max_priority_fee</span></code>.
 The <code class="docutils literal notranslate"><span class="pre">ape</span></code> framework supports both types of transactions. By default, transactions use the dynamic-fee model.
 Making contract calls without specifying any additional <code class="docutils literal notranslate"><span class="pre">kwargs</span></code> will use a dynamic-fee transaction.</p>
 <p>Calling certain methods on a deployed-contract is one way to transact.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">contract</span> <span class="o">=</span> <span class="n">deploy</span><span class="p">()</span>  <span class="c1"># Example from above, that returns a contract instance.</span>
-<span class="n">contract</span><span class="o">.</span><span class="n">fundMyContract</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="s2">&quot;1 gwei&quot;</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">sender</span><span class="p">)</span>  <span class="c1"># Assuming there is a method named &#39;fundMyContract&#39; on MyContract.</span>
-</pre></div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">contract</span> <span class="o">=</span> <span class="n">deploy</span><span class="p">()</span>  <span class="c1"># Example from above, that returns a contract instance.</span>
+</span><span data-line="2"><span class="n">contract</span><span class="o">.</span><span class="n">fundMyContract</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="s2">&quot;1 gwei&quot;</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">sender</span><span class="p">)</span>  <span class="c1"># Assuming there is a method named &#39;fundMyContract&#39; on MyContract.</span>
+</span></pre></div>
 </div>
 <p>In the example above, the call to <code class="docutils literal notranslate"><span class="pre">fundMyContract()</span></code> invokes a dynamic-fee transaction.
 To have more control of the fee-values, you can specify the <code class="docutils literal notranslate"><span class="pre">max_fee</span></code>, the <code class="docutils literal notranslate"><span class="pre">max_priority_fee</span></code>, or both.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">contract</span><span class="o">.</span><span class="n">fundMyContract</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="s2">&quot;1 gwei&quot;</span><span class="p">,</span> <span class="n">max_priority_fee</span><span class="o">=</span><span class="s2">&quot;50 gwei&quot;</span><span class="p">,</span> <span class="n">max_fee</span><span class="o">=</span><span class="s2">&quot;100 gwei&quot;</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">sender</span><span class="p">)</span>
-</pre></div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">contract</span><span class="o">.</span><span class="n">fundMyContract</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="s2">&quot;1 gwei&quot;</span><span class="p">,</span> <span class="n">max_priority_fee</span><span class="o">=</span><span class="s2">&quot;50 gwei&quot;</span><span class="p">,</span> <span class="n">max_fee</span><span class="o">=</span><span class="s2">&quot;100 gwei&quot;</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">sender</span><span class="p">)</span>
+</span></pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">max_priority_fee</span></code> cannot exceed the <code class="docutils literal notranslate"><span class="pre">max_fee</span></code>, as the <code class="docutils literal notranslate"><span class="pre">max_fee</span></code> includes both the base fee and the priority fee.
 The <code class="docutils literal notranslate"><span class="pre">max_priority_fee</span></code>, when omitted, defaults to the return value from the
@@ -341,13 +244,13 @@ the value returned from the
 property.</p>
 </section>
 <section id="static-fee-transactions">
-<h2>Static-Fee Transactions<a class="headerlink" href="#static-fee-transactions" title="Permalink to this heading"></a></h2>
+<h2>Static-Fee Transactions<a class="headerlink" href="#static-fee-transactions" title="Link to this heading"></a></h2>
 <p>Static-fee transactions are the transactions that Ethereum used before the London-fork
 (before <a class="reference external" href="https://eips.ethereum.org/EIPS/eip-1559">EIP-1559</a>).
 <strong>However, some applications may still require using static-fee transactions.</strong></p>
 <p>One way to use a static-fee transaction is by specifying the <code class="docutils literal notranslate"><span class="pre">gas_price</span></code> as a key-value argument:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">contract</span><span class="o">.</span><span class="n">startAuction</span><span class="p">(</span><span class="n">gas_price</span><span class="o">=</span><span class="s2">&quot;100 gwei&quot;</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">sender</span><span class="p">)</span>
-</pre></div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">contract</span><span class="o">.</span><span class="n">startAuction</span><span class="p">(</span><span class="n">gas_price</span><span class="o">=</span><span class="s2">&quot;100 gwei&quot;</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">sender</span><span class="p">)</span>
+</span></pre></div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -355,135 +258,145 @@ property.</p>
 </div>
 <p>Another way to use a static-fee transaction (without having to provide <code class="docutils literal notranslate"><span class="pre">gas_price</span></code>) is to set the key-value
 argument <code class="docutils literal notranslate"><span class="pre">type</span></code> equal to <code class="docutils literal notranslate"><span class="pre">0x00</span></code>.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">contract</span><span class="o">.</span><span class="n">startAuction</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s2">&quot;0x0&quot;</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">sender</span><span class="p">)</span>
-</pre></div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">contract</span><span class="o">.</span><span class="n">startAuction</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s2">&quot;0x0&quot;</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">sender</span><span class="p">)</span>
+</span></pre></div>
 </div>
 <p>When declaring <code class="docutils literal notranslate"><span class="pre">type=&quot;0x0&quot;</span></code> and <em>not</em> specifying a <code class="docutils literal notranslate"><span class="pre">gas_price</span></code>, the <code class="docutils literal notranslate"><span class="pre">gas_price</span></code> gets set using the provider’s estimation.</p>
 </section>
 <section id="access-list-transactions">
-<h2>Access List Transactions<a class="headerlink" href="#access-list-transactions" title="Permalink to this heading"></a></h2>
+<h2>Access List Transactions<a class="headerlink" href="#access-list-transactions" title="Link to this heading"></a></h2>
 <p>Utilizing <a class="reference external" href="https://eips.ethereum.org/EIPS/eip-2930">EIP-2930</a>, you can also make access-list transactions using Ape.
 Access-list transactions are static-fee transactions except you can optionally specify an access list.
 Access-lists make contract-interaction more predictable and optimized.
 You can also use Access-lists in Dynamic-fee transactions.</p>
 <p>To automatically use access-list (type 1) transactions in Ape, specify <code class="docutils literal notranslate"><span class="pre">type=1</span></code> in your call:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">contract</span><span class="o">.</span><span class="n">startAuction</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">sender</span><span class="p">)</span>
-</pre></div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">contract</span><span class="o">.</span><span class="n">startAuction</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">sender</span><span class="p">)</span>
+</span></pre></div>
 </div>
 <p>When specifying <code class="docutils literal notranslate"><span class="pre">type=1</span></code>, Ape uses <code class="docutils literal notranslate"><span class="pre">eth_createAccessList</span></code> RPC to attach an access list to the transaction automatically.</p>
 <p>You can also specify the access-list directly:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">contract</span><span class="o">.</span><span class="n">fundMyContract</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">sender</span><span class="p">,</span> <span class="n">access_list</span><span class="o">=</span><span class="n">MY_ACCESS_LIST</span><span class="p">)</span>
-</pre></div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">contract</span><span class="o">.</span><span class="n">fundMyContract</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">sender</span><span class="p">,</span> <span class="n">access_list</span><span class="o">=</span><span class="n">MY_ACCESS_LIST</span><span class="p">)</span>
+</span></pre></div>
 </div>
 </section>
 <section id="payable-transactions">
-<h2>Payable Transactions<a class="headerlink" href="#payable-transactions" title="Permalink to this heading"></a></h2>
+<h2>Payable Transactions<a class="headerlink" href="#payable-transactions" title="Link to this heading"></a></h2>
 <p>To add value to a transaction, use the <code class="docutils literal notranslate"><span class="pre">value=</span></code> kwarg when transacting in Ape.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">contract</span><span class="o">.</span><span class="n">fundMyContract</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="s2">&quot;1 ether&quot;</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">sender</span><span class="p">)</span>
-</pre></div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">contract</span><span class="o">.</span><span class="n">fundMyContract</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="s2">&quot;1 ether&quot;</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">sender</span><span class="p">)</span>
+</span></pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">value=&quot;1</span> <span class="pre">ether&quot;</span></code> part is sending 1 ETH to the contract.
 You would do this if <code class="docutils literal notranslate"><span class="pre">fundMyContract</span></code> was a <code class="docutils literal notranslate"><span class="pre">&quot;payable&quot;</span></code> method, e.g. marked <code class="docutils literal notranslate"><span class="pre">&#64;payable</span></code> in Vyper.</p>
 </section>
 <section id="transaction-logs">
-<h2>Transaction Logs<a class="headerlink" href="#transaction-logs" title="Permalink to this heading"></a></h2>
+<h2>Transaction Logs<a class="headerlink" href="#transaction-logs" title="Link to this heading"></a></h2>
 <p>In Ape, you can easily get all the events on a receipt.
 Use the <code class="docutils literal notranslate"><span class="pre">.events</span></code> property to access the (<a class="reference external" href="../methoddocs/types.html#ape.types.ContractLog">ContractLog</a>) objects.
 Each object represents an event emitted from the call.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">receipt</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">fundMyContract</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="s2">&quot;1 gwei&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;0x0&quot;</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">sender</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">receipt</span><span class="o">.</span><span class="n">events</span><span class="p">)</span>
-</pre></div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">receipt</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">fundMyContract</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="s2">&quot;1 gwei&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;0x0&quot;</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">sender</span><span class="p">)</span>
+</span><span data-line="2"><span class="nb">print</span><span class="p">(</span><span class="n">receipt</span><span class="o">.</span><span class="n">events</span><span class="p">)</span>
+</span></pre></div>
 </div>
 <p>To only get specific log types, use the <code class="docutils literal notranslate"><span class="pre">decode_logs()</span></code> method and pass the event ABIs as arguments:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">log</span> <span class="ow">in</span> <span class="n">receipt</span><span class="o">.</span><span class="n">decode_logs</span><span class="p">(</span><span class="n">contract</span><span class="o">.</span><span class="n">FooEvent</span><span class="o">.</span><span class="n">abi</span><span class="p">,</span> <span class="n">contract</span><span class="o">.</span><span class="n">BarEvent</span><span class="o">.</span><span class="n">abi</span><span class="p">):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">log</span><span class="o">.</span><span class="n">amount</span><span class="p">)</span>  <span class="c1"># Assuming &#39;amount&#39; is a property on the event.</span>
-</pre></div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">for</span> <span class="n">log</span> <span class="ow">in</span> <span class="n">receipt</span><span class="o">.</span><span class="n">decode_logs</span><span class="p">(</span><span class="n">contract</span><span class="o">.</span><span class="n">FooEvent</span><span class="o">.</span><span class="n">abi</span><span class="p">,</span> <span class="n">contract</span><span class="o">.</span><span class="n">BarEvent</span><span class="o">.</span><span class="n">abi</span><span class="p">):</span>
+</span><span data-line="2">    <span class="nb">print</span><span class="p">(</span><span class="n">log</span><span class="o">.</span><span class="n">amount</span><span class="p">)</span>  <span class="c1"># Assuming &#39;amount&#39; is a property on the event.</span>
+</span></pre></div>
 </div>
 <p>You can also use the <a class="reference external" href="../methoddocs/contracts.html?highlight=contractevent#ape.contracts.base.ContractEvent.from_receipt">ContractEvent.from_receipt(receipt)</a> method:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">receipt</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">fooMethod</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="s2">&quot;1 gwei&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;0x0&quot;</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">sender</span><span class="p">)</span>
-<span class="k">for</span> <span class="n">log</span> <span class="ow">in</span> <span class="n">contract</span><span class="o">.</span><span class="n">FooEvent</span><span class="o">.</span><span class="n">from_receipt</span><span class="p">(</span><span class="n">receipt</span><span class="p">):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">log</span><span class="o">.</span><span class="n">amount</span><span class="p">)</span>  <span class="c1"># Assuming &#39;amount&#39; is a property on the event.</span>
-</pre></div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">receipt</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">fooMethod</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="s2">&quot;1 gwei&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;0x0&quot;</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">sender</span><span class="p">)</span>
+</span><span data-line="2"><span class="k">for</span> <span class="n">log</span> <span class="ow">in</span> <span class="n">contract</span><span class="o">.</span><span class="n">FooEvent</span><span class="o">.</span><span class="n">from_receipt</span><span class="p">(</span><span class="n">receipt</span><span class="p">):</span>
+</span><span data-line="3">    <span class="nb">print</span><span class="p">(</span><span class="n">log</span><span class="o">.</span><span class="n">amount</span><span class="p">)</span>  <span class="c1"># Assuming &#39;amount&#39; is a property on the event.</span>
+</span></pre></div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>If you have more than one event with the same name in your contract type’s ABI, you can access the events by using the <a class="reference external" href="../methoddocs/contracts.html?highlight=contractinstance#ape.contracts.base.ContractInstance.get_event_by_signature">get_event_by_signature()</a> method:</p>
 </div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">event_type</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">get_event_by_signature</span><span class="p">(</span><span class="s2">&quot;FooEvent(uint256 bar, uint256 baz)&quot;</span><span class="p">)</span>
-<span class="n">receipt</span><span class="o">.</span><span class="n">decode_logs</span><span class="p">(</span><span class="n">event_type</span><span class="o">.</span><span class="n">abi</span><span class="p">)</span>
-</pre></div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">event_type</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">get_event_by_signature</span><span class="p">(</span><span class="s2">&quot;FooEvent(uint256 bar, uint256 baz)&quot;</span><span class="p">)</span>
+</span><span data-line="2"><span class="n">receipt</span><span class="o">.</span><span class="n">decode_logs</span><span class="p">(</span><span class="n">event_type</span><span class="o">.</span><span class="n">abi</span><span class="p">)</span>
+</span></pre></div>
 </div>
 <p>Otherwise, you will get an <code class="docutils literal notranslate"><span class="pre">AttributeError</span></code>.</p>
 </section>
 <section id="transaction-acceptance-timeout">
-<h2>Transaction Acceptance Timeout<a class="headerlink" href="#transaction-acceptance-timeout" title="Permalink to this heading"></a></h2>
+<h2>Transaction Acceptance Timeout<a class="headerlink" href="#transaction-acceptance-timeout" title="Link to this heading"></a></h2>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>For longer running scripts, you may need to increase the transaction acceptance timeout.</p>
 </div>
 <p>The default value is 2 minutes for live networks and 20 seconds for local networks.
 In your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file, add the following:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">ethereum</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">mainnet</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">transaction_acceptance_timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">600</span><span class="w">  </span><span class="c1"># 5 minutes</span>
-</pre></div>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">ethereum</span><span class="p">:</span>
+</span><span data-line="2"><span class="w">  </span><span class="nt">mainnet</span><span class="p">:</span>
+</span><span data-line="3"><span class="w">    </span><span class="nt">transaction_acceptance_timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">600</span><span class="w">  </span><span class="c1"># 5 minutes</span>
+</span></pre></div>
 </div>
 </section>
 <section id="traces">
-<h2>Traces<a class="headerlink" href="#traces" title="Permalink to this heading"></a></h2>
+<h2>Traces<a class="headerlink" href="#traces" title="Link to this heading"></a></h2>
 <p>Transaction traces are the steps in the contract the transaction took.
 Traces both power a myriad of features in Ape as well are themselves a tool for developers to use to debug transactions.
 To learn more about traces, see the <a class="reference external" href="./trace.html">traces userguide</a>.</p>
 </section>
 <section id="estimate-gas-cost">
-<h2>Estimate Gas Cost<a class="headerlink" href="#estimate-gas-cost" title="Permalink to this heading"></a></h2>
+<h2>Estimate Gas Cost<a class="headerlink" href="#estimate-gas-cost" title="Link to this heading"></a></h2>
 <p>To estimate the gas cost on a transaction or call without sending it, use the <code class="docutils literal notranslate"><span class="pre">estimate_gas_cost()</span></code> method from the contract’s transaction / call handler:
 (Assume I have a contract instance named <code class="docutils literal notranslate"><span class="pre">contract_a</span></code> that has a method named <code class="docutils literal notranslate"><span class="pre">methodToCall</span></code>)</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">txn_cost</span> <span class="o">=</span> <span class="n">contract_a</span><span class="o">.</span><span class="n">myMutableMethod</span><span class="o">.</span><span class="n">estimate_gas_cost</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;me&quot;</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">txn_cost</span><span class="p">)</span>
-
-<span class="n">view_cost</span> <span class="o">=</span> <span class="n">contract_a</span><span class="o">.</span><span class="n">myViewMethod</span><span class="o">.</span><span class="n">estimate_gas_cost</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">view_cost</span><span class="p">)</span>
-</pre></div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">txn_cost</span> <span class="o">=</span> <span class="n">contract_a</span><span class="o">.</span><span class="n">myMutableMethod</span><span class="o">.</span><span class="n">estimate_gas_cost</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;me&quot;</span><span class="p">))</span>
+</span><span data-line="2"><span class="nb">print</span><span class="p">(</span><span class="n">txn_cost</span><span class="p">)</span>
+</span><span data-line="3">
+</span><span data-line="4"><span class="n">view_cost</span> <span class="o">=</span> <span class="n">contract_a</span><span class="o">.</span><span class="n">myViewMethod</span><span class="o">.</span><span class="n">estimate_gas_cost</span><span class="p">()</span>
+</span><span data-line="5"><span class="nb">print</span><span class="p">(</span><span class="n">view_cost</span><span class="p">)</span>
+</span></pre></div>
 </div>
 </section>
 </section>
 
-
-           </div>
-          </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="config.html" class="btn btn-neutral float-left" title="Configure Ape" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="console.html" class="btn btn-neutral float-right" title="Console" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-    </div>
-
-  <hr/>
-
-  <div role="contentinfo">
-    <p>&#169; Copyright 2023, ApeWorX LTD.</p>
-  </div>
-
-  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    provided by <a href="https://readthedocs.org">Read the Docs</a>.
-   
-
-</footer>
-        </div>
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"><div class="navigation-prev">
+    <a href="trace.html">
+      <i class="i-lucide chevron-left"></i>
+      <div class="page-info">
+        <span>Previous</span><div class="title">Traces</div></div>
+    </a>
+  </div><div class="navigation-next">
+    <a href="../commands/accounts.html">
+      <div class="page-info">
+        <span>Next</span>
+        <div class="title">accounts</div>
       </div>
-    </section>
+      <i class="i-lucide chevron-right"></i>
+    </a>
+  </div></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2024, ApeWorX LTD</p>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials"></div>
+    </div>
   </div>
-  <script>
-      jQuery(function () {
-          SphinxRtdTheme.Navigation.enable(true);
-      });
-  </script> 
-
-  
-      <li><a href="https://github.com/ApeWorX/ape
-      /blob/main//docs/userguides/transactions.rst">
-      Show on GitHub</a></li>
-  
-
-</body>
+</footer>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script data-domain="docs.apeworx.io" defer="defer" src="https://plausible.io/js/script.js"></script>
+      <script src="../_static/shibuya.js?v=c5fc9e80"></script></body>
 </html>

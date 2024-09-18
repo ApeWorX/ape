@@ -1,6 +1,0 @@
-:mod:`ape.convert`
-==================
-
-.. py:module:: ape.convert
-
-

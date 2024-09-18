@@ -1,222 +1,109 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html lang="en" data-accent-color="lime" data-content_root="../">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
-
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Console &mdash; ape  documentation</title>
-      <link rel="stylesheet" href="/ape/latest/_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="/ape/latest/_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="/ape/latest/_static/custom.css" type="text/css" />
-    <link rel="shortcut icon" href="../_static/favicon.ico"/>
-    <link rel="canonical" href="/ape/userguides/console.html" />
-  <!--[if lt IE 9]>
-    <script src="../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script src="../_static/sphinx_highlight.js"></script>
-        <script data-domain="docs.apeworx.io" defer="defer" src="https://plausible.io/js/script.js"></script>
-    <script src="../_static/js/theme.js"></script>
-    <script src="../_static/custom.js"></script>
-  <script>
-      var PROJECT = "ape";
-  </script>
-    <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Contracts" href="contracts.html" />
-    <link rel="prev" title="Transactions" href="transactions.html" /> 
-</head>
-
-<body class="wy-body-for-nav"> 
-  <div class="wy-grid-for-nav">
-    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
-      <div class="wy-side-scroll">
-        <div class="wy-side-nav-search" >
-
-          
-          
-          <a href="../index.html" class="icon icon-home">
-            ape
-              <img src="../_static/logo.gif" class="logo" alt="Logo"/>
-          </a>
-
-          <div class="version">
-            <label for="version-picker" id="version-picker-label">Version:</label>
-            <select id="version-picker">
-              <option value="">Select version...</option>
-              <option value="latest">latest</option>
-              <option value="stable">stable</option>
-                <option value="v0.8.14">v0.8.14</option>
-                <option value="v0.8.13">v0.8.13</option>
-                <option value="v0.8.12">v0.8.12</option>
-                <option value="v0.8.11">v0.8.11</option>
-                <option value="v0.8.10">v0.8.10</option>
-                <option value="v0.8.9">v0.8.9</option>
-                <option value="v0.8.8">v0.8.8</option>
-                <option value="v0.8.7">v0.8.7</option>
-                <option value="v0.8.6">v0.8.6</option>
-                <option value="v0.8.5">v0.8.5</option>
-                <option value="v0.8.4">v0.8.4</option>
-                <option value="v0.8.3">v0.8.3</option>
-                <option value="v0.8.2">v0.8.2</option>
-                <option value="v0.8.1">v0.8.1</option>
-                <option value="v0.8.0">v0.8.0</option>
-                <option value="v0.7.23">v0.7.23</option>
-                <option value="v0.7.22">v0.7.22</option>
-                <option value="v0.7.21">v0.7.21</option>
-                <option value="v0.7.20">v0.7.20</option>
-                <option value="v0.7.19">v0.7.19</option>
-                <option value="v0.7.18">v0.7.18</option>
-                <option value="v0.7.17">v0.7.17</option>
-                <option value="v0.7.16">v0.7.16</option>
-                <option value="v0.7.15">v0.7.15</option>
-                <option value="v0.7.14">v0.7.14</option>
-                <option value="v0.7.12">v0.7.12</option>
-                <option value="v0.7.11">v0.7.11</option>
-                <option value="v0.7.10">v0.7.10</option>
-                <option value="v0.7.9">v0.7.9</option>
-                <option value="v0.7.8">v0.7.8</option>
-                <option value="v0.7.7">v0.7.7</option>
-                <option value="v0.7.6">v0.7.6</option>
-                <option value="v0.7.5">v0.7.5</option>
-                <option value="v0.7.4">v0.7.4</option>
-                <option value="v0.7.3">v0.7.3</option>
-                <option value="v0.7.2">v0.7.2</option>
-                <option value="v0.7.1">v0.7.1</option>
-                <option value="v0.7.0">v0.7.0</option>
-                <option value="v0.6.27">v0.6.27</option>
-                <option value="v0.6.26">v0.6.26</option>
-                <option value="v0.6.25">v0.6.25</option>
-                <option value="v0.6.24">v0.6.24</option>
-                <option value="v0.6.23">v0.6.23</option>
-                <option value="v0.6.22">v0.6.22</option>
-                <option value="v0.6.21">v0.6.21</option>
-                <option value="v0.6.20">v0.6.20</option>
-                <option value="v0.6.19">v0.6.19</option>
-                <option value="v0.6.18">v0.6.18</option>
-                <option value="v0.6.17">v0.6.17</option>
-                <option value="v0.6.16">v0.6.16</option>
-                <option value="v0.6.15">v0.6.15</option>
-                <option value="v0.6.14">v0.6.14</option>
-                <option value="v0.6.13">v0.6.13</option>
-                <option value="v0.6.12">v0.6.12</option>
-                <option value="v0.6.11">v0.6.11</option>
-                <option value="v0.6.10">v0.6.10</option>
-                <option value="v0.6.9">v0.6.9</option>
-                <option value="v0.6.8">v0.6.8</option>
-                <option value="v0.6.7">v0.6.7</option>
-                <option value="v0.6.6">v0.6.6</option>
-                <option value="v0.6.5">v0.6.5</option>
-                <option value="v0.6.4">v0.6.4</option>
-                <option value="v0.6.3">v0.6.3</option>
-                <option value="v0.6.2">v0.6.2</option>
-                <option value="v0.6.1">v0.6.1</option>
-                <option value="v0.6.0">v0.6.0</option>
-                <option value="v0.5.9">v0.5.9</option>
-                <option value="v0.5.8">v0.5.8</option>
-                <option value="v0.5.7">v0.5.7</option>
-                <option value="v0.5.6">v0.5.6</option>
-                <option value="v0.5.5">v0.5.5</option>
-                <option value="v0.5.4">v0.5.4</option>
-                <option value="v0.5.3">v0.5.3</option>
-                <option value="v0.5.2">v0.5.2</option>
-                <option value="v0.5.1">v0.5.1</option>
-                <option value="v0.5.0">v0.5.0</option>
-                <option value="v0.4.5">v0.4.5</option>
-                <option value="v0.4.4">v0.4.4</option>
-                <option value="v0.4.3">v0.4.3</option>
-                <option value="v0.4.2">v0.4.2</option>
-                <option value="v0.4.1">v0.4.1</option>
-                <option value="v0.4.0">v0.4.0</option>
-                <option value="v0.3.5">v0.3.5</option>
-                <option value="v0.3.4">v0.3.4</option>
-                <option value="v0.3.3">v0.3.3</option>
-                <option value="v0.3.2">v0.3.2</option>
-                <option value="v0.3.1">v0.3.1</option>
-                <option value="v0.3.0">v0.3.0</option>
-                <option value="v0.2.8">v0.2.8</option>
-                <option value="v0.2.7">v0.2.7</option>
-                <option value="v0.2.6">v0.2.6</option>
-                <option value="v0.2.5">v0.2.5</option>
-                <option value="v0.2.4">v0.2.4</option>
-                <option value="v0.2.3">v0.2.3</option>
-                <option value="v0.2.2">v0.2.2</option>
-                <option value="v0.2.1">v0.2.1</option>
-                <option value="v0.2.0">v0.2.0</option>
-                <option value="v0.1.6">v0.1.6</option>
-                <option value="v0.1.5">v0.1.5</option>
-                <option value="v0.1.4">v0.1.4</option>
-                <option value="v0.1.3">v0.1.3</option>
-                <option value="v0.1.1">v0.1.1</option>
-                <option value="v0.1.0">v0.1.0</option>
-            </select>
-          </div>
-<div role="search">
-  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
-    <input type="hidden" name="check_keywords" value="yes" />
-    <input type="hidden" name="area" value="default" />
-  </form>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Console - ape documentation</title><link rel="shortcut icon" href="../_static/favicon.ico"/><link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Contracts" href="contracts.html" /><link rel="prev" title="Configure Ape" href="config.html" />
+      <link rel="canonical" href="ape/userguides/console.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=397bb51e" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=36d120a7" />
+    <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    <meta property="og:type" content="website"/>
+<meta property="og:url" content="ape/userguides/console.html"/>
+<meta property="og:title" content="Console"/>
+<meta name="twitter:card" content="summary"/>
+  </head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="../index.html">
+      <img class="light-logo" src="../_static/logo_grey.svg" alt="ape" height="28" loading="lazy" />
+      <img class="dark-logo" src="../_static/logo_green.svg" alt="ape" height="28" loading="lazy" />
+      <strong>ape</strong>
+    </a>
+    <div class="sy-head-nav" id="HeadNav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials"></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="HeadNav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2 -translate-x-2"></span>
+          <span class="hamburger_3 -translate-x-1"></span>
+        </div>
+      </button>
+    </div>
+  </div>
 </div>
-        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">User Guides</span></p>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading" aria-level="3"><span class="caption-text">User Guides</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="accounts.html">Accounts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="installing_plugins.html">Plugins</a></li>
-<li class="toctree-l1"><a class="reference internal" href="projects.html">Developing Projects with Ape</a></li>
-<li class="toctree-l1"><a class="reference internal" href="dependencies.html">Dependencies</a></li>
-<li class="toctree-l1"><a class="reference internal" href="compile.html">Compile</a></li>
 <li class="toctree-l1"><a class="reference internal" href="clis.html">CLIs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="data.html">Querying Data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="networks.html">Networks</a></li>
-<li class="toctree-l1"><a class="reference internal" href="forking_networks.html">Forking Networks</a></li>
-<li class="toctree-l1"><a class="reference internal" href="developing_plugins.html">Developing Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="compile.html">Compile</a></li>
 <li class="toctree-l1"><a class="reference internal" href="config.html">Configure Ape</a></li>
-<li class="toctree-l1"><a class="reference internal" href="transactions.html">Transactions</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Console</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#ape-namespace">Ape Namespace</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#namespace-extras">Namespace Extras</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#init-function">Init Function</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#global-extras">Global Extras</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#configure">Configure</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#magic-commands">Magic Commands</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#ape">%ape</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#bal">%bal</a></li>
-</ul>
-</li>
-</ul>
-</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Console</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contracts.html">Contracts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="reverts.html">Reverts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="proxy.html">Proxy Contracts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="testing.html">Testing</a></li>
-<li class="toctree-l1"><a class="reference internal" href="scripts.html">Scripting</a></li>
-<li class="toctree-l1"><a class="reference internal" href="publishing.html">Publishing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="data.html">Querying Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="developing_plugins.html">Developing Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="forking_networks.html">Forking Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installing_plugins.html">Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="logging.html">Logging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="networks.html">Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="projects.html">Developing Projects with Ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="proxy.html">Proxy Contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="publishing.html">Publishing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reverts.html">Reverts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scripts.html">Scripting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="testing.html">Testing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="trace.html">Traces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transactions.html">Transactions</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">CLI Reference</span></p>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">CLI Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../commands/accounts.html">accounts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../commands/compile.html">compile</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../commands/pm.html">pm</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../commands/console.html">console</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../commands/init.html">init</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../commands/networks.html">networks</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../commands/plugins.html">plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/pm.html">pm</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../commands/run.html">run</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../commands/test.html">test</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Core Python Reference</span></p>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Python Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape.html">ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_accounts.html">ape-accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_compile.html">ape-compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_ethereum.html">ape-ethereum</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_ethereum.html#module-ape_ethereum.multicall">ape-ethereum.multicall</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_node.html">ape-node</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_pm.html">ape-pm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_test.html">ape-test</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/api.html">ape.api</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/cli.html">ape.cli</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/contracts.html">ape.contracts</a></li>
@@ -226,49 +113,65 @@
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/types.html">ape.types</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/utils.html">ape.utils</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Plugin Python Reference</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_accounts.html">ape-accounts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_compile.html">ape-compile</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_ethereum.html">ape-ethereum</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_ethereum.html#module-ape_ethereum.multicall">ape-ethereum.multicall</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_node.html">ape-node</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_pm.html">ape-pm</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_test.html">ape-test</a></li>
-</ul>
 
         </div>
-      </div>
-    </nav>
-
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../index.html">ape</a>
-      </nav>
-
-      <div class="wy-nav-content">
-        <div class="rst-content">
-          <div role="navigation" aria-label="Page navigation">
-  <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Console</li>
-      <li class="wy-breadcrumbs-aside">
-              <a href="https://github.com/ApeWorX/ape/blob/main/docs/userguides/console.md" class="fa fa-github"> Edit on GitHub</a>
-      </li>
-  </ul>
-  <hr/>
-</div>
-          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
-           <div itemprop="articleBody">
-             
-  <section id="console">
-<h1>Console<a class="headerlink" href="#console" title="Permalink to this heading"></a></h1>
+      </div></div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#ape-namespace">Ape Namespace</a></li>
+<li><a class="reference internal" href="#namespace-extras">Namespace Extras</a><ul>
+<li><a class="reference internal" href="#init-function">Init Function</a></li>
+<li><a class="reference internal" href="#global-extras">Global Extras</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#configure">Configure</a></li>
+<li><a class="reference internal" href="#magic-commands">Magic Commands</a><ul>
+<li><a class="reference internal" href="#ape">%ape</a></li>
+<li><a class="reference internal" href="#bal">%bal</a></li>
+</ul>
+</li>
+</ul>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6"><div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../index.html"><span itemprop="name">ape</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">Console</strong>
+        <meta itemprop="position" content="2" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+        <article class="yue" role="main">
+          <section id="console">
+<h1>Console<a class="headerlink" href="#console" title="Link to this heading"></a></h1>
 <p>Ape provides an <a class="reference external" href="https://ipython.readthedocs.io/">IPython</a> interactive console with useful pre-defined locals to interact with your project.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>console<span class="w"> </span>--network<span class="w"> </span>ethereum:mainnet
-
-In<span class="w"> </span><span class="o">[</span><span class="m">1</span><span class="o">]</span>:<span class="w"> </span>chain.blocks.head.timestamp
-Out<span class="o">[</span><span class="m">1</span><span class="o">]</span>:<span class="w"> </span><span class="m">1647323479</span>
-</pre></div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>console<span class="w"> </span>--network<span class="w"> </span>ethereum:mainnet
+</span><span data-line="2">
+</span><span data-line="3">In<span class="w"> </span><span class="o">[</span><span class="m">1</span><span class="o">]</span>:<span class="w"> </span>chain.blocks.head.timestamp
+</span><span data-line="4">Out<span class="o">[</span><span class="m">1</span><span class="o">]</span>:<span class="w"> </span><span class="m">1647323479</span>
+</span></pre></div>
 </div>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
@@ -276,8 +179,9 @@ Out<span class="o">[</span><span class="m">1</span><span class="o">]</span>:<spa
 If you need to make changes to your contract, you must re-start your console session for the compiler to handle the changes.</p>
 </div>
 <section id="ape-namespace">
-<h2>Ape Namespace<a class="headerlink" href="#ape-namespace" title="Permalink to this heading"></a></h2>
+<h2>Ape Namespace<a class="headerlink" href="#ape-namespace" title="Link to this heading"></a></h2>
 <p>Your console comes with pre-initialized root ape objects in your namespace.</p>
+<div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head text-center"><p>Name</p></th>
@@ -308,15 +212,16 @@ If you need to make changes to your contract, you must re-start your console ses
 </tr>
 </tbody>
 </table>
+</div>
 <p>You can access them as if they are already initialized:</p>
 <p>First, launch the console:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ape<span class="w"> </span>console
-</pre></div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>console
+</span></pre></div>
 </div>
 <p>Then, type the name of the item and you will see its Python representation:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="n">networks</span>
-<span class="n">Out</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="o">&lt;</span><span class="n">NetworkManager</span> <span class="n">active_provider</span><span class="o">=&lt;</span><span class="n">test</span> <span class="n">chain_id</span><span class="o">=</span><span class="mi">61</span><span class="o">&gt;&gt;</span>
-</pre></div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="n">networks</span>
+</span><span data-line="2"><span class="n">Out</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="o">&lt;</span><span class="n">NetworkManager</span> <span class="n">active_provider</span><span class="o">=&lt;</span><span class="n">test</span> <span class="n">chain_id</span><span class="o">=</span><span class="mi">61</span><span class="o">&gt;&gt;</span>
+</span></pre></div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -325,144 +230,154 @@ If you need to make changes to your contract, you must re-start your console ses
 <p>Follow <a class="reference external" href="./networks.html">this guide</a> for more information on networks in Ape.</p>
 </section>
 <section id="namespace-extras">
-<h2>Namespace Extras<a class="headerlink" href="#namespace-extras" title="Permalink to this heading"></a></h2>
+<h2>Namespace Extras<a class="headerlink" href="#namespace-extras" title="Link to this heading"></a></h2>
 <p>You can also create scripts to be included in the console namespace by adding a file (<code class="docutils literal notranslate"><span class="pre">ape_console_extras.py</span></code>) to your root project directory.  All non-internal symbols from this file will be included in the console namespace.  Internal symbols are prefixed by an underscore (<code class="docutils literal notranslate"><span class="pre">_</span></code>).</p>
 <p>An example file might look something like this:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">networks</span>
-<span class="kn">from</span> <span class="nn">eth_utils</span> <span class="kn">import</span> <span class="n">encode_hex</span><span class="p">,</span> <span class="n">decode_hex</span>
-
-<span class="k">def</span> <span class="nf">latest</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
-    <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">networks</span><span class="o">.</span><span class="n">active_provider</span><span class="o">.</span><span class="n">get_block</span><span class="p">(</span><span class="s2">&quot;latest&quot;</span><span class="p">),</span> <span class="n">key</span><span class="p">)</span>
-</pre></div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">networks</span>
+</span><span data-line="2"><span class="kn">from</span> <span class="nn">eth_utils</span> <span class="kn">import</span> <span class="n">encode_hex</span><span class="p">,</span> <span class="n">decode_hex</span>
+</span><span data-line="3">
+</span><span data-line="4"><span class="k">def</span> <span class="nf">latest</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
+</span><span data-line="5">    <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">networks</span><span class="o">.</span><span class="n">active_provider</span><span class="o">.</span><span class="n">get_block</span><span class="p">(</span><span class="s2">&quot;latest&quot;</span><span class="p">),</span> <span class="n">key</span><span class="p">)</span>
+</span></pre></div>
 </div>
 <p>Then both imported util functions and <code class="docutils literal notranslate"><span class="pre">latest()</span></code> will be available when you launch the console.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="n">latest</span><span class="p">(</span><span class="s1">&#39;number&#39;</span><span class="p">)</span>
-<span class="n">Out</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="mi">14388241</span>
-
-<span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="n">encode_hex</span><span class="p">(</span><span class="n">latest</span><span class="p">(</span><span class="s1">&#39;hash&#39;</span><span class="p">))</span>
-<span class="n">Out</span><span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="s1">&#39;0x68f768988e9bd4be971d527f72483f321975fa52aff9692b6d0e0af71fb77aaf&#39;</span>
-</pre></div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="n">latest</span><span class="p">(</span><span class="s1">&#39;number&#39;</span><span class="p">)</span>
+</span><span data-line="2"><span class="n">Out</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="mi">14388241</span>
+</span><span data-line="3">
+</span><span data-line="4"><span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="n">encode_hex</span><span class="p">(</span><span class="n">latest</span><span class="p">(</span><span class="s1">&#39;hash&#39;</span><span class="p">))</span>
+</span><span data-line="5"><span class="n">Out</span><span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="s1">&#39;0x68f768988e9bd4be971d527f72483f321975fa52aff9692b6d0e0af71fb77aaf&#39;</span>
+</span></pre></div>
 </div>
 <section id="init-function">
-<h3>Init Function<a class="headerlink" href="#init-function" title="Permalink to this heading"></a></h3>
+<h3>Init Function<a class="headerlink" href="#init-function" title="Link to this heading"></a></h3>
 <p>If you include a function named <code class="docutils literal notranslate"><span class="pre">ape_init_extras</span></code>, it will be executed with the symbols from the existing namespace being provided as keyword arguments.  This allows you to alter the scripts namespace using locals already included in the Ape namespace.  If you return a <code class="docutils literal notranslate"><span class="pre">dict</span></code>, these values will be added to the console namespace.  For example, you could set up an initialized Web3.py object by using one from an existing Ape Provider.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">ape_init_extras</span><span class="p">(</span><span class="n">chain</span><span class="p">):</span>
-    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;web3&quot;</span><span class="p">:</span> <span class="n">chain</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">web3</span><span class="p">}</span>
-</pre></div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">def</span> <span class="nf">ape_init_extras</span><span class="p">(</span><span class="n">chain</span><span class="p">):</span>
+</span><span data-line="2">    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;web3&quot;</span><span class="p">:</span> <span class="n">chain</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">web3</span><span class="p">}</span>
+</span></pre></div>
 </div>
 <p>Then <code class="docutils literal notranslate"><span class="pre">web3</span></code> will be available to use immediately.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="n">web3</span><span class="o">.</span><span class="n">eth</span><span class="o">.</span><span class="n">chain_id</span>
-<span class="n">Out</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="mi">1</span>
-</pre></div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="n">web3</span><span class="o">.</span><span class="n">eth</span><span class="o">.</span><span class="n">chain_id</span>
+</span><span data-line="2"><span class="n">Out</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="mi">1</span>
+</span></pre></div>
 </div>
 </section>
 <section id="global-extras">
-<h3>Global Extras<a class="headerlink" href="#global-extras" title="Permalink to this heading"></a></h3>
+<h3>Global Extras<a class="headerlink" href="#global-extras" title="Link to this heading"></a></h3>
 <p>You can also add an <code class="docutils literal notranslate"><span class="pre">ape_console_extras.py</span></code> file to the global ape data directory (<code class="docutils literal notranslate"><span class="pre">$HOME/.ape/ape_console_extras.py</span></code>) and it will execute regardless of what project context you are in.  This may be useful for variables and utility functions you use across all of your projects.</p>
 </section>
 </section>
 <section id="configure">
-<h2>Configure<a class="headerlink" href="#configure" title="Permalink to this heading"></a></h2>
+<h2>Configure<a class="headerlink" href="#configure" title="Link to this heading"></a></h2>
 <p>To automatically use other IPython extensions, add them to your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">console</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">plugins</span><span class="p">:</span>
-<span class="w">    </span><span class="c1"># A plugin that lets you modify Python modules without having close/reopen your console.</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">autoreload</span>
-</pre></div>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">console</span><span class="p">:</span>
+</span><span data-line="2"><span class="w">  </span><span class="nt">plugins</span><span class="p">:</span>
+</span><span data-line="3"><span class="w">    </span><span class="c1"># A plugin that lets you modify Python modules without having close/reopen your console.</span>
+</span><span data-line="4"><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">autoreload</span>
+</span></pre></div>
 </div>
 </section>
 <section id="magic-commands">
-<h2>Magic Commands<a class="headerlink" href="#magic-commands" title="Permalink to this heading"></a></h2>
+<h2>Magic Commands<a class="headerlink" href="#magic-commands" title="Link to this heading"></a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">ape-console</span></code> plugin ships with custom <a class="reference external" href="https://ipython.readthedocs.io/en/stable/interactive/magics.html#line-magics">magics</a> that are available when running the <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">console</span></code> command or loading the <code class="docutils literal notranslate"><span class="pre">ape_console.plugin</span></code> IPython extension manually.
 When starting an embedded console (from <code class="docutils literal notranslate"><span class="pre">-I</span></code> in <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">run</span></code> or <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">test</span></code>), you will have to load the extension manually.
 To do this, run the following from <em>any</em> <code class="docutils literal notranslate"><span class="pre">IPython</span></code> environment:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>In<span class="w"> </span><span class="o">[</span><span class="m">1</span><span class="o">]</span>:<span class="w"> </span>%load_ext<span class="w"> </span>ape_console.plugin
-</pre></div>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">In<span class="w"> </span><span class="o">[</span><span class="m">1</span><span class="o">]</span>:<span class="w"> </span>%load_ext<span class="w"> </span>ape_console.plugin
+</span></pre></div>
 </div>
 <p>Or add the <code class="docutils literal notranslate"><span class="pre">ape_console.plugin</span></code> extension to your <code class="docutils literal notranslate"><span class="pre">IPython</span></code> config.</p>
 <p>Otherwise, when launching <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">console</span></code>, the magics are automatically available.</p>
 <section id="ape">
-<h3>%ape<a class="headerlink" href="#ape" title="Permalink to this heading"></a></h3>
+<h3>%ape<a class="headerlink" href="#ape" title="Link to this heading"></a></h3>
 <p>The <code class="docutils literal notranslate"><span class="pre">%ape</span></code> magic invokes the CLI in your <code class="docutils literal notranslate"><span class="pre">ape-console</span></code> session:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>In<span class="w"> </span><span class="o">[</span><span class="m">1</span><span class="o">]</span>:<span class="w"> </span>%ape
-Usage:<span class="w"> </span>cli<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
-
-Options:
-<span class="w">  </span>-v,<span class="w"> </span>--verbosity<span class="w"> </span>LVL<span class="w">  </span>One<span class="w"> </span>of<span class="w"> </span>ERROR,<span class="w"> </span>WARNING,<span class="w"> </span>SUCCESS,<span class="w"> </span>INFO,<span class="w"> </span>or<span class="w"> </span>DEBUG
-<span class="w">  </span>--version<span class="w">            </span>Show<span class="w"> </span>the<span class="w"> </span>version<span class="w"> </span>and<span class="w"> </span>exit.
-<span class="w">  </span>--config<span class="w">             </span>Show<span class="w"> </span>configuration<span class="w"> </span>options<span class="w"> </span><span class="o">(</span>using<span class="w"> </span><span class="sb">`</span>ape-config.yaml<span class="sb">`</span><span class="o">)</span>
-<span class="w">  </span>-h,<span class="w"> </span>--help<span class="w">           </span>Show<span class="w"> </span>this<span class="w"> </span>message<span class="w"> </span>and<span class="w"> </span>exit.
-
-Commands:
-<span class="w">  </span>accounts<span class="w">  </span>Manage<span class="w"> </span><span class="nb">local</span><span class="w"> </span>accounts
-<span class="w">  </span>cache<span class="w">     </span>Query<span class="w"> </span>from<span class="w"> </span>caching<span class="w"> </span>database
-<span class="w">  </span>compile<span class="w">   </span>Compile<span class="w"> </span><span class="k">select</span><span class="w"> </span>contract<span class="w"> </span><span class="nb">source</span><span class="w"> </span>files
-<span class="w">  </span>console<span class="w">   </span>Load<span class="w"> </span>the<span class="w"> </span>console
-<span class="w">  </span>init<span class="w">      </span>Initialize<span class="w"> </span>an<span class="w"> </span>ape<span class="w"> </span>project
-<span class="w">  </span>networks<span class="w">  </span>Manage<span class="w"> </span>networks
-<span class="w">  </span>plugins<span class="w">   </span>Manage<span class="w"> </span>ape<span class="w"> </span>plugins
-<span class="w">  </span>run<span class="w">       </span>Run<span class="w"> </span>scripts<span class="w"> </span>from<span class="w"> </span>the<span class="w"> </span><span class="sb">`</span>scripts/<span class="sb">`</span><span class="w"> </span>folder
-<span class="w">  </span><span class="nb">test</span><span class="w">      </span>Launches<span class="w"> </span>pytest<span class="w"> </span>and<span class="w"> </span>runs<span class="w"> </span>the<span class="w"> </span>tests<span class="w"> </span><span class="k">for</span><span class="w"> </span>a<span class="w"> </span>project
-
-Out<span class="o">[</span><span class="m">1</span><span class="o">]</span>:<span class="w"> </span>&lt;Result<span class="w"> </span>okay&gt;
-</pre></div>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">In<span class="w"> </span><span class="o">[</span><span class="m">1</span><span class="o">]</span>:<span class="w"> </span>%ape
+</span><span data-line="2">Usage:<span class="w"> </span>cli<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
+</span><span data-line="3">
+</span><span data-line="4">Options:
+</span><span data-line="5"><span class="w">  </span>-v,<span class="w"> </span>--verbosity<span class="w"> </span>LVL<span class="w">  </span>One<span class="w"> </span>of<span class="w"> </span>ERROR,<span class="w"> </span>WARNING,<span class="w"> </span>SUCCESS,<span class="w"> </span>INFO,<span class="w"> </span>or<span class="w"> </span>DEBUG
+</span><span data-line="6"><span class="w">  </span>--version<span class="w">            </span>Show<span class="w"> </span>the<span class="w"> </span>version<span class="w"> </span>and<span class="w"> </span>exit.
+</span><span data-line="7"><span class="w">  </span>--config<span class="w">             </span>Show<span class="w"> </span>configuration<span class="w"> </span>options<span class="w"> </span><span class="o">(</span>using<span class="w"> </span><span class="sb">`</span>ape-config.yaml<span class="sb">`</span><span class="o">)</span>
+</span><span data-line="8"><span class="w">  </span>-h,<span class="w"> </span>--help<span class="w">           </span>Show<span class="w"> </span>this<span class="w"> </span>message<span class="w"> </span>and<span class="w"> </span>exit.
+</span><span data-line="9">
+</span><span data-line="10">Commands:
+</span><span data-line="11"><span class="w">  </span>accounts<span class="w">  </span>Manage<span class="w"> </span><span class="nb">local</span><span class="w"> </span>accounts
+</span><span data-line="12"><span class="w">  </span>cache<span class="w">     </span>Query<span class="w"> </span>from<span class="w"> </span>caching<span class="w"> </span>database
+</span><span data-line="13"><span class="w">  </span>compile<span class="w">   </span>Compile<span class="w"> </span><span class="k">select</span><span class="w"> </span>contract<span class="w"> </span><span class="nb">source</span><span class="w"> </span>files
+</span><span data-line="14"><span class="w">  </span>console<span class="w">   </span>Load<span class="w"> </span>the<span class="w"> </span>console
+</span><span data-line="15"><span class="w">  </span>init<span class="w">      </span>Initialize<span class="w"> </span>an<span class="w"> </span>ape<span class="w"> </span>project
+</span><span data-line="16"><span class="w">  </span>networks<span class="w">  </span>Manage<span class="w"> </span>networks
+</span><span data-line="17"><span class="w">  </span>plugins<span class="w">   </span>Manage<span class="w"> </span>ape<span class="w"> </span>plugins
+</span><span data-line="18"><span class="w">  </span>run<span class="w">       </span>Run<span class="w"> </span>scripts<span class="w"> </span>from<span class="w"> </span>the<span class="w"> </span><span class="sb">`</span>scripts/<span class="sb">`</span><span class="w"> </span>folder
+</span><span data-line="19"><span class="w">  </span><span class="nb">test</span><span class="w">      </span>Launches<span class="w"> </span>pytest<span class="w"> </span>and<span class="w"> </span>runs<span class="w"> </span>the<span class="w"> </span>tests<span class="w"> </span><span class="k">for</span><span class="w"> </span>a<span class="w"> </span>project
+</span><span data-line="20">
+</span><span data-line="21">Out<span class="o">[</span><span class="m">1</span><span class="o">]</span>:<span class="w"> </span>&lt;Result<span class="w"> </span>okay&gt;
+</span></pre></div>
 </div>
 <p>Run any CLI command this way without exiting your session.</p>
 </section>
 <section id="bal">
-<h3>%bal<a class="headerlink" href="#bal" title="Permalink to this heading"></a></h3>
+<h3>%bal<a class="headerlink" href="#bal" title="Link to this heading"></a></h3>
 <p>The <code class="docutils literal notranslate"><span class="pre">%bal</span></code> magic outputs a human-readable balance on an account, contract, address, or account alias.</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>In<span class="w"> </span><span class="o">[</span><span class="m">1</span><span class="o">]</span>:<span class="w"> </span><span class="nv">account</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>accounts.load<span class="o">(</span><span class="s2">&quot;metamask0&quot;</span><span class="o">)</span>
-
-In<span class="w"> </span><span class="o">[</span><span class="m">2</span><span class="o">]</span>:<span class="w"> </span>%bal<span class="w"> </span>account
-Out<span class="o">[</span><span class="m">2</span><span class="o">]</span>:<span class="w"> </span><span class="s1">&#39;0.00040634 ETH&#39;</span>
-
-In<span class="w"> </span><span class="o">[</span><span class="m">3</span><span class="o">]</span>:<span class="w"> </span>%bal<span class="w"> </span>metamask0
-Out<span class="o">[</span><span class="m">3</span><span class="o">]</span>:<span class="w"> </span><span class="s1">&#39;0.00040634 ETH&#39;</span>
-
-In<span class="w"> </span><span class="o">[</span><span class="m">4</span><span class="o">]</span>:<span class="w"> </span>%bal<span class="w"> </span>0xE3747e6341E0d3430e6Ea9e2346cdDCc2F8a4b5b
-Out<span class="o">[</span><span class="m">4</span><span class="o">]</span>:<span class="w"> </span><span class="s1">&#39;0.00040634 ETH&#39;</span>
-</pre></div>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">In<span class="w"> </span><span class="o">[</span><span class="m">1</span><span class="o">]</span>:<span class="w"> </span><span class="nv">account</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>accounts.load<span class="o">(</span><span class="s2">&quot;metamask0&quot;</span><span class="o">)</span>
+</span><span data-line="2">
+</span><span data-line="3">In<span class="w"> </span><span class="o">[</span><span class="m">2</span><span class="o">]</span>:<span class="w"> </span>%bal<span class="w"> </span>account
+</span><span data-line="4">Out<span class="o">[</span><span class="m">2</span><span class="o">]</span>:<span class="w"> </span><span class="s1">&#39;0.00040634 ETH&#39;</span>
+</span><span data-line="5">
+</span><span data-line="6">In<span class="w"> </span><span class="o">[</span><span class="m">3</span><span class="o">]</span>:<span class="w"> </span>%bal<span class="w"> </span>metamask0
+</span><span data-line="7">Out<span class="o">[</span><span class="m">3</span><span class="o">]</span>:<span class="w"> </span><span class="s1">&#39;0.00040634 ETH&#39;</span>
+</span><span data-line="8">
+</span><span data-line="9">In<span class="w"> </span><span class="o">[</span><span class="m">4</span><span class="o">]</span>:<span class="w"> </span>%bal<span class="w"> </span>0xE3747e6341E0d3430e6Ea9e2346cdDCc2F8a4b5b
+</span><span data-line="10">Out<span class="o">[</span><span class="m">4</span><span class="o">]</span>:<span class="w"> </span><span class="s1">&#39;0.00040634 ETH&#39;</span>
+</span></pre></div>
 </div>
 </section>
 </section>
 </section>
 
-
-           </div>
-          </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="transactions.html" class="btn btn-neutral float-left" title="Transactions" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="contracts.html" class="btn btn-neutral float-right" title="Contracts" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-    </div>
-
-  <hr/>
-
-  <div role="contentinfo">
-    <p>&#169; Copyright 2023, ApeWorX LTD.</p>
-  </div>
-
-  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    provided by <a href="https://readthedocs.org">Read the Docs</a>.
-   
-
-</footer>
-        </div>
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"><div class="navigation-prev">
+    <a href="config.html">
+      <i class="i-lucide chevron-left"></i>
+      <div class="page-info">
+        <span>Previous</span><div class="title">Configure Ape</div></div>
+    </a>
+  </div><div class="navigation-next">
+    <a href="contracts.html">
+      <div class="page-info">
+        <span>Next</span>
+        <div class="title">Contracts</div>
       </div>
-    </section>
+      <i class="i-lucide chevron-right"></i>
+    </a>
+  </div></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2024, ApeWorX LTD</p>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials"></div>
+    </div>
   </div>
-  <script>
-      jQuery(function () {
-          SphinxRtdTheme.Navigation.enable(true);
-      });
-  </script> 
-
-  
-      <li><a href="https://github.com/ApeWorX/ape
-      /blob/main//docs/userguides/console.rst">
-      Show on GitHub</a></li>
-  
-
-</body>
+</footer>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script data-domain="docs.apeworx.io" defer="defer" src="https://plausible.io/js/script.js"></script>
+      <script src="../_static/shibuya.js?v=c5fc9e80"></script></body>
 </html>
