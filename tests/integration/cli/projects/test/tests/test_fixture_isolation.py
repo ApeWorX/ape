@@ -156,3 +156,17 @@ def test_parametrized_test(foo):
     (it was the case at one point!)
     """
     assert isinstance(foo, int)
+
+
+def test_use_isolate_in_test(chain, parametrized_transaction):
+    """
+    Show the isolation we control doesn't affect
+    the isolation fixtures.
+    """
+    _ = parametrized_transaction  # Using this for complexity.
+    start_block = chain.blocks.height
+    with chain.isolate():
+        chain.mine()
+        assert chain.blocks.height == start_block + 1
+
+    assert chain.blocks.height == start_block
