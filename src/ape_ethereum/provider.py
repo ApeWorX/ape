@@ -640,9 +640,8 @@ class Web3Provider(ProviderAPI, ABC):
                 self.web3.eth.wait_for_transaction_receipt(hex_hash, timeout=timeout)
             )
         except TimeExhausted as err:
-            # We don't auto-wait for acceptance or confirmations for private transactions.
-            # TODO: Update comment with instructions for how to manually wait
-            #   once the feature is ready in core Ape.
+            # Since private transactions can take longer,
+            #  return a partial receipt instead of throwing a TimeExhausted error.
             if private:
                 # Return with a partial receipt
                 data = {
