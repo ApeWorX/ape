@@ -220,6 +220,18 @@ def test_test_isolation_disabled(setup_pytester, integ_project, pytester, eth_te
     assert "F _function_isolation" not in "\n".join(result.outlines)
 
 
+@skip_projects_except("test")
+def test_verbosity(runner, ape_cli):
+    """
+    Tests again an issue where `ape test -v debug` would fail because of
+    an invalid type check from click; only appeared in `ape test` command
+    for some reason.
+    """
+    # NOTE: Only using `--fixtures` flag to avoid running tests (just prints fixtures).
+    result = runner.invoke(ape_cli, ("test", "--verbosity", "DEBUG", "--fixtures"))
+    assert result.exit_code == 0, result.output
+
+
 @skip_projects_except("test", "with-contracts")
 def test_fixture_docs(setup_pytester, integ_project, pytester, eth_tester_provider):
     _ = eth_tester_provider  # Ensure using EthTester for this test.
