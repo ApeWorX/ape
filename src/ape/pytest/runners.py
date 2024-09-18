@@ -361,9 +361,15 @@ class PytestApeRunner(ManagerAccessMixin):
             # and need to trigger the invalidation logic above.
             snapshot.append_fixtures(new_fixtures)
 
+        # Separate the test-parameters from the actual fixtures.
+        # Test parameters must go at the end of the fixture-names
+        # and MUST be included! Else, pytest will crash.
+        fixtures = fixture_by_scope.fixturenames
+        test_params = [n for n in item.fixturenames if n not in fixtures]
+
         # Finally, setting the fixturenames in the order they should be used.
         # Pytest runs the fixtures in this order.
-        item.fixturenames = fixture_by_scope.fixturenames
+        item.fixturenames = [*fixture_by_scope.fixturenames, *test_params]
 
     def pytest_sessionstart(self):
         """
