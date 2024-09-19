@@ -134,7 +134,6 @@ def test_get_receipt_ignores_timeout_when_private(
     receipt_from_invoke = vyper_contract_instance.setNumber(888, sender=owner)
 
     real_web3 = eth_tester_provider._web3
-    # mock_web3.eth = real_web3.eth
 
     mock_web3.eth.wait_for_transaction_receipt.side_effect = TimeExhausted
     eth_tester_provider._web3 = mock_web3
