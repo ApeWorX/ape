@@ -123,6 +123,7 @@ data-aria-dark="Switch to auto color mode">
       <i class="i-lucide close"></i>
     </button>
     <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#base-path">Base Path</a></li>
 <li><a class="reference internal" href="#contracts-folder">Contracts Folder</a></li>
 <li><a class="reference internal" href="#default-ecosystem">Default Ecosystem</a></li>
 <li><a class="reference internal" href="#dependencies">Dependencies</a></li>
@@ -186,6 +187,23 @@ Simply include environment variables (with the <code class="docutils literal not
 </span></pre></div>
 </div>
 <p>This helps keep your secrets out of Ape!</p>
+<section id="base-path">
+<h2>Base Path<a class="headerlink" href="#base-path" title="Link to this heading"></a></h2>
+<p>Change the base path if it is different than your project root.
+For example, imagine a project structure like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1">project
+</span><span data-line="2">└── src/
+</span><span data-line="3">    └── contracts/
+</span><span data-line="4">        └── MyContract.sol
+</span></pre></div>
+</div>
+<p>In this case, you want to configure Ape like:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">base_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">src</span>
+</span></pre></div>
+</div>
+<p>This way, <code class="docutils literal notranslate"><span class="pre">MyContract.vy</span></code>’s source ID will be <code class="docutils literal notranslate"><span class="pre">&quot;contracts/Factory.vy&quot;</span></code> and not <code class="docutils literal notranslate"><span class="pre">&quot;src/contracts/Factory.vy&quot;</span></code>.
+Some dependencies, such as python-based ones like <code class="docutils literal notranslate"><span class="pre">snekmate</span></code>, use this structure.</p>
+</section>
 <section id="contracts-folder">
 <h2>Contracts Folder<a class="headerlink" href="#contracts-folder" title="Link to this heading"></a></h2>
 <p>Specify a different path to your <code class="docutils literal notranslate"><span class="pre">contracts/</span></code> directory.
