@@ -647,6 +647,8 @@ class Web3Provider(ProviderAPI, ABC):
                 data = {
                     "block_number": -1,
                     "required_confirmations": required_confirmations,
+                    "txn_hash": txn_hash,
+                    "status": TransactionStatusEnum.NO_ERROR,
                     **txn,
                 }
                 receipt = self._create_receipt(**data)
