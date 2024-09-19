@@ -80,6 +80,7 @@ def _create_verbosity_kwargs(
         if cli_logger._did_parse_sys_argv:
             cli_logger.set_level(value)
         else:
+            # Avoid callback without fully parsing sys argv first.
             cli_logger._load_from_sys_argv(default=value)
 
     level_names = [lvl.name for lvl in LogLevel]
