@@ -1,8 +1,8 @@
-from collections.abc import Iterable, Iterator
+from collections.abc import Iterable, Iterator, Mapping
 from dataclasses import dataclass, field
 from fnmatch import fnmatch
-from functools import cached_property
-from typing import Optional
+from functools import cached_property, singledispatchmethod
+from typing import Optional, ClassVar
 
 import pytest
 from eth_utils import to_hex
@@ -19,6 +19,252 @@ from ape.pytest.utils import Scope
 from ape.types import SnapshotID
 from ape.utils.basemodel import ManagerAccessMixin
 from ape.utils.rpc import allow_disconnected
+
+
+class FixtureManager:
+    _builtin_fixtures: ClassVar[list] = []
+    _nodeid_to_fixture_map: dict[str, "FixtureMap"] = {}
+
+    def _get_builtin_fixtures(self, item) -> list[str]:
+        if self._builtin_fixtures:
+            return self._builtin_fixtures
+
+        self._builtin_fixtures = [
+            fixture_name
+            for fixture_name, defs in item.session._fixturemanager._arg2fixturedefs.items()
+            if any("pytest" in fixture.func.__module__ for fixture in defs)
+        ]
+        return self._builtin_fixtures
+
+    def get_fixtures(self, item):
+        if item.nodeid in self._nodeid_to_fixture_map:
+            return self._nodeid_to_fixture_map[item.nodeid]
+
+        fixture_map = FixtureMap.from_test_item(item)
+        self._nodeid_to_fixture_map[item.nodeid] = item
+        return fixture_map
+
+    def is_last_fixture_iteration(self, item) -> bool:
+        """
+        ``True`` when is the last from all the parametrized fixtures.
+        """
+        fixtures = self.get_fixtures(item)
+        parametrized_fixtures = fixtures.parametrized
+        if not parametrized_fixtures:
+            # When not using parametrized fixtures, it's always the last.
+            return True
+
+        return all(_get_last_fixture_iteration())
+        for name, info_ls in parametrized_fixtures.items():
+            for info in info_ls:
+
+
+            #
+            # """
+            # for name, info_ls in self.parametrized.items():
+            #     for info in info_ls:
+            #         if (
+            #                 info.cached_result is None
+            #                 or len(info.cached_result) < 2
+            #                 or info.cached_result[1] != info.params[-1]
+            #         ):
+            #             return False
+            #
+            # # All parametrized fixtures used are on their last iteration for this item.
+            # return True
+
+
+def _is_last_iteration(fixture_info) -> bool:
+    """
+    Returns True when is the last iteration of this fixture.
+    """
+    return _get_previous_iteration(fixture_info) == len(fixture_info.params)
+
+
+def _get_previous_iteration(fixture_info) -> int:
+    """
+    The last iteration of the fixture. Assume we know it's a parametrized
+    fixture.
+    """
+    cached_result = fixture_info.cached_result
+    if cached_result is None:
+        return -1  # Hasn't happened yet.
+
+    return cached_result[1]
+
+
+class FixtureMap(dict[Scope, list[str]]):
+    def __init__(self, item):
+        self._item = item
+        self._parametrized_names: Optional[list[str]] = None
+        super().__init__(
+            {
+                Scope.SESSION: [],
+                Scope.PACKAGE: [],
+                Scope.MODULE: [],
+                Scope.CLASS: [],
+                Scope.FUNCTION: [],
+            }
+        )
+
+    @classmethod
+    def from_test_item(cls, item) -> "FixtureMap":
+        obj = cls(item)
+        for name, info_ls in obj._arg2fixturedefs.items():
+            if not info_ls or name not in item.fixturenames:
+                continue
+
+            for info in info_ls:
+                obj[info.scope].append(name)
+
+        return obj
+
+    @property
+    def names(self) -> list[str]:
+        """
+        Outputs in correct order for item.fixturenames.
+        Also, injects isolation fixtures if needed.
+        """
+        result = []
+        for scope, ls in self.items():
+            # NOTE: For function scoped, we always add the isolation fixture.
+            if not ls and scope is not Scope.FUNCTION:
+                continue
+
+            result.append(scope.isolation_fixturename)
+            result.extend(ls)
+
+        return result
+
+    @property
+    def parameters(self) -> list[str]:
+        """
+        Test-parameters (not fixtures!)
+        """
+        return [n for n in self._item.fixturenames if n not in self._arg2fixturedefs]
+
+    @property
+    def num_fixture_iterations(self) -> int:
+        numbers = []
+        for ls in self.parametrized.values():
+            for itm in ls:
+                numbers.append(len(itm.params))
+
+        if not numbers:
+            return 1
+
+        result = numbers[0]
+        for num in numbers[1:]:
+            result *= num
+
+        return result
+
+    @property
+    def parametrized(self) -> dict[str, list]:
+        if self._parametrized_names is not None:
+            # We have already done this.
+            return {
+                n: ls for n, ls in self._arg2fixturedefs.items() if n in self._parametrized_names
+            }
+
+        # Calculating for first time.
+        self._parametrized_names = []
+        result: dict[str, list] = {}
+        for name, info_ls in self._arg2fixturedefs.items():
+            if name not in self._item.fixturenames or not any(info.params for info in info_ls):
+                continue
+
+            self._parametrized_names.append(name)
+            result[name] = info_ls
+
+        return result
+
+    @property
+    def _arg2fixturedefs(self) -> Mapping:
+        return self._item.session._fixturemanager._arg2fixturedefs
+
+    @singledispatchmethod
+    def __setitem__(self, key, value):
+        raise NotImplementedError(type(key))
+
+    @__setitem__.register
+    def __setitem_int(self, key: int, value: list[str]):
+        super().__setitem__(Scope(key), value)
+
+    @__setitem__.register
+    def __setitem_str(self, key: str, value: list[str]):
+        for scope in Scope:
+            if f"{scope}" == key:
+                super().__setitem__(scope, value)
+                return
+
+        raise KeyError(key)
+
+    @__setitem__.register
+    def __setitem_scope(self, key: Scope, value: list[str]):
+        super().__setitem__(key, value)
+
+    @singledispatchmethod
+    def __getitem__(self, key):
+        raise NotImplementedError(type(key))
+
+    @__getitem__.register
+    def __getitem_int(self, key: int) -> list[str]:
+        return super().__getitem__(Scope(key))
+
+    @__getitem__.register
+    def __getitem_str(self, key: str) -> list[str]:
+        for scope in Scope:
+            if f"{scope}" == key:
+                return super().__getitem__(scope)
+
+        raise KeyError(key)
+
+    @__getitem__.register
+    def __getitem_scope(self, key: Scope) -> list[str]:
+        return super().__getitem__(key)
+
+    def get_info(self, name: str) -> list:
+        """
+        Get fixture info.
+
+        Args:
+            name (str):
+
+        Returns:
+            list of info
+        """
+        if name not in self._arg2fixturedefs:
+            return []
+
+        return self._arg2fixturedefs[name]
+
+    def is_known(self, name: str) -> bool:
+        """
+        True when fixture-info is known for the given fixture name.
+        """
+        return name in self._arg2fixturedefs
+
+    def prepend(self, scope: Scope, fixtures: Iterable[str]):
+        existing = self[scope]
+        result = []
+        for new_fixture in fixtures:
+            if new_fixture in existing:
+                existing.remove(new_fixture)
+
+            result.append(new_fixture)
+
+        for existing_fixture in existing:
+            result.append(existing_fixture)
+
+        self[scope] = result
+
+    def apply_fixturenames(self):
+        """
+        Set the fixturenames on the test item in the order they should be used.
+        Carefully ignore non-fixtures, such as keys from parametrized tests.
+        """
+        self._item.fixturenames = [*self.names, *self.parameters]
 
 
 class PytestApeFixtures(ManagerAccessMixin):
