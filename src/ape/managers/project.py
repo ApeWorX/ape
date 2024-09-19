@@ -2123,14 +2123,14 @@ class LocalProject(Project):
         self._config_override = config_override or {}
 
         self._base_path = Path(path).resolve()
-        path_name = self._config_override.get("base_path", "")
-        self.path = self._base_path / path_name
 
         # A local project uses a special manifest.
         self.manifest_path = manifest_path or self._base_path / ".build" / "__local__.json"
         manifest = self.load_manifest()
 
         super().__init__(manifest, config_override=self._config_override)
+
+        self.path = self._base_path / (self.config.base_path or "")
 
         # NOTE: Avoid pointlessly adding info to the __local__ manifest.
         # This is mainly for dependencies.
@@ -2280,7 +2280,7 @@ class LocalProject(Project):
         ]
         plugins = [t for t in project_classes if not issubclass(t, ApeProject)]
         for api in plugins:
-            if instance := api.attempt_validate(path=self.path):
+            if instance := api.attempt_validate(path=self._base_path):
                 return instance
 
         # If no other APIs worked but we have a default Ape project, use that!
@@ -2290,10 +2290,10 @@ class LocalProject(Project):
 
         # For some reason we were just not able to create a project here.
         # I am not sure this is even possible.
-        raise ProjectError(f"'{self.path.name}' is not recognized as a project.")
+        raise ProjectError(f"'{self._base_path.name}' is not recognized as a project.")
 
     def _get_ape_project_api(self) -> Optional[ApeProject]:
-        if instance := ApeProject.attempt_validate(path=self.path):
+        if instance := ApeProject.attempt_validate(path=self._base_path):
             return cast(ApeProject, instance)
 
         return None
