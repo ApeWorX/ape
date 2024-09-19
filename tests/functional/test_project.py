@@ -1,4 +1,5 @@
 import json
+import os
 import shutil
 from pathlib import Path
 
@@ -12,7 +13,7 @@ import ape
 from ape import Project
 from ape.api.projects import ApeProject
 from ape.contracts import ContractContainer
-from ape.exceptions import ProjectError
+from ape.exceptions import ConfigError, ProjectError
 from ape.logging import LogLevel
 from ape.utils import create_tempdir
 from ape_pm import BrownieProject, FoundryProject
@@ -665,6 +666,21 @@ class TestProject:
         assert project.path == with_dependencies_project_path
         # Manifest should have been created by default.
         assert not project.manifest_path.is_file()
+
+    def test_init_invalid_config(self):
+        here = os.curdir
+        with create_tempdir() as temp_dir:
+            cfgfile = temp_dir / "ape-config.yaml"
+            # Name is invalid!
+            cfgfile.write_text("name:\n  {asdf}")
+
+            os.chdir(temp_dir)
+            expected = r"[.\n]*Input should be a valid string\n-->1: name:\n   2:   {asdf}[.\n]*"
+            try:
+                with pytest.raises(ConfigError, match=expected):
+                    _ = Project(temp_dir)
+            finally:
+                os.chdir(here)
 
     def test_config_override(self, with_dependencies_project_path):
         contracts_folder = with_dependencies_project_path / "my_contracts"
