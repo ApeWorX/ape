@@ -232,6 +232,16 @@ def test_verbosity(runner, ape_cli):
     assert result.exit_code == 0, result.output
 
 
+@skip_projects_except("test")
+def test_vvv(runner, ape_cli):
+    """
+    Showing you can somehow use pytest's -v flag without
+    messing up Ape.
+    """
+    result = runner.invoke(ape_cli, ("test", "-vvv", "--fixtures"), catch_exceptions=False)
+    assert result.exit_code == 0, result.output
+
+
 @skip_projects_except("test", "with-contracts")
 def test_fixture_docs(setup_pytester, integ_project, pytester, eth_tester_provider):
     _ = eth_tester_provider  # Ensure using EthTester for this test.
