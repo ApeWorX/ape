@@ -333,6 +333,12 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
     The name of the project.
     """
 
+    base_path: Optional[str] = None
+    """
+    Use this when the project's base-path is not the
+    root of the project.
+    """
+
     request_headers: dict = {}
     """
     Extra request headers for all HTTP requests.

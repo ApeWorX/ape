@@ -572,7 +572,6 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         only a single ecosystem installed, such as Ethereum, then get
         that ecosystem.
         """
-
         return self.ecosystems[self.default_ecosystem_name]
 
     def set_default_ecosystem(self, ecosystem_name: str):

@@ -29,6 +29,27 @@ plugin:
 
 This helps keep your secrets out of Ape!
 
+## Base Path
+
+Change the base path if it is different than your project root.
+For example, imagine a project structure like:
+
+```
+project
+└── src/
+    └── contracts/
+        └── MyContract.sol
+```
+
+In this case, you want to configure Ape like:
+
+```yaml
+base_path: src
+```
+
+This way, `MyContract.vy`'s source ID will be `"contracts/Factory.vy"` and not `"src/contracts/Factory.vy"`.
+Some dependencies, such as python-based ones like `snekmate`, use this structure.
+
 ## Contracts Folder
 
 Specify a different path to your `contracts/` directory.
