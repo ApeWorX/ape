@@ -2118,13 +2118,17 @@ class LocalProject(Project):
         config_override: Optional[dict] = None,
     ) -> None:
         self._session_source_change_check: set[str] = set()
-        self.path = Path(path).resolve()
-        # A local project uses a special manifest.
-        self.manifest_path = manifest_path or self.path / ".build" / "__local__.json"
-        manifest = self.load_manifest()
 
         # NOTE: Set this before super() because needed for self.config read.
         self._config_override = config_override or {}
+
+        self._base_path = Path(path).resolve()
+        path_name = self._config_override.get("base_path", "")
+        self.path = self._base_path / path_name
+
+        # A local project uses a special manifest.
+        self.manifest_path = manifest_path or self._base_path / ".build" / "__local__.json"
+        manifest = self.load_manifest()
 
         super().__init__(manifest, config_override=self._config_override)
 
@@ -2301,7 +2305,7 @@ class LocalProject(Project):
         elif name := self.manifest.name:
             return name
 
-        return self.path.name.replace("_", "-").lower()
+        return self._base_path.name.replace("_", "-").lower()
 
     @cached_property
     def config(self) -> ApeConfig:

@@ -93,6 +93,31 @@ def test_path(project):
     assert project.path is not None
 
 
+def test_path_configured(project):
+    """
+    Simulating package structures like snekmate.
+    """
+    madeup_name = "snakemate"
+    with create_tempdir(name=madeup_name) as temp_dir:
+        subdir = temp_dir / "src"
+        contracts_folder = subdir / madeup_name
+        contracts_folder.mkdir(parents=True)
+        contract = contracts_folder / "snake.json"
+        abi = [{"name": "foo", "type": "fallback", "stateMutability": "nonpayable"}]
+        contract.write_text(json.dumps(abi), encoding="utf8")
+
+        snekmate = Project(
+            temp_dir, config_override={"base_path": "src", "contracts_folder": madeup_name}
+        )
+        assert snekmate.name == madeup_name
+        assert snekmate.path == subdir
+        assert snekmate.contracts_folder == contracts_folder
+
+        actual = snekmate.load_contracts()
+        assert "snake" in actual
+        assert actual["snake"].source_id == f"{madeup_name}/snake.json"
+
+
 def test_name(project):
     assert project.name == project.path.name
 
