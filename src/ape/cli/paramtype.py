@@ -1,5 +1,6 @@
 import json
 from pathlib import Path as PathLibPath
+from typing import Any
 
 import click
 
@@ -34,3 +35,14 @@ class JSON(click.ParamType):
                 self.fail(f"Invalid JSON string: {err}", param, ctx)
 
         return value  # Good already.
+
+
+class Noop(click.ParamType):
+    """
+    A param-type for ignoring param-types.
+    Good to use when the multi-type handling
+    happens already in a callback or in the command itself.
+    """
+
+    def convert(self, value: Any, param, ctx) -> Any:
+        return value
