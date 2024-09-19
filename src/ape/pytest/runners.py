@@ -1,7 +1,6 @@
 import inspect
 from collections import defaultdict
-from collections.abc import Iterable
-from functools import cached_property, singledispatchmethod
+from functools import cached_property
 from pathlib import Path
 from typing import Optional
 
@@ -14,110 +13,12 @@ from ape.api.networks import ProviderContextManager
 from ape.logging import LogLevel
 from ape.pytest.config import ConfigWrapper
 from ape.pytest.coverage import CoverageTracker
-from ape.pytest.fixtures import IsolationManager, PytestApeFixtures, ReceiptCapture
+from ape.pytest.fixtures import IsolationManager, PytestApeFixtures, ReceiptCapture, FixtureManager
 from ape.pytest.gas import GasTracker
 from ape.pytest.utils import Scope
 from ape.types.coverage import CoverageReport
 from ape.utils.basemodel import ManagerAccessMixin
 from ape_console._cli import console
-
-
-class FixturesByScope(dict[Scope, list[str]]):
-    def __init__(self):
-        super().__init__(
-            {
-                Scope.SESSION: [],
-                Scope.PACKAGE: [],
-                Scope.MODULE: [],
-                Scope.CLASS: [],
-                Scope.FUNCTION: [],
-            }
-        )
-
-    @singledispatchmethod
-    def __setitem__(self, key, value):
-        raise NotImplementedError(type(key))
-
-    @__setitem__.register
-    def __setitem_int(self, key: int, value: list[str]):
-        super().__setitem__(Scope(key), value)
-
-    @__setitem__.register
-    def __setitem_str(self, key: str, value: list[str]):
-        for scope in Scope:
-            if f"{scope}" == key:
-                super().__setitem__(scope, value)
-                return
-
-        raise KeyError(key)
-
-    @__setitem__.register
-    def __setitem_scope(self, key: Scope, value: list[str]):
-        super().__setitem__(key, value)
-
-    @singledispatchmethod
-    def __getitem__(self, key):
-        raise NotImplementedError(type(key))
-
-    @__getitem__.register
-    def __getitem_int(self, key: int) -> list[str]:
-        return super().__getitem__(Scope(key))
-
-    @__getitem__.register
-    def __getitem_str(self, key: str) -> list[str]:
-        for scope in Scope:
-            if f"{scope}" == key:
-                return super().__getitem__(scope)
-
-        raise KeyError(key)
-
-    @__getitem__.register
-    def __getitem_scope(self, key: Scope) -> list[str]:
-        return super().__getitem__(key)
-
-    @classmethod
-    def from_test_item(cls, item) -> "FixturesByScope":
-        obj = cls()
-        info_dict = item.session._fixturemanager._arg2fixturedefs
-        for name, info_ls in info_dict.items():
-            if not info_ls or name not in item.fixturenames:
-                continue
-
-            for info in info_ls:
-                obj[info.scope].append(name)
-
-        return obj
-
-    @property
-    def fixturenames(self) -> list[str]:
-        """
-        Outputs in correct order for item.fixturenames.
-        Also, injects isolation fixtures if needed.
-        """
-        result = []
-        for scope, ls in self.items():
-            # NOTE: For function scoped, we always add the isolation fixture.
-            if not ls and scope is not Scope.FUNCTION:
-                continue
-
-            result.append(scope.isolation_fixturename)
-            result.extend(ls)
-
-        return result
-
-    def prepend(self, scope: Scope, fixtures: Iterable[str]):
-        existing = self[scope]
-        result = []
-        for new_fixture in fixtures:
-            if new_fixture in existing:
-                existing.remove(new_fixture)
-
-            result.append(new_fixture)
-
-        for existing_fixture in existing:
-            result.append(existing_fixture)
-
-        self[scope] = result
 
 
 class PytestApeRunner(ManagerAccessMixin):
@@ -128,6 +29,7 @@ class PytestApeRunner(ManagerAccessMixin):
         receipt_capture: ReceiptCapture,
         gas_tracker: GasTracker,
         coverage_tracker: CoverageTracker,
+        fixture_manager: Optional[FixtureManager] = None,
     ):
         self.config_wrapper = config_wrapper
         self.isolation_manager = isolation_manager
@@ -139,6 +41,7 @@ class PytestApeRunner(ManagerAccessMixin):
         gas_tracker.session_gas_report = None
         self.gas_tracker = gas_tracker
         self.coverage_tracker = coverage_tracker
+        self.fixture_manager = fixture_manager or FixtureManager()
 
     @property
     def _provider_context(self) -> ProviderContextManager:
@@ -240,17 +143,6 @@ class PytestApeRunner(ManagerAccessMixin):
             ]
         )
 
-    def _get_builtin_fixtures(self, item) -> list[str]:
-        if self._builtin_fixtures:
-            return self._builtin_fixtures
-
-        self._builtin_fixtures = [
-            fixture_name
-            for fixture_name, defs in item.session._fixturemanager._arg2fixturedefs.items()
-            if any("pytest" in fixture.func.__module__ for fixture in defs)
-        ]
-        return self._builtin_fixtures
-
     def pytest_runtest_setup(self, item):
         """
         By default insert isolation fixtures into each test cases list of fixtures
@@ -267,14 +159,12 @@ class PytestApeRunner(ManagerAccessMixin):
             # isolation is disabled via cmdline option or running doc-tests.
             return
 
-        fixture_defs = item.session._fixturemanager._arg2fixturedefs
-        fixture_by_scope = FixturesByScope.from_test_item(item)
-        builtin_fixtures = self._get_builtin_fixtures(item)
+        fixtures = self.fixture_manager.get_fixtures(item)
         for scope in (Scope.SESSION, Scope.PACKAGE, Scope.MODULE, Scope.CLASS):
             custom_fixtures = [
                 f
-                for f in fixture_by_scope[scope]
-                if f not in self._ape_fixtures and f not in builtin_fixtures
+                for f in fixtures[scope]
+                if f not in self._ape_fixtures and f not in fixtures.builtins
             ]
             if not custom_fixtures:
                 # Intermediate scope isolations aren't filled in, or only using
@@ -282,35 +172,22 @@ class PytestApeRunner(ManagerAccessMixin):
                 continue
 
             snapshot = self.isolation_manager.get_snapshot(scope)
+            is_last_iteration = fixtures.is_last_iteration
 
             # Gather new fixtures. Also, be mindful of parametrized fixtures
             # which strangely have the same name.
             new_fixtures = []
             for custom_fixture in custom_fixtures:
-                if custom_fixture not in snapshot.fixtures:
+                is_parametrized = custom_fixture in fixtures.parametrized
+                if not is_parametrized and custom_fixture not in snapshot.fixtures:
                     # Is simply a new a fixture.
                     new_fixtures.append(custom_fixture)
                     continue
 
-                elif custom_fixture not in fixture_defs:
-                    # Unknown fixture?
-                    continue
-
-                fixture_infos = fixture_defs[custom_fixture]
-
-                # Check for parametrized fixtures, which must also be considered "new" to work.
-                for fixture_info in fixture_infos:
-                    params = fixture_info.params
-                    if params is None:
-                        # Not a parametrized fixture.
-                        continue
-
-                    if (
-                        fixture_info.cached_result is not None
-                        and len(fixture_info.cached_result) >= 2
-                        and fixture_info.cached_result[1] != params[-1]
-                    ):
-                        new_fixtures.append(custom_fixture)
+                elif is_parametrized and is_last_iteration:
+                    pass
+                # elif not is_last_iteration and custom_fixture in fixtures.parametrized:
+                #     new_fixtures.append(custom_fixture)
 
             # Check for fixtures that are now invalid. For example, imagine a session
             # fixture comes into play after the module snapshot has been set.
@@ -343,15 +220,12 @@ class PytestApeRunner(ManagerAccessMixin):
                 # Invalidate fixtures by clearing out their cached result.
                 for invalid_scope, invalid_fixture_ls in invalid_fixtures.items():
                     for invalid_fixture in invalid_fixture_ls:
-                        if invalid_fixture not in fixture_defs:
-                            continue
-
-                        info_ls = fixture_defs[invalid_fixture]
+                        info_ls = fixtures.get_info(invalid_fixture)
                         for info in info_ls:
                             info.cached_result = None
 
                     # Also, invalidate the corresponding isolation fixture.
-                    if invalid_isolation_fixture_ls := fixture_defs.get(
+                    if invalid_isolation_fixture_ls := fixtures.get_info(
                         invalid_scope.isolation_fixturename
                     ):
                         for invalid_isolation_fixture in invalid_isolation_fixture_ls:
@@ -361,15 +235,7 @@ class PytestApeRunner(ManagerAccessMixin):
             # and need to trigger the invalidation logic above.
             snapshot.append_fixtures(new_fixtures)
 
-        # Separate the test-parameters from the actual fixtures.
-        # Test parameters must go at the end of the fixture-names
-        # and MUST be included! Else, pytest will crash.
-        fixtures = fixture_by_scope.fixturenames
-        test_params = [n for n in item.fixturenames if n not in fixtures]
-
-        # Finally, setting the fixturenames in the order they should be used.
-        # Pytest runs the fixtures in this order.
-        item.fixturenames = [*fixture_by_scope.fixturenames, *test_params]
+        fixtures.apply_fixturenames()
 
     def pytest_sessionstart(self):
         """
