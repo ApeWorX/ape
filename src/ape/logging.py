@@ -127,6 +127,7 @@ class ApeLogger:
         self.info = _logger.info
         self.debug = _logger.debug
         self._logger = _logger
+        self._did_parse_sys_argv = False
         self._load_from_sys_argv()
         self.fmt = fmt
 
@@ -145,22 +146,34 @@ class ApeLogger:
         """
         Load from sys.argv to beat race condition with `click`.
         """
+        if self._did_parse_sys_argv:
+            # Already parsed.
+            return
 
         log_level = _get_level(level=default)
         level_names = [lvl.name for lvl in LogLevel]
-        for arg_i in range(len(sys.argv) - 1):
+
+        #  Minus 2 because if `-v` is the last arg, it is not our verbosity `-v`.
+        num_args = len(sys.argv) - 2
+
+        for arg_i in range(num_args):
             if sys.argv[arg_i] == "-v" or sys.argv[arg_i] == "--verbosity":
-                level = _get_level(sys.argv[arg_i + 1].upper())
+                try:
+                    level = _get_level(sys.argv[arg_i + 1].upper())
+                except Exception:
+                    # Let it fail in a better spot, or is not our level.
+                    continue
 
                 if level in level_names:
+                    self._sys_argv = level
                     log_level = level
                     break
                 else:
-                    names_str = f"{', '.join(level_names[:-1])}, or {level_names[-1]}"
-                    self._logger.error(f"Must be one of '{names_str}', not '{level}'.")
-                    sys.exit(2)
+                    # Not our level.
+                    continue
 
         self.set_level(log_level)
+        self._did_parse_sys_argv = True
 
     @property
     def level(self) -> int:
