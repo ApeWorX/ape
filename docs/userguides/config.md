@@ -31,8 +31,8 @@ This helps keep your secrets out of Ape!
 
 ## Base Path
 
-Change the base path if it is different than your root.
-For example, imagine a project structure like:
+Change the base path if it is different than your project root.
+For example, imagine a project structure like:  
 
 ```
 project
