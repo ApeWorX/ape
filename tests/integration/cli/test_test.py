@@ -238,7 +238,7 @@ def test_vvv(runner, ape_cli):
     Showing you can somehow use pytest's -v flag without
     messing up Ape.
     """
-    result = runner.invoke(ape_cli, ("test", "-vvv", "--fixtures"))
+    result = runner.invoke(ape_cli, ("test", "-vvv", "--fixtures"), catch_exceptions=False)
     assert result.exit_code == 0, result.output
 
 
