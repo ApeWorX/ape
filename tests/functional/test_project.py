@@ -785,11 +785,12 @@ class TestFoundryProject:
         )
 
     def test_extract_config(self, foundry_toml, gitmodules, mock_github):
-        with ape.Project.create_temporary_project() as temp_project:
-            cfg_file = temp_project.path / "foundry.toml"
+        with create_tempdir() as temp_dir:
+            cfg_file = temp_dir / "foundry.toml"
             cfg_file.write_text(foundry_toml, encoding="utf8")
-            gitmodules_file = temp_project.path / ".gitmodules"
+            gitmodules_file = temp_dir / ".gitmodules"
             gitmodules_file.write_text(gitmodules, encoding="utf8")
+            temp_project = Project(temp_dir)
 
             api = temp_project.project_api
             mock_github.get_repo.return_value = {"default_branch": "main"}
