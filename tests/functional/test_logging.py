@@ -33,7 +33,6 @@ def test_info_level_higher(simple_runner):
     def cmd(cli_ctx):
         cli_ctx.logger.info("this is a test")
 
-    logger._did_parse_sys_argv = False
     result = simple_runner.invoke(group_for_testing, ("cmd", "-v", "WARNING"))
 
     # You don't get INFO log when log level is higher
@@ -58,7 +57,6 @@ def test_warning_level_higher(simple_runner):
     def cmd(cli_ctx):
         cli_ctx.logger.warning("this is a test")
 
-    logger._did_parse_sys_argv = False
     result = simple_runner.invoke(group_for_testing, ("cmd", "-v", "ERROR"))
     assert "WARNING" not in result.output
     assert "this is a test" not in result.output
@@ -73,7 +71,6 @@ def test_success(simple_runner):
     def cmd(cli_ctx):
         cli_ctx.logger.success("this is a test")
 
-    logger._did_parse_sys_argv = False
     result = simple_runner.invoke(group_for_testing, "cmd")
     assert "SUCCESS" in result.output
     assert "this is a test" in result.output
@@ -85,7 +82,6 @@ def test_success_level_higher(simple_runner):
     def cmd(cli_ctx):
         cli_ctx.logger.success("this is a test")
 
-    logger._did_parse_sys_argv = False
     result = simple_runner.invoke(group_for_testing, ("cmd", "-v", "WARNING"))
     assert "SUCCESS" not in result.output
     assert "this is a test" not in result.output
