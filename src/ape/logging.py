@@ -2,7 +2,8 @@
 import logging
 import sys
 import traceback
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Iterator, Sequence
+from contextlib import contextmanager
 from enum import IntEnum
 from pathlib import Path
 from typing import IO, Any, Optional, Union
@@ -197,6 +198,23 @@ class ApeLogger:
         self._logger.setLevel(level)
         for _logger in self._extra_loggers.values():
             _logger.setLevel(level)
+
+    @contextmanager
+    def at_level(self, level: Union[str, int, LogLevel]) -> Iterator:
+        """
+        Change the log-level in a context.
+
+        Args:
+            level (Union[str, int, LogLevel]): The level to use.
+
+        Returns:
+            Iterator
+        """
+
+        initial_level = self.level
+        self.set_level(level)
+        yield
+        self.set_level(initial_level)
 
     def log_error(self, err: Exception):
         """

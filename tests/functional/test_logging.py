@@ -112,3 +112,12 @@ def test_format(simple_runner):
 def test_set_level(level):
     logger.set_level(level)
     assert logger.level == LogLevel.INFO.value
+
+
+def test_at_level():
+    level_to_set = next(lvl for lvl in LogLevel if lvl != logger.level)
+    initial_level = logger.level
+    with logger.at_level(level_to_set):
+        assert logger.level == level_to_set
+
+    assert logger.level == initial_level
