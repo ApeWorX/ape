@@ -1,72 +1,34 @@
 name: Docs
 
 on:
-    push:
-        branches: [main]
-    release:
-        types: [released]
-    pull_request:
-        types: [opened, synchronize]
+  push:
+    branches: [main]
+  release:
+    types: [released]
+  pull_request:
+    types: [opened, synchronize]
 
 jobs:
-    docs:
-        runs-on: ubuntu-latest
+  docs:
+    runs-on: ubuntu-latest
 
-        permissions:
-          contents: write
+    permissions:
+      contents: write
 
-        steps:
-        - uses: actions/checkout@v4
+    steps:
+    - uses: actions/checkout@v4
 
-        - name: Setup Python
-          uses: actions/setup-python@v5
-          with:
-              python-version: "3.10"
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.10"
 
-        - name: Install Dependencies
-          run: |
-            python -m pip install --upgrade pip
-            pip install .[doc]
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install .[doc]
 
-        - name: Build HTML artifact
-          run: python build_docs.py
-
-        - name: Upload HTML artifact
-          uses: actions/upload-artifact@v4
-          with:
-              name: DocumentationHTML
-              path: docs/_build/ape
-
-        - name: Doctesting
-          run: |
-            sphinx-build -b doctest docs docs/_build/doctest
-            if grep -q '0 failed' docs/_build/doctest/output.txt; then
-              echo "All doctests passed!"
-            else
-              echo "Some doctests failed. See the output below."
-              cat docs/_build/doctest/output.txt
-              exit 1
-            fi
-
-        - name: Commit and publish documentation changes to gh-pages branch
-          run: |
-              if [[ "${GITHUB_EVENT_NAME}" =~ "pull_request" ]]; then
-                echo "skipping 'git commit' step for PR"
-              else
-                git clone https://github.com/${GITHUB_REPOSITORY} --branch gh-pages --single-branch gh-pages
-                cp -r docs/_build/ape/* gh-pages/
-                cd gh-pages
-                touch .nojekyll
-                git config --local user.email "action@github.com"
-                git config --local user.name "GitHub Action"
-                git add .
-                git commit -m "Update documentation" -a || true
-              fi
-        - name: Push changes
-          uses: ad-m/github-push-action@master
-          if: ${{ github.event_name != 'pull_request' }}
-          with:
-              branch: gh-pages
-              directory: gh-pages
-              github_token: ${{ secrets.GITHUB_TOKEN }}
-        
+    - name: Ape Docs
+      uses: apeworx/sphinx-ape@main
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
