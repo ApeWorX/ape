@@ -67,7 +67,8 @@ You can use dependencies from [PyPI](https://pypi.org/) by using the `pypi:` key
 dependencies:
    - pypi: snekmate
      config_override:
-       contracts_folder: src
+       base_path: src
+       contracts_folder: snekmate
 ```
 
 When using the `pypi:` key, dependencies are downloaded and extracted from PyPI using an HTTP requests library.
