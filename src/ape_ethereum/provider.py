@@ -624,11 +624,35 @@ class Web3Provider(ProviderAPI, ABC):
         )
         hex_hash = HexBytes(txn_hash)
 
+        txn = {}
+        if transaction := kwargs.get("transaction"):
+            # perf: If called `send_transaction()`, we should already have the data!
+            txn = (
+                transaction
+                if isinstance(transaction, dict)
+                else transaction.model_dump(by_alias=True, mode="json")
+            )
+
+        private = kwargs.get("private")
+
         try:
             receipt_data = dict(
                 self.web3.eth.wait_for_transaction_receipt(hex_hash, timeout=timeout)
             )
         except TimeExhausted as err:
+            # Since private transactions can take longer,
+            #  return a partial receipt instead of throwing a TimeExhausted error.
+            if private:
+                # Return with a partial receipt
+                data = {
+                    "block_number": -1,
+                    "required_confirmations": required_confirmations,
+                    "txn_hash": txn_hash,
+                    "status": TransactionStatusEnum.NO_ERROR,
+                    **txn,
+                }
+                receipt = self._create_receipt(**data)
+                return receipt
             msg_str = str(err)
             if f"HexBytes('{txn_hash}')" in msg_str:
                 msg_str = msg_str.replace(f"HexBytes('{txn_hash}')", f"'{txn_hash}'")
@@ -641,18 +665,11 @@ class Web3Provider(ProviderAPI, ABC):
         network_config: dict = ecosystem_config.get(self.network.name, {})
         max_retries = network_config.get("max_get_transaction_retries", DEFAULT_MAX_RETRIES_TX)
 
-        if transaction := kwargs.get("transaction"):
-            # perf: If called `send_transaction()`, we should already have the data!
-            txn = (
-                transaction
-                if isinstance(transaction, dict)
-                else transaction.model_dump(by_alias=True, mode="json")
-            )
+        if transaction:
             if "effectiveGasPrice" in receipt_data:
                 receipt_data["gasPrice"] = receipt_data["effectiveGasPrice"]
 
         else:
-            txn = {}
             for attempt in range(max_retries):
                 try:
                     txn = dict(self.web3.eth.get_transaction(HexStr(txn_hash)))
