@@ -158,7 +158,10 @@ def test_get_receipt_passes_receipt_when_private(
     eth_tester_provider._web3 = mock_web3
     try:
         receipt_from_provider = eth_tester_provider.get_receipt(
-            receipt_from_invoke.txn_hash, timeout=5, private=True, transaction=receipt_from_invoke.transaction
+            receipt_from_invoke.txn_hash,
+            timeout=5,
+            private=True,
+            transaction=receipt_from_invoke.transaction,
         )
 
     finally:
