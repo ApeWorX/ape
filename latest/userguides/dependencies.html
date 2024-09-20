@@ -233,7 +233,8 @@ Bypass the original failing attempt by including a <code class="docutils literal
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">dependencies</span><span class="p">:</span>
 </span><span data-line="2"><span class="w">   </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">pypi</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">snekmate</span>
 </span><span data-line="3"><span class="w">     </span><span class="nt">config_override</span><span class="p">:</span>
-</span><span data-line="4"><span class="w">       </span><span class="nt">contracts_folder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">src</span>
+</span><span data-line="4"><span class="w">       </span><span class="nt">base_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">src</span>
+</span><span data-line="5"><span class="w">       </span><span class="nt">contracts_folder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">snekmate</span>
 </span></pre></div>
 </div>
 <p>When using the <code class="docutils literal notranslate"><span class="pre">pypi:</span></code> key, dependencies are downloaded and extracted from PyPI using an HTTP requests library.</p>
