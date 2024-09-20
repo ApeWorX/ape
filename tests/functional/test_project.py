@@ -1,4 +1,5 @@
 import json
+import os
 import shutil
 from pathlib import Path
 
@@ -12,7 +13,7 @@ import ape
 from ape import Project
 from ape.api.projects import ApeProject
 from ape.contracts import ContractContainer
-from ape.exceptions import ProjectError
+from ape.exceptions import ConfigError, ProjectError
 from ape.logging import LogLevel
 from ape.utils import create_tempdir
 from ape_pm import BrownieProject, FoundryProject
@@ -91,6 +92,31 @@ def make_manifest(*contracts: ContractType, include_contract_type: bool = True) 
 
 def test_path(project):
     assert project.path is not None
+
+
+def test_path_configured(project):
+    """
+    Simulating package structures like snekmate.
+    """
+    madeup_name = "snakemate"
+    with create_tempdir(name=madeup_name) as temp_dir:
+        subdir = temp_dir / "src"
+        contracts_folder = subdir / madeup_name
+        contracts_folder.mkdir(parents=True)
+        contract = contracts_folder / "snake.json"
+        abi = [{"name": "foo", "type": "fallback", "stateMutability": "nonpayable"}]
+        contract.write_text(json.dumps(abi), encoding="utf8")
+
+        snekmate = Project(
+            temp_dir, config_override={"base_path": "src", "contracts_folder": madeup_name}
+        )
+        assert snekmate.name == madeup_name
+        assert snekmate.path == subdir
+        assert snekmate.contracts_folder == contracts_folder
+
+        actual = snekmate.load_contracts()
+        assert "snake" in actual
+        assert actual["snake"].source_id == f"{madeup_name}/snake.json"
 
 
 def test_name(project):
@@ -641,6 +667,21 @@ class TestProject:
         # Manifest should have been created by default.
         assert not project.manifest_path.is_file()
 
+    def test_init_invalid_config(self):
+        here = os.curdir
+        with create_tempdir() as temp_dir:
+            cfgfile = temp_dir / "ape-config.yaml"
+            # Name is invalid!
+            cfgfile.write_text("name:\n  {asdf}")
+
+            os.chdir(temp_dir)
+            expected = r"[.\n]*Input should be a valid string\n-->1: name:\n   2:   {asdf}[.\n]*"
+            try:
+                with pytest.raises(ConfigError, match=expected):
+                    _ = Project(temp_dir)
+            finally:
+                os.chdir(here)
+
     def test_config_override(self, with_dependencies_project_path):
         contracts_folder = with_dependencies_project_path / "my_contracts"
         config = {"contracts_folder": contracts_folder.name}
@@ -760,11 +801,12 @@ class TestFoundryProject:
         )
 
     def test_extract_config(self, foundry_toml, gitmodules, mock_github):
-        with ape.Project.create_temporary_project() as temp_project:
-            cfg_file = temp_project.path / "foundry.toml"
+        with create_tempdir() as temp_dir:
+            cfg_file = temp_dir / "foundry.toml"
             cfg_file.write_text(foundry_toml, encoding="utf8")
-            gitmodules_file = temp_project.path / ".gitmodules"
+            gitmodules_file = temp_dir / ".gitmodules"
             gitmodules_file.write_text(gitmodules, encoding="utf8")
+            temp_project = Project(temp_dir)
 
             api = temp_project.project_api
             mock_github.get_repo.return_value = {"default_branch": "main"}
