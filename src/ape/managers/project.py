@@ -2167,7 +2167,7 @@ class LocalProject(Project):
 
     @log_instead_of_fail(default="<ProjectManager>")
     def __repr__(self):
-        path = f" {clean_path(self.path)}"
+        path = f" {clean_path(self._base_path)}"
         # NOTE: 'Project' is meta for 'ProjectManager' (mixin magic).
         return f"<ProjectManager{path}>"
 

@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import shutil
 from pathlib import Path
 
@@ -107,14 +108,17 @@ def test_path_configured(project):
         abi = [{"name": "foo", "type": "fallback", "stateMutability": "nonpayable"}]
         contract.write_text(json.dumps(abi), encoding="utf8")
 
-        snekmate = Project(
+        snakemate = Project(
             temp_dir, config_override={"base_path": "src", "contracts_folder": madeup_name}
         )
-        assert snekmate.name == madeup_name
-        assert snekmate.path == subdir
-        assert snekmate.contracts_folder == contracts_folder
+        assert snakemate.name == madeup_name
+        assert snakemate.path == subdir
+        assert snakemate.contracts_folder == contracts_folder
 
-        actual = snekmate.load_contracts()
+        # The repr should show `/snakemate` and not `/snakemate/src/`.
+        assert re.match(r"<ProjectManager [\w|/]*/snakemate>", repr(snakemate))
+
+        actual = snakemate.load_contracts()
         assert "snake" in actual
         assert actual["snake"].source_id == f"{madeup_name}/snake.json"
 
