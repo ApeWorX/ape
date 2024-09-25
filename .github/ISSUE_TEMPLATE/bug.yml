@@ -38,10 +38,11 @@ body:
     attributes:
       value: |
         ### ape-config.yaml file
-        Please paste your `ape-config.yaml` contents here.
+
+        Paste your ape-config.yaml content in the following section
 
         \`\`\`yaml
-        # Paste your ape-config.yaml contents here
+
         \`\`\`
 
         **NOTE:** Do not post anything private like RPC URLs or secrets!
