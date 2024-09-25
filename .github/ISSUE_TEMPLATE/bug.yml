@@ -43,6 +43,12 @@ body:
       required: true
   - type: textarea
     attributes:
+      label: Description
+      description: Describe what happened
+    validations:
+      required: true
+  - type: textarea
+    attributes:
       label: Reproduction code
       description: Please include a simple reproduction code-snippet.
     validations:
