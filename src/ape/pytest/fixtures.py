@@ -2,7 +2,7 @@ from collections.abc import Iterable, Iterator, Mapping
 from dataclasses import dataclass, field
 from fnmatch import fnmatch
 from functools import cached_property, singledispatchmethod
-from typing import Optional, ClassVar
+from typing import ClassVar, Optional
 
 import pytest
 from eth_utils import to_hex
@@ -25,11 +25,11 @@ class FixtureManager:
     _builtin_fixtures: ClassVar[list] = []
     _nodeid_to_fixture_map: dict[str, "FixtureMap"] = {}
 
-    def _get_builtin_fixtures(self, item) -> list[str]:
+    def get_builtin_fixtures(self, item) -> list[str]:
         if self._builtin_fixtures:
             return self._builtin_fixtures
 
-        self._builtin_fixtures = [
+        FixtureManager._builtin_fixtures = [
             fixture_name
             for fixture_name, defs in item.session._fixturemanager._arg2fixturedefs.items()
             if any("pytest" in fixture.func.__module__ for fixture in defs)
@@ -43,54 +43,6 @@ class FixtureManager:
         fixture_map = FixtureMap.from_test_item(item)
         self._nodeid_to_fixture_map[item.nodeid] = item
         return fixture_map
-
-    def is_last_fixture_iteration(self, item) -> bool:
-        """
-        ``True`` when is the last from all the parametrized fixtures.
-        """
-        fixtures = self.get_fixtures(item)
-        parametrized_fixtures = fixtures.parametrized
-        if not parametrized_fixtures:
-            # When not using parametrized fixtures, it's always the last.
-            return True
-
-        return all(_get_last_fixture_iteration())
-        for name, info_ls in parametrized_fixtures.items():
-            for info in info_ls:
-
-
-            #
-            # """
-            # for name, info_ls in self.parametrized.items():
-            #     for info in info_ls:
-            #         if (
-            #                 info.cached_result is None
-            #                 or len(info.cached_result) < 2
-            #                 or info.cached_result[1] != info.params[-1]
-            #         ):
-            #             return False
-            #
-            # # All parametrized fixtures used are on their last iteration for this item.
-            # return True
-
-
-def _is_last_iteration(fixture_info) -> bool:
-    """
-    Returns True when is the last iteration of this fixture.
-    """
-    return _get_previous_iteration(fixture_info) == len(fixture_info.params)
-
-
-def _get_previous_iteration(fixture_info) -> int:
-    """
-    The last iteration of the fixture. Assume we know it's a parametrized
-    fixture.
-    """
-    cached_result = fixture_info.cached_result
-    if cached_result is None:
-        return -1  # Hasn't happened yet.
-
-    return cached_result[1]
 
 
 class FixtureMap(dict[Scope, list[str]]):
