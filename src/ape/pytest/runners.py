@@ -13,7 +13,7 @@ from ape.api.networks import ProviderContextManager
 from ape.logging import LogLevel
 from ape.pytest.config import ConfigWrapper
 from ape.pytest.coverage import CoverageTracker
-from ape.pytest.fixtures import IsolationManager, PytestApeFixtures, ReceiptCapture, FixtureManager
+from ape.pytest.fixtures import FixtureManager, IsolationManager, PytestApeFixtures, ReceiptCapture
 from ape.pytest.gas import GasTracker
 from ape.pytest.utils import Scope
 from ape.types.coverage import CoverageReport
@@ -160,11 +160,10 @@ class PytestApeRunner(ManagerAccessMixin):
             return
 
         fixtures = self.fixture_manager.get_fixtures(item)
+        builtins = self.fixture_manager.get_builtin_fixtures(item)
         for scope in (Scope.SESSION, Scope.PACKAGE, Scope.MODULE, Scope.CLASS):
             custom_fixtures = [
-                f
-                for f in fixtures[scope]
-                if f not in self._ape_fixtures and f not in fixtures.builtins
+                f for f in fixtures[scope] if f not in self._ape_fixtures and f not in builtins
             ]
             if not custom_fixtures:
                 # Intermediate scope isolations aren't filled in, or only using
@@ -172,22 +171,17 @@ class PytestApeRunner(ManagerAccessMixin):
                 continue
 
             snapshot = self.isolation_manager.get_snapshot(scope)
-            is_last_iteration = fixtures.is_last_iteration
 
             # Gather new fixtures. Also, be mindful of parametrized fixtures
             # which strangely have the same name.
             new_fixtures = []
             for custom_fixture in custom_fixtures:
+                # Parametrized fixtures must always be considered new
+                # because of severe complications of using them.
                 is_parametrized = custom_fixture in fixtures.parametrized
-                if not is_parametrized and custom_fixture not in snapshot.fixtures:
-                    # Is simply a new a fixture.
+                if custom_fixture not in snapshot.fixtures or is_parametrized:
                     new_fixtures.append(custom_fixture)
                     continue
-
-                elif is_parametrized and is_last_iteration:
-                    pass
-                # elif not is_last_iteration and custom_fixture in fixtures.parametrized:
-                #     new_fixtures.append(custom_fixture)
 
             # Check for fixtures that are now invalid. For example, imagine a session
             # fixture comes into play after the module snapshot has been set.
