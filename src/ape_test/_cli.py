@@ -173,7 +173,7 @@ def cli(cli_ctx, watch, watch_folders, watch_delay, pytest_args):
     if pytest_verbosity := cli_ctx.get("pytest_verbosity"):
         pytest_arg_ls.append(pytest_verbosity)
 
-    pytest_arg_ls = _validate_pytest_args(*pytest_arg_ls, pytest_verbosity)
+    pytest_arg_ls = _validate_pytest_args(*pytest_arg_ls)
     if watch:
         event_handler = _create_event_handler()
         observer = _create_observer()

@@ -228,7 +228,8 @@ def test_verbosity(runner, ape_cli):
     for some reason.
     """
     # NOTE: Only using `--fixtures` flag to avoid running tests (just prints fixtures).
-    result = runner.invoke(ape_cli, ("test", "--verbosity", "DEBUG", "--fixtures"))
+    cmd = ("test", "--verbosity", "DEBUG", "--fixtures")
+    result = runner.invoke(ape_cli, cmd, catch_exceptions=False)
     assert result.exit_code == 0, result.output
 
 
