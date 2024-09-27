@@ -239,6 +239,7 @@ def test_vvv(runner, ape_cli):
     messing up Ape.
     """
     result = runner.invoke(ape_cli, ("test", "-vvv", "--fixtures"), catch_exceptions=False)
+    breakpoint()
     assert result.exit_code == 0, result.output
 
 
