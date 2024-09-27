@@ -34,16 +34,23 @@ body:
         - Linux
     validations:
       required: true
+  - type: markdown
+    attributes:
+      value: |
+        ### ape-config.yaml file
+
+        Paste your ape-config.yaml content in the following section
+
+        \`\`\`yaml
+
+        \`\`\`
+
+        **NOTE:** Do not post anything private like RPC URLs or secrets!
   - type: textarea
     attributes:
-      label: ape-config.yaml file
-      description: "Please paste your `ape-config.yaml` contents here (NOTE: do not post anything private like RPC urls or secrets!)"
-      placeholder: "Run `cat ape-config.yaml` and copy and paste the result here"
-    validations:
-      required: true
+      label: Description
+      description: Describe what happened
   - type: textarea
     attributes:
       label: Reproduction code
       description: Please include a simple reproduction code-snippet.
-    validations:
-      required: true
