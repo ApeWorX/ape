@@ -228,18 +228,47 @@ def test_verbosity(runner, ape_cli):
     for some reason.
     """
     # NOTE: Only using `--fixtures` flag to avoid running tests (just prints fixtures).
-    result = runner.invoke(ape_cli, ("test", "--verbosity", "DEBUG", "--fixtures"))
+    cmd = ("test", "--verbosity", "DEBUG", "--fixtures")
+    result = runner.invoke(ape_cli, cmd, catch_exceptions=False)
     assert result.exit_code == 0, result.output
 
 
 @skip_projects_except("test")
-def test_vvv(runner, ape_cli):
+@pytest.mark.parametrize("v_arg", ("-v", "-vv", "-vvv"))
+def test_vvv(runner, ape_cli, integ_project, v_arg):
     """
     Showing you can somehow use pytest's -v flag without
     messing up Ape.
     """
-    result = runner.invoke(ape_cli, ("test", "-vvv", "--fixtures"), catch_exceptions=False)
+    here = integ_project.path
+    os.chdir(integ_project.path)
+    name = f"test_{v_arg.replace('-', '_')}"
+
+    TEST = f"""
+    def {name}():
+        assert True
+    """.lstrip()
+
+    # Have to create a new test each time to avoid .pycs issues
+    new_test_file = integ_project.tests_folder / f"{name}.py"
+    new_test_file.write_text(TEST)
+
+    try:
+        # NOTE: v_arg purposely at the end because testing doesn't interfere
+        #   with click's option parsing "requires value" error.
+        result = runner.invoke(
+            ape_cli,
+            ("test", f"tests/{new_test_file.name}::{name}", v_arg),
+            catch_exceptions=False,
+        )
+    finally:
+        new_test_file.unlink(missing_ok=True)
+        os.chdir(here)
+
     assert result.exit_code == 0, result.output
+    # Prove `-vvv` worked via the output.
+    # It shows PASSED instead of the little green dot.
+    assert "PASSED" in result.output
 
 
 @skip_projects_except("test", "with-contracts")

@@ -37,6 +37,10 @@ class ApeCliContextObject(ManagerAccessMixin, dict):
         self.logger = logger
         super().__init__({})
 
+    def __repr__(self) -> str:
+        # Customizing this because otherwise it uses `dict` repr, which is confusing.
+        return f"<{self.__class__.__name__}>"
+
     @staticmethod
     def abort(msg: str, base_error: Optional[Exception] = None) -> NoReturn:
         """
@@ -56,18 +60,37 @@ class ApeCliContextObject(ManagerAccessMixin, dict):
 
 
 def verbosity_option(
-    cli_logger: Optional[ApeLogger] = None, default: Union[str, int, LogLevel] = DEFAULT_LOG_LEVEL
+    cli_logger: Optional[ApeLogger] = None,
+    default: Union[str, int, LogLevel] = DEFAULT_LOG_LEVEL,
+    callback: Optional[Callable] = None,
+    **kwargs,
 ) -> Callable:
     """A decorator that adds a `--verbosity, -v` option to the decorated
     command.
+
+    Args:
+        cli_logger (:class:`~ape.logging.ApeLogger` | None): Optionally pass
+          a custom logger object.
+        default (str | int | :class:`~ape.logging.LogLevel`): The default log-level
+          for this command.
+        callback (Callable | None): A callback handler for passed-in verbosity values.
+        **kwargs: Additional click overrides.
+
+    Returns:
+        click option
     """
     _logger = cli_logger or logger
-    kwarguments = _create_verbosity_kwargs(_logger=_logger, default=default)
+    kwarguments = _create_verbosity_kwargs(
+        _logger=_logger, default=default, callback=callback, **kwargs
+    )
     return lambda f: click.option(*_VERBOSITY_VALUES, **kwarguments)(f)
 
 
 def _create_verbosity_kwargs(
-    _logger: Optional[ApeLogger] = None, default: Union[str, int, LogLevel] = DEFAULT_LOG_LEVEL
+    _logger: Optional[ApeLogger] = None,
+    default: Union[str, int, LogLevel] = DEFAULT_LOG_LEVEL,
+    callback: Optional[Callable] = None,
+    **kwargs,
 ) -> dict:
     cli_logger = _logger or logger
 
@@ -76,6 +99,9 @@ def _create_verbosity_kwargs(
             value = value.upper()
             if value.startswith("LOGLEVEL."):
                 value = value.split(".")[-1].strip()
+
+        if callback is not None:
+            value = callback(ctx, param, value)
 
         cli_logger._load_from_sys_argv(default=value)
 
@@ -89,6 +115,7 @@ def _create_verbosity_kwargs(
         "help": f"One of {names_str}",
         "is_eager": True,
         "type": Noop(),
+        **kwargs,
     }
 
 
@@ -102,13 +129,16 @@ def ape_cli_context(
     such as logging or accessing managers.
 
     Args:
-        default_log_level (Union[str, int, :class:`~ape.logging.LogLevel`]): The log-level
+        default_log_level (str | int | :class:`~ape.logging.LogLevel`): The log-level
           value to pass to :meth:`~ape.cli.options.verbosity_option`.
         obj_type (Type): The context object type. Defaults to
           :class:`~ape.cli.options.ApeCliContextObject`. Sub-class
           the context to extend its functionality in your CLIs,
           such as if you want to add additional manager classes
           to the context.
+
+    Returns:
+        click option
     """
 
     def decorator(f):
