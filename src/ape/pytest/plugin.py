@@ -81,11 +81,6 @@ def pytest_configure(config):
     gas_tracker = GasTracker(config_wrapper)
     coverage_tracker = CoverageTracker(config_wrapper)
 
-    if not config.option.verbose:
-        # Enable verbose output if stdout capture is disabled
-        config.option.verbose = config.getoption("capture") == "no"
-    # else: user has already changes verbosity to an equal or higher level; avoid downgrading.
-
     # Register the custom Ape test runner
     runner = PytestApeRunner(
         config_wrapper, isolation_manager, receipt_capture, gas_tracker, coverage_tracker

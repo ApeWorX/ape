@@ -209,6 +209,7 @@ class PytestApeRunner(ManagerAccessMixin):
                     invalid_fixtures[next_snapshot.scope].extend(next_snapshot.fixtures)
 
                 # Restore the state now.
+                invalidated = []
                 if scope_to_revert is not None:
                     self.isolation_manager.restore(scope_to_revert)
 
@@ -218,6 +219,7 @@ class PytestApeRunner(ManagerAccessMixin):
                         info_ls = fixtures.get_info(invalid_fixture)
                         for info in info_ls:
                             info.cached_result = None
+                            invalidated.append(info.name)
 
                     # Also, invalidate the corresponding isolation fixture.
                     if invalid_isolation_fixture_ls := fixtures.get_info(
@@ -225,6 +227,15 @@ class PytestApeRunner(ManagerAccessMixin):
                     ):
                         for invalid_isolation_fixture in invalid_isolation_fixture_ls:
                             invalid_isolation_fixture.cached_result = None
+                            invalidated.append(invalid_isolation_fixture.name)
+
+                    if invalidated and self.config_wrapper.verbosity:
+                        log = "rebase"
+                        if scope_to_revert is not None:
+                            log = f"{log} scope={scope_to_revert}"
+
+                        log = f"{log} invalidated-fixtures='{', '.join(invalidated)}'"
+                        self.isolation_manager._records.append(log)
 
             # Append these fixtures so we know when new ones arrive
             # and need to trigger the invalidation logic above.
@@ -276,12 +287,8 @@ class PytestApeRunner(ManagerAccessMixin):
             self._provider_is_connected = True
 
     def pytest_runtest_logreport(self, report: TestReport):
-        breakpoint()
-        if report.when == "setup":
-            fixtures = self.fixture_manager.get_fixtures(report.nodeid)
-            isolation = fixtures.isolation
-            log = f"Isolation={', '.join(isolation)}"
-            rich_print(f"\n{log}\n")
+        if self.config_wrapper.verbosity >= 3:
+            self.isolation_manager.show_records()
 
     def pytest_terminal_summary(self, terminalreporter):
         """
