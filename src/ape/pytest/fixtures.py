@@ -1,3 +1,5 @@
+import inspect
+import re
 from collections.abc import Iterable, Iterator, Mapping
 from dataclasses import dataclass, field
 from fnmatch import fnmatch
@@ -22,20 +24,48 @@ from ape.utils.basemodel import ManagerAccessMixin
 from ape.utils.rpc import allow_disconnected
 
 
-class FixtureManager:
+@dataclass()
+class FixtureRebase:
+    return_scope: Scope
+    invalid_fixtures: dict[Scope, list[str]]
+
+
+class FixtureManager(ManagerAccessMixin):
     _builtin_fixtures: ClassVar[list] = []
-    _nodeid_to_fixture_map: dict[str, "FixtureMap"] = {}
+    _ISOLATION_FIXTURE_REGEX = re.compile(r"_(session|package|module|class|function)_isolation")
 
-    def get_builtin_fixtures(self, item) -> list[str]:
-        if self._builtin_fixtures:
-            return self._builtin_fixtures
+    def __init__(self, config_wrapper: ConfigWrapper, isolation_manager: "IsolationManager"):
+        self.config_wrapper = config_wrapper
+        self.isolation_manager = isolation_manager
+        self._nodeid_to_fixture_map: dict[str, "FixtureMap"] = {}
+        self._fixture_name_to_info: dict[str, dict] = {}
 
-        FixtureManager._builtin_fixtures = [
-            fixture_name
-            for fixture_name, defs in item.session._fixturemanager._arg2fixturedefs.items()
-            if any("pytest" in fixture.func.__module__ for fixture in defs)
-        ]
+    @cached_property
+    def _ape_fixtures(self) -> tuple[str, ...]:
+        return tuple(
+            [
+                n
+                for n, itm in inspect.getmembers(PytestApeFixtures)
+                if callable(itm) and not n.startswith("_")
+            ]
+        )
+
+    @property
+    def builtin_fixtures(self) -> list[str]:
         return self._builtin_fixtures
+
+    def is_builtin(self, name: str) -> bool:
+        return name in self.builtin_fixtures
+
+    @classmethod
+    def is_isolation(cls, name: str) -> bool:
+        return bool(re.match(cls._ISOLATION_FIXTURE_REGEX, name))
+
+    def is_ape(self, name: str) -> bool:
+        return name in self._ape_fixtures
+
+    def is_custom(self, name) -> bool:
+        return not self.is_builtin(name) and not self.is_ape(name) and not self.is_isolation(name)
 
     def get_fixtures(self, item):
         if isinstance(item, str):
@@ -51,11 +81,87 @@ class FixtureManager:
 
         # New map.
         fixture_map = FixtureMap.from_test_item(item)
+        if not FixtureManager._builtin_fixtures:
+            FixtureManager._builtin_fixtures = [
+                n
+                for n, defs in fixture_map._arg2fixturedefs.items()
+                if any("pytest" in fixture.func.__module__ for fixture in defs)
+            ]
         self._nodeid_to_fixture_map[item.nodeid] = fixture_map
+        for scope, fixture_set in fixture_map.items():
+            for fixture_name in fixture_set:
+                if fixture_name not in self._fixture_name_to_info:
+                    self._fixture_name_to_info[fixture_name] = {"scope": Scope}
+
         return fixture_map
+
+    def get_fixture_scope(self, fixture_name: str) -> Optional[Scope]:
+        return self._fixture_name_to_info.get(fixture_name, {}).get("scope")
+
+    def is_stateful(self, name: str) -> bool:
+        if not self.provider.auto_mine:
+            # When automine is disabled, assume every fixture is stateful
+            # because we have no way to tell.
+            return True
+
+        info = self._fixture_name_to_info.get(name)
+        if not info:
+            # Info was never tracked, so block numbers were never stored.
+            # We can assume it must not be stateful then.
+            return False
+
+        setup_block = info.get("setup_block")
+        if setup_block is None:
+            # Setup block never set, assume not stateful.
+            return False
+
+        # teardown_block must be present if setup_block is.
+        teardown_block = info["teardown_block"]
+
+        # If the two are not equal, state has changed.
+        return setup_block != teardown_block
+
+    def add_fixture_info(self, name: str, **info):
+        if name not in self._fixture_name_to_info:
+            self._fixture_name_to_info[name] = info
+        else:
+            self._fixture_name_to_info[name] = {
+                **self._fixture_name_to_info[name],
+                **info,
+            }
 
     def _get_cached_fixtures(self, nodeid: str) -> Optional["FixtureMap"]:
         return self._nodeid_to_fixture_map.get(nodeid)
+
+    def rebase(self, rebase: FixtureRebase, fixtures: "FixtureMap"):
+        self.isolation_manager.restore(rebase.return_scope)
+
+        # Invalidate fixtures by clearing out their cached result.
+        invalidated = []
+        for invalid_scope, invalid_fixture_ls in rebase.invalid_fixtures.items():
+            for invalid_fixture in invalid_fixture_ls:
+                info_ls = fixtures.get_info(invalid_fixture)
+                for info in info_ls:
+                    if self.is_stateful(info.name):
+                        info.cached_result = None
+                        invalidated.append(info.name)
+                    # else: the fixture doesn't change state - no need to invalidate
+
+            # Also, invalidate the corresponding isolation fixture.
+            if invalid_isolation_fixture_ls := fixtures.get_info(
+                invalid_scope.isolation_fixturename
+            ):
+                for invalid_isolation_fixture in invalid_isolation_fixture_ls:
+                    invalid_isolation_fixture.cached_result = None
+                    invalidated.append(invalid_isolation_fixture.name)
+
+            if invalidated and self.config_wrapper.verbosity:
+                log = "rebase"
+                if rebase.return_scope is not None:
+                    log = f"{log} scope={rebase.return_scope}"
+
+                log = f"{log} invalidated-fixtures='{', '.join(invalidated)}'"
+                self.isolation_manager._records.append(log)
 
 
 class FixtureMap(dict[Scope, list[str]]):
@@ -113,11 +219,7 @@ class FixtureMap(dict[Scope, list[str]]):
 
     @property
     def isolation(self) -> list[str]:
-        return [
-            n.lstrip("_").split("_")[0]
-            for n in self.names
-            if n.endswith("_isolation") and n.startswith("_")
-        ]
+        return [n.lstrip("_").split("_")[0] for n in self.names if FixtureManager.is_isolation(n)]
 
     @property
     def parametrized(self) -> dict[str, list]:

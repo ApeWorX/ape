@@ -4,7 +4,7 @@ from pathlib import Path
 from ape.exceptions import ConfigError
 from ape.pytest.config import ConfigWrapper
 from ape.pytest.coverage import CoverageTracker
-from ape.pytest.fixtures import IsolationManager, PytestApeFixtures, ReceiptCapture
+from ape.pytest.fixtures import FixtureManager, IsolationManager, PytestApeFixtures, ReceiptCapture
 from ape.pytest.gas import GasTracker
 from ape.pytest.runners import PytestApeRunner
 from ape.utils.basemodel import ManagerAccessMixin
@@ -80,10 +80,16 @@ def pytest_configure(config):
     isolation_manager = IsolationManager(config_wrapper, receipt_capture)
     gas_tracker = GasTracker(config_wrapper)
     coverage_tracker = CoverageTracker(config_wrapper)
+    fixture_manager = FixtureManager(config_wrapper, isolation_manager)
 
     # Register the custom Ape test runner
     runner = PytestApeRunner(
-        config_wrapper, isolation_manager, receipt_capture, gas_tracker, coverage_tracker
+        config_wrapper,
+        isolation_manager,
+        receipt_capture,
+        gas_tracker,
+        coverage_tracker,
+        fixture_manager=fixture_manager,
     )
     config.pluginmanager.register(runner, "ape-test")
 

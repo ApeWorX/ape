@@ -1,6 +1,4 @@
-import inspect
 from collections import defaultdict
-from functools import cached_property
 from pathlib import Path
 from typing import Optional
 
@@ -14,7 +12,7 @@ from ape.api.networks import ProviderContextManager
 from ape.logging import LogLevel
 from ape.pytest.config import ConfigWrapper
 from ape.pytest.coverage import CoverageTracker
-from ape.pytest.fixtures import FixtureManager, IsolationManager, PytestApeFixtures, ReceiptCapture
+from ape.pytest.fixtures import FixtureManager, FixtureRebase, IsolationManager, ReceiptCapture
 from ape.pytest.gas import GasTracker
 from ape.pytest.utils import Scope
 from ape.types.coverage import CoverageReport
@@ -42,7 +40,7 @@ class PytestApeRunner(ManagerAccessMixin):
         gas_tracker.session_gas_report = None
         self.gas_tracker = gas_tracker
         self.coverage_tracker = coverage_tracker
-        self.fixture_manager = fixture_manager or FixtureManager()
+        self.fixture_manager = fixture_manager or FixtureManager(config_wrapper, isolation_manager)
 
     @property
     def _provider_context(self) -> ProviderContextManager:
@@ -134,16 +132,6 @@ class PytestApeRunner(ManagerAccessMixin):
             # tests had stopped here.
             pytest.exit("`ape test` exited.")
 
-    @cached_property
-    def _ape_fixtures(self) -> tuple[str, ...]:
-        return tuple(
-            [
-                n
-                for n, itm in inspect.getmembers(PytestApeFixtures)
-                if callable(itm) and not n.startswith("_")
-            ]
-        )
-
     def pytest_runtest_setup(self, item):
         """
         By default insert isolation fixtures into each test cases list of fixtures
@@ -165,12 +153,10 @@ class PytestApeRunner(ManagerAccessMixin):
 
     def _setup_isolation(self, item):
         fixtures = self.fixture_manager.get_fixtures(item)
-        builtins = self.fixture_manager.get_builtin_fixtures(item)
         for scope in (Scope.SESSION, Scope.PACKAGE, Scope.MODULE, Scope.CLASS):
-            custom_fixtures = [
-                f for f in fixtures[scope] if f not in self._ape_fixtures and f not in builtins
-            ]
-            if not custom_fixtures:
+            if not (
+                custom_fixtures := [f for f in fixtures[scope] if self.fixture_manager.is_custom(f)]
+            ):
                 # Intermediate scope isolations aren't filled in, or only using
                 # built-in Ape fixtures.
                 continue
@@ -179,73 +165,61 @@ class PytestApeRunner(ManagerAccessMixin):
 
             # Gather new fixtures. Also, be mindful of parametrized fixtures
             # which strangely have the same name.
-            new_fixtures = []
+            new_stateful_fixtures = []
             for custom_fixture in custom_fixtures:
                 # Parametrized fixtures must always be considered new
                 # because of severe complications of using them.
                 is_parametrized = custom_fixture in fixtures.parametrized
-                if custom_fixture not in snapshot.fixtures or is_parametrized:
-                    new_fixtures.append(custom_fixture)
+                if (
+                    custom_fixture not in snapshot.fixtures or is_parametrized
+                ) and self.fixture_manager.is_stateful(custom_fixture):
+                    new_stateful_fixtures.append(custom_fixture)
                     continue
 
-            # Check for fixtures that are now invalid. For example, imagine a session
-            # fixture comes into play after the module snapshot has been set.
-            # Once we restore the module's state and move to the next module,
-            # that session fixture will no longer exist. To remedy this situation,
-            # we invalidate the lower-scoped fixtures and re-snapshot everything.
-            if new_fixtures and snapshot.fixtures:
-                invalid_fixtures = defaultdict(list)
-                scope_to_revert = None
-                for next_snapshot in self.isolation_manager.next_snapshots(scope):
-                    if next_snapshot.identifier is None:
-                        # Thankfully, we haven't reached this scope yet.
-                        # In this case, things are running in a performant order.
-                        continue
-
-                    if scope_to_revert is None:
-                        # Revert to the closest scope to use. For example, a new
-                        # session comes in but we have already calculated a module
-                        # and a class, revert to pre-module and invalidate the module
-                        # and class fixtures.
-                        scope_to_revert = next_snapshot.scope
-
-                    # All fixtures downward need to be invalidated.
-                    invalid_fixtures[next_snapshot.scope].extend(next_snapshot.fixtures)
-
-                # Restore the state now.
-                invalidated = []
-                if scope_to_revert is not None:
-                    self.isolation_manager.restore(scope_to_revert)
-
-                # Invalidate fixtures by clearing out their cached result.
-                for invalid_scope, invalid_fixture_ls in invalid_fixtures.items():
-                    for invalid_fixture in invalid_fixture_ls:
-                        info_ls = fixtures.get_info(invalid_fixture)
-                        for info in info_ls:
-                            info.cached_result = None
-                            invalidated.append(info.name)
-
-                    # Also, invalidate the corresponding isolation fixture.
-                    if invalid_isolation_fixture_ls := fixtures.get_info(
-                        invalid_scope.isolation_fixturename
-                    ):
-                        for invalid_isolation_fixture in invalid_isolation_fixture_ls:
-                            invalid_isolation_fixture.cached_result = None
-                            invalidated.append(invalid_isolation_fixture.name)
-
-                    if invalidated and self.config_wrapper.verbosity:
-                        log = "rebase"
-                        if scope_to_revert is not None:
-                            log = f"{log} scope={scope_to_revert}"
-
-                        log = f"{log} invalidated-fixtures='{', '.join(invalidated)}'"
-                        self.isolation_manager._records.append(log)
+            # Rebase if there are new fixtures found of non-function scope.
+            # And there are stateful fixtures of lower scopes that need resetting.
+            needs_rebase = bool(new_fixtures and snapshot.fixtures)
+            if needs_rebase:
+                if rebase := self._get_rebase(scope):
+                    self.fixture_manager.rebase(rebase, fixtures)
 
             # Append these fixtures so we know when new ones arrive
             # and need to trigger the invalidation logic above.
             snapshot.append_fixtures(new_fixtures)
 
         fixtures.apply_fixturenames()
+
+    def _get_rebase(self, scope: Scope) -> Optional[FixtureRebase]:
+        # Check for fixtures that are now invalid. For example, imagine a session
+        # fixture comes into play after the module snapshot has been set.
+        # Once we restore the module's state and move to the next module,
+        # that session fixture will no longer exist. To remedy this situation,
+        # we invalidate the lower-scoped fixtures and re-snapshot everything.
+        scope_to_revert = None
+        invalids = defaultdict(list)
+        for next_snapshot in self.isolation_manager.next_snapshots(scope):
+            if next_snapshot.identifier is None:
+                # Thankfully, we haven't reached this scope yet.
+                # In this case, things are running in a performant order.
+                continue
+
+            if scope_to_revert is None:
+                # Revert to the closest scope to use. For example, a new
+                # session comes in but we have already calculated a module
+                # and a class, revert to pre-module and invalidate the module
+                # and class fixtures.
+                scope_to_revert = next_snapshot.scope
+
+            # All stateful fixtures downward are "below scope"
+            invalids[next_snapshot.scope].extend(
+                [f for f in next_snapshot.fixtures if self.fixture_manager.is_stateful(f)]
+            )
+
+        return (
+            FixtureRebase(return_scope=scope_to_revert, invalid_fixtures=dict(invalids))
+            if scope_to_revert
+            else None
+        )
 
     def pytest_sessionstart(self):
         """
@@ -277,6 +251,28 @@ class PytestApeRunner(ManagerAccessMixin):
 
         else:
             yield
+
+    def pytest_fixture_setup(self, fixturedef, request):
+        fixture_name = fixturedef.argname
+        if self._track_fixture_blocks(fixture_name):
+            block_number = self.chain_manager.blocks.height
+            self.fixture_manager.add_fixture_info(fixture_name, setup_block=block_number)
+
+    def pytest_fixture_post_finalizer(self, fixturedef, request):
+        fixture_name = fixturedef.argname
+        if self._track_fixture_blocks(fixture_name):
+            block_number = self.chain_manager.blocks.height
+            self.fixture_manager.add_fixture_info(fixture_name, teardown_block=block_number)
+
+    def _track_fixture_blocks(self, fixture_name: str) -> bool:
+        if not self.fixture_manager.is_custom(fixture_name):
+            return False
+
+        scope = self.fixture_manager.get_fixture_scope(fixture_name)
+        if scope in (None, Scope.FUNCTION):
+            return False
+
+        return True
 
     @pytest.hookimpl(trylast=True, hookwrapper=True)
     def pytest_collection_finish(self, session):
