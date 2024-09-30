@@ -37,12 +37,24 @@ class FixtureManager:
         return self._builtin_fixtures
 
     def get_fixtures(self, item):
-        if item.nodeid in self._nodeid_to_fixture_map:
-            return self._nodeid_to_fixture_map[item.nodeid]
+        if isinstance(item, str):
+            # Cached map referenced where only have nodeid.
+            if fixture_map := self._get_cached_fixtures(item):
+                return fixture_map
 
+            raise KeyError(f"No item found with nodeid '{item}'.")
+
+        elif fixture_map := self._get_cached_fixtures(item.nodeid):
+            # Cached map.
+            return fixture_map
+
+        # New map.
         fixture_map = FixtureMap.from_test_item(item)
-        self._nodeid_to_fixture_map[item.nodeid] = item
+        self._nodeid_to_fixture_map[item.nodeid] = fixture_map
         return fixture_map
+
+    def _get_cached_fixtures(self, nodeid: str) -> Optional["FixtureMap"]:
+        return self._nodeid_to_fixture_map.get(nodeid)
 
 
 class FixtureMap(dict[Scope, list[str]]):
@@ -58,6 +70,9 @@ class FixtureMap(dict[Scope, list[str]]):
                 Scope.FUNCTION: [],
             }
         )
+
+    def __repr__(self) -> str:
+        return f"<{self.__class__.__name__} {self._item.nodeid}>"
 
     @classmethod
     def from_test_item(cls, item) -> "FixtureMap":
@@ -96,20 +111,8 @@ class FixtureMap(dict[Scope, list[str]]):
         return [n for n in self._item.fixturenames if n not in self._arg2fixturedefs]
 
     @property
-    def num_fixture_iterations(self) -> int:
-        numbers = []
-        for ls in self.parametrized.values():
-            for itm in ls:
-                numbers.append(len(itm.params))
-
-        if not numbers:
-            return 1
-
-        result = numbers[0]
-        for num in numbers[1:]:
-            result *= num
-
-        return result
+    def isolation(self) -> list[str]:
+        return [n.lstrip("_").split("_")[0] for n in self.names if n.endswith("_isolation") and n.startswith("_")]
 
     @property
     def parametrized(self) -> dict[str, list]:
