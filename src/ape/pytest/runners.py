@@ -7,6 +7,7 @@ from typing import Optional
 import click
 import pytest
 from _pytest._code.code import Traceback as PytestTraceback
+from _pytest.reports import TestReport
 from rich import print as rich_print
 
 from ape.api.networks import ProviderContextManager
@@ -273,6 +274,14 @@ class PytestApeRunner(ManagerAccessMixin):
         if not outcome.get_result() and session.items:
             self._provider_context.push_provider()
             self._provider_is_connected = True
+
+    def pytest_runtest_logreport(self, report: TestReport):
+        breakpoint()
+        if report.when == "setup":
+            fixtures = self.fixture_manager.get_fixtures(report.nodeid)
+            isolation = fixtures.isolation
+            log = f"Isolation={', '.join(isolation)}"
+            rich_print(f"\n{log}\n")
 
     def pytest_terminal_summary(self, terminalreporter):
         """
