@@ -6,6 +6,7 @@ from typing import ClassVar, Optional
 
 import pytest
 from eth_utils import to_hex
+from rich import print as rich_print
 
 from ape.api.accounts import TestAccountAPI
 from ape.api.transactions import ReceiptAPI
@@ -112,7 +113,11 @@ class FixtureMap(dict[Scope, list[str]]):
 
     @property
     def isolation(self) -> list[str]:
-        return [n.lstrip("_").split("_")[0] for n in self.names if n.endswith("_isolation") and n.startswith("_")]
+        return [
+            n.lstrip("_").split("_")[0]
+            for n in self.names
+            if n.endswith("_isolation") and n.startswith("_")
+        ]
 
     @property
     def parametrized(self) -> dict[str, list]:
@@ -354,6 +359,7 @@ class IsolationManager(ManagerAccessMixin):
     def __init__(self, config_wrapper: ConfigWrapper, receipt_capture: "ReceiptCapture"):
         self.config_wrapper = config_wrapper
         self.receipt_capture = receipt_capture
+        self._records: list[str] = []
 
     @cached_property
     def _track_transactions(self) -> bool:
@@ -404,6 +410,9 @@ class IsolationManager(ManagerAccessMixin):
         if not self.supported:
             return
 
+        if self.config_wrapper.verbosity:
+            self._records.append(f"snapshot-taken '{scope.name.upper()}'")
+
         try:
             snapshot_id = self.take_snapshot()
         except Exception:
@@ -437,6 +446,9 @@ class IsolationManager(ManagerAccessMixin):
             self.snapshots.clear_snapshot_id(scope)
             return
 
+        if self.config_wrapper.verbosity:
+            self._records.append(f"restoring '{scope.name.upper()}'")
+
         try:
             self.chain_manager.restore(snapshot_id)
         except NotImplementedError:
@@ -448,6 +460,14 @@ class IsolationManager(ManagerAccessMixin):
             self.supported = False
 
         self.snapshots.clear_snapshot_id(scope)
+
+    def show_records(self):
+        if not self._records:
+            return
+
+        records_str = "\n".join(self._records)
+        rich_print(f"\n{records_str}")
+        self._records = []
 
 
 class ReceiptCapture(ManagerAccessMixin):
