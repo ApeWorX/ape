@@ -160,6 +160,10 @@ class PytestApeRunner(ManagerAccessMixin):
             # isolation is disabled via cmdline option or running doc-tests.
             return
 
+        if self.config_wrapper.isolation:
+            self._setup_isolation(item)
+
+    def _setup_isolation(self, item):
         fixtures = self.fixture_manager.get_fixtures(item)
         builtins = self.fixture_manager.get_builtin_fixtures(item)
         for scope in (Scope.SESSION, Scope.PACKAGE, Scope.MODULE, Scope.CLASS):
