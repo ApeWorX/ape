@@ -201,9 +201,8 @@ class FixtureManager(ManagerAccessMixin):
                 scope_to_revert = next_snapshot.scope
 
             # All stateful fixtures downward are "below scope"
-            invalids[next_snapshot.scope].extend(
-                [f for f in next_snapshot.fixtures if self.is_stateful(f) is not False]
-            )
+            fixtures = [f for f in next_snapshot.fixtures if self.is_stateful(f) is not False]
+            invalids[next_snapshot.scope].extend(fixtures)
 
         invalids_dict = dict(invalids)
         return (
