@@ -103,9 +103,18 @@ def test_parametrized_fixtures(start_block_number, chain, parametrized_mining):
 @pytest.fixture(scope="session", params=(1, 2, 3))
 def parametrized_transaction(request, alice, bob):
     """
-    2 more get added to the session here!
+    3 more get added to the session here!
     """
     alice.transfer(bob, f"{request.param} wei")
+    return request.param
+
+
+@pytest.fixture(scope="session", params=(1, 2, 3))
+def second_parametrized_transaction(request, alice, bob):
+    """
+    2 more get added to the session here!
+    """
+    alice.transfer(bob, f"{request.param * 2} wei")
     return request.param
 
 
@@ -128,10 +137,13 @@ def test_functional_fixture_using_session(chain, functional_fixture_using_sessio
 
 
 def test_use_parametrized_transaction(chain, parametrized_transaction):
+    starting = 10  # All session + module
+    assert chain.blocks.height == starting + parametrized_transaction
+
+
+def test_use_parametrized_transaction_again(chain, parametrized_transaction):
     """
-    The real test is in the next file `test_iso_session.py`.
-    The session fixtures should know about these and add an additional
-    `3` to the `6` to make `9.`
+    Should not have invalidated parametrized fixture.
     """
     starting = 10  # All session + module
     assert chain.blocks.height == starting + parametrized_transaction
