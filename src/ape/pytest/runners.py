@@ -168,12 +168,14 @@ class PytestApeRunner(ManagerAccessMixin):
             for custom_fixture in custom_fixtures:
                 # Parametrized fixtures must always be considered new
                 # because of severe complications of using them.
-                is_iterating = custom_fixture in fixtures.parametrized and fixtures.is_iterating(
-                    custom_fixture
-                )
-                if (
-                    custom_fixture not in snapshot.fixtures or is_iterating
-                ) and self.fixture_manager.is_stateful(custom_fixture) is not False:
+                is_custom = custom_fixture in fixtures.parametrized
+                is_iterating = is_custom and fixtures.is_iterating(custom_fixture)
+                is_new = custom_fixture not in snapshot.fixtures
+
+                # NOTE: Consider ``None`` to be stateful here to be safe.
+                stateful = self.fixture_manager.is_stateful(custom_fixture) is not False
+
+                if (is_new or is_iterating) and stateful:
                     new_fixtures.append(custom_fixture)
                     continue
 
