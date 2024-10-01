@@ -227,8 +227,10 @@ After each test completes, the chain reverts to that snapshot from the beginning
 
 By default, every `pytest` fixture is `function` scoped, meaning it will be replayed each time it is requested (no result-caching).
 For example, if you deploy a contract in a function-scoped fixture, it will be re-deployed each time the fixture gets used in your tests.
-To only deploy once, you can use different scopes, such as `"session"`, `"package"`, `"module"`, or `"class"`.
+To only deploy once, you can use different scopes, such as `"session"`, `"package"`, `"module"`, or `"class"`, and you **must** use these fixtures right away, either via `autouse=True` or using them in the first collected tests.
+Otherwise, higher-scoped fixtures that arrive late in a Pytest session will cause the snapshotting system to have to rebase itself, which can be costly.
 For example, if you define a session scoped fixture that deploys a contract and makes transactions, the state changes from those transactions remain in subsequent tests, whether those tests use that fixture or not.
+However, if a new fixture of a session scope comes into play after module, package, or class scoped snapshots have already been taken, those lower-scoped fixtures are now invalid and have to re-run after the session fixture to ensure the session fixture remains in the session-snapshot.
 
 In the following example, the `my_contract` fixture gets deployed upon its first usage, which happens in the test `test_my_contract_0()`.
 During the test `test_something_else()`, it may not have been deployed yet, as it was not requested, and it is defined before the other tests.
@@ -259,7 +261,7 @@ To disable isolation, run `ape test` with the `--disable-isolation` flag.
 When isolation is disabled, the blockchain's state persists as the tests run.
 This will be more performant and less complex, but will also cause non-deterministic results in your tests as each test inherits the state of whatever was run before it.
 
-This may be further complicated when running with other pytest plugins such as `pytest-xdist` or `pytest-split` which re-arranges the order that tests are executed in (not recommended to use these plugins together with ape).
+This may be further complicated when running with other pytest plugins such as `pytest-xdist` or `pytest-split` which re-arranges the order that tests are executed in (not recommended to use these plugins together with ape until more proper integrations are developed).
 
 ```shell
 ape test --disable-isolation
@@ -269,6 +271,7 @@ ape test --disable-isolation
 Be mindful if, when, and how you define non-function scoped fixtures.
 Pytest activates fixtures in the order they are used.
 If a session scoped fixture comes into play after package, module, or class scoped fixtures, the isolation logic has to invalidate each of those scopes and replay them after the session scoped, which causes any benefits of package, module, or class scopes to be void.
+If you are using higher-scoped fixtures for parametrized fixtures with lower-scoped fixtures, each itertion of the parametried fixture invalidates the lower-level fixtures each time, rendering everything to behave as function scoped until the end of the parametrized fixtures first run-through.
 ```
 
 ## Ape testing commands
