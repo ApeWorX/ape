@@ -1,11 +1,31 @@
 import pytest
 
+import ape
+
 INITIAL_BALANCE = 1_000_1 * 10**18
 
 
 @pytest.fixture(scope="function")
 def function_one(chain):
     chain.mine(1)
+
+
+TOKEN_MAP = {
+    "WETH": "weth-token",
+    "DAI": "dai-token",
+    "BAT": "bat-token",
+}
+
+
+@ape.fixture(scope="module", chain_isolation=False, params=("WETH", "DAI", "BAT"))
+def token_key(request):
+    return TOKEN_MAP[request.param]
+
+
+def test_token_key(token_key):
+    # TODO: Improve this test - show token key doesn't trigger
+    #   resets in those unfortunate conditions.
+    assert True
 
 
 @pytest.fixture(scope="module", autouse=True)

@@ -274,6 +274,17 @@ If a session scoped fixture comes into play after package, module, or class scop
 If you are using higher-scoped fixtures for parametrized fixtures with lower-scoped fixtures, each itertion of the parametried fixture invalidates the lower-level fixtures each time, rendering everything to behave as function scoped until the end of the parametrized fixtures first run-through.
 ```
 
+If you are using chain-isolation and have a higher-scoped fixture that you know is for-sure not chain-altering, you can use `ape.fixture` and the `chain_isolation` flag, and it may improve performance:
+
+```python
+import ape
+from ape_tokens import tokens
+
+@ape.fixture(scope="session", chain_isolation=False, params=("WETH", "DAI", "BAT"))
+def token_addresses(request):
+    return tokens[request].address
+```
+
 ## Ape testing commands
 
 ```bash

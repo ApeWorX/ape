@@ -34,6 +34,7 @@ class FixtureRebase:
 
 class FixtureManager(ManagerAccessMixin):
     _builtin_fixtures: ClassVar[list] = []
+    _isolation_marks: ClassVar[dict[str, bool]] = {}
     _ISOLATION_FIXTURE_REGEX = re.compile(r"_(session|package|module|class|function)_isolation")
 
     def __init__(self, config_wrapper: ConfigWrapper, isolation_manager: "IsolationManager"):
@@ -108,7 +109,11 @@ class FixtureManager(ManagerAccessMixin):
         return self._fixture_name_to_info.get(fixture_name, {}).get("scope")
 
     def is_stateful(self, name: str) -> Optional[bool]:
-        if not self.provider.auto_mine:
+        if name in self._isolation_marks:
+            # Used `@ape.fixture(chain_isolation=<bool>)
+            return self._isolation_marks[name]
+
+        elif not self.provider.auto_mine:
             # When automine is disabled, it's unknown.
             return None
 
@@ -728,3 +733,31 @@ class ReceiptCapture(ManagerAccessMixin):
                 return True
 
         return False
+
+
+def fixture(chain_isolation: Optional[bool], **kwargs):
+    """
+    A thin-wrapper around ``@pytest.fixture`` with extra capabilities.
+    Set ``chain_isolation`` to ``False`` to signal to Ape that this fixture's
+    cached result is the same regardless of block number and it does not
+    need to be invalidated during times or pytest-scoped based chain rebasing.
+
+    Usage example::
+
+        import ape
+        from ape_tokens import tokens
+
+        @ape.fixture(scope="session", chain_isolation=False, params=("WETH", "DAI", "BAT"))
+        def token_addresses(request):
+            return tokens[request].address
+
+    """
+
+    def decorator(fixture_function):
+        if chain_isolation is not None:
+            name = kwargs.get("name", fixture_function.__name__)
+            FixtureManager._isolation_marks[name] = chain_isolation
+
+        return pytest.fixture(fixture_function, **kwargs)
+
+    return decorator
