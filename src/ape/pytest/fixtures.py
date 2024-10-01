@@ -151,12 +151,12 @@ class FixtureManager(ManagerAccessMixin):
             for invalid_fixture in invalid_fixture_ls:
                 info_ls = fixtures.get_info(invalid_fixture)
                 for info in info_ls:
-                    if self.is_stateful(info.name) is False:
+                    if self.is_stateful(info.argname) is False:
                         # It has been determined that this fixture is not stateful.
                         continue
 
                     info.cached_result = None
-                    invalidated.append(info.name)
+                    invalidated.append(info.argname)
 
             # Also, invalidate the corresponding isolation fixture.
             if invalid_isolation_fixture_ls := fixtures.get_info(
@@ -164,7 +164,7 @@ class FixtureManager(ManagerAccessMixin):
             ):
                 for invalid_isolation_fixture in invalid_isolation_fixture_ls:
                     invalid_isolation_fixture.cached_result = None
-                    invalidated.append(invalid_isolation_fixture.name)
+                    invalidated.append(invalid_isolation_fixture.argname)
 
             if invalidated and self.config_wrapper.verbosity:
                 log = "rebase"
@@ -200,9 +200,10 @@ class FixtureManager(ManagerAccessMixin):
                 [f for f in next_snapshot.fixtures if self.is_stateful(f) is not False]
             )
 
+        invalids_dict = dict(invalids)
         return (
-            FixtureRebase(return_scope=scope_to_revert, invalid_fixtures=dict(invalids))
-            if scope_to_revert
+            FixtureRebase(return_scope=scope_to_revert, invalid_fixtures=invalids_dict)
+            if scope_to_revert is not None and any(len(ls) > 0 for ls in invalids_dict.values())
             else None
         )
 

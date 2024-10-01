@@ -10,7 +10,7 @@ from ape_test import ApeTestConfig
 def create_fixture_info(mocker):
     def fn(name="my_fixture", scope=Scope.FUNCTION.value, params=None, cached_result=None):
         info = mocker.MagicMock()
-        info.name = name
+        info.argname = name
         info.scope = scope
         info.params = params
         info.cached_result = cached_result
@@ -27,9 +27,14 @@ def item(mocker, create_fixture_info):
     mock.nodeid = "test_nodeid"
     mock.fixturenames = fixturenames
     mock.session._fixturemanager._arg2fixturedefs = {
+        "_session_isolation": [create_fixture_info("_session_isolation", Scope.SESSION.value)],
+        "_package_isolation": [create_fixture_info("_package_isolation", Scope.PACKAGE.value)],
         "foo": [create_fixture_info("foo", Scope.SESSION.value, [1, 2, 3])],
+        "_module_isolation": [create_fixture_info("_module_isolation", Scope.MODULE.value)],
         "bar": [create_fixture_info("bar", Scope.MODULE.value)],
+        "_class_isolation": [create_fixture_info("_class_isolation", Scope.CLASS.value)],
         "baz": [create_fixture_info("baz", Scope.CLASS.value)],
+        "_function_isolation": [create_fixture_info("_function_isolation", Scope.FUNCTION.value)],
     }
     return mock
 
@@ -101,6 +106,7 @@ class TestFixtureManager:
         # We must have already started our module-scope isolation.
         isolation_manager = IsolationManager(fixture_manager.config_wrapper, mocker.MagicMock())
         isolation_manager.snapshots[Scope.MODULE].identifier = "123"
+        isolation_manager.snapshots[Scope.MODULE].fixtures = ["bar"]
         fixture_manager.isolation_manager = isolation_manager
 
         # New session fixture arrives, triggering a rebase.
@@ -110,12 +116,32 @@ class TestFixtureManager:
             create_fixture_info("new_session_fixture", Scope.SESSION)
         ]
 
+        # Cache a module result so we can prove it gets cleared.
+        fixture_map._item.session._fixturemanager._arg2fixturedefs["bar"][0].cached_result = "CACHE"
+
+        # Show the module-isolation was cache and gets cleared as well.
+        # NOTE: Pytest caches yield-based fixtures as a tuple, even when yields None.
+        fixture_map._item.session._fixturemanager._arg2fixturedefs["_module_isolation"][
+            0
+        ].cached_result = (None, None, None)
+
         expected = (
             r"Invalid isolation; Ensure session|package|module|class scoped "
             r"fixtures run earlier\. Rebasing fixtures is costly\."
         )
         with pytest.warns(InvalidIsolationWarning, match=expected):
             fixture_manager.rebase(Scope.SESSION, fixture_map)
+
+        # Show that module-level fixtures are invalidated, including the isolation fixture.
+        for module_fixture_name in ("bar", "_module_isolation"):
+            assert (
+                fixture_map._item.session._fixturemanager._arg2fixturedefs[module_fixture_name][
+                    0
+                ].cached_result
+                is None
+            )
+        # Show that we have reverted our module-level snapshot.
+        assert isolation_manager.snapshots[Scope.MODULE].identifier is None
 
 
 class TestFixtureMap:
@@ -170,7 +196,7 @@ class TestFixtureMap:
     def test_get_info(self, fixture_map):
         actual = fixture_map.get_info("foo")
         assert len(actual) == 1
-        assert actual[0].name == "foo"
+        assert actual[0].argname == "foo"
         assert actual[0].scope == Scope.SESSION
 
     def test_is_known(self, fixture_map):
@@ -214,6 +240,10 @@ class TestFixtureMap:
 
 
 class TestSnapshotRegistry:
+    """
+    Note: Most isolation-based tests occur in `functional/test_fixtures.py`.
+    """
+
     @pytest.fixture
     def registry(self):
         return SnapshotRegistry()
@@ -231,6 +261,10 @@ class TestSnapshotRegistry:
 
 
 class TestIsolationManager:
+    """
+    Note: Most isolation-based tests occur in `functional/test_fixtures.py`.
+    """
+
     @pytest.fixture
     def isolation_manager(self, mocker):
         config_wrapper = mocker.MagicMock()
