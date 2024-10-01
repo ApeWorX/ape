@@ -1,5 +1,6 @@
 import inspect
 import re
+from collections import defaultdict
 from collections.abc import Iterable, Iterator, Mapping
 from dataclasses import dataclass, field
 from fnmatch import fnmatch
@@ -19,6 +20,7 @@ from ape.managers.networks import NetworkManager
 from ape.managers.project import ProjectManager
 from ape.pytest.config import ConfigWrapper
 from ape.pytest.utils import Scope
+from ape.pytest.warnings import warn_invalid_isolation
 from ape.types import SnapshotID
 from ape.utils.basemodel import ManagerAccessMixin
 from ape.utils.rpc import allow_disconnected
@@ -39,6 +41,14 @@ class FixtureManager(ManagerAccessMixin):
         self.isolation_manager = isolation_manager
         self._nodeid_to_fixture_map: dict[str, "FixtureMap"] = {}
         self._fixture_name_to_info: dict[str, dict] = {}
+
+    @classmethod
+    def set_builtins(cls, fixture_map: "FixtureMap"):
+        cls._builtin_fixtures = [
+            n
+            for n, defs in fixture_map._arg2fixturedefs.items()
+            if any("pytest" in fixture.func.__module__ for fixture in defs)
+        ]
 
     @cached_property
     def _ape_fixtures(self) -> tuple[str, ...]:
@@ -67,7 +77,7 @@ class FixtureManager(ManagerAccessMixin):
     def is_custom(self, name) -> bool:
         return not self.is_builtin(name) and not self.is_ape(name) and not self.is_isolation(name)
 
-    def get_fixtures(self, item):
+    def get_fixtures(self, item) -> "FixtureMap":
         if isinstance(item, str):
             # Cached map referenced where only have nodeid.
             if fixture_map := self._get_cached_fixtures(item):
@@ -79,14 +89,13 @@ class FixtureManager(ManagerAccessMixin):
             # Cached map.
             return fixture_map
 
-        # New map.
+        return self.cache_fixtures(item)
+
+    def cache_fixtures(self, item) -> "FixtureMap":
         fixture_map = FixtureMap.from_test_item(item)
         if not FixtureManager._builtin_fixtures:
-            FixtureManager._builtin_fixtures = [
-                n
-                for n, defs in fixture_map._arg2fixturedefs.items()
-                if any("pytest" in fixture.func.__module__ for fixture in defs)
-            ]
+            FixtureManager.set_builtins(fixture_map)
+
         self._nodeid_to_fixture_map[item.nodeid] = fixture_map
         for scope, fixture_set in fixture_map.items():
             for fixture_name in fixture_set:
@@ -98,25 +107,20 @@ class FixtureManager(ManagerAccessMixin):
     def get_fixture_scope(self, fixture_name: str) -> Optional[Scope]:
         return self._fixture_name_to_info.get(fixture_name, {}).get("scope")
 
-    def is_stateful(self, name: str) -> bool:
+    def is_stateful(self, name: str) -> Optional[bool]:
         if not self.provider.auto_mine:
-            # When automine is disabled, assume every fixture is stateful
-            # because we have no way to tell.
-            return True
+            # When automine is disabled, it's unknown.
+            return None
 
-        info = self._fixture_name_to_info.get(name)
-        if not info:
-            # Info was never tracked, so block numbers were never stored.
-            # We can assume it must not be stateful then.
-            return False
+        elif not (info := self._fixture_name_to_info.get(name)):
+            # Statefulness not yet tracked. Unknown.
+            return None
 
         setup_block = info.get("setup_block")
-        if setup_block is None:
-            # Setup block never set, assume not stateful.
-            return False
-
-        # teardown_block must be present if setup_block is.
-        teardown_block = info["teardown_block"]
+        teardown_block = info.get("teardown_block")
+        if setup_block is None or teardown_block is None:
+            # Blocks no set. Unknown.
+            return None
 
         # If the two are not equal, state has changed.
         return setup_block != teardown_block
@@ -133,7 +137,12 @@ class FixtureManager(ManagerAccessMixin):
     def _get_cached_fixtures(self, nodeid: str) -> Optional["FixtureMap"]:
         return self._nodeid_to_fixture_map.get(nodeid)
 
-    def rebase(self, rebase: FixtureRebase, fixtures: "FixtureMap"):
+    def rebase(self, scope: Scope, fixtures: "FixtureMap"):
+        if not (rebase := self._get_rebase(scope)):
+            # Rebase avoided: nothing would change.
+            return
+
+        warn_invalid_isolation()
         self.isolation_manager.restore(rebase.return_scope)
 
         # Invalidate fixtures by clearing out their cached result.
@@ -142,10 +151,12 @@ class FixtureManager(ManagerAccessMixin):
             for invalid_fixture in invalid_fixture_ls:
                 info_ls = fixtures.get_info(invalid_fixture)
                 for info in info_ls:
-                    if self.is_stateful(info.name):
-                        info.cached_result = None
-                        invalidated.append(info.name)
-                    # else: the fixture doesn't change state - no need to invalidate
+                    if self.is_stateful(info.name) is False:
+                        # It has been determined that this fixture is not stateful.
+                        continue
+
+                    info.cached_result = None
+                    invalidated.append(info.name)
 
             # Also, invalidate the corresponding isolation fixture.
             if invalid_isolation_fixture_ls := fixtures.get_info(
@@ -162,6 +173,38 @@ class FixtureManager(ManagerAccessMixin):
 
                 log = f"{log} invalidated-fixtures='{', '.join(invalidated)}'"
                 self.isolation_manager._records.append(log)
+
+    def _get_rebase(self, scope: Scope) -> Optional[FixtureRebase]:
+        # Check for fixtures that are now invalid. For example, imagine a session
+        # fixture comes into play after the module snapshot has been set.
+        # Once we restore the module's state and move to the next module,
+        # that session fixture will no longer exist. To remedy this situation,
+        # we invalidate the lower-scoped fixtures and re-snapshot everything.
+        scope_to_revert = None
+        invalids = defaultdict(list)
+        for next_snapshot in self.isolation_manager.next_snapshots(scope):
+            if next_snapshot.identifier is None:
+                # Thankfully, we haven't reached this scope yet.
+                # In this case, things are running in a performant order.
+                continue
+
+            if scope_to_revert is None:
+                # Revert to the closest scope to use. For example, a new
+                # session comes in but we have already calculated a module
+                # and a class, revert to pre-module and invalidate the module
+                # and class fixtures.
+                scope_to_revert = next_snapshot.scope
+
+            # All stateful fixtures downward are "below scope"
+            invalids[next_snapshot.scope].extend(
+                [f for f in next_snapshot.fixtures if self.is_stateful(f) is not False]
+            )
+
+        return (
+            FixtureRebase(return_scope=scope_to_revert, invalid_fixtures=dict(invalids))
+            if scope_to_revert
+            else None
+        )
 
 
 class FixtureMap(dict[Scope, list[str]]):
@@ -307,19 +350,33 @@ class FixtureMap(dict[Scope, list[str]]):
         """
         return name in self._arg2fixturedefs
 
-    def prepend(self, scope: Scope, fixtures: Iterable[str]):
-        existing = self[scope]
-        result = []
-        for new_fixture in fixtures:
-            if new_fixture in existing:
-                existing.remove(new_fixture)
+    def is_iterating(self, name: str) -> bool:
+        """
+        True when is a non-function scoped parametrized fixture that hasn't
+        fully iterated.
+        """
+        if name not in self.parametrized:
+            return False
 
-            result.append(new_fixture)
+        elif not (info_ls := self.get_info(name)):
+            return False
 
-        for existing_fixture in existing:
-            result.append(existing_fixture)
+        for info in info_ls:
+            if not info.params:
+                continue
 
-        self[scope] = result
+            if not info.cached_result:
+                return True  # First iteration
+
+            elif len(info.cached_result) < 2:
+                continue  # ?
+
+            last_param_ran = info.cached_result[1]
+            last_param = info.params[-1]
+            if last_param_ran != last_param:
+                return True  # Is iterating.
+
+        return False
 
     def apply_fixturenames(self):
         """
