@@ -284,3 +284,68 @@ class TestIsolationManager:
         assert actual[1].scope is Scope.MODULE
         assert actual[2].scope is Scope.CLASS
         assert actual[3].scope is Scope.FUNCTION
+
+    def test_isolate(self, isolation_manager, owner, vyper_contract_instance):
+        """
+        Low-level test simulating how pyetst interacts with these yield-based
+        isolation fixtures.
+        """
+        start_number = vyper_contract_instance.myNumber()
+        session = isolation_manager.isolation(Scope.SESSION)
+        module = isolation_manager.isolation(Scope.MODULE)
+        function = isolation_manager.isolation(Scope.FUNCTION)
+
+        expected_session = 10000000
+        expected_module = 20000000
+        expected_test = 300000000
+
+        # Show we start off clear of snapshots.
+        assert all(isolation_manager.snapshots[s].identifier is None for s in Scope)
+
+        # Start session.
+        next(session)
+        assert isolation_manager.snapshots[Scope.SESSION].identifier is not None
+        vyper_contract_instance.setNumber(expected_session, sender=owner)
+
+        # Start module.
+        next(module)
+        vyper_contract_instance.setNumber(expected_module, sender=owner)
+
+        # Start test.
+        next(function)
+        vyper_contract_instance.setNumber(expected_test, sender=owner)
+        assert vyper_contract_instance.myNumber() == expected_test
+
+        # End test; back to module.
+        next(function, None)
+        assert vyper_contract_instance.myNumber() == expected_module, "Is not back at module."
+
+        # End module; back to session.
+        assert isolation_manager.snapshots[Scope.MODULE].identifier is not None
+        next(module, None)
+        assert vyper_contract_instance.myNumber() == expected_session, "Is not back at session."
+
+        # Start new module.
+        module = isolation_manager.isolation(Scope.MODULE)
+        next(module)
+        vyper_contract_instance.setNumber(expected_module, sender=owner)
+
+        # Start new test.
+        function = isolation_manager.isolation(Scope.FUNCTION)
+        next(function)
+        vyper_contract_instance.setNumber(expected_test, sender=owner)
+        assert vyper_contract_instance.myNumber() == expected_test
+
+        # End test.
+        next(function, None)
+        assert vyper_contract_instance.myNumber() == expected_module, "(2) Is not back at module."
+
+        # End module.
+        assert isolation_manager.snapshots[Scope.MODULE].identifier is not None
+        next(module, None)
+        assert isolation_manager.snapshots[Scope.MODULE].identifier is None
+        assert vyper_contract_instance.myNumber() == expected_session, "(2) Is not back at session."
+
+        # End session.
+        next(session, None)
+        assert vyper_contract_instance.myNumber() == start_number, "(2) Is not back pre-session."
