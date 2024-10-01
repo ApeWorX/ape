@@ -33,13 +33,15 @@ class PytestApeRunner(ManagerAccessMixin):
         self.isolation_manager = isolation_manager
         self.receipt_capture = receipt_capture
         self._provider_is_connected = False
-        self._builtin_fixtures: list[str] = []
 
         # Ensure the gas report starts off None for this runner.
         gas_tracker.session_gas_report = None
         self.gas_tracker = gas_tracker
         self.coverage_tracker = coverage_tracker
         self.fixture_manager = fixture_manager or FixtureManager(config_wrapper, isolation_manager)
+
+        self._initialized_fixtures: list[str] = []
+        self._finalized_fixtures: list[str] = []
 
     @property
     def _provider_context(self) -> ProviderContextManager:
@@ -224,12 +226,20 @@ class PytestApeRunner(ManagerAccessMixin):
 
     def pytest_fixture_setup(self, fixturedef, request):
         fixture_name = fixturedef.argname
+        if fixture_name in self._initialized_fixtures:
+            return
+
+        self._initialized_fixtures.append(fixture_name)
         if self._track_fixture_blocks(fixture_name):
             block_number = self.chain_manager.blocks.height
             self.fixture_manager.add_fixture_info(fixture_name, setup_block=block_number)
 
     def pytest_fixture_post_finalizer(self, fixturedef, request):
         fixture_name = fixturedef.argname
+        if fixture_name in self._finalized_fixtures:
+            return
+
+        self._finalized_fixtures.append(fixture_name)
         if self._track_fixture_blocks(fixture_name):
             block_number = self.chain_manager.blocks.height
             self.fixture_manager.add_fixture_info(fixture_name, teardown_block=block_number)
