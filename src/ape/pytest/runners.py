@@ -1,4 +1,3 @@
-from collections import defaultdict
 from pathlib import Path
 from typing import Optional
 
@@ -12,7 +11,7 @@ from ape.api.networks import ProviderContextManager
 from ape.logging import LogLevel
 from ape.pytest.config import ConfigWrapper
 from ape.pytest.coverage import CoverageTracker
-from ape.pytest.fixtures import FixtureManager, FixtureRebase, IsolationManager, ReceiptCapture
+from ape.pytest.fixtures import FixtureManager, IsolationManager, ReceiptCapture
 from ape.pytest.gas import GasTracker
 from ape.pytest.utils import Scope
 from ape.types.coverage import CoverageReport
@@ -165,61 +164,30 @@ class PytestApeRunner(ManagerAccessMixin):
 
             # Gather new fixtures. Also, be mindful of parametrized fixtures
             # which strangely have the same name.
-            new_stateful_fixtures = []
+            new_fixtures = []
             for custom_fixture in custom_fixtures:
                 # Parametrized fixtures must always be considered new
                 # because of severe complications of using them.
-                is_parametrized = custom_fixture in fixtures.parametrized
+                is_iterating = custom_fixture in fixtures.parametrized and fixtures.is_iterating(
+                    custom_fixture
+                )
                 if (
-                    custom_fixture not in snapshot.fixtures or is_parametrized
-                ) and self.fixture_manager.is_stateful(custom_fixture):
-                    new_stateful_fixtures.append(custom_fixture)
+                    custom_fixture not in snapshot.fixtures or is_iterating
+                ) and self.fixture_manager.is_stateful(custom_fixture) is not False:
+                    new_fixtures.append(custom_fixture)
                     continue
 
             # Rebase if there are new fixtures found of non-function scope.
             # And there are stateful fixtures of lower scopes that need resetting.
-            needs_rebase = bool(new_fixtures and snapshot.fixtures)
-            if needs_rebase:
-                if rebase := self._get_rebase(scope):
-                    self.fixture_manager.rebase(rebase, fixtures)
+            may_need_rebase = bool(new_fixtures and snapshot.fixtures)
+            if may_need_rebase:
+                self.fixture_manager.rebase(scope, fixtures)
 
             # Append these fixtures so we know when new ones arrive
             # and need to trigger the invalidation logic above.
             snapshot.append_fixtures(new_fixtures)
 
         fixtures.apply_fixturenames()
-
-    def _get_rebase(self, scope: Scope) -> Optional[FixtureRebase]:
-        # Check for fixtures that are now invalid. For example, imagine a session
-        # fixture comes into play after the module snapshot has been set.
-        # Once we restore the module's state and move to the next module,
-        # that session fixture will no longer exist. To remedy this situation,
-        # we invalidate the lower-scoped fixtures and re-snapshot everything.
-        scope_to_revert = None
-        invalids = defaultdict(list)
-        for next_snapshot in self.isolation_manager.next_snapshots(scope):
-            if next_snapshot.identifier is None:
-                # Thankfully, we haven't reached this scope yet.
-                # In this case, things are running in a performant order.
-                continue
-
-            if scope_to_revert is None:
-                # Revert to the closest scope to use. For example, a new
-                # session comes in but we have already calculated a module
-                # and a class, revert to pre-module and invalidate the module
-                # and class fixtures.
-                scope_to_revert = next_snapshot.scope
-
-            # All stateful fixtures downward are "below scope"
-            invalids[next_snapshot.scope].extend(
-                [f for f in next_snapshot.fixtures if self.fixture_manager.is_stateful(f)]
-            )
-
-        return (
-            FixtureRebase(return_scope=scope_to_revert, invalid_fixtures=dict(invalids))
-            if scope_to_revert
-            else None
-        )
 
     def pytest_sessionstart(self):
         """
