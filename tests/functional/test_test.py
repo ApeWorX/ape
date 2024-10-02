@@ -99,8 +99,8 @@ class TestFixtureManager:
         assert fixture_manager.is_stateful("foo") is None  # Unknown.
         fixture_manager.add_fixture_info("foo", setup_block=1, teardown_block=1)
         assert fixture_manager.is_stateful("foo") is False
-        fixture_manager.add_fixture_info("foo", teardown_block=2)
-        assert fixture_manager.is_stateful("foo") is True
+        fixture_manager.add_fixture_info("bar", setup_block=1, teardown_block=2)
+        assert fixture_manager.is_stateful("bar") is True
 
     def test_rebase(self, mocker, fixture_manager, fixture_map, create_fixture_info):
         # We must have already started our module-scope isolation.
@@ -271,6 +271,13 @@ class TestIsolationManager:
         receipt_capture = mocker.MagicMock()
         return IsolationManager(config_wrapper, receipt_capture)
 
+    @pytest.fixture
+    def empty_snapshot_registry(self, isolation_manager):
+        snapshots = isolation_manager.snapshots
+        isolation_manager.snapshots = SnapshotRegistry()
+        yield
+        isolation_manager.snapshots = snapshots
+
     def test_get_snapshot(self, isolation_manager):
         actual = isolation_manager.get_snapshot(Scope.SESSION)
         # Empty.
@@ -285,9 +292,11 @@ class TestIsolationManager:
         assert actual[2].scope is Scope.CLASS
         assert actual[3].scope is Scope.FUNCTION
 
-    def test_isolate(self, isolation_manager, owner, vyper_contract_instance):
+    def test_isolate(
+        self, isolation_manager, owner, vyper_contract_instance, empty_snapshot_registry
+    ):
         """
-        Low-level test simulating how pyetst interacts with these yield-based
+        Low-level test simulating how pytest interacts with these yield-based
         isolation fixtures.
         """
         start_number = vyper_contract_instance.myNumber()
@@ -295,12 +304,14 @@ class TestIsolationManager:
         module = isolation_manager.isolation(Scope.MODULE)
         function = isolation_manager.isolation(Scope.FUNCTION)
 
-        expected_session = 10000000
-        expected_module = 20000000
-        expected_test = 300000000
+        expected_session = 10_000_000
+        expected_module = 20_000_000
+        expected_test = 30_000_000
 
         # Show we start off clear of snapshots.
-        assert all(isolation_manager.snapshots[s].identifier is None for s in Scope)
+        assert all(
+            isolation_manager.snapshots[s].identifier is None for s in Scope
+        ), "Setup failed - snapshots not empty"
 
         # Start session.
         next(session)
