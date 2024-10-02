@@ -778,3 +778,8 @@ def test_start(mocker, convert, project, geth_provider):
 
         actual = spy.call_args[1]["balance"]
         assert actual == amount
+
+
+@geth_process_test
+def test_auto_mine(geth_provider):
+    assert geth_provider.auto_mine is True
