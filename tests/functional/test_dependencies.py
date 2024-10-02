@@ -474,7 +474,9 @@ class TestGitHubDependency:
         """
         When not given a name, it is derived from the github suffix.
         """
-        dependency = GithubDependency(github="ApeWorX/ApeNotAThing", version="3.0.0")  # type: ignore
+        dependency = GithubDependency(  # type: ignore
+            github="ApeWorX/ApeNotAThing", version="3.0.0"
+        )
         assert dependency.name == "apenotathing"
 
     def test_fetch_given_version(self, mock_client):
