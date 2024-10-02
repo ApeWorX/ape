@@ -313,7 +313,15 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
 
     @property
     def auto_mine(self) -> bool:
-        return self.make_request("eth_mining", [])
+        if self.process is not None:
+            # Geth --dev auto mines.
+            return True
+
+        try:
+            return self.make_request("eth_mining", [])
+        except NotImplementedError:
+            # Assume true; unlikely to be off. Geth --dev automines.
+            return True
 
     @auto_mine.setter
     def auto_mine(self, value):
