@@ -34,7 +34,7 @@ class FixtureRebase:
 
 class FixtureManager(ManagerAccessMixin):
     _builtin_fixtures: ClassVar[list] = []
-    _isolation_marks: ClassVar[dict[str, bool]] = {}
+    _stateful_fixtures_cache: ClassVar[dict[str, bool]] = {}
     _ISOLATION_FIXTURE_REGEX = re.compile(r"_(session|package|module|class|function)_isolation")
 
     def __init__(self, config_wrapper: ConfigWrapper, isolation_manager: "IsolationManager"):
@@ -109,9 +109,10 @@ class FixtureManager(ManagerAccessMixin):
         return self._fixture_name_to_info.get(fixture_name, {}).get("scope")
 
     def is_stateful(self, name: str) -> Optional[bool]:
-        if name in self._isolation_marks:
+        if name in self._stateful_fixtures_cache:
             # Used `@ape.fixture(chain_isolation=<bool>)
-            return self._isolation_marks[name]
+            # Or we already calculated.
+            return self._stateful_fixtures_cache[name]
 
         elif not self.provider.auto_mine:
             # When automine is disabled, it's unknown.
@@ -128,7 +129,17 @@ class FixtureManager(ManagerAccessMixin):
             return None
 
         # If the two are not equal, state has changed.
-        return setup_block != teardown_block
+        is_stateful = setup_block != teardown_block
+        self._stateful_fixtures_cache[name] = is_stateful
+
+        # Clear out blocks since they are no longer needed.
+        self._fixture_name_to_info[name] = {
+            k: v
+            for k, v in self._fixture_name_to_info[name].items()
+            if k not in ("setup_block", "teardown_block")
+        }
+
+        return is_stateful
 
     def add_fixture_info(self, name: str, **info):
         if name not in self._fixture_name_to_info:
@@ -755,7 +766,7 @@ def fixture(chain_isolation: Optional[bool], **kwargs):
     def decorator(fixture_function):
         if chain_isolation is not None:
             name = kwargs.get("name", fixture_function.__name__)
-            FixtureManager._isolation_marks[name] = chain_isolation
+            FixtureManager._stateful_fixtures_cache[name] = chain_isolation
 
         return pytest.fixture(fixture_function, **kwargs)
 
