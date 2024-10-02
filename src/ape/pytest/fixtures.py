@@ -114,8 +114,14 @@ class FixtureManager(ManagerAccessMixin):
             # Or we already calculated.
             return self._stateful_fixtures_cache[name]
 
-        elif not self.provider.auto_mine:
-            # When automine is disabled, it's unknown.
+        try:
+            is_auto_mine = self.provider.auto_mine
+        except NotImplementedError:
+            # Assume it's on since it can't be turned off.
+            is_auto_mine = True
+
+        if not is_auto_mine:
+            # When auto-mine is disabled, it's unknown.
             return None
 
         elif not (info := self._fixture_name_to_info.get(name)):
