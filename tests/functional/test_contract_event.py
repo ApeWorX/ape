@@ -4,6 +4,7 @@ from typing import Optional
 
 import pytest
 from eth_pydantic_types import HexBytes
+from eth_pydantic_types.hash import HashBytes20
 from ethpm_types import ContractType
 
 from ape.api import ReceiptAPI
@@ -382,3 +383,24 @@ def test_model_dump(solidity_contract_container, owner):
     # This next assertion is important because of this Pydantic bug:
     # https://github.com/pydantic/pydantic/issues/10152
     assert not isinstance(actual["newNum"], CurrencyValueComparable)
+
+
+def test_model_dump_json():
+    # NOTE: There was an issue when using HexBytes for Any.
+    event_arguments = {"key": 123, "validators": [HexBytes(123)]}
+    event = ContractLog(
+        block_number=123,
+        block_hash="block-hash",
+        event_arguments=event_arguments,
+        event_name="MyEvent",
+        log_index=0,
+        transaction_hash=HashBytes20.__eth_pydantic_validate__(347374237412374174),
+    )
+    actual = event.model_dump_json()
+    assert actual == (
+        '{"block_hash":"block-hash","block_number":123,'
+        '"contract_address":"0x0000000000000000000000000000000000000000",'
+        '"event_arguments":{"key":123,"validators":["0x7b"]},"event_name":'
+        '"MyEvent","log_index":0,'
+        '"transaction_hash":"0x00000000000000000000000004d21f074916369e"}'
+    )
