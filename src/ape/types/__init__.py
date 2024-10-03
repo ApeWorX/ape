@@ -265,15 +265,15 @@ class BaseContractLog(BaseInterfaceModel):
         (https://github.com/pydantic/pydantic/issues/10152)
         we have to ensure these are regular ints.
         """
-        return self._serialize_value(event_arguments)
+        return self._serialize_value(event_arguments, info)
 
-    def _serialize_value(self, value: Any) -> Any:
+    def _serialize_value(self, value: Any, info) -> Any:
         if isinstance(value, int):
             # Handle custom ints.
             return int(value)
 
         elif isinstance(value, HexBytes):
-            return to_hex(value)
+            return to_hex(value) if info.mode == "json" else value
 
         elif isinstance(value, str):
             # Avoiding str triggering iterable condition.
@@ -281,10 +281,10 @@ class BaseContractLog(BaseInterfaceModel):
 
         elif isinstance(value, dict):
             # Also, avoid handling dict in the iterable case.
-            return {k: self._serialize_value(v) for k, v in value.items()}
+            return {k: self._serialize_value(v, info) for k, v in value.items()}
 
         elif isinstance(value, Iterable):
-            return [self._serialize_value(v) for v in value]
+            return [self._serialize_value(v, info) for v in value]
 
         return value
 
@@ -313,8 +313,8 @@ class ContractLog(ExtraAttributesMixin, BaseContractLog):
     """
 
     @field_serializer("transaction_hash", "block_hash")
-    def _serialize_hashes(self, value):
-        return self._serialize_value(value)
+    def _serialize_hashes(self, value, info):
+        return self._serialize_value(value, info)
 
     # NOTE: This class has an overridden `__getattr__` method, but `block` is a reserved keyword
     #       in most smart contract languages, so it is safe to use. Purposely avoid adding
