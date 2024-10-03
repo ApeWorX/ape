@@ -209,7 +209,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
               ``eth_sendPrivateTransaction`` to achieve this. Local providers may ignore
               this value.
             **kwargs: Additional transaction kwargs passed to
-              :meth:`~ape.api.networks.EcosystemAPI.create_transaction`, such as ``gas_price``
+              :meth:`~ape.api.networks.EcosystemAPI.create_transaction`, such as ``gas``
               ``max_fee``, or ``max_priority_fee``. For a list of available transaction
                 kwargs, see :class:`~ape.api.transactions.TransactionAPI`.
 
