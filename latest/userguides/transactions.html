@@ -123,6 +123,7 @@ data-aria-dark="Switch to auto color mode">
       <i class="i-lucide close"></i>
     </button>
     <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#transfer">Transfer</a></li>
 <li><a class="reference internal" href="#deployment">Deployment</a><ul>
 <li><a class="reference internal" href="#deployment-from-ape-console">Deployment from Ape Console</a></li>
 <li><a class="reference internal" href="#deployment-metadata">Deployment Metadata</a></li>
@@ -169,6 +170,30 @@ data-aria-dark="Switch to auto color mode">
 <h1>Transactions<a class="headerlink" href="#transactions" title="Link to this heading"></a></h1>
 <p>Regardless of how you are using <code class="docutils literal notranslate"><span class="pre">ape</span></code>, you will likely be making transactions.
 There are various types of transactions you can make with <code class="docutils literal notranslate"><span class="pre">ape</span></code>. A simple example is deploying a contract.</p>
+<section id="transfer">
+<h2>Transfer<a class="headerlink" href="#transfer" title="Link to this heading"></a></h2>
+<p>One of the simplest ways to transact in Ape is to use the <a class="reference external" href="../methoddocs/api.html?highlight=accountapi#ape.api.accounts.AccountAPI.transfer">the transfer method</a>.
+Transfers are transactions that send the base-currency (e.g. Ether) from one account to another.</p>
+<p>The following is a simple guide to transferring ETH.</p>
+<p>First, launch an ape console to your network of choice (for demo purposes; transfers can happen in any Python medium):</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>console<span class="w"> </span>--network<span class="w"> </span>ethereum:mainnet:node
+</span></pre></div>
+</div>
+<p>Then, load the account you want to send money from:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nv">account</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>accounts.load<span class="o">(</span><span class="s2">&quot;&lt;my-account&gt;&quot;</span><span class="o">)</span>
+</span></pre></div>
+</div>
+<p>Find the address you want to send money to and invoke the <code class="docutils literal notranslate"><span class="pre">.transfer()</span></code> method.
+The first argument is the account you are sending money to.
+The second argument is the amount you want to send.
+Any additional kwargs are passed to the transaction, such as <code class="docutils literal notranslate"><span class="pre">gas</span></code>, <code class="docutils literal notranslate"><span class="pre">max_fee</span></code>, or <code class="docutils literal notranslate"><span class="pre">max_priority_fee</span></code>, etc:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nv">other_account</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;0xab5801a7d398351b8be11c439e05c5b3259aec9b&quot;</span>
+</span><span data-line="2"><span class="nv">tx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>account.transfer<span class="o">(</span>other_account,<span class="w"> </span><span class="s2">&quot;1 ETH&quot;</span>,<span class="w"> </span><span class="nv">gas</span><span class="o">=</span><span class="m">21000</span><span class="o">)</span>
+</span><span data-line="3">print<span class="o">(</span>tx.confirmed<span class="o">)</span>
+</span></pre></div>
+</div>
+<p>Learn more about accounts (necessary for <code class="docutils literal notranslate"><span class="pre">.transfer()</span></code>) by following the <a class="reference external" href="./accounts.html">Accounts Guide</a>.</p>
+</section>
 <section id="deployment">
 <h2>Deployment<a class="headerlink" href="#deployment" title="Link to this heading"></a></h2>
 <p>Deploying a smart contract is a unique type of transaction where we don’t necessarily care about the receipt as much
