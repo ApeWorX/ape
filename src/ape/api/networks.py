@@ -1000,6 +1000,9 @@ class NetworkAPI(BaseInterfaceModel):
 
     @property
     def is_mainnet(self) -> bool:
+        """
+        True when the network is the mainnet network for the ecosystem.
+        """
         cfg_is_mainnet = self.config.get("is_mainnet")
         if cfg_is_mainnet is not None:
             return cfg_is_mainnet
