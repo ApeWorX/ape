@@ -36,7 +36,11 @@ class PytestApeRunner(ManagerAccessMixin):
 
     @property
     def _provider_context(self) -> ProviderContextManager:
-        return self.network_manager.parse_network_choice(self.config_wrapper.network)
+        ctx = self.network_manager.parse_network_choice(self.config_wrapper.network)
+        if ctx._provider.network.is_mainnet:
+            pytest.exit("Unable to run tests on mainnet.")
+
+        return ctx
 
     @property
     def _coverage_report(self) -> Optional[CoverageReport]:

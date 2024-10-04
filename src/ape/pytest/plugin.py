@@ -10,6 +10,16 @@ from ape.pytest.runners import PytestApeRunner
 from ape.utils.basemodel import ManagerAccessMixin
 
 
+def _get_default_network() -> str:
+    default_ecosystem = ManagerAccessMixin.network_manager.default_ecosystem
+    if default_ecosystem.default_network.is_mainnet:
+        # Don't use mainnet for tests, even if it configured as
+        # the default.
+        return "ethereum:local:test"
+
+    return default_ecosystem.name
+
+
 def pytest_addoption(parser):
     def add_option(*names, **kwargs):
         try:
@@ -29,7 +39,7 @@ def pytest_addoption(parser):
     add_option(
         "--network",
         action="store",
-        default=ManagerAccessMixin.network_manager.default_ecosystem.name,
+        default=_get_default_network(),
         help="Override the default network and provider (see ``ape networks list`` for options).",
     )
     add_option(
