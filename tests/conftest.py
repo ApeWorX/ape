@@ -323,8 +323,14 @@ def _isolation():
 
 @pytest.fixture(autouse=True)
 def eth_tester_isolation(eth_tester_provider):
-    with _isolation():
-        yield
+    did_yield = False
+    try:
+        with _isolation():
+            yield
+            did_yield = True
+    except Exception:
+        if not did_yield:
+            yield
 
 
 @pytest.fixture
