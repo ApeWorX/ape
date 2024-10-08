@@ -186,7 +186,7 @@ def test_compile_when_contract_type_collision(ape_cli, runner, integ_project, cl
     clean()
     source_copy = temp_dir / "Interface.json"
     expected = (
-        r"ERROR: \(CompilerError\) ContractType collision\. "
+        r"\(CompilerError\) ContractType collision\. "
         r"Contracts '(.*\.json)' and '(.*\.json)' share the name 'Interface'\."
     )
     temp_dir.mkdir()
@@ -270,7 +270,7 @@ def test_compile_unknown_extension_does_not_compile(ape_cli, runner, integ_proje
     arguments = ("compile", "Interface.js", "--project", f"{integ_project.path}")
     result = runner.invoke(ape_cli, arguments, catch_exceptions=False)
     assert result.exit_code == 2, result.output
-    assert "Error: Source file 'Interface.js' not found." in result.output
+    assert "Source file 'Interface.js' not found." in result.output
 
 
 @skip_projects_except("with-dependencies")

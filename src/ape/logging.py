@@ -24,7 +24,7 @@ class LogLevel(IntEnum):
 logging.addLevelName(LogLevel.SUCCESS.value, LogLevel.SUCCESS.name)
 logging.SUCCESS = LogLevel.SUCCESS.value  # type: ignore
 DEFAULT_LOG_LEVEL = LogLevel.INFO.name
-DEFAULT_LOG_FORMAT = "%(levelname)-7s%(plugin)s: %(message)s"
+DEFAULT_LOG_FORMAT = "%(levelname)-7s %(plugin)-15s: %(message)s"
 HIDDEN_MESSAGE = "[hidden]"
 
 
