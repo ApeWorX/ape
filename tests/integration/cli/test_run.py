@@ -169,7 +169,8 @@ def test_uncaught_tx_err(scripts_runner, integ_project):
     result = scripts_runner.invoke("txerr")
     assert '/scripts/txerr.py", line 12, in main' in result.output
     assert "contract.setNumber(5, sender=account)" in result.output
-    assert "ERROR: (ContractLogicError) Transaction failed." in result.output
+    assert "ERROR" in result.output
+    assert "(ContractLogicError) Transaction failed." in result.output
 
 
 @skip_projects_except("script")
