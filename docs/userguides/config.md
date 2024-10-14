@@ -258,7 +258,10 @@ solidity:
 
 Projects can use their own settings.
 Meaning, you can put whatever data you want in an `ape-config.yaml` file and read it in Ape.
-**NOTE**: These types of settings lack sophisticated Pydantic validation and are limited in that respect.
+
+```{note}
+These types of settings lack sophisticated Pydantic validation and are limited in that respect.
+```
 
 ```yaml
 my_project_key:
