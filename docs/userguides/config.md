@@ -265,7 +265,7 @@ These types of settings lack sophisticated Pydantic validation and are limited i
 
 ```yaml
 my_project_key:
-  my_project_setting: "123"
+  my_project_setting: "my_value"
 ```
 
 Then, to access it (or any setting for that matter):
@@ -273,5 +273,5 @@ Then, to access it (or any setting for that matter):
 ```python
 from ape import project
 
-setting = project.config.my_project_key.my_project_setting  # "123"
+setting = project.config.my_project_key.my_project_setting  #  my_value
 ```
