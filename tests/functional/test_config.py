@@ -503,5 +503,7 @@ def test_project_level_settings(project):
     works.
     """
     # NOTE: Using strings for the values to show simple validation occurs.
-    with project.temp_config(my_string="my_string", my_int="123", my_bool="True"):
-        assert project.config.project_thing == "123"
+    with project.temp_config(my_string="my_string", my_int=123, my_bool=True):
+        assert project.config.my_string == "my_string"
+        assert project.config.my_int == 123
+        assert project.config.my_bool is True
