@@ -494,3 +494,13 @@ def test_dependencies_list_of_non_dicts(project):
     expected = "Expecting mapping for dependency. Received: int."
     with pytest.raises(ConfigError, match=expected):
         _ = ApeConfig.model_validate(data)
+
+
+def test_project_level_settings(project):
+    """
+    Settings can be configured in an ape-config.yaml file
+    that are not part of any plugin. This test ensures that
+    works.
+    """
+    with project.temp_config(project_thing="123"):
+        assert project.config.project_thing == "123"
