@@ -261,7 +261,6 @@ class PluginMetadata(BaseInterfaceModel):
         version = values.get("version")
 
         if name.startswith("git+"):
-            # name
             version = name
             name = (
                 urlparse(version.replace("git+", ""))
