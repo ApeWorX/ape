@@ -2,12 +2,12 @@
 <html lang="en" data-accent-color="lime" data-content_root="../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>ape - ape documentation</title><link rel="shortcut icon" href="../_static/favicon.ico"/><link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="ape-accounts" href="ape_accounts.html" /><link rel="prev" title="test" href="../commands/test.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>ape - ape documentation</title><link rel="shortcut icon" href="../_static/favicon.ico"/><link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" />
       <link rel="canonical" href="ape/methoddocs/ape.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=397bb51e" />
-    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=36d120a7" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=83eaa723" />
     <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -57,65 +57,10 @@ data-aria-dark="Switch to auto color mode">
   <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
     <div class="sy-lside-inner md:sticky">
       <div class="sy-scrollbar p-6">
-        <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading" aria-level="3"><span class="caption-text">User Guides</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../userguides/accounts.html">Accounts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../userguides/clis.html">CLIs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../userguides/compile.html">Compile</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../userguides/config.html">Configure Ape</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../userguides/console.html">Console</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../userguides/contracts.html">Contracts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../userguides/data.html">Querying Data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../userguides/dependencies.html">Dependencies</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../userguides/developing_plugins.html">Developing Plugins</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../userguides/forking_networks.html">Forking Networks</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../userguides/installing_plugins.html">Plugins</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../userguides/logging.html">Logging</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../userguides/networks.html">Networks</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../userguides/projects.html">Developing Projects with Ape</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../userguides/proxy.html">Proxy Contracts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../userguides/publishing.html">Publishing</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../userguides/quickstart.html">Overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../userguides/reverts.html">Reverts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../userguides/scripts.html">Scripting</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../userguides/testing.html">Testing</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../userguides/trace.html">Traces</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../userguides/transactions.html">Transactions</a></li>
-</ul>
-<p class="caption" role="heading" aria-level="3"><span class="caption-text">CLI Reference</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../commands/accounts.html">accounts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../commands/compile.html">compile</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../commands/console.html">console</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../commands/init.html">init</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../commands/networks.html">networks</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../commands/plugins.html">plugins</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../commands/pm.html">pm</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../commands/run.html">run</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../commands/test.html">test</a></li>
-</ul>
-<p class="caption" role="heading" aria-level="3"><span class="caption-text">Python Reference</span></p>
-<ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">ape</a></li>
-<li class="toctree-l1"><a class="reference internal" href="ape_accounts.html">ape-accounts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="ape_compile.html">ape-compile</a></li>
-<li class="toctree-l1"><a class="reference internal" href="ape_ethereum.html">ape-ethereum</a></li>
-<li class="toctree-l1"><a class="reference internal" href="ape_ethereum.html#module-ape_ethereum.multicall">ape-ethereum.multicall</a></li>
-<li class="toctree-l1"><a class="reference internal" href="ape_node.html">ape-node</a></li>
-<li class="toctree-l1"><a class="reference internal" href="ape_pm.html">ape-pm</a></li>
-<li class="toctree-l1"><a class="reference internal" href="ape_test.html">ape-test</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api.html">ape.api</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cli.html">ape.cli</a></li>
-<li class="toctree-l1"><a class="reference internal" href="contracts.html">ape.contracts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="exceptions.html">ape.exceptions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="managers.html">ape.managers</a></li>
-<li class="toctree-l1"><a class="reference internal" href="plugins.html">ape.plugins</a></li>
-<li class="toctree-l1"><a class="reference internal" href="types.html">ape.types</a></li>
-<li class="toctree-l1"><a class="reference internal" href="utils.html">ape.utils</a></li>
-</ul>
-
+        <div class="globaltoc" data-expand-depth="0">
         </div>
-      </div></div>
+      </div>
+    </div>
   </aside>
   <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
   <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
@@ -231,21 +176,7 @@ Also handy for querying data about the chain and managing local caches.</p>
     <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
   </svg>
   <span>Back to top</span>
-</button><div class="navigation flex print:hidden"><div class="navigation-prev">
-    <a href="../commands/test.html">
-      <i class="i-lucide chevron-left"></i>
-      <div class="page-info">
-        <span>Previous</span><div class="title">test</div></div>
-    </a>
-  </div><div class="navigation-next">
-    <a href="ape_accounts.html">
-      <div class="page-info">
-        <span>Next</span>
-        <div class="title">ape-accounts</div>
-      </div>
-      <i class="i-lucide chevron-right"></i>
-    </a>
-  </div></div></div>
+</button><div class="navigation flex print:hidden"></div></div>
     </div>
   </main>
 </div>
@@ -272,5 +203,5 @@ Also handy for querying data about the chain and managing local caches.</p>
       <script src="../_static/doctools.js?v=9a2dae69"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script data-domain="docs.apeworx.io" defer="defer" src="https://plausible.io/js/script.js"></script>
-      <script src="../_static/shibuya.js?v=c5fc9e80"></script></body>
+      <script src="../_static/shibuya.js?v=e2e99575"></script></body>
 </html>
