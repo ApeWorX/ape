@@ -273,5 +273,5 @@ Then, to access it (or any setting for that matter):
 ```python
 from ape import project
 
-setting = project.config.my_project_key.my_project_setting  #  my_value
+setting = project.config.my_project_key.my_project_setting  #  "my_value"
 ```
