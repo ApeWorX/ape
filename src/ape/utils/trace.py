@@ -126,6 +126,7 @@ def _parse_coverage_table(coverage: "CoverageReport", statement: bool = True) ->
 
 def _parse_verbose_coverage(coverage: "CoverageReport", statement: bool = True) -> list[Table]:
     tables = []
+    row: tuple[str, ...]
     for project in coverage.projects:
         for src in project.sources:
             for contract in src.contracts:
