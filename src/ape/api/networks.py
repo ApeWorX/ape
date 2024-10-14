@@ -999,6 +999,17 @@ class NetworkAPI(BaseInterfaceModel):
         return None  # May not have an block explorer
 
     @property
+    def is_mainnet(self) -> bool:
+        """
+        True when the network is the mainnet network for the ecosystem.
+        """
+        cfg_is_mainnet: Optional[bool] = self.config.get("is_mainnet")
+        if cfg_is_mainnet is not None:
+            return cfg_is_mainnet
+
+        return self.name == "mainnet"
+
+    @property
     def is_fork(self) -> bool:
         """
         True when using a forked network.

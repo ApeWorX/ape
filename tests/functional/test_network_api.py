@@ -236,3 +236,27 @@ def test_providers_custom_non_fork_network_does_not_use_fork_provider(
         finally:
             network._get_plugin_providers = orig
             network.__dict__.pop("providers", None)  # de-cache
+
+
+def test_is_local(ethereum):
+    assert ethereum.local.is_local
+    assert not ethereum.mainnet.is_local
+    assert not ethereum.mainnet_fork.is_local
+
+
+def test_is_fork(ethereum):
+    assert not ethereum.local.is_fork
+    assert not ethereum.mainnet.is_fork
+    assert ethereum.mainnet_fork.is_fork
+
+
+def test_is_dev(ethereum):
+    assert ethereum.local.is_dev
+    assert not ethereum.mainnet.is_dev
+    assert ethereum.mainnet_fork.is_dev
+
+
+def test_is_mainnet(ethereum):
+    assert not ethereum.local.is_mainnet
+    assert ethereum.mainnet.is_mainnet
+    assert not ethereum.mainnet_fork.is_mainnet
