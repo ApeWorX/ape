@@ -502,5 +502,6 @@ def test_project_level_settings(project):
     that are not part of any plugin. This test ensures that
     works.
     """
-    with project.temp_config(project_thing="123"):
+    # NOTE: Using strings for the values to show simple validation occurs.
+    with project.temp_config(my_string="my_string", my_int="123", my_bool="True"):
         assert project.config.project_thing == "123"

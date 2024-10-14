@@ -261,11 +261,14 @@ Meaning, you can put whatever data you want in an `ape-config.yaml` file and rea
 
 ```{note}
 These types of settings lack sophisticated Pydantic validation and are limited in that respect.
+Simple validation, however, will occur, such as if it the value `isnumeric()`, it will be converted to an int, or if the value is a boolean name it will convert it to a `bool`.
 ```
 
 ```yaml
 my_project_key:
-  my_project_setting: "my_value"
+  my_string: "my_value"
+  my_int: 123
+  my_bool: True
 ```
 
 Then, to access it (or any setting for that matter):
@@ -273,5 +276,7 @@ Then, to access it (or any setting for that matter):
 ```python
 from ape import project
 
-setting = project.config.my_project_key.my_project_setting  #  "my_value"
+my_str = project.config.my_project_key.my_string  #  "my_value"
+my_int = project.config.my_project_key.my_int  #  123
+my_bool = project.config.my_project_key.my_bool  #  True
 ```
