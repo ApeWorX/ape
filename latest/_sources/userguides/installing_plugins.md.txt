@@ -67,6 +67,12 @@ Or from the CLI like:
 ape plugins install "foobar@git+https://github.com/<owner-of-plugin>/ape-foobar.git@<branch/name>"
 ```
 
+Also, you may omit the `foobar@` prefix and allow Ape to deduce the name:
+
+```shell
+ape plugins install "git+https://github.com/<owner-of-plugin>/ape-foobar.git@<branch/name>"
+```
+
 ## Plugin Versions
 
 By default, `ape plugins` commands install plugins within your current Ape version specification.
