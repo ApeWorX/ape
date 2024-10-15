@@ -115,10 +115,10 @@ setup(
         "urllib3>=2.0.0,<3",
         "watchdog>=3.0,<4",
         # ** Dependencies maintained by Ethereum Foundation **
-        # All version pins dependent on web3[tester]
+        # All unspecified version pins dependent on web3.py and eth-tester.
         "eth-abi",
         "eth-account",
-        "eth-typing",
+        "eth-typing>=5.0.0,<6",
         "eth-utils",
         "hexbytes",
         "py-geth>=5.0.0-beta.2,<6",
