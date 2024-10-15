@@ -147,6 +147,12 @@ class NetworkConfig(PluginConfig):
     base_fee_multiplier: float = 1.0
     """A multiplier to apply to a transaction base fee."""
 
+    is_mainnet: Optional[bool] = None
+    """
+    Set to ``True`` to declare as a mainnet or ``False`` to ensure
+    it isn't detected as one.
+    """
+
     request_headers: dict = {}
     """Optionally config extra request headers whenever using this network."""
 
