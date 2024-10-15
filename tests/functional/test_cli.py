@@ -438,7 +438,7 @@ def test_verbosity_option(runner, name):
         click.echo(f"__expected_{logger.level}")
 
     result = runner.invoke(cmd, (name, "debug"))
-    assert f"__expected_10" in result.output
+    assert "__expected_10" in result.output
 
 
 @pytest.mark.parametrize(
