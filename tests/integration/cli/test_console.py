@@ -2,8 +2,9 @@ from pathlib import Path
 
 import pytest
 
+from ape.logging import logger
 from ape import __all__
-from tests.integration.cli.utils import skip_projects, skip_projects_except
+from tests.integration.cli.utils import skip_projects, skip_projects_except, run_once
 
 
 @pytest.fixture(params=("path", "root"))

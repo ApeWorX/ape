@@ -103,7 +103,11 @@ def _create_verbosity_kwargs(
         if callback is not None:
             value = callback(ctx, param, value)
 
-        cli_logger._load_from_sys_argv(default=value)
+        if cli_logger._did_parse_sys_argv:
+            # Changing mid-session somehow (tests?)
+            cli_logger.set_level(value)
+        else:
+            cli_logger._load_from_sys_argv(default=value)
 
     level_names = [lvl.name for lvl in LogLevel]
     names_str = f"{', '.join(level_names[:-1])}, or {level_names[-1]}"
