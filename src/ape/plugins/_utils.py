@@ -5,6 +5,7 @@ from enum import Enum
 from functools import cached_property
 from shutil import which
 from typing import Any, Optional
+from urllib.parse import urlparse
 
 import click
 from packaging.specifiers import SpecifierSet
@@ -258,6 +259,15 @@ class PluginMetadata(BaseInterfaceModel):
 
         name = values["name"]
         version = values.get("version")
+
+        if name.startswith("git+"):
+            version = name
+            name = (
+                urlparse(version.replace("git+", ""))
+                .path.split(".git")[0]
+                .split("/")[-1]
+                .replace("ape-", "")
+            )
 
         if version and version.startswith("git+"):
             if f"ape-{name}" not in version:
