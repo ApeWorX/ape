@@ -188,7 +188,7 @@ def test_compile_when_contract_type_collision(ape_cli, runner, integ_project, cl
     clean()
     source_copy = temp_dir / "Interface.json"
     expected = (
-        r"ERROR *: \(CompilerError\) ContractType collision\. "
+        r"ERROR: *\(CompilerError\) ContractType collision\. "
         r"Contracts '(.*\.json)' and '(.*\.json)' share the name 'Interface'\."
     )
     temp_dir.mkdir()
