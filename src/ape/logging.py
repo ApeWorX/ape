@@ -161,7 +161,7 @@ class ApeLogger:
         #  Minus 2 because if `-v` is the last arg, it is not our verbosity `-v`.
         num_args = len(sys.argv) - 2
 
-        for arg_i in range(num_args):
+        for arg_i in range(1, 1 + num_args):
             if sys.argv[arg_i] == "-v" or sys.argv[arg_i] == "--verbosity":
                 try:
                     level = _get_level(sys.argv[arg_i + 1].upper())
