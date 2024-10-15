@@ -101,7 +101,6 @@ def _validate_pytest_args(*pytest_args) -> list[str]:
     if "no:pytest_ethereum" not in valid_args:
         valid_args.extend(("-p", "no:pytest_ethereum"))
 
-    breakpoint()
     return valid_args
 
 
