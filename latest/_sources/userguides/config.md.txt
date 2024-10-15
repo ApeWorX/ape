@@ -8,8 +8,9 @@ There are two locations you can place an `ape-config.yaml` file.
 
 Project settings take precedent, but global settings allow you to configure preferences across all projects, such as your default mainnet provider (e.g. Alchemy versus running your own node).
 
-This guide serves as an index of the settings you can include in any `ape-config.yaml` file.
+This guide serves as an index of some settings you can include in any `ape-config.yaml` file.
 This guide is **PURPOSELY** alphabetized to facilitate easier look-up of keys.
+Plugins for Ape may define their own configs.
 
 Most of the features in this guide are documented more-fully elsewhere in the user-guides.
 
@@ -241,4 +242,41 @@ Configure your test accounts:
 test:
   mnemonic: test test test test test test test test test test test junk
   number_of_accounts: 5
+```
+
+## Plugin Settings
+
+To configure a plugin, use the name of the plugin followed by any of the plugin's settings.
+For example, to configure the `ape-solidity` plugin, you would do:
+
+```yaml
+solidity:
+  evm_version: paris  # Or any other setting defined in `ape-solidity`.
+```
+
+## Non-plugin settings
+
+Projects can use their own settings.
+Meaning, you can put whatever data you want in an `ape-config.yaml` file and read it in Ape.
+
+```{note}
+These types of settings lack sophisticated Pydantic validation and are limited in that respect.
+Simple validation, however, will occur, such as if it the value `isnumeric()`, it will be converted to an int, or if the value is a boolean name it will convert it to a `bool`.
+```
+
+```yaml
+my_project_key:
+  my_string: "my_value"
+  my_int: 123
+  my_bool: True
+```
+
+Then, to access it (or any setting for that matter):
+
+```python
+from ape import project
+
+my_str = project.config.my_project_key.my_string  #  "my_value"
+my_int = project.config.my_project_key.my_int  #  123
+my_bool = project.config.my_project_key.my_bool  #  True
 ```

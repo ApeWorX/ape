@@ -78,6 +78,8 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#plugins">Plugins</a></li>
 <li><a class="reference internal" href="#request-headers">Request Headers</a></li>
 <li><a class="reference internal" href="#testing">Testing</a></li>
+<li><a class="reference internal" href="#plugin-settings">Plugin Settings</a></li>
+<li><a class="reference internal" href="#non-plugin-settings">Non-plugin settings</a></li>
 </ul>
 </div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
   </aside>
@@ -116,8 +118,9 @@ There are two locations you can place an <code class="docutils literal notransla
 <li><p>In your <code class="docutils literal notranslate"><span class="pre">$HOME/.ape</span></code> directory (global)</p></li>
 </ol>
 <p>Project settings take precedent, but global settings allow you to configure preferences across all projects, such as your default mainnet provider (e.g. Alchemy versus running your own node).</p>
-<p>This guide serves as an index of the settings you can include in any <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file.
-This guide is <strong>PURPOSELY</strong> alphabetized to facilitate easier look-up of keys.</p>
+<p>This guide serves as an index of some settings you can include in any <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file.
+This guide is <strong>PURPOSELY</strong> alphabetized to facilitate easier look-up of keys.
+Plugins for Ape may define their own configs.</p>
 <p>Most of the features in this guide are documented more-fully elsewhere in the user-guides.</p>
 <p>However, here is a list of common-use cases requiring the <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file to help you:</p>
 <ol class="arabic simple">
@@ -311,6 +314,39 @@ For example, to change the URI for an Ethereum network, do:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">test</span><span class="p">:</span>
 </span><span data-line="2"><span class="w">  </span><span class="nt">mnemonic</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test test test test test test test test test test test junk</span>
 </span><span data-line="3"><span class="w">  </span><span class="nt">number_of_accounts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
+</span></pre></div>
+</div>
+</section>
+<section id="plugin-settings">
+<h2>Plugin Settings<a class="headerlink" href="#plugin-settings" title="Link to this heading"></a></h2>
+<p>To configure a plugin, use the name of the plugin followed by any of the plugin’s settings.
+For example, to configure the <code class="docutils literal notranslate"><span class="pre">ape-solidity</span></code> plugin, you would do:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">solidity</span><span class="p">:</span>
+</span><span data-line="2"><span class="w">  </span><span class="nt">evm_version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">paris</span><span class="w">  </span><span class="c1"># Or any other setting defined in `ape-solidity`.</span>
+</span></pre></div>
+</div>
+</section>
+<section id="non-plugin-settings">
+<h2>Non-plugin settings<a class="headerlink" href="#non-plugin-settings" title="Link to this heading"></a></h2>
+<p>Projects can use their own settings.
+Meaning, you can put whatever data you want in an <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file and read it in Ape.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>These types of settings lack sophisticated Pydantic validation and are limited in that respect.
+Simple validation, however, will occur, such as if it the value <code class="docutils literal notranslate"><span class="pre">isnumeric()</span></code>, it will be converted to an int, or if the value is a boolean name it will convert it to a <code class="docutils literal notranslate"><span class="pre">bool</span></code>.</p>
+</div>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">my_project_key</span><span class="p">:</span>
+</span><span data-line="2"><span class="w">  </span><span class="nt">my_string</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;my_value&quot;</span>
+</span><span data-line="3"><span class="w">  </span><span class="nt">my_int</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">123</span>
+</span><span data-line="4"><span class="w">  </span><span class="nt">my_bool</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">True</span>
+</span></pre></div>
+</div>
+<p>Then, to access it (or any setting for that matter):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">project</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="n">my_str</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">my_project_key</span><span class="o">.</span><span class="n">my_string</span>  <span class="c1">#  &quot;my_value&quot;</span>
+</span><span data-line="4"><span class="n">my_int</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">my_project_key</span><span class="o">.</span><span class="n">my_int</span>  <span class="c1">#  123</span>
+</span><span data-line="5"><span class="n">my_bool</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">my_project_key</span><span class="o">.</span><span class="n">my_bool</span>  <span class="c1">#  True</span>
 </span></pre></div>
 </div>
 </section>
