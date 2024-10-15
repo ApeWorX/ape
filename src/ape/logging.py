@@ -80,7 +80,9 @@ class ApeColorFormatter(logging.Formatter):
             default_dict: dict[str, Any] = {}
             styles: dict[str, Any] = CLICK_STYLE_KWARGS.get(level, default_dict)
             record.levelname = click.style(record.levelname, **styles)
-            record.levelname_semicolon_padded = click.style(record.levelname_semicolon_padded, **styles)
+            record.levelname_semicolon_padded = click.style(
+                record.levelname_semicolon_padded, **styles
+            )
 
         path = Path(record.pathname)
         record.plugin = ""
