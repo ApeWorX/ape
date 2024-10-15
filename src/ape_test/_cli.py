@@ -97,6 +97,11 @@ def _validate_pytest_args(*pytest_args) -> list[str]:
         else:
             valid_args.append(argument)
 
+    # Disable the pytest_ethereum plugin.
+    if "no:pytest_ethereum" not in valid_args:
+        valid_args.extend(("-p", "no:pytest_ethereum"))
+
+    breakpoint()
     return valid_args
 
 

@@ -118,7 +118,7 @@ setup(
         # All unspecified version pins dependent on web3.py and eth-tester.
         "eth-abi",
         "eth-account",
-        "eth-typing>=5.0.1,<6",
+        "eth-typing",
         "eth-utils",
         "hexbytes",
         "py-geth>=5.0.0-beta.2,<6",
