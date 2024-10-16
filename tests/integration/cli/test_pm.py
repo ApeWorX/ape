@@ -225,8 +225,9 @@ def test_uninstall_not_exists(pm_runner, integ_project):
     pm_runner.project = integ_project
     package_name = "_this_does_not_exist_"
     result = pm_runner.invoke("uninstall", package_name, "--yes")
-    expected_message = f"ERROR: Package(s) '{package_name}' not installed."
+    expected_message = f"Package(s) '{package_name}' not installed."
     assert result.exit_code != 0, result.output or result._completed_process.stderr
+    assert "ERROR" in result.output
     assert expected_message in result.output
 
 
@@ -270,9 +271,10 @@ def test_uninstall_invalid_version(pm_runner, integ_project):
 
     invalid_version = "0.0.0"
     result = pm_runner.invoke("uninstall", package_name, invalid_version, "--yes")
-    expected_message = f"ERROR: Package(s) '{package_name}={invalid_version}' not installed."
+    expected_message = f"Package(s) '{package_name}={invalid_version}' not installed."
     assert result.exit_code != 0, result.output
 
+    assert "ERROR" in result.output
     assert expected_message in result.output
 
 
