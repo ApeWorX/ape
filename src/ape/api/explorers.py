@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Union
 
 from ethpm_types import ContractType
 
@@ -60,3 +60,19 @@ class ExplorerAPI(BaseInterfaceModel):
         Args:
             address (:class:`~ape.types.address.AddressType`): The address of the deployed contract.
         """
+
+    @classmethod
+    def supports_chain(cls, chain_id: int) -> bool:
+        """
+        Returns ``True`` when the given chain ID is claimed to be
+        supported by this explorer. Adhoc / custom networks rely on
+        this feature to have automatic-explorer support. Explorer
+        plugins should override this.
+
+        Args:
+            chain_id (int): The chain ID to check.
+
+        Returns:
+            bool
+        """
+        return False

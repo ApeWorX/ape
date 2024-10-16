@@ -975,7 +975,7 @@ class NetworkAPI(BaseInterfaceModel):
         Returns:
             :class:`ape.api.explorers.ExplorerAPI`, optional
         """
-
+        chain_id = None if self.network_manager.active_provider is None else self.provider.chain_id
         for plugin_name, plugin_tuple in self.plugin_manager.explorers:
             ecosystem_name, network_name, explorer_class = plugin_tuple
 
@@ -987,14 +987,16 @@ class NetworkAPI(BaseInterfaceModel):
                 and self.name in plugin_config[self.ecosystem.name]
             )
 
+            # Return the first registered explorer (skipping any others)
+            # TODO: In 0.9, delete this and only use `supports_chain()` approach.
             if self.ecosystem.name == ecosystem_name and (
                 self.name == network_name or has_explorer_config
             ):
-                # Return the first registered explorer (skipping any others)
-                return explorer_class(
-                    name=plugin_name,
-                    network=self,
-                )
+                return explorer_class(name=plugin_name, network=self)
+
+            elif chain_id is not None and explorer_class.supports_chain(chain_id):
+                # NOTE: Adhoc networks will likely reach here.
+                return explorer_class(name=plugin_name, network=self)
 
         return None  # May not have an block explorer
 
