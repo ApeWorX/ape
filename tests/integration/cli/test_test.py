@@ -180,7 +180,7 @@ def test_test(setup_pytester, integ_project, pytester, eth_tester_provider):
     from ape.logging import logger
 
     logger.set_level("DEBUG")
-    result = pytester.runpytest_subprocess(timeout=120)
+    result = pytester.runpytest_subprocess("-p", "no:pytest_ethereum", timeout=120)
     try:
         result.assert_outcomes(passed=passed, failed=failed), "\n".join(result.outlines)
     except ValueError:
@@ -191,7 +191,7 @@ def test_test(setup_pytester, integ_project, pytester, eth_tester_provider):
 def test_uncaught_txn_err(setup_pytester, integ_project, pytester, eth_tester_provider):
     _ = eth_tester_provider  # Ensure using EthTester for this test.
     setup_pytester(integ_project)
-    result = pytester.runpytest_subprocess(timeout=120)
+    result = pytester.runpytest_subprocess("-p", "no:pytest_ethereum", timeout=120)
     expected = """
     contract_in_test.setNumber(5, sender=owner)
 E   ape.exceptions.ContractLogicError: Transaction failed.
@@ -203,7 +203,7 @@ E   ape.exceptions.ContractLogicError: Transaction failed.
 def test_show_internal(setup_pytester, integ_project, pytester, eth_tester_provider):
     _ = eth_tester_provider  # Ensure using EthTester for this test.
     setup_pytester(integ_project)
-    result = pytester.runpytest_subprocess("--show-internal")
+    result = pytester.runpytest_subprocess("-p", "no:pytest_ethereum", "--show-internal")
     expected = """
     raise vm_err from err
 E   ape.exceptions.ContractLogicError: Transaction failed.
@@ -216,7 +216,9 @@ def test_test_isolation_disabled(setup_pytester, integ_project, pytester, eth_te
     # check the disable isolation option actually disables built-in isolation
     _ = eth_tester_provider  # Ensure using EthTester for this test.
     setup_pytester(integ_project)
-    result = pytester.runpytest_subprocess("--disable-isolation", "--setup-show")
+    result = pytester.runpytest_subprocess(
+        "-p", "no:pytest_ethereum", "--disable-isolation", "--setup-show"
+    )
     assert "F _function_isolation" not in "\n".join(result.outlines)
 
 
@@ -228,7 +230,7 @@ def test_verbosity(runner, ape_cli):
     for some reason.
     """
     # NOTE: Only using `--fixtures` flag to avoid running tests (just prints fixtures).
-    cmd = ("test", "--verbosity", "DEBUG", "--fixtures")
+    cmd = ("test", "--verbosity", "DEBUG", "--fixtures", "-p", "no:pytest_ethereum")
     result = runner.invoke(ape_cli, cmd, catch_exceptions=False)
     assert result.exit_code == 0, result.output
 
@@ -258,7 +260,7 @@ def test_vvv(runner, ape_cli, integ_project, v_arg):
         #   with click's option parsing "requires value" error.
         result = runner.invoke(
             ape_cli,
-            ("test", f"tests/{new_test_file.name}::{name}", v_arg),
+            ("test", f"tests/{new_test_file.name}::{name}", v_arg, "-p", "no:pytest_ethereum"),
             catch_exceptions=False,
         )
     finally:
@@ -274,7 +276,7 @@ def test_vvv(runner, ape_cli, integ_project, v_arg):
 @skip_projects_except("test", "with-contracts")
 def test_fixture_docs(setup_pytester, integ_project, pytester, eth_tester_provider):
     _ = eth_tester_provider  # Ensure using EthTester for this test.
-    result = pytester.runpytest_subprocess("-q", "--fixtures")
+    result = pytester.runpytest_subprocess("-q", "--fixtures", "-p", "no:pytest_ethereum")
     actual = "\n".join(result.outlines)
 
     # 'accounts', 'networks', 'chain', and 'project' (etc.)
@@ -293,7 +295,7 @@ def test_gas_flag_when_not_supported(
     setup_pytester(integ_project)
     path = f"{integ_project.path}/tests/test_contract.py"
     path_w_test = f"{path}::test_contract_interaction_in_tests"
-    result = pytester.runpytest(path_w_test, "--gas")
+    result = pytester.runpytest(path_w_test, "--gas", "-p", "no:pytest_ethereum")
     actual = "\n".join(result.outlines)
     expected = (
         "Provider 'test' does not support transaction tracing. "
@@ -307,7 +309,9 @@ def test_gas_flag_when_not_supported(
 def test_gas_flag_in_tests(geth_provider, setup_pytester, integ_project, pytester, owner):
     owner.transfer(owner, "1 wei")  # Do this to force a clean slate.
     passed, failed = setup_pytester(integ_project)
-    result = pytester.runpytest_subprocess("--gas", "--network", "ethereum:local:node")
+    result = pytester.runpytest_subprocess(
+        "--gas", "--network", "ethereum:local:node", "-p", "no:pytest_ethereum"
+    )
     run_gas_test(result, passed, failed)
 
 
@@ -321,7 +325,9 @@ def test_gas_flag_set_in_config(
     cfg["test"]["gas"] = {"reports": ["terminal"]}
     with integ_project.temp_config(**cfg):
         passed, failed = setup_pytester(integ_project)
-        result = pytester.runpytest_subprocess("--network", "ethereum:local:node")
+        result = pytester.runpytest_subprocess(
+            "--network", "ethereum:local:node", "-p", "no:pytest_ethereum"
+        )
         run_gas_test(result, passed, failed)
 
 
@@ -336,7 +342,7 @@ def test_gas_when_estimating(geth_provider, setup_pytester, integ_project, pytes
     geth_account.transfer(geth_account, "1 wei")  # Force a clean block.
     with integ_project.temp_config(**cfg):
         passed, failed = setup_pytester(integ_project)
-        result = pytester.runpytest_subprocess(timeout=120)
+        result = pytester.runpytest_subprocess("-p", "no:pytest_ethereum", timeout=120)
         run_gas_test(result, passed, failed)
 
 
@@ -357,6 +363,8 @@ def test_gas_flag_exclude_using_cli_option(
         "*:fooAndBar,*:myNumber,tokenB:*",
         "--network",
         "ethereum:local:node",
+        "-p",
+        "no:pytest_ethereum",
     )
     run_gas_test(result, passed, failed, expected_report=expected)
 
@@ -381,7 +389,9 @@ def test_gas_flag_exclusions_set_in_config(
     }
     with integ_project.temp_config(**cfg):
         passed, failed = setup_pytester(integ_project)
-        result = pytester.runpytest_subprocess("--gas", "--network", "ethereum:local:node")
+        result = pytester.runpytest_subprocess(
+            "--gas", "--network", "ethereum:local:node", "-p", "no:pytest_ethereum"
+        )
         run_gas_test(result, passed, failed, expected_report=expected)
 
 
@@ -393,7 +403,13 @@ def test_gas_flag_excluding_contracts(
     geth_account.transfer(geth_account, "1 wei")  # Force a clean block.
     passed, failed = setup_pytester(integ_project)
     result = pytester.runpytest_subprocess(
-        "--gas", "--gas-exclude", "VyperContract,TokenA", "--network", "ethereum:local:node"
+        "--gas",
+        "--gas-exclude",
+        "VyperContract,TokenA",
+        "--network",
+        "ethereum:local:node",
+        "-p",
+        "no:pytest_ethereum",
     )
     run_gas_test(result, passed, failed, expected_report=TOKEN_B_GAS_REPORT)
 
@@ -410,7 +426,12 @@ def test_coverage(geth_provider, setup_pytester, integ_project, pytester, geth_a
     geth_account.transfer(geth_account, "1 wei")  # Force a clean block.
     passed, failed = setup_pytester(integ_project)
     result = pytester.runpytest_subprocess(
-        "--coverage", "--show-internal", "--network", "ethereum:local:node"
+        "--coverage",
+        "--show-internal",
+        "--network",
+        "ethereum:local:node",
+        "-p",
+        "no:pytest_ethereum",
     )
     result.assert_outcomes(passed=passed, failed=failed)
 
@@ -426,7 +447,7 @@ def test_fails():
     pytester.makepyfile(test)
     stdin = "print(foo)\nexit\n"
     monkeypatch.setattr("sys.stdin", io.StringIO(stdin))
-    result = pytester.runpytest("--interactive", "-s")
+    result = pytester.runpytest("--interactive", "-s", "-p", "no:pytest_ethereum")
     result.assert_outcomes(failed=1)
     actual = str(result.stdout)
     assert secret in actual
@@ -448,7 +469,7 @@ def test_watch(mocker, integ_project, runner, ape_cli):
     run_main_loop_patch.side_effect = SystemExit  # Avoid infinite loop.
 
     # Only passing `-s` so we have an extra arg to test.
-    result = runner.invoke(ape_cli, ("test", "--watch", "-s"))
+    result = runner.invoke(ape_cli, ("test", "--watch", "-s", "-p", "no:pytest_ethereum"))
     assert result.exit_code == 0
 
     # The observer started, then the main runner exits, and the observer stops + joins.
@@ -458,4 +479,4 @@ def test_watch(mocker, integ_project, runner, ape_cli):
 
     # NOTE: We had a bug once where the args it received were not strings.
     #   (wasn't deconstructing), so this check is important.
-    run_subprocess_patch.assert_called_once_with(["ape", "test", "-s"])
+    run_subprocess_patch.assert_called_once_with(["ape", "test", "-s", "-p", "no:pytest_ethereum"])
