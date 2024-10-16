@@ -890,7 +890,9 @@ class TestSourceManager:
 
             # Top-level match.
             for base in (source_path, str(source_path), "Contract", "Contract.json"):
-                assert pm.sources.lookup(base) == source_path, f"Failed to lookup {base}"
+                # Using stem in case it returns `Contract.__mock__`, which is
+                # added / removed as part of other tests (running x-dist).
+                assert pm.sources.lookup(base).stem == source_path.stem, f"Failed to lookup {base}"
 
             # Nested: 1st level
             for closest in (
@@ -901,6 +903,8 @@ class TestSourceManager:
             ):
                 actual = pm.sources.lookup(closest)
                 expected = nested_source_a
+                # Using stem in case it returns `Contract.__mock__`, which is
+                # added / removed as part of other tests (running x-dist).
                 assert actual.stem == expected.stem, f"Failed to lookup {closest}"
 
             # Nested: 2nd level

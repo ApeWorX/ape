@@ -875,7 +875,7 @@ class NetworkAPI(BaseInterfaceModel):
         The configuration of the network. See :class:`~ape.managers.config.ConfigManager`
         for more information on plugin configurations.
         """
-        return self.config_manager.get_config(self.ecosystem.name)
+        return self.ecosystem.config
 
     @property
     def config(self) -> PluginConfig:
