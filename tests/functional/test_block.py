@@ -18,8 +18,9 @@ def test_block(eth_tester_provider, vyper_contract_instance):
     assert actual.number == data["number"]
 
 
-def test_block_dict(block):
-    actual = block.model_dump()
+@pytest.mark.parametrize("mode", ("json", "python"))
+def test_model_dump(block, mode):
+    actual = block.model_dump(mode=mode)
     expected = {
         "baseFeePerGas": 1000000000,
         "difficulty": 0,
@@ -38,7 +39,7 @@ def test_block_dict(block):
     assert actual == expected
 
 
-def test_block_json(block):
+def test_model_dump_json(block):
     actual = block.model_dump_json()
     expected = (
         '{"baseFeePerGas":1000000000,"difficulty":0,"gasLimit":30029122,"gasUsed":0,'
