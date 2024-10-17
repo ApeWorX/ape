@@ -1,3 +1,4 @@
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -241,6 +242,7 @@ def test_uncaught_txn_err(integ_project, ape_cli, runner, mocker):
     handler = mocker.patch("ape_console.plugin.handle_ape_exception")
     cmd_ls = [
         "%load_ext ape_console.plugin",
+        "from ape import project, accounts",
         "account = accounts.test_accounts[0]",
         "contract = account.deploy(project.ContractA)",
         "receipt = contract.setNumber(5, sender=account)",
@@ -249,12 +251,13 @@ def test_uncaught_txn_err(integ_project, ape_cli, runner, mocker):
     ]
     cmd_str = "\n".join(cmd_ls)
     arguments = ("console", "--project", f"{integ_project.path}")
-    runner.invoke(
+    result = runner.invoke(
         ape_cli,
         arguments,
         input=f"{cmd_str}\n",
         catch_exceptions=False,
     )
+    assert handler.call_args, "handler not called."
     err = handler.call_args[0][0]
     assert str(err) == "Transaction failed."
 
