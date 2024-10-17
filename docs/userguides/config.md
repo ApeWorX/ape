@@ -1,6 +1,6 @@
 # Configure Ape
 
-You can configure Ape using a `pyproject.toml` file or any configuration file named `ape-config.[yaml|yml|json]`.
+You can configure Ape using a `pyproject.toml` file and the prefix `tool.ape` or any configuration file named `ape-config.[yaml|yml|json]`.
 There are two locations you can place config files.
 
 1. In the root of your project
@@ -51,6 +51,13 @@ project
 
 In this case, you want to configure Ape like:
 
+```toml
+[tool.ape]
+base_path = "src"
+```
+
+Or the equivalent YAML:
+
 ```yaml
 base_path: src
 ```
@@ -62,6 +69,13 @@ Some dependencies, such as python-based ones like `snekmate`, use this structure
 
 Specify a different path to your `contracts/` directory.
 This is useful when using a different naming convention, such as `src/` rather than `contracts/`.
+
+```toml
+[tool.ape]
+contracts_folder = "src"
+```
+
+Or the equivalent YAML:
 
 ```yaml
 contracts_folder: src
@@ -78,6 +92,13 @@ contracts_folder: "~/GlobalContracts"
 
 You can change the default ecosystem by including the following:
 
+```toml
+[tool.ape]
+default_ecosystem = "fantom"
+```
+
+Or the equivalent YAML:
+
 ```yaml
 default_ecosystem: fantom
 ```
@@ -91,9 +112,18 @@ To learn more about dependencies, see [this guide](./dependencies.html).
 
 A simple example of configuring dependencies looks like this:
 
+```toml
+[[tool.ape.dependencies]]
+name = "openzeppelin"
+github = "OpenZeppelin/openzeppelin-contracts"
+version = "4.4.2"
+```
+
+Or the equivalent YAML:
+
 ```yaml
 dependencies:
-  - name: OpenZeppelin
+  - name: openzeppelin
     github: OpenZeppelin/openzeppelin-contracts
     version: 4.4.2
 ```
@@ -104,6 +134,18 @@ Set deployments that were made outside of Ape in your `ape-config.yaml` to creat
 (See [this example](./contracts.html#from-previous-deployment) for more information on this feature).
 
 Config example:
+
+```toml
+[[tool.ape.deployments.ethereum.mainnet]]
+contract_type = "MyContract"
+address = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
+
+[[tool.ape.deployments.ethereum.sepolia]]
+contract_type = "MyContract"
+address = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
+```
+
+Or the equivalent YAML:
 
 ```yaml
 deployments:
@@ -133,6 +175,13 @@ Ape does not add or edit deployments in your `ape-config.yaml` file.
 When using the `node` provider, you can customize its settings.
 For example, to change the URI for an Ethereum network, do:
 
+```toml
+[tool.ape.node.ethereum.mainnet]
+uri = "http://localhost:5030"
+```
+
+Or the equivalent YAML:
+
 ```yaml
 node:
   ethereum:
@@ -151,6 +200,16 @@ For more information on networking as a whole, see [this guide](./networks.html)
 ## Networks
 
 Set default network and network providers:
+
+```toml
+[tool.ape.ethereum]
+default_network = "mainnet-fork"
+
+[tool.ape.ethereum.mainnet_fork]
+default_provider = "hardhat"
+```
+
+Or the equivalent YAML:
 
 ```yaml
 ethereum:
@@ -194,6 +253,17 @@ Set which `ape` plugins you want to always use.
 ```{note}
 The `ape-` prefix is not needed and shouldn't be included here.
 ```
+
+```toml
+[[tool.ape.plugins]]
+name = "solidity"
+version = "0.1.0b2"
+
+[[tool.ape.plugins]]
+name = "ens"
+```
+
+Or the equivalent YAML:
 
 ```yaml
 plugins:
