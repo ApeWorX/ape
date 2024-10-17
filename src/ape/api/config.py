@@ -424,6 +424,30 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
 
     @classmethod
     def validate_file(cls, path: Path, **overrides) -> "ApeConfig":
+        """
+        Create an ApeConfig class using the given path.
+        Supports both pyproject.toml and ape-config.[.yml|.yaml|.json] files.
+
+        Raises:
+            :class:`~ape.exceptions.ConfigError`: When given an unknown file type
+              or the data is invalid.
+
+        Args:
+            path (Path): The path to the file.
+            **overrides: Config overrides.
+
+        Returns:
+            :class:`~ape.api.config.ApeConfig`
+        """
+        if path.name == "pyproject.toml":
+            return cls._validate_pyproject_toml(path, **overrides)
+        elif path.stem == "ape-config":
+            return cls._validate_ape_config_file(pathlib, **overrides)
+        else:
+            raise ConfigError(f"Unsupported config file: {path}")
+
+    @classmethod
+    def _validate_ape_config_file(cls, path: Path,  **overrides):
         data = {**load_config(path), **overrides}
 
         # NOTE: We are including the project path here to assist
@@ -444,6 +468,11 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
                 raise ConfigError(final_msg)
             else:
                 raise ConfigError(str(err)) from err
+
+    @classmethod
+    def _validate_pyproject_toml(cls, path: Path) -> "ApeConfig":
+        # TODO
+        raise NotImplementedError()
 
     @classmethod
     def from_manifest(cls, manifest: PackageManifest, **overrides) -> "ApeConfig":
