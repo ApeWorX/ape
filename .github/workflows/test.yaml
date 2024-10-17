@@ -95,13 +95,13 @@ jobs:
             pip install .[test]
 
         - name: Run Functional Tests
-          run: pytest tests/functional -m "not fuzzing" -s --cov=src --cov-append -n auto --dist loadgroup
+          run: ape test tests/functional -m "not fuzzing" -s --cov=src --cov-append -n auto --dist loadgroup
 
         - name: Run Integration Tests
-          run: pytest tests/integration -m "not fuzzing" -s --cov=src --cov-append -n auto --dist loadgroup
+          run: ape test tests/integration -m "not fuzzing" -s --cov=src --cov-append -n auto --dist loadgroup
 
         - name: Run Performance Tests
-          run: pytest tests/performance -s
+          run: ape test tests/performance -s
 
     fuzzing:
         runs-on: ubuntu-latest
@@ -123,4 +123,4 @@ jobs:
             pip install .[test]
 
         - name: Run Tests
-          run: pytest -m "fuzzing" --no-cov -s
+          run: ape test -m "fuzzing" --no-cov -s

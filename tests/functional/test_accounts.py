@@ -20,7 +20,6 @@ from ape.exceptions import (
 )
 from ape.types import AutoGasLimit
 from ape.types.signatures import recover_signer
-from ape.utils.testing import DEFAULT_NUMBER_OF_TEST_ACCOUNTS
 from ape_accounts import (
     KeyfileAccount,
     generate_account,
@@ -362,7 +361,7 @@ def test_send_transaction_without_enough_funds_impersonated_account(
 ):
     address = "0x4838B106FCe9647Bdf1E7877BF73cE8B0BAD5f97"  # Not a test account!
     impersonated_account = ImpersonatedAccount(raw_address=address)
-    accounts.test_accounts._impersonated_accounts[address] = impersonated_account
+    accounts._impersonated_accounts[address] = impersonated_account
 
     # Basically, it failed anywhere else besides the AccountsError you get from not
     # enough balance.
@@ -376,23 +375,21 @@ def test_send_transaction_sets_defaults(sender, receiver):
     assert receipt.required_confirmations == 0
 
 
-def test_accounts_splice_access(test_accounts):
-    a, b = test_accounts[:2]
-    assert a == test_accounts[0]
-    assert b == test_accounts[1]
-    c = test_accounts[-1]
-    assert c == test_accounts[len(test_accounts) - 1]
-    expected = (
-        (len(test_accounts) // 2) if len(test_accounts) % 2 == 0 else (len(test_accounts) // 2 + 1)
-    )
-    assert len(test_accounts[::2]) == expected
+def test_accounts_splice_access(accounts):
+    a, b = accounts[:2]
+    assert a == accounts[0]
+    assert b == accounts[1]
+    c = accounts[-1]
+    assert c == accounts[len(accounts) - 1]
+    expected = (len(accounts) // 2) if len(accounts) % 2 == 0 else (len(accounts) // 2 + 1)
+    assert len(accounts[::2]) == expected
 
 
 def test_accounts_address_access(owner, accounts):
     assert accounts[owner.address] == owner
 
 
-def test_accounts_address_access_conversion_fail(accounts):
+def test_accounts_address_access_conversion_fail(account_manager):
     with pytest.raises(
         KeyError,
         match=(
@@ -400,7 +397,7 @@ def test_accounts_address_access_conversion_fail(accounts):
             r"Do you have the necessary conversion plugins installed?"
         ),
     ):
-        _ = accounts["FAILS"]
+        _ = account_manager["FAILS"]
 
 
 def test_accounts_address_access_not_found(accounts):
@@ -409,15 +406,15 @@ def test_accounts_address_access_not_found(accounts):
         _ = accounts[address]
 
 
-def test_test_accounts_address_access_conversion_fail(test_accounts):
+def test_test_accounts_address_access_conversion_fail(accounts):
     with pytest.raises(KeyError, match=r"No account with ID 'FAILS'"):
-        _ = test_accounts["FAILS"]
+        _ = accounts["FAILS"]
 
 
-def test_test_accounts_address_access_not_found(test_accounts):
+def test_test_accounts_address_access_not_found(accounts):
     address = "0x1222262222222922222222222222222222222222"
     with pytest.raises(KeyError, match=rf"No account with address '{address}'\."):
-        _ = test_accounts[address]
+        _ = accounts[address]
 
 
 def test_accounts_contains(accounts, owner):
@@ -459,9 +456,9 @@ def test_impersonated_account_ignores_signature_check_on_txn(accounts, address):
     account = ImpersonatedAccount(raw_address=address)
 
     # Impersonate hack, since no providers in core actually support it.
-    accounts.test_accounts._impersonated_accounts[address] = account
-    other_0 = accounts.test_accounts[8]
-    other_1 = accounts.test_accounts[9]
+    accounts._impersonated_accounts[address] = account
+    other_0 = accounts[8]
+    other_1 = accounts[9]
     txn = other_0.transfer(other_1, "1 gwei").transaction
 
     # Hack in fake sender.
@@ -553,13 +550,13 @@ def test_unlock_with_wrong_passphrase_from_env(keyfile_account):
     assert keyfile_account.locked
 
 
-def test_unlock_and_reload(runner, accounts, keyfile_account, message):
+def test_unlock_and_reload(runner, account_manager, keyfile_account, message):
     """
     Tests against a condition where reloading after unlocking
     would not honor unlocked state.
     """
     keyfile_account.unlock(passphrase=PASSPHRASE)
-    reloaded_account = accounts.load(keyfile_account.alias)
+    reloaded_account = account_manager.load(keyfile_account.alias)
 
     # y: yes, sign (note: unlocking makes the key available but is not the same as autosign).
     with runner.isolation(input="y\n"):
@@ -567,23 +564,20 @@ def test_unlock_and_reload(runner, accounts, keyfile_account, message):
         assert keyfile_account.check_signature(message, signature)
 
 
-def test_custom_num_of_test_accounts_config(test_accounts, project):
-    custom_number_of_test_accounts = 20
+def test_custom_num_of_test_accounts_config(accounts, project):
+    custom_number_of_test_accounts = 25
     test_config = {
         "test": {
             "number_of_accounts": custom_number_of_test_accounts,
         }
     }
-
-    assert len(test_accounts) == DEFAULT_NUMBER_OF_TEST_ACCOUNTS
-
     with project.temp_config(**test_config):
-        assert len(test_accounts) == custom_number_of_test_accounts
+        assert len(accounts) == custom_number_of_test_accounts
 
 
-def test_test_accounts_repr(test_accounts):
-    actual = repr(test_accounts)
-    assert all(a.address in actual for a in test_accounts)
+def test_test_accounts_repr(accounts):
+    actual = repr(accounts)
+    assert all(a.address in actual for a in accounts)
 
 
 def test_account_comparison_to_non_account(core_account):
@@ -591,14 +585,14 @@ def test_account_comparison_to_non_account(core_account):
     assert core_account != "foo"
 
 
-def test_create_account(test_accounts):
-    length_at_start = len(test_accounts)
-    created_account = test_accounts.generate_test_account()
+def test_create_account(accounts):
+    length_at_start = len(accounts)
+    created_account = accounts.generate_test_account()
 
     assert isinstance(created_account, TestAccount)
     assert created_account.index == length_at_start
 
-    second_created_account = test_accounts.generate_test_account()
+    second_created_account = accounts.generate_test_account()
 
     assert created_account.address != second_created_account.address
     assert second_created_account.index == created_account.index + 1
@@ -627,42 +621,42 @@ def test_is_not_contract(owner, keyfile_account):
     assert not keyfile_account.is_contract
 
 
-def test_using_different_hd_path(test_accounts, project, eth_tester_provider):
+def test_using_different_hd_path(accounts, project, eth_tester_provider):
     test_config = {
         "test": {
             "hd_path": "m/44'/60'/0/0",
         }
     }
 
-    old_address = test_accounts[0].address
+    old_address = accounts[0].address
     original_settings = eth_tester_provider.settings.model_dump(by_alias=True)
     with project.temp_config(**test_config):
         eth_tester_provider.update_settings(test_config["test"])
-        new_address = test_accounts[0].address
+        new_address = accounts[0].address
 
     eth_tester_provider.update_settings(original_settings)
     assert old_address != new_address
 
 
-def test_using_random_mnemonic(test_accounts, project, eth_tester_provider):
+def test_using_random_mnemonic(accounts, project, eth_tester_provider):
     mnemonic = "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat"
     test_config = {"test": {"mnemonic": mnemonic}}
 
-    old_address = test_accounts[0].address
+    old_address = accounts[0].address
     original_settings = eth_tester_provider.settings.model_dump(by_alias=True)
     with project.temp_config(**test_config):
         eth_tester_provider.update_settings(test_config["test"])
-        new_address = test_accounts[0].address
+        new_address = accounts[0].address
 
     eth_tester_provider.update_settings(original_settings)
     assert old_address != new_address
 
 
-def test_iter_test_accounts(test_accounts):
-    test_accounts.reset()
-    accounts = list(iter(test_accounts))
+def test_iter_test_accounts(accounts):
+    accounts.reset()
+    accounts = list(iter(accounts))
     actual = len(accounts)
-    expected = len(test_accounts)
+    expected = len(accounts)
     assert actual == expected
 
 
@@ -908,6 +902,6 @@ def test_import_account_from_private_key_insecure_passphrase(delete_account_afte
             import_account_from_private_key(simple_alias, "simple", PRIVATE_KEY)
 
 
-def test_load(accounts, keyfile_account):
-    account = accounts.load(keyfile_account.alias)
+def test_load(account_manager, keyfile_account):
+    account = account_manager.load(keyfile_account.alias)
     assert account == keyfile_account

@@ -109,21 +109,21 @@ def _teardown_numb_acct_change(accounts):
 
 
 @pytest.fixture
-def no_accounts(accounts, empty_data_folder, project):
-    data = _setup_temp_acct_number_change(accounts, 0)
+def no_accounts(account_manager, empty_data_folder, project):
+    data = _setup_temp_acct_number_change(account_manager, 0)
     with project.temp_config(**data):
         yield
 
-    _teardown_numb_acct_change(accounts)
+    _teardown_numb_acct_change(account_manager)
 
 
 @pytest.fixture
-def one_account(accounts, empty_data_folder, project, test_accounts):
-    data = _setup_temp_acct_number_change(accounts, 1)
+def one_account(account_manager, empty_data_folder, project):
+    data = _setup_temp_acct_number_change(account_manager, 1)
     with project.temp_config(**data):
-        yield test_accounts[0]
+        yield account_manager.test_accounts[0]
 
-    _teardown_numb_acct_change(accounts)
+    _teardown_numb_acct_change(account_manager)
 
 
 def get_expected_account_str(acct):
@@ -371,9 +371,9 @@ def test_account_prompts_when_more_than_one_keyfile_account(
 
 
 @pytest.mark.parametrize("test_key", ("test", "TEST"))
-def test_account_option_can_use_test_account(runner, test_accounts, test_key):
+def test_account_option_can_use_test_account(runner, accounts, test_key):
     index = 7
-    test_account = test_accounts[index]
+    test_account = accounts[index]
 
     @click.command()
     @account_option()
