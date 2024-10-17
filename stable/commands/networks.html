@@ -7,7 +7,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=397bb51e" />
-    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=36d120a7" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=83eaa723" />
     <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -59,28 +59,28 @@ data-aria-dark="Switch to auto color mode">
       <div class="sy-scrollbar p-6">
         <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading" aria-level="3"><span class="caption-text">User Guides</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../userguides/accounts.html">Accounts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../userguides/clis.html">CLIs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../userguides/compile.html">Compile</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../userguides/config.html">Configure Ape</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../userguides/console.html">Console</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../userguides/contracts.html">Contracts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../userguides/data.html">Querying Data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../userguides/dependencies.html">Dependencies</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../userguides/developing_plugins.html">Developing Plugins</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../userguides/forking_networks.html">Forking Networks</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../userguides/installing_plugins.html">Plugins</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../userguides/logging.html">Logging</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../userguides/networks.html">Networks</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../userguides/projects.html">Developing Projects with Ape</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../userguides/proxy.html">Proxy Contracts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../userguides/publishing.html">Publishing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/quickstart.html">Overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../userguides/reverts.html">Reverts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/accounts.html">Accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/networks.html">Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/forking_networks.html">Forking Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/contracts.html">Contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/proxy.html">Proxy Contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/installing_plugins.html">Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/projects.html">Developing Projects with Ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/config.html">Configure Ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/compile.html">Compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/console.html">Console</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/transactions.html">Transactions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/trace.html">Traces</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/scripts.html">Scripting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../userguides/testing.html">Testing</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../userguides/trace.html">Traces</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../userguides/transactions.html">Transactions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/reverts.html">Reverts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/publishing.html">Publishing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/clis.html">CLIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/data.html">Querying Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/developing_plugins.html">Developing Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/logging.html">Logging</a></li>
 </ul>
 <p class="caption" role="heading" aria-level="3"><span class="caption-text">CLI Reference</span></p>
 <ul class="current">
@@ -94,16 +94,9 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="run.html">run</a></li>
 <li class="toctree-l1"><a class="reference internal" href="test.html">test</a></li>
 </ul>
-<p class="caption" role="heading" aria-level="3"><span class="caption-text">Python Reference</span></p>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Core Python Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape.html">ape</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_accounts.html">ape-accounts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_compile.html">ape-compile</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_ethereum.html">ape-ethereum</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_ethereum.html#module-ape_ethereum.multicall">ape-ethereum.multicall</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_node.html">ape-node</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_pm.html">ape-pm</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_test.html">ape-test</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/api.html">ape.api</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/cli.html">ape.cli</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/contracts.html">ape.contracts</a></li>
@@ -113,9 +106,20 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/types.html">ape.types</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../methoddocs/utils.html">ape.utils</a></li>
 </ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Plugin Python Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_accounts.html">ape-accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_compile.html">ape-compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_ethereum.html">ape-ethereum</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_ethereum.html#module-ape_ethereum.multicall">ape-ethereum.multicall</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_node.html">ape-node</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_pm.html">ape-pm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_test.html">ape-test</a></li>
+</ul>
 
         </div>
-      </div></div>
+      </div>
+    </div>
   </aside>
   <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
   <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
@@ -189,7 +193,8 @@ data-aria-dark="Switch to auto color mode">
 <dd><p>Filter the results by ecosystem</p>
 <dl class="field-list simple">
 <dt class="field-odd">Options<span class="colon">:</span></dt>
-<dd class="field-odd"><p></p></dd>
+<dd class="field-odd"><p>ethereum</p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -199,7 +204,8 @@ data-aria-dark="Switch to auto color mode">
 <dd><p>Filter the results by network</p>
 <dl class="field-list simple">
 <dt class="field-odd">Options<span class="colon">:</span></dt>
-<dd class="field-odd"><p></p></dd>
+<dd class="field-odd"><p>holesky | local | sepolia | mainnet-fork | holesky-fork | sepolia-fork | mainnet</p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -209,7 +215,8 @@ data-aria-dark="Switch to auto color mode">
 <dd><p>Filter the results by provider</p>
 <dl class="field-list simple">
 <dt class="field-odd">Options<span class="colon">:</span></dt>
-<dd class="field-odd"><p></p></dd>
+<dd class="field-odd"><p>test | node</p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -234,7 +241,8 @@ and stream stdout and stderr.</p>
 <dd><p>Override the default network and provider. (see <cite>ape networks list</cite> for options)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Options<span class="colon">:</span></dt>
-<dd class="field-odd"><p></p></dd>
+<dd class="field-odd"><p>:mainnet:node | ethereum:mainnet:node | :mainnet | ethereum:mainnet | :sepolia:node | ethereum:sepolia:node | :sepolia | ethereum:sepolia | :holesky:node | ethereum:holesky:node | :holesky | ethereum:holesky | ::node | :local:node | ethereum::node | ethereum:local:node | ::test | :local:test | ethereum::test | ethereum:local:test | :local | ethereum:local | ethereum</p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -287,5 +295,5 @@ and stream stdout and stderr.</p>
       <script src="../_static/doctools.js?v=9a2dae69"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script data-domain="docs.apeworx.io" defer="defer" src="https://plausible.io/js/script.js"></script>
-      <script src="../_static/shibuya.js?v=c5fc9e80"></script></body>
+      <script src="../_static/shibuya.js?v=e2e99575"></script></body>
 </html>
