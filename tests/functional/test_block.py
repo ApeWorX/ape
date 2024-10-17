@@ -47,9 +47,20 @@ def test_model_dump_json(block):
         '"num_transactions":0,"number":0,'
         f'"parentHash":"{to_hex(block.parent_hash)}",'
         f'"size":{block.size},"timestamp":{block.timestamp},'
-        f'"totalDifficulty":0,"transactions":[],"uncles":[]}}'
+        '"totalDifficulty":0,"transactions":[],"uncles":[]}'
     )
     assert actual == expected
+
+
+@pytest.mark.parametrize("size", (123, HexBytes(123), to_hex(123)))
+def test_size(block, size):
+    block._size = size
+    dictionary_python = block.model_dump(mode="python")
+    dictionary_json = block.model_dump(mode="json")
+    jons_str = block.model_dump_json()
+    assert dictionary_python["size"] == 123
+    assert dictionary_json["size"] == 123
+    assert '"size":123' in jons_str
 
 
 def test_block_calculate_size(block):

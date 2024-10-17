@@ -16,7 +16,7 @@ from typing import TYPE_CHECKING, Any, Optional, Union, cast
 
 from eth_pydantic_types import HexBytes
 from ethpm_types.abi import EventABI
-from pydantic import Field, computed_field, model_validator
+from pydantic import Field, computed_field, field_serializer, model_validator
 
 from ape.api.config import PluginConfig
 from ape.api.networks import NetworkAPI
@@ -40,6 +40,7 @@ from ape.utils.misc import (
     _create_raises_not_implemented_error,
     log_instead_of_fail,
     raises_not_implemented,
+    to_int,
 )
 from ape.utils.rpc import RPCHeaders
 
@@ -111,7 +112,6 @@ class BlockAPI(BaseInterfaceModel):
         Saves it to a private member on this class and
         gets returned in computed field "size".
         """
-
         if isinstance(values, BlockAPI):
             size = values.size
 
@@ -128,6 +128,10 @@ class BlockAPI(BaseInterfaceModel):
             model._size = size
 
         return model
+
+    @field_serializer("size")
+    def serialize_size(self, value):
+        return to_int(value)
 
     @computed_field()  # type: ignore[misc]
     @cached_property
@@ -153,7 +157,6 @@ class BlockAPI(BaseInterfaceModel):
         in which case it gets calculated if and only if the user
         requests it (or during serialization of this model to disk).
         """
-
         if self._size is not None:
             # The size was provided with the rest of the model
             # (normal).
