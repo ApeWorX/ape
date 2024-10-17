@@ -3,7 +3,7 @@ import re
 from typing import Any, ClassVar, cast
 
 import pytest
-from eth_pydantic_types import HashBytes32, HexBytes
+from eth_pydantic_types import HexBytes32, HexBytes
 from eth_typing import HexAddress, HexStr
 from ethpm_types import ContractType, ErrorABI
 from ethpm_types.abi import ABIType, EventABI, MethodABI
@@ -703,7 +703,7 @@ def test_encode_blueprint_contract(ethereum, vyper_contract_type):
 
 def test_decode_returndata(ethereum):
     abi = make_method_abi("doThing", outputs=[{"name": "", "type": "bool"}])
-    data = HashBytes32.__eth_pydantic_validate__(0)
+    data = HexBytes32.__eth_pydantic_validate__(0)
     actual = ethereum.decode_returndata(abi, data)
     assert actual == (False,)
 
@@ -1153,11 +1153,11 @@ def test_enrich_trace_handles_events(ethereum, vyper_contract_instance, owner):
         {
             "name": "NumberChange",
             "calldata": {
-                "b": "0x3e..404b",
+                "b": "0x3ee0..404b",
                 "prevNum": 0,
                 "dynData": '"Dynamic"',
                 "newNum": 123,
-                "dynIndexed": "0x9f..a94d",
+                "dynIndexed": "0x9f3d..a94d",
             },
         }
     ]

@@ -241,14 +241,14 @@ class KeyfileAccount(AccountAPI):
         )
 
         # NOTE: Signing a raw hash is so dangerous, we don't want to allow autosigning it
-        if not click.confirm("Please confirm you wish to sign using `EthAccount.signHash`"):
+        if not click.confirm("Please confirm you wish to sign using `EthAccount.unsafe_sign_hash`"):
             return None
 
         # Ignoring misleading deprecated warning from web3.py.
         # Also, we have already warned the user about the safety.
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            signed_msg = EthAccount.signHash(msghash, self.__key)
+            signed_msg = EthAccount.unsafe_sign_hash(msghash, self.__key)
 
         return MessageSignature(
             v=signed_msg.v,

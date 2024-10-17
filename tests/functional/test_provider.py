@@ -3,7 +3,7 @@ from pathlib import Path
 from unittest import mock
 
 import pytest
-from eth_pydantic_types import HashBytes32
+from eth_pydantic_types import HexBytes32
 from eth_tester.exceptions import TransactionFailed  # type: ignore
 from eth_typing import HexStr
 from eth_utils import ValidationError, to_hex
@@ -355,7 +355,7 @@ def test_send_transaction_when_no_error_and_receipt_fails(
 
     try:
         # NOTE: Value is meaningless.
-        tx_hash = HashBytes32.__eth_pydantic_validate__(123**36)
+        tx_hash = HexBytes32.__eth_pydantic_validate__(123**36)
 
         # Sending tx "works" meaning no vm error.
         mock_eth_tester.ethereum_tester.send_raw_transaction.return_value = tx_hash
