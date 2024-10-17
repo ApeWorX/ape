@@ -1763,6 +1763,8 @@ class Project(ProjectManager):
             path.write_text(str(src.content), encoding="utf8")
 
         # Unpack config file.
+        # NOTE: Always unpacks into a regular .yaml config file for simplicity
+        #   and maximum portibility.
         self.config.write_to_disk(destination / "ape-config.yaml")
 
         return LocalProject(destination, config_override=config_override)
