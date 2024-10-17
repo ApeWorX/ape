@@ -1,4 +1,5 @@
 import os
+import re
 from pathlib import Path
 from typing import Optional, Union
 
@@ -14,6 +15,90 @@ from ape.utils import create_tempdir
 from ape_ethereum.ecosystem import EthereumConfig, NetworkConfig
 from ape_networks import CustomNetwork
 from tests.functional.conftest import PROJECT_WITH_LONG_CONTRACTS_FOLDER
+
+CONTRACTS_FOLDER = "pathsomewhwere"
+NUMBER_OF_TEST_ACCOUNTS = 31
+YAML_CONTENT = rf"""
+contracts_folder: "{CONTRACTS_FOLDER}"
+
+dependencies:
+  - name: "openzeppelin"
+    github: "OpenZeppelin/openzeppelin-contracts"
+    version: "4.5.0"
+
+plugins:
+  - name: "hardhat"
+  - name: "solidity"
+    version: "0.8.1"
+
+test:
+  number_of_accounts: "{NUMBER_OF_TEST_ACCOUNTS}"
+
+compile:
+  exclude:
+    - "exclude_dir"
+    - "Excl*.json"
+    - r"Ignore\w*\.json"
+""".lstrip()
+JSON_CONTENT = f"""
+{{
+    "contracts_folder": "{CONTRACTS_FOLDER}",
+    "dependencies": [
+        {{
+            "name": "openzeppelin",
+            "github": "OpenZeppelin/openzeppelin-contracts",
+            "version": "4.5.0"
+        }}
+    ],
+    "plugins": [
+        {{
+            "name": "hardhat"
+        }},
+        {{
+            "name": "solidity",
+            "version": "0.8.1"
+        }}
+    ],
+    "test": {{
+        "number_of_accounts": "{NUMBER_OF_TEST_ACCOUNTS}"
+    }},
+    "compile": {{
+        "exclude": [
+            "exclude_dir",
+            "Excl*.json",
+            "r\\"Ignore\\\\w*\\\\.json\\""
+        ]
+    }}
+}}
+""".lstrip()
+PYPROJECT_TOML = rf"""
+[tool.ape]
+contracts_folder = "{CONTRACTS_FOLDER}"
+
+[[tool.ape.dependencies]]
+name = "openzeppelin"
+github = "OpenZeppelin/openzeppelin-contracts"
+version = "4.5.0"
+
+[[tool.ape.plugins]]
+name = "hardhat"
+
+[[tool.ape.plugins]]
+name = "solidity"
+version = "0.8.1"
+
+[tool.ape.test]
+number_of_accounts = {NUMBER_OF_TEST_ACCOUNTS}
+
+[tool.ape.compile]
+exclude = ["exclude_dir", "Excl*.json", 'r"Ignore\w*\.json"']
+""".lstrip()
+EXT_TO_CONTENT = {
+    ".yml": YAML_CONTENT,
+    ".yaml": YAML_CONTENT,
+    ".json": JSON_CONTENT,
+    ".toml": PYPROJECT_TOML,
+}
 
 
 def test_model_validate_empty():
@@ -41,61 +126,27 @@ def test_model_validate_path_contracts_folder():
     assert cfg.contracts_folder == str(path)
 
 
-@pytest.mark.parametrize("ext", ("yml", "yaml"))
-def test_validate_file_config(ext):
-    contracts_folder = "pathtowherever"
+@pytest.mark.parametrize(
+    "file", ("ape-config.yml", "ape-config.yaml", "ape-config.json", "pyproject.toml")
+)
+def test_validate_file(file):
+    content = EXT_TO_CONTENT[Path(file).suffix]
     with create_tempdir() as temp_dir:
-        file = temp_dir / f"ape-config.{ext}"
-        file.write_text(f"contracts_folder: {contracts_folder}")
-        actual = ApeConfig.validate_file(file)
+        path = temp_dir / file
+        path.write_text(content)
+        actual = ApeConfig.validate_file(path)
 
-    assert actual.contracts_folder == contracts_folder
-
-
-def test_validate_json_file():
-    value = "pathtowherever"
-    with create_tempdir() as temp_dir:
-        file = temp_dir / "ape-config.json"
-        file.write_text(f'{{"contracts_folder": "{value}"}}')
-        actual = ApeConfig.validate_file(file)
-
-    assert actual.contracts_folder == value
-
-
-def test_validate_pyproject_toml():
-    contracts_folder = "pathtowherever"
-    number_of_test_accounts = 31
-    content = f"""
-[tool.ape]
-contracts_folder = "{contracts_folder}"
-
-[[tool.ape.dependencies]]
-name = "openzeppelin"
-github = "OpenZeppelin/openzeppelin-contracts"
-version = "4.5.0"
-
-[[tool.ape.plugins]]
-name = "hardhat"
-
-[[tool.ape.plugins]]
-name = "solidity"
-version = "0.8.1"
-
-[tool.ape.test]
-number_of_accounts = {number_of_test_accounts}
-    """.lstrip()
-    with create_tempdir() as temp_dir:
-        file = temp_dir / "pyproject.toml"
-        file.write_text(content)
-        actual = ApeConfig.validate_file(file)
-
-    assert actual.contracts_folder == contracts_folder
-    assert actual.test.number_of_accounts == number_of_test_accounts
+    assert actual.contracts_folder == CONTRACTS_FOLDER
+    assert actual.test.number_of_accounts == NUMBER_OF_TEST_ACCOUNTS
     assert len(actual.dependencies) == 1
     assert actual.dependencies[0]["name"] == "openzeppelin"
     assert actual.dependencies[0]["github"] == "OpenZeppelin/openzeppelin-contracts"
     assert actual.dependencies[0]["version"] == "4.5.0"
     assert actual.plugins == [{"name": "hardhat"}, {"name": "solidity", "version": "0.8.1"}]
+    assert re.compile("Ignore\\w*\\.json") in actual.compile.exclude
+    assert "exclude_dir" in actual.compile.exclude
+    assert ".cache" in actual.compile.exclude
+    assert "Excl*.json" in actual.compile.exclude
 
 
 def test_validate_file_expands_env_vars():

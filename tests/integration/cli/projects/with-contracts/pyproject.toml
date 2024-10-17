@@ -1,0 +1,23 @@
+[tool.ape]
+name = "withcontracts"
+
+[[tool.ape.dependencies]]
+name = "foodep"
+local = "./dep"
+
+[[tool.ape.dependencies]]
+name = "depcontractsfolderroot"
+local = "./dep_contracts_folder_root"
+
+[tool.ape.dependencies.config_override]
+contracts_folder = "."
+
+[[tool.ape.dependencies]]
+name = "depwithunregisteredcontracts"
+local = "./dep_with_sol_and_vy"
+
+[tool.ape.test]
+disconnect_providers_after = false
+
+[tool.ape.compile]
+exclude = ["exclude_dir", "Excl*.json", 'r"Ignore\w*\.json"']
