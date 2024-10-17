@@ -62,6 +62,17 @@ def test_size(block, size):
     assert dictionary_json["size"] == 123
     assert '"size":123' in jons_str
 
+    # Show the same when validated with size in the model.
+    data = block.model_dump()
+    data["size"] = size
+    new_block = Block.model_validate(data)
+    dictionary_python = new_block.model_dump(mode="python")
+    dictionary_json = new_block.model_dump(mode="json")
+    jons_str = new_block.model_dump_json()
+    assert dictionary_python["size"] == 123
+    assert dictionary_json["size"] == 123
+    assert '"size":123' in jons_str
+
 
 def test_block_calculate_size(block):
     original = block.model_dump(by_alias=True)

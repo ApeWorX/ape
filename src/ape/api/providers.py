@@ -84,7 +84,7 @@ class BlockAPI(BaseInterfaceModel):
     NOTE: The pending block uses the current timestamp.
     """
 
-    _size: Optional[int] = None
+    _size: Optional[HexInt] = None
 
     @log_instead_of_fail(default="<BlockAPI>")
     def __repr__(self) -> str:
@@ -125,7 +125,7 @@ class BlockAPI(BaseInterfaceModel):
 
         model = handler(values)
         if size is not None:
-            model._size = size
+            model._size = to_int(size)
 
         return model
 
@@ -149,7 +149,7 @@ class BlockAPI(BaseInterfaceModel):
 
     @computed_field()  # type: ignore[misc]
     @cached_property
-    def size(self) -> int:
+    def size(self) -> HexInt:
         """
         The size of the block in gas. Most of the time,
         this field is passed to the model at validation time,
