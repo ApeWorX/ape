@@ -41,11 +41,22 @@ def test_model_validate_path_contracts_folder():
     assert cfg.contracts_folder == str(path)
 
 
-def test_validate_file():
+@pytest.mark.parametrize("ext", ("yml", "yaml"))
+def test_validate_file_config(ext):
     value = "pathtowherever"
     with create_tempdir() as temp_dir:
-        file = temp_dir / "ape-config.yaml"
+        file = temp_dir / f"ape-config.{ext}"
         file.write_text(f"contracts_folder: {value}")
+        actual = ApeConfig.validate_file(file)
+
+    assert actual.contracts_folder == value
+
+
+def test_validate_json_file():
+    value = "pathtowherever"
+    with create_tempdir() as temp_dir:
+        file = temp_dir / f"ape-config.json"
+        file.write_text(f'{{"contracts_folder": "{value}"}}')
         actual = ApeConfig.validate_file(file)
 
     assert actual.contracts_folder == value
