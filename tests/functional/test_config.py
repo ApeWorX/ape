@@ -43,23 +43,59 @@ def test_model_validate_path_contracts_folder():
 
 @pytest.mark.parametrize("ext", ("yml", "yaml"))
 def test_validate_file_config(ext):
-    value = "pathtowherever"
+    contracts_folder = "pathtowherever"
     with create_tempdir() as temp_dir:
         file = temp_dir / f"ape-config.{ext}"
-        file.write_text(f"contracts_folder: {value}")
+        file.write_text(f"contracts_folder: {contracts_folder}")
         actual = ApeConfig.validate_file(file)
 
-    assert actual.contracts_folder == value
+    assert actual.contracts_folder == contracts_folder
 
 
 def test_validate_json_file():
     value = "pathtowherever"
     with create_tempdir() as temp_dir:
-        file = temp_dir / f"ape-config.json"
+        file = temp_dir / "ape-config.json"
         file.write_text(f'{{"contracts_folder": "{value}"}}')
         actual = ApeConfig.validate_file(file)
 
     assert actual.contracts_folder == value
+
+
+def test_validate_pyproject_toml():
+    contracts_folder = "pathtowherever"
+    number_of_test_accounts = 31
+    content = f"""
+[tool.ape]
+contracts_folder = "{contracts_folder}"
+
+[[tool.ape.dependencies]]
+name = "openzeppelin"
+github = "OpenZeppelin/openzeppelin-contracts"
+version = "4.5.0"
+
+[[tool.ape.plugins]]
+name = "hardhat"
+
+[[tool.ape.plugins]]
+name = "solidity"
+version = "0.8.1"
+
+[tool.ape.test]
+number_of_accounts = {number_of_test_accounts}
+    """.lstrip()
+    with create_tempdir() as temp_dir:
+        file = temp_dir / "pyproject.toml"
+        file.write_text(content)
+        actual = ApeConfig.validate_file(file)
+
+    assert actual.contracts_folder == contracts_folder
+    assert actual.test.number_of_accounts == number_of_test_accounts
+    assert len(actual.dependencies) == 1
+    assert actual.dependencies[0]["name"] == "openzeppelin"
+    assert actual.dependencies[0]["github"] == "OpenZeppelin/openzeppelin-contracts"
+    assert actual.dependencies[0]["version"] == "4.5.0"
+    assert actual.plugins == [{"name": "hardhat"}, {"name": "solidity", "version": "0.8.1"}]
 
 
 def test_validate_file_expands_env_vars():
