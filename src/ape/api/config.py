@@ -479,9 +479,7 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
 
     @classmethod
     def _validate_pyproject_toml(cls, path: Path) -> "ApeConfig":
-        with open(path, "rb") as f:
-            data = tomllib.load(f)
-
+        data = tomllib.loads(path.read_text())
         ape_data = data.get("tool", {}).get("ape", {})
         return ApeConfig.model_validate(ape_data)
 
