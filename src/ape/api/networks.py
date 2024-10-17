@@ -988,7 +988,6 @@ class NetworkAPI(BaseInterfaceModel):
             )
 
             # Return the first registered explorer (skipping any others)
-            # TODO: In 0.9, delete this and only use `supports_chain()` approach.
             if self.ecosystem.name == ecosystem_name and (
                 self.name == network_name or has_explorer_config
             ):
