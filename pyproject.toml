@@ -30,7 +30,6 @@ norecursedirs = "projects"
 # NOTE: 'no:ape_test' Prevents the ape plugin from activating on our tests
 #    And 'pytest_ethereum' is not used and causes issues in some environments.
 addopts = """
--p no:ape_test
 -p no:pytest_ethereum
 """
 
