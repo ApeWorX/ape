@@ -74,7 +74,7 @@ class BlockAPI(BaseInterfaceModel):
         default=EMPTY_BYTES32, alias="parentHash"
     )  # NOTE: genesis block has no parent hash
     """
-    The preceeding block's hash.
+    The preceding block's hash.
     """
 
     timestamp: HexInt
