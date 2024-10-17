@@ -1,7 +1,7 @@
 # Configure Ape
 
-You can configure Ape using configuration files with the name `ape-config.yaml`.
-There are two locations you can place an `ape-config.yaml` file.
+You can configure Ape using a `pyproject.toml` file or any configuration file named `ape-config.[yaml|yml|json]`.
+There are two locations you can place config files.
 
 1. In the root of your project
 2. In your `$HOME/.ape` directory (global)
@@ -22,6 +22,13 @@ However, here is a list of common-use cases requiring the `ape-config.yaml` file
 
 **Environment Variables**: `ape-config.yaml` files support environment-variable expansion.
 Simply include environment variables (with the `$` prefix) in your config file and Ape will automatically expand them.
+
+```toml
+[tool.ape.plugin]
+secret_rpc = "$MY_SECRET_RPC"
+```
+
+Or the equivalent YAML:
 
 ```yaml
 plugin:

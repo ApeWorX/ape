@@ -1,17 +1,9 @@
 import os
-import sys
 from collections.abc import Iterable, Iterator
 from enum import Enum
 from functools import cached_property
 from pathlib import Path
 from typing import Any, Optional, TypeVar, cast
-
-if sys.version_info.minor >= 11:
-    # 3.11 or greater
-    # NOTE: type-ignore is for when running mypy on python versions < 3.11
-    import tomllib  # type: ignore[import-not-found]
-else:
-    import toml as tomllib  # type: ignore[no-redef]
 
 import yaml
 from ethpm_types import PackageManifest, PackageMeta, Source
@@ -447,15 +439,6 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
         Returns:
             :class:`~ape.api.config.ApeConfig`
         """
-        if path.name == "pyproject.toml":
-            return cls._validate_pyproject_toml(path, **overrides)
-        elif path.stem == "ape-config":
-            return cls._validate_ape_config_file(path, **overrides)
-        else:
-            raise ConfigError(f"Unsupported config file: {path}")
-
-    @classmethod
-    def _validate_ape_config_file(cls, path: Path, **overrides):
         data = {**load_config(path), **overrides}
 
         # NOTE: We are including the project path here to assist
@@ -476,12 +459,6 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
                 raise ConfigError(final_msg)
             else:
                 raise ConfigError(str(err)) from err
-
-    @classmethod
-    def _validate_pyproject_toml(cls, path: Path) -> "ApeConfig":
-        data = tomllib.loads(path.read_text())
-        ape_data = data.get("tool", {}).get("ape", {})
-        return ApeConfig.model_validate(ape_data)
 
     @classmethod
     def from_manifest(cls, manifest: PackageManifest, **overrides) -> "ApeConfig":
