@@ -3,7 +3,14 @@ import functools
 import inspect
 import json
 import sys
-import tomllib
+
+if sys.version_info.minor >= 11:
+    # 3.11 or greater
+    # NOTE: type-ignore is for when running mypy on python versions < 3.11
+    import tomllib  # type: ignore[import-not-found]
+else:
+    import toml as tomllib  # type: ignore[no-redef]
+
 from asyncio import gather
 from collections.abc import Coroutine, Mapping
 from datetime import datetime, timezone
