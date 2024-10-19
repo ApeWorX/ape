@@ -2,6 +2,8 @@ from collections.abc import Collection, Iterator
 from functools import cached_property
 from typing import Optional, Union
 
+from evmchains import PUBLIC_CHAIN_META
+
 from ape.api import EcosystemAPI, ProviderAPI, ProviderContextManager
 from ape.api.networks import NetworkAPI
 from ape.exceptions import EcosystemNotFoundError, NetworkError, NetworkNotFoundError
@@ -51,7 +53,6 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         """
         The currently connected provider if one exists. Otherwise, returns ``None``.
         """
-
         return self._active_provider
 
     @active_provider.setter
@@ -162,7 +163,6 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         """
         The set of all ecosystem names in ``ape``.
         """
-
         return set(self.ecosystems)
 
     @property
@@ -435,10 +435,15 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
             :class:`~ape.api.networks.EcosystemAPI`
         """
 
-        if ecosystem_name not in self.ecosystem_names:
-            raise EcosystemNotFoundError(ecosystem_name, options=self.ecosystem_names)
+        if ecosystem_name in self.ecosystem_names:
+            return self.ecosystems[ecosystem_name]
 
-        return self.ecosystems[ecosystem_name]
+        elif ecosystem_name in PUBLIC_CHAIN_META:
+            # Is an EVM chain, can automatically make a class using evm-chains.
+            evm_class = self._plugin_ecosystems["ethereum"].__class__
+            return evm_class(name=ecosystem_name)
+
+        raise EcosystemNotFoundError(ecosystem_name, options=self.ecosystem_names)
 
     def get_provider_from_choice(
         self,
@@ -546,7 +551,6 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         Returns:
             :class:`~api.api.networks.ProviderContextManager`
         """
-
         provider = self.get_provider_from_choice(
             network_choice=network_choice, provider_settings=provider_settings
         )
