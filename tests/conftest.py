@@ -513,11 +513,17 @@ class SubprocessRunner:
         self.root_cmd = root_cmd or []
         self.data_folder = data_folder
 
-    def invoke(self, *subcommand: str, input=None, timeout: int = 40):
+    def invoke(
+        self,
+        *subcommand: str,
+        input=None,
+        timeout: int = 40,
+        env: Optional[dict] = None,
+    ):
         subcommand = subcommand or ()
         cmd_ls = [*self.root_cmd, *subcommand]
 
-        env = dict(os.environ)
+        env = {**dict(os.environ), **(env or {})}
         if self.data_folder:
             env["APE_DATA_FOLDER"] = str(self.data_folder)
 
@@ -548,7 +554,7 @@ class ApeSubprocessRunner(SubprocessRunner):
         super().__init__([str(ape_path), *root], data_folder=data_folder)
         self.project = None
 
-    def invoke(self, *subcommand: str, input=None, timeout: int = 40):
+    def invoke(self, *subcommand: str, input=None, timeout: int = 40, env: Optional[dict] = None):
         if self.project:
             try:
                 here = os.getcwd()
@@ -560,7 +566,7 @@ class ApeSubprocessRunner(SubprocessRunner):
         else:
             here = None
 
-        result = super().invoke(*subcommand, input=input, timeout=timeout)
+        result = super().invoke(*subcommand, input=input, timeout=timeout, env=env)
         if here:
             os.chdir(here)
 
@@ -577,7 +583,7 @@ class SubprocessResult:
 
     @property
     def output(self) -> str:
-        return self._completed_process.stdout
+        return self._completed_process.stdout or self._completed_process.stderr
 
 
 CUSTOM_NETWORK_0 = "apenet"

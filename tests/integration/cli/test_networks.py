@@ -153,7 +153,7 @@ def test_list_geth(ape_cli, runner, networks, project):
 
 
 @run_once
-def test_list_filter_networks(ape_cli, runner, networks):
+def test_list_filter_networks(ape_cli, runner):
     result = runner.invoke(ape_cli, ("networks", "list", "--network", "sepolia"))
     assert result.exit_code == 0
 
