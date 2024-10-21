@@ -42,11 +42,11 @@ def test_install_path_to_local_package(pm_runner, integ_project):
 @run_once
 def test_install_path_to_local_config_file(pm_runner):
     project = "with-contracts"
-    path = Path(__file__).parent / "projects" / project / "ape-config.yaml"
+    path = Path(__file__).parent / "projects" / project / "pyproject.toml"
     arguments = ("install", path.as_posix(), "--name", project)
     result = pm_runner.invoke(*arguments)
     assert result.exit_code == 0, result.output
-    assert f"Package '{path.parent.as_posix()}' installed."
+    assert f"Package '{path.parent.as_posix()}' installed." in result.output
 
 
 @skip_projects_except("test", "with-contracts")
