@@ -251,7 +251,6 @@ def test_console_bal_magic(integ_project, ape_cli, runner, keyfile_account):
 def test_uncaught_txn_err(integ_project, console_runner):
     cmd_ls = [
         "%load_ext ape_console.plugin",
-        "from ape import project, accounts",
         "account = accounts.test_accounts[0]",
         "contract = account.deploy(project.ContractA)",
         "contract.setNumber(5, sender=account)",
