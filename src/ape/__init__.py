@@ -9,6 +9,7 @@ import sys as _sys
 
 from ape.managers.project import ProjectManager as Project
 from ape.pytest.contextmanagers import RevertsContextManager
+from ape.pytest.fixtures import fixture
 from ape.utils import ManagerAccessMixin as _ManagerAccessMixin
 
 # Wiring together the application
@@ -59,6 +60,7 @@ __all__ = [
     "config",
     "convert",
     "Contract",
+    "fixture",
     "networks",
     "project",
     "Project",  # So you can load other projects
