@@ -69,7 +69,7 @@ def test_success(simple_runner):
     # this test also ensures that we get SUCCESS logs
     # without having to specify verbosity
     @group_for_testing.command()
-    @ape_cli_context()
+    @ape_cli_context(default_log_level=LogLevel.INFO.value)
     def cmd(cli_ctx):
         cli_ctx.logger.success("this is a test")
 
