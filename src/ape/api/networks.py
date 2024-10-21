@@ -976,7 +976,7 @@ class NetworkAPI(BaseInterfaceModel):
             :class:`ape.api.explorers.ExplorerAPI`, optional
         """
         chain_id = None if self.network_manager.active_provider is None else self.provider.chain_id
-        for plugin_name, plugin_tuple in self.plugin_manager.explorers:
+        for plugin_name, plugin_tuple in self._plugin_explorers:
             ecosystem_name, network_name, explorer_class = plugin_tuple
 
             # Check for explicitly configured custom networks
@@ -998,6 +998,11 @@ class NetworkAPI(BaseInterfaceModel):
                 return explorer_class(name=plugin_name, network=self)
 
         return None  # May not have an block explorer
+
+    @property
+    def _plugin_explorers(self) -> list[tuple]:
+        # Abstracted for testing purposes.
+        return self.plugin_manager.explorers
 
     @property
     def is_mainnet(self) -> bool:
