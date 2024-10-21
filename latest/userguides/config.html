@@ -170,8 +170,8 @@ data-aria-dark="Switch to auto color mode">
         <article class="yue" role="main">
           <section id="configure-ape">
 <h1>Configure Ape<a class="headerlink" href="#configure-ape" title="Link to this heading"></a></h1>
-<p>You can configure Ape using configuration files with the name <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code>.
-There are two locations you can place an <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file.</p>
+<p>You can configure Ape using a <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code> file and the prefix <code class="docutils literal notranslate"><span class="pre">tool.ape</span></code> or any configuration file named <code class="docutils literal notranslate"><span class="pre">ape-config.[yaml|yml|json]</span></code>.
+There are two locations you can place config files.</p>
 <ol class="arabic simple">
 <li><p>In the root of your project</p></li>
 <li><p>In your <code class="docutils literal notranslate"><span class="pre">$HOME/.ape</span></code> directory (global)</p></li>
@@ -189,6 +189,11 @@ Plugins for Ape may define their own configs.</p>
 </ol>
 <p><strong>Environment Variables</strong>: <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> files support environment-variable expansion.
 Simply include environment variables (with the <code class="docutils literal notranslate"><span class="pre">$</span></code> prefix) in your config file and Ape will automatically expand them.</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[tool.ape.plugin]</span>
+</span><span data-line="2"><span class="n">secret_rpc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;$MY_SECRET_RPC&quot;</span>
+</span></pre></div>
+</div>
+<p>Or the equivalent YAML:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">plugin</span><span class="p">:</span>
 </span><span data-line="2"><span class="w">  </span><span class="nt">secret_rpc</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">$MY_SECRET_RPC</span>
 </span></pre></div>
@@ -205,6 +210,11 @@ For example, imagine a project structure like:</p>
 </span></pre></div>
 </div>
 <p>In this case, you want to configure Ape like:</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[tool.ape]</span>
+</span><span data-line="2"><span class="n">base_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;src&quot;</span>
+</span></pre></div>
+</div>
+<p>Or the equivalent YAML:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">base_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">src</span>
 </span></pre></div>
 </div>
@@ -215,6 +225,11 @@ Some dependencies, such as python-based ones like <code class="docutils literal 
 <h2>Contracts Folder<a class="headerlink" href="#contracts-folder" title="Link to this heading"></a></h2>
 <p>Specify a different path to your <code class="docutils literal notranslate"><span class="pre">contracts/</span></code> directory.
 This is useful when using a different naming convention, such as <code class="docutils literal notranslate"><span class="pre">src/</span></code> rather than <code class="docutils literal notranslate"><span class="pre">contracts/</span></code>.</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[tool.ape]</span>
+</span><span data-line="2"><span class="n">contracts_folder</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;src&quot;</span>
+</span></pre></div>
+</div>
+<p>Or the equivalent YAML:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">contracts_folder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">src</span>
 </span></pre></div>
 </div>
@@ -227,6 +242,11 @@ This is useful for projects that compile contracts outside their directory.</p>
 <section id="default-ecosystem">
 <h2>Default Ecosystem<a class="headerlink" href="#default-ecosystem" title="Link to this heading"></a></h2>
 <p>You can change the default ecosystem by including the following:</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[tool.ape]</span>
+</span><span data-line="2"><span class="n">default_ecosystem</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;fantom&quot;</span>
+</span></pre></div>
+</div>
+<p>Or the equivalent YAML:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">default_ecosystem</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fantom</span>
 </span></pre></div>
 </div>
@@ -237,8 +257,15 @@ This is useful for projects that compile contracts outside their directory.</p>
 <p>Configure dependencies for your ape project.
 To learn more about dependencies, see <a class="reference external" href="./dependencies.html">this guide</a>.</p>
 <p>A simple example of configuring dependencies looks like this:</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[[tool.ape.dependencies]]</span>
+</span><span data-line="2"><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;openzeppelin&quot;</span>
+</span><span data-line="3"><span class="n">github</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;OpenZeppelin/openzeppelin-contracts&quot;</span>
+</span><span data-line="4"><span class="n">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;4.4.2&quot;</span>
+</span></pre></div>
+</div>
+<p>Or the equivalent YAML:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">dependencies</span><span class="p">:</span>
-</span><span data-line="2"><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">OpenZeppelin</span>
+</span><span data-line="2"><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">openzeppelin</span>
 </span><span data-line="3"><span class="w">    </span><span class="nt">github</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">OpenZeppelin/openzeppelin-contracts</span>
 </span><span data-line="4"><span class="w">    </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4.4.2</span>
 </span></pre></div>
@@ -249,6 +276,16 @@ To learn more about dependencies, see <a class="reference external" href="./depe
 <p>Set deployments that were made outside of Ape in your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> to create past-deployment-based contract instances in Ape:
 (See <a class="reference external" href="./contracts.html#from-previous-deployment">this example</a> for more information on this feature).</p>
 <p>Config example:</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[[tool.ape.deployments.ethereum.mainnet]]</span>
+</span><span data-line="2"><span class="n">contract_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;MyContract&quot;</span>
+</span><span data-line="3"><span class="n">address</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;0x5FbDB2315678afecb367f032d93F642f64180aa3&quot;</span>
+</span><span data-line="4">
+</span><span data-line="5"><span class="k">[[tool.ape.deployments.ethereum.sepolia]]</span>
+</span><span data-line="6"><span class="n">contract_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;MyContract&quot;</span>
+</span><span data-line="7"><span class="n">address</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512&quot;</span>
+</span></pre></div>
+</div>
+<p>Or the equivalent YAML:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">deployments</span><span class="p">:</span>
 </span><span data-line="2"><span class="w">  </span><span class="nt">ethereum</span><span class="p">:</span>
 </span><span data-line="3"><span class="w">    </span><span class="nt">mainnet</span><span class="p">:</span>
@@ -274,6 +311,11 @@ To learn more about dependencies, see <a class="reference external" href="./depe
 <h2>Node<a class="headerlink" href="#node" title="Link to this heading"></a></h2>
 <p>When using the <code class="docutils literal notranslate"><span class="pre">node</span></code> provider, you can customize its settings.
 For example, to change the URI for an Ethereum network, do:</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[tool.ape.node.ethereum.mainnet]</span>
+</span><span data-line="2"><span class="n">uri</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;http://localhost:5030&quot;</span>
+</span></pre></div>
+</div>
+<p>Or the equivalent YAML:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">node</span><span class="p">:</span>
 </span><span data-line="2"><span class="w">  </span><span class="nt">ethereum</span><span class="p">:</span>
 </span><span data-line="3"><span class="w">    </span><span class="nt">mainnet</span><span class="p">:</span>
@@ -290,6 +332,14 @@ For example, to change the URI for an Ethereum network, do:</p>
 <section id="networks">
 <h2>Networks<a class="headerlink" href="#networks" title="Link to this heading"></a></h2>
 <p>Set default network and network providers:</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[tool.ape.ethereum]</span>
+</span><span data-line="2"><span class="n">default_network</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;mainnet-fork&quot;</span>
+</span><span data-line="3">
+</span><span data-line="4"><span class="k">[tool.ape.ethereum.mainnet_fork]</span>
+</span><span data-line="5"><span class="n">default_provider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;hardhat&quot;</span>
+</span></pre></div>
+</div>
+<p>Or the equivalent YAML:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">ethereum</span><span class="p">:</span>
 </span><span data-line="2"><span class="w">  </span><span class="nt">default_network</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mainnet-fork</span>
 </span><span data-line="3"><span class="w">  </span><span class="nt">mainnet_fork</span><span class="p">:</span>
@@ -327,6 +377,15 @@ For example, to change the URI for an Ethereum network, do:</p>
 <p class="admonition-title">Note</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">ape-</span></code> prefix is not needed and shouldn’t be included here.</p>
 </div>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[[tool.ape.plugins]]</span>
+</span><span data-line="2"><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;solidity&quot;</span>
+</span><span data-line="3"><span class="n">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;0.1.0b2&quot;</span>
+</span><span data-line="4">
+</span><span data-line="5"><span class="k">[[tool.ape.plugins]]</span>
+</span><span data-line="6"><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;ens&quot;</span>
+</span></pre></div>
+</div>
+<p>Or the equivalent YAML:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">plugins</span><span class="p">:</span>
 </span><span data-line="2"><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">solidity</span><span class="w"> </span><span class="c1"># ape-solidity plugin</span>
 </span><span data-line="3"><span class="w">    </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.1.0b2</span>
