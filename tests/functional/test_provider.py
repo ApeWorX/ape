@@ -242,11 +242,11 @@ def test_supports_tracing(eth_tester_provider):
     assert not eth_tester_provider.supports_tracing
 
 
-def test_provider_get_balance(project, networks, accounts):
+def test_get_balance(networks, accounts):
     """
     Test that the address is an AddressType.
     """
-    balance = networks.provider.get_balance(accounts.test_accounts[0].address)
+    balance = networks.provider.get_balance(accounts[0].address)
 
     assert type(balance) is int
     assert balance == DEFAULT_TEST_ACCOUNT_BALANCE

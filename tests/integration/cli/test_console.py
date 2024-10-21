@@ -1,9 +1,21 @@
+import os
+import subprocess
 from pathlib import Path
 
 import pytest
 
 from ape import __all__
+from tests.conftest import ApeSubprocessRunner
 from tests.integration.cli.utils import skip_projects, skip_projects_except
+
+
+@pytest.fixture
+def console_runner(config):
+    class ConsoleSubprocessRunner(ApeSubprocessRunner):
+        def __init__(self):
+            super().__init__("console", data_folder=config.DATA_FOLDER)
+
+    return ConsoleSubprocessRunner()
 
 
 @pytest.fixture(params=("path", "root"))
@@ -236,27 +248,18 @@ def test_console_bal_magic(integ_project, ape_cli, runner, keyfile_account):
 
 
 @skip_projects_except("with-contracts")
-def test_uncaught_txn_err(integ_project, ape_cli, runner, mocker):
-    # For some reason, not showing in result.output, so captured another way.
-    handler = mocker.patch("ape_console.plugin.handle_ape_exception")
+def test_uncaught_txn_err(integ_project, console_runner):
     cmd_ls = [
         "%load_ext ape_console.plugin",
         "account = accounts.test_accounts[0]",
         "contract = account.deploy(project.ContractA)",
-        "receipt = contract.setNumber(5, sender=account)",
-        "print(receipt)",
+        "contract.setNumber(5, sender=account)",
         "exit",
     ]
     cmd_str = "\n".join(cmd_ls)
-    arguments = ("console", "--project", f"{integ_project.path}")
-    runner.invoke(
-        ape_cli,
-        arguments,
-        input=f"{cmd_str}\n",
-        catch_exceptions=False,
-    )
-    err = handler.call_args[0][0]
-    assert str(err) == "Transaction failed."
+    console_runner.project = integ_project
+    result = console_runner.invoke(input=f"{cmd_str}\n")
+    assert "ERROR:    (ContractLogicError) Transaction failed." in result.output
 
 
 def test_console_none_network(integ_project, ape_cli, runner):
@@ -266,7 +269,7 @@ def test_console_none_network(integ_project, ape_cli, runner):
 
 
 @skip_projects_except("with-contracts")
-def test_console_natspecs(integ_project, ape_cli, runner, solidity_contract_type):
+def test_console_natspecs(integ_project, solidity_contract_type, console_runner):
     """
     This test shows that the various natspec integrations with ABI-backed
     types work in ``ape console``.
@@ -287,7 +290,6 @@ def test_console_natspecs(integ_project, ape_cli, runner, solidity_contract_type
         "exit",
     ]
     cmd_str = "\n".join(cmd_ls)
-    arguments = ("console", "--project", f"{integ_project.path}")
     expected_method = """
 setNumber(uint256 num)
   @custom:emits Emits a `NumberChange` event with the previous number, the new number, and the previous block hash
@@ -301,12 +303,7 @@ NumberChange(bytes32 b, uint256 prevNum, string dynData, uint256 indexed newNum,
   @details Emitted when number is changed. `newNum` is the new number from the call. Expected every time number changes.
 """.strip()
     # flake8: on
-    result = runner.invoke(
-        ape_cli,
-        arguments,
-        input=f"{cmd_str}\n",
-        catch_exceptions=False,
-    )
+    result = console_runner.invoke("--project", f"{integ_project.path}", input=f"{cmd_str}\n")
 
     # Getting rid of newlines as terminal-breakage never consistent in tests.
     actual = result.output.replace("\n", "")

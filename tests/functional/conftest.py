@@ -610,9 +610,9 @@ def struct_input_for_call(owner):
 
 
 @pytest.fixture(scope="session")
-def output_from_struct_input_call(test_accounts):
+def output_from_struct_input_call(accounts):
     # Expected when using `struct_input_for_call`.
-    addr = test_accounts[0].address.replace("0x", "")
+    addr = accounts[0].address.replace("0x", "")
     return HexBytes(
         f"0x26e0a196000000000000000000000000{addr}000000000000000000000000000000000"
         f"0000000000000000000000000000080000000000000000000000000000000000000000000"
