@@ -275,44 +275,6 @@ def geth_provider(networks):
         yield networks.provider
 
 
-@contextmanager
-def _isolation():
-    if ape.networks.active_provider is None:
-        raise AssertionError("Isolation should only be used with a connected provider.")
-
-    init_network_name = ape.chain.provider.network.name
-    init_provider_name = ape.chain.provider.name
-
-    try:
-        snapshot = ape.chain.snapshot()
-    except (APINotImplementedError, ProviderNotConnectedError):
-        # Provider not used or connected in test.
-        snapshot = None
-
-    yield
-
-    if (
-        snapshot is None
-        or ape.networks.active_provider is None
-        or ape.chain.provider.network.name != init_network_name
-        or ape.chain.provider.name != init_provider_name
-    ):
-        return
-
-    try:
-        ape.chain.restore(snapshot)
-    except (UnknownSnapshotError, ProviderNotConnectedError):
-        # Assume snapshot removed for testing reasons
-        # or the provider was not needed to be connected for the test.
-        pass
-
-
-@pytest.fixture(autouse=True)
-def eth_tester_isolation(eth_tester_provider):
-    with _isolation():
-        yield
-
-
 @pytest.fixture
 def empty_data_folder():
     # Avoid user's global ape-config data.
