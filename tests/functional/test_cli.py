@@ -454,6 +454,18 @@ def test_verbosity_option_change_default(runner, level):
     assert verbosity_parameter.default == level
 
 
+def test_verbosity_option_uses_logger_level_as_default(runner):
+    @click.command()
+    @verbosity_option(default=None)
+    def cmd():
+        click.echo(f"LogLevel={logger.level}")
+        pass
+
+    with logger.at_level(LogLevel.DEBUG):
+        result = runner.invoke(cmd)
+        assert "LogLevel=10" in result.output
+
+
 def test_account_prompt_name():
     """
     It is very important for this class to have the `name` attribute,
