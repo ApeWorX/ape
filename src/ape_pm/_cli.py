@@ -111,7 +111,7 @@ def _handle_package_path(path: Path, original_value: Optional[str] = None) -> di
         value = original_value or path.as_posix()
         raise click.BadArgumentUsage(f"Unknown package '{value}'.")
 
-    elif path.is_file() and path.name == "ape-config.yaml":
+    elif path.is_file() and (path.stem == "ape-config" or path.name == "pyproject.toml"):
         path = path.parent
 
     path = path.resolve().absolute()

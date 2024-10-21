@@ -1,4 +1,5 @@
 import json
+from collections import defaultdict
 from collections.abc import Collection, Iterator
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
@@ -1497,7 +1498,7 @@ class ChainManager(BaseManager):
         from ape import chain
     """
 
-    _snapshots: list[SnapshotID] = []
+    _snapshots: defaultdict = defaultdict(list)  # chain_id -> snapshots
     _chain_id_map: dict[str, int] = {}
     _block_container_map: dict[int, BlockContainer] = {}
     _transaction_history_map: dict[int, TransactionHistory] = {}
@@ -1602,9 +1603,10 @@ class ChainManager(BaseManager):
         Returns:
             :class:`~ape.types.SnapshotID`: The snapshot ID.
         """
+        chain_id = self.provider.chain_id
         snapshot_id = self.provider.snapshot()
-        if snapshot_id not in self._snapshots:
-            self._snapshots.append(snapshot_id)
+        if snapshot_id not in self._snapshots[chain_id]:
+            self._snapshots[chain_id].append(snapshot_id)
 
         return snapshot_id
 
@@ -1623,15 +1625,16 @@ class ChainManager(BaseManager):
             snapshot_id (Optional[:class:`~ape.types.SnapshotID`]): The snapshot ID. Defaults
               to the most recent snapshot ID.
         """
-        if snapshot_id is None and not self._snapshots:
+        chain_id = self.provider.chain_id
+        if snapshot_id is None and not self._snapshots[chain_id]:
             raise ChainError("There are no snapshots to revert to.")
         elif snapshot_id is None:
-            snapshot_id = self._snapshots.pop()
-        elif snapshot_id not in self._snapshots:
+            snapshot_id = self._snapshots[chain_id].pop()
+        elif snapshot_id not in self._snapshots[chain_id]:
             raise UnknownSnapshotError(snapshot_id)
         else:
-            snapshot_index = self._snapshots.index(snapshot_id)
-            self._snapshots = self._snapshots[:snapshot_index]
+            snapshot_index = self._snapshots[chain_id].index(snapshot_id)
+            self._snapshots[chain_id] = self._snapshots[chain_id][:snapshot_index]
 
         self.provider.restore(snapshot_id)
         self.history.revert_to_block(self.blocks.height)

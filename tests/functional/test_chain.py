@@ -1,8 +1,9 @@
+from collections import defaultdict
 from datetime import datetime, timedelta
 
 import pytest
 
-from ape.exceptions import APINotImplementedError, ChainError
+from ape.exceptions import APINotImplementedError, ChainError, UnknownSnapshotError
 from ape.managers.chain import AccountHistory
 from ape.types import AddressType
 
@@ -61,16 +62,30 @@ def test_snapshot_and_restore_unknown_snapshot_id(chain):
     # After restoring to the second ID, the third ID is now invalid.
     chain.restore(snapshot_id_2)
 
-    with pytest.raises(ChainError) as err:
+    with pytest.raises(UnknownSnapshotError) as err:
         chain.restore(snapshot_id_3)
 
     assert "Unknown snapshot ID" in str(err.value)
 
 
 def test_snapshot_and_restore_no_snapshots(chain):
-    chain._snapshots = []  # Ensure empty (gets set in test setup)
+    chain._snapshots = defaultdict(list)  # Ensure empty (gets set in test setup)
     with pytest.raises(ChainError, match="There are no snapshots to revert to."):
         chain.restore()
+
+
+def test_snapshot_and_restore_switched_chains(networks, chain):
+    """
+    Ensuring things work as expected when we switch chains after snapshotting
+    and before restoring.
+    """
+    snapshot = chain.snapshot()
+    # Switch chains.
+    with networks.ethereum.local.use_provider(
+        "test", provider_settings={"chain_id": 11191919191991918223773}
+    ):
+        with pytest.raises(UnknownSnapshotError):
+            chain.restore(snapshot)
 
 
 def test_isolate(chain, vyper_contract_instance, owner):

@@ -136,7 +136,7 @@ class PytestApeFixtures(ManagerAccessMixin):
 
     @allow_disconnected
     def _restore(self, snapshot_id: SnapshotID):
-        if snapshot_id not in self.chain_manager._snapshots:
+        if snapshot_id not in self.chain_manager._snapshots[self.provider.chain_id]:
             return
         try:
             self.chain_manager.restore(snapshot_id)

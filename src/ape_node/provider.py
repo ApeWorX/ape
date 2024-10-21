@@ -332,6 +332,7 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
         if self.is_connected:
             self._complete_connect()
         else:
+            # Starting the process.
             self.start()
 
     def start(self, timeout: int = 20):
@@ -389,6 +390,9 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
         # Also unset the subprocess-provider reference.
         # NOTE: Type ignore is wrong; TODO: figure out why.
         self.process = None  # type: ignore[assignment]
+
+        # Clear any snapshots.
+        self.chain_manager._snapshots[self.chain_id] = []
 
         super().disconnect()
 

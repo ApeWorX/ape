@@ -1,5 +1,6 @@
 import copy
 from pathlib import Path
+from unittest import mock
 
 import pytest
 
@@ -286,3 +287,65 @@ def test_is_mainnet_from_config(project):
     ecosystem = MyEcosystem()
     network = network_type(name=network_name, ecosystem=ecosystem)
     assert network.is_mainnet
+
+
+def test_explorer(networks):
+    """
+    Local network does not have an explorer, by default.
+    """
+    network = networks.ethereum.local
+    network.__dict__.pop("explorer", None)  # Ensure not cached yet.
+    assert network.explorer is None
+
+
+def test_explorer_when_network_registered(networks, mocker):
+    """
+    Tests the simple flow of having the Explorer plugin register
+    the networks it supports.
+    """
+    network = networks.ethereum.local
+    network.__dict__.pop("explorer", None)  # Ensure not cached yet.
+    name = "my-explorer"
+
+    def explorer_cls(*args, **kwargs):
+        res = mocker.MagicMock()
+        res.name = name
+        return res
+
+    mock_plugin_explorers = mocker.patch(
+        "ape.api.networks.NetworkAPI._plugin_explorers", new_callable=mock.PropertyMock
+    )
+    mock_plugin_explorers.return_value = [("my-example", ("ethereum", "local", explorer_cls))]
+    assert network.explorer is not None
+    assert network.explorer.name == name
+
+
+def test_explorer_when_adhoc_network_supported(networks, mocker):
+    """
+    Tests the flow of when a chain is supported by an explorer
+    but not registered in the plugin (API-flow).
+    """
+    network = networks.ethereum.local
+    network.__dict__.pop("explorer", None)  # Ensure not cached yet.
+    NAME = "my-explorer"
+
+    class MyExplorer:
+        name: str = NAME
+
+        def __init__(self, *args, **kwargs):
+            pass
+
+        @classmethod
+        def supports_chain(cls, chain_id):
+            return True
+
+    mock_plugin_explorers = mocker.patch(
+        "ape.api.networks.NetworkAPI._plugin_explorers", new_callable=mock.PropertyMock
+    )
+
+    # NOTE: Ethereum is not registered at the plugin level, but is at the API level.
+    mock_plugin_explorers.return_value = [
+        ("my-example", ("some-other-ecosystem", "local", MyExplorer))
+    ]
+    assert network.explorer is not None
+    assert network.explorer.name == NAME

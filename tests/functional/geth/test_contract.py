@@ -107,8 +107,8 @@ def test_revert_out_of_gas_error_allow(geth_account, geth_second_account, geth_p
 
 
 @geth_process_test
-def test_revert_allow(test_accounts, geth_contract):
-    not_owner = test_accounts[0]
+def test_revert_allow(accounts, geth_contract):
+    not_owner = accounts[0]
 
     # 'sender' is not the owner so it will revert (with a message)
     receipt = geth_contract.setNumber(100199, sender=not_owner, raise_on_revert=False)

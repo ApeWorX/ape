@@ -124,15 +124,15 @@ def test_contract_logs_range(chain, contract_instance, owner, assert_log_values)
 
 
 def test_contract_logs_range_by_address(
-    mocker, chain, eth_tester_provider, test_accounts, contract_instance, owner, assert_log_values
+    mocker, chain, eth_tester_provider, accounts, contract_instance, owner, assert_log_values
 ):
     get_logs_spy = mocker.spy(eth_tester_provider.tester.ethereum_tester, "get_logs")
-    contract_instance.setAddress(test_accounts[1], sender=owner)
+    contract_instance.setAddress(accounts[1], sender=owner)
     height = chain.blocks.height
     logs = [
         log
         for log in contract_instance.AddressChange.range(
-            height, height + 1, search_topics={"newAddress": test_accounts[1]}
+            height, height + 1, search_topics={"newAddress": accounts[1]}
         )
     ]
 
@@ -151,7 +151,7 @@ def test_contract_logs_range_by_address(
         ],
     }
     assert actual == expected
-    assert logs == [contract_instance.AddressChange(newAddress=test_accounts[1])]
+    assert logs == [contract_instance.AddressChange(newAddress=accounts[1])]
 
 
 def test_contracts_log_multiple_addresses(

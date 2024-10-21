@@ -15,7 +15,6 @@ from ethpm_types import ContractType
 
 import ape
 from ape.contracts import ContractContainer
-from ape.exceptions import APINotImplementedError, ProviderNotConnectedError, UnknownSnapshotError
 from ape.logging import LogLevel, logger
 from ape.managers.project import Project
 from ape.pytest.config import ConfigWrapper
@@ -91,7 +90,7 @@ def validate_cwd(start_dir):
 
 
 @pytest.fixture
-def project():
+def example_project():
     path = "tests/functional/data/contracts/ethereum/local"
     with ape.project.temp_config(contracts_folder=path):
         ape.project.clean()
@@ -135,7 +134,8 @@ def plugin_manager():
 
 
 @pytest.fixture(scope="session")
-def accounts():
+def account_manager():
+    # NOTE: `accounts` fixture comes with ape_test as the test-accounts.
     return ape.accounts
 
 
@@ -145,43 +145,28 @@ def compilers():
 
 
 @pytest.fixture(scope="session")
-def networks():
-    return ape.networks
+def owner(accounts):
+    return accounts[0]
 
 
 @pytest.fixture(scope="session")
-def chain():
-    return ape.chain
+def sender(accounts):
+    return accounts[1]
 
 
 @pytest.fixture(scope="session")
-def test_accounts(accounts):
-    return accounts.test_accounts
+def receiver(accounts):
+    return accounts[2]
 
 
 @pytest.fixture(scope="session")
-def owner(test_accounts):
-    return test_accounts[0]
+def not_owner(accounts):
+    return accounts[3]
 
 
 @pytest.fixture(scope="session")
-def sender(test_accounts):
-    return test_accounts[1]
-
-
-@pytest.fixture(scope="session")
-def receiver(test_accounts):
-    return test_accounts[2]
-
-
-@pytest.fixture(scope="session")
-def not_owner(test_accounts):
-    return test_accounts[3]
-
-
-@pytest.fixture(scope="session")
-def helper(test_accounts):
-    return test_accounts[4]
+def helper(accounts):
+    return accounts[4]
 
 
 @pytest.fixture(scope="session")
@@ -190,18 +175,18 @@ def mystruct_c():
 
 
 @pytest.fixture
-def signer(test_accounts):
-    return test_accounts[5]
+def signer(accounts):
+    return accounts[5]
 
 
 @pytest.fixture
-def geth_account(test_accounts):
-    return test_accounts[6]
+def geth_account(accounts):
+    return accounts[6]
 
 
 @pytest.fixture
-def geth_second_account(test_accounts):
-    return test_accounts[7]
+def geth_second_account(accounts):
+    return accounts[7]
 
 
 @pytest.fixture(scope="session")
@@ -287,44 +272,6 @@ def geth_provider(networks):
             yield provider
     else:
         yield networks.provider
-
-
-@contextmanager
-def _isolation():
-    if ape.networks.active_provider is None:
-        raise AssertionError("Isolation should only be used with a connected provider.")
-
-    init_network_name = ape.chain.provider.network.name
-    init_provider_name = ape.chain.provider.name
-
-    try:
-        snapshot = ape.chain.snapshot()
-    except (APINotImplementedError, ProviderNotConnectedError):
-        # Provider not used or connected in test.
-        snapshot = None
-
-    yield
-
-    if (
-        snapshot is None
-        or ape.networks.active_provider is None
-        or ape.chain.provider.network.name != init_network_name
-        or ape.chain.provider.name != init_provider_name
-    ):
-        return
-
-    try:
-        ape.chain.restore(snapshot)
-    except (UnknownSnapshotError, ProviderNotConnectedError):
-        # Assume snapshot removed for testing reasons
-        # or the provider was not needed to be connected for the test.
-        pass
-
-
-@pytest.fixture(autouse=True)
-def eth_tester_isolation(eth_tester_provider):
-    with _isolation():
-        yield
 
 
 @pytest.fixture
@@ -527,11 +474,17 @@ class SubprocessRunner:
         self.root_cmd = root_cmd or []
         self.data_folder = data_folder
 
-    def invoke(self, *subcommand: str, input=None, timeout: int = 40):
+    def invoke(
+        self,
+        *subcommand: str,
+        input=None,
+        timeout: int = 40,
+        env: Optional[dict] = None,
+    ):
         subcommand = subcommand or ()
         cmd_ls = [*self.root_cmd, *subcommand]
 
-        env = dict(os.environ)
+        env = {**dict(os.environ), **(env or {})}
         if self.data_folder:
             env["APE_DATA_FOLDER"] = str(self.data_folder)
 
@@ -562,7 +515,7 @@ class ApeSubprocessRunner(SubprocessRunner):
         super().__init__([str(ape_path), *root], data_folder=data_folder)
         self.project = None
 
-    def invoke(self, *subcommand: str, input=None, timeout: int = 40):
+    def invoke(self, *subcommand: str, input=None, timeout: int = 40, env: Optional[dict] = None):
         if self.project:
             try:
                 here = os.getcwd()
@@ -574,7 +527,7 @@ class ApeSubprocessRunner(SubprocessRunner):
         else:
             here = None
 
-        result = super().invoke(*subcommand, input=input, timeout=timeout)
+        result = super().invoke(*subcommand, input=input, timeout=timeout, env=env)
         if here:
             os.chdir(here)
 
@@ -591,7 +544,7 @@ class SubprocessResult:
 
     @property
     def output(self) -> str:
-        return self._completed_process.stdout
+        return self._completed_process.stdout or self._completed_process.stderr
 
 
 CUSTOM_NETWORK_0 = "apenet"
