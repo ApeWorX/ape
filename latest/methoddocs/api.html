@@ -280,6 +280,7 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#ape.api.explorers.ExplorerAPI.get_contract_type"><code class="docutils literal notranslate">get_contract_type()</span></code></a></li>
 <li><a class="reference internal" href="#ape.api.explorers.ExplorerAPI.get_transaction_url"><code class="docutils literal notranslate">get_transaction_url()</span></code></a></li>
 <li><a class="reference internal" href="#ape.api.explorers.ExplorerAPI.publish_contract"><code class="docutils literal notranslate">publish_contract()</span></code></a></li>
+<li><a class="reference internal" href="#ape.api.explorers.ExplorerAPI.supports_chain"><code class="docutils literal notranslate">supports_chain()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -1945,6 +1946,23 @@ in a particular ecosystem.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>address</strong> (<a class="reference internal" href="types.html#ape.types.address.AddressType" title="ape.types.address.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a>) – The address of the deployed contract.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.api.explorers.ExplorerAPI.supports_chain">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">supports_chain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chain_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#ape.api.explorers.ExplorerAPI.supports_chain" title="Link to this definition"></a></dt>
+<dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> when the given chain ID is claimed to be
+supported by this explorer. Adhoc / custom networks rely on
+this feature to have automatic-explorer support. Explorer
+plugins should override this.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>chain_id</strong> (<em>int</em>) – The chain ID to check.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
 </dd>
 </dl>
 </dd></dl>
