@@ -6,7 +6,6 @@ import pytest
 from ape.exceptions import APINotImplementedError, ChainError, UnknownSnapshotError
 from ape.managers.chain import AccountHistory
 from ape.types import AddressType
-from tests.conftest import geth_process_test
 
 
 def test_snapshot_and_restore(chain, owner, receiver, vyper_contract_instance):
