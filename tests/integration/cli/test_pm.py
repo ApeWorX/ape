@@ -46,7 +46,8 @@ def test_install_path_to_local_config_file(pm_runner):
     arguments = ("install", path.as_posix(), "--name", project)
     result = pm_runner.invoke(*arguments)
     assert result.exit_code == 0, result.output
-    assert f"Package '{path.parent.as_posix()}' installed." in result.output
+    assert "SUCCESS" in result.output
+    assert f"Package 'with-contracts@local' installed." in result.output
 
 
 @skip_projects_except("test", "with-contracts")
