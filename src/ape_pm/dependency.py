@@ -54,6 +54,11 @@ class LocalDependency(DependencyAPI):
         # Resolves the relative path so if the dependency API
         # data moves, it will still work.
         path = Path(model["local"])
+
+        # Automatically include `"name"`.
+        if "name" not in model:
+            model["name"] = path.stem
+
         if path.is_absolute():
             return model
 
