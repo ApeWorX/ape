@@ -589,3 +589,10 @@ def test_ipc_per_network(project, key):
         # TODO: 0.9 investigate not using random if ipc set.
 
         assert node.ipc_path == Path(ipc)
+
+
+def test_update_settings_invalidates_snapshots(eth_tester_provider, chain):
+    snapshot = chain.snapshot()
+    assert snapshot in chain._snapshots[eth_tester_provider.chain_id]
+    eth_tester_provider.update_settings({})
+    assert snapshot not in chain._snapshots[eth_tester_provider.chain_id]

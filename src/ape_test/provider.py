@@ -111,6 +111,9 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         self._evm_backend = None
         self.provider_settings = {}
 
+        # Invalidate snapshots.
+        self.chain_manager._snapshots[self.chain_id] = []
+
     def update_settings(self, new_settings: dict):
         self.provider_settings = {**self.provider_settings, **new_settings}
         self.disconnect()
