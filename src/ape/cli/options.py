@@ -61,7 +61,7 @@ class ApeCliContextObject(ManagerAccessMixin, dict):
 
 def verbosity_option(
     cli_logger: Optional[ApeLogger] = None,
-    default: Union[str, int, LogLevel] = DEFAULT_LOG_LEVEL,
+    default: Optional[Union[str, int, LogLevel]] = None,
     callback: Optional[Callable] = None,
     **kwargs,
 ) -> Callable:
@@ -80,6 +80,7 @@ def verbosity_option(
         click option
     """
     _logger = cli_logger or logger
+    default = logger.level if default is None else default
     kwarguments = _create_verbosity_kwargs(
         _logger=_logger, default=default, callback=callback, **kwargs
     )
@@ -88,11 +89,12 @@ def verbosity_option(
 
 def _create_verbosity_kwargs(
     _logger: Optional[ApeLogger] = None,
-    default: Union[str, int, LogLevel] = DEFAULT_LOG_LEVEL,
+    default: Optional[Union[str, int, LogLevel]] = None,
     callback: Optional[Callable] = None,
     **kwargs,
 ) -> dict:
-    cli_logger = _logger or logger
+    default = logger.level if default is None else default
+    ape_logger = _logger or logger
 
     def set_level(ctx, param, value):
         if isinstance(value, str):
@@ -103,11 +105,11 @@ def _create_verbosity_kwargs(
         if callback is not None:
             value = callback(ctx, param, value)
 
-        if cli_logger._did_parse_sys_argv:
+        if ape_logger._did_parse_sys_argv:
             # Changing mid-session somehow (tests?)
-            cli_logger.set_level(value)
+            ape_logger.set_level(value)
         else:
-            cli_logger._load_from_sys_argv(default=value)
+            ape_logger._load_from_sys_argv(default=value)
 
     level_names = [lvl.name for lvl in LogLevel]
     names_str = f"{', '.join(level_names[:-1])}, or {level_names[-1]}"
@@ -124,7 +126,7 @@ def _create_verbosity_kwargs(
 
 
 def ape_cli_context(
-    default_log_level: Union[str, int, LogLevel] = DEFAULT_LOG_LEVEL,
+    default_log_level: Optional[Union[str, int, LogLevel]] = None,
     obj_type: type = ApeCliContextObject,
 ) -> Callable:
     """
@@ -133,7 +135,7 @@ def ape_cli_context(
     such as logging or accessing managers.
 
     Args:
-        default_log_level (str | int | :class:`~ape.logging.LogLevel`): The log-level
+        default_log_level (str | int | :class:`~ape.logging.LogLevel` |  None): The log-level
           value to pass to :meth:`~ape.cli.options.verbosity_option`.
         obj_type (Type): The context object type. Defaults to
           :class:`~ape.cli.options.ApeCliContextObject`. Sub-class
@@ -144,6 +146,7 @@ def ape_cli_context(
     Returns:
         click option
     """
+    default_log_level = logger.level if default_log_level is None else default_log_level
 
     def decorator(f):
         f = verbosity_option(logger, default=default_log_level)(f)
