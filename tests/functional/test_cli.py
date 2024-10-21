@@ -455,13 +455,14 @@ def test_verbosity_option_change_default(runner, level):
 
 
 def test_verbosity_option_uses_logger_level_as_default(runner):
-    @click.command()
-    @verbosity_option(default=None)
-    def cmd():
-        click.echo(f"LogLevel={logger.level}")
-        pass
-
     with logger.at_level(LogLevel.DEBUG):
+
+        @click.command()
+        @verbosity_option(default=None)
+        def cmd():
+            click.echo(f"LogLevel={logger.level}")
+            pass
+
         result = runner.invoke(cmd)
         assert "LogLevel=10" in result.output
 
