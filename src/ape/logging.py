@@ -24,7 +24,7 @@ class LogLevel(IntEnum):
 logging.addLevelName(LogLevel.SUCCESS.value, LogLevel.SUCCESS.name)
 logging.SUCCESS = LogLevel.SUCCESS.value  # type: ignore
 DEFAULT_LOG_LEVEL = LogLevel.INFO.name
-DEFAULT_LOG_FORMAT = "%(levelname)s%(plugin)s: %(message)s"
+DEFAULT_LOG_FORMAT = "%(levelname_semicolon_padded)s %(plugin)s %(message)s"
 HIDDEN_MESSAGE = "[hidden]"
 
 
@@ -73,12 +73,16 @@ class ApeColorFormatter(logging.Formatter):
         super().__init__(fmt=fmt)
 
     def format(self, record):
+        record.levelname_semicolon_padded = f"{record.levelname}:".ljust(8)
         if _isatty(sys.stdout) and _isatty(sys.stderr):
             # Only color log messages when sys.stdout and sys.stderr are sent to the terminal.
             level = LogLevel(record.levelno)
             default_dict: dict[str, Any] = {}
             styles: dict[str, Any] = CLICK_STYLE_KWARGS.get(level, default_dict)
             record.levelname = click.style(record.levelname, **styles)
+            record.levelname_semicolon_padded = click.style(
+                record.levelname_semicolon_padded, **styles
+            )
 
         path = Path(record.pathname)
         record.plugin = ""
@@ -157,7 +161,7 @@ class ApeLogger:
         #  Minus 2 because if `-v` is the last arg, it is not our verbosity `-v`.
         num_args = len(sys.argv) - 2
 
-        for arg_i in range(num_args):
+        for arg_i in range(1, 1 + num_args):
             if sys.argv[arg_i] == "-v" or sys.argv[arg_i] == "--verbosity":
                 try:
                     level = _get_level(sys.argv[arg_i + 1].upper())

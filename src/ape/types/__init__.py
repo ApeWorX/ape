@@ -1,4 +1,4 @@
-from collections.abc import Callable, Iterator, Sequence
+from collections.abc import Callable, Iterable, Iterator, Sequence
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Annotated, Any, Literal, Optional, TypeVar, Union, cast, overload
 
@@ -265,7 +265,28 @@ class BaseContractLog(BaseInterfaceModel):
         (https://github.com/pydantic/pydantic/issues/10152)
         we have to ensure these are regular ints.
         """
-        return {k: int(v) if isinstance(v, int) else v for k, v in event_arguments.items()}
+        return self._serialize_value(event_arguments, info)
+
+    def _serialize_value(self, value: Any, info) -> Any:
+        if isinstance(value, int):
+            # Handle custom ints.
+            return int(value)
+
+        elif isinstance(value, HexBytes):
+            return to_hex(value) if info.mode == "json" else value
+
+        elif isinstance(value, str):
+            # Avoiding str triggering iterable condition.
+            return value
+
+        elif isinstance(value, dict):
+            # Also, avoid handling dict in the iterable case.
+            return {k: self._serialize_value(v, info) for k, v in value.items()}
+
+        elif isinstance(value, Iterable):
+            return [self._serialize_value(v, info) for v in value]
+
+        return value
 
 
 class ContractLog(ExtraAttributesMixin, BaseContractLog):
@@ -290,6 +311,10 @@ class ContractLog(ExtraAttributesMixin, BaseContractLog):
     The index of the transaction's position when the log was created.
     Is `None` when from the pending block.
     """
+
+    @field_serializer("transaction_hash", "block_hash")
+    def _serialize_hashes(self, value, info):
+        return self._serialize_value(value, info)
 
     # NOTE: This class has an overridden `__getattr__` method, but `block` is a reserved keyword
     #       in most smart contract languages, so it is safe to use. Purposely avoid adding

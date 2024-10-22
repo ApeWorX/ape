@@ -623,7 +623,7 @@ class Web3Provider(ProviderAPI, ABC):
         )
         hex_hash = HexBytes(txn_hash)
 
-        txn = {}
+        txn: dict = {}
         if transaction := kwargs.get("transaction"):
             # perf: If called `send_transaction()`, we should already have the data!
             txn = (
@@ -1222,7 +1222,7 @@ class Web3Provider(ProviderAPI, ABC):
             # Maybe it is a JSON-str.
             # NOTE: For some reason, it comes back with single quotes though.
             try:
-                err_data = json.loads(err_data.replace("'", '"'))
+                err_data = json.loads(str(err_data or "").replace("'", '"'))
             except Exception:
                 return VirtualMachineError(base_err=exception, **kwargs)
 

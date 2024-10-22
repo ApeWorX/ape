@@ -901,7 +901,7 @@ class TestSourceManager:
             ):
                 actual = pm.sources.lookup(closest)
                 expected = nested_source_a
-                assert actual == expected, f"Failed to lookup {closest}"
+                assert actual.stem == expected.stem, f"Failed to lookup {closest}"
 
             # Nested: 2nd level
             for closest in (

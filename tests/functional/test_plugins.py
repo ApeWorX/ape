@@ -152,16 +152,25 @@ class TestPluginMetadata:
         assert actual == f"ape-foo>=0.{ape_version.minor}.0,<0.{ape_version.minor + 1}.0"
 
     def test_install_str_when_using_git_remote(self):
-        url = "git+https://example.com/ape-foo/branch"
+        url = "git+https://example.com/myorg/ape-foo.git@branch_name"
         metadata = PluginMetadata(name="foo", version=url)
+        assert metadata.name == "foo"
         actual = metadata.install_str
         assert actual == url
 
     def test_install_str_remote_in_name(self):
-        url = "git+https://example.com/ape-foo/branch"
+        url = "git+https://example.com/myorg/ape-foo.git@branch_name"
         metadata = PluginMetadata(name=f"foo@{url}")
+        assert metadata.name == "foo"
         actual = metadata.install_str
         assert actual == url
+
+    def test_install_str_only_remote(self):
+        url = "git+https://example.com/myorg/ape-foo.git@branch_name"
+        metadata = PluginMetadata(name=url)
+        actual = metadata.install_str
+        assert actual == url
+        assert metadata.name == "foo"
 
     def test_is_available(self):
         metadata = PluginMetadata(name=list(AVAILABLE_PLUGINS)[0])

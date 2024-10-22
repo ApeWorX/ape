@@ -138,10 +138,15 @@ class GithubDependency(DependencyAPI):
 
     @model_validator(mode="before")
     @classmethod
-    def branch_to_ref(cls, model):
+    def _validate_model(cls, model):
+        # branch -> ref
         if "branch" in model and "ref" not in model:
             # Handle branch as an alias.
             model["ref"] = model.pop("branch")
+
+        if "name" not in model and "github" in model:
+            # Calculate a default name.
+            model["name"] = model["github"].split("/")[-1].lower()
 
         return model
 

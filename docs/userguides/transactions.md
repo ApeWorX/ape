@@ -3,6 +3,38 @@
 Regardless of how you are using `ape`, you will likely be making transactions.
 There are various types of transactions you can make with `ape`. A simple example is deploying a contract.
 
+## Transfer
+
+One of the simplest ways to transact in Ape is to use the [the transfer method](../methoddocs/api.html?highlight=accountapi#ape.api.accounts.AccountAPI.transfer).
+Transfers are transactions that send the base-currency (e.g. Ether) from one account to another.
+
+The following is a simple guide to transferring ETH.
+
+First, launch an ape console to your network of choice (for demo purposes; transfers can happen in any Python medium):
+
+```shell
+ape console --network ethereum:mainnet:node
+```
+
+Then, load the account you want to send money from:
+
+```shell
+account = accounts.load("<my-account>")
+```
+
+Find the address you want to send money to and invoke the `.transfer()` method.
+The first argument is the account you are sending money to.
+The second argument is the amount you want to send.
+Any additional kwargs are passed to the transaction, such as `gas`, `max_fee`, or `max_priority_fee`, etc:
+
+```shell
+other_account = "0xab5801a7d398351b8be11c439e05c5b3259aec9b"
+tx = account.transfer(other_account, "1 ETH", gas=21000)
+print(tx.confirmed)
+```
+
+Learn more about accounts (necessary for `.transfer()`) by following the [Accounts Guide](./accounts.html).
+
 ## Deployment
 
 Deploying a smart contract is a unique type of transaction where we don't necessarily care about the receipt as much

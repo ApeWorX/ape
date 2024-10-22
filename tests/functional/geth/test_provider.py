@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import cast
 
 import pytest
-from eth_pydantic_types import HashBytes32
+from eth_pydantic_types import HexBytes32
 from eth_typing import HexStr
 from eth_utils import keccak, to_hex
 from evmchains import PUBLIC_CHAIN_META
@@ -472,7 +472,7 @@ def test_send_transaction_when_no_error_and_receipt_fails(
     geth_provider._web3 = mock_web3
     # Getting a receipt "works", but you get a failed one.
     # NOTE: Value is meaningless.
-    tx_hash = HashBytes32.__eth_pydantic_validate__(123**36)
+    tx_hash = HexBytes32.__eth_pydantic_validate__(123**36)
     receipt_data = {
         "failed": True,
         "blockNumber": 0,
@@ -778,3 +778,8 @@ def test_start(mocker, convert, project, geth_provider):
 
         actual = spy.call_args[1]["balance"]
         assert actual == amount
+
+
+@geth_process_test
+def test_auto_mine(geth_provider):
+    assert geth_provider.auto_mine is True

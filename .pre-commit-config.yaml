@@ -1,6 +1,6 @@
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v5.0.0
     hooks:
     -   id: check-yaml
 
@@ -10,7 +10,7 @@ repos:
       - id: isort
 
 -   repo: https://github.com/psf/black
-    rev: 24.8.0
+    rev: 24.10.0
     hooks:
       - id: black
         name: black
@@ -22,7 +22,7 @@ repos:
         additional_dependencies: [flake8-breakpoint, flake8-print, flake8-pydantic]
 
 -   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.11.1
+    rev: v1.11.2
     hooks:
     -   id: mypy
         additional_dependencies: [
@@ -37,7 +37,7 @@ repos:
         ]
 
 -   repo: https://github.com/executablebooks/mdformat
-    rev: 0.7.17
+    rev: 0.7.18
     hooks:
     -   id: mdformat
         additional_dependencies: [mdformat-gfm, mdformat-frontmatter, mdformat-pyproject]

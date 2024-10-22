@@ -208,6 +208,10 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
               private. For example, EVM providers typically use the RPC
               ``eth_sendPrivateTransaction`` to achieve this. Local providers may ignore
               this value.
+            **kwargs: Additional transaction kwargs passed to
+              :meth:`~ape.api.networks.EcosystemAPI.create_transaction`, such as ``gas``
+              ``max_fee``, or ``max_priority_fee``. For a list of available transaction
+              kwargs, see :class:`~ape.api.transactions.TransactionAPI`.
 
         Returns:
             :class:`~ape.api.transactions.ReceiptAPI`

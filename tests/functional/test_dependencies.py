@@ -470,6 +470,15 @@ class TestGitHubDependency:
         with pytest.raises(ValidationError, match=expected):
             _ = GithubDependency(name="foo", github="asdf")
 
+    def test_name_from_github(self):
+        """
+        When not given a name, it is derived from the github suffix.
+        """
+        dependency = GithubDependency(  # type: ignore
+            github="ApeWorX/ApeNotAThing", version="3.0.0"
+        )
+        assert dependency.name == "apenotathing"
+
     def test_fetch_given_version(self, mock_client):
         dependency = GithubDependency(
             github="ApeWorX/ApeNotAThing", version="3.0.0", name="apetestdep"
