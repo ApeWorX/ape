@@ -532,6 +532,7 @@ __all__ = [
     "is_evm_precompile",
     "is_zero_hex",
     "load_config",
+    "LOCAL_NETWORK_NAME",
     "log_instead_of_fail",
     "nonreentrant",
     "raises_not_implemented",

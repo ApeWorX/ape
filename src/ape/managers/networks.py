@@ -2,11 +2,10 @@ from collections.abc import Collection, Iterator
 from functools import cached_property
 from typing import Optional, Union
 
-from ape.api import EcosystemAPI, ProviderAPI, ProviderContextManager
-from ape.api.networks import NetworkAPI
+from ape.api.networks import EcosystemAPI, NetworkAPI, ProviderContextManager
+from ape.api.providers import ProviderAPI
 from ape.exceptions import EcosystemNotFoundError, NetworkError, NetworkNotFoundError
 from ape.managers.base import BaseManager
-from ape.utils import RPCHeaders
 from ape.utils.basemodel import (
     ExtraAttributesMixin,
     ExtraModelAttributes,
@@ -14,6 +13,7 @@ from ape.utils.basemodel import (
     only_raise_attribute_error,
 )
 from ape.utils.misc import _dict_overlay, log_instead_of_fail
+from ape.utils.rpc import RPCHeaders
 from ape_ethereum.provider import EthereumNodeProvider
 
 

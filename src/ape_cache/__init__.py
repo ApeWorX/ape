@@ -1,7 +1,7 @@
-from ape import plugins
-from ape.api import PluginConfig
+from importlib import import_module
 
-from .query import CacheQueryProvider
+from ape import plugins
+from ape.api.config import PluginConfig
 
 
 class CacheConfig(PluginConfig):
@@ -15,7 +15,17 @@ def config_class():
 
 @plugins.register(plugins.QueryPlugin)
 def query_engines():
-    return CacheQueryProvider
+    query = import_module("ape_cache.query")
+    return query.CacheQueryProvider
+
+
+def __getattr__(name):
+    if name == "CacheQueryProvider":
+        query = import_module("ape_cache.query")
+        return query.CacheQueryProvider
+
+    else:
+        raise AttributeError(name)
 
 
 __all__ = [
