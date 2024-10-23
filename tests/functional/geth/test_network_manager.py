@@ -1,6 +1,6 @@
 import pytest
 
-from ape.api.networks import LOCAL_NETWORK_NAME
+from ape.utils.misc import LOCAL_NETWORK_NAME
 from tests.conftest import geth_process_test
 
 

@@ -4,10 +4,10 @@ from pathlib import Path
 import pytest
 
 import ape
-from ape.api import EcosystemAPI
-from ape.api.networks import LOCAL_NETWORK_NAME
+from ape.api.networks import EcosystemAPI
 from ape.exceptions import NetworkError, ProviderNotFoundError
-from ape.utils import DEFAULT_TEST_CHAIN_ID
+from ape.utils.misc import LOCAL_NETWORK_NAME
+from ape.utils.testing import DEFAULT_TEST_CHAIN_ID
 
 
 class NewChainID:

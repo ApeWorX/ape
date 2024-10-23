@@ -3,8 +3,7 @@ from typing import NewType, Optional, Union
 from pydantic import NonNegativeInt, field_validator
 
 from ape import plugins
-from ape.api import PluginConfig
-from ape.api.networks import LOCAL_NETWORK_NAME
+from ape.api.config import PluginConfig
 from ape.utils.basemodel import ManagerAccessMixin
 from ape.utils.testing import (
     DEFAULT_NUMBER_OF_TEST_ACCOUNTS,
@@ -178,7 +177,7 @@ def account_types():
 
 @plugins.register(plugins.ProviderPlugin)
 def providers():
-    yield "ethereum", LOCAL_NETWORK_NAME, LocalProvider
+    yield "ethereum", "local", LocalProvider
 
 
 __all__ = [
