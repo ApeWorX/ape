@@ -15,10 +15,12 @@ from eth_keys import keys  # type: ignore
 from eth_pydantic_types import HexBytes
 from eth_utils import to_bytes, to_hex
 
-from ape.api import AccountAPI, AccountContainerAPI, TransactionAPI
+from ape.api.accounts import AccountAPI, AccountContainerAPI
+from ape.api.transactions import TransactionAPI
 from ape.exceptions import AccountsError
 from ape.logging import logger
-from ape.types import AddressType, MessageSignature, SignableMessage, TransactionSignature
+from ape.types.address import AddressType
+from ape.types.signatures import MessageSignature, SignableMessage, TransactionSignature
 from ape.utils.basemodel import ManagerAccessMixin
 from ape.utils.misc import log_instead_of_fail
 from ape.utils.validators import _validate_account_alias, _validate_account_passphrase

@@ -15,6 +15,7 @@ from ethpm_types.source import (
     Statement,
 )
 from pydantic import RootModel
+from pydantic.dataclasses import dataclass
 
 from ape.utils.misc import log_instead_of_fail
 
@@ -533,3 +534,28 @@ class SourceTraceback(RootModel[list[ControlFlow]]):
             statements=[statement], source_path=source_path, closure=function, depth=depth
         )
         self.append(exec_sequence)
+
+
+@dataclass
+class ContractFunctionPath:
+    """
+    Useful for identifying a method in a contract.
+    """
+
+    contract_name: str
+    method_name: Optional[str] = None
+
+    @classmethod
+    def from_str(cls, value: str) -> "ContractFunctionPath":
+        if ":" in value:
+            contract_name, method_name = value.split(":")
+            return cls(contract_name=contract_name, method_name=method_name)
+
+        return cls(contract_name=value)
+
+    def __str__(self) -> str:
+        return f"{self.contract_name}:{self.method_name}"
+
+    @log_instead_of_fail(default="<ContractFunctionPath>")
+    def __repr__(self) -> str:
+        return f"<{self}>"

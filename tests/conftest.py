@@ -19,9 +19,11 @@ from ape.logging import LogLevel, logger
 from ape.managers.project import Project
 from ape.pytest.config import ConfigWrapper
 from ape.pytest.gas import GasTracker
-from ape.types import AddressType, CurrencyValue
-from ape.utils import DEFAULT_TEST_CHAIN_ID, ZERO_ADDRESS
+from ape.types.address import AddressType
+from ape.types.units import CurrencyValue
 from ape.utils.basemodel import only_raise_attribute_error
+from ape.utils.misc import ZERO_ADDRESS
+from ape.utils.testing import DEFAULT_TEST_CHAIN_ID
 
 # Needed to test tracing support in core `ape test` command.
 pytest_plugins = ["pytester"]

@@ -4,7 +4,7 @@ from typing import Optional
 
 from ape.api.query import ContractCreation, ContractCreationQuery, QueryAPI, QueryType
 from ape.exceptions import APINotImplementedError, ProviderError, QueryEngineError
-from ape.types import AddressType
+from ape.types.address import AddressType
 
 
 class EthereumQueryProvider(QueryAPI):

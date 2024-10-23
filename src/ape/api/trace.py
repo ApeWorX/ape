@@ -3,8 +3,7 @@ from abc import abstractmethod
 from collections.abc import Iterator, Sequence
 from typing import IO, Any, Optional
 
-from ape.types import ContractFunctionPath
-from ape.types.trace import GasReport
+from ape.types.trace import ContractFunctionPath, GasReport
 from ape.utils.basemodel import BaseInterfaceModel
 
 

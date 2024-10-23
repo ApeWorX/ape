@@ -1,4 +1,5 @@
 import os
+from abc import abstractmethod
 from collections.abc import Iterator
 from functools import cached_property
 from pathlib import Path
@@ -24,8 +25,10 @@ from ape.exceptions import (
     TransactionError,
 )
 from ape.logging import logger
-from ape.types import AddressType, MessageSignature, SignableMessage
-from ape.utils import BaseInterfaceModel, abstractmethod, raises_not_implemented
+from ape.types.address import AddressType
+from ape.types.signatures import MessageSignature, SignableMessage
+from ape.utils.basemodel import BaseInterfaceModel
+from ape.utils.misc import raises_not_implemented
 
 if TYPE_CHECKING:
     from ape.contracts import ContractContainer, ContractInstance

@@ -1,6 +1,10 @@
 from collections.abc import Iterator
+from functools import cached_property
 from types import ModuleType
 from typing import Any, Optional, Union
+
+from eth_pydantic_types import HexBytes
+from ethpm_types import ContractType
 
 from ape.api import ReceiptAPI, TransactionAPI
 from ape.contracts.base import (
@@ -12,9 +16,9 @@ from ape.contracts.base import (
 )
 from ape.exceptions import ChainError, DecodingError
 from ape.logging import logger
-from ape.types import AddressType, ContractType, HexBytes
-from ape.utils import ManagerAccessMixin, cached_property
+from ape.types.address import AddressType
 from ape.utils.abi import MethodABI
+from ape.utils.basemodel import ManagerAccessMixin
 
 from .constants import (
     MULTICALL3_ADDRESS,

@@ -7,7 +7,9 @@ import shutil
 import sys
 import time
 import warnings
+from abc import abstractmethod
 from collections.abc import Iterable, Iterator
+from functools import cached_property
 from logging import FileHandler, Formatter, Logger, getLogger
 from pathlib import Path
 from signal import SIGINT, SIGTERM, signal
@@ -33,8 +35,11 @@ from ape.exceptions import (
     VirtualMachineError,
 )
 from ape.logging import LogLevel, logger
-from ape.types import AddressType, BlockID, ContractCode, ContractLog, HexInt, LogFilter, SnapshotID
-from ape.utils import BaseInterfaceModel, JoinableQueue, abstractmethod, cached_property, spawn
+from ape.types.address import AddressType
+from ape.types.basic import HexInt
+from ape.types.events import ContractLog, LogFilter
+from ape.types.vm import BlockID, ContractCode, SnapshotID
+from ape.utils.basemodel import BaseInterfaceModel
 from ape.utils.misc import (
     EMPTY_BYTES32,
     _create_raises_not_implemented_error,
@@ -42,6 +47,7 @@ from ape.utils.misc import (
     raises_not_implemented,
     to_int,
 )
+from ape.utils.process import JoinableQueue, spawn
 from ape.utils.rpc import RPCHeaders
 
 if TYPE_CHECKING:

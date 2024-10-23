@@ -6,7 +6,8 @@ from evm_trace.gas import merge_reports
 
 from ape.api.trace import TraceAPI
 from ape.pytest.config import ConfigWrapper
-from ape.types import AddressType, ContractFunctionPath, GasReport
+from ape.types.address import AddressType
+from ape.types.trace import ContractFunctionPath, GasReport
 from ape.utils.basemodel import ManagerAccessMixin
 from ape.utils.trace import _exclude_gas, parse_gas_table
 

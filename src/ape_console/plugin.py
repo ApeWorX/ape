@@ -1,4 +1,5 @@
 import shlex
+from functools import cached_property
 from pathlib import Path
 
 import click
@@ -13,8 +14,8 @@ from ape._cli import cli
 from ape.exceptions import Abort, ApeException, handle_ape_exception
 from ape.logging import logger
 from ape.managers.project import LocalProject
-from ape.types import AddressType
-from ape.utils import ManagerAccessMixin, cached_property
+from ape.types.address import AddressType
+from ape.utils.basemodel import ManagerAccessMixin
 from ape.utils.os import clean_path
 
 

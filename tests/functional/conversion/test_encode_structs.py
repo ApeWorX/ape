@@ -5,7 +5,7 @@ from eth_pydantic_types import HexBytes
 from ethpm_types import BaseModel
 from ethpm_types.abi import MethodABI
 
-from ape.types import AddressType
+from ape.types.address import AddressType
 
 ABI = MethodABI.model_validate(
     {

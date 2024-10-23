@@ -11,10 +11,11 @@ from evm_trace import CallTreeNode, CallType
 
 from ape.api.networks import ForkedNetworkAPI, NetworkAPI
 from ape.exceptions import CustomError, DecodingError, NetworkError, NetworkNotFoundError
-from ape.types import AddressType, CurrencyValueComparable
+from ape.types.address import AddressType
+from ape.types.units import CurrencyValueComparable
 from ape.utils.misc import DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT, LOCAL_NETWORK_NAME
-from ape_ethereum import TransactionTrace
 from ape_ethereum.ecosystem import BLUEPRINT_HEADER, BaseEthereumConfig, Block, Ethereum
+from ape_ethereum.trace import TransactionTrace
 from ape_ethereum.transactions import (
     DynamicFeeTransaction,
     Receipt,

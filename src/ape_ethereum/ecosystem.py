@@ -42,16 +42,12 @@ from ape.exceptions import (
 )
 from ape.logging import logger
 from ape.managers.config import merge_configs
-from ape.types import (
-    AddressType,
-    AutoGasLimit,
-    ContractLog,
-    CurrencyValueComparable,
-    GasLimit,
-    HexInt,
-    RawAddress,
-    TransactionSignature,
-)
+from ape.types.address import AddressType, RawAddress
+from ape.types.basic import HexInt
+from ape.types.events import ContractLog
+from ape.types.gas import AutoGasLimit, GasLimit
+from ape.types.signatures import TransactionSignature
+from ape.types.units import CurrencyValueComparable
 from ape.utils.abi import LogInputABICollection, Struct, StructParser, is_array, returns_array
 from ape.utils.basemodel import _assert_not_ipython_check, only_raise_attribute_error
 from ape.utils.misc import (

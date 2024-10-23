@@ -12,7 +12,7 @@ from eth_account._utils.signing import (
 )
 from eth_pydantic_types import HexBytes
 from eth_utils import keccak, to_int
-from ethpm_types import BaseModel, ContractType
+from ethpm_types import ContractType
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, MethodABI
 from pydantic import model_validator
 
@@ -26,10 +26,12 @@ from ape.exceptions import (
     SignatureError,
 )
 from ape.logging import logger
-from ape.types import AutoGasLimit, ContractLog, GasLimit
 from ape.types.address import AddressType, RawAddress
+from ape.types.events import ContractLog
+from ape.types.gas import AutoGasLimit, GasLimit
 from ape.utils.basemodel import (
     BaseInterfaceModel,
+    BaseModel,
     ExtraAttributesMixin,
     ExtraModelAttributes,
     ManagerAccessMixin,
@@ -419,7 +421,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         """
 
     @abstractmethod
-    def decode_logs(self, logs: Sequence[dict], *events: EventABI) -> Iterator["ContractLog"]:
+    def decode_logs(self, logs: Sequence[dict], *events: EventABI) -> Iterator[ContractLog]:
         """
         Decode any contract logs that match the given event ABI from the raw log data.
 

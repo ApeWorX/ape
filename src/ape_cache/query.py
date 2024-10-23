@@ -20,7 +20,7 @@ from ape.api.query import (
 from ape.api.transactions import TransactionAPI
 from ape.exceptions import QueryEngineError
 from ape.logging import logger
-from ape.types import ContractLog
+from ape.types.events import ContractLog
 from ape.utils.misc import LOCAL_NETWORK_NAME
 
 from . import models

@@ -1,7 +1,7 @@
 import difflib
 import types
 from collections.abc import Callable, Iterator
-from functools import partial
+from functools import cached_property, partial, singledispatchmethod
 from itertools import islice
 from pathlib import Path
 from typing import Any, Optional, Union
@@ -14,14 +14,15 @@ from ethpm_types.abi import ConstructorABI, ErrorABI, EventABI, MethodABI
 from ethpm_types.contract_type import ABI_W_SELECTOR_T, ContractType
 from IPython.lib.pretty import for_type
 
-from ape.api import AccountAPI, Address, ReceiptAPI, TransactionAPI
-from ape.api.address import BaseAddress
+from ape.api.accounts import AccountAPI
+from ape.api.address import Address, BaseAddress
 from ape.api.query import (
     ContractCreation,
     ContractEventQuery,
     extract_fields,
     validate_and_expand_columns,
 )
+from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.exceptions import (
     ApeAttributeError,
     ArgumentsLengthError,
@@ -34,20 +35,17 @@ from ape.exceptions import (
     MissingDeploymentBytecodeError,
 )
 from ape.logging import get_rich_console, logger
-from ape.types import AddressType, ContractLog, LogFilter, MockContractLog
-from ape.utils import (
-    BaseInterfaceModel,
-    ManagerAccessMixin,
-    cached_property,
-    log_instead_of_fail,
-    singledispatchmethod,
-)
+from ape.types.address import AddressType
+from ape.types.events import ContractLog, LogFilter, MockContractLog
 from ape.utils.abi import StructParser, _enrich_natspec
 from ape.utils.basemodel import (
+    BaseInterfaceModel,
     ExtraAttributesMixin,
     ExtraModelAttributes,
+    ManagerAccessMixin,
     _assert_not_ipython_check,
     get_attribute_with_extras,
+    log_instead_of_fail,
     only_raise_attribute_error,
 )
 

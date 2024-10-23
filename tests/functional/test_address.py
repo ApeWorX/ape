@@ -2,7 +2,7 @@ import pytest
 from pydantic import BaseModel
 
 from ape.api.address import Address, BaseAddress
-from ape.types import AddressType
+from ape.types.address import AddressType
 
 
 @pytest.fixture

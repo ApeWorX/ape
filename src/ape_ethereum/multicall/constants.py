@@ -1,7 +1,9 @@
 from copy import deepcopy
 from typing import cast
 
-from ape.types import AddressType, HexBytes
+from eth_pydantic_types import HexBytes
+
+from ape.types.address import AddressType
 
 SUPPORTED_CHAINS = [
     1,

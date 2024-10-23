@@ -13,7 +13,7 @@ from ape.exceptions import (
     TransactionError,
     handle_ape_exception,
 )
-from ape.types import SourceTraceback
+from ape.types.trace import SourceTraceback
 from ape.utils.misc import LOCAL_NETWORK_NAME, ZERO_ADDRESS
 from ape_ethereum.transactions import DynamicFeeTransaction, Receipt
 

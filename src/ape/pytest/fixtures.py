@@ -14,7 +14,7 @@ from ape.managers.chain import ChainManager
 from ape.managers.networks import NetworkManager
 from ape.managers.project import ProjectManager
 from ape.pytest.config import ConfigWrapper
-from ape.types import SnapshotID
+from ape.types.vm import SnapshotID
 from ape.utils.basemodel import ManagerAccessMixin
 from ape.utils.rpc import allow_disconnected
 

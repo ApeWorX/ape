@@ -25,7 +25,9 @@ if TYPE_CHECKING:
     from ape.api.trace import TraceAPI
     from ape.api.transactions import ReceiptAPI, TransactionAPI
     from ape.managers.project import ProjectManager
-    from ape.types import AddressType, BlockID, SnapshotID, SourceTraceback
+    from ape.types.address import AddressType
+    from ape.types.trace import SourceTraceback
+    from ape.types.vm import BlockID, SnapshotID
 
 
 FailedTxn = Union["TransactionAPI", "ReceiptAPI"]

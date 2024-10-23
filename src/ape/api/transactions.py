@@ -1,7 +1,9 @@
 import sys
 import time
+from abc import abstractmethod
 from collections.abc import Iterator
 from datetime import datetime
+from functools import cached_property
 from typing import IO, TYPE_CHECKING, Any, NoReturn, Optional, Union
 
 from eth_pydantic_types import HexBytes, HexStr
@@ -20,23 +22,14 @@ from ape.exceptions import (
     TransactionNotFoundError,
 )
 from ape.logging import logger
-from ape.types import (
-    AddressType,
-    AutoGasLimit,
-    ContractLogContainer,
-    HexInt,
-    SourceTraceback,
-    TransactionSignature,
-)
-from ape.utils import (
-    BaseInterfaceModel,
-    ExtraAttributesMixin,
-    ExtraModelAttributes,
-    abstractmethod,
-    cached_property,
-    log_instead_of_fail,
-    raises_not_implemented,
-)
+from ape.types.address import AddressType
+from ape.types.basic import HexInt
+from ape.types.events import ContractLogContainer
+from ape.types.gas import AutoGasLimit
+from ape.types.signatures import TransactionSignature
+from ape.types.trace import SourceTraceback
+from ape.utils.basemodel import BaseInterfaceModel, ExtraAttributesMixin, ExtraModelAttributes
+from ape.utils.misc import log_instead_of_fail, raises_not_implemented
 
 if TYPE_CHECKING:
     from ape.api.providers import BlockAPI

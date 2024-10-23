@@ -18,7 +18,7 @@ from ape.exceptions import (
     CustomError,
     MethodNonPayableError,
 )
-from ape.types import AddressType
+from ape.types.address import AddressType
 from ape_ethereum.transactions import TransactionStatusEnum, TransactionType
 
 MATCH_TEST_CONTRACT = re.compile(r"<TestContract((Sol)|(Vy))")

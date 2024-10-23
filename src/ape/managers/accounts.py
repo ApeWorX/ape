@@ -1,6 +1,7 @@
 import contextlib
 from collections.abc import Generator, Iterator
 from contextlib import AbstractContextManager as ContextManager
+from functools import cached_property, singledispatchmethod
 from typing import Optional, Union
 
 from eth_utils import is_hex
@@ -14,8 +15,9 @@ from ape.api.accounts import (
 )
 from ape.exceptions import AccountsError, ConversionError
 from ape.managers.base import BaseManager
-from ape.types import AddressType
-from ape.utils import ManagerAccessMixin, cached_property, log_instead_of_fail, singledispatchmethod
+from ape.types.address import AddressType
+from ape.utils.basemodel import ManagerAccessMixin
+from ape.utils.misc import log_instead_of_fail
 
 _DEFAULT_SENDERS: list[AccountAPI] = []
 
