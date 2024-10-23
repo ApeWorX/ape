@@ -1,6 +1,6 @@
 import pytest
 
-from ape.api.networks import LOCAL_NETWORK_NAME
+from ape.utils.misc import LOCAL_NETWORK_NAME
 from tests.conftest import ApeSubprocessRunner, geth_process_test
 
 from .utils import run_once, skip_projects_except

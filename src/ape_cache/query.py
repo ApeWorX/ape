@@ -1,4 +1,5 @@
 from collections.abc import Iterator
+from functools import singledispatchmethod
 from pathlib import Path
 from typing import Any, Optional, cast
 
@@ -7,13 +8,20 @@ from sqlalchemy.engine import CursorResult
 from sqlalchemy.sql import column, insert, select
 from sqlalchemy.sql.expression import Insert, Select
 
-from ape.api import BlockAPI, QueryAPI, QueryType, TransactionAPI
-from ape.api.networks import LOCAL_NETWORK_NAME
-from ape.api.query import BaseInterfaceModel, BlockQuery, BlockTransactionQuery, ContractEventQuery
+from ape.api.providers import BlockAPI
+from ape.api.query import (
+    BaseInterfaceModel,
+    BlockQuery,
+    BlockTransactionQuery,
+    ContractEventQuery,
+    QueryAPI,
+    QueryType,
+)
+from ape.api.transactions import TransactionAPI
 from ape.exceptions import QueryEngineError
 from ape.logging import logger
 from ape.types import ContractLog
-from ape.utils import singledispatchmethod
+from ape.utils.misc import LOCAL_NETWORK_NAME
 
 from . import models
 from .models import Blocks, ContractEvents, Transactions

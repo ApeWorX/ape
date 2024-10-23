@@ -1,5 +1,4 @@
 from ape import plugins
-from ape.api.networks import LOCAL_NETWORK_NAME
 
 from .provider import EthereumNetworkConfig, EthereumNodeConfig, GethDev, Node
 from .query import OtterscanQueryEngine
@@ -13,11 +12,11 @@ def config_class():
 @plugins.register(plugins.ProviderPlugin)
 def providers():
     networks_dict = EthereumNetworkConfig().model_dump()
-    networks_dict.pop(LOCAL_NETWORK_NAME)
+    networks_dict.pop("local")
     for network_name in networks_dict:
         yield "ethereum", network_name, Node
 
-    yield "ethereum", LOCAL_NETWORK_NAME, GethDev
+    yield "ethereum", "local", GethDev
 
 
 @plugins.register(plugins.QueryPlugin)

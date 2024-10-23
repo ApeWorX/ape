@@ -1,6 +1,7 @@
 import copy
+from abc import abstractmethod
 from collections.abc import Collection, Iterator, Sequence
-from functools import partial
+from functools import cached_property, partial
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar, Optional, Union
 
@@ -25,19 +26,21 @@ from ape.exceptions import (
     SignatureError,
 )
 from ape.logging import logger
-from ape.types import AddressType, AutoGasLimit, ContractLog, GasLimit, RawAddress
-from ape.utils import (
-    DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT,
+from ape.types import AutoGasLimit, ContractLog, GasLimit
+from ape.types.address import AddressType, RawAddress
+from ape.utils.basemodel import (
     BaseInterfaceModel,
     ExtraAttributesMixin,
     ExtraModelAttributes,
     ManagerAccessMixin,
-    RPCHeaders,
-    abstractmethod,
-    cached_property,
+)
+from ape.utils.misc import (
+    DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT,
+    LOCAL_NETWORK_NAME,
     log_instead_of_fail,
     raises_not_implemented,
 )
+from ape.utils.rpc import RPCHeaders
 
 from .config import PluginConfig
 
@@ -46,9 +49,6 @@ if TYPE_CHECKING:
     from .providers import BlockAPI, ProviderAPI, UpstreamProvider
     from .trace import TraceAPI
     from .transactions import ReceiptAPI, TransactionAPI
-
-
-LOCAL_NETWORK_NAME = "local"
 
 
 class ProxyInfoAPI(BaseModel):
@@ -1395,3 +1395,15 @@ def create_network_type(chain_id: int, network_id: int, is_fork: bool = False) -
             return network_id
 
     return network_def
+
+
+# TODO: Can remove in 0.9 since `LOCAL_NETWORK_NAME` doesn't need to be here.
+__all__ = [
+    "create_network_type",
+    "EcosystemAPI",
+    "LOCAL_NETWORK_NAME",  # Have to leave for backwards compat.
+    "ForkedNetworkAPI",
+    "NetworkAPI",
+    "ProviderContextManager",
+    "ProxyInfoAPI",
+]

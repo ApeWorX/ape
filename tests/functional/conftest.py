@@ -12,13 +12,13 @@ from ethpm_types import ContractType, ErrorABI, MethodABI
 from ethpm_types.abi import ABIType
 
 import ape
-from ape.api.networks import LOCAL_NETWORK_NAME
 from ape.contracts import ContractContainer, ContractInstance
 from ape.contracts.base import ContractCallHandler
 from ape.exceptions import ChainError, ContractLogicError, ProviderError
 from ape.logging import LogLevel
 from ape.logging import logger as _logger
 from ape.types import AddressType, ContractLog
+from ape.utils.misc import LOCAL_NETWORK_NAME
 from ape_ethereum.proxies import minimal_proxy as _minimal_proxy_container
 
 ALIAS_2 = "__FUNCTIONAL_TESTS_ALIAS_2__"
