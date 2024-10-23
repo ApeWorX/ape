@@ -3,8 +3,8 @@ from typing import Optional
 import pytest
 from ethpm_types import ContractType
 
-from ape.api import ExplorerAPI
-from ape.types import AddressType
+from ape.api.explorers import ExplorerAPI
+from ape.types.address import AddressType
 
 
 class MyExplorer(ExplorerAPI):

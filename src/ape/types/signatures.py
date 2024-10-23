@@ -7,7 +7,7 @@ from eth_pydantic_types import HexBytes
 from eth_utils import to_bytes, to_hex
 from pydantic.dataclasses import dataclass
 
-from ape.utils import as_our_module, log_instead_of_fail
+from ape.utils.misc import as_our_module, log_instead_of_fail
 
 try:
     # Only on Python 3.11
@@ -15,7 +15,7 @@ try:
 except ImportError:
     from typing_extensions import Self  # type: ignore
 
-from ape.types import AddressType
+from ape.types.address import AddressType
 
 # Fix 404 in doc link.
 as_our_module(

@@ -16,9 +16,11 @@ from requests.exceptions import ConnectionError
 from web3.middleware import geth_poa_middleware as ExtraDataToPOAMiddleware
 from yarl import URL
 
-from ape.api import PluginConfig, SubprocessProvider, TestAccountAPI, TestProviderAPI
+from ape.api.accounts import TestAccountAPI
+from ape.api.config import PluginConfig
+from ape.api.providers import SubprocessProvider, TestProviderAPI
 from ape.logging import LogLevel, logger
-from ape.types import SnapshotID
+from ape.types.vm import SnapshotID
 from ape.utils.misc import ZERO_ADDRESS, log_instead_of_fail, raises_not_implemented
 from ape.utils.process import JoinableQueue, spawn
 from ape.utils.testing import (

@@ -3,7 +3,7 @@ from typing import Any, Optional, Union
 
 from _pytest.config import Config as PytestConfig
 
-from ape.types import ContractFunctionPath
+from ape.types.trace import ContractFunctionPath
 from ape.utils.basemodel import ManagerAccessMixin
 
 

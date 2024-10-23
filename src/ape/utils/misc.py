@@ -30,7 +30,7 @@ from ape.logging import logger
 from ape.utils.os import expand_environment_variables
 
 if TYPE_CHECKING:
-    from ape.types import AddressType
+    from ape.types.address import AddressType
 
 
 EMPTY_BYTES32 = HexBytes("0x0000000000000000000000000000000000000000000000000000000000000000")

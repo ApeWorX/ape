@@ -15,12 +15,15 @@ from ethpm_types import ContractType
 from ethpm_types.abi import EventABI, MethodABI
 from pydantic import BaseModel, Field, field_validator, model_validator
 
-from ape.api import ReceiptAPI, TransactionAPI
+from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.contracts import ContractEvent
 from ape.exceptions import OutOfGasError, SignatureError, TransactionError
 from ape.logging import logger
-from ape.types import AddressType, ContractLog, ContractLogContainer, HexInt, SourceTraceback
-from ape.utils import ZERO_ADDRESS
+from ape.types.address import AddressType
+from ape.types.basic import HexInt
+from ape.types.events import ContractLog, ContractLogContainer
+from ape.types.trace import SourceTraceback
+from ape.utils.misc import ZERO_ADDRESS
 from ape_ethereum.trace import Trace, _events_to_trees
 
 

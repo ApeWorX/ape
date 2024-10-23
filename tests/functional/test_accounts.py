@@ -18,9 +18,9 @@ from ape.exceptions import (
     ProjectError,
     SignatureError,
 )
-from ape.types import AutoGasLimit
+from ape.types.gas import AutoGasLimit
 from ape.types.signatures import recover_signer
-from ape_accounts import (
+from ape_accounts.accounts import (
     KeyfileAccount,
     generate_account,
     import_account_from_mnemonic,

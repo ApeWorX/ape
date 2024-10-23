@@ -6,8 +6,11 @@ from ethpm_types.abi import EventABI
 from hexbytes import HexBytes
 from pydantic import BaseModel, Field
 
-from ape.types import AddressType, ContractLog, CurrencyValueComparable, HexInt, LogFilter
-from ape.utils import ZERO_ADDRESS
+from ape.types.address import AddressType
+from ape.types.basic import HexInt
+from ape.types.events import ContractLog, LogFilter
+from ape.types.units import CurrencyValueComparable
+from ape.utils.misc import ZERO_ADDRESS
 
 TXN_HASH = "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa222222222222222222222222"
 BLOCK_HASH = "0x999999998d4f99f68db9999999999da27ed049458b139999999999e910155b99"

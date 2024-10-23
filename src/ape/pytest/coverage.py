@@ -9,13 +9,8 @@ from ethpm_types.source import ContractSource
 from ape.logging import logger
 from ape.managers.project import ProjectManager
 from ape.pytest.config import ConfigWrapper
-from ape.types import (
-    ContractFunctionPath,
-    ControlFlow,
-    CoverageProject,
-    CoverageReport,
-    SourceTraceback,
-)
+from ape.types.coverage import CoverageProject, CoverageReport
+from ape.types.trace import ContractFunctionPath, ControlFlow, SourceTraceback
 from ape.utils.basemodel import ManagerAccessMixin
 from ape.utils.misc import get_current_timestamp_ms
 from ape.utils.os import get_full_extension, get_relative_path

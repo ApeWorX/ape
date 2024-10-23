@@ -17,7 +17,8 @@ from ape.contracts.base import ContractCallHandler
 from ape.exceptions import ChainError, ContractLogicError, ProviderError
 from ape.logging import LogLevel
 from ape.logging import logger as _logger
-from ape.types import AddressType, ContractLog
+from ape.types.address import AddressType
+from ape.types.events import ContractLog
 from ape.utils.misc import LOCAL_NETWORK_NAME
 from ape_ethereum.proxies import minimal_proxy as _minimal_proxy_container
 

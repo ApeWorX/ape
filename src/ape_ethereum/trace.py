@@ -24,11 +24,14 @@ from hexbytes import HexBytes
 from pydantic import field_validator
 from rich.tree import Tree
 
-from ape.api import EcosystemAPI, TraceAPI, TransactionAPI
+from ape.api.networks import EcosystemAPI
+from ape.api.trace import TraceAPI
+from ape.api.transactions import TransactionAPI
 from ape.exceptions import ContractLogicError, ProviderError, TransactionNotFoundError
 from ape.logging import get_rich_console, logger
-from ape.types import AddressType, ContractFunctionPath, GasReport
-from ape.utils import ZERO_ADDRESS, is_evm_precompile, is_zero_hex, log_instead_of_fail
+from ape.types.address import AddressType
+from ape.types.trace import ContractFunctionPath, GasReport
+from ape.utils.misc import ZERO_ADDRESS, is_evm_precompile, is_zero_hex, log_instead_of_fail
 from ape.utils.trace import TraceStyles, _exclude_gas
 from ape_ethereum._print import extract_debug_logs
 

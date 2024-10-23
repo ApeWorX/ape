@@ -1,10 +1,15 @@
+from abc import abstractmethod
+from functools import cached_property
 from typing import TYPE_CHECKING, Any
 
 from eth_pydantic_types import HexBytes
 
 from ape.exceptions import ConversionError
-from ape.types import AddressType, ContractCode, CurrencyValue
-from ape.utils import BaseInterface, abstractmethod, cached_property, log_instead_of_fail
+from ape.types.address import AddressType
+from ape.types.units import CurrencyValue
+from ape.types.vm import ContractCode
+from ape.utils.basemodel import BaseInterface
+from ape.utils.misc import log_instead_of_fail
 
 if TYPE_CHECKING:
     from ape.api.transactions import ReceiptAPI, TransactionAPI

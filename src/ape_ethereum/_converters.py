@@ -2,7 +2,7 @@ import re
 from decimal import Decimal
 
 from ape.api.convert import ConverterAPI
-from ape.types import CurrencyValue
+from ape.types.units import CurrencyValue
 
 ETHER_UNITS = {
     "eth": int(1e18),

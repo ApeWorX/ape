@@ -6,13 +6,12 @@ import yaml
 from rich import print as echo_rich_text
 from rich.tree import Tree
 
-from ape.api import SubprocessProvider
-from ape.cli import ape_cli_context, network_option
+from ape.api.providers import SubprocessProvider
 from ape.cli.choices import OutputFormat
-from ape.cli.options import output_format_option
+from ape.cli.options import ape_cli_context, network_option, output_format_option
 from ape.exceptions import NetworkError
 from ape.logging import LogLevel
-from ape.types import _LazySequence
+from ape.types.basic import _LazySequence
 from ape.utils.basemodel import ManagerAccessMixin
 
 

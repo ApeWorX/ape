@@ -12,8 +12,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from ape.exceptions import ConfigError
 from ape.logging import logger
-from ape.types import AddressType
-from ape.utils import clean_path
+from ape.types.address import AddressType
 from ape.utils.basemodel import (
     ExtraAttributesMixin,
     ExtraModelAttributes,
@@ -23,6 +22,7 @@ from ape.utils.basemodel import (
     only_raise_attribute_error,
 )
 from ape.utils.misc import load_config
+from ape.utils.os import clean_path
 
 ConfigItemType = TypeVar("ConfigItemType")
 

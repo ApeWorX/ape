@@ -10,8 +10,8 @@ from pydantic_settings import SettingsConfigDict
 from ape.api.config import ApeConfig, ConfigEnum, PluginConfig
 from ape.exceptions import ConfigError
 from ape.managers.config import CONFIG_FILE_NAME, merge_configs
-from ape.types import GasLimit
-from ape.utils import create_tempdir
+from ape.types.gas import GasLimit
+from ape.utils.os import create_tempdir
 from ape_ethereum.ecosystem import EthereumConfig, NetworkConfig
 from ape_networks import CustomNetwork
 from tests.functional.conftest import PROJECT_WITH_LONG_CONTRACTS_FOLDER

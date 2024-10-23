@@ -15,7 +15,7 @@ from ape.exceptions import (
     NetworkNotFoundError,
     ProviderNotFoundError,
 )
-from ape.types import _LazySequence
+from ape.types.basic import _LazySequence
 from ape.utils.basemodel import ManagerAccessMixin
 
 _ACCOUNT_TYPE_FILTER = Union[

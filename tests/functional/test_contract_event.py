@@ -8,9 +8,10 @@ from eth_pydantic_types.hash import HashBytes20
 from eth_utils import to_hex
 from ethpm_types import ContractType
 
-from ape.api import ReceiptAPI
+from ape.api.transactions import ReceiptAPI
 from ape.exceptions import ProviderError
-from ape.types import ContractLog, CurrencyValueComparable
+from ape.types.events import ContractLog
+from ape.types.units import CurrencyValueComparable
 
 
 @pytest.fixture

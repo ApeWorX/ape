@@ -1,10 +1,11 @@
+from abc import abstractmethod
 from typing import Optional
 
 from ethpm_types import ContractType
 
-from ape.api import networks
-from ape.types import AddressType
-from ape.utils import BaseInterfaceModel, abstractmethod
+from ape.api.networks import NetworkAPI
+from ape.types.address import AddressType
+from ape.utils.basemodel import BaseInterfaceModel
 
 
 class ExplorerAPI(BaseInterfaceModel):
@@ -14,7 +15,7 @@ class ExplorerAPI(BaseInterfaceModel):
     """
 
     name: str  # Plugin name
-    network: networks.NetworkAPI
+    network: NetworkAPI
 
     @abstractmethod
     def get_address_url(self, address: AddressType) -> str:

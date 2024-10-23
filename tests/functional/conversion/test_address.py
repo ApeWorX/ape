@@ -1,7 +1,7 @@
 import pytest
 
 from ape.managers.converters import HexAddressConverter, IntAddressConverter
-from ape.types import AddressType
+from ape.types.address import AddressType
 
 
 def test_convert_keyfile_account_to_address(convert, keyfile_account):

@@ -20,7 +20,7 @@ from ape.exceptions import (
     TransactionError,
     TransactionNotFoundError,
 )
-from ape.types import LogFilter
+from ape.types.events import LogFilter
 from ape.utils.testing import DEFAULT_TEST_ACCOUNT_BALANCE, DEFAULT_TEST_CHAIN_ID
 from ape_ethereum.provider import WEB3_PROVIDER_URI_ENV_VAR_NAME, Web3Provider, _sanitize_web3_url
 from ape_ethereum.transactions import TransactionStatusEnum, TransactionType

@@ -3,7 +3,7 @@ from collections import defaultdict
 from collections.abc import Collection, Iterator
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
-from functools import partial
+from functools import partial, singledispatchmethod
 from pathlib import Path
 from statistics import mean, median
 from typing import IO, Optional, Union, cast
@@ -40,15 +40,11 @@ from ape.exceptions import (
 )
 from ape.logging import get_rich_console, logger
 from ape.managers.base import BaseManager
-from ape.types import AddressType, GasReport, SnapshotID, SourceTraceback
-from ape.utils import (
-    BaseInterfaceModel,
-    is_evm_precompile,
-    is_zero_hex,
-    log_instead_of_fail,
-    nonreentrant,
-    singledispatchmethod,
-)
+from ape.types.address import AddressType
+from ape.types.trace import GasReport, SourceTraceback
+from ape.types.vm import SnapshotID
+from ape.utils.basemodel import BaseInterfaceModel
+from ape.utils.misc import is_evm_precompile, is_zero_hex, log_instead_of_fail, nonreentrant
 
 
 class BlockContainer(BaseManager):

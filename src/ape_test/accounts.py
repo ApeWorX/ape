@@ -10,10 +10,12 @@ from eth_keys.datatypes import PrivateKey  # type: ignore
 from eth_pydantic_types import HexBytes
 from eth_utils import to_bytes, to_hex
 
-from ape.api import TestAccountAPI, TestAccountContainerAPI, TransactionAPI
+from ape.api.accounts import TestAccountAPI, TestAccountContainerAPI
+from ape.api.transactions import TransactionAPI
 from ape.exceptions import ProviderNotConnectedError, SignatureError
-from ape.types import AddressType, MessageSignature, TransactionSignature
-from ape.utils import (
+from ape.types.address import AddressType
+from ape.types.signatures import MessageSignature, TransactionSignature
+from ape.utils.testing import (
     DEFAULT_NUMBER_OF_TEST_ACCOUNTS,
     DEFAULT_TEST_HD_PATH,
     DEFAULT_TEST_MNEMONIC,
