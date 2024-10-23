@@ -8,10 +8,10 @@ from ape.cli.options import network_option
 from ape.logging import logger
 
 if TYPE_CHECKING:
-    from ape.api.query import QueryAPI
+    from ape_cache.query import CacheQueryProvider
 
 
-def get_engine() -> "QueryAPI":
+def get_engine() -> "CacheQueryProvider":
     basemodel = import_module("ape.utils.basemodel")
     return basemodel.ManagerAccessMixin.query_manager.engines["cache"]
 
