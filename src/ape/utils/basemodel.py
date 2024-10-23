@@ -1,8 +1,10 @@
 import inspect
 from abc import ABC
 from collections.abc import Callable, Iterator, Sequence
+from importlib import import_module
+from pathlib import Path
 from sys import getrecursionlimit
-from typing import TYPE_CHECKING, Any, ClassVar, Optional, Union, cast
+from typing import TYPE_CHECKING, Any, ClassVar, Optional, Union
 
 from ethpm_types import BaseModel as EthpmTypesBaseModel
 from pydantic import BaseModel as RootBaseModel
@@ -11,6 +13,7 @@ from pydantic import ConfigDict
 from ape.exceptions import ApeAttributeError, ApeIndexError, ProviderNotConnectedError
 from ape.logging import logger
 from ape.utils.misc import log_instead_of_fail, raises_not_implemented
+from ape.utils.rpc import USER_AGENT
 
 if TYPE_CHECKING:
     from pydantic.main import Model
@@ -34,6 +37,19 @@ class classproperty(object):
 
     def __get__(self, obj, owner):
         return self.fn(owner)
+
+
+class manager_access:
+    _cache = None
+
+    def __init__(self, fn):
+        self.fn = fn
+
+    def __get__(self, obj, owner):
+        if self._cache is None:
+            self._cache = self.fn(owner)
+
+        return self._cache
 
 
 class _RecursionChecker:
@@ -66,6 +82,7 @@ class _RecursionChecker:
 _recursion_checker = _RecursionChecker()
 
 
+# TODO: Delete in 0.9 (deprecated & no longer used anywhere)
 class injected_before_use(property):
     """
     Injected properties are injected class variables that must be set before use.
@@ -108,30 +125,103 @@ def only_raise_attribute_error(fn: Callable) -> Any:
 
 
 class ManagerAccessMixin:
-    # NOTE: cast is used to update the class type returned to mypy
-    account_manager: ClassVar["AccountManager"] = cast("AccountManager", injected_before_use())
+    """
+    A mixin for accessing Ape's manager at the class level.
 
-    chain_manager: ClassVar["ChainManager"] = cast("ChainManager", injected_before_use())
+    Usage example:
 
-    compiler_manager: ClassVar["CompilerManager"] = cast("CompilerManager", injected_before_use())
+        from ape.utils import ManagerAccessMixin
 
-    config_manager: ClassVar["ConfigManager"] = cast("ConfigManager", injected_before_use())
-
-    conversion_manager: ClassVar["ConversionManager"] = cast(
-        "ConversionManager", injected_before_use()
-    )
-
-    local_project: ClassVar["ProjectManager"] = cast("ProjectManager", injected_before_use())
-
-    network_manager: ClassVar["NetworkManager"] = cast("NetworkManager", injected_before_use())
-
-    plugin_manager: ClassVar["PluginManager"] = cast("PluginManager", injected_before_use())
-
-    Project: ClassVar[type["ProjectManager"]] = cast(type["ProjectManager"], injected_before_use())
-
-    query_manager: ClassVar["QueryManager"] = cast("QueryManager", injected_before_use())
+        class MyClass(ManagerAccessMixin):
+            def my_function(self):
+                accounts = self.account_manager  # And so on!
+    """
 
     _test_runner: ClassVar[Optional["PytestApeRunner"]] = None
+
+    @manager_access
+    def account_manager(cls) -> "AccountManager":
+        """
+        The :class:`~ape.managers.accounts.AccountManager`.
+        """
+        accounts = import_module("ape.managers.accounts")
+        return accounts.AccountManager()
+
+    @manager_access
+    def chain_manager(cls) -> "ChainManager":
+        """
+        The :class:`~ape.managers.chain.ChainManager`.
+        """
+        chain = import_module("ape.managers.chain")
+        return chain.ChainManager()
+
+    @manager_access
+    def compiler_manager(cls) -> "CompilerManager":
+        """
+        The :class:`~ape.managers.compilers.CompilerManager`.
+        """
+        compilers = import_module("ape.managers.compilers")
+        return compilers.CompilerManager()
+
+    @manager_access
+    def config_manager(cls) -> "ConfigManager":
+        """
+        The :class:`~ape.managers.config.ConfigManager`.
+        """
+        config = import_module("ape.managers.config")
+        return config.ConfigManager(
+            request_header={"User-Agent": USER_AGENT, "Content-Type": "application/json"},
+        )
+
+    @manager_access
+    def conversion_manager(cls) -> "ConversionManager":
+        """
+        The :class:`~ape.managers.converters.ConversionManager`.
+        """
+        converters = import_module("ape.managers.converters")
+        return converters.ConversionManager()
+
+    @manager_access
+    def local_project(cls) -> "ProjectManager":
+        """
+        A :class:`~ape.managers.project.ProjectManager` pointed
+        at the current-working directory.
+        """
+        project = import_module("ape.managers.project")
+        return project.ProjectManager(Path.cwd())
+
+    @manager_access
+    def network_manager(cls) -> "NetworkManager":
+        """
+        The :class:`~ape.managers.networks.NetworkManager`.
+        """
+        networks = import_module("ape.managers.networks")
+        return networks.NetworkManager()
+
+    @manager_access
+    def plugin_manager(cls) -> "PluginManager":
+        """
+        The :class:`~ape.managers.plugins.PluginManager`.
+        """
+        plugins = import_module("ape.managers.plugins")
+        return plugins.PluginManager()
+
+    @manager_access
+    def Project(cls) -> type["ProjectManager"]:
+        """
+        The ``Project`` factory class for creating
+        other local-projects.
+        """
+        project = import_module("ape.managers.project")
+        return project.ProjectManager
+
+    @manager_access
+    def query_manager(cls) -> "QueryManager":
+        """
+        The :class:`~ape.managers.query.QueryManager`.
+        """
+        query = import_module("ape.managers.query")
+        return query.QueryManager()
 
     @classproperty
     def provider(cls) -> "ProviderAPI":
