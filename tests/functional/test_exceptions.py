@@ -4,8 +4,7 @@ from typing import Optional
 
 import pytest
 
-from ape.api import ReceiptAPI
-from ape.api.networks import LOCAL_NETWORK_NAME
+from ape.api.transactions import ReceiptAPI
 from ape.exceptions import (
     Abort,
     ContractLogicError,
@@ -15,7 +14,7 @@ from ape.exceptions import (
     handle_ape_exception,
 )
 from ape.types import SourceTraceback
-from ape.utils import ZERO_ADDRESS
+from ape.utils.misc import LOCAL_NETWORK_NAME, ZERO_ADDRESS
 from ape_ethereum.transactions import DynamicFeeTransaction, Receipt
 
 

@@ -1,6 +1,6 @@
 from ape import plugins
-from ape.api import ForkedNetworkAPI, NetworkAPI, create_network_type
-from ape.api.networks import LOCAL_NETWORK_NAME
+from ape.api.networks import ForkedNetworkAPI, NetworkAPI, create_network_type
+from ape.utils.misc import LOCAL_NETWORK_NAME
 
 from ._converters import WeiConversions
 from .ecosystem import (

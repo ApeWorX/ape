@@ -9,10 +9,10 @@ from ethpm_types import ContractType, ErrorABI
 from ethpm_types.abi import ABIType, EventABI, MethodABI
 from evm_trace import CallTreeNode, CallType
 
-from ape.api.networks import LOCAL_NETWORK_NAME, ForkedNetworkAPI, NetworkAPI
+from ape.api.networks import ForkedNetworkAPI, NetworkAPI
 from ape.exceptions import CustomError, DecodingError, NetworkError, NetworkNotFoundError
 from ape.types import AddressType, CurrencyValueComparable
-from ape.utils import DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT
+from ape.utils.misc import DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT, LOCAL_NETWORK_NAME
 from ape_ethereum import TransactionTrace
 from ape_ethereum.ecosystem import BLUEPRINT_HEADER, BaseEthereumConfig, Block, Ethereum
 from ape_ethereum.transactions import (
