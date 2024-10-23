@@ -11,6 +11,7 @@ from typing import Any, Optional
 import click
 import rich
 import yaml
+from click import Context
 
 from ape.cli import ape_cli_context
 from ape.exceptions import Abort, ApeException, ConfigError, handle_ape_exception
@@ -49,11 +50,14 @@ class ApeCLI(click.MultiCommand):
     _commands: Optional[dict] = None
     _CLI_GROUP_NAME = "ape_cli_subcommands"
 
-    def __init__(self, *args, **kwargs):
+    def parse_args(self, ctx: Context, args: list[str]) -> list[str]:
         # Validate the config before any argument parsing,
         # as arguments may utilize config.
-        _validate_config()
-        super().__init__(*args, **kwargs)
+        if "--help" not in args and args != []:
+            # perf: don't bother w/ config if only doing --help.
+            _validate_config()
+
+        return super().parse_args(ctx, args)
 
     def format_commands(self, ctx, formatter) -> None:
         commands = []
