@@ -156,6 +156,10 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#ape.utils.JoinableQueue.join"><code class="docutils literal notranslate">join()</span></code></a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#ape.utils.ManagerAccessMixin"><code class="docutils literal notranslate"><span class="pre">ManagerAccessMixin</span></code></a><ul>
+<li><a class="reference internal" href="#ape.utils.ManagerAccessMixin.Project"><code class="docutils literal notranslate">Project</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#ape.utils.RPCHeaders"><code class="docutils literal notranslate"><span class="pre">RPCHeaders</span></code></a></li>
 <li><a class="reference internal" href="#ape.utils.Struct"><code class="docutils literal notranslate"><span class="pre">Struct</span></code></a><ul>
 <li><a class="reference internal" href="#ape.utils.Struct.items"><code class="docutils literal notranslate">items()</span></code></a></li>
@@ -250,7 +254,7 @@ data-aria-dark="Switch to auto color mode">
 <dl class="py class">
 <dt class="sig sig-object py" id="ape.utils.BaseInterface">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.utils.</span></span><span class="sig-name descname"><span class="pre">BaseInterface</span></span><a class="headerlink" href="#ape.utils.BaseInterface" title="Link to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ManagerAccessMixin</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<dd><p>Bases: <a class="reference internal" href="#ape.utils.ManagerAccessMixin" title="ape.utils.basemodel.ManagerAccessMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">ManagerAccessMixin</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
 <p>Abstract class that has manager access.</p>
 </dd></dl>
 
@@ -414,6 +418,30 @@ Borrowed from the <code class="docutils literal notranslate"><span class="pre">p
 queue. The count goes down whenever a consumer thread calls task_done()
 to indicate the item was retrieved and all work on it is complete.</p>
 <p>When the count of unfinished tasks drops to zero, join() unblocks.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.utils.ManagerAccessMixin">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.utils.</span></span><span class="sig-name descname"><span class="pre">ManagerAccessMixin</span></span><a class="headerlink" href="#ape.utils.ManagerAccessMixin" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A mixin for accessing Ape’s manager at the class level.</p>
+<p>Usage example:</p>
+<blockquote>
+<div><p>from ape.utils import ManagerAccessMixin</p>
+<dl class="simple">
+<dt>class MyClass(ManagerAccessMixin):</dt><dd><dl class="simple">
+<dt>def my_function(self):</dt><dd><p>accounts = self.account_manager  # And so on!</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</div></blockquote>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.utils.ManagerAccessMixin.Project">
+<span class="sig-name descname"><span class="pre">Project</span></span><a class="headerlink" href="#ape.utils.ManagerAccessMixin.Project" title="Link to this definition"></a></dt>
+<dd><p>alias of <a class="reference internal" href="managers.html#ape.managers.project.ProjectManager" title="ape.managers.project.ProjectManager"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProjectManager</span></code></a></p>
 </dd></dl>
 
 </dd></dl>

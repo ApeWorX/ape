@@ -297,6 +297,11 @@ data-aria-dark="Switch to auto color mode">
 </ul>
 </li>
 <li><a class="reference internal" href="#module-ape_ethereum.multicall">ape-ethereum.multicall</a><ul>
+<li><a class="reference internal" href="#ape_ethereum.multicall.BaseMulticall"><code class="docutils literal notranslate"><span class="pre">BaseMulticall</span></code></a><ul>
+<li><a class="reference internal" href="#ape_ethereum.multicall.BaseMulticall.add"><code class="docutils literal notranslate">.add()</span></code></a></li>
+<li><a class="reference internal" href="#ape_ethereum.multicall.BaseMulticall.inject"><code class="docutils literal notranslate">.inject()</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#ape_ethereum.multicall.Call"><code class="docutils literal notranslate"><span class="pre">Call</span></code></a><ul>
 <li><a class="reference internal" href="#ape_ethereum.multicall.Call.__call__"><code class="docutils literal notranslate">.__call__()</span></code></a></li>
 <li><a class="reference internal" href="#ape_ethereum.multicall.Call.add"><code class="docutils literal notranslate">.add()</span></code></a></li>
@@ -1768,9 +1773,61 @@ this validator to eliminate the concern.</p>
 <section id="module-ape_ethereum.multicall">
 <span id="ape-ethereum-multicall"></span><h1>ape-ethereum.multicall<a class="headerlink" href="#module-ape_ethereum.multicall" title="Link to this heading"></a></h1>
 <dl class="py class">
+<dt class="sig sig-object py" id="ape_ethereum.multicall.BaseMulticall">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape_ethereum.multicall.</span></span><span class="sig-name descname"><span class="pre">BaseMulticall</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><span class="pre">ChecksumAddress</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_AddressValidator</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'0xcA11bde05977b3631167028862bE2a173976CA11'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">supported_chains</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_ethereum.multicall.BaseMulticall" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="utils.html#ape.utils.ManagerAccessMixin" title="ape.utils.basemodel.ManagerAccessMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">ManagerAccessMixin</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ape_ethereum.multicall.BaseMulticall.add">
+<span class="sig-name descname"><span class="pre">add</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">call</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ContractMethodHandler</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allowFailure</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ape_ethereum.multicall.BaseMulticall" title="ape_ethereum.multicall.handlers.BaseMulticall"><span class="pre">BaseMulticall</span></a></span></span><a class="headerlink" href="#ape_ethereum.multicall.BaseMulticall.add" title="Link to this definition"></a></dt>
+<dd><p>Adds a call to the Multicall session object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>InvalidOption</strong> – If one
+    of the kwarg modifiers is not able to be used.</p>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>call</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ContractMethodHandler</span></code>) – The method to call.</p></li>
+<li><p><strong>*args</strong> – The arguments to invoke the method with.</p></li>
+<li><p><strong>allowFailure</strong> (<em>bool</em>) – Whether the call is allowed to fail.</p></li>
+<li><p><strong>value</strong> (<em>int</em>) – The amount of ether to forward with the call.</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>returns itself</dt><dd><p>to emulate a builder pattern.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#ape_ethereum.multicall.BaseMulticall" title="ape_ethereum.multicall.handlers.BaseMulticall"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseMulticall</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape_ethereum.multicall.BaseMulticall.inject">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">inject</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ModuleType</span></span></span><a class="headerlink" href="#ape_ethereum.multicall.BaseMulticall.inject" title="Link to this definition"></a></dt>
+<dd><p>Create the multicall module contract on-chain, so we can use it.
+Must use a provider that supports <code class="docutils literal notranslate"><span class="pre">debug_setCode</span></code>.</p>
+<p>Usage example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape_ethereum</span> <span class="kn">import</span> <span class="n">multicall</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">)</span>
+</span><span data-line="4"><span class="k">def</span> <span class="nf">use_multicall</span><span class="p">():</span>
+</span><span data-line="5">    <span class="c1"># NOTE: use this fixture any test where you want to use a multicall</span>
+</span><span data-line="6">    <span class="k">return</span> <span class="n">multicall</span><span class="o">.</span><span class="n">BaseMulticall</span><span class="o">.</span><span class="n">inject</span><span class="p">()</span>
+</span></pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="ape_ethereum.multicall.Call">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape_ethereum.multicall.</span></span><span class="sig-name descname"><span class="pre">Call</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><span class="pre">ChecksumAddress</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_AddressValidator</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'0xcA11bde05977b3631167028862bE2a173976CA11'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">supported_chains</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_ethereum.multicall.Call" title="Link to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseMulticall</span></code></p>
+<dd><p>Bases: <a class="reference internal" href="#ape_ethereum.multicall.BaseMulticall" title="ape_ethereum.multicall.handlers.BaseMulticall"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseMulticall</span></code></a></p>
 <p>Create a sequence of calls to execute at once using <code class="docutils literal notranslate"><span class="pre">eth_call</span></code> via the Multicall3 contract.</p>
 <p>Usage example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape_ethereum</span> <span class="kn">import</span> <span class="n">multicall</span>
@@ -1841,7 +1898,7 @@ is called.</p>
 </p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseMulticall</span></code></p>
+<dd class="field-even"><p><a class="reference internal" href="#ape_ethereum.multicall.BaseMulticall" title="ape_ethereum.multicall.handlers.BaseMulticall"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseMulticall</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1862,7 +1919,7 @@ is called.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="ape_ethereum.multicall.Transaction">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape_ethereum.multicall.</span></span><span class="sig-name descname"><span class="pre">Transaction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><span class="pre">ChecksumAddress</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_AddressValidator</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'0xcA11bde05977b3631167028862bE2a173976CA11'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">supported_chains</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_ethereum.multicall.Transaction" title="Link to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseMulticall</span></code></p>
+<dd><p>Bases: <a class="reference internal" href="#ape_ethereum.multicall.BaseMulticall" title="ape_ethereum.multicall.handlers.BaseMulticall"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseMulticall</span></code></a></p>
 <p>Create a sequence of calls to execute at once using <code class="docutils literal notranslate"><span class="pre">eth_sendTransaction</span></code>
 via the Multicall3 contract.</p>
 <p>Usage example:</p>

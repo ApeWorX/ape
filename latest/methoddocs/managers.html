@@ -374,6 +374,12 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#ape.managers.project.DependencyVersionMap.get"><code class="docutils literal notranslate">get()</span></code></a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#ape.managers.project.DeploymentManager"><code class="docutils literal notranslate"><span class="pre">DeploymentManager</span></code></a><ul>
+<li><a class="reference internal" href="#ape.managers.project.DeploymentManager.__iter__"><code class="docutils literal notranslate">__iter__()</span></code></a></li>
+<li><a class="reference internal" href="#ape.managers.project.DeploymentManager.instance_map"><code class="docutils literal notranslate">instance_map</span></code></a></li>
+<li><a class="reference internal" href="#ape.managers.project.DeploymentManager.track"><code class="docutils literal notranslate">track()</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#ape.managers.project.LocalProject"><code class="docutils literal notranslate"><span class="pre">LocalProject</span></code></a><ul>
 <li><a class="reference internal" href="#ape.managers.project.LocalProject.__repr__"><code class="docutils literal notranslate">__repr__()</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.project.LocalProject.config"><code class="docutils literal notranslate">config</span></code></a></li>
@@ -393,6 +399,14 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#ape.managers.project.LocalProject.sources"><code class="docutils literal notranslate">sources</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.project.LocalProject.unpack"><code class="docutils literal notranslate">unpack()</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.project.LocalProject.update_manifest"><code class="docutils literal notranslate">update_manifest()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ape.managers.project.PackagesCache"><code class="docutils literal notranslate"><span class="pre">PackagesCache</span></code></a><ul>
+<li><a class="reference internal" href="#ape.managers.project.PackagesCache.cache_api"><code class="docutils literal notranslate">cache_api()</span></code></a></li>
+<li><a class="reference internal" href="#ape.managers.project.PackagesCache.get_api_path"><code class="docutils literal notranslate">get_api_path()</span></code></a></li>
+<li><a class="reference internal" href="#ape.managers.project.PackagesCache.get_manifest_path"><code class="docutils literal notranslate">get_manifest_path()</span></code></a></li>
+<li><a class="reference internal" href="#ape.managers.project.PackagesCache.get_project_path"><code class="docutils literal notranslate">get_project_path()</span></code></a></li>
+<li><a class="reference internal" href="#ape.managers.project.PackagesCache.get_project_versions_path"><code class="docutils literal notranslate">get_project_versions_path()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#ape.managers.project.Project"><code class="docutils literal notranslate"><span class="pre">Project</span></code></a><ul>
@@ -2839,7 +2853,7 @@ affiliation.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="ape.managers.project.DependencyManager.packages_cache">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">packages_cache</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">PackagesCache</span></em><a class="headerlink" href="#ape.managers.project.DependencyManager.packages_cache" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">packages_cache</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ape.managers.project.PackagesCache" title="ape.managers.project.PackagesCache"><span class="pre">PackagesCache</span></a></em><a class="headerlink" href="#ape.managers.project.DependencyManager.packages_cache" title="Link to this definition"></a></dt>
 <dd><p>Where all dependency files go.</p>
 </dd></dl>
 
@@ -2912,6 +2926,43 @@ as well none v-prefixed versions.</p>
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="ape.managers.project.DeploymentManager">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.managers.project.</span></span><span class="sig-name descname"><span class="pre">DeploymentManager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ape.managers.project.LocalProject" title="ape.managers.project.LocalProject"><span class="pre">LocalProject</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.project.DeploymentManager" title="Link to this definition"></a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.project.DeploymentManager.__iter__">
+<span class="sig-name descname"><span class="pre">__iter__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">ContractInstance</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.managers.project.DeploymentManager.__iter__" title="Link to this definition"></a></dt>
+<dd><p>Get project deployments.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Iterator[ethpm_types.ContractInstance]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.managers.project.DeploymentManager.instance_map">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">instance_map</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ContractInstance</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.managers.project.DeploymentManager.instance_map" title="Link to this definition"></a></dt>
+<dd><p>The mapping needed for deployments publishing in an ethpm manifest.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.project.DeploymentManager.track">
+<span class="sig-name descname"><span class="pre">track</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contract</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="contracts.html#ape.contracts.base.ContractInstance" title="ape.contracts.base.ContractInstance"><span class="pre">ContractInstance</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.project.DeploymentManager.track" title="Link to this definition"></a></dt>
+<dd><p>Indicate that a contract deployment should be included in the package manifest
+upon publication.</p>
+<p><strong>NOTE</strong>: Deployments are automatically tracked for contracts. However, only
+deployments passed to this method are included in the final, publishable manifest.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>contract</strong> (<a class="reference internal" href="contracts.html#ape.contracts.base.ContractInstance" title="ape.contracts.base.ContractInstance"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractInstance</span></code></a>) – The contract
+to track as a deployment of the project.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="ape.managers.project.LocalProject">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.managers.project.</span></span><span class="sig-name descname"><span class="pre">LocalProject</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.project.LocalProject" title="Link to this definition"></a></dt>
 <dd><p>Manage project(s).</p>
@@ -2952,7 +3003,7 @@ as well none v-prefixed versions.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="ape.managers.project.LocalProject.deployments">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">deployments</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">DeploymentManager</span></em><a class="headerlink" href="#ape.managers.project.LocalProject.deployments" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">deployments</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ape.managers.project.DeploymentManager" title="ape.managers.project.DeploymentManager"><span class="pre">DeploymentManager</span></a></em><a class="headerlink" href="#ape.managers.project.LocalProject.deployments" title="Link to this definition"></a></dt>
 <dd><p>Project deployment manager for adding and reading
 deployments.</p>
 </dd></dl>
@@ -3060,6 +3111,43 @@ to a local one.</p>
 <dd class="field-odd"><p><strong>**kwargs</strong> – Top-level manifest attributes.</p>
 </dd>
 </dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.managers.project.PackagesCache">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.managers.project.</span></span><span class="sig-name descname"><span class="pre">PackagesCache</span></span><a class="headerlink" href="#ape.managers.project.PackagesCache" title="Link to this definition"></a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.project.PackagesCache.cache_api">
+<span class="sig-name descname"><span class="pre">cache_api</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">api</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="api.html#ape.api.projects.DependencyAPI" title="ape.api.projects.DependencyAPI"><span class="pre">DependencyAPI</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Path</span></span></span><a class="headerlink" href="#ape.managers.project.PackagesCache.cache_api" title="Link to this definition"></a></dt>
+<dd><p>Cache a dependency JSON for usage outside of the project.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.project.PackagesCache.get_api_path">
+<span class="sig-name descname"><span class="pre">get_api_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">package_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Path</span></span></span><a class="headerlink" href="#ape.managers.project.PackagesCache.get_api_path" title="Link to this definition"></a></dt>
+<dd><p>Path to the manifest filepath the dependency project uses
+as a base.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.project.PackagesCache.get_manifest_path">
+<span class="sig-name descname"><span class="pre">get_manifest_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">package_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Path</span></span></span><a class="headerlink" href="#ape.managers.project.PackagesCache.get_manifest_path" title="Link to this definition"></a></dt>
+<dd><p>Path to the manifest filepath the dependency project uses
+as a base.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.project.PackagesCache.get_project_path">
+<span class="sig-name descname"><span class="pre">get_project_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">package_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Path</span></span></span><a class="headerlink" href="#ape.managers.project.PackagesCache.get_project_path" title="Link to this definition"></a></dt>
+<dd><p>Path to the dir of the cached project.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.project.PackagesCache.get_project_versions_path">
+<span class="sig-name descname"><span class="pre">get_project_versions_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">package_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Path</span></span></span><a class="headerlink" href="#ape.managers.project.PackagesCache.get_project_versions_path" title="Link to this definition"></a></dt>
+<dd><p>The path to all the versions (projects) of a dependency.</p>
 </dd></dl>
 
 </dd></dl>
