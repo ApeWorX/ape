@@ -35,7 +35,7 @@ class classproperty(object):
     def __init__(self, fn: Callable):
         self.fn = fn
 
-    def __get__(self, obj, owner):
+    def __get__(self, obj, owner) -> Any:
         return self.fn(owner)
 
 
@@ -45,7 +45,7 @@ class manager_access(property):
     def __init__(self, fn):
         self.fn = fn
 
-    def __get__(self, obj, owner):
+    def __get__(self, obj, owner) -> Any:  # type: ignore[override]
         if self._cache is None:
             self._cache = self.fn(owner)
 
