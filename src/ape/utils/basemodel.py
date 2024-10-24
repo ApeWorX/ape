@@ -505,6 +505,10 @@ def get_attribute_with_extras(obj: Any, name: str) -> Any:
         _recursion_checker.reset(name)
         return res
 
+    if name.startswith("__") and name.endswith("__"):
+        # Don't seek double-dunderized definitions from extras.
+        raise AttributeError(name)
+
     # NOTE: Do not check extras within the error handler to avoid
     #   errors occurring within an exception handler (Python shows that differently).
     extras_checked = set()
