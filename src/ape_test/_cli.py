@@ -2,6 +2,7 @@ import sys
 import threading
 import time
 from datetime import datetime, timedelta
+from functools import cached_property
 from pathlib import Path
 from subprocess import run as run_subprocess
 from typing import Any
@@ -12,9 +13,9 @@ from click import Command
 from watchdog import events
 from watchdog.observers import Observer
 
-from ape.cli import ape_cli_context
+from ape.cli.options import ape_cli_context
 from ape.logging import LogLevel, _get_level
-from ape.utils import ManagerAccessMixin, cached_property
+from ape.utils.basemodel import ManagerAccessMixin as access
 
 # Copied from https://github.com/olzhasar/pytest-watcher/blob/master/pytest_watcher/watcher.py
 trigger_lock = threading.Lock()
@@ -32,7 +33,7 @@ def emit_trigger():
         trigger = datetime.now()
 
 
-class EventHandler(events.FileSystemEventHandler, ManagerAccessMixin):
+class EventHandler(events.FileSystemEventHandler):
     EVENTS_WATCHED = (
         events.EVENT_TYPE_CREATED,
         events.EVENT_TYPE_DELETED,
@@ -46,7 +47,7 @@ class EventHandler(events.FileSystemEventHandler, ManagerAccessMixin):
 
     @cached_property
     def _extensions_to_watch(self) -> list[str]:
-        return [".py", *self.compiler_manager.registered_compilers.keys()]
+        return [".py", *access.compiler_manager.registered_compilers.keys()]
 
     def _is_path_watched(self, filepath: str) -> bool:
         """

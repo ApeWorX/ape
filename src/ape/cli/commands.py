@@ -1,13 +1,17 @@
 import inspect
-from typing import Any, Optional
+from importlib import import_module
+from typing import TYPE_CHECKING, Any, Optional
 
 import click
 from click import Context
 
-from ape.api import ProviderAPI, ProviderContextManager
 from ape.cli.choices import _NONE_NETWORK, NetworkChoice
 from ape.exceptions import NetworkError
-from ape.utils.basemodel import ManagerAccessMixin
+from ape.utils.basemodel import ManagerAccessMixin as access
+
+if TYPE_CHECKING:
+    from ape.api.networks import ProviderContextManager
+    from ape.api.providers import ProviderAPI
 
 
 def get_param_from_ctx(ctx: Context, param: str) -> Optional[Any]:
@@ -21,7 +25,7 @@ def get_param_from_ctx(ctx: Context, param: str) -> Optional[Any]:
     return None
 
 
-def parse_network(ctx: Context) -> Optional[ProviderContextManager]:
+def parse_network(ctx: Context) -> Optional["ProviderContextManager"]:
     interactive = get_param_from_ctx(ctx, "interactive")
 
     # Handle if already parsed (as when using network-option)
@@ -30,17 +34,18 @@ def parse_network(ctx: Context) -> Optional[ProviderContextManager]:
         return provider.network.use_provider(provider, disconnect_on_exit=not interactive)
 
     provider = get_param_from_ctx(ctx, "network")
-    if provider is not None and isinstance(provider, ProviderAPI):
+    provider_module = import_module("ape.api.providers")
+    if provider is not None and isinstance(provider, provider_module.ProviderAPI):
         return provider.network.use_provider(provider, disconnect_on_exit=not interactive)
 
     elif provider not in (None, _NONE_NETWORK) and isinstance(provider, str):
         # Is using a choice-str network param value instead of the network object instances.
-        return ManagerAccessMixin.network_manager.parse_network_choice(
+        return access.network_manager.parse_network_choice(
             provider, disconnect_on_exit=not interactive
         )
 
     elif provider is None:
-        ecosystem = ManagerAccessMixin.network_manager.default_ecosystem
+        ecosystem = access.network_manager.default_ecosystem
         network = ecosystem.default_network
         if provider_name := network.default_provider_name:
             return network.use_provider(provider_name, disconnect_on_exit=not interactive)
@@ -66,7 +71,8 @@ class ConnectedProviderCommand(click.Command):
 
     def parse_args(self, ctx: Context, args: list[str]) -> list[str]:
         arguments = args  # Renamed for better pdb support.
-        base_type = ProviderAPI if self._use_cls_types else str
+        provider_module = import_module("ape.api.providers")
+        base_type = provider_module.ProviderAPI if self._use_cls_types else str
         if existing_option := next(
             iter(
                 x
@@ -99,7 +105,7 @@ class ConnectedProviderCommand(click.Command):
         else:
             return self._invoke(ctx)
 
-    def _invoke(self, ctx: Context, provider: Optional[ProviderAPI] = None):
+    def _invoke(self, ctx: Context, provider: Optional["ProviderAPI"] = None):
         # Will be put back with correct value if needed.
         # Else, causes issues.
         ctx.params.pop("network", None)

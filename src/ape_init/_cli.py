@@ -4,8 +4,7 @@ from pathlib import Path
 import click
 from click import BadParameter
 
-from ape.cli import ape_cli_context
-from ape.managers.config import CONFIG_FILE_NAME
+from ape.cli.options import ape_cli_context
 from ape.utils._github import github_client
 
 GITIGNORE_CONTENT = """
@@ -73,10 +72,10 @@ def cli(cli_ctx, github):
             git_ignore_path.touch()
             git_ignore_path.write_text(GITIGNORE_CONTENT.lstrip(), encoding="utf8")
 
-        ape_config = project_folder / CONFIG_FILE_NAME
+        ape_config = project_folder / "ape-config.yaml"
         if ape_config.exists():
             cli_ctx.logger.warning(f"'{ape_config}' exists")
         else:
             project_name = click.prompt("Please enter project name")
             ape_config.write_text(f"name: {project_name}\n", encoding="utf8")
-            cli_ctx.logger.success(f"{project_name} is written in {CONFIG_FILE_NAME}")
+            cli_ctx.logger.success(f"{project_name} is written in ape-config.yaml")

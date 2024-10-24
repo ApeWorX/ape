@@ -45,9 +45,9 @@ from ape.utils.basemodel import (
     ManagerAccessMixin,
     _assert_not_ipython_check,
     get_attribute_with_extras,
-    log_instead_of_fail,
     only_raise_attribute_error,
 )
+from ape.utils.misc import log_instead_of_fail
 
 
 class ContractConstructor(ManagerAccessMixin):

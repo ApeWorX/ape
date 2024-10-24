@@ -1,14 +1,14 @@
 import inspect
 from collections.abc import Callable
 from functools import partial
+from importlib import import_module
 from pathlib import Path
-from typing import NoReturn, Optional, Union
+from typing import Any, NoReturn, Optional, Union
 
 import click
 from click import Option
 from ethpm_types import ContractType
 
-from ape.api.providers import ProviderAPI
 from ape.cli.choices import (
     _ACCOUNT_TYPE_FILTER,
     _NONE_NETWORK,
@@ -40,6 +40,12 @@ class ApeCliContextObject(ManagerAccessMixin, dict):
     def __repr__(self) -> str:
         # Customizing this because otherwise it uses `dict` repr, which is confusing.
         return f"<{self.__class__.__name__}>"
+
+    def __getattr__(self, item: str) -> Any:
+        try:
+            return self.__getattribute__(item)
+        except AttributeError:
+            return getattr(ManagerAccessMixin, item)
 
     @staticmethod
     def abort(msg: str, base_error: Optional[Exception] = None) -> NoReturn:
@@ -167,7 +173,10 @@ class NetworkOption(Option):
         network = kwargs.pop("network", None)
         provider = kwargs.pop("provider", None)
         default = kwargs.pop("default", "auto")
-        base_type = kwargs.pop("base_type", ProviderAPI)
+
+        provider_module = import_module("ape.api.providers")
+        base_type = kwargs.pop("base_type", provider_module.ProviderAPI)
+
         callback = kwargs.pop("callback", None)
 
         # NOTE: If using network_option, this part is skipped
@@ -244,13 +253,7 @@ def network_option(
     def decorator(f):
         # These are the available network object names you can request.
         network_object_names = ("ecosystem", "network", "provider")
-
-        # All kwargs in the defined @click.command().
-        command_signature = inspect.signature(f)
-        command_kwargs = [x.name for x in command_signature.parameters.values()]
-
-        # Any combination of ["ecosystem", "network", "provider"]
-        requested_network_objects = [x for x in command_kwargs if x in network_object_names]
+        requested_network_objects = _get_requested_networks(f, network_object_names)
 
         # When using network_option, handle parsing now so we can pass to
         # callback outside of command context.
@@ -258,54 +261,10 @@ def network_option(
 
         def callback(ctx, param, value):
             keep_as_choice_str = param.type.base_type is str
-            use_default = value is None and default == "auto"
-
-            if not keep_as_choice_str and use_default:
-                default_ecosystem = ManagerAccessMixin.network_manager.default_ecosystem
-                provider_obj = default_ecosystem.default_network.default_provider
-
-            elif value is None or keep_as_choice_str:
-                provider_obj = None
-
-            elif isinstance(value, ProviderAPI):
-                provider_obj = value
-
-            elif value == _NONE_NETWORK:
-                provider_obj = None
-
-            else:
-                network_ctx = ManagerAccessMixin.network_manager.parse_network_choice(value)
-                provider_obj = network_ctx._provider
+            provider_obj = _get_provider(value, default, keep_as_choice_str)
 
             if provider_obj:
-                choice_classes = {
-                    "ecosystem": provider_obj.network.ecosystem,
-                    "network": provider_obj.network,
-                    "provider": provider_obj,
-                }
-
-                # Set the actual values in the callback.
-                for item in requested_network_objects:
-                    instance = choice_classes[item]
-                    ctx.params[item] = instance
-
-                if isinstance(ctx.command, ConnectedProviderCommand):
-                    # Place all values, regardless of request in
-                    # the context. This helps the Ape CLI backend.
-                    if ctx.obj is None:
-                        # Happens when using commands that don't use the
-                        # Ape context or any context.
-                        ctx.obj = {}
-
-                    for choice, obj in choice_classes.items():
-                        try:
-                            ctx.obj[choice] = obj
-                        except Exception:
-                            # This would only happen if using an unusual context object.
-                            raise Abort(
-                                "Cannot use connected-provider command type(s) "
-                                "with non key-settable context object."
-                            )
+                _update_context_with_network(ctx, provider_obj, requested_network_objects)
 
             elif keep_as_choice_str:
                 # Add raw choice to object context.
@@ -318,27 +277,7 @@ def network_option(
 
             return value if user_callback is None else user_callback(ctx, param, value)
 
-        # Prevent argument errors but initializing callback to use None placeholders.
-        partial_kwargs: dict = {}
-        for arg_type in network_object_names:
-            if arg_type in requested_network_objects:
-                partial_kwargs[arg_type] = None
-
-        if partial_kwargs:
-            wrapped_f = partial(f, **partial_kwargs)
-
-            # NOTE: The following is needed for click internals.
-            wrapped_f.__name__ = f.__name__  # type: ignore[attr-defined]
-
-            # NOTE: The following is needed for sphinx internals.
-            wrapped_f.__doc__ = f.__doc__
-
-            # Add other click parameters.
-            if hasattr(f, "__click_params__"):
-                wrapped_f.__click_params__ = f.__click_params__  # type: ignore[attr-defined]
-        else:
-            # No network kwargs are used. No need for partial wrapper.
-            wrapped_f = f
+        wrapped_f = _wrap_network_function(network_object_names, requested_network_objects, f)
 
         # Use NetworkChoice option.
         kwargs["type"] = None
@@ -363,6 +302,95 @@ def network_option(
         )(wrapped_f)
 
     return decorator
+
+
+def _get_requested_networks(function, network_object_names):
+    command_signature = inspect.signature(function)
+    command_kwargs = [x.name for x in command_signature.parameters.values()]
+
+    # Any combination of ["ecosystem", "network", "provider"]
+    return [x for x in command_kwargs if x in network_object_names]
+
+
+def _update_context_with_network(ctx, provider, requested_network_objects):
+    choice_classes = {
+        "ecosystem": provider.network.ecosystem,
+        "network": provider.network,
+        "provider": provider,
+    }
+
+    # Set the actual values in the callback.
+    for item in requested_network_objects:
+        instance = choice_classes[item]
+        ctx.params[item] = instance
+
+    if isinstance(ctx.command, ConnectedProviderCommand):
+        # Place all values, regardless of request in
+        # the context. This helps the Ape CLI backend.
+        if ctx.obj is None:
+            # Happens when using commands that don't use the
+            # Ape context or any context.
+            ctx.obj = {}
+
+        for choice, obj in choice_classes.items():
+            try:
+                ctx.obj[choice] = obj
+            except Exception:
+                # This would only happen if using an unusual context object.
+                raise Abort(
+                    "Cannot use connected-provider command type(s) "
+                    "with non key-settable context object."
+                )
+
+
+def _get_provider(value, default, keep_as_choice_str):
+    use_default = value is None and default == "auto"
+    provider_module = import_module("ape.api.providers")
+    ProviderAPI = provider_module.ProviderAPI
+
+    if not keep_as_choice_str and use_default:
+        default_ecosystem = ManagerAccessMixin.network_manager.default_ecosystem
+        return default_ecosystem.default_network.default_provider
+
+    elif value is None or keep_as_choice_str:
+        return None
+
+    elif isinstance(value, ProviderAPI):
+        return value
+
+    elif value == _NONE_NETWORK:
+        return None
+
+    else:
+        network_ctx = ManagerAccessMixin.network_manager.parse_network_choice(value)
+        return network_ctx._provider
+
+
+def _wrap_network_function(network_object_names, requested_network_objects, function):
+    # Prevent argument errors but initializing callback to use None placeholders.
+    partial_kwargs: dict = {}
+    for arg_type in network_object_names:
+        if arg_type in requested_network_objects:
+            partial_kwargs[arg_type] = None
+
+    if partial_kwargs:
+        wrapped_f = partial(function, **partial_kwargs)
+
+        # NOTE: The following is needed for click internals.
+        wrapped_f.__name__ = function.__name__  # type: ignore[attr-defined]
+
+        # NOTE: The following is needed for sphinx internals.
+        wrapped_f.__doc__ = function.__doc__
+
+        # Add other click parameters.
+        if hasattr(function, "__click_params__"):
+            wrapped_f.__click_params__ = function.__click_params__  # type: ignore[attr-defined]
+
+        return wrapped_f
+
+    else:
+        # No network kwargs are used. No need for partial wrapper.
+        return function
 
 
 def skip_confirmation_option(help="") -> Callable:

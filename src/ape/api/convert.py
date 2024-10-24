@@ -1,6 +1,7 @@
+from abc import abstractmethod
 from typing import Any, Generic, TypeVar
 
-from ape.utils import BaseInterfaceModel, abstractmethod
+from ape.utils.basemodel import BaseInterfaceModel
 
 ConvertedType = TypeVar("ConvertedType")
 

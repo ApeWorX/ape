@@ -1,6 +1,6 @@
 from collections.abc import Iterator
 
-from ape.api import DependencyAPI, ProjectAPI
+from ape.api.projects import DependencyAPI, ProjectAPI
 
 from .pluggy_patch import PluginType, hookspec
 

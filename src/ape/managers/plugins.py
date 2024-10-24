@@ -1,5 +1,6 @@
-import importlib
 from collections.abc import Generator, Iterable, Iterator
+from functools import cached_property
+from importlib import import_module
 from typing import Any, Optional
 
 from ape.exceptions import ApeAttributeError
@@ -97,8 +98,8 @@ class PluginManager:
         hook_fn = getattr(pluggy_manager.hook, attr_name)
         hookimpls = hook_fn.get_hookimpls()
 
-        def get_plugin_name_and_hookfn(h):
-            return h.plugin_name, getattr(h.plugin, attr_name)()
+        def get_plugin_name_and_hookfn(hook):
+            return hook.plugin_name, getattr(hook.plugin, attr_name)()
 
         for plugin_name, results in map(get_plugin_name_and_hookfn, hookimpls):
             # NOTE: Some plugins return a tuple and some return iterators
@@ -113,10 +114,10 @@ class PluginManager:
                     if validated_plugin:
                         yield validated_plugin
 
-    @property
+    @cached_property
     def registered_plugins(self) -> set[str]:
-        self._register_plugins()
-        return {x[0] for x in pluggy_manager.list_name_plugin()}
+        plugins = list({n.replace("-", "_") for n in get_plugin_dists()})
+        return {*plugins, *CORE_PLUGINS}
 
     def _register_plugins(self):
         if self.__registered:
@@ -127,7 +128,7 @@ class PluginManager:
 
         for module_name in plugin_modules:
             try:
-                module = importlib.import_module(module_name)
+                module = import_module(module_name)
                 pluggy_manager.register(module)
             except Exception as err:
                 if module_name in CORE_PLUGINS or module_name == "ape":

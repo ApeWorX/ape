@@ -477,7 +477,7 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
         self.__pydantic_extra__ = self.__pydantic_extra__ or {}
         return self.__pydantic_extra__
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "<ape-config.yaml>"
 
     def __str__(self) -> str:

@@ -1,22 +1,25 @@
 import difflib
 import time
 from collections.abc import Iterator
+from functools import cached_property, singledispatchmethod
 from itertools import tee
 from typing import Optional
 
-from ape.api import QueryAPI, QueryType, ReceiptAPI, TransactionAPI
 from ape.api.query import (
     AccountTransactionQuery,
     BaseInterfaceModel,
     BlockQuery,
     BlockTransactionQuery,
     ContractEventQuery,
+    QueryAPI,
+    QueryType,
 )
+from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.contracts.base import ContractLog, LogFilter
 from ape.exceptions import QueryEngineError
 from ape.logging import logger
 from ape.plugins._utils import clean_plugin_name
-from ape.utils import ManagerAccessMixin, cached_property, singledispatchmethod
+from ape.utils.basemodel import ManagerAccessMixin
 
 
 class DefaultQueryProvider(QueryAPI):

@@ -2,7 +2,7 @@ import sys
 from pathlib import Path
 from typing import Optional
 
-from ape.api import EcosystemAPI
+from ape.api.networks import EcosystemAPI
 from ape.exceptions import ConfigError
 from ape.pytest.config import ConfigWrapper
 from ape.pytest.coverage import CoverageTracker

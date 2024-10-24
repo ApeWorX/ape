@@ -15,9 +15,9 @@ from rich.box import SIMPLE
 from rich.console import Console as RichConsole
 from rich.table import Table
 
-from ape.api import BlockAPI, ReceiptAPI
 from ape.api.address import BaseAddress
 from ape.api.networks import NetworkAPI, ProxyInfoAPI
+from ape.api.providers import BlockAPI
 from ape.api.query import (
     AccountTransactionQuery,
     BlockQuery,
@@ -26,6 +26,7 @@ from ape.api.query import (
     extract_fields,
     validate_and_expand_columns,
 )
+from ape.api.transactions import ReceiptAPI
 from ape.contracts import ContractContainer, ContractInstance
 from ape.exceptions import (
     APINotImplementedError,

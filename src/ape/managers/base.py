@@ -1,4 +1,5 @@
-from ape.utils import ManagerAccessMixin, raises_not_implemented
+from ape.utils.basemodel import ManagerAccessMixin
+from ape.utils.misc import raises_not_implemented
 
 
 class BaseManager(ManagerAccessMixin):

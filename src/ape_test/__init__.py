@@ -1,28 +1,42 @@
+from importlib import import_module
+
 from ape import plugins
-from ape_test.accounts import TestAccount, TestAccountContainer
-from ape_test.config import (
-    ApeTestConfig,
-    CoverageConfig,
-    CoverageReportsConfig,
-    GasConfig,
-    GasExclusion,
-)
-from ape_test.provider import EthTesterProviderConfig, LocalProvider
 
 
 @plugins.register(plugins.Config)
 def config_class():
-    return ApeTestConfig
+    module = import_module("ape_test.config")
+    return module.ApeTestConfig
 
 
 @plugins.register(plugins.AccountPlugin)
 def account_types():
-    return TestAccountContainer, TestAccount
+    module = import_module("ape_test.accounts")
+    return module.TestAccountContainer, module.TestAccount
 
 
 @plugins.register(plugins.ProviderPlugin)
 def providers():
-    yield "ethereum", "local", LocalProvider
+    module = import_module("ape_test.provider")
+    yield "ethereum", "local", module.LocalProvider
+
+
+def __getattr__(name: str):
+    if name in ("TestAccountContainer", "TestAccount"):
+        module = import_module("ape_test.accounts")
+    elif name in (
+        "EthTesterProviderConfig",
+        "GasExclusion",
+        "GasConfig",
+        "CoverageReportsConfig",
+        "CoverageConfig",
+        "ApeTestConfig",
+    ):
+        module = import_module("ape_test.config")
+    else:
+        module = import_module("ape_test.provider")
+
+    return getattr(module, name)
 
 
 __all__ = [

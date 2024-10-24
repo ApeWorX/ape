@@ -1,13 +1,19 @@
+from importlib import import_module
+from typing import TYPE_CHECKING
+
 import click
-import pandas as pd
 
-from ape.cli import ConnectedProviderCommand, network_option
+from ape.cli.commands import ConnectedProviderCommand
+from ape.cli.options import network_option
 from ape.logging import logger
-from ape.utils import ManagerAccessMixin
+
+if TYPE_CHECKING:
+    from ape_cache.query import CacheQueryProvider
 
 
-def get_engine():
-    return ManagerAccessMixin.query_manager.engines["cache"]
+def get_engine() -> "CacheQueryProvider":
+    basemodel = import_module("ape.utils.basemodel")
+    return basemodel.ManagerAccessMixin.query_manager.engines["cache"]
 
 
 @click.group(short_help="Query from caching database")
@@ -51,6 +57,7 @@ def query(query_str):
     with get_engine().database_connection as conn:
         results = conn.execute(query_str).fetchall()
         if results:
+            pd = import_module("pandas")
             click.echo(pd.DataFrame(results))
 
 

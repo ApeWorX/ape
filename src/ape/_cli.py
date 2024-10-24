@@ -4,6 +4,7 @@ import sys
 import warnings
 from collections.abc import Iterable
 from gettext import gettext
+from importlib import import_module
 from importlib.metadata import entry_points
 from pathlib import Path
 from typing import Any, Optional
@@ -13,11 +14,10 @@ import rich
 import yaml
 from click import Context
 
-from ape.cli import ape_cli_context
+from ape.cli.options import ape_cli_context
 from ape.exceptions import Abort, ApeException, ConfigError, handle_ape_exception
 from ape.logging import logger
-from ape.plugins._utils import PluginMetadataList, clean_plugin_name
-from ape.utils.basemodel import ManagerAccessMixin
+from ape.utils.basemodel import ManagerAccessMixin as access
 
 _DIFFLIB_CUT_OFF = 0.6
 
@@ -30,16 +30,16 @@ def display_config(ctx, param, value):
     click.echo("# Current configuration")
 
     # NOTE: Using json-mode as yaml.dump requires JSON-like structure.
-    model = ManagerAccessMixin.local_project.config_manager.model_dump(mode="json")
+    model = access.local_project.config.model_dump(mode="json")
 
     click.echo(yaml.dump(model))
-
     ctx.exit()  # NOTE: Must exit to bypass running ApeCLI
 
 
 def _validate_config():
+    project = access.local_project
     try:
-        _ = ManagerAccessMixin.local_project.config
+        _ = project.config
     except ConfigError as err:
         rich.print(err)
         # Exit now to avoid weird problems.
@@ -68,40 +68,40 @@ class ApeCLI(click.MultiCommand):
 
             commands.append((subcommand, cmd))
 
-        # Allow for 3 times the default spacing.
-        if len(commands):
-            limit = formatter.width - 6 - max(len(cmd[0]) for cmd in commands)
+        if not commands:
+            return None
 
-            # Split the commands into 3 sections.
-            sections: dict[str, list[tuple[str, str]]] = {
-                "Core": [],
-                "Plugin": [],
-                "3rd-Party Plugin": [],
-            }
+        limit = formatter.width - 6 - max(len(cmd[0]) for cmd in commands)
 
-            pl_metadata = PluginMetadataList.load(
-                ManagerAccessMixin.plugin_manager, include_available=False
-            )
+        # Split the commands into 3 sections.
+        sections: dict[str, list[tuple[str, str]]] = {
+            "Core": [],
+            "Plugin": [],
+            "3rd-Party Plugin": [],
+        }
+        plugin_utils = import_module("ape.plugins._utils")
+        metadata_cls = plugin_utils.PluginMetadataList
+        plugin_manager = access.plugin_manager
+        pl_metadata = metadata_cls.load(plugin_manager, include_available=False)
+        for cli_name, cmd in commands:
+            help = cmd.get_short_help_str(limit)
+            plugin = pl_metadata.get_plugin(cli_name, check_available=False)
+            if plugin is None:
+                continue
 
-            for cli_name, cmd in commands:
-                help = cmd.get_short_help_str(limit)
-                plugin = pl_metadata.get_plugin(cli_name)
-                if not plugin:
-                    continue
+            if plugin.in_core:
+                sections["Core"].append((cli_name, help))
+            elif plugin.is_installed and not plugin.is_third_party:
+                sections["Plugin"].append((cli_name, help))
+            else:
+                sections["3rd-Party Plugin"].append((cli_name, help))
 
-                if plugin.in_core:
-                    sections["Core"].append((cli_name, help))
-                elif plugin.is_installed and not plugin.is_third_party:
-                    sections["Plugin"].append((cli_name, help))
-                else:
-                    sections["3rd-Party Plugin"].append((cli_name, help))
+        for title, rows in sections.items():
+            if not rows:
+                continue
 
-            for title, rows in sections.items():
-                if not rows:
-                    continue
-
-                with formatter.section(gettext(f"{title} Commands")):
-                    formatter.write_dl(rows)
+            with formatter.section(gettext(f"{title} Commands")):
+                formatter.write_dl(rows)
 
     def invoke(self, ctx) -> Any:
         try:
@@ -158,20 +158,18 @@ class ApeCLI(click.MultiCommand):
                 warnings.simplefilter("ignore")
                 eps = _entry_points.get(self._CLI_GROUP_NAME, [])  # type: ignore
 
-        self._commands = {clean_plugin_name(cmd.name): cmd.load for cmd in eps}
+        commands = {cmd.name.replace("_", "-").replace("ape-", ""): cmd.load for cmd in eps}
+        self._commands = {k: commands[k] for k in sorted(commands)}
         return self._commands
 
     def list_commands(self, ctx) -> list[str]:
-        return list(sorted(self.commands))
+        return [k for k in self.commands]
 
     def get_command(self, ctx, name) -> Optional[click.Command]:
-        if name in self.commands:
-            try:
-                return self.commands[name]()
-            except Exception as err:
-                logger.warn_from_exception(
-                    err, f"Unable to load CLI endpoint for plugin 'ape_{name}'"
-                )
+        try:
+            return self.commands[name]()
+        except Exception as err:
+            logger.warn_from_exception(err, f"Unable to load CLI endpoint for plugin 'ape_{name}'")
 
         # NOTE: don't return anything so Click displays proper error
         return None

@@ -1,6 +1,6 @@
 from collections.abc import Iterator
 
-from ape.api import ConverterAPI
+from ape.api.convert import ConverterAPI
 
 from .pluggy_patch import PluginType, hookspec
 

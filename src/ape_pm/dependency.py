@@ -14,9 +14,9 @@ from ape.api.projects import DependencyAPI
 from ape.exceptions import ProjectError
 from ape.logging import logger
 from ape.managers.project import _version_to_options
-from ape.utils import ManagerAccessMixin, clean_path, get_package_path, in_tempdir
 from ape.utils._github import _GithubClient, github_client
-from ape.utils.os import extract_archive
+from ape.utils.basemodel import ManagerAccessMixin
+from ape.utils.os import clean_path, extract_archive, get_package_path, in_tempdir
 
 
 def _fetch_local(src: Path, destination: Path, config_override: Optional[dict] = None):
@@ -197,7 +197,7 @@ class GithubDependency(DependencyAPI):
 
         return _uri
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         cls_name = getattr(type(self), "__name__", GithubDependency.__name__)
         return f"<{cls_name} github={self.github}>"
 

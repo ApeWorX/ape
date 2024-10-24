@@ -9,7 +9,6 @@ from ethpm_types import PackageManifest
 
 from ape.api.config import ApeConfig
 from ape.managers.base import BaseManager
-from ape.utils import create_tempdir, in_tempdir, log_instead_of_fail
 from ape.utils.basemodel import (
     ExtraAttributesMixin,
     ExtraModelAttributes,
@@ -17,6 +16,8 @@ from ape.utils.basemodel import (
     get_item_with_extras,
     only_raise_attribute_error,
 )
+from ape.utils.misc import log_instead_of_fail
+from ape.utils.os import create_tempdir, in_tempdir
 from ape.utils.rpc import RPCHeaders
 
 CONFIG_FILE_NAME = "ape-config.yaml"

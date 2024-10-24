@@ -6,9 +6,8 @@ from typing import Any
 import click
 from packaging.version import Version
 
-from ape.cli import ape_cli_context, skip_confirmation_option
+from ape.cli.options import ape_cli_context, skip_confirmation_option
 from ape.logging import logger
-from ape.managers.config import CONFIG_FILE_NAME
 from ape.plugins._utils import (
     PIP_COMMAND,
     ModifyPluginResultHandler,
@@ -35,8 +34,17 @@ def plugins_argument():
     """
 
     def load_from_file(ctx, file_path: Path) -> list[PluginMetadata]:
-        if file_path.is_dir() and (file_path / CONFIG_FILE_NAME).is_file():
-            file_path = file_path / CONFIG_FILE_NAME
+        if file_path.is_dir():
+            name_options = (
+                "ape-config.yaml",
+                "ape-config.yml",
+                "ape-config.json",
+                "pyproject.toml",
+            )
+            for option in name_options:
+                if (file_path / option).is_file():
+                    file_path = file_path / option
+                    break
 
         if file_path.is_file():
             config = load_config(file_path)

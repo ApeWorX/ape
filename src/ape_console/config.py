@@ -1,4 +1,4 @@
-from ape.api import PluginConfig
+from ape.api.config import PluginConfig
 
 
 class ConsoleConfig(PluginConfig):

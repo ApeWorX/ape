@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from collections.abc import Iterable, Iterator
 from functools import cached_property
 from pathlib import Path
@@ -13,12 +14,8 @@ from ape.api.trace import TraceAPI
 from ape.exceptions import APINotImplementedError, ContractLogicError
 from ape.types.coverage import ContractSourceCoverage
 from ape.types.trace import SourceTraceback
-from ape.utils import (
-    BaseInterfaceModel,
-    abstractmethod,
-    log_instead_of_fail,
-    raises_not_implemented,
-)
+from ape.utils.basemodel import BaseInterfaceModel
+from ape.utils.misc import log_instead_of_fail, raises_not_implemented
 
 if TYPE_CHECKING:
     from ape.managers.project import ProjectManager

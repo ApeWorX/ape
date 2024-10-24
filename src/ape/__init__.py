@@ -1,56 +1,13 @@
 import signal
 import threading
+from typing import Any
 
 if threading.current_thread() is threading.main_thread():
     # If we are in the main thread, we can safely set the signal handler
     signal.signal(signal.SIGINT, lambda s, f: _sys.exit(130))
 
 import sys as _sys
-
-from ape.managers.project import ProjectManager as Project
-from ape.pytest.contextmanagers import RevertsContextManager
-from ape.utils import ManagerAccessMixin as _ManagerAccessMixin
-
-# Wiring together the application
-
-config = _ManagerAccessMixin.config_manager
-"""
-The active configs for the current project. See :class:`ape.managers.config.ConfigManager`.
-"""
-
-# Main types we export for the user
-compilers = _ManagerAccessMixin.compiler_manager
-"""Manages compilers for the current project. See
-:class:`ape.managers.compilers.CompilerManager`."""
-
-networks = _ManagerAccessMixin.network_manager
-"""Manages the networks for the current project. See
-:class:`ape.managers.networks.NetworkManager`."""
-
-chain = _ManagerAccessMixin.chain_manager
-"""
-The current connected blockchain; requires an active provider.
-Useful for development purposes, such as controlling the state of the blockchain.
-Also handy for querying data about the chain and managing local caches.
-"""
-
-accounts = _ManagerAccessMixin.account_manager
-"""Manages accounts for the current project. See :class:`ape.managers.accounts.AccountManager`."""
-
-project = _ManagerAccessMixin.local_project
-"""The currently active project. See :class:`ape.managers.project.ProjectManager`."""
-
-Contract = chain.contracts.instance_at
-"""User-facing class for instantiating contracts."""
-
-convert = _ManagerAccessMixin.conversion_manager.convert
-"""Conversion utility function. See :class:`ape.managers.converters.ConversionManager`."""
-
-reverts = RevertsContextManager
-"""
-Catch and expect contract logic reverts. Resembles ``pytest.raises()``.
-"""
-
+from importlib import import_module
 
 __all__ = [
     "accounts",
@@ -64,3 +21,34 @@ __all__ = [
     "Project",  # So you can load other projects
     "reverts",
 ]
+
+
+def __getattr__(name: str) -> Any:
+    if name not in __all__:
+        raise AttributeError(name)
+
+    elif name == "reverts":
+        contextmanagers = import_module("ape.pytest.contextmanagers")
+        return contextmanagers.RevertsContextManager
+
+    else:
+        access = import_module("ape.managers.project").ManagerAccessMixin
+        if name == "Contract":
+            return access.chain_manager.contracts.instance_at
+
+        elif name == "Project":
+            return access.Project
+
+        elif name == "convert":
+            return access.conversion_manager.convert
+
+        # The rest are managers; we can derive the name.
+        key = name
+        if name == "project":
+            key = "local_project"
+        elif name.endswith("s"):
+            key = f"{name[:-1]}_manager"
+        else:
+            key = f"{key}_manager"
+
+        return getattr(access, key)

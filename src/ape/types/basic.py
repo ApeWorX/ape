@@ -6,8 +6,8 @@ from pydantic import BeforeValidator
 
 
 def _hex_int_validator(value, info):
-    basemodel = import_module("ape.utils.basemodel")
-    convert = basemodel.ManagerAccessMixin.conversion_manager.convert
+    access = import_module("ape.utils.basemodel").ManagerAccessMixin
+    convert = access.conversion_manager.convert
     return convert(value, int)
 
 
