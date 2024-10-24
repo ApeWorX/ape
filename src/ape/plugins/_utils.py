@@ -388,7 +388,7 @@ class PluginMetadata(BaseInterfaceModel):
 
         return self.module_name in _get_available_plugins()
 
-    def __str__(self):
+    def __str__(self) -> str:
         """
         A string like ``trezor==0.4.0``.
         """

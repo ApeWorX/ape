@@ -671,7 +671,7 @@ class SubprocessTimeoutError(SubprocessError):
     def __exit__(self, exc_type, exc_val, exc_tb):
         return False
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self._seconds in [None, ""]:
             return ""
 

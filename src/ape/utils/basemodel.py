@@ -39,7 +39,7 @@ class classproperty(object):
         return self.fn(owner)
 
 
-class manager_access:
+class manager_access(property):
     _cache = None
 
     def __init__(self, fn):
@@ -206,7 +206,7 @@ class ManagerAccessMixin:
         plugins = import_module("ape.managers.plugins")
         return plugins.PluginManager()
 
-    @manager_access
+    @classproperty
     def Project(cls) -> type["ProjectManager"]:
         """
         The ``Project`` factory class for creating

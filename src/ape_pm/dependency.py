@@ -197,7 +197,7 @@ class GithubDependency(DependencyAPI):
 
         return _uri
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         cls_name = getattr(type(self), "__name__", GithubDependency.__name__)
         return f"<{cls_name} github={self.github}>"
 
