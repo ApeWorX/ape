@@ -7,6 +7,7 @@ from enum import Enum
 from functools import cached_property
 from typing import IO, Any, Optional, Union
 
+from eth_pydantic_types import HexStr
 from eth_utils import is_0x_prefixed, to_hex
 from ethpm_types import ContractType, MethodABI
 from evm_trace import (
@@ -447,7 +448,7 @@ class Trace(TraceAPI):
 
 
 class TransactionTrace(Trace):
-    transaction_hash: str
+    transaction_hash: HexStr
     debug_trace_transaction_parameters: dict = {"enableMemory": True}
     _frames: list[dict] = []
 

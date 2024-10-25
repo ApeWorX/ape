@@ -134,8 +134,9 @@ def test_get_gas_report_with_sub_calls(simple_trace_cls):
     assert len(actual) > 1  # Sub-contract calls!
 
 
-def test_transaction_trace_create(vyper_contract_instance):
-    tx_hash = vyper_contract_instance.creation_metadata.txn_hash
+@pytest.mark.parametrize("txn_hash_callback", (str, HexBytes))
+def test_transaction_trace_create(vyper_contract_instance, txn_hash_callback):
+    tx_hash = txn_hash_callback(vyper_contract_instance.creation_metadata.txn_hash)
     trace = TransactionTrace(transaction_hash=tx_hash)
     actual = f"{trace}"
     expected = r"VyperContract\.__new__\(num=0\) \[\d+ gas\]"
