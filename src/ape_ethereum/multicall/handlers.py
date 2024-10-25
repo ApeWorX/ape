@@ -6,7 +6,7 @@ from typing import Any, Optional, Union
 from eth_pydantic_types import HexBytes
 from ethpm_types import ContractType
 
-from ape.api import ReceiptAPI, TransactionAPI
+from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.contracts.base import (
     ContractCallHandler,
     ContractInstance,

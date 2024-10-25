@@ -35,17 +35,17 @@ class classproperty(object):
     def __init__(self, fn: Callable):
         self.fn = fn
 
-    def __get__(self, obj, owner):
+    def __get__(self, obj, owner) -> Any:
         return self.fn(owner)
 
 
-class manager_access:
+class manager_access(property):
     _cache = None
 
     def __init__(self, fn):
         self.fn = fn
 
-    def __get__(self, obj, owner):
+    def __get__(self, obj, owner) -> Any:  # type: ignore[override]
         if self._cache is None:
             self._cache = self.fn(owner)
 
@@ -206,7 +206,7 @@ class ManagerAccessMixin:
         plugins = import_module("ape.managers.plugins")
         return plugins.PluginManager()
 
-    @manager_access
+    @classproperty
     def Project(cls) -> type["ProjectManager"]:
         """
         The ``Project`` factory class for creating
@@ -504,6 +504,10 @@ def get_attribute_with_extras(obj: Any, name: str) -> Any:
     if res is not None:
         _recursion_checker.reset(name)
         return res
+
+    if name.startswith("__") and name.endswith("__"):
+        # Don't seek double-dunderized definitions from extras.
+        raise AttributeError(name)
 
     # NOTE: Do not check extras within the error handler to avoid
     #   errors occurring within an exception handler (Python shows that differently).

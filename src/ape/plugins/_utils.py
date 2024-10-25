@@ -14,10 +14,9 @@ from pydantic import field_validator, model_validator
 
 from ape.exceptions import PluginVersionError
 from ape.logging import logger
-from ape.utils import BaseInterfaceModel, get_package_version, log_instead_of_fail
 from ape.utils._github import github_client
-from ape.utils.basemodel import BaseModel
-from ape.utils.misc import _get_distributions
+from ape.utils.basemodel import BaseInterfaceModel, BaseModel
+from ape.utils.misc import _get_distributions, get_package_version, log_instead_of_fail
 from ape.version import version as ape_version_str
 
 # Plugins maintained OSS by ApeWorX (and trusted)
@@ -215,7 +214,7 @@ class PluginMetadataList(BaseModel):
         yield from self.installed.plugins.values()
         yield from self.third_party.plugins.values()
 
-    def get_plugin(self, name: str) -> Optional["PluginMetadata"]:
+    def get_plugin(self, name: str, check_available: bool = True) -> Optional["PluginMetadata"]:
         name = name if name.startswith("ape_") else f"ape_{name}"
         if name in self.core.plugins:
             return self.core.plugins[name]
@@ -223,7 +222,7 @@ class PluginMetadataList(BaseModel):
             return self.installed.plugins[name]
         elif name in self.third_party.plugins:
             return self.third_party.plugins[name]
-        elif name in self.available.plugins:
+        elif check_available and name in self.available.plugins:
             return self.available.plugins[name]
 
         return None
@@ -389,7 +388,7 @@ class PluginMetadata(BaseInterfaceModel):
 
         return self.module_name in _get_available_plugins()
 
-    def __str__(self):
+    def __str__(self) -> str:
         """
         A string like ``trezor==0.4.0``.
         """

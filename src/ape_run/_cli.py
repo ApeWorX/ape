@@ -10,11 +10,11 @@ from typing import Any, Union
 import click
 from click import Command, Context, Option
 
-from ape.cli import ConnectedProviderCommand, verbosity_option
-from ape.cli.options import _VERBOSITY_VALUES, _create_verbosity_kwargs
+from ape.cli.commands import ConnectedProviderCommand
+from ape.cli.options import _VERBOSITY_VALUES, _create_verbosity_kwargs, verbosity_option
 from ape.exceptions import ApeException, handle_ape_exception
 from ape.logging import logger
-from ape.utils.basemodel import ManagerAccessMixin
+from ape.utils.basemodel import ManagerAccessMixin as access
 from ape.utils.os import get_relative_path, use_temp_sys_path
 from ape_console._cli import console
 
@@ -60,7 +60,7 @@ def run_script_module(script_path: Path):
     return run_module(mod_name)
 
 
-class ScriptCommand(click.MultiCommand, ManagerAccessMixin):
+class ScriptCommand(click.MultiCommand):
     def __init__(self, *args, **kwargs):
         if "result_callback" not in kwargs:
             kwargs["result_callback"] = self.result_callback
@@ -78,9 +78,9 @@ class ScriptCommand(click.MultiCommand, ManagerAccessMixin):
                 # Print the exception trace and then launch the console
                 # Attempt to use source-traceback style printing.
                 network_value = (
-                    ctx.params.get("network") or self.network_manager.default_ecosystem.name
+                    ctx.params.get("network") or access.network_manager.default_ecosystem.name
                 )
-                with self.network_manager.parse_network_choice(
+                with access.network_manager.parse_network_choice(
                     network_value, disconnect_on_exit=False
                 ):
                     path = ctx.obj.local_project.path
@@ -95,7 +95,7 @@ class ScriptCommand(click.MultiCommand, ManagerAccessMixin):
                 raise
 
     def _get_command(self, filepath: Path) -> Union[click.Command, click.Group, None]:
-        relative_filepath = get_relative_path(filepath, ManagerAccessMixin.local_project.path)
+        relative_filepath = get_relative_path(filepath, access.local_project.path)
 
         # First load the code module by compiling it
         # NOTE: This does not execute the module
@@ -175,10 +175,10 @@ class ScriptCommand(click.MultiCommand, ManagerAccessMixin):
 
     @property
     def commands(self) -> dict[str, Union[click.Command, click.Group]]:
-        if not self.local_project.scripts_folder.is_dir():
+        if not access.local_project.scripts_folder.is_dir():
             return {}
 
-        return self._get_cli_commands(self.local_project.scripts_folder)
+        return self._get_cli_commands(access.local_project.scripts_folder)
 
     def _get_cli_commands(self, base_path: Path) -> dict:
         commands: dict[str, Command] = {}
@@ -225,7 +225,7 @@ class ScriptCommand(click.MultiCommand, ManagerAccessMixin):
     def _launch_console(self):
         trace = inspect.trace()
         trace_frames = [
-            x for x in trace if x.filename.startswith(str(self.local_project.scripts_folder))
+            x for x in trace if x.filename.startswith(str(access.local_project.scripts_folder))
         ]
         if not trace_frames:
             # Error from Ape internals; avoid launching console.
@@ -247,7 +247,7 @@ class ScriptCommand(click.MultiCommand, ManagerAccessMixin):
             if frame:
                 del frame
 
-        return console(project=self.local_project, extra_locals=extra_locals, embed=True)
+        return console(project=access.local_project, extra_locals=extra_locals, embed=True)
 
 
 @click.command(

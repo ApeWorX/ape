@@ -1,7 +1,7 @@
 from typing import Optional
 
 from ape import plugins
-from ape.api import PluginConfig
+from ape.api.config import PluginConfig
 
 
 class CustomNetwork(PluginConfig):

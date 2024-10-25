@@ -13,13 +13,13 @@ from ape.contracts import ContractContainer
 from ape.exceptions import CompilerError, ContractLogicError, CustomError
 from ape.logging import logger
 from ape.managers.base import BaseManager
-from ape.utils import log_instead_of_fail
 from ape.utils.basemodel import (
     ExtraAttributesMixin,
     ExtraModelAttributes,
     get_attribute_with_extras,
     only_raise_attribute_error,
 )
+from ape.utils.misc import log_instead_of_fail
 from ape.utils.os import get_full_extension
 
 if TYPE_CHECKING:

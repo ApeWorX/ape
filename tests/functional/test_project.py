@@ -17,7 +17,7 @@ from ape.contracts import ContractContainer
 from ape.exceptions import ConfigError, ProjectError
 from ape.logging import LogLevel
 from ape.utils import create_tempdir
-from ape_pm import BrownieProject, FoundryProject
+from ape_pm.project import BrownieProject, FoundryProject
 from tests.conftest import skip_if_plugin_installed
 
 
