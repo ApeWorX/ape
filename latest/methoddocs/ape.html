@@ -127,16 +127,16 @@ data-aria-dark="Switch to auto color mode">
       <i class="i-lucide close"></i>
     </button>
     <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
-<li><a class="reference internal" href="#ape.Contract"><code class="docutils literal notranslate"><span class="pre">Contract()</span></code></a></li>
-<li><a class="reference internal" href="#ape.Project"><code class="docutils literal notranslate"><span class="pre">Project</span></code></a></li>
-<li><a class="reference internal" href="#ape.accounts"><code class="docutils literal notranslate"><span class="pre">accounts</span></code></a></li>
-<li><a class="reference internal" href="#ape.chain"><code class="docutils literal notranslate"><span class="pre">chain</span></code></a></li>
-<li><a class="reference internal" href="#ape.compilers"><code class="docutils literal notranslate"><span class="pre">compilers</span></code></a></li>
-<li><a class="reference internal" href="#ape.config"><code class="docutils literal notranslate"><span class="pre">config</span></code></a></li>
-<li><a class="reference internal" href="#ape.convert"><code class="docutils literal notranslate"><span class="pre">convert()</span></code></a></li>
-<li><a class="reference internal" href="#ape.networks"><code class="docutils literal notranslate"><span class="pre">networks</span></code></a></li>
-<li><a class="reference internal" href="#ape.project"><code class="docutils literal notranslate"><span class="pre">project</span></code></a></li>
-<li><a class="reference internal" href="#ape.reverts"><code class="docutils literal notranslate"><span class="pre">reverts</span></code></a></li>
+<li><a class="reference internal" href="#ape.accounts"><code class="docutils literal notranslate">accounts</span></code></a></li>
+<li><a class="reference internal" href="#ape.chain"><code class="docutils literal notranslate">chain</span></code></a></li>
+<li><a class="reference internal" href="#ape.networks"><code class="docutils literal notranslate">networks</span></code></a></li>
+<li><a class="reference internal" href="#ape.project"><code class="docutils literal notranslate">project</span></code></a></li>
+<li><a class="reference internal" href="#ape.config"><code class="docutils literal notranslate">config</span></code></a></li>
+<li><a class="reference internal" href="#ape.Project"><code class="docutils literal notranslate">Project()</span></code></a></li>
+<li><a class="reference internal" href="#ape.Contract"><code class="docutils literal notranslate">Contract()</span></code></a></li>
+<li><a class="reference internal" href="#ape.convert"><code class="docutils literal notranslate">convert()</span></code></a></li>
+<li><a class="reference internal" href="#ape.compilers"><code class="docutils literal notranslate">compilers</span></code></a></li>
+<li><a class="reference internal" href="#ape.reverts"><code class="docutils literal notranslate">reverts()</span></code></a></li>
 </ul>
 </div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
   </aside>
@@ -162,70 +162,109 @@ data-aria-dark="Switch to auto color mode">
 </div><div class="flex flex-col break-words justify-between">
       <div class="min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
         <article class="yue" role="main">
-          <section id="module-ape">
-<span id="ape"></span><h1>ape<a class="headerlink" href="#module-ape" title="Link to this heading"></a></h1>
-<dl class="py function">
-<dt class="sig sig-object py" id="ape.Contract">
-<span class="sig-prename descclassname"><span class="pre">ape.</span></span><span class="sig-name descname"><span class="pre">Contract</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><span class="pre">ChecksumAddress</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_AddressValidator</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contract_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ContractType</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">txn_hash</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">HexBytes</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">abi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">ConstructorABI</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">FallbackABI</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ReceiveABI</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">MethodABI</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">EventABI</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ErrorABI</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">StructABI</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">UnprocessedABI</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="contracts.html#ape.contracts.base.ContractInstance" title="ape.contracts.base.ContractInstance"><span class="pre">ContractInstance</span></a></span></span><a class="headerlink" href="#ape.Contract" title="Link to this definition"></a></dt>
-<dd><p>User-facing class for instantiating contracts.</p>
+          <section id="ape">
+<h1>ape<a class="headerlink" href="#ape" title="Link to this heading"></a></h1>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.accounts">
+<span class="sig-prename descclassname"><span class="pre">ape.</span></span><span class="sig-name descname"><span class="pre">accounts</span></span><a class="headerlink" href="#ape.accounts" title="Link to this definition"></a></dt>
+<dd><p>Manage accounts.
+See the <a class="reference external" href="../methoddocs/managers.html#ape.managers.accounts.AccountManager">AccountManager</a> for more info.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="ape.Project">
-<span class="sig-prename descclassname"><span class="pre">ape.</span></span><span class="sig-name descname"><span class="pre">Project</span></span><a class="headerlink" href="#ape.Project" title="Link to this definition"></a></dt>
-<dd><p>alias of <a class="reference internal" href="managers.html#ape.managers.project.ProjectManager" title="ape.managers.project.ProjectManager"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProjectManager</span></code></a></p>
-</dd></dl>
-
-<dl class="py data">
-<dt class="sig sig-object py" id="ape.accounts">
-<span class="sig-prename descclassname"><span class="pre">ape.</span></span><span class="sig-name descname"><span class="pre">accounts</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[]</span></em><a class="headerlink" href="#ape.accounts" title="Link to this definition"></a></dt>
-<dd><p>Manages accounts for the current project. See <a class="reference internal" href="managers.html#ape.managers.accounts.AccountManager" title="ape.managers.accounts.AccountManager"><code class="xref py py-class docutils literal notranslate"><span class="pre">ape.managers.accounts.AccountManager</span></code></a>.</p>
-</dd></dl>
-
-<dl class="py data">
 <dt class="sig sig-object py" id="ape.chain">
-<span class="sig-prename descclassname"><span class="pre">ape.</span></span><span class="sig-name descname"><span class="pre">chain</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;ChainManager</span> <span class="pre">(disconnected)&gt;</span></em><a class="headerlink" href="#ape.chain" title="Link to this definition"></a></dt>
-<dd><p>The current connected blockchain; requires an active provider.
-Useful for development purposes, such as controlling the state of the blockchain.
-Also handy for querying data about the chain and managing local caches.</p>
+<span class="sig-prename descclassname"><span class="pre">ape.</span></span><span class="sig-name descname"><span class="pre">chain</span></span><a class="headerlink" href="#ape.chain" title="Link to this definition"></a></dt>
+<dd><p>Manage the blockchain.
+See the <a class="reference external" href="../methoddocs/managers.html#ape.managers.chain.ChainManager">ChainManager</a> for more info.</p>
 </dd></dl>
 
-<dl class="py data">
-<dt class="sig sig-object py" id="ape.compilers">
-<span class="sig-prename descclassname"><span class="pre">ape.</span></span><span class="sig-name descname"><span class="pre">compilers</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;CompilerManager</span> <span class="pre">len(registered_compilers)=0&gt;</span></em><a class="headerlink" href="#ape.compilers" title="Link to this definition"></a></dt>
-<dd><p>Manages compilers for the current project. See
-<a class="reference internal" href="managers.html#ape.managers.compilers.CompilerManager" title="ape.managers.compilers.CompilerManager"><code class="xref py py-class docutils literal notranslate"><span class="pre">ape.managers.compilers.CompilerManager</span></code></a>.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.networks">
+<span class="sig-prename descclassname"><span class="pre">ape.</span></span><span class="sig-name descname"><span class="pre">networks</span></span><a class="headerlink" href="#ape.networks" title="Link to this definition"></a></dt>
+<dd><p>Manage networks.
+See the <a class="reference external" href="../methoddocs/managers.html#ape.managers.networks.NetworkManager">NetworkManager</a> for more info.</p>
 </dd></dl>
 
-<dl class="py data">
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.project">
+<span class="sig-prename descclassname"><span class="pre">ape.</span></span><span class="sig-name descname"><span class="pre">project</span></span><a class="headerlink" href="#ape.project" title="Link to this definition"></a></dt>
+<dd><p>Access the local project.
+See the <a class="reference external" href="../methoddocs/managers.html#ape.managers.project.ProjectManager">ProjectManager</a> for more info.</p>
+</dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="ape.config">
-<span class="sig-prename descclassname"><span class="pre">ape.</span></span><span class="sig-name descname"><span class="pre">config</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;ape-config.yaml&gt;</span></em><a class="headerlink" href="#ape.config" title="Link to this definition"></a></dt>
-<dd><p>The active configs for the current project. See <a class="reference internal" href="managers.html#ape.managers.config.ConfigManager" title="ape.managers.config.ConfigManager"><code class="xref py py-class docutils literal notranslate"><span class="pre">ape.managers.config.ConfigManager</span></code></a>.</p>
+<span class="sig-prename descclassname"><span class="pre">ape.</span></span><span class="sig-name descname"><span class="pre">config</span></span><a class="headerlink" href="#ape.config" title="Link to this definition"></a></dt>
+<dd><p>Access the local project config.
+See the <a class="reference external" href="../methoddocs/managers.html#ape.managers.config.ConfigManager">ConfigManager</a> for more info.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ape.Project">
+<span class="sig-prename descclassname"><span class="pre">ape.</span></span><span class="sig-name descname"><span class="pre">Project</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.Project" title="Link to this definition"></a></dt>
+<dd><p>Instantiate other projects.
+See the <a class="reference external" href="../methoddocs/managers.html#ape.managers.project.ProjectManager">ProjectManager</a> for more info.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Path<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The path to the project.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ape.Contract">
+<span class="sig-prename descclassname"><span class="pre">ape.</span></span><span class="sig-name descname"><span class="pre">Contract</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contract_type</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.Contract" title="Link to this definition"></a></dt>
+<dd><p>Instantiate contract-classes at a given address.
+See the <a class="reference external" href="../methoddocs/contracts.html#ape.contracts.base.ContractInstance">ContractInstance</a> for more info.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Address<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The address of the instance.</p>
+</dd>
+<dt class="field-even">Contract_type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Optionally provide the ABI or contract type data.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ape.convert">
-<span class="sig-prename descclassname"><span class="pre">ape.</span></span><span class="sig-name descname"><span class="pre">convert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">type</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">tuple</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#ape.convert" title="Link to this definition"></a></dt>
-<dd><p>Conversion utility function. See <a class="reference internal" href="managers.html#ape.managers.converters.ConversionManager" title="ape.managers.converters.ConversionManager"><code class="xref py py-class docutils literal notranslate"><span class="pre">ape.managers.converters.ConversionManager</span></code></a>.</p>
-</dd></dl>
-
-<dl class="py data">
-<dt class="sig sig-object py" id="ape.networks">
-<span class="sig-prename descclassname"><span class="pre">ape.</span></span><span class="sig-name descname"><span class="pre">networks</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;NetworkManager&gt;</span></em><a class="headerlink" href="#ape.networks" title="Link to this definition"></a></dt>
-<dd><p>Manages the networks for the current project. See
-<a class="reference internal" href="managers.html#ape.managers.networks.NetworkManager" title="ape.managers.networks.NetworkManager"><code class="xref py py-class docutils literal notranslate"><span class="pre">ape.managers.networks.NetworkManager</span></code></a>.</p>
-</dd></dl>
-
-<dl class="py data">
-<dt class="sig sig-object py" id="ape.project">
-<span class="sig-prename descclassname"><span class="pre">ape.</span></span><span class="sig-name descname"><span class="pre">project</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;ProjectManager</span> <span class="pre">$HOME/work/ape/ape&gt;</span></em><a class="headerlink" href="#ape.project" title="Link to this definition"></a></dt>
-<dd><p>The currently active project. See <a class="reference internal" href="managers.html#ape.managers.project.ProjectManager" title="ape.managers.project.ProjectManager"><code class="xref py py-class docutils literal notranslate"><span class="pre">ape.managers.project.ProjectManager</span></code></a>.</p>
+<span class="sig-prename descclassname"><span class="pre">ape.</span></span><span class="sig-name descname"><span class="pre">convert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to_type</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.convert" title="Link to this definition"></a></dt>
+<dd><p>Conversion utility.
+See the <a class="reference external" href="../methoddocs/managers.html#ape.managers.converters.ConversionManager">ConversionManager</a> for more info.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Value<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The value to convert.</p>
+</dd>
+<dt class="field-even">To_type<span class="colon">:</span></dt>
+<dd class="field-even"><p>The destination type.</p>
+</dd>
+</dl>
+<p>Example usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">result</span> <span class="o">=</span> <span class="n">ape</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;1 ETH&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+</span></pre></div>
+</div>
 </dd></dl>
 
 <dl class="py attribute">
+<dt class="sig sig-object py" id="ape.compilers">
+<span class="sig-prename descclassname"><span class="pre">ape.</span></span><span class="sig-name descname"><span class="pre">compilers</span></span><a class="headerlink" href="#ape.compilers" title="Link to this definition"></a></dt>
+<dd><p>Access compiler classes.
+See the <a class="reference external" href="../methoddocs/managers.html#ape.managers.compilers.CompilerManager">CompilerManager</a> for more info.</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="ape.reverts">
-<span class="sig-prename descclassname"><span class="pre">ape.</span></span><span class="sig-name descname"><span class="pre">reverts</span></span><a class="headerlink" href="#ape.reverts" title="Link to this definition"></a></dt>
-<dd><p>Catch and expect contract logic reverts. Resembles <code class="docutils literal notranslate"><span class="pre">pytest.raises()</span></code>.</p>
+<span class="sig-prename descclassname"><span class="pre">ape.</span></span><span class="sig-name descname"><span class="pre">reverts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expected_message</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dev_message</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.reverts" title="Link to this definition"></a></dt>
+<dd><p>Catch contract-revert exceptions.
+Mimics <code class="docutils literal notranslate"><span class="pre">pytest.raises</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Expected_message<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The expected revert message (optional).</p>
+</dd>
+<dt class="field-even">Dev_message<span class="colon">:</span></dt>
+<dd class="field-even"><p>The expected dev-message (optional).</p>
+</dd>
+</dl>
 </dd></dl>
 
 </section>

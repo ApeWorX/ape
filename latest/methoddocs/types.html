@@ -227,17 +227,78 @@ data-aria-dark="Switch to auto color mode">
 </li>
 </ul>
 </li>
-<li><a class="reference internal" href="#module-ape.types">Miscellaneous</a><ul>
-<li><a class="reference internal" href="#ape.types.ContractLog"><code class="docutils literal notranslate"><span class="pre">ContractLog</span></code></a><ul>
-<li><a class="reference internal" href="#ape.types.ContractLog.block_hash"><code class="docutils literal notranslate">block_hash</span></code></a></li>
-<li><a class="reference internal" href="#ape.types.ContractLog.block_number"><code class="docutils literal notranslate">block_number</span></code></a></li>
-<li><a class="reference internal" href="#ape.types.ContractLog.log_index"><code class="docutils literal notranslate">log_index</span></code></a></li>
-<li><a class="reference internal" href="#ape.types.ContractLog.timestamp"><code class="docutils literal notranslate">timestamp</span></code></a></li>
-<li><a class="reference internal" href="#ape.types.ContractLog.transaction_hash"><code class="docutils literal notranslate">transaction_hash</span></code></a></li>
-<li><a class="reference internal" href="#ape.types.ContractLog.transaction_index"><code class="docutils literal notranslate">transaction_index</span></code></a></li>
+<li><a class="reference internal" href="#module-ape.types.events">Events</a><ul>
+<li><a class="reference internal" href="#ape.types.events.ContractLog"><code class="docutils literal notranslate"><span class="pre">ContractLog</span></code></a><ul>
+<li><a class="reference internal" href="#ape.types.events.ContractLog.block_hash"><code class="docutils literal notranslate">block_hash</span></code></a></li>
+<li><a class="reference internal" href="#ape.types.events.ContractLog.block_number"><code class="docutils literal notranslate">block_number</span></code></a></li>
+<li><a class="reference internal" href="#ape.types.events.ContractLog.log_index"><code class="docutils literal notranslate">log_index</span></code></a></li>
+<li><a class="reference internal" href="#ape.types.events.ContractLog.timestamp"><code class="docutils literal notranslate">timestamp</span></code></a></li>
+<li><a class="reference internal" href="#ape.types.events.ContractLog.transaction_hash"><code class="docutils literal notranslate">transaction_hash</span></code></a></li>
+<li><a class="reference internal" href="#ape.types.events.ContractLog.transaction_index"><code class="docutils literal notranslate">transaction_index</span></code></a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#ape.types.MockContractLog"><code class="docutils literal notranslate"><span class="pre">MockContractLog</span></code></a></li>
+<li><a class="reference internal" href="#ape.types.events.ContractLogContainer"><code class="docutils literal notranslate"><span class="pre">ContractLogContainer</span></code></a></li>
+<li><a class="reference internal" href="#ape.types.events.LogFilter"><code class="docutils literal notranslate"><span class="pre">LogFilter</span></code></a><ul>
+<li><a class="reference internal" href="#ape.types.events.LogFilter.from_event"><code class="docutils literal notranslate">from_event()</span></code></a></li>
+<li><a class="reference internal" href="#ape.types.events.LogFilter.model_dump"><code class="docutils literal notranslate">model_dump()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ape.types.events.MockContractLog"><code class="docutils literal notranslate"><span class="pre">MockContractLog</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-ape.types.vm">VM</a><ul>
+<li><a class="reference internal" href="#ape.types.vm.BlockID"><code class="docutils literal notranslate"><span class="pre">BlockID</span></code></a></li>
+<li><a class="reference internal" href="#ape.types.vm.SnapshotID"><code class="docutils literal notranslate"><span class="pre">SnapshotID</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-ape.types.gas">Gas</a><ul>
+<li><a class="reference internal" href="#ape.types.gas.AutoGasLimit"><code class="docutils literal notranslate"><span class="pre">AutoGasLimit</span></code></a><ul>
+<li><a class="reference internal" href="#ape.types.gas.AutoGasLimit.multiplier"><code class="docutils literal notranslate">multiplier</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ape.types.gas.GasLimit"><code class="docutils literal notranslate"><span class="pre">GasLimit</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-ape.types.trace">Trace</a><ul>
+<li><a class="reference internal" href="#ape.types.trace.ControlFlow"><code class="docutils literal notranslate"><span class="pre">ControlFlow</span></code></a><ul>
+<li><a class="reference internal" href="#ape.types.trace.ControlFlow.begin_lineno"><code class="docutils literal notranslate">begin_lineno</span></code></a></li>
+<li><a class="reference internal" href="#ape.types.trace.ControlFlow.closure"><code class="docutils literal notranslate">closure</span></code></a></li>
+<li><a class="reference internal" href="#ape.types.trace.ControlFlow.depth"><code class="docutils literal notranslate">depth</span></code></a></li>
+<li><a class="reference internal" href="#ape.types.trace.ControlFlow.end_lineno"><code class="docutils literal notranslate">end_lineno</span></code></a></li>
+<li><a class="reference internal" href="#ape.types.trace.ControlFlow.extend"><code class="docutils literal notranslate">extend()</span></code></a></li>
+<li><a class="reference internal" href="#ape.types.trace.ControlFlow.format"><code class="docutils literal notranslate">format()</span></code></a></li>
+<li><a class="reference internal" href="#ape.types.trace.ControlFlow.line_numbers"><code class="docutils literal notranslate">line_numbers</span></code></a></li>
+<li><a class="reference internal" href="#ape.types.trace.ControlFlow.next_statement"><code class="docutils literal notranslate">next_statement</span></code></a></li>
+<li><a class="reference internal" href="#ape.types.trace.ControlFlow.source_path"><code class="docutils literal notranslate">source_path</span></code></a></li>
+<li><a class="reference internal" href="#ape.types.trace.ControlFlow.source_statements"><code class="docutils literal notranslate">source_statements</span></code></a></li>
+<li><a class="reference internal" href="#ape.types.trace.ControlFlow.statements"><code class="docutils literal notranslate">statements</span></code></a></li>
+<li><a class="reference internal" href="#ape.types.trace.ControlFlow.ws_begin_lineno"><code class="docutils literal notranslate">ws_begin_lineno</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ape.types.trace.GasReport"><code class="docutils literal notranslate"><span class="pre">GasReport</span></code></a></li>
+<li><a class="reference internal" href="#ape.types.trace.SourceTraceback"><code class="docutils literal notranslate"><span class="pre">SourceTraceback</span></code></a><ul>
+<li><a class="reference internal" href="#ape.types.trace.SourceTraceback.add_builtin_jump"><code class="docutils literal notranslate">add_builtin_jump()</span></code></a></li>
+<li><a class="reference internal" href="#ape.types.trace.SourceTraceback.add_jump"><code class="docutils literal notranslate">add_jump()</span></code></a></li>
+<li><a class="reference internal" href="#ape.types.trace.SourceTraceback.append"><code class="docutils literal notranslate">append()</span></code></a></li>
+<li><a class="reference internal" href="#ape.types.trace.SourceTraceback.execution"><code class="docutils literal notranslate">execution</span></code></a></li>
+<li><a class="reference internal" href="#ape.types.trace.SourceTraceback.extend"><code class="docutils literal notranslate">extend()</span></code></a></li>
+<li><a class="reference internal" href="#ape.types.trace.SourceTraceback.extend_last"><code class="docutils literal notranslate">extend_last()</span></code></a></li>
+<li><a class="reference internal" href="#ape.types.trace.SourceTraceback.format"><code class="docutils literal notranslate">format()</span></code></a></li>
+<li><a class="reference internal" href="#ape.types.trace.SourceTraceback.last"><code class="docutils literal notranslate">last</span></code></a></li>
+<li><a class="reference internal" href="#ape.types.trace.SourceTraceback.revert_type"><code class="docutils literal notranslate">revert_type</span></code></a></li>
+<li><a class="reference internal" href="#ape.types.trace.SourceTraceback.source_statements"><code class="docutils literal notranslate">source_statements</span></code></a></li>
+<li><a class="reference internal" href="#ape.types.trace.SourceTraceback.statements"><code class="docutils literal notranslate">statements</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-ape.types.units">Units</a><ul>
+<li><a class="reference internal" href="#ape.types.units.CurrencyValue"><code class="docutils literal notranslate"><span class="pre">CurrencyValue</span></code></a></li>
+<li><a class="reference internal" href="#ape.types.units.CurrencyValueComparable"><code class="docutils literal notranslate"><span class="pre">CurrencyValueComparable</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-ape.types.basic">Basic</a><ul>
+<li><a class="reference internal" href="#ape.types.basic.HexInt"><code class="docutils literal notranslate"><span class="pre">HexInt</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -935,46 +996,46 @@ See <a class="reference internal" href="#ape.types.coverage.CoverageStatement" t
 </dd></dl>
 
 </section>
-<section id="module-ape.types">
-<span id="miscellaneous"></span><h2>Miscellaneous<a class="headerlink" href="#module-ape.types" title="Link to this heading"></a></h2>
+<section id="module-ape.types.events">
+<span id="events"></span><h2>Events<a class="headerlink" href="#module-ape.types.events" title="Link to this heading"></a></h2>
 <dl class="py class">
-<dt class="sig sig-object py" id="ape.types.ContractLog">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.types.</span></span><span class="sig-name descname"><span class="pre">ContractLog</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contract_address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><span class="pre">ChecksumAddress</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_AddressValidator</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'0x0000000000000000000000000000000000000000'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_arguments</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transaction_hash</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">BeforeValidator</span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">func</span></span><span class="o"><span class="pre">=</span></span><span class="pre">_hex_int_validator</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">json_schema_input_type</span></span><span class="o"><span class="pre">=</span></span><span class="pre">PydanticUndefined</span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_hash</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">BeforeValidator</span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">func</span></span><span class="o"><span class="pre">=</span></span><span class="pre">_hex_int_validator</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">json_schema_input_type</span></span><span class="o"><span class="pre">=</span></span><span class="pre">PydanticUndefined</span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transaction_index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">BeforeValidator</span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">func</span></span><span class="o"><span class="pre">=</span></span><span class="pre">_hex_int_validator</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">json_schema_input_type</span></span><span class="o"><span class="pre">=</span></span><span class="pre">PydanticUndefined</span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.types.ContractLog" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="ape.types.events.ContractLog">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.types.events.</span></span><span class="sig-name descname"><span class="pre">ContractLog</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contract_address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><span class="pre">ChecksumAddress</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_AddressValidator</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'0x0000000000000000000000000000000000000000'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_arguments</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transaction_hash</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">BeforeValidator</span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">func</span></span><span class="o"><span class="pre">=</span></span><span class="pre">_hex_int_validator</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">json_schema_input_type</span></span><span class="o"><span class="pre">=</span></span><span class="pre">PydanticUndefined</span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_hash</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">BeforeValidator</span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">func</span></span><span class="o"><span class="pre">=</span></span><span class="pre">_hex_int_validator</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">json_schema_input_type</span></span><span class="o"><span class="pre">=</span></span><span class="pre">PydanticUndefined</span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transaction_index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">BeforeValidator</span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">func</span></span><span class="o"><span class="pre">=</span></span><span class="pre">_hex_int_validator</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">json_schema_input_type</span></span><span class="o"><span class="pre">=</span></span><span class="pre">PydanticUndefined</span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.types.events.ContractLog" title="Link to this definition"></a></dt>
 <dd><p>An instance of a log from a contract.</p>
 <dl class="py attribute">
-<dt class="sig sig-object py" id="ape.types.ContractLog.block_hash">
-<span class="sig-name descname"><span class="pre">block_hash</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Any</span></em><a class="headerlink" href="#ape.types.ContractLog.block_hash" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="ape.types.events.ContractLog.block_hash">
+<span class="sig-name descname"><span class="pre">block_hash</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Any</span></em><a class="headerlink" href="#ape.types.events.ContractLog.block_hash" title="Link to this definition"></a></dt>
 <dd><p>The hash of the block containing the transaction that produced this log.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="ape.types.ContractLog.block_number">
-<span class="sig-name descname"><span class="pre">block_number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">BeforeValidator</span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">func</span></span><span class="o"><span class="pre">=</span></span><span class="pre">_hex_int_validator</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">json_schema_input_type</span></span><span class="o"><span class="pre">=</span></span><span class="pre">PydanticUndefined</span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.types.ContractLog.block_number" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="ape.types.events.ContractLog.block_number">
+<span class="sig-name descname"><span class="pre">block_number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">BeforeValidator</span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">func</span></span><span class="o"><span class="pre">=</span></span><span class="pre">_hex_int_validator</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">json_schema_input_type</span></span><span class="o"><span class="pre">=</span></span><span class="pre">PydanticUndefined</span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.types.events.ContractLog.block_number" title="Link to this definition"></a></dt>
 <dd><p>The number of the block containing the transaction that produced this log.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="ape.types.ContractLog.log_index">
-<span class="sig-name descname"><span class="pre">log_index</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">BeforeValidator</span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">func</span></span><span class="o"><span class="pre">=</span></span><span class="pre">_hex_int_validator</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">json_schema_input_type</span></span><span class="o"><span class="pre">=</span></span><span class="pre">PydanticUndefined</span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.types.ContractLog.log_index" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="ape.types.events.ContractLog.log_index">
+<span class="sig-name descname"><span class="pre">log_index</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">BeforeValidator</span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">func</span></span><span class="o"><span class="pre">=</span></span><span class="pre">_hex_int_validator</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">json_schema_input_type</span></span><span class="o"><span class="pre">=</span></span><span class="pre">PydanticUndefined</span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.types.events.ContractLog.log_index" title="Link to this definition"></a></dt>
 <dd><p>The index of the log on the transaction.</p>
 </dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="ape.types.ContractLog.timestamp">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">timestamp</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ape.types.ContractLog.timestamp" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="ape.types.events.ContractLog.timestamp">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">timestamp</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ape.types.events.ContractLog.timestamp" title="Link to this definition"></a></dt>
 <dd><p>The UNIX timestamp of when the event was emitted.</p>
 <p>NOTE: This performs a block lookup.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="ape.types.ContractLog.transaction_hash">
-<span class="sig-name descname"><span class="pre">transaction_hash</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Any</span></em><a class="headerlink" href="#ape.types.ContractLog.transaction_hash" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="ape.types.events.ContractLog.transaction_hash">
+<span class="sig-name descname"><span class="pre">transaction_hash</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Any</span></em><a class="headerlink" href="#ape.types.events.ContractLog.transaction_hash" title="Link to this definition"></a></dt>
 <dd><p>The hash of the transaction containing this log.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="ape.types.ContractLog.transaction_index">
-<span class="sig-name descname"><span class="pre">transaction_index</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">BeforeValidator</span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">func</span></span><span class="o"><span class="pre">=</span></span><span class="pre">_hex_int_validator</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">json_schema_input_type</span></span><span class="o"><span class="pre">=</span></span><span class="pre">PydanticUndefined</span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.types.ContractLog.transaction_index" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="ape.types.events.ContractLog.transaction_index">
+<span class="sig-name descname"><span class="pre">transaction_index</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">BeforeValidator</span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">func</span></span><span class="o"><span class="pre">=</span></span><span class="pre">_hex_int_validator</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">json_schema_input_type</span></span><span class="o"><span class="pre">=</span></span><span class="pre">PydanticUndefined</span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.types.events.ContractLog.transaction_index" title="Link to this definition"></a></dt>
 <dd><p>The index of the transaction’s position when the log was created.
 Is <cite>None</cite> when from the pending block.</p>
 </dd></dl>
@@ -982,14 +1043,349 @@ Is <cite>None</cite> when from the pending block.</p>
 </dd></dl>
 
 <dl class="py class">
-<dt class="sig sig-object py" id="ape.types.MockContractLog">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.types.</span></span><span class="sig-name descname"><span class="pre">MockContractLog</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contract_address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><span class="pre">ChecksumAddress</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_AddressValidator</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'0x0000000000000000000000000000000000000000'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_arguments</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.types.MockContractLog" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="ape.types.events.ContractLogContainer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.types.events.</span></span><span class="sig-name descname"><span class="pre">ContractLogContainer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iterable</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.types.events.ContractLogContainer" title="Link to this definition"></a></dt>
+<dd><p>Container for ContractLogs which is adding capability of filtering logs</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.types.events.LogFilter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.types.events.</span></span><span class="sig-name descname"><span class="pre">LogFilter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">addresses</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><span class="pre">ChecksumAddress</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_AddressValidator</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">events</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">EventABI</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topic_filter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">HexStr</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">HexStr</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_block</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_block</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selectors</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">EventABI</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.types.events.LogFilter" title="Link to this definition"></a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="ape.types.events.LogFilter.from_event">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_event</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">EventABI</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="contracts.html#ape.contracts.base.ContractEvent" title="ape.contracts.base.ContractEvent"><span class="pre">ContractEvent</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">search_topics</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">addresses</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><span class="pre">ChecksumAddress</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_AddressValidator</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_block</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_block</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.types.events.LogFilter.from_event" title="Link to this definition"></a></dt>
+<dd><p>Construct a log filter from an event topic query.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.types.events.LogFilter.model_dump">
+<span class="sig-name descname"><span class="pre">model_dump</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.types.events.LogFilter.model_dump" title="Link to this definition"></a></dt>
+<dd><p>Usage docs: <a class="reference external" href="https://docs.pydantic.dev/2.9/concepts/serialization/#modelmodel_dump">https://docs.pydantic.dev/2.9/concepts/serialization/#modelmodel_dump</a></p>
+<p>Generate a dictionary representation of the model, optionally specifying which fields to include or exclude.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mode</strong> – The mode in which <cite>to_python</cite> should run.
+If mode is ‘json’, the output will only contain JSON serializable types.
+If mode is ‘python’, the output may contain non-JSON-serializable Python objects.</p></li>
+<li><p><strong>include</strong> – A set of fields to include in the output.</p></li>
+<li><p><strong>exclude</strong> – A set of fields to exclude from the output.</p></li>
+<li><p><strong>context</strong> – Additional context to pass to the serializer.</p></li>
+<li><p><strong>by_alias</strong> – Whether to use the field’s alias in the dictionary key if defined.</p></li>
+<li><p><strong>exclude_unset</strong> – Whether to exclude fields that have not been explicitly set.</p></li>
+<li><p><strong>exclude_defaults</strong> – Whether to exclude fields that are set to their default value.</p></li>
+<li><p><strong>exclude_none</strong> – Whether to exclude fields that have a value of <cite>None</cite>.</p></li>
+<li><p><strong>round_trip</strong> – If True, dumped values should be valid as input for non-idempotent types such as Json[T].</p></li>
+<li><p><strong>warnings</strong> – How to handle serialization errors. False/”none” ignores them, True/”warn” logs errors,
+“error” raises a [<cite>PydanticSerializationError</cite>][pydantic_core.PydanticSerializationError].</p></li>
+<li><p><strong>serialize_as_any</strong> – Whether to serialize fields with duck-typing serialization behavior.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dictionary representation of the model.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.types.events.MockContractLog">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.types.events.</span></span><span class="sig-name descname"><span class="pre">MockContractLog</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contract_address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><span class="pre">ChecksumAddress</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_AddressValidator</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'0x0000000000000000000000000000000000000000'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_arguments</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.types.events.MockContractLog" title="Link to this definition"></a></dt>
 <dd><p>A mock version of the ContractLog class used for testing purposes.
 This class is designed to match a subset of event arguments in a ContractLog instance
 by only comparing those event arguments that the user explicitly provides.</p>
 <p>Inherits from <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseContractLog</span></code>, and overrides the
 equality method for custom comparison
 of event arguments between a MockContractLog and a ContractLog instance.</p>
+</dd></dl>
+
+</section>
+<section id="module-ape.types.vm">
+<span id="vm"></span><h2>VM<a class="headerlink" href="#module-ape.types.vm" title="Link to this heading"></a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="ape.types.vm.BlockID">
+<span class="sig-prename descclassname"><span class="pre">ape.types.vm.</span></span><span class="sig-name descname"><span class="pre">BlockID</span></span><a class="headerlink" href="#ape.types.vm.BlockID" title="Link to this definition"></a></dt>
+<dd><p>An ID that can match a block, such as the literals <code class="docutils literal notranslate"><span class="pre">&quot;earliest&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;latest&quot;</span></code>, or <code class="docutils literal notranslate"><span class="pre">&quot;pending&quot;</span></code>
+as well as a block number or hash (HexBytes).</p>
+<p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">HexStr</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">HexBytes</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">Literal</span></code>[‘earliest’, ‘latest’, ‘pending’]</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="ape.types.vm.SnapshotID">
+<span class="sig-prename descclassname"><span class="pre">ape.types.vm.</span></span><span class="sig-name descname"><span class="pre">SnapshotID</span></span><a class="headerlink" href="#ape.types.vm.SnapshotID" title="Link to this definition"></a></dt>
+<dd><p>An ID representing a point in time on a blockchain, as used in the
+<a class="reference internal" href="managers.html#ape.managers.chain.ChainManager.snapshot" title="ape.managers.chain.ChainManager.snapshot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">snapshot()</span></code></a> and
+<a class="reference internal" href="managers.html#ape.managers.chain.ChainManager.snapshot" title="ape.managers.chain.ChainManager.snapshot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">snapshot()</span></code></a> methods. Can be a <code class="docutils literal notranslate"><span class="pre">str</span></code>, <code class="docutils literal notranslate"><span class="pre">int</span></code>, or <code class="docutils literal notranslate"><span class="pre">bytes</span></code>.
+Providers will expect and handle snapshot IDs differently. There shouldn’t be a need to change
+providers when using this feature, so there should not be confusion over this type in practical use
+cases.</p>
+<p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">bytes</span></code></p>
+</dd></dl>
+
+</section>
+<section id="module-ape.types.gas">
+<span id="gas"></span><h2>Gas<a class="headerlink" href="#module-ape.types.gas" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.types.gas.AutoGasLimit">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.types.gas.</span></span><span class="sig-name descname"><span class="pre">AutoGasLimit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multiplier</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.types.gas.AutoGasLimit" title="Link to this definition"></a></dt>
+<dd><p>Additional settings for <code class="docutils literal notranslate"><span class="pre">gas_limit:</span> <span class="pre">auto</span></code>.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.types.gas.AutoGasLimit.multiplier">
+<span class="sig-name descname"><span class="pre">multiplier</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ape.types.gas.AutoGasLimit.multiplier" title="Link to this definition"></a></dt>
+<dd><p>A multiplier to estimated gas.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="ape.types.gas.GasLimit">
+<span class="sig-prename descclassname"><span class="pre">ape.types.gas.</span></span><span class="sig-name descname"><span class="pre">GasLimit</span></span><a class="headerlink" href="#ape.types.gas.GasLimit" title="Link to this definition"></a></dt>
+<dd><p>A value you can give to Ape for handling gas-limit calculations.
+<code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code> refers to automatically figuring out the gas,
+<code class="docutils literal notranslate"><span class="pre">&quot;max&quot;</span></code> refers to using the maximum block gas limit,
+and otherwise you can provide a numeric value.</p>
+<p>alias of <code class="xref py py-obj docutils literal notranslate"><span class="pre">Literal</span></code>[‘auto’, ‘max’] | <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <a class="reference internal" href="#ape.types.gas.AutoGasLimit" title="ape.types.gas.AutoGasLimit"><code class="xref py py-class docutils literal notranslate"><span class="pre">AutoGasLimit</span></code></a></p>
+</dd></dl>
+
+</section>
+<section id="module-ape.types.trace">
+<span id="trace"></span><h2>Trace<a class="headerlink" href="#module-ape.types.trace" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.types.trace.ControlFlow">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.types.trace.</span></span><span class="sig-name descname"><span class="pre">ControlFlow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">statements</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">Statement</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">closure</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Closure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depth</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.types.trace.ControlFlow" title="Link to this definition"></a></dt>
+<dd><p>A collection of linear source nodes up until a jump.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.types.trace.ControlFlow.begin_lineno">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">begin_lineno</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.types.trace.ControlFlow.begin_lineno" title="Link to this definition"></a></dt>
+<dd><p>The first line number in the sequence.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.types.trace.ControlFlow.closure">
+<span class="sig-name descname"><span class="pre">closure</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Closure</span></em><a class="headerlink" href="#ape.types.trace.ControlFlow.closure" title="Link to this definition"></a></dt>
+<dd><p>The defining closure, such as a function or module, of the code sequence.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.types.trace.ControlFlow.depth">
+<span class="sig-name descname"><span class="pre">depth</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ape.types.trace.ControlFlow.depth" title="Link to this definition"></a></dt>
+<dd><p>The depth at which this flow was executed,
+where 1 is the first calling function.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.types.trace.ControlFlow.end_lineno">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">end_lineno</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.types.trace.ControlFlow.end_lineno" title="Link to this definition"></a></dt>
+<dd><p>The last line number.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.types.trace.ControlFlow.extend">
+<span class="sig-name descname"><span class="pre">extend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">location</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pcs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">set</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ws_start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.types.trace.ControlFlow.extend" title="Link to this definition"></a></dt>
+<dd><p>Extend this node’s content with other content that follows it directly.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – When there is a gap in content.</p>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>location</strong> (<em>SourceLocation</em>) – The location of the content, in the form
+(lineno, col_offset, end_lineno, end_coloffset).</p></li>
+<li><p><strong>pcs</strong> (<em>Optional</em><em>[</em><em>set</em><em>[</em><em>int</em><em>]</em><em>]</em>) – The PC values of the statements.</p></li>
+<li><p><strong>ws_start</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – Optionally provide a white-space starting point
+to back-fill.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.types.trace.ControlFlow.format">
+<span class="sig-name descname"><span class="pre">format</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_arrow</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#ape.types.trace.ControlFlow.format" title="Link to this definition"></a></dt>
+<dd><p>Format this trace node into a string presentable to the user.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.types.trace.ControlFlow.line_numbers">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">line_numbers</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.types.trace.ControlFlow.line_numbers" title="Link to this definition"></a></dt>
+<dd><p>The list of all line numbers as part of this node.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.types.trace.ControlFlow.next_statement">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">next_statement</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">SourceStatement</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.types.trace.ControlFlow.next_statement" title="Link to this definition"></a></dt>
+<dd><p>Returns the next statement that _would_ execute
+if the program were to progress to the next line.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.types.trace.ControlFlow.source_path">
+<span class="sig-name descname"><span class="pre">source_path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.types.trace.ControlFlow.source_path" title="Link to this definition"></a></dt>
+<dd><p>The path to the local contract file.
+Only exists when is from a local contract.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.types.trace.ControlFlow.source_statements">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">source_statements</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">SourceStatement</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.types.trace.ControlFlow.source_statements" title="Link to this definition"></a></dt>
+<dd><p>All statements coming directly from a contract’s source.
+Excludes implicit-compiler statements.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.types.trace.ControlFlow.statements">
+<span class="sig-name descname"><span class="pre">statements</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">Statement</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.types.trace.ControlFlow.statements" title="Link to this definition"></a></dt>
+<dd><p>The source node statements.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.types.trace.ControlFlow.ws_begin_lineno">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ws_begin_lineno</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.types.trace.ControlFlow.ws_begin_lineno" title="Link to this definition"></a></dt>
+<dd><p>The first line number in the sequence, including whitespace.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.types.trace.GasReport">
+<span class="sig-prename descclassname"><span class="pre">ape.types.trace.</span></span><span class="sig-name descname"><span class="pre">GasReport</span></span><a class="headerlink" href="#ape.types.trace.GasReport" title="Link to this definition"></a></dt>
+<dd><p>A gas report in Ape.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.types.trace.SourceTraceback">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.types.trace.</span></span><span class="sig-name descname"><span class="pre">SourceTraceback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">RootModelRootType</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">PydanticUndefined</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.types.trace.SourceTraceback" title="Link to this definition"></a></dt>
+<dd><p>A full execution traceback including source code.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.types.trace.SourceTraceback.add_builtin_jump">
+<span class="sig-name descname"><span class="pre">add_builtin_jump</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">full_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pcs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">set</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.types.trace.SourceTraceback.add_builtin_jump" title="Link to this definition"></a></dt>
+<dd><p>A convenience method for appending a control flow that happened
+from an internal compiler built-in code. See the ape-vyper plugin
+for a usage example.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – The name of the compiler built-in.</p></li>
+<li><p><strong>_type</strong> (<em>str</em>) – A str describing the type of check.</p></li>
+<li><p><strong>full_name</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – A full-name ID.</p></li>
+<li><p><strong>source_path</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="cli.html#ape.cli.paramtype.Path" title="ape.cli.paramtype.Path"><em>Path</em></a><em>]</em>) – The source file related, if there is one.</p></li>
+<li><p><strong>pcs</strong> (<em>Optional</em><em>[</em><em>set</em><em>[</em><em>int</em><em>]</em><em>]</em>) – Program counter values mapping to this check.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.types.trace.SourceTraceback.add_jump">
+<span class="sig-name descname"><span class="pre">add_jump</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">location</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">function</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Function</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depth</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pcs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">set</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.types.trace.SourceTraceback.add_jump" title="Link to this definition"></a></dt>
+<dd><p>Add an execution sequence from a jump.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>location</strong> (<code class="docutils literal notranslate"><span class="pre">SourceLocation</span></code>) – The location to add.</p></li>
+<li><p><strong>function</strong> (<code class="docutils literal notranslate"><span class="pre">Function</span></code>) – The function executing.</p></li>
+<li><p><strong>source_path</strong> (Optional[<code class="docutils literal notranslate"><span class="pre">Path</span></code>]) – The path of the source file.</p></li>
+<li><p><strong>depth</strong> (<em>int</em>) – The depth of the function call in the call tree.</p></li>
+<li><p><strong>pcs</strong> (<em>Optional</em><em>[</em><em>set</em><em>[</em><em>int</em><em>]</em><em>]</em>) – The program counter values.</p></li>
+<li><p><strong>source_path</strong> – The path of the source file.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.types.trace.SourceTraceback.append">
+<span class="sig-name descname"><span class="pre">append</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_SourceTraceback__object</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#ape.types.trace.SourceTraceback.append" title="Link to this definition"></a></dt>
+<dd><p>Append the given control flow to this one.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.types.trace.SourceTraceback.execution">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">execution</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape.types.trace.ControlFlow" title="ape.types.trace.ControlFlow"><span class="pre">ControlFlow</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.types.trace.SourceTraceback.execution" title="Link to this definition"></a></dt>
+<dd><p>All the control flows in order. Each set of statements in
+a control flow is separated by a jump.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.types.trace.SourceTraceback.extend">
+<span class="sig-name descname"><span class="pre">extend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_SourceTraceback__iterable</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#ape.types.trace.SourceTraceback.extend" title="Link to this definition"></a></dt>
+<dd><p>Append all the control flows from the given traceback to this one.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.types.trace.SourceTraceback.extend_last">
+<span class="sig-name descname"><span class="pre">extend_last</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">location</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pcs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">set</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.types.trace.SourceTraceback.extend_last" title="Link to this definition"></a></dt>
+<dd><p>Extend the last node with more content.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>location</strong> (<code class="docutils literal notranslate"><span class="pre">SourceLocation</span></code>) – The location of the new content.</p></li>
+<li><p><strong>pcs</strong> (<em>Optional</em><em>[</em><em>set</em><em>[</em><em>int</em><em>]</em><em>]</em>) – The PC values to add on.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.types.trace.SourceTraceback.format">
+<span class="sig-name descname"><span class="pre">format</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#ape.types.trace.SourceTraceback.format" title="Link to this definition"></a></dt>
+<dd><p>Get a formatted traceback string for displaying to users.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.types.trace.SourceTraceback.last">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">last</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ape.types.trace.ControlFlow" title="ape.types.trace.ControlFlow"><span class="pre">ControlFlow</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.types.trace.SourceTraceback.last" title="Link to this definition"></a></dt>
+<dd><p>The last control flow in the traceback, if there is one.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.types.trace.SourceTraceback.revert_type">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">revert_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.types.trace.SourceTraceback.revert_type" title="Link to this definition"></a></dt>
+<dd><p>The revert type, such as a builtin-error code or a user dev-message,
+if there is one.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.types.trace.SourceTraceback.source_statements">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">source_statements</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">SourceStatement</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.types.trace.SourceTraceback.source_statements" title="Link to this definition"></a></dt>
+<dd><p>All source statements from each control flow.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.types.trace.SourceTraceback.statements">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">statements</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">Statement</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.types.trace.SourceTraceback.statements" title="Link to this definition"></a></dt>
+<dd><p>All statements from each control flow.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-ape.types.units">
+<span id="units"></span><h2>Units<a class="headerlink" href="#module-ape.types.units" title="Link to this heading"></a></h2>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.types.units.CurrencyValue">
+<span class="sig-prename descclassname"><span class="pre">ape.types.units.</span></span><span class="sig-name descname"><span class="pre">CurrencyValue</span></span><a class="headerlink" href="#ape.types.units.CurrencyValue" title="Link to this definition"></a></dt>
+<dd><p>An alias to <code class="xref py py-class docutils literal notranslate"><span class="pre">CurrencyValueComparable</span></code> for
+situations when you know for sure the type is a currency-value
+(and not just comparable to one).</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.types.units.CurrencyValueComparable">
+<span class="sig-prename descclassname"><span class="pre">ape.types.units.</span></span><span class="sig-name descname"><span class="pre">CurrencyValueComparable</span></span><a class="headerlink" href="#ape.types.units.CurrencyValueComparable" title="Link to this definition"></a></dt>
+<dd><p>alias of <a class="reference internal" href="#ape.types.units.CurrencyValueComparable" title="ape.types.units.CurrencyValueComparable"><code class="xref py py-class docutils literal notranslate"><span class="pre">CurrencyValueComparable</span></code></a></p>
+</dd></dl>
+
+</section>
+<section id="module-ape.types.basic">
+<span id="basic"></span><h2>Basic<a class="headerlink" href="#module-ape.types.basic" title="Link to this heading"></a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="ape.types.basic.HexInt">
+<span class="sig-prename descclassname"><span class="pre">ape.types.basic.</span></span><span class="sig-name descname"><span class="pre">HexInt</span></span><a class="headerlink" href="#ape.types.basic.HexInt" title="Link to this definition"></a></dt>
+<dd><p>Validate any hex-str or bytes into an integer.
+To be used on pydantic-fields.</p>
+<p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">Annotated</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">BeforeValidator</span></code>(func=<code class="xref py py-class docutils literal notranslate"><span class="pre">_hex_int_validator</span></code>, json_schema_input_type=PydanticUndefined)]</p>
 </dd></dl>
 
 </section>

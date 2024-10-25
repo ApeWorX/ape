@@ -81,7 +81,6 @@ data-aria-dark="Switch to auto color mode">
  | <a href="#U"><strong>U</strong></a>
  | <a href="#V"><strong>V</strong></a>
  | <a href="#W"><strong>W</strong></a>
- | <a href="#X"><strong>X</strong></a>
  | <a href="#Y"><strong>Y</strong></a>
  
 </div>
@@ -709,14 +708,12 @@ data-aria-dark="Switch to auto color mode">
 </li>
       <li><a href="methoddocs/plugins.html#ape.plugins.account.AccountPlugin">AccountPlugin (class in ape.plugins.account)</a>
 </li>
-      <li><a href="methoddocs/api.html#ape.api.accounts.AccountContainerAPI.accounts">accounts (ape.api.accounts.AccountContainerAPI property)</a>
+      <li><a href="methoddocs/ape.html#ape.accounts">accounts (ape attribute)</a>
 
       <ul>
+        <li><a href="methoddocs/api.html#ape.api.accounts.AccountContainerAPI.accounts">(ape.api.accounts.AccountContainerAPI property)</a>
+</li>
         <li><a href="methoddocs/ape_accounts.html#ape_accounts.AccountContainer.accounts">(ape_accounts.AccountContainer property)</a>
-</li>
-        <li><a href="methoddocs/ape_test.html#ape_test.TestAccountContainer.accounts">(ape_test.TestAccountContainer property)</a>
-</li>
-        <li><a href="methoddocs/ape.html#ape.accounts">(in module ape)</a>
 </li>
       </ul></li>
       <li>
@@ -809,7 +806,11 @@ data-aria-dark="Switch to auto color mode">
         <li><a href="methoddocs/ape_ethereum.html#ape_ethereum.multicall.Call.add">(ape_ethereum.multicall.Call method)</a>
 </li>
       </ul></li>
+      <li><a href="methoddocs/types.html#ape.types.trace.SourceTraceback.add_builtin_jump">add_builtin_jump() (ape.types.trace.SourceTraceback method)</a>
+</li>
       <li><a href="methoddocs/managers.html#ape.managers.project.Project.add_compiler_data">add_compiler_data() (ape.managers.project.Project method)</a>
+</li>
+      <li><a href="methoddocs/types.html#ape.types.trace.SourceTraceback.add_jump">add_jump() (ape.types.trace.SourceTraceback method)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.networks.EcosystemAPI.add_network">add_network() (ape.api.networks.EcosystemAPI method)</a>
 </li>
@@ -833,8 +834,6 @@ data-aria-dark="Switch to auto color mode">
         <li><a href="methoddocs/utils.html#ape.utils.GeneratedDevAccount.address">(ape.utils.GeneratedDevAccount attribute)</a>
 </li>
         <li><a href="methoddocs/ape_accounts.html#ape_accounts.KeyfileAccount.address">(ape_accounts.KeyfileAccount property)</a>
-</li>
-        <li><a href="methoddocs/ape_test.html#ape_test.TestAccount.address">(ape_test.TestAccount property)</a>
 </li>
       </ul></li>
       <li><a href="methoddocs/api.html#ape.api.address.Address">Address (class in ape.api.address)</a>
@@ -863,8 +862,6 @@ data-aria-dark="Switch to auto color mode">
       <ul>
         <li><a href="methoddocs/ape_accounts.html#ape_accounts.KeyfileAccount.alias">(ape_accounts.KeyfileAccount property)</a>
 </li>
-        <li><a href="methoddocs/ape_test.html#ape_test.TestAccount.alias">(ape_test.TestAccount property)</a>
-</li>
       </ul></li>
       <li><a href="methoddocs/cli.html#ape.cli.choices.Alias">Alias (class in ape.cli.choices)</a>
 </li>
@@ -877,18 +874,9 @@ data-aria-dark="Switch to auto color mode">
 </li>
         <li><a href="methoddocs/ape_accounts.html#ape_accounts.AccountContainer.aliases">(ape_accounts.AccountContainer property)</a>
 </li>
-        <li><a href="methoddocs/ape_test.html#ape_test.TestAccountContainer.aliases">(ape_test.TestAccountContainer property)</a>
-</li>
       </ul></li>
       <li><a href="methoddocs/utils.html#ape.utils.allow_disconnected">allow_disconnected() (in module ape.utils)</a>
 </li>
-      <li>
-    ape
-
-      <ul>
-        <li><a href="methoddocs/ape.html#module-ape">module</a>
-</li>
-      </ul></li>
       <li>
     ape.api.accounts
 
@@ -931,8 +919,6 @@ data-aria-dark="Switch to auto color mode">
         <li><a href="methoddocs/api.html#module-ape.api.explorers">module</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     ape.api.networks
 
@@ -975,6 +961,8 @@ data-aria-dark="Switch to auto color mode">
         <li><a href="methoddocs/cli.html#module-ape.cli.choices">module</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     ape.cli.commands
 
@@ -994,6 +982,20 @@ data-aria-dark="Switch to auto color mode">
 
       <ul>
         <li><a href="methoddocs/cli.html#module-ape.cli.paramtype">module</a>
+</li>
+      </ul></li>
+      <li>
+    ape.Contract()
+
+      <ul>
+        <li><a href="methoddocs/ape.html#ape.Contract">built-in function</a>
+</li>
+      </ul></li>
+      <li>
+    ape.convert()
+
+      <ul>
+        <li><a href="methoddocs/ape.html#ape.convert">built-in function</a>
 </li>
       </ul></li>
       <li>
@@ -1116,10 +1118,17 @@ data-aria-dark="Switch to auto color mode">
 </li>
       </ul></li>
       <li>
-    ape.types
+    ape.Project()
 
       <ul>
-        <li><a href="methoddocs/types.html#module-ape.types">module</a>
+        <li><a href="methoddocs/ape.html#ape.Project">built-in function</a>
+</li>
+      </ul></li>
+      <li>
+    ape.reverts()
+
+      <ul>
+        <li><a href="methoddocs/ape.html#ape.reverts">built-in function</a>
 </li>
       </ul></li>
       <li>
@@ -1130,10 +1139,52 @@ data-aria-dark="Switch to auto color mode">
 </li>
       </ul></li>
       <li>
+    ape.types.basic
+
+      <ul>
+        <li><a href="methoddocs/types.html#module-ape.types.basic">module</a>
+</li>
+      </ul></li>
+      <li>
     ape.types.coverage
 
       <ul>
         <li><a href="methoddocs/types.html#module-ape.types.coverage">module</a>
+</li>
+      </ul></li>
+      <li>
+    ape.types.events
+
+      <ul>
+        <li><a href="methoddocs/types.html#module-ape.types.events">module</a>
+</li>
+      </ul></li>
+      <li>
+    ape.types.gas
+
+      <ul>
+        <li><a href="methoddocs/types.html#module-ape.types.gas">module</a>
+</li>
+      </ul></li>
+      <li>
+    ape.types.trace
+
+      <ul>
+        <li><a href="methoddocs/types.html#module-ape.types.trace">module</a>
+</li>
+      </ul></li>
+      <li>
+    ape.types.units
+
+      <ul>
+        <li><a href="methoddocs/types.html#module-ape.types.units">module</a>
+</li>
+      </ul></li>
+      <li>
+    ape.types.vm
+
+      <ul>
+        <li><a href="methoddocs/types.html#module-ape.types.vm">module</a>
 </li>
       </ul></li>
       <li>
@@ -1206,8 +1257,6 @@ data-aria-dark="Switch to auto color mode">
 </li>
       <li><a href="methoddocs/api.html#ape.api.projects.ApeProject">ApeProject (class in ape.api.projects)</a>
 </li>
-      <li><a href="methoddocs/ape_test.html#ape_test.ApeTestConfig">ApeTestConfig (class in ape_test)</a>
-</li>
       <li><a href="methoddocs/managers.html#ape.managers.project.Dependency.api_path">api_path (ape.managers.project.Dependency property)</a>
 </li>
       <li><a href="methoddocs/exceptions.html#ape.exceptions.APINotImplementedError">APINotImplementedError</a>
@@ -1218,6 +1267,8 @@ data-aria-dark="Switch to auto color mode">
         <li><a href="methoddocs/managers.html#ape.managers.chain.AccountHistory.append">(ape.managers.chain.AccountHistory method)</a>
 </li>
         <li><a href="methoddocs/managers.html#ape.managers.chain.TransactionHistory.append">(ape.managers.chain.TransactionHistory method)</a>
+</li>
+        <li><a href="methoddocs/types.html#ape.types.trace.SourceTraceback.append">(ape.types.trace.SourceTraceback method)</a>
 </li>
       </ul></li>
       <li><a href="methoddocs/ape_ethereum.html#ape_ethereum.CallTrace.arguments">arguments (ape_ethereum.CallTrace attribute)</a>
@@ -1245,9 +1296,9 @@ data-aria-dark="Switch to auto color mode">
       <ul>
         <li><a href="methoddocs/ape_node.html#ape_node.GethDev.auto_mine">(ape_node.GethDev property)</a>
 </li>
-        <li><a href="methoddocs/ape_test.html#ape_test.LocalProvider.auto_mine">(ape_test.LocalProvider property)</a>
-</li>
       </ul></li>
+      <li><a href="methoddocs/types.html#ape.types.gas.AutoGasLimit">AutoGasLimit (class in ape.types.gas)</a>
+</li>
       <li><a href="methoddocs/api.html#ape.api.transactions.ReceiptAPI.await_confirmations">await_confirmations() (ape.api.transactions.ReceiptAPI method)</a>
 </li>
   </ul></td>
@@ -1257,19 +1308,13 @@ data-aria-dark="Switch to auto color mode">
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/api.html#ape.api.address.BaseAddress.balance">balance (ape.api.address.BaseAddress property)</a>
-
-      <ul>
-        <li><a href="methoddocs/ape_test.html#ape_test.ApeTestConfig.balance">(ape_test.ApeTestConfig attribute)</a>
 </li>
-      </ul></li>
       <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.base_fee">base_fee (ape.api.providers.ProviderAPI property)</a>
 
       <ul>
         <li><a href="methoddocs/managers.html#ape.managers.chain.ChainManager.base_fee">(ape.managers.chain.ChainManager property)</a>
 </li>
         <li><a href="methoddocs/ape_ethereum.html#ape_ethereum.Web3Provider.base_fee">(ape_ethereum.Web3Provider property)</a>
-</li>
-        <li><a href="methoddocs/ape_test.html#ape_test.LocalProvider.base_fee">(ape_test.LocalProvider property)</a>
 </li>
       </ul></li>
       <li><a href="methoddocs/api.html#ape.api.networks.NetworkAPI.base_fee_multiplier">base_fee_multiplier (ape.api.networks.NetworkAPI property)</a>
@@ -1292,20 +1337,22 @@ data-aria-dark="Switch to auto color mode">
 </li>
       <li><a href="methoddocs/ape_ethereum.html#ape_ethereum.BaseTransaction">BaseTransaction (class in ape_ethereum)</a>
 </li>
+      <li><a href="methoddocs/types.html#ape.types.trace.ControlFlow.begin_lineno">begin_lineno (ape.types.trace.ControlFlow property)</a>
+</li>
       <li><a href="methoddocs/ape_ethereum.html#ape_ethereum.SharedBlobReceipt.blob_gas_price">blob_gas_price (ape_ethereum.SharedBlobReceipt attribute)</a>
 </li>
       <li><a href="methoddocs/ape_ethereum.html#ape_ethereum.SharedBlobReceipt.blob_gas_used">blob_gas_used (ape_ethereum.SharedBlobReceipt attribute)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.query.ContractCreation.block">block (ape.api.query.ContractCreation attribute)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/ape_ethereum.html#ape_ethereum.Block">Block (class in ape_ethereum)</a>
 </li>
-      <li><a href="methoddocs/types.html#ape.types.ContractLog.block_hash">block_hash (ape.types.ContractLog attribute)</a>
+      <li><a href="methoddocs/types.html#ape.types.events.ContractLog.block_hash">block_hash (ape.types.events.ContractLog attribute)</a>
 </li>
-      <li><a href="methoddocs/types.html#ape.types.ContractLog.block_number">block_number (ape.types.ContractLog attribute)</a>
+      <li><a href="methoddocs/types.html#ape.types.events.ContractLog.block_number">block_number (ape.types.events.ContractLog attribute)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.block_page_size">block_page_size (ape.api.providers.ProviderAPI attribute)</a>
 
       <ul>
@@ -1322,6 +1369,8 @@ data-aria-dark="Switch to auto color mode">
 </li>
       <li><a href="methoddocs/managers.html#ape.managers.chain.BlockContainer">BlockContainer (class in ape.managers.chain)</a>
 </li>
+      <li><a href="methoddocs/types.html#ape.types.vm.BlockID">BlockID (in module ape.types.vm)</a>
+</li>
       <li><a href="methoddocs/exceptions.html#ape.exceptions.BlockNotFoundError">BlockNotFoundError</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.query.BlockQuery">BlockQuery (class in ape.api.query)</a>
@@ -1332,12 +1381,23 @@ data-aria-dark="Switch to auto color mode">
 </li>
       <li><a href="methoddocs/types.html#ape.types.signatures.SignableMessage.body">body (ape.types.signatures.SignableMessage attribute)</a>
 </li>
-      <li><a href="methoddocs/ape_pm.html#ape_pm.BrownieProject">BrownieProject (class in ape_pm)</a>
-</li>
       <li><a href="methoddocs/api.html#ape.api.providers.SubprocessProvider.build_command">build_command() (ape.api.providers.SubprocessProvider method)</a>
 
       <ul>
         <li><a href="methoddocs/ape_node.html#ape_node.GethDev.build_command">(ape_node.GethDev method)</a>
+</li>
+      </ul></li>
+      <li>
+    built-in function
+
+      <ul>
+        <li><a href="methoddocs/ape.html#ape.Contract">ape.Contract()</a>
+</li>
+        <li><a href="methoddocs/ape.html#ape.convert">ape.convert()</a>
+</li>
+        <li><a href="methoddocs/ape.html#ape.Project">ape.Project()</a>
+</li>
+        <li><a href="methoddocs/ape.html#ape.reverts">ape.reverts()</a>
 </li>
       </ul></li>
       <li><a href="methoddocs/managers.html#ape.managers.converters.BytesAddressConverter">BytesAddressConverter (class in ape.managers.converters)</a>
@@ -1380,7 +1440,7 @@ data-aria-dark="Switch to auto color mode">
 </li>
       <li><a href="methoddocs/managers.html#ape.managers.compilers.CompilerManager.can_trace_source">can_trace_source() (ape.managers.compilers.CompilerManager method)</a>
 </li>
-      <li><a href="methoddocs/ape.html#ape.chain">chain (in module ape)</a>
+      <li><a href="methoddocs/ape.html#ape.chain">chain (ape attribute)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.networks.NetworkAPI.chain_id">chain_id (ape.api.networks.NetworkAPI property)</a>
 
@@ -1393,8 +1453,6 @@ data-aria-dark="Switch to auto color mode">
 </li>
         <li><a href="methoddocs/ape_node.html#ape_node.GethDev.chain_id">(ape_node.GethDev property)</a>
 </li>
-        <li><a href="methoddocs/ape_test.html#ape_test.LocalProvider.chain_id">(ape_test.LocalProvider property)</a>
-</li>
       </ul></li>
       <li><a href="methoddocs/exceptions.html#ape.exceptions.ChainError">ChainError</a>
 </li>
@@ -1405,6 +1463,8 @@ data-aria-dark="Switch to auto color mode">
       <li><a href="methoddocs/utils.html#ape.utils.clean_path">clean_path() (in module ape.utils)</a>
 </li>
       <li><a href="methoddocs/managers.html#ape.managers.chain.ContractCache.clear_local_caches">clear_local_caches() (ape.managers.chain.ContractCache method)</a>
+</li>
+      <li><a href="methoddocs/types.html#ape.types.trace.ControlFlow.closure">closure (ape.types.trace.ControlFlow attribute)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.address.BaseAddress.code">code (ape.api.address.BaseAddress property)</a>
 </li>
@@ -1442,15 +1502,9 @@ data-aria-dark="Switch to auto color mode">
 </li>
         <li><a href="methoddocs/managers.html#ape.managers.project.Dependency.compile">(ape.managers.project.Dependency method)</a>
 </li>
-        <li><a href="methoddocs/ape_pm.html#ape_pm.InterfaceCompiler.compile">(ape_pm.InterfaceCompiler method)</a>
-</li>
       </ul></li>
       <li><a href="methoddocs/api.html#ape.api.compiler.CompilerAPI.compile_code">compile_code() (ape.api.compiler.CompilerAPI method)</a>
-
-      <ul>
-        <li><a href="methoddocs/ape_pm.html#ape_pm.InterfaceCompiler.compile_code">(ape_pm.InterfaceCompiler method)</a>
 </li>
-      </ul></li>
       <li><a href="methoddocs/managers.html#ape.managers.compilers.CompilerManager.compile_source">compile_source() (ape.managers.compilers.CompilerManager method)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.compiler.CompilerAPI.compiler_settings">compiler_settings (ape.api.compiler.CompilerAPI attribute)</a>
@@ -1463,7 +1517,7 @@ data-aria-dark="Switch to auto color mode">
 </li>
       <li><a href="methoddocs/plugins.html#ape.plugins.compiler.CompilerPlugin">CompilerPlugin (class in ape.plugins.compiler)</a>
 </li>
-      <li><a href="methoddocs/ape.html#ape.compilers">compilers (in module ape)</a>
+      <li><a href="methoddocs/ape.html#ape.compilers">compilers (ape attribute)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.concurrency">concurrency (ape.api.providers.ProviderAPI attribute)</a>
 
@@ -1471,9 +1525,11 @@ data-aria-dark="Switch to auto color mode">
         <li><a href="methoddocs/ape_ethereum.html#ape_ethereum.EthereumNodeProvider.concurrency">(ape_ethereum.EthereumNodeProvider attribute)</a>
 </li>
       </ul></li>
-      <li><a href="methoddocs/api.html#ape.api.networks.EcosystemAPI.config">config (ape.api.networks.EcosystemAPI property)</a>
+      <li><a href="methoddocs/ape.html#ape.config">config (ape attribute)</a>
 
       <ul>
+        <li><a href="methoddocs/api.html#ape.api.networks.EcosystemAPI.config">(ape.api.networks.EcosystemAPI property)</a>
+</li>
         <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.config">(ape.api.providers.ProviderAPI property)</a>
 </li>
         <li><a href="methoddocs/managers.html#ape.managers.project.LocalProject.config">(ape.managers.project.LocalProject property)</a>
@@ -1487,8 +1543,6 @@ data-aria-dark="Switch to auto color mode">
         <li><a href="methoddocs/ape_compile.html#ape_compile.Config">(class in ape_compile)</a>
 </li>
       </ul></li>
-      <li><a href="methoddocs/ape.html#ape.config">config (in module ape)</a>
-</li>
       <li><a href="methoddocs/plugins.html#ape.plugins.config.Config.config_class">config_class() (ape.plugins.config.Config method)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.projects.DependencyAPI.config_override">config_override (ape.api.projects.DependencyAPI attribute)</a>
@@ -1510,13 +1564,9 @@ data-aria-dark="Switch to auto color mode">
 </li>
         <li><a href="methoddocs/ape_node.html#ape_node.GethDev.connect">(ape_node.GethDev method)</a>
 </li>
-        <li><a href="methoddocs/ape_test.html#ape_test.LocalProvider.connect">(ape_test.LocalProvider method)</a>
-</li>
       </ul></li>
       <li><a href="methoddocs/cli.html#ape.cli.commands.ConnectedProviderCommand">ConnectedProviderCommand (class in ape.cli.commands)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.connection_id">connection_id (ape.api.providers.ProviderAPI property)</a>
 
       <ul>
@@ -1525,6 +1575,8 @@ data-aria-dark="Switch to auto color mode">
         <li><a href="methoddocs/ape_ethereum.html#ape_ethereum.EthereumNodeProvider.connection_id">(ape_ethereum.EthereumNodeProvider property)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.connection_str">connection_str (ape.api.providers.ProviderAPI property)</a>
 
       <ul>
@@ -1541,8 +1593,6 @@ data-aria-dark="Switch to auto color mode">
 </li>
       </ul></li>
       <li><a href="methoddocs/managers.html#ape.managers.accounts.AccountManager.containers">containers (ape.managers.accounts.AccountManager property)</a>
-</li>
-      <li><a href="methoddocs/ape.html#ape.Contract">Contract() (in module ape)</a>
 </li>
       <li><a href="methoddocs/cli.html#ape.cli.arguments.contract_file_paths_argument">contract_file_paths_argument() (in module ape.cli.arguments)</a>
 </li>
@@ -1568,7 +1618,9 @@ data-aria-dark="Switch to auto color mode">
 </li>
       <li><a href="methoddocs/contracts.html#ape.contracts.base.ContractInstance">ContractInstance (class in ape.contracts.base)</a>
 </li>
-      <li><a href="methoddocs/types.html#ape.types.ContractLog">ContractLog (class in ape.types)</a>
+      <li><a href="methoddocs/types.html#ape.types.events.ContractLog">ContractLog (class in ape.types.events)</a>
+</li>
+      <li><a href="methoddocs/types.html#ape.types.events.ContractLogContainer">ContractLogContainer (class in ape.types.events)</a>
 </li>
       <li><a href="methoddocs/exceptions.html#ape.exceptions.ContractLogicError">ContractLogicError</a>
 </li>
@@ -1595,6 +1647,8 @@ data-aria-dark="Switch to auto color mode">
       <li><a href="methoddocs/types.html#ape.types.coverage.ContractSourceCoverage">ContractSourceCoverage (class in ape.types.coverage)</a>
 </li>
       <li><a href="methoddocs/contracts.html#ape.contracts.base.ContractTypeWrapper">ContractTypeWrapper (class in ape.contracts.base)</a>
+</li>
+      <li><a href="methoddocs/types.html#ape.types.trace.ControlFlow">ControlFlow (class in ape.types.trace)</a>
 </li>
       <li><a href="methoddocs/exceptions.html#ape.exceptions.ConversionError">ConversionError</a>
 </li>
@@ -1639,22 +1693,14 @@ data-aria-dark="Switch to auto color mode">
 </li>
         <li><a href="methoddocs/managers.html#ape.managers.converters.TimestampConverter.convert">(ape.managers.converters.TimestampConverter method)</a>
 </li>
-        <li><a href="methoddocs/ape.html#ape.convert">(in module ape)</a>
-</li>
       </ul></li>
       <li><a href="methoddocs/api.html#ape.api.convert.ConverterAPI">ConverterAPI (class in ape.api.convert)</a>
 </li>
       <li><a href="methoddocs/plugins.html#ape.plugins.converter.ConversionPlugin.converters">converters() (ape.plugins.converter.ConversionPlugin method)</a>
 </li>
-      <li><a href="methoddocs/ape_test.html#ape_test.ApeTestConfig.coverage">coverage (ape_test.ApeTestConfig attribute)</a>
-</li>
-      <li><a href="methoddocs/ape_test.html#ape_test.CoverageConfig">CoverageConfig (class in ape_test)</a>
-</li>
       <li><a href="methoddocs/types.html#ape.types.coverage.CoverageProject">CoverageProject (class in ape.types.coverage)</a>
 </li>
       <li><a href="methoddocs/types.html#ape.types.coverage.CoverageReport">CoverageReport (class in ape.types.coverage)</a>
-</li>
-      <li><a href="methoddocs/ape_test.html#ape_test.CoverageReportsConfig">CoverageReportsConfig (class in ape_test)</a>
 </li>
       <li><a href="methoddocs/types.html#ape.types.coverage.CoverageStatement">CoverageStatement (class in ape.types.coverage)</a>
 </li>
@@ -1673,6 +1719,10 @@ data-aria-dark="Switch to auto color mode">
 </li>
       </ul></li>
       <li><a href="methoddocs/contracts.html#ape.contracts.base.ContractInstance.creation_metadata">creation_metadata (ape.contracts.base.ContractInstance property)</a>
+</li>
+      <li><a href="methoddocs/types.html#ape.types.units.CurrencyValue">CurrencyValue (in module ape.types.units)</a>
+</li>
+      <li><a href="methoddocs/types.html#ape.types.units.CurrencyValueComparable">CurrencyValueComparable (in module ape.types.units)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.networks.EcosystemAPI.custom_network">custom_network (ape.api.networks.EcosystemAPI property)</a>
 </li>
@@ -1834,6 +1884,8 @@ data-aria-dark="Switch to auto color mode">
         <li><a href="methoddocs/managers.html#ape.managers.project.LocalProject.deployments">(ape.managers.project.LocalProject property)</a>
 </li>
       </ul></li>
+      <li><a href="methoddocs/types.html#ape.types.trace.ControlFlow.depth">depth (ape.types.trace.ControlFlow attribute)</a>
+</li>
       <li><a href="methoddocs/exceptions.html#ape.exceptions.ContractLogicError.dev_message">dev_message (ape.exceptions.ContractLogicError property)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.disconnect">disconnect() (ape.api.providers.ProviderAPI method)</a>
@@ -1845,11 +1897,7 @@ data-aria-dark="Switch to auto color mode">
 </li>
         <li><a href="methoddocs/ape_node.html#ape_node.GethDev.disconnect">(ape_node.GethDev method)</a>
 </li>
-        <li><a href="methoddocs/ape_test.html#ape_test.LocalProvider.disconnect">(ape_test.LocalProvider method)</a>
-</li>
       </ul></li>
-      <li><a href="methoddocs/ape_test.html#ape_test.ApeTestConfig.disconnect_providers_after">disconnect_providers_after (ape_test.ApeTestConfig attribute)</a>
-</li>
       <li><a href="methoddocs/ape_ethereum.html#ape_ethereum.DynamicFeeTransaction">DynamicFeeTransaction (class in ape_ethereum)</a>
 </li>
   </ul></td>
@@ -1912,14 +1960,14 @@ data-aria-dark="Switch to auto color mode">
         <li><a href="methoddocs/ape_ethereum.html#ape_ethereum.Ethereum.encode_transaction">(ape_ethereum.Ethereum method)</a>
 </li>
       </ul></li>
+      <li><a href="methoddocs/types.html#ape.types.trace.ControlFlow.end_lineno">end_lineno (ape.types.trace.ControlFlow property)</a>
+</li>
       <li><a href="methoddocs/managers.html#ape.managers.query.QueryManager.engines">engines (ape.managers.query.QueryManager property)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.compiler.CompilerAPI.enrich_error">enrich_error() (ape.api.compiler.CompilerAPI method)</a>
 
       <ul>
         <li><a href="methoddocs/managers.html#ape.managers.compilers.CompilerManager.enrich_error">(ape.managers.compilers.CompilerManager method)</a>
-</li>
-        <li><a href="methoddocs/ape_pm.html#ape_pm.InterfaceCompiler.enrich_error">(ape_pm.InterfaceCompiler method)</a>
 </li>
       </ul></li>
       <li><a href="methoddocs/api.html#ape.api.networks.EcosystemAPI.enrich_trace">enrich_trace() (ape.api.networks.EcosystemAPI method)</a>
@@ -1934,8 +1982,6 @@ data-aria-dark="Switch to auto color mode">
 
       <ul>
         <li><a href="methoddocs/ape_ethereum.html#ape_ethereum.Web3Provider.estimate_gas_cost">(ape_ethereum.Web3Provider method)</a>
-</li>
-        <li><a href="methoddocs/ape_test.html#ape_test.LocalProvider.estimate_gas_cost">(ape_test.LocalProvider method)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -1960,21 +2006,15 @@ data-aria-dark="Switch to auto color mode">
 </li>
       <li><a href="methoddocs/ape_ethereum.html#ape_ethereum.EthereumNodeProvider">EthereumNodeProvider (class in ape_ethereum)</a>
 </li>
-      <li><a href="methoddocs/ape_test.html#ape_test.EthTesterProviderConfig">EthTesterProviderConfig (class in ape_test)</a>
-</li>
       <li><a href="methoddocs/api.html#ape.api.transactions.ReceiptAPI.events">events (ape.api.transactions.ReceiptAPI property)</a>
 </li>
       <li><a href="methoddocs/ape_compile.html#ape_compile.Config.exclude">exclude (ape_compile.Config attribute)</a>
-
-      <ul>
-        <li><a href="methoddocs/ape_test.html#ape_test.CoverageConfig.exclude">(ape_test.CoverageConfig attribute)</a>
 </li>
-        <li><a href="methoddocs/ape_test.html#ape_test.GasConfig.exclude">(ape_test.GasConfig attribute)</a>
-</li>
-      </ul></li>
       <li><a href="methoddocs/managers.html#ape.managers.project.LocalProject.exclusions">exclusions (ape.managers.project.LocalProject property)</a>
 </li>
       <li><a href="methoddocs/ape_node.html#ape_node.EthereumNodeConfig.executable">executable (ape_node.EthereumNodeConfig attribute)</a>
+</li>
+      <li><a href="methoddocs/types.html#ape.types.trace.SourceTraceback.execution">execution (ape.types.trace.SourceTraceback property)</a>
 </li>
       <li><a href="methoddocs/cli.html#ape.cli.arguments.existing_alias_argument">existing_alias_argument() (in module ape.cli.arguments)</a>
 </li>
@@ -1988,6 +2028,14 @@ data-aria-dark="Switch to auto color mode">
 </li>
       <li><a href="methoddocs/plugins.html#ape.plugins.network.ExplorerPlugin.explorers">explorers() (ape.plugins.network.ExplorerPlugin method)</a>
 </li>
+      <li><a href="methoddocs/types.html#ape.types.trace.ControlFlow.extend">extend() (ape.types.trace.ControlFlow method)</a>
+
+      <ul>
+        <li><a href="methoddocs/types.html#ape.types.trace.SourceTraceback.extend">(ape.types.trace.SourceTraceback method)</a>
+</li>
+      </ul></li>
+      <li><a href="methoddocs/types.html#ape.types.trace.SourceTraceback.extend_last">extend_last() (ape.types.trace.SourceTraceback method)</a>
+</li>
       <li><a href="methoddocs/utils.html#ape.utils.ExtraAttributesMixin">ExtraAttributesMixin (class in ape.utils)</a>
 </li>
       <li><a href="methoddocs/utils.html#ape.utils.extract_archive">extract_archive() (in module ape.utils)</a>
@@ -1998,10 +2046,6 @@ data-aria-dark="Switch to auto color mode">
         <li><a href="methoddocs/api.html#ape.api.projects.ProjectAPI.extract_config">(ape.api.projects.ProjectAPI method)</a>
 </li>
         <li><a href="methoddocs/managers.html#ape.managers.config.ConfigManager.extract_config">(ape.managers.config.ConfigManager class method)</a>
-</li>
-        <li><a href="methoddocs/ape_pm.html#ape_pm.BrownieProject.extract_config">(ape_pm.BrownieProject method)</a>
-</li>
-        <li><a href="methoddocs/ape_pm.html#ape_pm.FoundryProject.extract_config">(ape_pm.FoundryProject method)</a>
 </li>
       </ul></li>
       <li><a href="methoddocs/managers.html#ape.managers.project.LocalProject.extract_manifest">extract_manifest() (ape.managers.project.LocalProject method)</a>
@@ -2035,17 +2079,7 @@ data-aria-dark="Switch to auto color mode">
 </li>
       </ul></li>
       <li><a href="methoddocs/api.html#ape.api.projects.DependencyAPI.fetch">fetch() (ape.api.projects.DependencyAPI method)</a>
-
-      <ul>
-        <li><a href="methoddocs/ape_pm.html#ape_pm.GithubDependency.fetch">(ape_pm.GithubDependency method)</a>
 </li>
-        <li><a href="methoddocs/ape_pm.html#ape_pm.LocalDependency.fetch">(ape_pm.LocalDependency method)</a>
-</li>
-        <li><a href="methoddocs/ape_pm.html#ape_pm.NpmDependency.fetch">(ape_pm.NpmDependency method)</a>
-</li>
-        <li><a href="methoddocs/ape_pm.html#ape_pm.PythonDependency.fetch">(ape_pm.PythonDependency method)</a>
-</li>
-      </ul></li>
       <li>
     FILE_PATHS
 
@@ -2063,13 +2097,19 @@ data-aria-dark="Switch to auto color mode">
 </li>
       <li><a href="methoddocs/api.html#ape.api.networks.ForkedNetworkAPI">ForkedNetworkAPI (class in ape.api.networks)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/ape_ethereum.html#ape_ethereum.ForkedNetworkConfig">ForkedNetworkConfig (class in ape_ethereum)</a>
 </li>
-      <li><a href="methoddocs/ape_pm.html#ape_pm.FoundryProject">FoundryProject (class in ape_pm)</a>
+      <li><a href="methoddocs/types.html#ape.types.trace.ControlFlow.format">format() (ape.types.trace.ControlFlow method)</a>
+
+      <ul>
+        <li><a href="methoddocs/types.html#ape.types.trace.SourceTraceback.format">(ape.types.trace.SourceTraceback method)</a>
 </li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/exceptions.html#ape.exceptions.ContractLogicError.from_error">from_error() (ape.exceptions.ContractLogicError class method)</a>
+</li>
+      <li><a href="methoddocs/types.html#ape.types.events.LogFilter.from_event">from_event() (ape.types.events.LogFilter class method)</a>
 </li>
       <li><a href="methoddocs/managers.html#ape.managers.project.ProjectManager.from_manifest">from_manifest() (ape.managers.project.ProjectManager class method)</a>
 </li>
@@ -2115,8 +2155,6 @@ data-aria-dark="Switch to auto color mode">
 <h2 id="G">G</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="methoddocs/ape_test.html#ape_test.ApeTestConfig.gas">gas (ape_test.ApeTestConfig attribute)</a>
-</li>
       <li><a href="methoddocs/utils.html#ape.utils.TraceStyles.GAS_COST">GAS_COST (ape.utils.TraceStyles attribute)</a>
 </li>
       <li><a href="methoddocs/utils.html#ape.utils.gas_estimation_error_message">gas_estimation_error_message() (in module ape.utils)</a>
@@ -2130,18 +2168,14 @@ data-aria-dark="Switch to auto color mode">
 </li>
         <li><a href="methoddocs/ape_ethereum.html#ape_ethereum.Web3Provider.gas_price">(ape_ethereum.Web3Provider property)</a>
 </li>
-        <li><a href="methoddocs/ape_test.html#ape_test.LocalProvider.gas_price">(ape_test.LocalProvider property)</a>
-</li>
       </ul></li>
-      <li><a href="methoddocs/ape_test.html#ape_test.GasConfig">GasConfig (class in ape_test)</a>
+      <li><a href="methoddocs/types.html#ape.types.gas.GasLimit">GasLimit (in module ape.types.gas)</a>
 </li>
-      <li><a href="methoddocs/ape_test.html#ape_test.GasExclusion">GasExclusion (class in ape_test)</a>
+      <li><a href="methoddocs/types.html#ape.types.trace.GasReport">GasReport (in module ape.types.trace)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.accounts.TestAccountContainerAPI.generate_account">generate_account() (ape.api.accounts.TestAccountContainerAPI method)</a>
 
       <ul>
-        <li><a href="methoddocs/ape_test.html#ape_test.TestAccountContainer.generate_account">(ape_test.TestAccountContainer method)</a>
-</li>
         <li><a href="methoddocs/ape_accounts.html#ape_accounts.generate_account">(in module ape_accounts)</a>
 </li>
       </ul></li>
@@ -2176,8 +2210,6 @@ data-aria-dark="Switch to auto color mode">
       <ul>
         <li><a href="methoddocs/ape_ethereum.html#ape_ethereum.Web3Provider.get_balance">(ape_ethereum.Web3Provider method)</a>
 </li>
-        <li><a href="methoddocs/ape_test.html#ape_test.LocalProvider.get_balance">(ape_test.LocalProvider method)</a>
-</li>
       </ul></li>
       <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.get_block">get_block() (ape.api.providers.ProviderAPI method)</a>
 
@@ -2211,8 +2243,6 @@ data-aria-dark="Switch to auto color mode">
 
       <ul>
         <li><a href="methoddocs/ape_ethereum.html#ape_ethereum.Web3Provider.get_contract_logs">(ape_ethereum.Web3Provider method)</a>
-</li>
-        <li><a href="methoddocs/ape_test.html#ape_test.LocalProvider.get_contract_logs">(ape_test.LocalProvider method)</a>
 </li>
       </ul></li>
       <li><a href="methoddocs/api.html#ape.api.explorers.ExplorerAPI.get_contract_type">get_contract_type() (ape.api.explorers.ExplorerAPI method)</a>
@@ -2265,8 +2295,6 @@ data-aria-dark="Switch to auto color mode">
 
       <ul>
         <li><a href="methoddocs/ape_ethereum.html#ape_ethereum.Web3Provider.get_nonce">(ape_ethereum.Web3Provider method)</a>
-</li>
-        <li><a href="methoddocs/ape_test.html#ape_test.LocalProvider.get_nonce">(ape_test.LocalProvider method)</a>
 </li>
       </ul></li>
       <li><a href="methoddocs/utils.html#ape.utils.get_package_path">get_package_path() (in module ape.utils)</a>
@@ -2328,17 +2356,11 @@ data-aria-dark="Switch to auto color mode">
 </li>
         <li><a href="methoddocs/ape_node.html#ape_node.GethDev.get_test_account">(ape_node.GethDev method)</a>
 </li>
-        <li><a href="methoddocs/ape_test.html#ape_test.LocalProvider.get_test_account">(ape_test.LocalProvider method)</a>
-</li>
-        <li><a href="methoddocs/ape_test.html#ape_test.TestAccountContainer.get_test_account">(ape_test.TestAccountContainer method)</a>
-</li>
       </ul></li>
       <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.get_transaction_trace">get_transaction_trace() (ape.api.providers.ProviderAPI method)</a>
 
       <ul>
         <li><a href="methoddocs/ape_ethereum.html#ape_ethereum.Web3Provider.get_transaction_trace">(ape_ethereum.Web3Provider method)</a>
-</li>
-        <li><a href="methoddocs/ape_test.html#ape_test.LocalProvider.get_transaction_trace">(ape_test.LocalProvider method)</a>
 </li>
       </ul></li>
       <li><a href="methoddocs/api.html#ape.api.explorers.ExplorerAPI.get_transaction_url">get_transaction_url() (ape.api.explorers.ExplorerAPI method)</a>
@@ -2362,24 +2384,16 @@ data-aria-dark="Switch to auto color mode">
       <ul>
         <li><a href="methoddocs/managers.html#ape.managers.project.DependencyManager.get_versions">(ape.managers.project.DependencyManager method)</a>
 </li>
-        <li><a href="methoddocs/ape_pm.html#ape_pm.InterfaceCompiler.get_versions">(ape_pm.InterfaceCompiler method)</a>
-</li>
       </ul></li>
       <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.get_virtual_machine_error">get_virtual_machine_error() (ape.api.providers.ProviderAPI method)</a>
 
       <ul>
         <li><a href="methoddocs/ape_ethereum.html#ape_ethereum.Web3Provider.get_virtual_machine_error">(ape_ethereum.Web3Provider method)</a>
 </li>
-        <li><a href="methoddocs/ape_test.html#ape_test.LocalProvider.get_virtual_machine_error">(ape_test.LocalProvider method)</a>
-</li>
       </ul></li>
       <li><a href="methoddocs/types.html#ape.types.coverage.CoverageReport.get_xml">get_xml() (ape.types.coverage.CoverageReport method)</a>
 </li>
       <li><a href="methoddocs/ape_node.html#ape_node.GethDev">GethDev (class in ape_node)</a>
-</li>
-      <li><a href="methoddocs/ape_pm.html#ape_pm.GithubDependency.github">github (ape_pm.GithubDependency attribute)</a>
-</li>
-      <li><a href="methoddocs/ape_pm.html#ape_pm.GithubDependency">GithubDependency (class in ape_pm)</a>
 </li>
       <li><a href="methoddocs/managers.html#ape.managers.config.ConfigManager.global_config">global_config (ape.managers.config.ConfigManager property)</a>
 </li>
@@ -2397,8 +2411,6 @@ data-aria-dark="Switch to auto color mode">
         <li><a href="methoddocs/ape_ethereum.html#ape_ethereum.Block.hash">(ape_ethereum.Block attribute)</a>
 </li>
       </ul></li>
-      <li><a href="methoddocs/ape_test.html#ape_test.ApeTestConfig.hd_path">hd_path (ape_test.ApeTestConfig attribute)</a>
-</li>
       <li><a href="methoddocs/managers.html#ape.managers.chain.BlockContainer.head">head (ape.managers.chain.BlockContainer property)</a>
 </li>
       <li><a href="methoddocs/types.html#ape.types.signatures.SignableMessage.header">header (ape.types.signatures.SignableMessage attribute)</a>
@@ -2408,6 +2420,8 @@ data-aria-dark="Switch to auto color mode">
       <li><a href="methoddocs/managers.html#ape.managers.converters.HexAddressConverter">HexAddressConverter (class in ape.managers.converters)</a>
 </li>
       <li><a href="methoddocs/managers.html#ape.managers.converters.HexConverter">HexConverter (class in ape.managers.converters)</a>
+</li>
+      <li><a href="methoddocs/types.html#ape.types.basic.HexInt">HexInt (in module ape.types.basic)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -2427,8 +2441,6 @@ data-aria-dark="Switch to auto color mode">
         <li><a href="methoddocs/types.html#ape.types.coverage.FunctionCoverage.hit_count">(ape.types.coverage.FunctionCoverage attribute)</a>
 </li>
       </ul></li>
-      <li><a href="methoddocs/ape_test.html#ape_test.CoverageReportsConfig.html">html (ape_test.CoverageReportsConfig attribute)</a>
-</li>
       <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.http_uri">http_uri (ape.api.providers.ProviderAPI property)</a>
 
       <ul>
@@ -2507,8 +2519,6 @@ data-aria-dark="Switch to auto color mode">
       <li><a href="methoddocs/managers.html#ape.managers.project.DeploymentManager.instance_map">instance_map (ape.managers.project.DeploymentManager property)</a>
 </li>
       <li><a href="methoddocs/managers.html#ape.managers.converters.IntAddressConverter">IntAddressConverter (class in ape.managers.converters)</a>
-</li>
-      <li><a href="methoddocs/ape_pm.html#ape_pm.InterfaceCompiler">InterfaceCompiler (class in ape_pm)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.config.ApeConfig.interfaces_folder">interfaces_folder (ape.api.config.ApeConfig attribute)</a>
 
@@ -2591,10 +2601,6 @@ data-aria-dark="Switch to auto color mode">
       <ul>
         <li><a href="methoddocs/api.html#ape.api.projects.ProjectAPI.is_valid">(ape.api.projects.ProjectAPI property)</a>
 </li>
-        <li><a href="methoddocs/ape_pm.html#ape_pm.BrownieProject.is_valid">(ape_pm.BrownieProject property)</a>
-</li>
-        <li><a href="methoddocs/ape_pm.html#ape_pm.FoundryProject.is_valid">(ape_pm.FoundryProject property)</a>
-</li>
       </ul></li>
       <li><a href="methoddocs/utils.html#ape.utils.is_zero_hex">is_zero_hex() (in module ape.utils)</a>
 </li>
@@ -2638,6 +2644,10 @@ data-aria-dark="Switch to auto color mode">
 <h2 id="L">L</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="methoddocs/types.html#ape.types.trace.SourceTraceback.last">last (ape.types.trace.SourceTraceback property)</a>
+</li>
+      <li><a href="methoddocs/types.html#ape.types.trace.ControlFlow.line_numbers">line_numbers (ape.types.trace.ControlFlow property)</a>
+</li>
       <li><a href="methoddocs/types.html#ape.types.coverage.ContractCoverage.line_rate">line_rate (ape.types.coverage.ContractCoverage property)</a>
 
       <ul>
@@ -2682,19 +2692,15 @@ data-aria-dark="Switch to auto color mode">
 </li>
       <li><a href="methoddocs/managers.html#ape.managers.project.LocalProject.load_manifest">load_manifest() (ape.managers.project.LocalProject method)</a>
 </li>
-      <li><a href="methoddocs/ape_pm.html#ape_pm.LocalDependency.local">local (ape_pm.LocalDependency attribute)</a>
-</li>
-      <li><a href="methoddocs/ape_pm.html#ape_pm.LocalDependency">LocalDependency (class in ape_pm)</a>
-</li>
       <li><a href="methoddocs/managers.html#ape.managers.project.LocalProject">LocalProject (class in ape.managers.project)</a>
-</li>
-      <li><a href="methoddocs/ape_test.html#ape_test.LocalProvider">LocalProvider (class in ape_test)</a>
 </li>
       <li><a href="methoddocs/types.html#ape.types.coverage.CoverageStatement.location">location (ape.types.coverage.CoverageStatement attribute)</a>
 </li>
-      <li><a href="methoddocs/types.html#ape.types.ContractLog.log_index">log_index (ape.types.ContractLog attribute)</a>
+      <li><a href="methoddocs/types.html#ape.types.events.ContractLog.log_index">log_index (ape.types.events.ContractLog attribute)</a>
 </li>
       <li><a href="methoddocs/utils.html#ape.utils.log_instead_of_fail">log_instead_of_fail() (in module ape.utils)</a>
+</li>
+      <li><a href="methoddocs/types.html#ape.types.events.LogFilter">LogFilter (class in ape.types.events)</a>
 </li>
       <li><a href="methoddocs/managers.html#ape.managers.project.SourceManager.lookup">lookup() (ape.managers.project.SourceManager method)</a>
 </li>
@@ -2718,8 +2724,6 @@ data-aria-dark="Switch to auto color mode">
 
       <ul>
         <li><a href="methoddocs/ape_ethereum.html#ape_ethereum.Web3Provider.max_gas">(ape_ethereum.Web3Provider property)</a>
-</li>
-        <li><a href="methoddocs/ape_test.html#ape_test.LocalProvider.max_gas">(ape_test.LocalProvider property)</a>
 </li>
       </ul></li>
       <li><a href="methoddocs/ape_ethereum.html#ape_ethereum.NetworkConfig.max_receipt_retries">max_receipt_retries (ape_ethereum.NetworkConfig attribute)</a>
@@ -2751,8 +2755,6 @@ data-aria-dark="Switch to auto color mode">
 </li>
         <li><a href="methoddocs/ape_node.html#ape_node.GethDev.mine">(ape_node.GethDev method)</a>
 </li>
-        <li><a href="methoddocs/ape_test.html#ape_test.LocalProvider.mine">(ape_test.LocalProvider method)</a>
-</li>
       </ul></li>
       <li><a href="methoddocs/types.html#ape.types.coverage.ContractCoverage.miss_count">miss_count (ape.types.coverage.ContractCoverage property)</a>
 
@@ -2768,9 +2770,7 @@ data-aria-dark="Switch to auto color mode">
       </ul></li>
       <li><a href="methoddocs/exceptions.html#ape.exceptions.MissingDeploymentBytecodeError">MissingDeploymentBytecodeError</a>
 </li>
-      <li><a href="methoddocs/ape_test.html#ape_test.ApeTestConfig.mnemonic">mnemonic (ape_test.ApeTestConfig attribute)</a>
-</li>
-      <li><a href="methoddocs/types.html#ape.types.MockContractLog">MockContractLog (class in ape.types)</a>
+      <li><a href="methoddocs/types.html#ape.types.events.MockContractLog">MockContractLog (class in ape.types.events)</a>
 </li>
       <li><a href="methoddocs/utils.html#ape.utils.BaseInterfaceModel.model_computed_fields">model_computed_fields (ape.utils.BaseInterfaceModel attribute)</a>
 
@@ -2797,6 +2797,8 @@ data-aria-dark="Switch to auto color mode">
 </li>
         <li><a href="methoddocs/types.html#ape.types.coverage.FunctionCoverage.model_dump">(ape.types.coverage.FunctionCoverage method)</a>
 </li>
+        <li><a href="methoddocs/types.html#ape.types.events.LogFilter.model_dump">(ape.types.events.LogFilter method)</a>
+</li>
       </ul></li>
       <li><a href="methoddocs/utils.html#ape.utils.BaseInterfaceModel.model_fields">model_fields (ape.utils.BaseInterfaceModel attribute)</a>
 
@@ -2808,8 +2810,6 @@ data-aria-dark="Switch to auto color mode">
     module
 
       <ul>
-        <li><a href="methoddocs/ape.html#module-ape">ape</a>
-</li>
         <li><a href="methoddocs/api.html#module-ape.api.accounts">ape.api.accounts</a>
 </li>
         <li><a href="methoddocs/api.html#module-ape.api.address">ape.api.address</a>
@@ -2874,11 +2874,21 @@ data-aria-dark="Switch to auto color mode">
 </li>
         <li><a href="methoddocs/plugins.html#module-ape.plugins.query">ape.plugins.query</a>
 </li>
-        <li><a href="methoddocs/types.html#module-ape.types">ape.types</a>
-</li>
         <li><a href="methoddocs/types.html#module-ape.types.address">ape.types.address</a>
 </li>
+        <li><a href="methoddocs/types.html#module-ape.types.basic">ape.types.basic</a>
+</li>
         <li><a href="methoddocs/types.html#module-ape.types.coverage">ape.types.coverage</a>
+</li>
+        <li><a href="methoddocs/types.html#module-ape.types.events">ape.types.events</a>
+</li>
+        <li><a href="methoddocs/types.html#module-ape.types.gas">ape.types.gas</a>
+</li>
+        <li><a href="methoddocs/types.html#module-ape.types.trace">ape.types.trace</a>
+</li>
+        <li><a href="methoddocs/types.html#module-ape.types.units">ape.types.units</a>
+</li>
+        <li><a href="methoddocs/types.html#module-ape.types.vm">ape.types.vm</a>
 </li>
         <li><a href="methoddocs/utils.html#module-ape.utils">ape.utils</a>
 </li>
@@ -2897,6 +2907,10 @@ data-aria-dark="Switch to auto color mode">
         <li><a href="methoddocs/ape_test.html#module-ape_test">ape_test</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="methoddocs/types.html#ape.types.gas.AutoGasLimit.multiplier">multiplier (ape.types.gas.AutoGasLimit attribute)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -2947,8 +2961,6 @@ data-aria-dark="Switch to auto color mode">
 </li>
         <li><a href="methoddocs/ape_node.html#ape_node.GethDev.name">(ape_node.GethDev attribute)</a>
 </li>
-        <li><a href="methoddocs/ape_pm.html#ape_pm.InterfaceCompiler.name">(ape_pm.InterfaceCompiler property)</a>
-</li>
       </ul></li>
       <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.network">network (ape.api.providers.ProviderAPI attribute)</a>
 
@@ -2986,10 +2998,10 @@ data-aria-dark="Switch to auto color mode">
 </li>
       <li><a href="methoddocs/plugins.html#ape.plugins.network.NetworkPlugin">NetworkPlugin (class in ape.plugins.network)</a>
 </li>
-      <li><a href="methoddocs/api.html#ape.api.networks.EcosystemAPI.networks">networks (ape.api.networks.EcosystemAPI property)</a>
+      <li><a href="methoddocs/ape.html#ape.networks">networks (ape attribute)</a>
 
       <ul>
-        <li><a href="methoddocs/ape.html#ape.networks">(in module ape)</a>
+        <li><a href="methoddocs/api.html#ape.api.networks.EcosystemAPI.networks">(ape.api.networks.EcosystemAPI property)</a>
 </li>
       </ul></li>
       <li><a href="methoddocs/plugins.html#ape.plugins.network.NetworkPlugin.networks">networks() (ape.plugins.network.NetworkPlugin method)</a>
@@ -3022,6 +3034,8 @@ data-aria-dark="Switch to auto color mode">
         <li><a href="commands/networks.html#cmdoption-networks-run-v">-v</a>
 </li>
       </ul></li>
+      <li><a href="methoddocs/types.html#ape.types.trace.ControlFlow.next_statement">next_statement (ape.types.trace.ControlFlow property)</a>
+</li>
       <li><a href="methoddocs/ape_ethereum.html#ape_ethereum.TransactionStatusEnum.NO_ERROR">NO_ERROR (ape_ethereum.TransactionStatusEnum attribute)</a>
 </li>
       <li><a href="methoddocs/ape_node.html#ape_node.Node">Node (class in ape_node)</a>
@@ -3032,15 +3046,9 @@ data-aria-dark="Switch to auto color mode">
 </li>
       <li><a href="methoddocs/cli.html#ape.cli.paramtype.Noop">Noop (class in ape.cli.paramtype)</a>
 </li>
-      <li><a href="methoddocs/ape_pm.html#ape_pm.NpmDependency.npm">npm (ape_pm.NpmDependency attribute)</a>
-</li>
-      <li><a href="methoddocs/ape_pm.html#ape_pm.NpmDependency">NpmDependency (class in ape_pm)</a>
-</li>
       <li><a href="methoddocs/api.html#ape.api.providers.BlockAPI.num_transactions">num_transactions (ape.api.providers.BlockAPI attribute)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.providers.BlockAPI.number">number (ape.api.providers.BlockAPI attribute)</a>
-</li>
-      <li><a href="methoddocs/ape_test.html#ape_test.ApeTestConfig.number_of_accounts">number_of_accounts (ape_test.ApeTestConfig attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -3085,14 +3093,6 @@ data-aria-dark="Switch to auto color mode">
 
       <ul>
         <li><a href="methoddocs/managers.html#ape.managers.project.Dependency.package_id">(ape.managers.project.Dependency property)</a>
-</li>
-        <li><a href="methoddocs/ape_pm.html#ape_pm.GithubDependency.package_id">(ape_pm.GithubDependency property)</a>
-</li>
-        <li><a href="methoddocs/ape_pm.html#ape_pm.LocalDependency.package_id">(ape_pm.LocalDependency property)</a>
-</li>
-        <li><a href="methoddocs/ape_pm.html#ape_pm.NpmDependency.package_id">(ape_pm.NpmDependency property)</a>
-</li>
-        <li><a href="methoddocs/ape_pm.html#ape_pm.PythonDependency.package_id">(ape_pm.PythonDependency property)</a>
 </li>
       </ul></li>
       <li><a href="methoddocs/managers.html#ape.managers.project.DependencyManager.packages_cache">packages_cache (ape.managers.project.DependencyManager property)</a>
@@ -3311,8 +3311,6 @@ data-aria-dark="Switch to auto color mode">
       <ul>
         <li><a href="methoddocs/ape_ethereum.html#ape_ethereum.Web3Provider.priority_fee">(ape_ethereum.Web3Provider property)</a>
 </li>
-        <li><a href="methoddocs/ape_test.html#ape_test.LocalProvider.priority_fee">(ape_test.LocalProvider property)</a>
-</li>
       </ul></li>
       <li><a href="methoddocs/utils.html#ape.utils.GeneratedDevAccount.private_key">private_key (ape.utils.GeneratedDevAccount attribute)</a>
 </li>
@@ -3324,18 +3322,18 @@ data-aria-dark="Switch to auto color mode">
       </ul></li>
       <li><a href="methoddocs/types.html#ape.types.coverage.FunctionCoverage.profile_statement">profile_statement() (ape.types.coverage.FunctionCoverage method)</a>
 </li>
-      <li><a href="methoddocs/managers.html#ape.managers.project.Dependency.project">project (ape.managers.project.Dependency property)</a>
+      <li><a href="methoddocs/ape.html#ape.project">project (ape attribute)</a>
+
+      <ul>
+        <li><a href="methoddocs/managers.html#ape.managers.project.Dependency.project">(ape.managers.project.Dependency property)</a>
 </li>
+      </ul></li>
       <li><a href="methoddocs/utils.html#ape.utils.ManagerAccessMixin.Project">Project (ape.utils.ManagerAccessMixin attribute)</a>
 
       <ul>
         <li><a href="methoddocs/managers.html#ape.managers.project.Project">(class in ape.managers.project)</a>
 </li>
-        <li><a href="methoddocs/ape.html#ape.Project">(in module ape)</a>
-</li>
       </ul></li>
-      <li><a href="methoddocs/ape.html#ape.project">project (in module ape)</a>
-</li>
       <li><a href="methoddocs/managers.html#ape.managers.project.LocalProject.project_api">project_api (ape.managers.project.LocalProject property)</a>
 </li>
       <li><a href="methoddocs/managers.html#ape.managers.project.Dependency.project_path">project_path (ape.managers.project.Dependency property)</a>
@@ -3353,8 +3351,6 @@ data-aria-dark="Switch to auto color mode">
       <li><a href="methoddocs/plugins.html#ape.plugins.project.ProjectPlugin.projects">projects() (ape.plugins.project.ProjectPlugin method)</a>
 </li>
       <li><a href="methoddocs/cli.html#ape.cli.choices.PromptChoice">PromptChoice (class in ape.cli.choices)</a>
-</li>
-      <li><a href="methoddocs/ape_test.html#ape_test.ApeTestConfig.provider">provider (ape_test.ApeTestConfig attribute)</a>
 </li>
       <li><a href="methoddocs/managers.html#ape.managers.networks.NetworkManager.provider_names">provider_names (ape.managers.networks.NetworkManager property)</a>
 </li>
@@ -3384,8 +3380,6 @@ data-aria-dark="Switch to auto color mode">
         <li><a href="methoddocs/api.html#ape.api.networks.NetworkAPI.publish_contract">(ape.api.networks.NetworkAPI method)</a>
 </li>
       </ul></li>
-      <li><a href="methoddocs/ape_pm.html#ape_pm.PythonDependency.pypi">pypi (ape_pm.PythonDependency attribute)</a>
-</li>
       <li>
     PYTEST_ARGS
 
@@ -3393,10 +3387,6 @@ data-aria-dark="Switch to auto color mode">
         <li><a href="commands/test.html#cmdoption-test-arg-PYTEST_ARGS">test command line option</a>
 </li>
       </ul></li>
-      <li><a href="methoddocs/ape_pm.html#ape_pm.PythonDependency.python">python (ape_pm.PythonDependency attribute)</a>
-</li>
-      <li><a href="methoddocs/ape_pm.html#ape_pm.PythonDependency">PythonDependency (class in ape_pm)</a>
-</li>
   </ul></td>
 </tr></table>
 
@@ -3479,8 +3469,6 @@ data-aria-dark="Switch to auto color mode">
 </li>
       <li><a href="methoddocs/types.html#ape.types.signatures.recover_signer">recover_signer() (ape.types.signatures method)</a>
 </li>
-      <li><a href="methoddocs/ape_pm.html#ape_pm.GithubDependency.ref">ref (ape_pm.GithubDependency attribute)</a>
-</li>
       <li><a href="methoddocs/managers.html#ape.managers.project.SourceManager.refresh">refresh() (ape.managers.project.SourceManager method)</a>
 </li>
       <li><a href="methoddocs/managers.html#ape.managers.project.LocalProject.refresh_sources">refresh_sources() (ape.managers.project.LocalProject method)</a>
@@ -3501,12 +3489,6 @@ data-aria-dark="Switch to auto color mode">
 </li>
       <li><a href="methoddocs/api.html#ape.api.accounts.AccountContainerAPI.remove">remove() (ape.api.accounts.AccountContainerAPI method)</a>
 </li>
-      <li><a href="methoddocs/ape_test.html#ape_test.CoverageConfig.reports">reports (ape_test.CoverageConfig attribute)</a>
-
-      <ul>
-        <li><a href="methoddocs/ape_test.html#ape_test.GasConfig.reports">(ape_test.GasConfig attribute)</a>
-</li>
-      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/api.html#ape.api.networks.EcosystemAPI.request_header">request_header (ape.api.networks.EcosystemAPI attribute)</a>
@@ -3534,11 +3516,7 @@ data-aria-dark="Switch to auto color mode">
 </li>
       </ul></li>
       <li><a href="methoddocs/api.html#ape.api.accounts.TestAccountContainerAPI.reset">reset() (ape.api.accounts.TestAccountContainerAPI method)</a>
-
-      <ul>
-        <li><a href="methoddocs/ape_test.html#ape_test.TestAccountContainer.reset">(ape_test.TestAccountContainer method)</a>
 </li>
-      </ul></li>
       <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.restore">restore() (ape.api.providers.ProviderAPI method)</a>
 
       <ul>
@@ -3547,8 +3525,6 @@ data-aria-dark="Switch to auto color mode">
         <li><a href="methoddocs/managers.html#ape.managers.chain.ChainManager.restore">(ape.managers.chain.ChainManager method)</a>
 </li>
         <li><a href="methoddocs/ape_node.html#ape_node.GethDev.restore">(ape_node.GethDev method)</a>
-</li>
-        <li><a href="methoddocs/ape_test.html#ape_test.LocalProvider.restore">(ape_test.LocalProvider method)</a>
 </li>
       </ul></li>
       <li><a href="methoddocs/api.html#ape.api.transactions.ReceiptAPI.return_value">return_value (ape.api.transactions.ReceiptAPI property)</a>
@@ -3569,7 +3545,7 @@ data-aria-dark="Switch to auto color mode">
         <li><a href="methoddocs/managers.html#ape.managers.chain.TransactionHistory.revert_to_block">(ape.managers.chain.TransactionHistory method)</a>
 </li>
       </ul></li>
-      <li><a href="methoddocs/ape.html#ape.reverts">reverts (in module ape)</a>
+      <li><a href="methoddocs/types.html#ape.types.trace.SourceTraceback.revert_type">revert_type (ape.types.trace.SourceTraceback property)</a>
 </li>
       <li><a href="methoddocs/utils.html#ape.utils.RPCHeaders">RPCHeaders (class in ape.utils)</a>
 </li>
@@ -3607,8 +3583,6 @@ data-aria-dark="Switch to auto color mode">
       <ul>
         <li><a href="methoddocs/ape_ethereum.html#ape_ethereum.Web3Provider.send_call">(ape_ethereum.Web3Provider method)</a>
 </li>
-        <li><a href="methoddocs/ape_test.html#ape_test.LocalProvider.send_call">(ape_test.LocalProvider method)</a>
-</li>
       </ul></li>
       <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.send_private_transaction">send_private_transaction() (ape.api.providers.ProviderAPI method)</a>
 </li>
@@ -3616,8 +3590,6 @@ data-aria-dark="Switch to auto color mode">
 
       <ul>
         <li><a href="methoddocs/ape_ethereum.html#ape_ethereum.Web3Provider.send_transaction">(ape_ethereum.Web3Provider method)</a>
-</li>
-        <li><a href="methoddocs/ape_test.html#ape_test.LocalProvider.send_transaction">(ape_test.LocalProvider method)</a>
 </li>
       </ul></li>
       <li><a href="methoddocs/ape_compile.html#ape_compile.Config.serialize_exclude">serialize_exclude() (ape_compile.Config method)</a>
@@ -3653,15 +3625,9 @@ data-aria-dark="Switch to auto color mode">
 </li>
         <li><a href="methoddocs/ape_node.html#ape_node.GethDev.set_timestamp">(ape_node.GethDev method)</a>
 </li>
-        <li><a href="methoddocs/ape_test.html#ape_test.LocalProvider.set_timestamp">(ape_test.LocalProvider method)</a>
-</li>
       </ul></li>
       <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.settings">settings (ape.api.providers.ProviderAPI property)</a>
-
-      <ul>
-        <li><a href="methoddocs/ape_test.html#ape_test.LocalProvider.settings">(ape_test.LocalProvider property)</a>
 </li>
-      </ul></li>
       <li><a href="methoddocs/ape_ethereum.html#ape_ethereum.SharedBlobReceipt">SharedBlobReceipt (class in ape_ethereum)</a>
 </li>
       <li><a href="methoddocs/ape_ethereum.html#ape_ethereum.SharedBlobTransaction">SharedBlobTransaction (class in ape_ethereum)</a>
@@ -3707,15 +3673,11 @@ data-aria-dark="Switch to auto color mode">
 </li>
         <li><a href="methoddocs/ape_accounts.html#ape_accounts.KeyfileAccount.sign_message">(ape_accounts.KeyfileAccount method)</a>
 </li>
-        <li><a href="methoddocs/ape_test.html#ape_test.TestAccount.sign_message">(ape_test.TestAccount method)</a>
-</li>
       </ul></li>
       <li><a href="methoddocs/api.html#ape.api.accounts.AccountAPI.sign_raw_msghash">sign_raw_msghash() (ape.api.accounts.AccountAPI method)</a>
 
       <ul>
         <li><a href="methoddocs/ape_accounts.html#ape_accounts.KeyfileAccount.sign_raw_msghash">(ape_accounts.KeyfileAccount method)</a>
-</li>
-        <li><a href="methoddocs/ape_test.html#ape_test.TestAccount.sign_raw_msghash">(ape_test.TestAccount method)</a>
 </li>
       </ul></li>
       <li><a href="methoddocs/api.html#ape.api.accounts.AccountAPI.sign_transaction">sign_transaction() (ape.api.accounts.AccountAPI method)</a>
@@ -3725,17 +3687,15 @@ data-aria-dark="Switch to auto color mode">
 </li>
         <li><a href="methoddocs/ape_accounts.html#ape_accounts.KeyfileAccount.sign_transaction">(ape_accounts.KeyfileAccount method)</a>
 </li>
-        <li><a href="methoddocs/ape_test.html#ape_test.TestAccount.sign_transaction">(ape_test.TestAccount method)</a>
-</li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/types.html#ape.types.signatures.SignableMessage">SignableMessage (class in ape.types.signatures)</a>
 </li>
       <li><a href="methoddocs/exceptions.html#ape.exceptions.SignatureError">SignatureError</a>
 </li>
       <li><a href="methoddocs/utils.html#ape.utils.singledispatchmethod">singledispatchmethod (class in ape.utils)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/api.html#ape.api.providers.BlockAPI.size">size (ape.api.providers.BlockAPI property)</a>
 
       <ul>
@@ -3753,15 +3713,25 @@ data-aria-dark="Switch to auto color mode">
 </li>
         <li><a href="methoddocs/ape_node.html#ape_node.GethDev.snapshot">(ape_node.GethDev method)</a>
 </li>
-        <li><a href="methoddocs/ape_test.html#ape_test.LocalProvider.snapshot">(ape_test.LocalProvider method)</a>
-</li>
       </ul></li>
+      <li><a href="methoddocs/types.html#ape.types.vm.SnapshotID">SnapshotID (in module ape.types.vm)</a>
+</li>
       <li><a href="methoddocs/types.html#ape.types.coverage.CoverageReport.source_folders">source_folders (ape.types.coverage.CoverageReport attribute)</a>
 </li>
       <li><a href="methoddocs/types.html#ape.types.coverage.ContractSourceCoverage.source_id">source_id (ape.types.coverage.ContractSourceCoverage attribute)</a>
 </li>
       <li><a href="methoddocs/contracts.html#ape.contracts.base.ContractTypeWrapper.source_path">source_path (ape.contracts.base.ContractTypeWrapper property)</a>
+
+      <ul>
+        <li><a href="methoddocs/types.html#ape.types.trace.ControlFlow.source_path">(ape.types.trace.ControlFlow attribute)</a>
 </li>
+      </ul></li>
+      <li><a href="methoddocs/types.html#ape.types.trace.ControlFlow.source_statements">source_statements (ape.types.trace.ControlFlow property)</a>
+
+      <ul>
+        <li><a href="methoddocs/types.html#ape.types.trace.SourceTraceback.source_statements">(ape.types.trace.SourceTraceback property)</a>
+</li>
+      </ul></li>
       <li><a href="methoddocs/api.html#ape.api.transactions.ReceiptAPI.source_traceback">source_traceback (ape.api.transactions.ReceiptAPI property)</a>
 
       <ul>
@@ -3778,6 +3748,8 @@ data-aria-dark="Switch to auto color mode">
         <li><a href="methoddocs/types.html#ape.types.coverage.CoverageReport.sources">(ape.types.coverage.CoverageReport property)</a>
 </li>
       </ul></li>
+      <li><a href="methoddocs/types.html#ape.types.trace.SourceTraceback">SourceTraceback (class in ape.types.trace)</a>
+</li>
       <li><a href="methoddocs/utils.html#ape.utils.spawn">spawn() (in module ape.utils)</a>
 </li>
       <li><a href="methoddocs/managers.html#ape.managers.project.DependencyManager.specified">specified (ape.managers.project.DependencyManager property)</a>
@@ -3798,6 +3770,10 @@ data-aria-dark="Switch to auto color mode">
         <li><a href="methoddocs/types.html#ape.types.coverage.CoverageReport.statements">(ape.types.coverage.CoverageReport property)</a>
 </li>
         <li><a href="methoddocs/types.html#ape.types.coverage.FunctionCoverage.statements">(ape.types.coverage.FunctionCoverage attribute)</a>
+</li>
+        <li><a href="methoddocs/types.html#ape.types.trace.ControlFlow.statements">(ape.types.trace.ControlFlow attribute)</a>
+</li>
+        <li><a href="methoddocs/types.html#ape.types.trace.SourceTraceback.statements">(ape.types.trace.SourceTraceback property)</a>
 </li>
       </ul></li>
       <li><a href="methoddocs/ape_ethereum.html#ape_ethereum.StaticFeeTransaction">StaticFeeTransaction (class in ape_ethereum)</a>
@@ -3837,8 +3813,6 @@ data-aria-dark="Switch to auto color mode">
       <ul>
         <li><a href="methoddocs/ape_ethereum.html#ape_ethereum.Web3Provider.supports_tracing">(ape_ethereum.Web3Provider property)</a>
 </li>
-        <li><a href="methoddocs/ape_test.html#ape_test.LocalProvider.supports_tracing">(ape_test.LocalProvider property)</a>
-</li>
       </ul></li>
   </ul></td>
 </tr></table>
@@ -3849,8 +3823,6 @@ data-aria-dark="Switch to auto color mode">
       <li><a href="methoddocs/types.html#ape.types.coverage.CoverageStatement.tag">tag (ape.types.coverage.CoverageStatement attribute)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.networks.ProxyInfoAPI.target">target (ape.api.networks.ProxyInfoAPI attribute)</a>
-</li>
-      <li><a href="methoddocs/ape_test.html#ape_test.CoverageReportsConfig.terminal">terminal (ape_test.CoverageReportsConfig attribute)</a>
 </li>
       <li>
     test command line option
@@ -3873,11 +3845,7 @@ data-aria-dark="Switch to auto color mode">
       </ul></li>
       <li><a href="methoddocs/managers.html#ape.managers.accounts.AccountManager.test_accounts">test_accounts (ape.managers.accounts.AccountManager property)</a>
 </li>
-      <li><a href="methoddocs/ape_test.html#ape_test.TestAccount">TestAccount (class in ape_test)</a>
-</li>
       <li><a href="methoddocs/api.html#ape.api.accounts.TestAccountAPI">TestAccountAPI (class in ape.api.accounts)</a>
-</li>
-      <li><a href="methoddocs/ape_test.html#ape_test.TestAccountContainer">TestAccountContainer (class in ape_test)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.accounts.TestAccountContainerAPI">TestAccountContainerAPI (class in ape.api.accounts)</a>
 </li>
@@ -3888,9 +3856,9 @@ data-aria-dark="Switch to auto color mode">
       <li><a href="methoddocs/api.html#ape.api.providers.BlockAPI.timestamp">timestamp (ape.api.providers.BlockAPI attribute)</a>
 
       <ul>
-        <li><a href="methoddocs/types.html#ape.types.ContractLog.timestamp">(ape.types.ContractLog property)</a>
-</li>
         <li><a href="methoddocs/types.html#ape.types.coverage.CoverageReport.timestamp">(ape.types.coverage.CoverageReport attribute)</a>
+</li>
+        <li><a href="methoddocs/types.html#ape.types.events.ContractLog.timestamp">(ape.types.events.ContractLog property)</a>
 </li>
       </ul></li>
       <li><a href="methoddocs/managers.html#ape.managers.converters.TimestampConverter">TimestampConverter (class in ape.managers.converters)</a>
@@ -3927,8 +3895,6 @@ data-aria-dark="Switch to auto color mode">
 </li>
       <li><a href="methoddocs/utils.html#ape.utils.TraceStyles">TraceStyles (class in ape.utils)</a>
 </li>
-      <li><a href="methoddocs/ape_test.html#ape_test.CoverageConfig.track">track (ape_test.CoverageConfig attribute)</a>
-</li>
       <li><a href="methoddocs/managers.html#ape.managers.project.DeploymentManager.track">track() (ape.managers.project.DeploymentManager method)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.transactions.ReceiptAPI.track_coverage">track_coverage() (ape.api.transactions.ReceiptAPI method)</a>
@@ -3951,9 +3917,9 @@ data-aria-dark="Switch to auto color mode">
         <li><a href="methoddocs/ape_ethereum.html#ape_ethereum.NetworkConfig.transaction_acceptance_timeout">(ape_ethereum.NetworkConfig attribute)</a>
 </li>
       </ul></li>
-      <li><a href="methoddocs/types.html#ape.types.ContractLog.transaction_hash">transaction_hash (ape.types.ContractLog attribute)</a>
+      <li><a href="methoddocs/types.html#ape.types.events.ContractLog.transaction_hash">transaction_hash (ape.types.events.ContractLog attribute)</a>
 </li>
-      <li><a href="methoddocs/types.html#ape.types.ContractLog.transaction_index">transaction_index (ape.types.ContractLog attribute)</a>
+      <li><a href="methoddocs/types.html#ape.types.events.ContractLog.transaction_index">transaction_index (ape.types.events.ContractLog attribute)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.transactions.TransactionAPI">TransactionAPI (class in ape.api.transactions)</a>
 </li>
@@ -4022,13 +3988,11 @@ data-aria-dark="Switch to auto color mode">
       <ul>
         <li><a href="methoddocs/ape_ethereum.html#ape_ethereum.Web3Provider.update_settings">(ape_ethereum.Web3Provider method)</a>
 </li>
-        <li><a href="methoddocs/ape_test.html#ape_test.LocalProvider.update_settings">(ape_test.LocalProvider method)</a>
-</li>
       </ul></li>
-      <li><a href="methoddocs/api.html#ape.api.networks.ForkedNetworkAPI.upstream_chain_id">upstream_chain_id (ape.api.networks.ForkedNetworkAPI property)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="methoddocs/api.html#ape.api.networks.ForkedNetworkAPI.upstream_chain_id">upstream_chain_id (ape.api.networks.ForkedNetworkAPI property)</a>
+</li>
       <li><a href="methoddocs/api.html#ape.api.networks.ForkedNetworkAPI.upstream_network">upstream_network (ape.api.networks.ForkedNetworkAPI property)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.networks.ForkedNetworkAPI.upstream_provider">upstream_provider (ape.api.networks.ForkedNetworkAPI property)</a>
@@ -4043,14 +4007,6 @@ data-aria-dark="Switch to auto color mode">
 
       <ul>
         <li><a href="methoddocs/managers.html#ape.managers.project.Dependency.uri">(ape.managers.project.Dependency property)</a>
-</li>
-        <li><a href="methoddocs/ape_pm.html#ape_pm.GithubDependency.uri">(ape_pm.GithubDependency property)</a>
-</li>
-        <li><a href="methoddocs/ape_pm.html#ape_pm.LocalDependency.uri">(ape_pm.LocalDependency property)</a>
-</li>
-        <li><a href="methoddocs/ape_pm.html#ape_pm.NpmDependency.uri">(ape_pm.NpmDependency property)</a>
-</li>
-        <li><a href="methoddocs/ape_pm.html#ape_pm.PythonDependency.uri">(ape_pm.PythonDependency property)</a>
 </li>
       </ul></li>
       <li><a href="methoddocs/managers.html#ape.managers.project.DependencyManager.uri_map">uri_map (ape.managers.project.DependencyManager property)</a>
@@ -4086,6 +4042,8 @@ data-aria-dark="Switch to auto color mode">
         <li><a href="commands/plugins.html#cmdoption-plugins-change-version-arg-VERSION">plugins-change-version command line option</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/api.html#ape.api.config.ApeConfig.version">version (ape.api.config.ApeConfig attribute)</a>
 
       <ul>
@@ -4093,33 +4051,9 @@ data-aria-dark="Switch to auto color mode">
 </li>
         <li><a href="methoddocs/types.html#ape.types.signatures.SignableMessage.version">(ape.types.signatures.SignableMessage attribute)</a>
 </li>
-        <li><a href="methoddocs/ape_pm.html#ape_pm.GithubDependency.version">(ape_pm.GithubDependency attribute)</a>
-</li>
-        <li><a href="methoddocs/ape_pm.html#ape_pm.LocalDependency.version">(ape_pm.LocalDependency attribute)</a>
-</li>
-        <li><a href="methoddocs/ape_pm.html#ape_pm.NpmDependency.version">(ape_pm.NpmDependency attribute)</a>
-</li>
-        <li><a href="methoddocs/ape_pm.html#ape_pm.PythonDependency.version">(ape_pm.PythonDependency attribute)</a>
-</li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="methoddocs/ape_pm.html#ape_pm.NpmDependency.version_from_installed_package_json">version_from_installed_package_json (ape_pm.NpmDependency property)</a>
-</li>
-      <li><a href="methoddocs/ape_pm.html#ape_pm.NpmDependency.version_from_project_package_json">version_from_project_package_json (ape_pm.NpmDependency property)</a>
-</li>
       <li><a href="methoddocs/api.html#ape.api.projects.DependencyAPI.version_id">version_id (ape.api.projects.DependencyAPI property)</a>
-
-      <ul>
-        <li><a href="methoddocs/ape_pm.html#ape_pm.GithubDependency.version_id">(ape_pm.GithubDependency property)</a>
 </li>
-        <li><a href="methoddocs/ape_pm.html#ape_pm.LocalDependency.version_id">(ape_pm.LocalDependency property)</a>
-</li>
-        <li><a href="methoddocs/ape_pm.html#ape_pm.NpmDependency.version_id">(ape_pm.NpmDependency property)</a>
-</li>
-        <li><a href="methoddocs/ape_pm.html#ape_pm.PythonDependency.version_id">(ape_pm.PythonDependency property)</a>
-</li>
-      </ul></li>
       <li>
     VERSIONS
 
@@ -4143,6 +4077,8 @@ data-aria-dark="Switch to auto color mode">
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="methoddocs/types.html#ape.types.trace.ControlFlow.ws_begin_lineno">ws_begin_lineno (ape.types.trace.ControlFlow property)</a>
+</li>
       <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.ws_uri">ws_uri (ape.api.providers.ProviderAPI property)</a>
 
       <ul>
@@ -4151,14 +4087,6 @@ data-aria-dark="Switch to auto color mode">
         <li><a href="methoddocs/ape_ethereum.html#ape_ethereum.Web3Provider.ws_uri">(ape_ethereum.Web3Provider property)</a>
 </li>
       </ul></li>
-  </ul></td>
-</tr></table>
-
-<h2 id="X">X</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="methoddocs/ape_test.html#ape_test.CoverageReportsConfig.xml">xml (ape_test.CoverageReportsConfig attribute)</a>
-</li>
   </ul></td>
 </tr></table>
 

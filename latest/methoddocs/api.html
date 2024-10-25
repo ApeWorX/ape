@@ -1513,7 +1513,7 @@ function defined in the given contract type.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">SourceTraceback</span></code></p>
+<dd class="field-even"><p><a class="reference internal" href="types.html#ape.types.trace.SourceTraceback" title="ape.types.trace.SourceTraceback"><code class="xref py py-class docutils literal notranslate"><span class="pre">SourceTraceback</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1548,7 +1548,7 @@ function defined in the given contract type.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.api.config.ApeConfig.__repr__">
-<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.config.ApeConfig.__repr__" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#ape.api.config.ApeConfig.__repr__" title="Link to this definition"></a></dt>
 <dd><p>Return repr(self).</p>
 </dd></dl>
 
@@ -2125,7 +2125,7 @@ the error.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.api.networks.EcosystemAPI.decode_logs">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">decode_logs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">events</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">EventABI</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="types.html#ape.types.ContractLog" title="ape.types.events.ContractLog"><span class="pre">ContractLog</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.api.networks.EcosystemAPI.decode_logs" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">decode_logs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">events</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">EventABI</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="types.html#ape.types.events.ContractLog" title="ape.types.events.ContractLog"><span class="pre">ContractLog</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.api.networks.EcosystemAPI.decode_logs" title="Link to this definition"></a></dt>
 <dd><p>Decode any contract logs that match the given event ABI from the raw log data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -2135,7 +2135,7 @@ the error.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Iterator[<a class="reference internal" href="types.html#ape.types.ContractLog" title="ape.types.ContractLog"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractLog</span></code></a>]</p>
+<dd class="field-even"><p>Iterator[<code class="xref py py-class docutils literal notranslate"><span class="pre">ContractLog</span></code>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -3286,7 +3286,7 @@ for checking a previous account nonce.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.api.providers.ProviderAPI.get_contract_logs">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_contract_logs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_filter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">LogFilter</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="types.html#ape.types.ContractLog" title="ape.types.events.ContractLog"><span class="pre">ContractLog</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.api.providers.ProviderAPI.get_contract_logs" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_contract_logs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_filter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="types.html#ape.types.events.LogFilter" title="ape.types.events.LogFilter"><span class="pre">LogFilter</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="types.html#ape.types.events.ContractLog" title="ape.types.events.ContractLog"><span class="pre">ContractLog</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.api.providers.ProviderAPI.get_contract_logs" title="Link to this definition"></a></dt>
 <dd><p>Get logs from contracts.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -3294,7 +3294,7 @@ for checking a previous account nonce.</p></li>
 topic filters. Defaults to getting all events.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Iterator[<a class="reference internal" href="types.html#ape.types.ContractLog" title="ape.types.ContractLog"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractLog</span></code></a>]</p>
+<dd class="field-even"><p>Iterator[<code class="xref py py-class docutils literal notranslate"><span class="pre">ContractLog</span></code>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -3561,7 +3561,7 @@ networks.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Iterator[<a class="reference internal" href="types.html#ape.types.ContractLog" title="ape.types.ContractLog"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractLog</span></code></a>]</p>
+<dd class="field-even"><p>Iterator[<code class="xref py py-class docutils literal notranslate"><span class="pre">ContractLog</span></code>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -4023,21 +4023,21 @@ to the required amount of confirmations.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.api.transactions.ReceiptAPI.decode_logs">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">decode_logs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">abi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">EventABI</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="contracts.html#ape.contracts.base.ContractEvent" title="ape.contracts.base.ContractEvent"><span class="pre">ContractEvent</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">EventABI</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="contracts.html#ape.contracts.base.ContractEvent" title="ape.contracts.base.ContractEvent"><span class="pre">ContractEvent</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ContractLogContainer</span></span></span><a class="headerlink" href="#ape.api.transactions.ReceiptAPI.decode_logs" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">decode_logs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">abi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">EventABI</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="contracts.html#ape.contracts.base.ContractEvent" title="ape.contracts.base.ContractEvent"><span class="pre">ContractEvent</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">EventABI</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="contracts.html#ape.contracts.base.ContractEvent" title="ape.contracts.base.ContractEvent"><span class="pre">ContractEvent</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="types.html#ape.types.events.ContractLogContainer" title="ape.types.events.ContractLogContainer"><span class="pre">ContractLogContainer</span></a></span></span><a class="headerlink" href="#ape.api.transactions.ReceiptAPI.decode_logs" title="Link to this definition"></a></dt>
 <dd><p>Decode the logs on the receipt.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>abi</strong> (<code class="docutils literal notranslate"><span class="pre">EventABI</span></code>) – The ABI of the event to decode into logs.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>list[<a class="reference internal" href="types.html#ape.types.ContractLog" title="ape.types.ContractLog"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractLog</span></code></a>]</p>
+<dd class="field-even"><p>list[<code class="xref py py-class docutils literal notranslate"><span class="pre">ContractLog</span></code>]</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="ape.api.transactions.ReceiptAPI.events">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">events</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ContractLogContainer</span></em><a class="headerlink" href="#ape.api.transactions.ReceiptAPI.events" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">events</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="types.html#ape.types.events.ContractLogContainer" title="ape.types.events.ContractLogContainer"><span class="pre">ContractLogContainer</span></a></em><a class="headerlink" href="#ape.api.transactions.ReceiptAPI.events" title="Link to this definition"></a></dt>
 <dd><p>All the events that were emitted from this call.</p>
 </dd></dl>
 
