@@ -1,18 +1,22 @@
 import json
 from collections.abc import Callable
+from importlib import import_module
+from typing import TYPE_CHECKING
 
 import click
 import yaml
 from rich import print as echo_rich_text
 from rich.tree import Tree
 
-from ape.api.providers import SubprocessProvider
 from ape.cli.choices import OutputFormat
 from ape.cli.options import ape_cli_context, network_option, output_format_option
 from ape.exceptions import NetworkError
 from ape.logging import LogLevel
 from ape.types.basic import _LazySequence
-from ape.utils.basemodel import ManagerAccessMixin
+from ape.utils.basemodel import ManagerAccessMixin as access
+
+if TYPE_CHECKING:
+    from ape.api.providers import SubprocessProvider
 
 
 def _filter_option(name: str, options):
@@ -35,7 +39,7 @@ def cli():
 def _lazy_get(name: str) -> _LazySequence:
     # NOTE: Using fn generator to maintain laziness.
     def gen():
-        yield from getattr(ManagerAccessMixin.network_manager, f"{name}_names")
+        yield from getattr(access.network_manager, f"{name}_names")
 
     return _LazySequence(gen)
 
@@ -114,8 +118,8 @@ def run(cli_ctx, provider):
     """
     # Ignore extra loggers, such as web3 loggers.
     cli_ctx.logger._extra_loggers = {}
-
-    if not isinstance(provider, SubprocessProvider):
+    providers_module = import_module("ape.api.providers")
+    if not isinstance(provider, providers_module.SubprocessProvider):
         cli_ctx.abort(
             f"`ape networks run` requires a provider that manages a process, not '{provider.name}'."
         )
@@ -136,7 +140,7 @@ def run(cli_ctx, provider):
         cli_ctx.logger.format(fmt=original_format)
 
 
-def _run(cli_ctx, provider: SubprocessProvider):
+def _run(cli_ctx, provider: "SubprocessProvider"):
     provider.connect()
     if process := provider.process:
         try:

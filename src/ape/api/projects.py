@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from functools import cached_property
 from pathlib import Path
 from typing import Optional
@@ -5,7 +6,7 @@ from typing import Optional
 from pydantic import Field, field_validator
 
 from ape.api.config import ApeConfig
-from ape.utils import BaseInterfaceModel, abstractmethod
+from ape.utils.basemodel import BaseInterfaceModel
 
 
 class DependencyAPI(BaseInterfaceModel):

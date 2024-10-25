@@ -39,9 +39,44 @@
     :show-inheritance:
 ```
 
-## Miscellaneous
+## Events
 
 ```{eval-rst}
-.. automodule:: ape.types
-    :members: BlockID, BaseContractLog, ContractLog, MockContractLog
+.. automodule:: ape.types.events
+    :members: ContractLog, ContractLogContainer, MockContractLog, LogFilter
+```
+
+## VM
+
+```{eval-rst}
+.. automodule:: ape.types.vm
+    :members: BlockID, SnapshotID
+```
+
+## Gas
+
+```{eval-rst}
+.. automodule:: ape.types.gas
+    :members: GasLimit, AutoGasLimit
+```
+
+## Trace
+
+```{eval-rst}
+.. automodule:: ape.types.trace
+    :members: GasReport, ControlFlow, SourceTraceback
+```
+
+## Units
+
+```{eval-rst}
+.. automodule:: ape.types.units
+    :members: CurrencyValueComparable, CurrencyValue
+```
+
+## Basic
+
+```{eval-rst}
+.. automodule:: ape.types.basic
+    :members: HexInt
 ```

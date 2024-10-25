@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 from .pluggy_patch import PluginType, hookspec
 
 if TYPE_CHECKING:
-    from ape.api import QueryAPI
+    from ape.api.query import QueryAPI
 
 
 class QueryPlugin(PluginType):

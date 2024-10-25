@@ -1,14 +1,16 @@
 import sys
+from importlib import import_module
 from pathlib import Path
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 import click
 
 from ape.cli.options import ape_cli_context, config_override_option
 from ape.exceptions import ProjectError
 from ape.logging import logger
-from ape.managers.project import Dependency
-from ape_pm import LocalDependency
+
+if TYPE_CHECKING:
+    from ape.managers.project import Dependency
 
 
 @click.group()
@@ -47,9 +49,10 @@ def _list(cli_ctx, list_all):
 
         # For local dependencies, use the short name.
         # This is mostly because it looks nicer than very long paths.
+        dependency_module = import_module("ape_pm.dependency")
         name = (
             dependency.name
-            if isinstance(dependency.api, LocalDependency)
+            if isinstance(dependency.api, dependency_module.LocalDependency)
             else dependency.package_id
         )
 
@@ -197,7 +200,6 @@ def install(cli_ctx, package, name, version, ref, force, config_override):
     except Exception as err:
         cli_ctx.logger.log_error(err)
     else:
-        assert isinstance(dependency, Dependency)  # for mypy
         cli_ctx.logger.success(f"Package '{dependency.name}@{dependency.version}' installed.")
 
 
@@ -277,7 +279,7 @@ def uninstall(cli_ctx, name, versions, yes):
     sys.exit(int(did_error))
 
 
-def _uninstall(dependency: Dependency, yes: bool = False) -> bool:
+def _uninstall(dependency: "Dependency", yes: bool = False) -> bool:
     key = f"{dependency.name}={dependency.version}"
     if not yes and not click.confirm(f"Remove '{key}'"):
         return True  # Not an error.
@@ -337,7 +339,7 @@ def compile(cli_ctx, name, version, force, config_override):
         _compile_dependency(cli_ctx, dependency, force)
 
 
-def _compile_dependency(cli_ctx, dependency: Dependency, force: bool):
+def _compile_dependency(cli_ctx, dependency: "Dependency", force: bool):
     try:
         result = dependency.compile(use_cache=not force)
     except Exception as err:

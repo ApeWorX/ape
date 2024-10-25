@@ -6,19 +6,21 @@ from importlib.machinery import SourceFileLoader
 from importlib.util import module_from_spec, spec_from_loader
 from os import environ
 from types import ModuleType
-from typing import Any, Optional, cast
+from typing import TYPE_CHECKING, Any, Optional, cast
 
 import click
-import IPython
-from IPython.terminal.ipapp import Config as IPythonConfig
 
 from ape.cli.commands import ConnectedProviderCommand
 from ape.cli.options import ape_cli_context, project_option
-from ape.managers.project import ProjectManager
-from ape.utils.basemodel import ManagerAccessMixin
+from ape.utils.basemodel import ManagerAccessMixin as access
 from ape.utils.misc import _python_version
 from ape.version import version as ape_version
 from ape_console.config import ConsoleConfig
+
+if TYPE_CHECKING:
+    from IPython.terminal.ipapp import Config as IPythonConfig
+
+    from ape.managers.project import ProjectManager
 
 CONSOLE_EXTRAS_FILENAME = "ape_console_extras.py"
 
@@ -52,7 +54,7 @@ def import_extras_file(file_path) -> ModuleType:
 def load_console_extras(**namespace: Any) -> dict[str, Any]:
     """load and return namespace updates from ape_console_extras.py  files if
     they exist"""
-    pm = namespace.get("project", ManagerAccessMixin.local_project)
+    pm = namespace.get("project", access.local_project)
     global_extras = pm.config_manager.DATA_FOLDER.joinpath(CONSOLE_EXTRAS_FILENAME)
     project_extras = pm.path.joinpath(CONSOLE_EXTRAS_FILENAME)
 
@@ -91,14 +93,17 @@ def load_console_extras(**namespace: Any) -> dict[str, Any]:
 
 
 def console(
-    project: Optional[ProjectManager] = None,
+    project: Optional["ProjectManager"] = None,
     verbose: bool = False,
     extra_locals: Optional[dict] = None,
     embed: bool = False,
 ):
+    import IPython
+    from IPython.terminal.ipapp import Config as IPythonConfig
+
     import ape
 
-    project = project or ManagerAccessMixin.local_project
+    project = project or ape.project
     banner = ""
     if verbose:
         banner = """
@@ -147,7 +152,9 @@ def console(
     _launch_console(namespace, ipy_config, embed, banner)
 
 
-def _launch_console(namespace: dict, ipy_config: IPythonConfig, embed: bool, banner: str):
+def _launch_console(namespace: dict, ipy_config: "IPythonConfig", embed: bool, banner: str):
+    import IPython
+
     ipython_kwargs = {"user_ns": namespace, "config": ipy_config}
     if embed:
         IPython.embed(**ipython_kwargs, colors="Neutral", banner1=banner)

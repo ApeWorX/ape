@@ -1,4 +1,4 @@
-from ape.api import CompilerAPI
+from ape.api.compiler import CompilerAPI
 
 from .pluggy_patch import PluginType, hookspec
 

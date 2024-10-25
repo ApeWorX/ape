@@ -1,6 +1,8 @@
 from collections.abc import Iterator
 
-from ape.api import EcosystemAPI, ExplorerAPI, NetworkAPI, ProviderAPI
+from ape.api.explorers import ExplorerAPI
+from ape.api.networks import EcosystemAPI, NetworkAPI
+from ape.api.providers import ProviderAPI
 
 from .pluggy_patch import PluginType, hookspec
 
