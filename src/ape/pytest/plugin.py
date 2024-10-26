@@ -16,15 +16,6 @@ def _get_default_network(ecosystem: Optional[EcosystemAPI] = None) -> str:
     if ecosystem is None:
         ecosystem = ManagerAccessMixin.network_manager.default_ecosystem
 
-    if ecosystem.default_network.is_mainnet:
-        # Don't use mainnet for tests, even if it configured as
-        # the default.
-        raise ConfigError(
-            "Default network is mainnet; unable to run tests on mainnet. "
-            "Please specify the network using the `--network` flag or "
-            "configure a different default network."
-        )
-
     return ecosystem.name
 
 

@@ -1,7 +1,7 @@
 import pytest
 
 from ape.exceptions import ConfigError
-from ape.pytest.plugin import _get_default_network
+from ape.pytest.runners import PytestApeRunner
 from ape_test import ApeTestConfig
 
 
@@ -15,17 +15,21 @@ class TestApeTestConfig:
         assert actual == expected
 
 
-def test_get_default_network(mocker):
-    # NOTE: Using this weird test to avoid actually
-    #  using mainnet in any test, even accidentally.
-    mock_ecosystem = mocker.MagicMock()
-    mock_mainnet = mocker.MagicMock()
-    mock_mainnet.name = "mainnet"
-    mock_ecosystem.default_network = mock_mainnet
+def test_connect_to_mainnet_by_default(mocker):
+    """
+    Tests the condition where mainnet is configured as the default network
+    and no --network option is passed. It should avoid running the tests
+    to be safe.
+    """
+
+    cfg = mocker.MagicMock()
+    cfg.network = "ethereum:mainnet:node"
+    runner = PytestApeRunner(cfg, mocker.MagicMock(), mocker.MagicMock(), mocker.MagicMock())
+
     expected = (
         "Default network is mainnet; unable to run tests on mainnet. "
         "Please specify the network using the `--network` flag or "
         "configure a different default network."
     )
     with pytest.raises(ConfigError, match=expected):
-        _get_default_network(mock_mainnet)
+        runner._connect()
