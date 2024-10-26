@@ -42,6 +42,8 @@ from ape.api.providers import BlockAPI, ProviderAPI
 from ape.api.trace import TraceAPI
 from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.exceptions import (
+    _SOURCE_TRACEBACK_ARG,
+    _TRACE_ARG,
     ApeException,
     APINotImplementedError,
     BlockNotFoundError,
@@ -1245,9 +1247,9 @@ class Web3Provider(ProviderAPI, ABC):
         self,
         exception: Union[Exception, str],
         txn: Optional[TransactionAPI] = None,
-        trace: Optional[TraceAPI] = None,
+        trace: _TRACE_ARG = None,
         contract_address: Optional[AddressType] = None,
-        source_traceback: Optional[SourceTraceback] = None,
+        source_traceback: _SOURCE_TRACEBACK_ARG = None,
         set_ape_traceback: Optional[bool] = None,
     ) -> ContractLogicError:
         if hasattr(exception, "args") and len(exception.args) == 2:
@@ -1277,10 +1279,13 @@ class Web3Provider(ProviderAPI, ABC):
                 if trace is None and txn is not None:
                     trace = self.provider.get_transaction_trace(to_hex(txn.txn_hash))
 
-                if trace is not None and (revert_message := trace.revert_message):
-                    message = revert_message
-                    no_reason = False
-                    if revert_message := trace.revert_message:
+                if trace is not None:
+                    if callable(trace):
+                        trace_called = params["trace"] = trace()
+                    else:
+                        trace_called = trace
+
+                    if trace_called is not None and (revert_message := trace_called.revert_message):
                         message = revert_message
                         no_reason = False
 
