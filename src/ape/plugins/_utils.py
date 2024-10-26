@@ -39,9 +39,9 @@ CORE_PLUGINS = [
 ]
 # Hardcoded for performance reasons. Functionality in plugins commands
 # and functions won't use this; they use GitHub to check directly.
-# This hardcoded list is useful for `ape --help` for performance reasons;
-# If ApeWorX adds a new trusted plugin, it should be added to this list
-# or else it may just show-up as un-trusted in `ape --help`.
+# This hardcoded list is useful for `ape --help`. If ApeWorX adds a new
+# trusted plugin, it should be added to this list; else it will show
+# as 3rd-party in `ape --help`.
 TRUSTED_PLUGINS = [
     "addressbook",
     "alchemy",
@@ -419,10 +419,16 @@ class PluginMetadata(BaseInterfaceModel):
 
     @property
     def is_third_party(self) -> bool:
-        return self.is_installed and not self.is_available
+        """
+        ``True`` when is an installed plugin that is not from ApeWorX.
+        """
+        return self.is_installed and not self.is_trusted
 
     @cached_property
     def is_trusted(self) -> bool:
+        """
+        ``True`` when is a plugin from ApeWorX.
+        """
         return self.check_trusted()
 
     @property
