@@ -7,6 +7,7 @@ from _pytest._code.code import Traceback as PytestTraceback
 from rich import print as rich_print
 
 from ape.api.networks import ProviderContextManager
+from ape.exceptions import ConfigError
 from ape.logging import LogLevel
 from ape.pytest.config import ConfigWrapper
 from ape.pytest.coverage import CoverageTracker
@@ -206,8 +207,24 @@ class PytestApeRunner(ManagerAccessMixin):
 
         # Only start provider if collected tests.
         if not outcome.get_result() and session.items:
-            self._provider_context.push_provider()
-            self._provider_is_connected = True
+            self._connect()
+
+    def _connect(self):
+        if self._provider_context._provider.network.is_mainnet:
+            # Ensure is not only running on tests on mainnet because
+            # was configured as the default.
+            is_from_command_line = (
+                "--network" in self.config_wrapper.pytest_config.invocation_params.args
+            )
+            if not is_from_command_line:
+                raise ConfigError(
+                    "Default network is mainnet; unable to run tests on mainnet. "
+                    "Please specify the network using the `--network` flag or "
+                    "configure a different default network."
+                )
+
+        self._provider_context.push_provider()
+        self._provider_is_connected = True
 
     def pytest_terminal_summary(self, terminalreporter):
         """
