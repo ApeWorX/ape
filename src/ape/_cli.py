@@ -91,7 +91,7 @@ class ApeCLI(click.MultiCommand):
 
             if plugin.in_core:
                 sections["Core"].append((cli_name, help))
-            elif plugin.is_installed and not plugin.is_third_party:
+            elif plugin.check_trusted(use_web=False):
                 sections["Plugin"].append((cli_name, help))
             else:
                 sections["3rd-Party Plugin"].append((cli_name, help))

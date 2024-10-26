@@ -37,6 +37,47 @@ CORE_PLUGINS = [
     "ape_run",
     "ape_test",
 ]
+# Hardcoded for performance reasons. Functionality in plugins command
+# and functions won't use this; they use GitHub to check directly.
+# This hardcoded list is useful for `ape --help` for performance reasons;
+# If ApeWorX adds a new trusted plugin, it should be added to this list
+# or else it may just show-up as un-trusted in `ape --help`.
+TRUSTED_PLUGINS = [
+    "addressbook",
+    "alchemy",
+    "arbitrum",
+    "avalanche",
+    "aws",
+    "base",
+    "blast",
+    "blockscout",
+    "bsc",
+    "cairo",
+    "chainstack",
+    "ens",
+    "etherscan",
+    "fantom",
+    "farcaster",
+    "flashbots",
+    "foundry",
+    "frame",
+    "ganache",
+    "hardhat",
+    "infura",
+    "ledger",
+    "notebook",
+    "optimism",
+    "polygon",
+    "polygon_zkevm",
+    "safe",
+    "solidity",
+    "template",
+    "tenderly",
+    "titanoboa",
+    "tokens",
+    "trezor",
+    "vyper",
+]
 
 
 def clean_plugin_name(name: str) -> str:
@@ -380,12 +421,15 @@ class PluginMetadata(BaseInterfaceModel):
     def is_third_party(self) -> bool:
         return self.is_installed and not self.is_available
 
+    @cached_property
+    def is_trusted(self) -> bool:
+        return self.check_trusted()
+
     @property
     def is_available(self) -> bool:
         """
         Whether the plugin is maintained by the ApeWorX organization.
         """
-
         return self.module_name in _get_available_plugins()
 
     def __str__(self) -> str:
@@ -403,6 +447,15 @@ class PluginMetadata(BaseInterfaceModel):
             _get_distributions.cache_clear()
 
         return any(n == self.package_name for n in get_plugin_dists())
+
+    def check_trusted(self, use_web: bool = True) -> bool:
+        if use_web:
+            return self.is_available
+
+        else:
+            # Sometimes (such as for --help commands), it is better
+            # to not check GitHub to see if the plugin is trusted.
+            return self.name in TRUSTED_PLUGINS
 
     def _prepare_install(
         self, upgrade: bool = False, skip_confirmation: bool = False
