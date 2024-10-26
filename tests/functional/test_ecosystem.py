@@ -631,6 +631,39 @@ def test_decode_receipt_shared_blob(ethereum, blob_gas_used, blob_gas_key):
         assert actual.blob_gas_used == 0
 
 
+def test_decode_receipt_misleading_blob_receipt(ethereum):
+    """
+    Tests a strange situation (noticed on Tenderly nodes) where _some_
+    of the keys indicate blob-related fields, set to ``0``, and others
+    are missing, because it's not actually a blob receipt. In this case,
+    don't use the blob-receipt class.
+    """
+    data = {
+        "type": 2,
+        "status": 1,
+        "cumulativeGasUsed": 10565720,
+        "logsBloom": HexBytes(
+            "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"  # noqa: E501
+        ),
+        "logs": [],
+        "transactionHash": HexBytes(
+            "0x62fc9991bc7fb0c76bc83faaa8d1c17fc5efb050542e58ac358932f80aa7a087"
+        ),
+        "from": "0x1f9090aaE28b8a3dCeaDf281B0F12828e676c326",
+        "to": "0xeBec795c9c8bBD61FFc14A6662944748F299cAcf",
+        "contractAddress": None,
+        "gasUsed": 21055,
+        "effectiveGasPrice": 7267406643,
+        "blockHash": HexBytes("0xa47fc133f829183b751488c1146f1085451bcccd247db42066dc6c89eaf5ebac"),
+        "blockNumber": 21051245,
+        "transactionIndex": 130,
+        "blobGasUsed": 0,
+    }
+    actual = ethereum.decode_receipt(data)
+    assert not isinstance(actual, SharedBlobReceipt)
+    assert isinstance(actual, Receipt)
+
+
 def test_default_transaction_type_not_connected_used_default_network(project, ethereum, networks):
     value = TransactionType.STATIC.value
     config_dict = {"ethereum": {"mainnet_fork": {"default_transaction_type": value}}}
