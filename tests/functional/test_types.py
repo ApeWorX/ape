@@ -4,7 +4,7 @@ import pytest
 from eth_utils import to_hex
 from ethpm_types.abi import EventABI
 from hexbytes import HexBytes
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ValidationError
 
 from ape.types.address import AddressType
 from ape.types.basic import HexInt
@@ -143,6 +143,19 @@ class TestHexInt:
         expected = 291  # Base-10 form of 0x123.
         assert act.ual == expected
         assert act.ual_optional is None
+
+    def test_none(self):
+        """
+        Was getting unhelpful conversion errors here. We should instead
+        let Pydantic fail as it normally does in this situation.
+        """
+
+        class MyModel(BaseModel):
+            an_int: HexInt
+
+        expected = ".*Input should be a valid integer.*"
+        with pytest.raises(ValidationError, match=expected):
+            _ = MyModel(an_int=None)
 
 
 class TestCurrencyValueComparable:
