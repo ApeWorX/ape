@@ -6,7 +6,13 @@ from pydantic import BeforeValidator
 
 
 def _hex_int_validator(value, info):
+    if value is None:
+        # If not optional, will allow pydantic to (better) handle the error.
+        return value
+
+    # NOTE: Allows this module to load lazier.
     access = import_module("ape.utils.basemodel").ManagerAccessMixin
+
     convert = access.conversion_manager.convert
     return convert(value, int)
 
