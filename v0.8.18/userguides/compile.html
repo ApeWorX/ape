@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en" data-accent-color="lime" data-content_root="../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Compile - ape documentation</title><link rel="shortcut icon" href="../_static/favicon.ico"/><link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Console" href="console.html" /><link rel="prev" title="Configure Ape" href="config.html" />
+      <link rel="canonical" href="ape/userguides/compile.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=397bb51e" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=83eaa723" />
+    <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    <meta property="og:type" content="website"/>
+<meta property="og:url" content="ape/userguides/compile.html"/>
+<meta property="og:title" content="Compile"/>
+<meta name="twitter:card" content="summary"/>
+  </head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="../index.html">
+      <img class="light-logo" src="../_static/logo_grey.svg" alt="ape" height="28" loading="lazy" />
+      <img class="dark-logo" src="../_static/logo_green.svg" alt="ape" height="28" loading="lazy" />
+      <strong>ape</strong>
+    </a>
+    <div class="sy-head-nav" id="HeadNav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials"></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="HeadNav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2 -translate-x-2"></span>
+          <span class="hamburger_3 -translate-x-1"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading" aria-level="3"><span class="caption-text">User Guides</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="accounts.html">Accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="networks.html">Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="forking_networks.html">Forking Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contracts.html">Contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="proxy.html">Proxy Contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installing_plugins.html">Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="projects.html">Developing Projects with Ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Configure Ape</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="console.html">Console</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transactions.html">Transactions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trace.html">Traces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scripts.html">Scripting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="testing.html">Testing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reverts.html">Reverts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="publishing.html">Publishing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="clis.html">CLIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="data.html">Querying Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="developing_plugins.html">Developing Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="logging.html">Logging</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">CLI Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../commands/accounts.html">accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/compile.html">compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/console.html">console</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/init.html">init</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/networks.html">networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/plugins.html">plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/pm.html">pm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/run.html">run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/test.html">test</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Core Python Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape.html">ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/api.html">ape.api</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/cli.html">ape.cli</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/contracts.html">ape.contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/exceptions.html">ape.exceptions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/managers.html">ape.managers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/plugins.html">ape.plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/types.html">ape.types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/utils.html">ape.utils</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Plugin Python Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_accounts.html">ape-accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_compile.html">ape-compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_ethereum.html">ape-ethereum</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_ethereum.html#module-ape_ethereum.multicall">ape-ethereum.multicall</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_node.html">ape-node</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_pm.html">ape-pm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_test.html">ape-test</a></li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#the-json-compiler">The JSON Compiler</a></li>
+<li><a class="reference internal" href="#other-compiler-plugins">Other Compiler Plugins</a></li>
+<li><a class="reference internal" href="#exclude-files">Exclude Files</a></li>
+<li><a class="reference internal" href="#dependencies">Dependencies</a></li>
+<li><a class="reference internal" href="#settings">Settings</a></li>
+<li><a class="reference internal" href="#compile-source-code">Compile Source Code</a></li>
+<li><a class="reference internal" href="#output-extra">Output Extra</a></li>
+</ul>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6"><div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../index.html"><span itemprop="name">ape</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">Compile</strong>
+        <meta itemprop="position" content="2" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+        <article class="yue" role="main">
+          <section id="compile">
+<h1>Compile<a class="headerlink" href="#compile" title="Link to this heading"></a></h1>
+<p>Compile your project using the following command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>compile
+</span></pre></div>
+</div>
+<p>Configure the location Ape looks for contracts by editing the <code class="docutils literal notranslate"><span class="pre">contracts_folder</span></code> key in your project’s <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">contracts_folder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">src</span><span class="w">  </span><span class="c1"># Default is &#39;contracts/&#39;</span>
+</span></pre></div>
+</div>
+<section id="the-json-compiler">
+<h2>The JSON Compiler<a class="headerlink" href="#the-json-compiler" title="Link to this heading"></a></h2>
+<p>Ape ships with a compiler that is able to compile <code class="docutils literal notranslate"><span class="pre">.json</span></code> files.
+This compiler is useful for the following:</p>
+<ol class="arabic simple">
+<li><p><strong>Interfaces</strong>: If you know the address of an existing contract, you can include its ABI in your project and create a contract wrapper around it:</p></li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">project</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="c1"># Comes from a file named `MyInterface.json` in the contracts/ folder.</span>
+</span><span data-line="4"><span class="n">my_interface</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">MyInterface</span>
+</span><span data-line="5"><span class="n">address</span> <span class="o">=</span> <span class="s2">&quot;0x1234556b5Ed9202110D7Ecd637A4581db8b9879F&quot;</span>
+</span><span data-line="6">
+</span><span data-line="7"><span class="c1"># Instantiate a deployed contract using the local interface.</span>
+</span><span data-line="8"><span class="n">contract</span> <span class="o">=</span> <span class="n">my_interface</span><span class="o">.</span><span class="n">at</span><span class="p">(</span><span class="n">address</span><span class="p">)</span>
+</span><span data-line="9">
+</span><span data-line="10"><span class="c1"># Call a method named `my_method` found in the local contract ABI.</span>
+</span><span data-line="11"><span class="n">contract</span><span class="o">.</span><span class="n">my_method</span><span class="p">()</span>
+</span></pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li><p><strong>Pre-existing Contract Types</strong>: If you have a contract type JSON that was compiled elsewhere, you can include it in your project.
+This is useful if you are unable or unwilling to install a compiler.</p></li>
+<li><p><strong>Raw Compiler Output</strong>: If you have an artifact with binary compiled elsewhere, you can include it in your project.
+This is useful if you want to use contracts from much larger projects as dependency for your test cases.</p></li>
+</ol>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>You may have to adjust name and source ID similarly to raw contract-type output.</p>
+</div>
+</section>
+<section id="other-compiler-plugins">
+<h2>Other Compiler Plugins<a class="headerlink" href="#other-compiler-plugins" title="Link to this heading"></a></h2>
+<p>If your project includes Solidity (<code class="docutils literal notranslate"><span class="pre">.sol</span></code>) or Vyper (<code class="docutils literal notranslate"><span class="pre">.vy</span></code>) files, you will have to install additional compilers.
+To include additional compilers in your project, you can add the plugins to the <code class="docutils literal notranslate"><span class="pre">plugins</span></code> list in your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> or install them using the CLI.
+For information on how to configure plugins in your project, follow <a class="reference external" href="./installing_plugins.html">this guide</a>.</p>
+</section>
+<section id="exclude-files">
+<h2>Exclude Files<a class="headerlink" href="#exclude-files" title="Link to this heading"></a></h2>
+<p>You can configure files to be excluded from compilation.
+By default, Ape excludes known non-contract files such as <code class="docutils literal notranslate"><span class="pre">package.json</span></code>, <code class="docutils literal notranslate"><span class="pre">package-lock.json</span></code>, <code class="docutils literal notranslate"><span class="pre">tsconfig.json</span></code>, or <code class="docutils literal notranslate"><span class="pre">.DS_Store</span></code>.
+To append file-globs to the exclusions list, edit your <code class="docutils literal notranslate"><span class="pre">compile:exclude</span></code> config like this:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">compile</span><span class="p">:</span>
+</span><span data-line="2"><span class="w">  </span><span class="nt">exclude</span><span class="p">:</span>
+</span><span data-line="3"><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;examples&quot;</span><span class="w">  </span><span class="c1"># Exclude all files in the examples/ directory</span>
+</span><span data-line="4"><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;*Mock.sol&quot;</span><span class="w">  </span><span class="c1"># Exclude all files ending in Mock.sol</span>
+</span><span data-line="5"><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">r&quot;(?!.*_mock\.vy$)&quot;</span><span class="w">  </span><span class="c1"># You can also use regex instead of globs (prefix with `r`).</span>
+</span></pre></div>
+</div>
+<p>You can also exclude files using the <code class="docutils literal notranslate"><span class="pre">--config-override</span></code> CLI option:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>compile<span class="w"> </span>--config-override<span class="w"> </span><span class="s1">&#39;{&quot;compile&quot;: {&quot;exclude&quot;: [&quot;*Mock.sol&quot;]}}&#39;</span>
+</span></pre></div>
+</div>
+</section>
+<section id="dependencies">
+<h2>Dependencies<a class="headerlink" href="#dependencies" title="Link to this heading"></a></h2>
+<p>In Ape, compiler plugins typically let you have dependencies.
+See <a class="reference external" href="./dependencies.html">this guide</a> to learn more about configuring dependencies in Ape.</p>
+<p>To always compile dependencies in Ape during the <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">compile</span></code> command, use the CLI flag <code class="docutils literal notranslate"><span class="pre">--include-dependencies</span></code>:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>compile<span class="w"> </span>--include-dependencies
+</span></pre></div>
+</div>
+<p>Alternatively, configure it to always happen:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">compile</span><span class="p">:</span>
+</span><span data-line="2"><span class="w">  </span><span class="nt">use_dependencies</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span></pre></div>
+</div>
+</section>
+<section id="settings">
+<h2>Settings<a class="headerlink" href="#settings" title="Link to this heading"></a></h2>
+<p>Generally, configure compiler plugins using your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file.</p>
+<p>For example, when using the <code class="docutils literal notranslate"><span class="pre">vyper</span></code> plugin, you can configure settings under the <code class="docutils literal notranslate"><span class="pre">vyper</span></code> key:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">vyper</span><span class="p">:</span>
+</span><span data-line="2"><span class="w">  </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.3.10</span>
+</span></pre></div>
+</div>
+<p>When using the CLI, you can also specify settings using the <code class="docutils literal notranslate"><span class="pre">--config-override</span></code>.
+This is not limited to compiler settings; you can include other settings, such as <code class="docutils literal notranslate"><span class="pre">&quot;contracts_folder&quot;</span></code>, which affects compiling.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>compile<span class="w"> </span>--config-override<span class="w"> </span><span class="s1">&#39;{&quot;contracts_folder&quot;: &quot;other_contracts&quot;, &quot;vyper&quot;: {&quot;evm_version&quot;: &quot;paris&quot;}, &quot;solidity&quot;: {&quot;evm_version&quot;: &quot;paris&quot;}}&#39;</span>
+</span></pre></div>
+</div>
+<p>Finally, you can also configure settings in Python code:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+</span><span data-line="2"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">compilers</span>
+</span><span data-line="3">
+</span><span data-line="4"><span class="n">settings</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;vyper&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="s2">&quot;0.3.7&quot;</span><span class="p">},</span> <span class="s2">&quot;solidity&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="s2">&quot;0.8.0&quot;</span><span class="p">}}</span>
+</span><span data-line="5"><span class="n">compilers</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
+</span><span data-line="6">   <span class="p">[</span><span class="s2">&quot;path/to/contract.vy&quot;</span><span class="p">,</span> <span class="s2">&quot;path/to/contract.sol&quot;</span><span class="p">],</span> <span class="n">settings</span><span class="o">=</span><span class="n">settings</span>
+</span><span data-line="7"><span class="p">)</span>
+</span><span data-line="8">
+</span><span data-line="9"><span class="c1"># Or, more explicitly:</span>
+</span><span data-line="10"><span class="n">vyper</span> <span class="o">=</span> <span class="n">compilers</span><span class="o">.</span><span class="n">get_compiler</span><span class="p">(</span><span class="s2">&quot;vyper&quot;</span><span class="p">,</span> <span class="n">settings</span><span class="o">=</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;vyper&quot;</span><span class="p">])</span>
+</span><span data-line="11"><span class="n">vyper</span><span class="o">.</span><span class="n">compile</span><span class="p">([</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;path/to/contract.vy&quot;</span><span class="p">)])</span>
+</span><span data-line="12">
+</span><span data-line="13"><span class="n">solidity</span> <span class="o">=</span> <span class="n">compilers</span><span class="o">.</span><span class="n">get_compiler</span><span class="p">(</span><span class="s2">&quot;solidity&quot;</span><span class="p">,</span> <span class="n">settings</span><span class="o">=</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;solidity&quot;</span><span class="p">])</span>
+</span><span data-line="14"><span class="n">vyper</span><span class="o">.</span><span class="n">compile</span><span class="p">([</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;path/to/contract.sol&quot;</span><span class="p">)])</span>
+</span></pre></div>
+</div>
+</section>
+<section id="compile-source-code">
+<h2>Compile Source Code<a class="headerlink" href="#compile-source-code" title="Link to this heading"></a></h2>
+<p>Instead of compiling project source files, you can compile code (str) directly:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">compilers</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="n">CODE</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+</span><span data-line="4"><span class="s2">   ... source code here</span>
+</span><span data-line="5"><span class="s2">&quot;&quot;&quot;</span>
+</span><span data-line="6">
+</span><span data-line="7"><span class="n">container</span> <span class="o">=</span> <span class="n">compilers</span><span class="o">.</span><span class="n">compile_source</span><span class="p">(</span>
+</span><span data-line="8">   <span class="s2">&quot;vyper&quot;</span><span class="p">,</span>
+</span><span data-line="9">   <span class="n">CODE</span><span class="p">,</span>
+</span><span data-line="10">   <span class="n">settings</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;vyper&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="s2">&quot;0.3.7&quot;</span><span class="p">}},</span> 
+</span><span data-line="11">   <span class="n">contractName</span><span class="o">=</span><span class="s2">&quot;MyContract&quot;</span><span class="p">,</span>
+</span><span data-line="12"><span class="p">)</span>
+</span><span data-line="13">
+</span><span data-line="14"><span class="n">owner</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">test_accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</span><span data-line="15">
+</span><span data-line="16"><span class="n">instance</span> <span class="o">=</span> <span class="n">container</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">owner</span><span class="p">)</span>
+</span></pre></div>
+</div>
+</section>
+<section id="output-extra">
+<h2>Output Extra<a class="headerlink" href="#output-extra" title="Link to this heading"></a></h2>
+<p>Sometimes, there are extra output styles you may want.
+For example, to output minified ABI JSONs, use the following config:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">compile</span><span class="p">:</span>
+</span><span data-line="2"><span class="w">  </span><span class="nt">output_extra</span><span class="p">:</span>
+</span><span data-line="3"><span class="w">     </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ABI</span>
+</span></pre></div>
+</div>
+<p>Then, after compiling, you should notice minified ABI json files in your <code class="docutils literal notranslate"><span class="pre">.build/abi</span></code> folder.
+This is useful if hosting these files on a web-server.</p>
+<p>To see the full list of supported output-extra, see <a class="reference external" href="../methoddocs/ape_compile.html#ape_compile.OutputExtras">the OutpuExtra enum documentation</a>.</p>
+</section>
+</section>
+
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"><div class="navigation-prev">
+    <a href="config.html">
+      <i class="i-lucide chevron-left"></i>
+      <div class="page-info">
+        <span>Previous</span><div class="title">Configure Ape</div></div>
+    </a>
+  </div><div class="navigation-next">
+    <a href="console.html">
+      <div class="page-info">
+        <span>Next</span>
+        <div class="title">Console</div>
+      </div>
+      <i class="i-lucide chevron-right"></i>
+    </a>
+  </div></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2024, ApeWorX LTD</p>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials"></div>
+    </div>
+  </div>
+</footer>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script data-domain="docs.apeworx.io" defer="defer" src="https://plausible.io/js/script.js"></script>
+      <script src="../_static/shibuya.js?v=e2e99575"></script></body>
+</html>
