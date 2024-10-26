@@ -37,7 +37,7 @@ CORE_PLUGINS = [
     "ape_run",
     "ape_test",
 ]
-# Hardcoded for performance reasons. Functionality in plugins command
+# Hardcoded for performance reasons. Functionality in plugins commands
 # and functions won't use this; they use GitHub to check directly.
 # This hardcoded list is useful for `ape --help` for performance reasons;
 # If ApeWorX adds a new trusted plugin, it should be added to this list
