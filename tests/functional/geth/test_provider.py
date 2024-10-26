@@ -707,8 +707,17 @@ def test_estimate_gas_cost_of_static_fee_txn(geth_contract, geth_provider, geth_
 
 
 @geth_process_test
-def test_estimate_gas_cost_reverts(geth_contract, geth_provider, geth_second_account):
+def test_estimate_gas_cost_reverts_with_message(geth_contract, geth_provider, geth_second_account):
+    # NOTE: The error message from not-owner is "!authorized".
     txn = geth_contract.setNumber.as_transaction(900, sender=geth_second_account, type=0)
+    with pytest.raises(ContractLogicError):
+        geth_provider.estimate_gas_cost(txn)
+
+
+@geth_process_test
+def test_estimate_gas_cost_reverts_no_message(geth_contract, geth_provider, geth_account):
+    # NOTE: The error message from using `5` has no revert message.
+    txn = geth_contract.setNumber.as_transaction(5, sender=geth_account, type=0)
     with pytest.raises(ContractLogicError):
         geth_provider.estimate_gas_cost(txn)
 
