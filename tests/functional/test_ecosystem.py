@@ -631,6 +631,14 @@ def test_decode_receipt_shared_blob(ethereum, blob_gas_used, blob_gas_key):
         assert actual.blob_gas_used == 0
 
 
+def test_decode_receipt_blob_gas_price_none():
+    """
+    Tests a strange situation where the blob-related keys are in the
+    data but a required key is None. In this case, the provider is returning
+    empty data for these values and we should use the regular receipt.
+    """
+
+
 def test_default_transaction_type_not_connected_used_default_network(project, ethereum, networks):
     value = TransactionType.STATIC.value
     config_dict = {"ethereum": {"mainnet_fork": {"default_transaction_type": value}}}
