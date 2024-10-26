@@ -598,7 +598,6 @@ class Ethereum(EcosystemAPI):
                 "blob_gas_used",
             )
         ):
-
             blob_gas_price = data.get("blob_gas_price", data.get("blobGasPrice"))
             if blob_gas_price is None:
                 # Not actually a blob-receipt? Some providers may give you
@@ -608,7 +607,9 @@ class Ethereum(EcosystemAPI):
             else:
                 receipt_cls = SharedBlobReceipt
                 receipt_kwargs["blobGasPrice"] = blob_gas_price
-                receipt_kwargs["blobGasUsed"] = data.get("blob_gas_used", data.get("blobGasUsed")) or 0
+                receipt_kwargs["blobGasUsed"] = (
+                    data.get("blob_gas_used", data.get("blobGasUsed")) or 0
+                )
 
         else:
             receipt_cls = Receipt
