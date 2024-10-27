@@ -37,6 +37,47 @@ CORE_PLUGINS = [
     "ape_run",
     "ape_test",
 ]
+# Hardcoded for performance reasons. Functionality in plugins commands
+# and functions won't use this; they use GitHub to check directly.
+# This hardcoded list is useful for `ape --help`. If ApeWorX adds a new
+# trusted plugin, it should be added to this list; else it will show
+# as 3rd-party in `ape --help`.
+TRUSTED_PLUGINS = [
+    "addressbook",
+    "alchemy",
+    "arbitrum",
+    "avalanche",
+    "aws",
+    "base",
+    "blast",
+    "blockscout",
+    "bsc",
+    "cairo",
+    "chainstack",
+    "ens",
+    "etherscan",
+    "fantom",
+    "farcaster",
+    "flashbots",
+    "foundry",
+    "frame",
+    "ganache",
+    "hardhat",
+    "infura",
+    "ledger",
+    "notebook",
+    "optimism",
+    "polygon",
+    "polygon_zkevm",
+    "safe",
+    "solidity",
+    "template",
+    "tenderly",
+    "titanoboa",
+    "tokens",
+    "trezor",
+    "vyper",
+]
 
 
 def clean_plugin_name(name: str) -> str:
@@ -378,14 +419,23 @@ class PluginMetadata(BaseInterfaceModel):
 
     @property
     def is_third_party(self) -> bool:
-        return self.is_installed and not self.is_available
+        """
+        ``True`` when is an installed plugin that is not from ApeWorX.
+        """
+        return self.is_installed and not self.is_trusted
+
+    @cached_property
+    def is_trusted(self) -> bool:
+        """
+        ``True`` when is a plugin from ApeWorX.
+        """
+        return self.check_trusted()
 
     @property
     def is_available(self) -> bool:
         """
         Whether the plugin is maintained by the ApeWorX organization.
         """
-
         return self.module_name in _get_available_plugins()
 
     def __str__(self) -> str:
@@ -403,6 +453,15 @@ class PluginMetadata(BaseInterfaceModel):
             _get_distributions.cache_clear()
 
         return any(n == self.package_name for n in get_plugin_dists())
+
+    def check_trusted(self, use_web: bool = True) -> bool:
+        if use_web:
+            return self.is_available
+
+        else:
+            # Sometimes (such as for --help commands), it is better
+            # to not check GitHub to see if the plugin is trusted.
+            return self.name in TRUSTED_PLUGINS
 
     def _prepare_install(
         self, upgrade: bool = False, skip_confirmation: bool = False
