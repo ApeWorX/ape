@@ -125,10 +125,14 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         Returns:
             :class:`~ape.api.networks.ProviderContextManager`
         """
+        network_name = self.network.name
+        forked_network_name = (
+            network_name if network_name.endswith("-fork") else f"{network_name}-fork"
+        )
         try:
-            forked_network = self.ecosystem.get_network(f"{self.network.name}-fork")
+            forked_network = self.ecosystem.get_network(forked_network_name)
         except NetworkNotFoundError as err:
-            raise NetworkError(f"Unable to fork network '{self.network.name}'.") from err
+            raise NetworkError(f"Unable to fork network '{network_name}'.") from err
 
         provider_settings = provider_settings or {}
         fork_settings = {}
