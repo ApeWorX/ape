@@ -27,7 +27,6 @@ def existing_alias_argument(account_type: _ACCOUNT_TYPE_FILTER = None, **kwargs)
           If given, limits the type of account the user may choose from.
         **kwargs: click.argument overrides.
     """
-
     type_ = kwargs.pop("type", Alias(key=account_type))
     return click.argument("alias", type=type_, **kwargs)
 

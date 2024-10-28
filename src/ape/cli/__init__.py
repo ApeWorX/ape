@@ -6,6 +6,7 @@ from ape.cli.arguments import (
 from ape.cli.choices import (
     AccountAliasPromptChoice,
     Alias,
+    LazyChoice,
     NetworkChoice,
     OutputFormat,
     PromptChoice,
@@ -42,6 +43,7 @@ __all__ = [
     "existing_alias_argument",
     "incompatible_with",
     "JSON",
+    "LazyChoice",
     "network_option",
     "NetworkChoice",
     "NetworkOption",

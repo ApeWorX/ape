@@ -12,10 +12,6 @@ import click
 
 from ape.cli.commands import ConnectedProviderCommand
 from ape.cli.options import ape_cli_context, project_option
-from ape.utils.basemodel import ManagerAccessMixin as access
-from ape.utils.misc import _python_version
-from ape.version import version as ape_version
-from ape_console.config import ConsoleConfig
 
 if TYPE_CHECKING:
     from IPython.terminal.ipapp import Config as IPythonConfig
@@ -54,6 +50,8 @@ def import_extras_file(file_path) -> ModuleType:
 def load_console_extras(**namespace: Any) -> dict[str, Any]:
     """load and return namespace updates from ape_console_extras.py  files if
     they exist"""
+    from ape.utils.basemodel import ManagerAccessMixin as access
+
     pm = namespace.get("project", access.local_project)
     global_extras = pm.config_manager.DATA_FOLDER.joinpath(CONSOLE_EXTRAS_FILENAME)
     project_extras = pm.path.joinpath(CONSOLE_EXTRAS_FILENAME)
@@ -102,6 +100,8 @@ def console(
     from IPython.terminal.ipapp import Config as IPythonConfig
 
     import ape
+    from ape.utils.misc import _python_version
+    from ape.version import version as ape_version
 
     project = project or ape.project
     banner = ""
@@ -154,6 +154,8 @@ def console(
 
 def _launch_console(namespace: dict, ipy_config: "IPythonConfig", embed: bool, banner: str):
     import IPython
+
+    from ape_console.config import ConsoleConfig
 
     ipython_kwargs = {"user_ns": namespace, "config": ipy_config}
     if embed:

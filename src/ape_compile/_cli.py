@@ -1,12 +1,14 @@
 import sys
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import click
-from ethpm_types import ContractType
 
 from ape.cli.arguments import contract_file_paths_argument
 from ape.cli.options import ape_cli_context, config_override_option, project_option
-from ape.utils.os import clean_path
+
+if TYPE_CHECKING:
+    from ethpm_types import ContractType
 
 
 def _include_dependencies_callback(ctx, param, value):
@@ -93,6 +95,8 @@ def cli(
                 _display_byte_code_sizes(cli_ctx, contract_types)
 
     if not compiled:
+        from ape.utils.os import clean_path  # perf: lazy import
+
         folder = clean_path(project.contracts_folder)
         cli_ctx.logger.warning(f"Nothing to compile ({folder}).")
 
@@ -101,7 +105,7 @@ def cli(
         sys.exit(1)
 
 
-def _display_byte_code_sizes(cli_ctx, contract_types: dict[str, ContractType]):
+def _display_byte_code_sizes(cli_ctx, contract_types: dict[str, "ContractType"]):
     # Display bytecode size for *all* contract types (not just ones we compiled)
     code_size = []
     for contract in contract_types.values():

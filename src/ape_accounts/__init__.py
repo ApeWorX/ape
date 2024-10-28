@@ -1,10 +1,10 @@
 from importlib import import_module
 from typing import Any
 
-from ape import plugins
+from ape.plugins import AccountPlugin, register
 
 
-@plugins.register(plugins.AccountPlugin)
+@register(AccountPlugin)
 def account_types():
     from ape_accounts.accounts import AccountContainer, KeyfileAccount
 

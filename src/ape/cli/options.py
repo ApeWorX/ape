@@ -178,14 +178,12 @@ class NetworkOption(Option):
         provider = kwargs.pop("provider", None)
         default = kwargs.pop("default", "auto")
 
-        provider_module = import_module("ape.api.providers")
-        base_type = kwargs.pop("base_type", provider_module.ProviderAPI)
-
         callback = kwargs.pop("callback", None)
 
         # NOTE: If using network_option, this part is skipped
         #  because parsing happens earlier to handle advanced usage.
         if not kwargs.get("type"):
+            base_type = kwargs.pop("base_type", None)
             kwargs["type"] = NetworkChoice(
                 case_sensitive=False,
                 ecosystem=ecosystem,

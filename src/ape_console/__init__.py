@@ -1,7 +1,8 @@
-from ape import plugins
-from ape_console.config import ConsoleConfig
+from ape.plugins import Config, register
 
 
-@plugins.register(plugins.Config)
+@register(Config)
 def config_class():
+    from ape_console.config import ConsoleConfig
+
     return ConsoleConfig

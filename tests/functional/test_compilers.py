@@ -8,7 +8,7 @@ from ethpm_types import ContractType, ErrorABI
 from ape.contracts import ContractContainer
 from ape.exceptions import APINotImplementedError, CompilerError, ContractLogicError, CustomError
 from ape.types.address import AddressType
-from ape_compile import Config
+from ape_compile.config import Config
 
 
 def test_get_imports(project, compilers):
