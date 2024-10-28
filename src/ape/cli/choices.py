@@ -422,7 +422,7 @@ class NetworkChoice(click.Choice):
 
         if choice not in (None, _NONE_NETWORK) and isinstance(choice, str):
             provider_module = import_module("ape.api.providers")
-            if issubclass(self.base_type, provider_module.ProviderAPI):
+            if issubclass(self.base_type, provider_module.ProviderAPI):  # type: ignore[arg-type]
                 # Return the provider.
                 choice = networks.get_provider_from_choice(network_choice=value)
 
@@ -475,6 +475,7 @@ class LazyChoice(Choice):
     """
     A simple lazy-choice where choices are evaluated lazily.
     """
+
     def __init__(self, get_choices: Callable[[], Sequence[str]], case_sensitive: bool = False):
         self._get_choices = get_choices
         self.case_sensitive = case_sensitive

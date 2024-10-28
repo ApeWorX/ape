@@ -1,4 +1,4 @@
-from ape.plugins import register, Config
+from ape.plugins import Config, register
 
 
 @register(Config)

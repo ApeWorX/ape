@@ -8,7 +8,7 @@ import yaml
 from rich import print as echo_rich_text
 from rich.tree import Tree
 
-from ape.cli.choices import OutputFormat, LazyChoice
+from ape.cli.choices import LazyChoice, OutputFormat
 from ape.cli.options import ape_cli_context, network_option, output_format_option
 from ape.exceptions import NetworkError
 from ape.logging import LogLevel
@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from ape.api.providers import SubprocessProvider
 
 
-def _filter_option(name: str, get_options: Callable[[], list[str]]):
+def _filter_option(name: str, get_options: Callable[[], Sequence[str]]):
     return click.option(
         f"--{name}",
         f"{name}_filter",
