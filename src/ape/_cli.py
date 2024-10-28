@@ -67,6 +67,7 @@ class ApeCLI(click.MultiCommand):
 
         commands = []
         for subcommand in self.list_commands(ctx):
+            print(subcommand)
             cmd = self.get_command(ctx, subcommand)
             if cmd is None or cmd.hidden:
                 continue

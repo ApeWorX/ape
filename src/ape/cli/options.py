@@ -3,11 +3,10 @@ from collections.abc import Callable
 from functools import partial
 from importlib import import_module
 from pathlib import Path
-from typing import Any, NoReturn, Optional, Union
+from typing import TYPE_CHECKING, Any, NoReturn, Optional, Union
 
 import click
 from click import Option
-from ethpm_types import ContractType
 
 from ape.cli.choices import (
     _ACCOUNT_TYPE_FILTER,
@@ -21,6 +20,10 @@ from ape.cli.commands import ConnectedProviderCommand
 from ape.cli.paramtype import JSON, Noop
 from ape.exceptions import Abort, ProjectError
 from ape.logging import DEFAULT_LOG_LEVEL, ApeLogger, LogLevel, logger
+
+if TYPE_CHECKING:
+    # perf: Avoid importing these if not needed to make CLIs load faster.
+    from ethpm_types.contract_type import ContractType
 
 _VERBOSITY_VALUES = ("--verbosity", "-v")
 
@@ -436,7 +439,7 @@ def account_option(account_type: _ACCOUNT_TYPE_FILTER = None) -> Callable:
     )
 
 
-def _load_contracts(ctx, param, value) -> Optional[Union[ContractType, list[ContractType]]]:
+def _load_contracts(ctx, param, value) -> Optional[Union["ContractType", list["ContractType"]]]:
     if not value:
         return None
 
@@ -449,7 +452,7 @@ def _load_contracts(ctx, param, value) -> Optional[Union[ContractType, list[Cont
     # and therefore we should also return a list.
     is_multiple = isinstance(value, (tuple, list))
 
-    def get_contract(contract_name: str) -> ContractType:
+    def get_contract(contract_name: str) -> "ContractType":
         if contract_name not in ManagerAccessMixin.local_project.contracts:
             raise ProjectError(f"No contract named '{value}'")
 
