@@ -21,12 +21,11 @@ from ape.cli.commands import ConnectedProviderCommand
 from ape.cli.paramtype import JSON, Noop
 from ape.exceptions import Abort, ProjectError
 from ape.logging import DEFAULT_LOG_LEVEL, ApeLogger, LogLevel, logger
-from ape.utils.basemodel import ManagerAccessMixin
 
 _VERBOSITY_VALUES = ("--verbosity", "-v")
 
 
-class ApeCliContextObject(ManagerAccessMixin, dict):
+class ApeCliContextObject(dict):
     """
     A ``click`` context object class. Use via :meth:`~ape.cli.options.ape_cli_context()`.
     It provides common CLI utilities for ape, such as logging or
@@ -45,6 +44,8 @@ class ApeCliContextObject(ManagerAccessMixin, dict):
         try:
             return self.__getattribute__(item)
         except AttributeError:
+            from ape.utils.basemodel import ManagerAccessMixin
+
             return getattr(ManagerAccessMixin, item)
 
     @staticmethod
@@ -204,6 +205,8 @@ class NetworkOption(Option):
             else:
                 # NOTE: Use a function as the default so it is calculated lazily
                 def fn():
+                    from ape.utils.basemodel import ManagerAccessMixin
+
                     return ManagerAccessMixin.network_manager.default_ecosystem.name
 
                 default = fn
@@ -344,6 +347,8 @@ def _update_context_with_network(ctx, provider, requested_network_objects):
 
 
 def _get_provider(value, default, keep_as_choice_str):
+    from ape.utils.basemodel import ManagerAccessMixin
+
     use_default = value is None and default == "auto"
     provider_module = import_module("ape.api.providers")
     ProviderAPI = provider_module.ProviderAPI
@@ -435,6 +440,8 @@ def _load_contracts(ctx, param, value) -> Optional[Union[ContractType, list[Cont
     if not value:
         return None
 
+    from ape.utils.basemodel import ManagerAccessMixin
+
     if len(ManagerAccessMixin.local_project.contracts) == 0:
         raise ProjectError("Project has no contracts.")
 
@@ -523,6 +530,8 @@ def incompatible_with(incompatible_opts) -> type[click.Option]:
 
 
 def _project_callback(ctx, param, val):
+    from ape.utils.basemodel import ManagerAccessMixin
+
     pm = None
     if not val:
         pm = ManagerAccessMixin.local_project

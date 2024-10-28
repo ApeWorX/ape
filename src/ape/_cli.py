@@ -18,7 +18,6 @@ from click import Context
 from ape.cli.options import ape_cli_context
 from ape.exceptions import Abort, ApeException, ConfigError, handle_ape_exception
 from ape.logging import logger
-from ape.utils.basemodel import ManagerAccessMixin as access
 
 _DIFFLIB_CUT_OFF = 0.6
 
@@ -27,6 +26,8 @@ def display_config(ctx, param, value):
     # NOTE: This is necessary not to interrupt how version or help is intercepted
     if not value or ctx.resilient_parsing:
         return
+
+    from ape.utils.basemodel import ManagerAccessMixin as access
 
     click.echo("# Current configuration")
 
@@ -38,6 +39,8 @@ def display_config(ctx, param, value):
 
 
 def _validate_config():
+    from ape.utils.basemodel import ManagerAccessMixin as access
+
     project = access.local_project
     try:
         _ = project.config
@@ -60,6 +63,8 @@ class ApeCLI(click.MultiCommand):
         return super().parse_args(ctx, args)
 
     def format_commands(self, ctx, formatter) -> None:
+        from ape.utils.basemodel import ManagerAccessMixin as access
+
         commands = []
         for subcommand in self.list_commands(ctx):
             cmd = self.get_command(ctx, subcommand)

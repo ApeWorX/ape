@@ -7,7 +7,6 @@ from click import Context
 
 from ape.cli.choices import _NONE_NETWORK, NetworkChoice
 from ape.exceptions import NetworkError
-from ape.utils.basemodel import ManagerAccessMixin as access
 
 if TYPE_CHECKING:
     from ape.api.networks import ProviderContextManager
@@ -26,6 +25,8 @@ def get_param_from_ctx(ctx: Context, param: str) -> Optional[Any]:
 
 
 def parse_network(ctx: Context) -> Optional["ProviderContextManager"]:
+    from ape.utils.basemodel import ManagerAccessMixin as access
+
     interactive = get_param_from_ctx(ctx, "interactive")
 
     # Handle if already parsed (as when using network-option)

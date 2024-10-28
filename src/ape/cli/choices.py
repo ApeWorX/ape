@@ -14,7 +14,6 @@ from ape.exceptions import (
     NetworkNotFoundError,
     ProviderNotFoundError,
 )
-from ape.utils.basemodel import ManagerAccessMixin as access
 
 if TYPE_CHECKING:
     from ape.api.accounts import AccountAPI
@@ -26,6 +25,8 @@ _ACCOUNT_TYPE_FILTER = Union[
 
 
 def _get_accounts(key: _ACCOUNT_TYPE_FILTER) -> list["AccountAPI"]:
+    from ape.utils.basemodel import ManagerAccessMixin as access
+
     accounts = access.account_manager
 
     add_test_accounts = False
@@ -206,6 +207,8 @@ class AccountAliasPromptChoice(PromptChoice):
         else:
             alias = value
 
+        from ape.utils.basemodel import ManagerAccessMixin as access
+
         accounts = access.account_manager
         if isinstance(alias, str) and alias.upper().startswith("TEST::"):
             idx_str = alias.upper().replace("TEST::", "")
@@ -235,6 +238,8 @@ class AccountAliasPromptChoice(PromptChoice):
                 click.echo(f"{idx}. {choice}")
                 did_print = True
 
+        from ape.utils.basemodel import ManagerAccessMixin as access
+
         accounts = access.account_manager
         len_test_accounts = len(accounts.test_accounts) - 1
         if len_test_accounts > 0:
@@ -261,6 +266,7 @@ class AccountAliasPromptChoice(PromptChoice):
         Returns:
             :class:`~ape.api.accounts.AccountAPI`
         """
+        from ape.utils.basemodel import ManagerAccessMixin as access
 
         accounts = access.account_manager
         if not self.choices or len(self.choices) == 0:
@@ -369,6 +375,8 @@ class NetworkChoice(click.Choice):
         return "[ecosystem-name][:[network-name][:[provider-name]]]"
 
     def convert(self, value: Any, param: Optional[Parameter], ctx: Optional[Context]) -> Any:
+        from ape.utils.basemodel import ManagerAccessMixin as access
+
         choice: Optional[Union[str, "ProviderAPI"]]
         networks = access.network_manager
         if not value:
