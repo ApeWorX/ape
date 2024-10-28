@@ -365,14 +365,20 @@ class NetworkChoice(click.Choice):
         self.provider = provider
         # NOTE: Purposely avoid super().init for performance reasons.
 
+    @property
     def base_type(self) -> type["ProviderAPI"]:
+        # perf: property exists to delay import ProviderAPI at init time.
+        from ape.api.providers import ProviderAPI
+
         if self._base_type is not None:
             return self._base_type
 
-        from ape.api.providers import ProviderAPI
-
         self._base_type = ProviderAPI
         return ProviderAPI
+
+    @base_type.setter
+    def base_type(self, value):
+        self._base_type = value
 
     @cached_property
     def choices(self) -> Sequence[Any]:  # type: ignore[override]
@@ -421,8 +427,9 @@ class NetworkChoice(click.Choice):
                     ) from err
 
         if choice not in (None, _NONE_NETWORK) and isinstance(choice, str):
-            provider_module = import_module("ape.api.providers")
-            if issubclass(self.base_type, provider_module.ProviderAPI):  # type: ignore[arg-type]
+            from ape.api.providers import ProviderAPI
+
+            if issubclass(self.base_type, ProviderAPI):
                 # Return the provider.
                 choice = networks.get_provider_from_choice(network_choice=value)
 
