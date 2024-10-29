@@ -138,7 +138,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
 
     @classmethod
     @abstractmethod
-    def decode_address(cls, raw_address: "RawAddress") -> "AddressType":
+    def decode_address(cls, raw_address: "RawAddress") -> AddressType:
         """
         Convert a raw address to the ecosystem's native address type.
 
@@ -152,7 +152,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
 
     @classmethod
     @abstractmethod
-    def encode_address(cls, address: "AddressType") -> "RawAddress":
+    def encode_address(cls, address: AddressType) -> "RawAddress":
         """
         Convert the ecosystem's native address type to a raw integer or str address.
 
@@ -407,7 +407,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
 
     @abstractmethod
     def encode_transaction(
-        self, address: "AddressType", abi: "MethodABI", *args, **kwargs
+        self, address: AddressType, abi: "MethodABI", *args, **kwargs
     ) -> "TransactionAPI":
         """
         Encode a transaction object from a contract function's ABI and call arguments.
@@ -576,7 +576,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
 
         return data
 
-    def get_proxy_info(self, address: "AddressType") -> Optional[ProxyInfoAPI]:
+    def get_proxy_info(self, address: AddressType) -> Optional[ProxyInfoAPI]:
         """
         Information about a proxy contract such as proxy type and implementation address.
 
@@ -645,7 +645,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
     def decode_custom_error(
         self,
         data: HexBytes,
-        address: "AddressType",
+        address: AddressType,
         **kwargs,
     ) -> Optional[CustomError]:
         """
@@ -1297,7 +1297,7 @@ class NetworkAPI(BaseInterfaceModel):
 
         raise NetworkError(f"No providers for network '{self.name}'.")
 
-    def publish_contract(self, address: "AddressType"):
+    def publish_contract(self, address: AddressType):
         """
         A convenience method to publish a contract to the explorer.
 
