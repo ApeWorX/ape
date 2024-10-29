@@ -534,7 +534,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         raise NetworkNotFoundError(network_name, ecosystem=self.name, options=networks)
 
     def get_network_data(
-        self, network_name: str, provider_filter: Optional["Collection[str]"] = None
+        self, network_name: str, provider_filter: Optional[Collection[str]] = None
     ) -> dict:
         """
         Get a dictionary of data about providers in the network.

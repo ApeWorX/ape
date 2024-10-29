@@ -609,9 +609,9 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
 
     def get_network_data(
         self,
-        ecosystem_filter: Optional["Collection[str]"] = None,
-        network_filter: Optional["Collection[str]"] = None,
-        provider_filter: Optional["Collection[str]"] = None,
+        ecosystem_filter: Optional[Collection[str]] = None,
+        network_filter: Optional[Collection[str]] = None,
+        provider_filter: Optional[Collection[str]] = None,
     ):
         data: dict = {"ecosystems": []}
 
@@ -629,8 +629,8 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
     def _get_ecosystem_data(
         self,
         ecosystem_name: str,
-        network_filter: Optional["Collection[str]"] = None,
-        provider_filter: Optional["Collection[str]"] = None,
+        network_filter: Optional[Collection[str]] = None,
+        provider_filter: Optional[Collection[str]] = None,
     ) -> dict:
         ecosystem = self[ecosystem_name]
         ecosystem_data: dict = {"name": str(ecosystem_name)}
