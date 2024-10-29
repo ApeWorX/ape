@@ -24,9 +24,6 @@ from ape.logging import DEFAULT_LOG_LEVEL, ApeLogger, LogLevel, logger
 if TYPE_CHECKING:
     from ethpm_types.contract_type import ContractType
 
-if TYPE_CHECKING:
-    from ethpm_types.contract_type import ContractType
-
 _VERBOSITY_VALUES = ("--verbosity", "-v")
 
 

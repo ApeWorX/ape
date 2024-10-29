@@ -1,13 +1,14 @@
 from collections.abc import Iterator
 from functools import singledispatchmethod
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Optional, cast
+from typing import Any, Optional, cast
 
 from sqlalchemy import create_engine, func
 from sqlalchemy.engine import CursorResult  # noqa: TC002
 from sqlalchemy.sql import column, insert, select
 from sqlalchemy.sql.expression import Insert, Select  # noqa: TC002
 
+from ape.api.providers import BlockAPI  # noqa: TC002
 from ape.api.query import (
     BaseInterfaceModel,
     BlockQuery,
@@ -24,9 +25,6 @@ from ape.utils.misc import LOCAL_NETWORK_NAME
 
 from . import models
 from .models import Blocks, ContractEvents, Transactions
-
-if TYPE_CHECKING:
-    from ape.api.providers import BlockAPI
 
 
 class CacheQueryProvider(QueryAPI):
@@ -319,7 +317,7 @@ class CacheQueryProvider(QueryAPI):
         )
 
     @perform_query.register
-    def _perform_block_query(self, query: BlockQuery) -> Iterator["BlockAPI"]:
+    def _perform_block_query(self, query: BlockQuery) -> Iterator[BlockAPI]:
         with self.database_connection as conn:
             result = conn.execute(
                 select([column(c) for c in query.columns])
