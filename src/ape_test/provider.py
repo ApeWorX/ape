@@ -36,7 +36,6 @@ from ape_ethereum.trace import TraceApproach, TransactionTrace
 from ape_test.config import EthTesterProviderConfig
 
 if TYPE_CHECKING:
-
     from ape.api.accounts import TestAccountAPI
     from ape.api.trace import TraceAPI
     from ape.api.transactions import ReceiptAPI, TransactionAPI

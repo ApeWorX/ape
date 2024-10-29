@@ -21,7 +21,6 @@ from ape.utils.testing import (
 )
 
 if TYPE_CHECKING:
-
     from ape.api.transactions import TransactionAPI
     from ape.types.address import AddressType
 

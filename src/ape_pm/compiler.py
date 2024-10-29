@@ -14,7 +14,6 @@ from ape.logging import logger
 from ape.utils.os import get_relative_path
 
 if TYPE_CHECKING:
-
     from ape.managers.project import ProjectManager
 
 
