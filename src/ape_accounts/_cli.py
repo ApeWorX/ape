@@ -146,7 +146,6 @@ def _import(cli_ctx, alias, import_from_mnemonic, custom_hd_path):
             confirmation_prompt=True,
         )
 
-    account_module = import_module("ape_accounts.accounts")
     if import_from_mnemonic:
         from eth_account import Account as EthAccount
 
@@ -154,9 +153,7 @@ def _import(cli_ctx, alias, import_from_mnemonic, custom_hd_path):
         EthAccount.enable_unaudited_hdwallet_features()
         try:
             passphrase = ask_for_passphrase()
-            account = account_module.import_account_from_mnemonic(
-                alias, passphrase, mnemonic, custom_hd_path
-            )
+            account = _account_from_mnemonic(alias, passphrase, mnemonic, hd_path=custom_hd_path)
         except Exception as error:
             error_msg = f"{error}".replace(mnemonic, HIDDEN_MESSAGE)
             cli_ctx.abort(f"Seed phrase can't be imported: {error_msg}")
@@ -165,7 +162,7 @@ def _import(cli_ctx, alias, import_from_mnemonic, custom_hd_path):
         key = click.prompt("Enter Private Key", hide_input=True)
         try:
             passphrase = ask_for_passphrase()
-            account = account_module.import_account_from_private_key(alias, passphrase, key)
+            account = _account_from_key(alias, passphrase, key)
         except Exception as error:
             cli_ctx.abort(f"Key can't be imported: {error}")
 
@@ -178,6 +175,18 @@ def _import(cli_ctx, alias, import_from_mnemonic, custom_hd_path):
 def _load_account_type(account: "AccountAPI") -> bool:
     module = import_module("ape_accounts.accounts")
     return isinstance(account, module.KeyfileAccount)
+
+
+def _account_from_mnemonic(
+    alias: str, passphrase: str, mnemonic: str, hd_path: str = ETHEREUM_DEFAULT_PATH
+) -> "KeyfileAccount":
+    account_module = import_module("ape_accounts.accounts")
+    return account_module.import_account_from_mnemonic(alias, passphrase, mnemonic, hd_path=hd_path)
+
+
+def _account_from_key(alias: str, passphrase: str, key: str) -> "KeyfileAccount":
+    account_module = import_module("ape_accounts.accounts")
+    return account_module.import_account_from_private_key(alias, passphrase, key)
 
 
 @cli.command(short_help="Export an account private key")
