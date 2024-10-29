@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en" data-accent-color="lime" data-content_root="../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Configure Ape - ape documentation</title><link rel="shortcut icon" href="../_static/favicon.ico"/><link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Compile" href="compile.html" /><link rel="prev" title="Dependencies" href="dependencies.html" />
+      <link rel="canonical" href="ape/userguides/config.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=397bb51e" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=83eaa723" />
+    <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    <meta property="og:type" content="website"/>
+<meta property="og:url" content="ape/userguides/config.html"/>
+<meta property="og:title" content="Configure Ape"/>
+<meta name="twitter:card" content="summary"/>
+  </head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="../index.html">
+      <img class="light-logo" src="../_static/logo_grey.svg" alt="ape" height="28" loading="lazy" />
+      <img class="dark-logo" src="../_static/logo_green.svg" alt="ape" height="28" loading="lazy" />
+      <strong>ape</strong>
+    </a>
+    <div class="sy-head-nav" id="HeadNav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials"></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="HeadNav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2 -translate-x-2"></span>
+          <span class="hamburger_3 -translate-x-1"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading" aria-level="3"><span class="caption-text">User Guides</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="accounts.html">Accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="networks.html">Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="forking_networks.html">Forking Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contracts.html">Contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="proxy.html">Proxy Contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installing_plugins.html">Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="projects.html">Developing Projects with Ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dependencies.html">Dependencies</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Configure Ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="compile.html">Compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="console.html">Console</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transactions.html">Transactions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trace.html">Traces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scripts.html">Scripting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="testing.html">Testing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reverts.html">Reverts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="publishing.html">Publishing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="clis.html">CLIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="data.html">Querying Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="developing_plugins.html">Developing Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="logging.html">Logging</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">CLI Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../commands/accounts.html">accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/compile.html">compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/console.html">console</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/init.html">init</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/networks.html">networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/plugins.html">plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/pm.html">pm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/run.html">run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/test.html">test</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Core Python Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape.html">ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/api.html">ape.api</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/cli.html">ape.cli</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/contracts.html">ape.contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/exceptions.html">ape.exceptions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/managers.html">ape.managers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/plugins.html">ape.plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/types.html">ape.types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/utils.html">ape.utils</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Plugin Python Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_accounts.html">ape-accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_compile.html">ape-compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_ethereum.html">ape-ethereum</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_ethereum.html#module-ape_ethereum.multicall">ape-ethereum.multicall</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_node.html">ape-node</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_pm.html">ape-pm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_test.html">ape-test</a></li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#base-path">Base Path</a></li>
+<li><a class="reference internal" href="#contracts-folder">Contracts Folder</a></li>
+<li><a class="reference internal" href="#default-ecosystem">Default Ecosystem</a></li>
+<li><a class="reference internal" href="#dependencies">Dependencies</a></li>
+<li><a class="reference internal" href="#deployments">Deployments</a></li>
+<li><a class="reference internal" href="#node">Node</a></li>
+<li><a class="reference internal" href="#networks">Networks</a></li>
+<li><a class="reference internal" href="#plugins">Plugins</a></li>
+<li><a class="reference internal" href="#request-headers">Request Headers</a></li>
+<li><a class="reference internal" href="#testing">Testing</a></li>
+<li><a class="reference internal" href="#plugin-settings">Plugin Settings</a></li>
+<li><a class="reference internal" href="#non-plugin-settings">Non-plugin settings</a></li>
+</ul>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6"><div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../index.html"><span itemprop="name">ape</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">Configure Ape</strong>
+        <meta itemprop="position" content="2" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+        <article class="yue" role="main">
+          <section id="configure-ape">
+<h1>Configure Ape<a class="headerlink" href="#configure-ape" title="Link to this heading"></a></h1>
+<p>You can configure Ape using a <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code> file and the prefix <code class="docutils literal notranslate"><span class="pre">tool.ape</span></code> or any configuration file named <code class="docutils literal notranslate"><span class="pre">ape-config.[yaml|yml|json]</span></code>.
+There are two locations you can place config files.</p>
+<ol class="arabic simple">
+<li><p>In the root of your project</p></li>
+<li><p>In your <code class="docutils literal notranslate"><span class="pre">$HOME/.ape</span></code> directory (global)</p></li>
+</ol>
+<p>Project settings take precedent, but global settings allow you to configure preferences across all projects, such as your default mainnet provider (e.g. Alchemy versus running your own node).</p>
+<p>This guide serves as an index of some settings you can include in any <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file.
+This guide is <strong>PURPOSELY</strong> alphabetized to facilitate easier look-up of keys.
+Plugins for Ape may define their own configs.</p>
+<p>Most of the features in this guide are documented more-fully elsewhere in the user-guides.</p>
+<p>However, here is a list of common-use cases requiring the <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file to help you:</p>
+<ol class="arabic simple">
+<li><p>Setting up a custom node RPC: See the <a class="reference external" href="#node">node</a> section.</p></li>
+<li><p>Setting up project dependencies: See the <a class="reference external" href="#dependencies">dependencies</a> section.</p></li>
+<li><p>Declaring your project’s plugins: See the <a class="reference external" href="#plugins">plugins</a> section.</p></li>
+</ol>
+<p><strong>Environment Variables</strong>: <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> files support environment-variable expansion.
+Simply include environment variables (with the <code class="docutils literal notranslate"><span class="pre">$</span></code> prefix) in your config file and Ape will automatically expand them.</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[tool.ape.plugin]</span>
+</span><span data-line="2"><span class="n">secret_rpc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;$MY_SECRET_RPC&quot;</span>
+</span></pre></div>
+</div>
+<p>Or the equivalent YAML:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">plugin</span><span class="p">:</span>
+</span><span data-line="2"><span class="w">  </span><span class="nt">secret_rpc</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">$MY_SECRET_RPC</span>
+</span></pre></div>
+</div>
+<p>This helps keep your secrets out of Ape!</p>
+<section id="base-path">
+<h2>Base Path<a class="headerlink" href="#base-path" title="Link to this heading"></a></h2>
+<p>Change the base path if it is different than your project root.
+For example, imagine a project structure like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1">project
+</span><span data-line="2">└── src/
+</span><span data-line="3">    └── contracts/
+</span><span data-line="4">        └── MyContract.sol
+</span></pre></div>
+</div>
+<p>In this case, you want to configure Ape like:</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[tool.ape]</span>
+</span><span data-line="2"><span class="n">base_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;src&quot;</span>
+</span></pre></div>
+</div>
+<p>Or the equivalent YAML:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">base_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">src</span>
+</span></pre></div>
+</div>
+<p>This way, <code class="docutils literal notranslate"><span class="pre">MyContract.vy</span></code>’s source ID will be <code class="docutils literal notranslate"><span class="pre">&quot;contracts/Factory.vy&quot;</span></code> and not <code class="docutils literal notranslate"><span class="pre">&quot;src/contracts/Factory.vy&quot;</span></code>.
+Some dependencies, such as python-based ones like <code class="docutils literal notranslate"><span class="pre">snekmate</span></code>, use this structure.</p>
+</section>
+<section id="contracts-folder">
+<h2>Contracts Folder<a class="headerlink" href="#contracts-folder" title="Link to this heading"></a></h2>
+<p>Specify a different path to your <code class="docutils literal notranslate"><span class="pre">contracts/</span></code> directory.
+This is useful when using a different naming convention, such as <code class="docutils literal notranslate"><span class="pre">src/</span></code> rather than <code class="docutils literal notranslate"><span class="pre">contracts/</span></code>.</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[tool.ape]</span>
+</span><span data-line="2"><span class="n">contracts_folder</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;src&quot;</span>
+</span></pre></div>
+</div>
+<p>Or the equivalent YAML:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">contracts_folder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">src</span>
+</span></pre></div>
+</div>
+<p>You can also use an absolute path.
+This is useful for projects that compile contracts outside their directory.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">contracts_folder</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;~/GlobalContracts&quot;</span>
+</span></pre></div>
+</div>
+</section>
+<section id="default-ecosystem">
+<h2>Default Ecosystem<a class="headerlink" href="#default-ecosystem" title="Link to this heading"></a></h2>
+<p>You can change the default ecosystem by including the following:</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[tool.ape]</span>
+</span><span data-line="2"><span class="n">default_ecosystem</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;fantom&quot;</span>
+</span></pre></div>
+</div>
+<p>Or the equivalent YAML:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">default_ecosystem</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fantom</span>
+</span></pre></div>
+</div>
+<p>The default ecosystem is <code class="docutils literal notranslate"><span class="pre">ethereum</span></code>.</p>
+</section>
+<section id="dependencies">
+<h2>Dependencies<a class="headerlink" href="#dependencies" title="Link to this heading"></a></h2>
+<p>Configure dependencies for your ape project.
+To learn more about dependencies, see <a class="reference external" href="./dependencies.html">this guide</a>.</p>
+<p>A simple example of configuring dependencies looks like this:</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[[tool.ape.dependencies]]</span>
+</span><span data-line="2"><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;openzeppelin&quot;</span>
+</span><span data-line="3"><span class="n">github</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;OpenZeppelin/openzeppelin-contracts&quot;</span>
+</span><span data-line="4"><span class="n">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;4.4.2&quot;</span>
+</span></pre></div>
+</div>
+<p>Or the equivalent YAML:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">dependencies</span><span class="p">:</span>
+</span><span data-line="2"><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">openzeppelin</span>
+</span><span data-line="3"><span class="w">    </span><span class="nt">github</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">OpenZeppelin/openzeppelin-contracts</span>
+</span><span data-line="4"><span class="w">    </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4.4.2</span>
+</span></pre></div>
+</div>
+</section>
+<section id="deployments">
+<h2>Deployments<a class="headerlink" href="#deployments" title="Link to this heading"></a></h2>
+<p>Set deployments that were made outside of Ape in your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> to create past-deployment-based contract instances in Ape:
+(See <a class="reference external" href="./contracts.html#from-previous-deployment">this example</a> for more information on this feature).</p>
+<p>Config example:</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[[tool.ape.deployments.ethereum.mainnet]]</span>
+</span><span data-line="2"><span class="n">contract_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;MyContract&quot;</span>
+</span><span data-line="3"><span class="n">address</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;0x5FbDB2315678afecb367f032d93F642f64180aa3&quot;</span>
+</span><span data-line="4">
+</span><span data-line="5"><span class="k">[[tool.ape.deployments.ethereum.sepolia]]</span>
+</span><span data-line="6"><span class="n">contract_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;MyContract&quot;</span>
+</span><span data-line="7"><span class="n">address</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512&quot;</span>
+</span></pre></div>
+</div>
+<p>Or the equivalent YAML:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">deployments</span><span class="p">:</span>
+</span><span data-line="2"><span class="w">  </span><span class="nt">ethereum</span><span class="p">:</span>
+</span><span data-line="3"><span class="w">    </span><span class="nt">mainnet</span><span class="p">:</span>
+</span><span data-line="4"><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">contract_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MyContract</span>
+</span><span data-line="5"><span class="w">        </span><span class="nt">address</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0x5FbDB2315678afecb367f032d93F642f64180aa3</span>
+</span><span data-line="6"><span class="w">    </span><span class="nt">sepolia</span><span class="p">:</span>
+</span><span data-line="7"><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">contract_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MyContract</span>
+</span><span data-line="8"><span class="w">        </span><span class="nt">address</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512</span>
+</span></pre></div>
+</div>
+<p>When connected to Ethereum mainnet, reference the deployment by doing:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">project</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="n">contract</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="o">.</span><span class="n">deployments</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</span></pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Ape does not add or edit deployments in your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file.</p>
+</div>
+</section>
+<section id="node">
+<h2>Node<a class="headerlink" href="#node" title="Link to this heading"></a></h2>
+<p>When using the <code class="docutils literal notranslate"><span class="pre">node</span></code> provider, you can customize its settings.
+For example, to change the URI for an Ethereum network, do:</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[tool.ape.node.ethereum.mainnet]</span>
+</span><span data-line="2"><span class="n">uri</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;http://localhost:5030&quot;</span>
+</span></pre></div>
+</div>
+<p>Or the equivalent YAML:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">node</span><span class="p">:</span>
+</span><span data-line="2"><span class="w">  </span><span class="nt">ethereum</span><span class="p">:</span>
+</span><span data-line="3"><span class="w">    </span><span class="nt">mainnet</span><span class="p">:</span>
+</span><span data-line="4"><span class="w">      </span><span class="nt">uri</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://localhost:5030</span>
+</span></pre></div>
+</div>
+<p>Now, the <code class="docutils literal notranslate"><span class="pre">ape-node</span></code> core plugin will use the URL <code class="docutils literal notranslate"><span class="pre">http://localhost:5030</span></code> to connect and make requests.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Instead of using <code class="docutils literal notranslate"><span class="pre">ape-node</span></code> to connect to an Infura or Alchemy node, use the <a class="reference external" href="https://github.com/ApeWorX/ape-infura">ape-infura</a> or <a class="reference external" href="https://github.com/ApeWorX/ape-alchemy">ape-alchemy</a> provider plugins instead, which have their own way of managing API keys via environment variables.</p>
+</div>
+<p>For more information on networking as a whole, see <a class="reference external" href="./networks.html">this guide</a>.</p>
+</section>
+<section id="networks">
+<h2>Networks<a class="headerlink" href="#networks" title="Link to this heading"></a></h2>
+<p>Set default network and network providers:</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[tool.ape.ethereum]</span>
+</span><span data-line="2"><span class="n">default_network</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;mainnet-fork&quot;</span>
+</span><span data-line="3">
+</span><span data-line="4"><span class="k">[tool.ape.ethereum.mainnet_fork]</span>
+</span><span data-line="5"><span class="n">default_provider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;hardhat&quot;</span>
+</span></pre></div>
+</div>
+<p>Or the equivalent YAML:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">ethereum</span><span class="p">:</span>
+</span><span data-line="2"><span class="w">  </span><span class="nt">default_network</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mainnet-fork</span>
+</span><span data-line="3"><span class="w">  </span><span class="nt">mainnet_fork</span><span class="p">:</span>
+</span><span data-line="4"><span class="w">    </span><span class="nt">default_provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hardhat</span>
+</span></pre></div>
+</div>
+<p>Set the gas limit for a given network:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">ethereum</span><span class="p">:</span>
+</span><span data-line="2"><span class="w">  </span><span class="nt">default_network</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mainnet-fork</span>
+</span><span data-line="3"><span class="w">  </span><span class="nt">mainnet_fork</span><span class="p">:</span>
+</span><span data-line="4"><span class="w">    </span><span class="nt">gas_limit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">max</span>
+</span></pre></div>
+</div>
+<p>You may use one of:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code> - gas limit is estimated for each transaction</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;max&quot;</span></code> - the maximum block gas limit is used</p></li>
+<li><p>A number or numeric string, base 10 or 16 (e.g. <code class="docutils literal notranslate"><span class="pre">1234</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;1234&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">0x1234</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;0x1234&quot;</span></code>)</p></li>
+<li><p>An object with key <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code> for specifying an estimate-multiplier for transaction insurance</p></li>
+</ul>
+<p>To use the auto-multiplier, make your config like this:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">ethereum</span><span class="p">:</span>
+</span><span data-line="2"><span class="w">  </span><span class="nt">mainnet</span><span class="p">:</span>
+</span><span data-line="3"><span class="w">    </span><span class="nt">gas_limit</span><span class="p">:</span>
+</span><span data-line="4"><span class="w">      </span><span class="nt">auto</span><span class="p">:</span>
+</span><span data-line="5"><span class="w">        </span><span class="nt">multiplier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.2</span><span class="w">  </span><span class="c1"># Multiply 1.2 times the result of eth_estimateGas</span>
+</span></pre></div>
+</div>
+<p>For the local network configuration, the default is <code class="docutils literal notranslate"><span class="pre">&quot;max&quot;</span></code>. Otherwise, it is <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code>.</p>
+</section>
+<section id="plugins">
+<h2>Plugins<a class="headerlink" href="#plugins" title="Link to this heading"></a></h2>
+<p>Set which <code class="docutils literal notranslate"><span class="pre">ape</span></code> plugins you want to always use.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">ape-</span></code> prefix is not needed and shouldn’t be included here.</p>
+</div>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[[tool.ape.plugins]]</span>
+</span><span data-line="2"><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;solidity&quot;</span>
+</span><span data-line="3"><span class="n">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;0.1.0b2&quot;</span>
+</span><span data-line="4">
+</span><span data-line="5"><span class="k">[[tool.ape.plugins]]</span>
+</span><span data-line="6"><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;ens&quot;</span>
+</span></pre></div>
+</div>
+<p>Or the equivalent YAML:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">plugins</span><span class="p">:</span>
+</span><span data-line="2"><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">solidity</span><span class="w"> </span><span class="c1"># ape-solidity plugin</span>
+</span><span data-line="3"><span class="w">    </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.1.0b2</span>
+</span><span data-line="4"><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ens</span>
+</span></pre></div>
+</div>
+<p>Install these plugins by running command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>plugins<span class="w"> </span>install<span class="w"> </span>.
+</span></pre></div>
+</div>
+</section>
+<section id="request-headers">
+<h2>Request Headers<a class="headerlink" href="#request-headers" title="Link to this heading"></a></h2>
+<p>For Ape’s HTTP usage, such as requests made via <code class="docutils literal notranslate"><span class="pre">web3.py</span></code>, optionally specify extra request headers.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">request_headers</span><span class="p">:</span>
+</span><span data-line="2"><span class="w">  </span><span class="c1"># NOTE: Only using Content-Type as an example; can be any header key/value.</span>
+</span><span data-line="3"><span class="w">  </span><span class="nt">Content-Type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">application/json</span>
+</span></pre></div>
+</div>
+<p>You can also specify request headers at the ecosystem, network, and provider levels:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="c1"># NOTE: All the headers are the same only for demo purposes.</span>
+</span><span data-line="2"><span class="c1"># You can use headers you want for any of these config locations.</span>
+</span><span data-line="3"><span class="nt">ethereum</span><span class="p">:</span>
+</span><span data-line="4"><span class="w">  </span><span class="c1"># Apply to all requests made to ethereum networks.</span>
+</span><span data-line="5"><span class="w">  </span><span class="nt">request_headers</span><span class="p">:</span>
+</span><span data-line="6"><span class="w">    </span><span class="nt">Content-Type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">application/json</span>
+</span><span data-line="7"><span class="w">  </span>
+</span><span data-line="8"><span class="w">  </span><span class="nt">mainnet</span><span class="p">:</span>
+</span><span data-line="9"><span class="w">    </span><span class="c1"># Apply to all requests made to ethereum:mainnet (using any provider)</span>
+</span><span data-line="10"><span class="w">    </span><span class="nt">request_headers</span><span class="p">:</span>
+</span><span data-line="11"><span class="w">      </span><span class="nt">Content-Type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">application/json</span>
+</span><span data-line="12"><span class="w">  </span>
+</span><span data-line="13"><span class="nt">node</span><span class="p">:</span>
+</span><span data-line="14"><span class="w">  </span><span class="c1"># Apply to any request using the `node` provider.</span>
+</span><span data-line="15"><span class="w">  </span><span class="nt">request_headers</span><span class="p">:</span>
+</span><span data-line="16"><span class="w">    </span><span class="nt">Content-Type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">application/json</span>
+</span></pre></div>
+</div>
+<p>To learn more about how request headers work in Ape, see <a class="reference external" href="./networks.html#request-headers">this section of the Networking guide</a>.</p>
+</section>
+<section id="testing">
+<h2>Testing<a class="headerlink" href="#testing" title="Link to this heading"></a></h2>
+<p>Configure your test accounts:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">test</span><span class="p">:</span>
+</span><span data-line="2"><span class="w">  </span><span class="nt">mnemonic</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test test test test test test test test test test test junk</span>
+</span><span data-line="3"><span class="w">  </span><span class="nt">number_of_accounts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
+</span></pre></div>
+</div>
+</section>
+<section id="plugin-settings">
+<h2>Plugin Settings<a class="headerlink" href="#plugin-settings" title="Link to this heading"></a></h2>
+<p>To configure a plugin, use the name of the plugin followed by any of the plugin’s settings.
+For example, to configure the <code class="docutils literal notranslate"><span class="pre">ape-solidity</span></code> plugin, you would do:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">solidity</span><span class="p">:</span>
+</span><span data-line="2"><span class="w">  </span><span class="nt">evm_version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">paris</span><span class="w">  </span><span class="c1"># Or any other setting defined in `ape-solidity`.</span>
+</span></pre></div>
+</div>
+</section>
+<section id="non-plugin-settings">
+<h2>Non-plugin settings<a class="headerlink" href="#non-plugin-settings" title="Link to this heading"></a></h2>
+<p>Projects can use their own settings.
+Meaning, you can put whatever data you want in an <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file and read it in Ape.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>These types of settings lack sophisticated Pydantic validation and are limited in that respect.
+Simple validation, however, will occur, such as if it the value <code class="docutils literal notranslate"><span class="pre">isnumeric()</span></code>, it will be converted to an int, or if the value is a boolean name it will convert it to a <code class="docutils literal notranslate"><span class="pre">bool</span></code>.</p>
+</div>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">my_project_key</span><span class="p">:</span>
+</span><span data-line="2"><span class="w">  </span><span class="nt">my_string</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;my_value&quot;</span>
+</span><span data-line="3"><span class="w">  </span><span class="nt">my_int</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">123</span>
+</span><span data-line="4"><span class="w">  </span><span class="nt">my_bool</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">True</span>
+</span></pre></div>
+</div>
+<p>Then, to access it (or any setting for that matter):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">project</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="n">my_str</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">my_project_key</span><span class="o">.</span><span class="n">my_string</span>  <span class="c1">#  &quot;my_value&quot;</span>
+</span><span data-line="4"><span class="n">my_int</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">my_project_key</span><span class="o">.</span><span class="n">my_int</span>  <span class="c1">#  123</span>
+</span><span data-line="5"><span class="n">my_bool</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">my_project_key</span><span class="o">.</span><span class="n">my_bool</span>  <span class="c1">#  True</span>
+</span></pre></div>
+</div>
+</section>
+</section>
+
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"><div class="navigation-prev">
+    <a href="dependencies.html">
+      <i class="i-lucide chevron-left"></i>
+      <div class="page-info">
+        <span>Previous</span><div class="title">Dependencies</div></div>
+    </a>
+  </div><div class="navigation-next">
+    <a href="compile.html">
+      <div class="page-info">
+        <span>Next</span>
+        <div class="title">Compile</div>
+      </div>
+      <i class="i-lucide chevron-right"></i>
+    </a>
+  </div></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2024, ApeWorX LTD</p>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials"></div>
+    </div>
+  </div>
+</footer>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script data-domain="docs.apeworx.io" defer="defer" src="https://plausible.io/js/script.js"></script>
+      <script src="../_static/shibuya.js?v=e2e99575"></script></body>
+</html>
