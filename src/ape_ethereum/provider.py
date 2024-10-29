@@ -22,6 +22,7 @@ from requests import HTTPError
 from web3 import HTTPProvider, IPCProvider, Web3
 from web3 import WebsocketProvider as WebSocketProvider
 from web3._utils.http import construct_user_agent
+from web3.exceptions import BlockNotFound
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.exceptions import (
     ExtraDataLengthError,
@@ -1526,6 +1527,10 @@ class EthereumNodeProvider(Web3Provider, ABC):
                 block = self.web3.eth.get_block(option)  # type: ignore[arg-type]
             except ExtraDataLengthError:
                 is_likely_poa = True
+                break
+            except BlockNotFound:
+                # Weird node implementation.
+                is_likely_poa = False
                 break
             else:
                 is_likely_poa = (
