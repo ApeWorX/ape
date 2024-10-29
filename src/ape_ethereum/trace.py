@@ -5,11 +5,10 @@ from collections import defaultdict, deque
 from collections.abc import Iterable, Iterator, Sequence
 from enum import Enum
 from functools import cached_property
-from typing import IO, Any, Optional, Union
+from typing import IO, TYPE_CHECKING, Any, Optional, Union
 
 from eth_pydantic_types import HexStr
 from eth_utils import is_0x_prefixed, to_hex
-from ethpm_types import ContractType, MethodABI
 from evm_trace import (
     CallTreeNode,
     CallType,
@@ -25,16 +24,21 @@ from hexbytes import HexBytes
 from pydantic import field_validator
 from rich.tree import Tree
 
-from ape.api.networks import EcosystemAPI
 from ape.api.trace import TraceAPI
 from ape.api.transactions import TransactionAPI
 from ape.exceptions import ContractLogicError, ProviderError, TransactionNotFoundError
 from ape.logging import get_rich_console, logger
-from ape.types.address import AddressType
-from ape.types.trace import ContractFunctionPath, GasReport
 from ape.utils.misc import ZERO_ADDRESS, is_evm_precompile, is_zero_hex, log_instead_of_fail
 from ape.utils.trace import TraceStyles, _exclude_gas
 from ape_ethereum._print import extract_debug_logs
+
+if TYPE_CHECKING:
+    from ethpm_types import ContractType, MethodABI
+
+    from ape.api.networks import EcosystemAPI
+    from ape.types.address import AddressType
+    from ape.types.trace import ContractFunctionPath, GasReport
+
 
 _INDENT = 2
 _WRAP_THRESHOLD = 50
@@ -174,11 +178,11 @@ class Trace(TraceAPI):
         yield from create_trace_frames(iter(self.raw_trace_frames))
 
     @property
-    def addresses(self) -> Iterator[AddressType]:
+    def addresses(self) -> Iterator["AddressType"]:
         yield from self.get_addresses_used()
 
     @cached_property
-    def root_contract_type(self) -> Optional[ContractType]:
+    def root_contract_type(self) -> Optional["ContractType"]:
         if address := self.transaction.get("to"):
             try:
                 return self.chain_manager.contracts.get(address)
@@ -188,7 +192,7 @@ class Trace(TraceAPI):
         return None
 
     @cached_property
-    def root_method_abi(self) -> Optional[MethodABI]:
+    def root_method_abi(self) -> Optional["MethodABI"]:
         method_id = self.transaction.get("data", b"")[:10]
         if ct := self.root_contract_type:
             try:
@@ -199,7 +203,7 @@ class Trace(TraceAPI):
         return None
 
     @property
-    def _ecosystem(self) -> EcosystemAPI:
+    def _ecosystem(self) -> "EcosystemAPI":
         if provider := self.network_manager.active_provider:
             return provider.network.ecosystem
 
@@ -357,13 +361,15 @@ class Trace(TraceAPI):
 
         console.print(root)
 
-    def get_gas_report(self, exclude: Optional[Sequence[ContractFunctionPath]] = None) -> GasReport:
+    def get_gas_report(
+        self, exclude: Optional[Sequence["ContractFunctionPath"]] = None
+    ) -> "GasReport":
         call = self.enriched_calltree
         return self._get_gas_report_from_call(call, exclude=exclude)
 
     def _get_gas_report_from_call(
-        self, call: dict, exclude: Optional[Sequence[ContractFunctionPath]] = None
-    ) -> GasReport:
+        self, call: dict, exclude: Optional[Sequence["ContractFunctionPath"]] = None
+    ) -> "GasReport":
         tx = self.transaction
 
         # Enrich transfers.
@@ -388,7 +394,7 @@ class Trace(TraceAPI):
             return merge_reports(*sub_reports)
 
         elif not is_zero_hex(call["method_id"]) and not is_evm_precompile(call["method_id"]):
-            report: GasReport = {
+            report: "GasReport" = {
                 call["contract_id"]: {
                     call["method_id"]: (
                         [int(call["gas_cost"])] if call.get("gas_cost") is not None else []
@@ -434,7 +440,7 @@ class Trace(TraceAPI):
     def _get_tree(self, verbose: bool = False) -> Tree:
         return parse_rich_tree(self.enriched_calltree, verbose=verbose)
 
-    def _get_abi(self, call: dict) -> Optional[MethodABI]:
+    def _get_abi(self, call: dict) -> Optional["MethodABI"]:
         if not (addr := call.get("address")):
             return self.root_method_abi
         if not (calldata := call.get("calldata")):

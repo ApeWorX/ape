@@ -1,5 +1,4 @@
 import sys
-from collections.abc import Iterable
 
 from ape.utils._github import _GithubClient, github_client
 
@@ -10,6 +9,7 @@ if sys.version_info.minor >= 11:
 else:
     import toml as tomllib  # type: ignore[no-redef]
 
+from collections.abc import Iterable
 from pathlib import Path
 from typing import Any, Optional
 

@@ -1,7 +1,7 @@
 import sys
 from enum import Enum, IntEnum
 from functools import cached_property
-from typing import IO, Any, Optional, Union
+from typing import IO, TYPE_CHECKING, Any, Optional, Union
 
 from eth_abi import decode
 from eth_account import Account as EthAccount
@@ -11,12 +11,10 @@ from eth_account._utils.legacy_transactions import (
 )
 from eth_pydantic_types import HexBytes
 from eth_utils import decode_hex, encode_hex, keccak, to_hex, to_int
-from ethpm_types import ContractType
 from ethpm_types.abi import EventABI, MethodABI
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 from ape.api.transactions import ReceiptAPI, TransactionAPI
-from ape.contracts import ContractEvent
 from ape.exceptions import OutOfGasError, SignatureError, TransactionError
 from ape.logging import logger
 from ape.types.address import AddressType
@@ -25,6 +23,11 @@ from ape.types.events import ContractLog, ContractLogContainer
 from ape.types.trace import SourceTraceback
 from ape.utils.misc import ZERO_ADDRESS
 from ape_ethereum.trace import Trace, _events_to_trees
+
+if TYPE_CHECKING:
+    from ethpm_types import ContractType
+
+    from ape.contracts import ContractEvent
 
 
 class TransactionStatusEnum(IntEnum):
@@ -221,7 +224,7 @@ class Receipt(ReceiptAPI):
         return list(trace.debug_logs)
 
     @cached_property
-    def contract_type(self) -> Optional[ContractType]:
+    def contract_type(self) -> Optional["ContractType"]:
         if address := (self.receiver or self.contract_address):
             return self.chain_manager.contracts.get(address)
 

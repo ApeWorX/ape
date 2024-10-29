@@ -1,11 +1,15 @@
+from typing import TYPE_CHECKING
+
 import pytest
 from rich.table import Table
 from rich.tree import Tree
 
-from ape.api import ReceiptAPI
 from ape.exceptions import ContractLogicError, OutOfGasError
 from ape.utils import ManagerAccessMixin
 from ape_ethereum.transactions import DynamicFeeTransaction, Receipt, TransactionStatusEnum
+
+if TYPE_CHECKING:
+    from ape.api import ReceiptAPI
 
 
 @pytest.fixture
@@ -147,7 +151,7 @@ def test_decode_logs(owner, contract_instance, assert_log_values):
     receipt_1 = contract_instance.setNumber(2, sender=owner)
     receipt_2 = contract_instance.setNumber(3, sender=owner)
 
-    def assert_receipt_logs(receipt: ReceiptAPI, num: int):
+    def assert_receipt_logs(receipt: "ReceiptAPI", num: int):
         logs = receipt.decode_logs(event_type)
         assert len(logs) == 1
         assert_log_values(logs[0], num)

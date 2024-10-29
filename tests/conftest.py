@@ -427,7 +427,7 @@ def ape_caplog(caplog):
             assert message in self.head, self.fail_message
 
         def assert_last_log_with_retries(
-            self, op: Callable, message: str, tries: int = 2, delay: float = 5.0
+            self, op: "Callable", message: str, tries: int = 2, delay: float = 5.0
         ):
             times_tried = 0
             return_value = None
@@ -471,7 +471,7 @@ class SubprocessRunner:
     """
 
     def __init__(
-        self, root_cmd: Optional[Sequence[str]] = None, data_folder: Optional[Path] = None
+        self, root_cmd: Optional["Sequence[str]"] = None, data_folder: Optional[Path] = None
     ):
         self.root_cmd = root_cmd or []
         self.data_folder = data_folder
@@ -505,7 +505,7 @@ class ApeSubprocessRunner(SubprocessRunner):
 
     def __init__(
         self,
-        root_cmd: Optional[Union[str, Sequence[str]]] = None,
+        root_cmd: Optional[Union[str, "Sequence[str]"]] = None,
         data_folder: Optional[Path] = None,
     ):
         ape_path = Path(sys.executable).parent / "ape"

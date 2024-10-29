@@ -5,10 +5,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional, Union
 
 from eth_pydantic_types import HexBytes
-from ethpm_types import ContractType
-from ethpm_types.source import Content
 
-from ape.api.compiler import CompilerAPI
 from ape.contracts import ContractContainer
 from ape.exceptions import CompilerError, ContractLogicError, CustomError
 from ape.logging import logger
@@ -23,6 +20,10 @@ from ape.utils.misc import log_instead_of_fail
 from ape.utils.os import get_full_extension
 
 if TYPE_CHECKING:
+    from ethpm_types.contract_type import ContractType
+    from ethpm_types.source import Content
+
+    from ape.api.compiler import CompilerAPI
     from ape.managers.project import ProjectManager
 
 
@@ -39,7 +40,7 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
         from ape import compilers  # "compilers" is the CompilerManager singleton
     """
 
-    _registered_compilers_cache: dict[Path, dict[str, CompilerAPI]] = {}
+    _registered_compilers_cache: dict[Path, dict[str, "CompilerAPI"]] = {}
 
     @log_instead_of_fail(default="<CompilerManager>")
     def __repr__(self) -> str:
@@ -59,7 +60,7 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
         return get_attribute_with_extras(self, attr_name)
 
     @cached_property
-    def registered_compilers(self) -> dict[str, CompilerAPI]:
+    def registered_compilers(self) -> dict[str, "CompilerAPI"]:
         """
         Each compile-able file extension mapped to its respective
         :class:`~ape.api.compiler.CompilerAPI` instance.
@@ -80,7 +81,7 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
 
         return registered_compilers
 
-    def get_compiler(self, name: str, settings: Optional[dict] = None) -> Optional[CompilerAPI]:
+    def get_compiler(self, name: str, settings: Optional[dict] = None) -> Optional["CompilerAPI"]:
         for compiler in self.registered_compilers.values():
             if compiler.name != name:
                 continue
@@ -98,7 +99,7 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
         contract_filepaths: Union[Path, str, Iterable[Union[Path, str]]],
         project: Optional["ProjectManager"] = None,
         settings: Optional[dict] = None,
-    ) -> Iterator[ContractType]:
+    ) -> Iterator["ContractType"]:
         """
         Invoke :meth:`ape.ape.compiler.CompilerAPI.compile` for each of the given files.
         For example, use the `ape-solidity plugin <https://github.com/ApeWorX/ape-solidity>`__
@@ -333,7 +334,7 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
         except NotImplementedError:
             return None
 
-    def flatten_contract(self, path: Path, **kwargs) -> Content:
+    def flatten_contract(self, path: Path, **kwargs) -> "Content":
         """
         Get the flattened version of a contract via its source path.
         Delegates to the matching :class:`~ape.api.compilers.CompilerAPI`.

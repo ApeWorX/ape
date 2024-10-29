@@ -2,7 +2,7 @@ import re
 from collections.abc import Iterator, Sequence
 from decimal import Decimal
 from functools import cached_property
-from typing import Any, ClassVar, Optional, Union, cast
+from typing import TYPE_CHECKING, Any, ClassVar, Optional, Union, cast
 
 from eth_abi import decode, encode
 from eth_abi.exceptions import InsufficientDataBytes, NonEmptyPaddingBytes
@@ -20,7 +20,6 @@ from eth_utils import (
     to_checksum_address,
     to_hex,
 )
-from ethpm_types import ContractType
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, MethodABI
 from pydantic import Field, computed_field, field_validator, model_validator
 from pydantic_settings import SettingsConfigDict
@@ -28,8 +27,6 @@ from pydantic_settings import SettingsConfigDict
 from ape.api.config import PluginConfig
 from ape.api.networks import EcosystemAPI
 from ape.api.providers import BlockAPI
-from ape.api.trace import TraceAPI
-from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.contracts.base import ContractCall
 from ape.exceptions import (
     ApeException,
@@ -79,6 +76,13 @@ from ape_ethereum.transactions import (
     TransactionStatusEnum,
     TransactionType,
 )
+
+if TYPE_CHECKING:
+    from ethpm_types import ContractType
+
+    from ape.api.trace import TraceAPI
+    from ape.api.transactions import ReceiptAPI, TransactionAPI
+
 
 NETWORKS = {
     # chain_id, network_id
@@ -418,7 +422,7 @@ class Ethereum(EcosystemAPI):
     def encode_address(cls, address: AddressType) -> RawAddress:
         return f"{address}"
 
-    def decode_transaction_type(self, transaction_type_id: Any) -> type[TransactionAPI]:
+    def decode_transaction_type(self, transaction_type_id: Any) -> type["TransactionAPI"]:
         if isinstance(transaction_type_id, TransactionType):
             tx_type = transaction_type_id
         elif isinstance(transaction_type_id, int):
@@ -435,8 +439,8 @@ class Ethereum(EcosystemAPI):
         return DynamicFeeTransaction
 
     def encode_contract_blueprint(
-        self, contract_type: ContractType, *args, **kwargs
-    ) -> TransactionAPI:
+        self, contract_type: "ContractType", *args, **kwargs
+    ) -> "TransactionAPI":
         # EIP-5202 implementation.
         bytes_obj = contract_type.deployment_bytecode
         contract_bytes = (bytes_obj.to_bytes() or b"") if bytes_obj else b""
@@ -546,7 +550,7 @@ class Ethereum(EcosystemAPI):
 
         return None
 
-    def decode_receipt(self, data: dict) -> ReceiptAPI:
+    def decode_receipt(self, data: dict) -> "ReceiptAPI":
         status = data.get("status")
         if status is not None:
             status = self.conversion_manager.convert(status, int)
@@ -864,7 +868,7 @@ class Ethereum(EcosystemAPI):
 
         return cast(BaseTransaction, txn)
 
-    def create_transaction(self, **kwargs) -> TransactionAPI:
+    def create_transaction(self, **kwargs) -> "TransactionAPI":
         """
         Returns a transaction using the given constructor kwargs.
 
@@ -902,7 +906,7 @@ class Ethereum(EcosystemAPI):
             tx_data["data"] = b""
 
         # Deduce the transaction type.
-        transaction_types: dict[TransactionType, type[TransactionAPI]] = {
+        transaction_types: dict[TransactionType, type["TransactionAPI"]] = {
             TransactionType.STATIC: StaticFeeTransaction,
             TransactionType.ACCESS_LIST: AccessListTransaction,
             TransactionType.DYNAMIC: DynamicFeeTransaction,
@@ -973,7 +977,7 @@ class Ethereum(EcosystemAPI):
 
         return txn_class.model_validate(tx_data)
 
-    def decode_logs(self, logs: Sequence[dict], *events: EventABI) -> Iterator["ContractLog"]:
+    def decode_logs(self, logs: Sequence[dict], *events: EventABI) -> Iterator[ContractLog]:
         if not logs:
             return
 
@@ -1052,7 +1056,7 @@ class Ethereum(EcosystemAPI):
                 ),
             )
 
-    def enrich_trace(self, trace: TraceAPI, **kwargs) -> TraceAPI:
+    def enrich_trace(self, trace: "TraceAPI", **kwargs) -> "TraceAPI":
         kwargs["trace"] = trace
         if not isinstance(trace, Trace):
             # Can only enrich `ape_ethereum.trace.Trace` (or subclass) implementations.
@@ -1416,7 +1420,7 @@ class Ethereum(EcosystemAPI):
 
     def _get_contract_type_for_enrichment(
         self, address: AddressType, **kwargs
-    ) -> Optional[ContractType]:
+    ) -> Optional["ContractType"]:
         if not (contract_type := kwargs.get("contract_type")):
             try:
                 contract_type = self.chain_manager.contracts.get(address)

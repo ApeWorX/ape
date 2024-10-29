@@ -10,6 +10,9 @@ from ape.cli.options import ape_cli_context, config_override_option, project_opt
 if TYPE_CHECKING:
     from ethpm_types import ContractType
 
+if TYPE_CHECKING:
+    from ethpm_types import ContractType
+
 
 def _include_dependencies_callback(ctx, param, value):
     return value or ctx.obj.config_manager.get_config("compile").include_dependencies

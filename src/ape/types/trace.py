@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING, Optional, Union
 
 from eth_pydantic_types import HexBytes
 from ethpm_types import ASTNode, BaseModel
-from ethpm_types.ast import SourceLocation
 from ethpm_types.source import (
     Closure,
     Content,
@@ -20,6 +19,8 @@ from pydantic.dataclasses import dataclass
 from ape.utils.misc import log_instead_of_fail
 
 if TYPE_CHECKING:
+    from ethpm_types.ast import SourceLocation
+
     from ape.api.trace import TraceAPI
 
 
@@ -162,7 +163,7 @@ class ControlFlow(BaseModel):
 
     def extend(
         self,
-        location: SourceLocation,
+        location: "SourceLocation",
         pcs: Optional[set[int]] = None,
         ws_start: Optional[int] = None,
     ):
@@ -441,7 +442,7 @@ class SourceTraceback(RootModel[list[ControlFlow]]):
 
     def add_jump(
         self,
-        location: SourceLocation,
+        location: "SourceLocation",
         function: Function,
         depth: int,
         pcs: Optional[set[int]] = None,
@@ -469,7 +470,7 @@ class SourceTraceback(RootModel[list[ControlFlow]]):
         ControlFlow.model_rebuild()
         self._add(asts, content, pcs, function, depth, source_path=source_path)
 
-    def extend_last(self, location: SourceLocation, pcs: Optional[set[int]] = None):
+    def extend_last(self, location: "SourceLocation", pcs: Optional[set[int]] = None):
         """
         Extend the last node with more content.
 

@@ -10,7 +10,6 @@ from eip712.messages import EIP712Message
 from eip712.messages import SignableMessage as EIP712SignableMessage
 from eth_account import Account
 from eth_account.messages import encode_defunct
-from eth_pydantic_types import HexBytes
 from eth_utils import to_hex
 from ethpm_types import ContractType
 
@@ -31,6 +30,8 @@ from ape.utils.basemodel import BaseInterfaceModel
 from ape.utils.misc import raises_not_implemented
 
 if TYPE_CHECKING:
+    from eth_pydantic_types import HexBytes
+
     from ape.contracts import ContractContainer, ContractInstance
 
 
@@ -65,7 +66,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         """
         return None
 
-    def sign_raw_msghash(self, msghash: HexBytes) -> Optional[MessageSignature]:
+    def sign_raw_msghash(self, msghash: "HexBytes") -> Optional[MessageSignature]:
         """
         Sign a raw message hash.
 

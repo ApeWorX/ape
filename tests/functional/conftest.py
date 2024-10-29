@@ -3,7 +3,7 @@ import time
 from contextlib import contextmanager
 from pathlib import Path
 from shutil import copytree
-from typing import Optional, cast
+from typing import TYPE_CHECKING, Optional, cast
 
 import pytest
 from eth_pydantic_types import HexBytes
@@ -18,9 +18,12 @@ from ape.exceptions import ChainError, ContractLogicError, ProviderError
 from ape.logging import LogLevel
 from ape.logging import logger as _logger
 from ape.types.address import AddressType
-from ape.types.events import ContractLog
 from ape.utils.misc import LOCAL_NETWORK_NAME
 from ape_ethereum.proxies import minimal_proxy as _minimal_proxy_container
+
+if TYPE_CHECKING:
+    from ape.types.events import ContractLog
+
 
 ALIAS_2 = "__FUNCTIONAL_TESTS_ALIAS_2__"
 TEST_ADDRESS = cast(AddressType, "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045")
@@ -431,7 +434,7 @@ def PollDaemon():
 @pytest.fixture
 def assert_log_values(contract_instance):
     def _assert_log_values(
-        log: ContractLog,
+        log: "ContractLog",
         number: int,
         previous_number: Optional[int] = None,
         address: Optional[AddressType] = None,

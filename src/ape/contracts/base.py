@@ -4,13 +4,13 @@ from collections.abc import Callable, Iterator
 from functools import cached_property, partial, singledispatchmethod
 from itertools import islice
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import TYPE_CHECKING, Any, Optional, Union
 
 import click
 import pandas as pd
 from eth_pydantic_types import HexBytes
 from eth_utils import to_hex
-from ethpm_types.abi import ConstructorABI, ErrorABI, EventABI, MethodABI
+from ethpm_types.abi import EventABI, MethodABI
 from ethpm_types.contract_type import ABI_W_SELECTOR_T, ContractType
 from IPython.lib.pretty import for_type
 
@@ -22,7 +22,6 @@ from ape.api.query import (
     extract_fields,
     validate_and_expand_columns,
 )
-from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.exceptions import (
     ApeAttributeError,
     ArgumentsLengthError,
@@ -49,12 +48,17 @@ from ape.utils.basemodel import (
 )
 from ape.utils.misc import log_instead_of_fail
 
+if TYPE_CHECKING:
+    from ethpm_types.abi import ConstructorABI, ErrorABI
+
+    from ape.api.transactions import ReceiptAPI, TransactionAPI
+
 
 class ContractConstructor(ManagerAccessMixin):
     def __init__(
         self,
         deployment_bytecode: HexBytes,
-        abi: ConstructorABI,
+        abi: "ConstructorABI",
     ) -> None:
         self.deployment_bytecode = deployment_bytecode
         self.abi = abi
@@ -76,14 +80,14 @@ class ContractConstructor(ManagerAccessMixin):
         decoded_inputs = self.provider.network.ecosystem.decode_calldata(self.abi, calldata)
         return self.abi.selector, decoded_inputs
 
-    def serialize_transaction(self, *args, **kwargs) -> TransactionAPI:
+    def serialize_transaction(self, *args, **kwargs) -> "TransactionAPI":
         arguments = self.conversion_manager.convert_method_args(self.abi, args)
         converted_kwargs = self.conversion_manager.convert_method_kwargs(kwargs)
         return self.provider.network.ecosystem.encode_deployment(
             self.deployment_bytecode, self.abi, *arguments, **converted_kwargs
         )
 
-    def __call__(self, private: bool = False, *args, **kwargs) -> ReceiptAPI:
+    def __call__(self, private: bool = False, *args, **kwargs) -> "ReceiptAPI":
         txn = self.serialize_transaction(*args, **kwargs)
 
         if "sender" in kwargs and isinstance(kwargs["sender"], AccountAPI):
@@ -109,7 +113,7 @@ class ContractCall(ManagerAccessMixin):
     def __repr__(self) -> str:
         return self.abi.signature
 
-    def serialize_transaction(self, *args, **kwargs) -> TransactionAPI:
+    def serialize_transaction(self, *args, **kwargs) -> "TransactionAPI":
         converted_kwargs = self.conversion_manager.convert_method_kwargs(kwargs)
         return self.provider.network.ecosystem.encode_transaction(
             self.address, self.abi, *args, **converted_kwargs
@@ -343,7 +347,7 @@ class ContractTransaction(ManagerAccessMixin):
     def __repr__(self) -> str:
         return self.abi.signature
 
-    def serialize_transaction(self, *args, **kwargs) -> TransactionAPI:
+    def serialize_transaction(self, *args, **kwargs) -> "TransactionAPI":
         if "sender" in kwargs and isinstance(kwargs["sender"], (ContractInstance, Address)):
             # Automatically impersonate contracts (if API available) when sender
             kwargs["sender"] = self.account_manager.test_accounts[kwargs["sender"].address]
@@ -354,7 +358,7 @@ class ContractTransaction(ManagerAccessMixin):
             self.address, self.abi, *arguments, **converted_kwargs
         )
 
-    def __call__(self, *args, **kwargs) -> ReceiptAPI:
+    def __call__(self, *args, **kwargs) -> "ReceiptAPI":
         txn = self.serialize_transaction(*args, **kwargs)
         private = kwargs.get("private", False)
 
@@ -370,7 +374,7 @@ class ContractTransaction(ManagerAccessMixin):
 
 
 class ContractTransactionHandler(ContractMethodHandler):
-    def as_transaction(self, *args, **kwargs) -> TransactionAPI:
+    def as_transaction(self, *args, **kwargs) -> "TransactionAPI":
         """
         Get a :class:`~ape.api.transactions.TransactionAPI`
         for this contract method invocation. This is useful
@@ -421,7 +425,7 @@ class ContractTransactionHandler(ContractMethodHandler):
 
         return ContractCallHandler(self.contract, self.abis)
 
-    def __call__(self, *args, **kwargs) -> ReceiptAPI:
+    def __call__(self, *args, **kwargs) -> "ReceiptAPI":
         contract_transaction = self._as_transaction(*args)
         if "sender" not in kwargs and self.account_manager.default_sender is not None:
             kwargs["sender"] = self.account_manager.default_sender
@@ -727,7 +731,7 @@ class ContractEvent(BaseInterfaceModel):
         )
         yield from self.query_manager.query(contract_event_query)  # type: ignore
 
-    def from_receipt(self, receipt: ReceiptAPI) -> list[ContractLog]:
+    def from_receipt(self, receipt: "ReceiptAPI") -> list[ContractLog]:
         """
         Get all the events from the given receipt.
 
@@ -864,7 +868,7 @@ class ContractTypeWrapper(ManagerAccessMixin):
         input_dict = ecosystem.decode_calldata(method, rest_calldata)
         return method.selector, input_dict
 
-    def _create_custom_error_type(self, abi: ErrorABI, **kwargs) -> type[CustomError]:
+    def _create_custom_error_type(self, abi: "ErrorABI", **kwargs) -> type[CustomError]:
         def exec_body(namespace):
             namespace["abi"] = abi
             namespace["contract"] = self
@@ -929,7 +933,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
             (txn_hash if isinstance(txn_hash, str) else to_hex(txn_hash)) if txn_hash else None
         )
 
-    def __call__(self, *args, **kwargs) -> ReceiptAPI:
+    def __call__(self, *args, **kwargs) -> "ReceiptAPI":
         has_value = kwargs.get("value")
         has_data = kwargs.get("data") or kwargs.get("input")
         has_non_payable_fallback = (
@@ -953,7 +957,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
         return super().__call__(*args, **kwargs)
 
     @classmethod
-    def from_receipt(cls, receipt: ReceiptAPI, contract_type: ContractType) -> "ContractInstance":
+    def from_receipt(cls, receipt: "ReceiptAPI", contract_type: ContractType) -> "ContractInstance":
         """
         Create a contract instance from the contract deployment receipt.
         """
@@ -1074,7 +1078,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
             name = self.contract_type.name or ContractType.__name__
             raise ApeAttributeError(f"'{name}' has no attribute '{method_name}'.")
 
-    def invoke_transaction(self, method_name: str, *args, **kwargs) -> ReceiptAPI:
+    def invoke_transaction(self, method_name: str, *args, **kwargs) -> "ReceiptAPI":
         """
         Call a contract's function directly using the method_name.
         This function is for non-view function's which may change
@@ -1183,7 +1187,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
 
     @cached_property
     def _errors_(self) -> dict[str, list[type[CustomError]]]:
-        abis: dict[str, list[ErrorABI]] = {}
+        abis: dict[str, list["ErrorABI"]] = {}
 
         try:
             for abi in self.contract_type.errors:
@@ -1434,7 +1438,7 @@ class ContractContainer(ContractTypeWrapper, ExtraAttributesMixin):
             deployment_bytecode=self.contract_type.get_deployment_bytecode() or HexBytes(""),
         )
 
-    def __call__(self, *args, **kwargs) -> TransactionAPI:
+    def __call__(self, *args, **kwargs) -> "TransactionAPI":
         args_length = len(args)
         inputs_length = (
             len(self.constructor.abi.inputs)
@@ -1500,7 +1504,7 @@ class ContractContainer(ContractTypeWrapper, ExtraAttributesMixin):
         instance.base_path = self.base_path or self.local_project.contracts_folder
         return instance
 
-    def _cache_wrap(self, function: Callable) -> ReceiptAPI:
+    def _cache_wrap(self, function: Callable) -> "ReceiptAPI":
         """
         A helper method to ensure a contract type is cached as early on
         as possible to help enrich errors from ``deploy()`` transactions
@@ -1525,7 +1529,7 @@ class ContractContainer(ContractTypeWrapper, ExtraAttributesMixin):
 
             raise  # The error after caching.
 
-    def declare(self, *args, **kwargs) -> ReceiptAPI:
+    def declare(self, *args, **kwargs) -> "ReceiptAPI":
         transaction = self.provider.network.ecosystem.encode_contract_blueprint(
             self.contract_type, *args, **kwargs
         )

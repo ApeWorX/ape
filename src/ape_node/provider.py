@@ -2,13 +2,12 @@ import atexit
 import shutil
 from pathlib import Path
 from subprocess import DEVNULL, PIPE, Popen
-from typing import Any, Optional, Union
+from typing import TYPE_CHECKING, Any, Optional, Union
 
 from eth_utils import add_0x_prefix, to_hex
 from evmchains import get_random_rpc
 from geth.chain import initialize_chain
 from geth.process import BaseGethProcess
-from geth.types import GenesisDataTypedDict
 from geth.wrapper import construct_test_chain_kwargs
 from pydantic import field_validator
 from pydantic_settings import SettingsConfigDict
@@ -16,11 +15,9 @@ from requests.exceptions import ConnectionError
 from web3.middleware import geth_poa_middleware as ExtraDataToPOAMiddleware
 from yarl import URL
 
-from ape.api.accounts import TestAccountAPI
 from ape.api.config import PluginConfig
 from ape.api.providers import SubprocessProvider, TestProviderAPI
 from ape.logging import LogLevel, logger
-from ape.types.vm import SnapshotID
 from ape.utils.misc import ZERO_ADDRESS, log_instead_of_fail, raises_not_implemented
 from ape.utils.process import JoinableQueue, spawn
 from ape.utils.testing import (
@@ -39,10 +36,17 @@ from ape_ethereum.provider import (
 )
 from ape_ethereum.trace import TraceApproach
 
+if TYPE_CHECKING:
+    from geth.types import GenesisDataTypedDict
+
+    from ape.api.accounts import TestAccountAPI
+    from ape.types.vm import SnapshotID
+
+
 Alloc = dict[str, dict[str, Any]]
 
 
-def create_genesis_data(alloc: Alloc, chain_id: int) -> GenesisDataTypedDict:
+def create_genesis_data(alloc: Alloc, chain_id: int) -> "GenesisDataTypedDict":
     """
     A wrapper around genesis data for py-geth that
     fills in more defaults.
@@ -398,10 +402,10 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
 
         super().disconnect()
 
-    def snapshot(self) -> SnapshotID:
+    def snapshot(self) -> "SnapshotID":
         return self._get_latest_block().number or 0
 
-    def restore(self, snapshot_id: SnapshotID):
+    def restore(self, snapshot_id: "SnapshotID"):
         if isinstance(snapshot_id, int):
             block_number_int = snapshot_id
             block_number_hex_str = str(to_hex(snapshot_id))

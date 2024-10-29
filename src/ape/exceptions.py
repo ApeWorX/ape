@@ -385,7 +385,7 @@ class EcosystemNotFoundError(NetworkError):
     Raised when the ecosystem with the given name was not found.
     """
 
-    def __init__(self, ecosystem: str, options: Optional[Collection[str]] = None):
+    def __init__(self, ecosystem: str, options: Optional["Collection[str]"] = None):
         self.ecosystem = ecosystem
         self.options = options
         message = f"No ecosystem named '{ecosystem}'."
@@ -410,7 +410,7 @@ class NetworkNotFoundError(NetworkError):
         self,
         network: str,
         ecosystem: Optional[str] = None,
-        options: Optional[Collection[str]] = None,
+        options: Optional["Collection[str]"] = None,
     ):
         self.network = network
         options = options or []
@@ -452,7 +452,7 @@ class ProviderNotFoundError(NetworkError):
         provider: str,
         network: Optional[str] = None,
         ecosystem: Optional[str] = None,
-        options: Optional[Collection[str]] = None,
+        options: Optional["Collection[str]"] = None,
     ):
         self.provider = provider
         self.network = network

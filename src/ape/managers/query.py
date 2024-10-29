@@ -3,7 +3,7 @@ import time
 from collections.abc import Iterator
 from functools import cached_property, singledispatchmethod
 from itertools import tee
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 from ape.api.query import (
     AccountTransactionQuery,
@@ -14,12 +14,14 @@ from ape.api.query import (
     QueryAPI,
     QueryType,
 )
-from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.contracts.base import ContractLog, LogFilter
 from ape.exceptions import QueryEngineError
 from ape.logging import logger
 from ape.plugins._utils import clean_plugin_name
 from ape.utils.basemodel import ManagerAccessMixin
+
+if TYPE_CHECKING:
+    from ape.api.transactions import ReceiptAPI, TransactionAPI
 
 
 class DefaultQueryProvider(QueryAPI):
@@ -72,7 +74,7 @@ class DefaultQueryProvider(QueryAPI):
     @perform_query.register
     def perform_block_transaction_query(
         self, query: BlockTransactionQuery
-    ) -> Iterator[TransactionAPI]:
+    ) -> Iterator["TransactionAPI"]:
         return self.provider.get_transactions_by_block(query.block_id)
 
     @perform_query.register
@@ -93,7 +95,7 @@ class DefaultQueryProvider(QueryAPI):
     @perform_query.register
     def perform_account_transactions_query(
         self, query: AccountTransactionQuery
-    ) -> Iterator[ReceiptAPI]:
+    ) -> Iterator["ReceiptAPI"]:
         yield from self.provider.get_transactions_by_account_nonce(
             query.account, query.start_nonce, query.stop_nonce
         )

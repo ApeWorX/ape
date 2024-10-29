@@ -3,17 +3,18 @@ from importlib import import_module
 from typing import TYPE_CHECKING, Any, Optional
 
 import click
-from click import Context
 
 from ape.cli.choices import _NONE_NETWORK, NetworkChoice
 from ape.exceptions import NetworkError
 
 if TYPE_CHECKING:
+    from click import Context
+
     from ape.api.networks import ProviderContextManager
     from ape.api.providers import ProviderAPI
 
 
-def get_param_from_ctx(ctx: Context, param: str) -> Optional[Any]:
+def get_param_from_ctx(ctx: "Context", param: str) -> Optional[Any]:
     if value := ctx.params.get(param):
         return value
 
@@ -26,8 +27,6 @@ def get_param_from_ctx(ctx: Context, param: str) -> Optional[Any]:
 
 def parse_network(ctx: Context) -> Optional["ProviderContextManager"]:
     from ape.utils.basemodel import ManagerAccessMixin as access
-
-    interactive = get_param_from_ctx(ctx, "interactive")
 
     # Handle if already parsed (as when using network-option)
     if ctx.obj and "provider" in ctx.obj:
@@ -70,7 +69,7 @@ class ConnectedProviderCommand(click.Command):
         self._network_callback = kwargs.pop("network_callback", None)
         super().__init__(*args, **kwargs)
 
-    def parse_args(self, ctx: Context, args: list[str]) -> list[str]:
+    def parse_args(self, ctx: "Context", args: list[str]) -> list[str]:
         arguments = args  # Renamed for better pdb support.
         provider_module = import_module("ape.api.providers")
         base_type = provider_module.ProviderAPI if self._use_cls_types else str
@@ -96,7 +95,7 @@ class ConnectedProviderCommand(click.Command):
 
         return super().parse_args(ctx, arguments)
 
-    def invoke(self, ctx: Context) -> Any:
+    def invoke(self, ctx: "Context") -> Any:
         if self.callback is None:
             return
 
@@ -106,7 +105,7 @@ class ConnectedProviderCommand(click.Command):
         else:
             return self._invoke(ctx)
 
-    def _invoke(self, ctx: Context, provider: Optional["ProviderAPI"] = None):
+    def _invoke(self, ctx: "Context", provider: Optional["ProviderAPI"] = None):
         # Will be put back with correct value if needed.
         # Else, causes issues.
         ctx.params.pop("network", None)
