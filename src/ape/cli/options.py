@@ -22,7 +22,6 @@ from ape.exceptions import Abort, ProjectError
 from ape.logging import DEFAULT_LOG_LEVEL, ApeLogger, LogLevel, logger
 
 if TYPE_CHECKING:
-    # perf: Avoid importing these if not needed to make CLIs load faster.
     from ethpm_types.contract_type import ContractType
 
 _VERBOSITY_VALUES = ("--verbosity", "-v")

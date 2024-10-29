@@ -19,7 +19,6 @@ from rich import print as rich_print
 from ape.logging import LogLevel, logger
 
 if TYPE_CHECKING:
-    # perf: some of these are only here to make this module load faster.
     from ethpm_types.abi import ConstructorABI, ErrorABI, MethodABI
     from ethpm_types.contract_type import ContractType
 

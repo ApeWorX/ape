@@ -3,7 +3,6 @@ from typing import TYPE_CHECKING
 from .pluggy_patch import PluginType, hookspec
 
 if TYPE_CHECKING:
-    # perf: Load only for type-checking; makes registering plugins faster.
     from ape.api.accounts import AccountAPI, AccountContainerAPI
 
 
