@@ -2,6 +2,8 @@ from collections.abc import Collection, Iterator
 from functools import cached_property
 from typing import TYPE_CHECKING, Optional, Union
 
+from evmchains import PUBLIC_CHAIN_META
+
 from ape.api.networks import EcosystemAPI, NetworkAPI, ProviderContextManager
 from ape.exceptions import EcosystemNotFoundError, NetworkError, NetworkNotFoundError
 from ape.managers.base import BaseManager
@@ -53,7 +55,6 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         """
         The currently connected provider if one exists. Otherwise, returns ``None``.
         """
-
         return self._active_provider
 
     @active_provider.setter
@@ -164,7 +165,6 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         """
         The set of all ecosystem names in ``ape``.
         """
-
         return set(self.ecosystems)
 
     @property
@@ -236,7 +236,8 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
 
             existing_cls = plugin_ecosystems[base_ecosystem_name]
             ecosystem_cls = existing_cls.model_copy(
-                update={"name": ecosystem_name}, cache_clear=("_networks_from_plugins",)
+                update={"name": ecosystem_name},
+                cache_clear=("_networks_from_plugins", "_networks_from_evmchains"),
             )
             plugin_ecosystems[ecosystem_name] = ecosystem_cls
 
@@ -437,10 +438,28 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
             :class:`~ape.api.networks.EcosystemAPI`
         """
 
-        if ecosystem_name not in self.ecosystem_names:
-            raise EcosystemNotFoundError(ecosystem_name, options=self.ecosystem_names)
+        if ecosystem_name in self.ecosystem_names:
+            return self.ecosystems[ecosystem_name]
 
-        return self.ecosystems[ecosystem_name]
+        elif ecosystem_name in PUBLIC_CHAIN_META:
+            symbol = None
+            for net in PUBLIC_CHAIN_META[ecosystem_name].values():
+                if not (native_currency := net.get("nativeCurrency")):
+                    continue
+
+                if "symbol" not in native_currency:
+                    continue
+
+                symbol = native_currency["symbol"]
+                break
+
+            symbol = symbol or "ETH"
+
+            # Is an EVM chain, can automatically make a class using evm-chains.
+            evm_class = self._plugin_ecosystems["ethereum"].__class__
+            return evm_class(name=ecosystem_name, fee_token_symbol=symbol)
+
+        raise EcosystemNotFoundError(ecosystem_name, options=self.ecosystem_names)
 
     def get_provider_from_choice(
         self,
@@ -548,7 +567,6 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         Returns:
             :class:`~api.api.networks.ProviderContextManager`
         """
-
         provider = self.get_provider_from_choice(
             network_choice=network_choice, provider_settings=provider_settings
         )

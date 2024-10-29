@@ -1,8 +1,9 @@
 # Networks
 
 When interacting with a blockchain, you will have to select an ecosystem (e.g. Ethereum, Arbitrum, or Fantom), a network (e.g. Mainnet or Sepolia) and a provider (e.g. Eth-Tester, Node (Geth), or Alchemy).
-Networks are part of ecosystems and typically defined in plugins.
-For example, the `ape-ethereum` plugin comes with Ape and can be used for handling EVM-like behavior.
+The `ape-ethereum` ecosystem and network(s) plugin comes with Ape and can be used for handling EVM-like behavior.
+Networks are part of ecosystems and typically defined in plugins or custom-network configurations.
+However, Ape works out-of-the-box (in a limited way) with any network defined in the [evmchains](https://github.com/ApeWorX/evmchains) library.
 
 ## Selecting a Network
 
@@ -25,7 +26,7 @@ ape test --network ethereum:local:foundry
 ape console --network arbitrum:testnet:alchemy # NOTICE: All networks, even from other ecosystems, use this.
 ```
 
-To see all possible values for `--network`, run the command:
+To see all networks that work with the `--network` flag (besides those _only_ defined in `evmchains`), run the command:
 
 ```shell
 ape networks list
@@ -99,6 +100,20 @@ ape networks list
 ```
 
 In the remainder of this guide, any example below using Ethereum, you can replace with an L2 ecosystem's name and network combination.
+
+## evmchains Networks
+
+If a network is in the [evmchains](https://github.com/ApeWorX/evmchains) library, it will work in Ape automatically, even without a plugin or any custom configuration for that network.
+
+```shell
+ape console --network moonbeam
+```
+
+This works because the `moonbeam` network data is available in the `evmchains` library, and Ape is able to look it up.
+
+```{warning}
+Support for networks from evm-chains alone may be limited and require additional configuration to work in production use-cases.
+```
 
 ## Custom Network Connection
 
