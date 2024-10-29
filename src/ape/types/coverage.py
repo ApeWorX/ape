@@ -226,7 +226,7 @@ class FunctionCoverage(BaseModel):
         return attribs
 
     def profile_statement(
-        self, pc: int, location: Optional["SourceLocation"] = None, tag: Optional[str] = None
+        self, pc: int, location: Optional[SourceLocation] = None, tag: Optional[str] = None
     ):
         """
         Initialize a statement in the coverage profile with a hit count starting at zero.

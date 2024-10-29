@@ -9,7 +9,7 @@ from ape.types.address import AddressType
 def custom_address(zero_address):
     class MyAddress(BaseAddress):
         @property
-        def address(self) -> "AddressType":
+        def address(self) -> AddressType:
             return zero_address
 
     return MyAddress()
