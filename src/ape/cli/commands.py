@@ -25,7 +25,7 @@ def get_param_from_ctx(ctx: "Context", param: str) -> Optional[Any]:
     return None
 
 
-def parse_network(ctx: Context) -> Optional["ProviderContextManager"]:
+def parse_network(ctx: "Context") -> Optional["ProviderContextManager"]:
     from ape.utils.basemodel import ManagerAccessMixin as access
 
     interactive = get_param_from_ctx(ctx, "interactive")
