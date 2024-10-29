@@ -2,18 +2,22 @@ import itertools
 from datetime import datetime
 from html.parser import HTMLParser
 from pathlib import Path
-from typing import Any, Optional
+from typing import TYPE_CHECKING, Any, Optional
 from xml.dom.minidom import getDOMImplementation
 from xml.etree.ElementTree import Element, SubElement, tostring
 
 import requests
-from ethpm_types.source import ContractSource, SourceLocation
+from ethpm_types.source import SourceLocation
 from pydantic import NonNegativeInt, field_validator
 
 from ape.logging import logger
 from ape.utils.basemodel import BaseModel
 from ape.utils.misc import get_current_timestamp_ms
 from ape.version import version as ape_version
+
+if TYPE_CHECKING:
+    from ethpm_types.source import ContractSource
+
 
 _APE_DOCS_URL = "https://docs.apeworx.io/ape/stable/index.html"
 _DTD_URL = "https://raw.githubusercontent.com/cobertura/web/master/htdocs/xml/coverage-04.dtd"
@@ -545,7 +549,7 @@ class CoverageProject(BaseModel):
 
         return attribs
 
-    def include(self, contract_source: ContractSource) -> ContractSourceCoverage:
+    def include(self, contract_source: "ContractSource") -> ContractSourceCoverage:
         for src in self.sources:
             if src.source_id == contract_source.source_id:
                 return src

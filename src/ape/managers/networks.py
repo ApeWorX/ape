@@ -1,9 +1,8 @@
 from collections.abc import Collection, Iterator
 from functools import cached_property
-from typing import Optional, Union
+from typing import TYPE_CHECKING, Optional, Union
 
 from ape.api.networks import EcosystemAPI, NetworkAPI, ProviderContextManager
-from ape.api.providers import ProviderAPI
 from ape.exceptions import EcosystemNotFoundError, NetworkError, NetworkNotFoundError
 from ape.managers.base import BaseManager
 from ape.utils.basemodel import (
@@ -13,8 +12,11 @@ from ape.utils.basemodel import (
     only_raise_attribute_error,
 )
 from ape.utils.misc import _dict_overlay, log_instead_of_fail
-from ape.utils.rpc import RPCHeaders
 from ape_ethereum.provider import EthereumNodeProvider
+
+if TYPE_CHECKING:
+    from ape.api.providers import ProviderAPI
+    from ape.utils.rpc import RPCHeaders
 
 
 class NetworkManager(BaseManager, ExtraAttributesMixin):
@@ -32,7 +34,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
            ...
     """
 
-    _active_provider: Optional[ProviderAPI] = None
+    _active_provider: Optional["ProviderAPI"] = None
     _default_ecosystem_name: Optional[str] = None
 
     # For adhoc adding custom networks, or incorporating some defined
@@ -47,7 +49,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         return f"<{content}>"
 
     @property
-    def active_provider(self) -> Optional[ProviderAPI]:
+    def active_provider(self) -> Optional["ProviderAPI"]:
         """
         The currently connected provider if one exists. Otherwise, returns ``None``.
         """
@@ -55,7 +57,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         return self._active_provider
 
     @active_provider.setter
-    def active_provider(self, new_value: ProviderAPI):
+    def active_provider(self, new_value: "ProviderAPI"):
         self._active_provider = new_value
 
     @property
@@ -88,7 +90,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
 
     def get_request_headers(
         self, ecosystem_name: str, network_name: str, provider_name: str
-    ) -> RPCHeaders:
+    ) -> "RPCHeaders":
         """
         All request headers to be used when connecting to this network.
         """
@@ -249,9 +251,9 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
     def create_custom_provider(
         self,
         connection_str: str,
-        provider_cls: type[ProviderAPI] = EthereumNodeProvider,
+        provider_cls: type["ProviderAPI"] = EthereumNodeProvider,
         provider_name: Optional[str] = None,
-    ) -> ProviderAPI:
+    ) -> "ProviderAPI":
         """
         Create a custom connection to a URI using the EthereumNodeProvider provider.
         **NOTE**: This provider will assume EVM-like behavior and this is generally not recommended.
@@ -444,7 +446,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         self,
         network_choice: Optional[str] = None,
         provider_settings: Optional[dict] = None,
-    ) -> ProviderAPI:
+    ) -> "ProviderAPI":
         """
         Get a :class:`~ape.api.providers.ProviderAPI` from a network choice.
         A network choice is any value returned from

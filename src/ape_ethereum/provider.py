@@ -9,14 +9,13 @@ from concurrent.futures import ThreadPoolExecutor
 from copy import copy
 from functools import cached_property, wraps
 from pathlib import Path
-from typing import Any, Optional, Union, cast
+from typing import TYPE_CHECKING, Any, Optional, Union, cast
 
 import ijson  # type: ignore
 import requests
 from eth_pydantic_types import HexBytes
 from eth_typing import BlockNumber, HexStr
 from eth_utils import add_0x_prefix, is_hex, to_hex
-from ethpm_types import EventABI
 from evmchains import get_random_rpc
 from pydantic.dataclasses import dataclass
 from requests import HTTPError
@@ -39,7 +38,6 @@ from web3.types import FeeHistory, RPCEndpoint, TxParams
 
 from ape.api.address import Address
 from ape.api.providers import BlockAPI, ProviderAPI
-from ape.api.trace import TraceAPI
 from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.exceptions import (
     _SOURCE_TRACEBACK_ARG,
@@ -58,16 +56,22 @@ from ape.exceptions import (
     VirtualMachineError,
 )
 from ape.logging import logger, sanitize_url
-from ape.types.address import AddressType
 from ape.types.events import ContractLog, LogFilter
 from ape.types.gas import AutoGasLimit
 from ape.types.trace import SourceTraceback
-from ape.types.vm import BlockID, ContractCode
 from ape.utils.basemodel import ManagerAccessMixin
 from ape.utils.misc import DEFAULT_MAX_RETRIES_TX, gas_estimation_error_message, to_int
 from ape_ethereum._print import CONSOLE_ADDRESS, console_contract
 from ape_ethereum.trace import CallTrace, TraceApproach, TransactionTrace
 from ape_ethereum.transactions import AccessList, AccessListTransaction, TransactionStatusEnum
+
+if TYPE_CHECKING:
+    from ethpm_types import EventABI
+
+    from ape.api.trace import TraceAPI
+    from ape.types.address import AddressType
+    from ape.types.vm import BlockID, ContractCode
+
 
 DEFAULT_PORT = 8545
 DEFAULT_HOSTNAME = "localhost"
@@ -322,7 +326,7 @@ class Web3Provider(ProviderAPI, ABC):
         self.provider_settings.update(new_settings)
         self.connect()
 
-    def estimate_gas_cost(self, txn: TransactionAPI, block_id: Optional[BlockID] = None) -> int:
+    def estimate_gas_cost(self, txn: TransactionAPI, block_id: Optional["BlockID"] = None) -> int:
         # NOTE: Using JSON mode since used as request data.
         txn_dict = txn.model_dump(by_alias=True, mode="json")
 
@@ -410,7 +414,7 @@ class Web3Provider(ProviderAPI, ABC):
                 "eth_maxPriorityFeePerGas not supported in this RPC. Please specify manually."
             ) from err
 
-    def get_block(self, block_id: BlockID) -> BlockAPI:
+    def get_block(self, block_id: "BlockID") -> BlockAPI:
         if isinstance(block_id, str) and block_id.isnumeric():
             block_id = int(block_id)
 
@@ -429,17 +433,19 @@ class Web3Provider(ProviderAPI, ABC):
     def _get_latest_block_rpc(self) -> dict:
         return self.make_request("eth_getBlockByNumber", ["latest", False])
 
-    def get_nonce(self, address: AddressType, block_id: Optional[BlockID] = None) -> int:
+    def get_nonce(self, address: "AddressType", block_id: Optional["BlockID"] = None) -> int:
         return self.web3.eth.get_transaction_count(address, block_identifier=block_id)
 
-    def get_balance(self, address: AddressType, block_id: Optional[BlockID] = None) -> int:
+    def get_balance(self, address: "AddressType", block_id: Optional["BlockID"] = None) -> int:
         return self.web3.eth.get_balance(address, block_identifier=block_id)
 
-    def get_code(self, address: AddressType, block_id: Optional[BlockID] = None) -> ContractCode:
+    def get_code(
+        self, address: "AddressType", block_id: Optional["BlockID"] = None
+    ) -> "ContractCode":
         return self.web3.eth.get_code(address, block_identifier=block_id)
 
     def get_storage(
-        self, address: AddressType, slot: int, block_id: Optional[BlockID] = None
+        self, address: "AddressType", slot: int, block_id: Optional["BlockID"] = None
     ) -> HexBytes:
         try:
             return HexBytes(self.web3.eth.get_storage_at(address, slot, block_identifier=block_id))
@@ -449,7 +455,7 @@ class Web3Provider(ProviderAPI, ABC):
 
             raise  # Raise original error
 
-    def get_transaction_trace(self, transaction_hash: str, **kwargs) -> TraceAPI:
+    def get_transaction_trace(self, transaction_hash: str, **kwargs) -> "TraceAPI":
         if transaction_hash in self._transaction_trace_cache:
             return self._transaction_trace_cache[transaction_hash]
 
@@ -463,7 +469,7 @@ class Web3Provider(ProviderAPI, ABC):
     def send_call(
         self,
         txn: TransactionAPI,
-        block_id: Optional[BlockID] = None,
+        block_id: Optional["BlockID"] = None,
         state: Optional[dict] = None,
         **kwargs: Any,
     ) -> HexBytes:
@@ -694,7 +700,7 @@ class Web3Provider(ProviderAPI, ABC):
         data = {"provider": self, **kwargs}
         return self.network.ecosystem.decode_receipt(data)
 
-    def get_transactions_by_block(self, block_id: BlockID) -> Iterator[TransactionAPI]:
+    def get_transactions_by_block(self, block_id: "BlockID") -> Iterator[TransactionAPI]:
         if isinstance(block_id, str):
             block_id = HexStr(block_id)
 
@@ -707,7 +713,7 @@ class Web3Provider(ProviderAPI, ABC):
 
     def get_transactions_by_account_nonce(
         self,
-        account: AddressType,
+        account: "AddressType",
         start_nonce: int = 0,
         stop_nonce: int = -1,
     ) -> Iterator[ReceiptAPI]:
@@ -732,7 +738,7 @@ class Web3Provider(ProviderAPI, ABC):
 
     def _find_txn_by_account_and_nonce(
         self,
-        account: AddressType,
+        account: "AddressType",
         start_nonce: int,
         stop_nonce: int,
         start_block: int,
@@ -878,11 +884,11 @@ class Web3Provider(ProviderAPI, ABC):
     def poll_logs(
         self,
         stop_block: Optional[int] = None,
-        address: Optional[AddressType] = None,
+        address: Optional["AddressType"] = None,
         topics: Optional[list[Union[str, list[str]]]] = None,
         required_confirmations: Optional[int] = None,
         new_block_timeout: Optional[int] = None,
-        events: Optional[list[EventABI]] = None,
+        events: Optional[list["EventABI"]] = None,
     ) -> Iterator[ContractLog]:
         events = events or []
         if required_confirmations is None:
@@ -1169,7 +1175,7 @@ class Web3Provider(ProviderAPI, ABC):
             del results[:]
 
     def create_access_list(
-        self, transaction: TransactionAPI, block_id: Optional[BlockID] = None
+        self, transaction: TransactionAPI, block_id: Optional["BlockID"] = None
     ) -> list[AccessList]:
         """
         Get the access list for a transaction use ``eth_createAccessList``.
@@ -1248,7 +1254,7 @@ class Web3Provider(ProviderAPI, ABC):
         exception: Union[Exception, str],
         txn: Optional[TransactionAPI] = None,
         trace: _TRACE_ARG = None,
-        contract_address: Optional[AddressType] = None,
+        contract_address: Optional["AddressType"] = None,
         source_traceback: _SOURCE_TRACEBACK_ARG = None,
         set_ape_traceback: Optional[bool] = None,
     ) -> ContractLogicError:
@@ -1548,7 +1554,7 @@ class EthereumNodeProvider(Web3Provider, ABC):
         )
         logger.info(f"{msg} {suffix}.")
 
-    def ots_get_contract_creator(self, address: AddressType) -> Optional[dict]:
+    def ots_get_contract_creator(self, address: "AddressType") -> Optional[dict]:
         if self._ots_api_level is None:
             return None
 
@@ -1559,7 +1565,7 @@ class EthereumNodeProvider(Web3Provider, ABC):
 
         return result
 
-    def _get_contract_creation_receipt(self, address: AddressType) -> Optional[ReceiptAPI]:
+    def _get_contract_creation_receipt(self, address: "AddressType") -> Optional[ReceiptAPI]:
         if result := self.ots_get_contract_creator(address):
             tx_hash = result["hash"]
             return self.get_receipt(tx_hash)

@@ -1,7 +1,7 @@
 import os
 import re
 from pathlib import Path
-from typing import Optional, Union
+from typing import TYPE_CHECKING, Optional, Union
 
 import pytest
 from pydantic import ValidationError
@@ -10,11 +10,14 @@ from pydantic_settings import SettingsConfigDict
 from ape.api.config import ApeConfig, ConfigEnum, PluginConfig
 from ape.exceptions import ConfigError
 from ape.managers.config import CONFIG_FILE_NAME, merge_configs
-from ape.types.gas import GasLimit
 from ape.utils.os import create_tempdir
 from ape_ethereum.ecosystem import EthereumConfig, NetworkConfig
 from ape_networks import CustomNetwork
 from tests.functional.conftest import PROJECT_WITH_LONG_CONTRACTS_FOLDER
+
+if TYPE_CHECKING:
+    from ape.types.gas import GasLimit
+
 
 CONTRACTS_FOLDER = "pathsomewhwere"
 NUMBER_OF_TEST_ACCOUNTS = 31
@@ -277,7 +280,7 @@ def test_network_gas_limit_default(config):
     assert eth_config.local.gas_limit == "max"
 
 
-def _sepolia_with_gas_limit(gas_limit: GasLimit) -> dict:
+def _sepolia_with_gas_limit(gas_limit: "GasLimit") -> dict:
     return {
         "ethereum": {
             "sepolia": {

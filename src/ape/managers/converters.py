@@ -3,7 +3,7 @@ from collections.abc import Iterable, Sequence
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from functools import cached_property
-from typing import Any, Union
+from typing import TYPE_CHECKING, Any, Union
 
 from dateutil.parser import parse
 from eth_pydantic_types import Address, HexBytes
@@ -16,7 +16,6 @@ from eth_utils import (
     to_checksum_address,
     to_int,
 )
-from ethpm_types import ConstructorABI, EventABI, MethodABI
 
 from ape.api.address import BaseAddress
 from ape.api.convert import ConverterAPI
@@ -27,6 +26,9 @@ from ape.types.address import AddressType
 from ape.utils.misc import log_instead_of_fail
 
 from .base import BaseManager
+
+if TYPE_CHECKING:
+    from ethpm_types import ConstructorABI, EventABI, MethodABI
 
 
 class HexConverter(ConverterAPI):
@@ -400,7 +402,7 @@ class ConversionManager(BaseManager):
 
     def convert_method_args(
         self,
-        abi: Union[MethodABI, ConstructorABI, EventABI],
+        abi: Union["MethodABI", "ConstructorABI", "EventABI"],
         arguments: Sequence[Any],
     ):
         input_types = [i.canonical_type for i in abi.inputs]

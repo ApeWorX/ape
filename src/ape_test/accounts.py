@@ -1,6 +1,6 @@
 import warnings
 from collections.abc import Iterator
-from typing import Any, Optional, cast
+from typing import TYPE_CHECKING, Any, Optional, cast
 
 from eip712.messages import EIP712Message
 from eth_account import Account as EthAccount
@@ -11,9 +11,7 @@ from eth_pydantic_types import HexBytes
 from eth_utils import to_bytes, to_hex
 
 from ape.api.accounts import TestAccountAPI, TestAccountContainerAPI
-from ape.api.transactions import TransactionAPI
 from ape.exceptions import ProviderNotConnectedError, SignatureError
-from ape.types.address import AddressType
 from ape.types.signatures import MessageSignature, TransactionSignature
 from ape.utils.testing import (
     DEFAULT_NUMBER_OF_TEST_ACCOUNTS,
@@ -21,6 +19,10 @@ from ape.utils.testing import (
     DEFAULT_TEST_MNEMONIC,
     generate_dev_accounts,
 )
+
+if TYPE_CHECKING:
+    from ape.api.transactions import TransactionAPI
+    from ape.types.address import AddressType
 
 
 class TestAccountContainer(TestAccountContainerAPI):
@@ -82,7 +84,9 @@ class TestAccountContainer(TestAccountContainerAPI):
         return account
 
     @classmethod
-    def init_test_account(cls, index: int, address: AddressType, private_key: str) -> "TestAccount":
+    def init_test_account(
+        cls, index: int, address: "AddressType", private_key: str
+    ) -> "TestAccount":
         return TestAccount(
             index=index,
             address_str=address,
@@ -105,7 +109,7 @@ class TestAccount(TestAccountAPI):
         return f"TEST::{self.index}"
 
     @property
-    def address(self) -> AddressType:
+    def address(self) -> "AddressType":
         return self.network_manager.ethereum.decode_address(self.address_str)
 
     def sign_message(self, msg: Any, **signer_options) -> Optional[MessageSignature]:
@@ -129,7 +133,9 @@ class TestAccount(TestAccountAPI):
             )
         return None
 
-    def sign_transaction(self, txn: TransactionAPI, **signer_options) -> Optional[TransactionAPI]:
+    def sign_transaction(
+        self, txn: "TransactionAPI", **signer_options
+    ) -> Optional["TransactionAPI"]:
         # Signs any transaction that's given to it.
         # NOTE: Using JSON mode, as only primitive types can be signed.
         tx_data = txn.model_dump(mode="json", by_alias=True, exclude={"sender"})

@@ -1,5 +1,7 @@
 import sys
 from collections.abc import Iterable
+from pathlib import Path
+from typing import Any, Optional
 
 from ape.utils._github import _GithubClient, github_client
 
@@ -9,9 +11,6 @@ if sys.version_info.minor >= 11:
     import tomllib  # type: ignore[import-not-found]
 else:
     import toml as tomllib  # type: ignore[no-redef]
-
-from pathlib import Path
-from typing import Any, Optional
 
 from yaml import safe_load
 

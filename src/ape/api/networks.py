@@ -12,8 +12,6 @@ from eth_account._utils.signing import (
 )
 from eth_pydantic_types import HexBytes
 from eth_utils import keccak, to_int
-from ethpm_types import ContractType
-from ethpm_types.abi import ABIType, ConstructorABI, EventABI, MethodABI
 from pydantic import model_validator
 
 from ape.exceptions import (
@@ -26,8 +24,7 @@ from ape.exceptions import (
     SignatureError,
 )
 from ape.logging import logger
-from ape.types.address import AddressType, RawAddress
-from ape.types.events import ContractLog
+from ape.types.address import AddressType
 from ape.types.gas import AutoGasLimit, GasLimit
 from ape.utils.basemodel import (
     BaseInterfaceModel,
@@ -47,6 +44,12 @@ from ape.utils.rpc import RPCHeaders
 from .config import PluginConfig
 
 if TYPE_CHECKING:
+    from ethpm_types import ContractType
+    from ethpm_types.abi import ABIType, ConstructorABI, EventABI, MethodABI
+
+    from ape.types.address import RawAddress
+    from ape.types.events import ContractLog
+
     from .explorers import ExplorerAPI
     from .providers import BlockAPI, ProviderAPI, UpstreamProvider
     from .trace import TraceAPI
@@ -135,7 +138,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
 
     @classmethod
     @abstractmethod
-    def decode_address(cls, raw_address: RawAddress) -> AddressType:
+    def decode_address(cls, raw_address: "RawAddress") -> AddressType:
         """
         Convert a raw address to the ecosystem's native address type.
 
@@ -149,7 +152,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
 
     @classmethod
     @abstractmethod
-    def encode_address(cls, address: AddressType) -> RawAddress:
+    def encode_address(cls, address: AddressType) -> "RawAddress":
         """
         Convert the ecosystem's native address type to a raw integer or str address.
 
@@ -162,7 +165,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
 
     @raises_not_implemented
     def encode_contract_blueprint(  # type: ignore[empty-body]
-        self, contract_type: ContractType, *args, **kwargs
+        self, contract_type: "ContractType", *args, **kwargs
     ) -> "TransactionAPI":
         """
         Encode a unique type of transaction that allows contracts to be created
@@ -386,7 +389,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
 
     @abstractmethod
     def encode_deployment(
-        self, deployment_bytecode: HexBytes, abi: ConstructorABI, *args, **kwargs
+        self, deployment_bytecode: HexBytes, abi: "ConstructorABI", *args, **kwargs
     ) -> "TransactionAPI":
         """
         Create a deployment transaction in the given ecosystem.
@@ -404,7 +407,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
 
     @abstractmethod
     def encode_transaction(
-        self, address: AddressType, abi: MethodABI, *args, **kwargs
+        self, address: AddressType, abi: "MethodABI", *args, **kwargs
     ) -> "TransactionAPI":
         """
         Encode a transaction object from a contract function's ABI and call arguments.
@@ -421,12 +424,12 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         """
 
     @abstractmethod
-    def decode_logs(self, logs: Sequence[dict], *events: EventABI) -> Iterator[ContractLog]:
+    def decode_logs(self, logs: Sequence[dict], *events: "EventABI") -> Iterator["ContractLog"]:
         """
         Decode any contract logs that match the given event ABI from the raw log data.
 
         Args:
-            logs (Sequence[Dict]): A list of raw log data from the chain.
+            logs (Sequence[dict]): A list of raw log data from the chain.
             *events (EventABI): Event definitions to decode.
 
         Returns:
@@ -464,7 +467,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         """
 
     @abstractmethod
-    def decode_calldata(self, abi: Union[ConstructorABI, MethodABI], calldata: bytes) -> dict:
+    def decode_calldata(self, abi: Union["ConstructorABI", "MethodABI"], calldata: bytes) -> dict:
         """
         Decode method calldata.
 
@@ -479,7 +482,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         """
 
     @abstractmethod
-    def encode_calldata(self, abi: Union[ConstructorABI, MethodABI], *args: Any) -> HexBytes:
+    def encode_calldata(self, abi: Union["ConstructorABI", "MethodABI"], *args: Any) -> HexBytes:
         """
         Encode method calldata.
 
@@ -492,7 +495,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         """
 
     @abstractmethod
-    def decode_returndata(self, abi: MethodABI, raw_data: bytes) -> Any:
+    def decode_returndata(self, abi: "MethodABI", raw_data: bytes) -> Any:
         """
         Get the result of a contract call.
 
@@ -586,7 +589,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         """
         return None
 
-    def get_method_selector(self, abi: MethodABI) -> HexBytes:
+    def get_method_selector(self, abi: "MethodABI") -> HexBytes:
         """
         Get a contract method selector, typically via hashing such as ``keccak``.
         Defaults to using ``keccak`` but can be overridden in different ecosystems.
@@ -626,7 +629,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
 
     @raises_not_implemented
     def get_python_types(  # type: ignore[empty-body]
-        self, abi_type: ABIType
+        self, abi_type: "ABIType"
     ) -> Union[type, Sequence]:
         """
         Get the Python types for a given ABI type.

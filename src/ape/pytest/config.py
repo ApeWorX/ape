@@ -1,10 +1,11 @@
 from functools import cached_property
-from typing import Any, Optional, Union
-
-from _pytest.config import Config as PytestConfig
+from typing import TYPE_CHECKING, Any, Optional, Union
 
 from ape.types.trace import ContractFunctionPath
 from ape.utils.basemodel import ManagerAccessMixin
+
+if TYPE_CHECKING:
+    from _pytest.config import Config as PytestConfig
 
 
 def _get_config_exclusions(config) -> list[ContractFunctionPath]:
@@ -21,7 +22,7 @@ class ConfigWrapper(ManagerAccessMixin):
     Pytest config object for ease-of-use and code-sharing.
     """
 
-    def __init__(self, pytest_config: PytestConfig):
+    def __init__(self, pytest_config: "PytestConfig"):
         self.pytest_config = pytest_config
 
     @cached_property

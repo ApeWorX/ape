@@ -7,13 +7,13 @@ from eth_pydantic_types import HexBytes
 from ape.exceptions import ConversionError
 from ape.types.address import AddressType
 from ape.types.units import CurrencyValue
-from ape.types.vm import ContractCode
 from ape.utils.basemodel import BaseInterface
 from ape.utils.misc import log_instead_of_fail
 
 if TYPE_CHECKING:
     from ape.api.transactions import ReceiptAPI, TransactionAPI
     from ape.managers.chain import AccountHistory
+    from ape.types.vm import ContractCode
 
 
 class BaseAddress(BaseInterface):
@@ -146,7 +146,7 @@ class BaseAddress(BaseInterface):
             super().__setattr__(attr, value)
 
     @property
-    def code(self) -> ContractCode:
+    def code(self) -> "ContractCode":
         """
         The raw bytes of the smart-contract code at the address.
         """

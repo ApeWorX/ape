@@ -63,7 +63,7 @@ SOURCE_EXCLUDE_PATTERNS = (
 )
 
 
-_python_version = (
+_python_version: str = (
     f"{sys.version_info.major}.{sys.version_info.minor}"
     f".{sys.version_info.micro} {sys.version_info.releaselevel}"
 )
@@ -193,7 +193,7 @@ def get_package_version(obj: Any) -> str:
         return ""
 
 
-__version__ = get_package_version(__name__)
+__version__: str = get_package_version(__name__)
 
 
 def load_config(path: Path, expand_envars=True, must_exist=False) -> dict:

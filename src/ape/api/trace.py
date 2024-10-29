@@ -1,10 +1,12 @@
 import sys
 from abc import abstractmethod
 from collections.abc import Iterator, Sequence
-from typing import IO, Any, Optional
+from typing import IO, TYPE_CHECKING, Any, Optional
 
-from ape.types.trace import ContractFunctionPath, GasReport
 from ape.utils.basemodel import BaseInterfaceModel
+
+if TYPE_CHECKING:
+    from ape.types.trace import ContractFunctionPath, GasReport
 
 
 class TraceAPI(BaseInterfaceModel):
@@ -22,7 +24,7 @@ class TraceAPI(BaseInterfaceModel):
     @abstractmethod
     def get_gas_report(
         self, exclude: Optional[Sequence["ContractFunctionPath"]] = None
-    ) -> GasReport:
+    ) -> "GasReport":
         """
         Get the gas report.
         """

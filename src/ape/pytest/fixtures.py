@@ -1,22 +1,24 @@
 from collections.abc import Iterator
 from fnmatch import fnmatch
 from functools import cached_property
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 import pytest
 from eth_utils import to_hex
 
-from ape.api.accounts import TestAccountAPI
-from ape.api.transactions import ReceiptAPI
 from ape.exceptions import BlockNotFoundError, ChainError
 from ape.logging import logger
-from ape.managers.chain import ChainManager
-from ape.managers.networks import NetworkManager
-from ape.managers.project import ProjectManager
-from ape.pytest.config import ConfigWrapper
-from ape.types.vm import SnapshotID
 from ape.utils.basemodel import ManagerAccessMixin
 from ape.utils.rpc import allow_disconnected
+
+if TYPE_CHECKING:
+    from ape.api.accounts import TestAccountAPI
+    from ape.api.transactions import ReceiptAPI
+    from ape.managers.chain import ChainManager
+    from ape.managers.networks import NetworkManager
+    from ape.managers.project import ProjectManager
+    from ape.pytest.config import ConfigWrapper
+    from ape.types.vm import SnapshotID
 
 
 class PytestApeFixtures(ManagerAccessMixin):
@@ -27,7 +29,7 @@ class PytestApeFixtures(ManagerAccessMixin):
     _supports_snapshot: bool = True
     receipt_capture: "ReceiptCapture"
 
-    def __init__(self, config_wrapper: ConfigWrapper, receipt_capture: "ReceiptCapture"):
+    def __init__(self, config_wrapper: "ConfigWrapper", receipt_capture: "ReceiptCapture"):
         self.config_wrapper = config_wrapper
         self.receipt_capture = receipt_capture
 
@@ -40,7 +42,7 @@ class PytestApeFixtures(ManagerAccessMixin):
         )
 
     @pytest.fixture(scope="session")
-    def accounts(self) -> list[TestAccountAPI]:
+    def accounts(self) -> list["TestAccountAPI"]:
         """
         A collection of pre-funded accounts.
         """
@@ -54,21 +56,21 @@ class PytestApeFixtures(ManagerAccessMixin):
         return self.compiler_manager
 
     @pytest.fixture(scope="session")
-    def chain(self) -> ChainManager:
+    def chain(self) -> "ChainManager":
         """
         Manipulate the blockchain, such as mine or change the pending timestamp.
         """
         return self.chain_manager
 
     @pytest.fixture(scope="session")
-    def networks(self) -> NetworkManager:
+    def networks(self) -> "NetworkManager":
         """
         Connect to other networks in your tests.
         """
         return self.network_manager
 
     @pytest.fixture(scope="session")
-    def project(self) -> ProjectManager:
+    def project(self) -> "ProjectManager":
         """
         Access contract types and dependencies.
         """
@@ -121,7 +123,7 @@ class PytestApeFixtures(ManagerAccessMixin):
     _function_isolation = pytest.fixture(_isolation, scope="function")
 
     @allow_disconnected
-    def _snapshot(self) -> Optional[SnapshotID]:
+    def _snapshot(self) -> Optional["SnapshotID"]:
         try:
             return self.chain_manager.snapshot()
         except NotImplementedError:
@@ -135,7 +137,7 @@ class PytestApeFixtures(ManagerAccessMixin):
         return None
 
     @allow_disconnected
-    def _restore(self, snapshot_id: SnapshotID):
+    def _restore(self, snapshot_id: "SnapshotID"):
         if snapshot_id not in self.chain_manager._snapshots[self.provider.chain_id]:
             return
         try:
@@ -150,11 +152,11 @@ class PytestApeFixtures(ManagerAccessMixin):
 
 
 class ReceiptCapture(ManagerAccessMixin):
-    config_wrapper: ConfigWrapper
-    receipt_map: dict[str, dict[str, ReceiptAPI]] = {}
+    config_wrapper: "ConfigWrapper"
+    receipt_map: dict[str, dict[str, "ReceiptAPI"]] = {}
     enter_blocks: list[int] = []
 
-    def __init__(self, config_wrapper: ConfigWrapper):
+    def __init__(self, config_wrapper: "ConfigWrapper"):
         self.config_wrapper = config_wrapper
 
     def __enter__(self):

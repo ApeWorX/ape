@@ -20,18 +20,21 @@ References
 """
 
 from collections.abc import Iterable
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from eth_abi import decode
 from eth_typing import ChecksumAddress
 from eth_utils import add_0x_prefix, decode_hex, to_hex
 from ethpm_types import ContractType, MethodABI
-from evm_trace import CallTreeNode
 from hexbytes import HexBytes
-from typing_extensions import TypeGuard
 
 import ape
 from ape_ethereum._console_log_abi import CONSOLE_LOG_ABI
+
+if TYPE_CHECKING:
+    from evm_trace import CallTreeNode
+    from typing_extensions import TypeGuard
+
 
 CONSOLE_ADDRESS = cast(ChecksumAddress, "0x000000000000000000636F6e736F6c652e6c6f67")
 VYPER_PRINT_METHOD_ID = HexBytes("0x23cdd8e8")  # log(string,bytes)
@@ -39,7 +42,7 @@ VYPER_PRINT_METHOD_ID = HexBytes("0x23cdd8e8")  # log(string,bytes)
 console_contract = ContractType(abi=CONSOLE_LOG_ABI, contractName="console")
 
 
-def is_console_log(call: CallTreeNode) -> TypeGuard[CallTreeNode]:
+def is_console_log(call: "CallTreeNode") -> "TypeGuard[CallTreeNode]":
     """Determine if a call is a standard console.log() call"""
     return (
         call.address == HexBytes(CONSOLE_ADDRESS)
@@ -47,7 +50,7 @@ def is_console_log(call: CallTreeNode) -> TypeGuard[CallTreeNode]:
     )
 
 
-def is_vyper_print(call: CallTreeNode) -> TypeGuard[CallTreeNode]:
+def is_vyper_print(call: "CallTreeNode") -> "TypeGuard[CallTreeNode]":
     """Determine if a call is a standard Vyper print() call"""
     if call.address != HexBytes(CONSOLE_ADDRESS) or call.calldata[:4] != VYPER_PRINT_METHOD_ID:
         return False
@@ -79,7 +82,7 @@ def vyper_print(calldata: str) -> tuple[Any]:
     return tuple(data)
 
 
-def extract_debug_logs(call: CallTreeNode) -> Iterable[tuple[Any]]:
+def extract_debug_logs(call: "CallTreeNode") -> Iterable[tuple[Any]]:
     """Filter calls to console.log() and print() from a transactions call tree"""
     if is_vyper_print(call) and call.calldata is not None:
         yield vyper_print(add_0x_prefix(to_hex(call.calldata[4:])))

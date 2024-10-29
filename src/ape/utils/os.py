@@ -211,12 +211,7 @@ def create_tempdir(name: Optional[str] = None) -> Iterator[Path]:
 
 
 def run_in_tempdir(
-    fn: Callable[
-        [
-            Path,
-        ],
-        Any,
-    ],
+    fn: Callable[[Path], Any],
     name: Optional[str] = None,
 ):
     """

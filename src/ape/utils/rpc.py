@@ -8,7 +8,7 @@ from ape.exceptions import ProviderNotConnectedError
 from ape.logging import logger
 from ape.utils.misc import __version__, _python_version
 
-USER_AGENT = f"Ape/{__version__} (Python/{_python_version})"
+USER_AGENT: str = f"Ape/{__version__} (Python/{_python_version})"
 
 
 def allow_disconnected(fn: Callable):

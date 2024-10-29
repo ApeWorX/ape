@@ -18,8 +18,6 @@ from web3.providers.eth_tester.defaults import API_ENDPOINTS, static_return
 from web3.types import TxParams
 
 from ape.api.providers import BlockAPI, TestProviderAPI
-from ape.api.trace import TraceAPI
-from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.exceptions import (
     APINotImplementedError,
     ContractLogicError,
@@ -31,8 +29,6 @@ from ape.exceptions import (
 )
 from ape.logging import logger
 from ape.types.address import AddressType
-from ape.types.events import ContractLog, LogFilter
-from ape.types.vm import BlockID, SnapshotID
 from ape.utils.misc import gas_estimation_error_message
 from ape.utils.testing import DEFAULT_TEST_HD_PATH
 from ape_ethereum.provider import Web3Provider
@@ -41,6 +37,10 @@ from ape_test.config import EthTesterProviderConfig
 
 if TYPE_CHECKING:
     from ape.api.accounts import TestAccountAPI
+    from ape.api.trace import TraceAPI
+    from ape.api.transactions import ReceiptAPI, TransactionAPI
+    from ape.types.events import ContractLog, LogFilter
+    from ape.types.vm import BlockID, SnapshotID
 
 
 class LocalProvider(TestProviderAPI, Web3Provider):
@@ -121,7 +121,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         self.connect()
 
     def estimate_gas_cost(
-        self, txn: TransactionAPI, block_id: Optional[BlockID] = None, **kwargs
+        self, txn: "TransactionAPI", block_id: Optional["BlockID"] = None, **kwargs
     ) -> int:
         if isinstance(self.network.gas_limit, int):
             return self.network.gas_limit
@@ -201,8 +201,8 @@ class LocalProvider(TestProviderAPI, Web3Provider):
 
     def send_call(
         self,
-        txn: TransactionAPI,
-        block_id: Optional[BlockID] = None,
+        txn: "TransactionAPI",
+        block_id: Optional["BlockID"] = None,
         state: Optional[dict] = None,
         **kwargs,
     ) -> HexBytes:
@@ -244,7 +244,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
 
         return HexBytes(result)
 
-    def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
+    def send_transaction(self, txn: "TransactionAPI") -> "ReceiptAPI":
         vm_err = None
         txn_dict = None
         try:
@@ -304,10 +304,10 @@ class LocalProvider(TestProviderAPI, Web3Provider):
 
         return receipt
 
-    def snapshot(self) -> SnapshotID:
+    def snapshot(self) -> "SnapshotID":
         return self.evm_backend.take_snapshot()
 
-    def restore(self, snapshot_id: SnapshotID):
+    def restore(self, snapshot_id: "SnapshotID"):
         if snapshot_id:
             current_hash = self._get_latest_block_rpc().get("hash")
             if current_hash != snapshot_id:
@@ -341,18 +341,18 @@ class LocalProvider(TestProviderAPI, Web3Provider):
     def mine(self, num_blocks: int = 1):
         self.evm_backend.mine_blocks(num_blocks)
 
-    def get_balance(self, address: AddressType, block_id: Optional[BlockID] = None) -> int:
+    def get_balance(self, address: AddressType, block_id: Optional["BlockID"] = None) -> int:
         # perf: Using evm_backend directly instead of going through web3.
         return self.evm_backend.get_balance(
             HexBytes(address), block_number="latest" if block_id is None else block_id
         )
 
-    def get_nonce(self, address: AddressType, block_id: Optional[BlockID] = None) -> int:
+    def get_nonce(self, address: AddressType, block_id: Optional["BlockID"] = None) -> int:
         return self.evm_backend.get_nonce(
             HexBytes(address), block_number="latest" if block_id is None else block_id
         )
 
-    def get_contract_logs(self, log_filter: LogFilter) -> Iterator[ContractLog]:
+    def get_contract_logs(self, log_filter: "LogFilter") -> Iterator["ContractLog"]:
         from_block = max(0, log_filter.start_block)
 
         if log_filter.stop_block is None:
@@ -397,7 +397,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
 
         raise APINotImplementedError("No base fee found in block.")
 
-    def get_transaction_trace(self, transaction_hash: str, **kwargs) -> TraceAPI:
+    def get_transaction_trace(self, transaction_hash: str, **kwargs) -> "TraceAPI":
         if "call_trace_approach" not in kwargs:
             kwargs["call_trace_approach"] = TraceApproach.BASIC
 

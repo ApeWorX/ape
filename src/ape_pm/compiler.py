@@ -2,7 +2,7 @@ import json
 from collections.abc import Iterable, Iterator
 from json import JSONDecodeError
 from pathlib import Path
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 from eth_pydantic_types import HexBytes
 from eth_utils import is_0x_prefixed
@@ -11,8 +11,10 @@ from ethpm_types import ContractType
 from ape.api.compiler import CompilerAPI
 from ape.exceptions import CompilerError, ContractLogicError
 from ape.logging import logger
-from ape.managers.project import ProjectManager
 from ape.utils.os import get_relative_path
+
+if TYPE_CHECKING:
+    from ape.managers.project import ProjectManager
 
 
 class InterfaceCompiler(CompilerAPI):
@@ -64,7 +66,7 @@ class InterfaceCompiler(CompilerAPI):
     def compile_code(
         self,
         code: str,
-        project: Optional[ProjectManager] = None,
+        project: Optional["ProjectManager"] = None,
         **kwargs,
     ) -> ContractType:
         code = code or "[]"

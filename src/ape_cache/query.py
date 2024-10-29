@@ -4,11 +4,11 @@ from pathlib import Path
 from typing import Any, Optional, cast
 
 from sqlalchemy import create_engine, func
-from sqlalchemy.engine import CursorResult
+from sqlalchemy.engine import CursorResult  # noqa: TC002
 from sqlalchemy.sql import column, insert, select
-from sqlalchemy.sql.expression import Insert, Select
+from sqlalchemy.sql.expression import Insert, Select  # noqa: TC002
 
-from ape.api.providers import BlockAPI
+from ape.api.providers import BlockAPI  # noqa: TC002
 from ape.api.query import (
     BaseInterfaceModel,
     BlockQuery,

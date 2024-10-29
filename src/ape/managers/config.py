@@ -3,9 +3,7 @@ from collections.abc import Iterator
 from contextlib import contextmanager
 from functools import cached_property
 from pathlib import Path
-from typing import Any, Optional
-
-from ethpm_types import PackageManifest
+from typing import TYPE_CHECKING, Any, Optional
 
 from ape.api.config import ApeConfig
 from ape.managers.base import BaseManager
@@ -19,6 +17,10 @@ from ape.utils.basemodel import (
 from ape.utils.misc import log_instead_of_fail
 from ape.utils.os import create_tempdir, in_tempdir
 from ape.utils.rpc import RPCHeaders
+
+if TYPE_CHECKING:
+    from ethpm_types import PackageManifest
+
 
 CONFIG_FILE_NAME = "ape-config.yaml"
 
@@ -93,7 +95,7 @@ class ConfigManager(ExtraAttributesMixin, BaseManager):
         return ApeConfig.model_validate(merged_data)
 
     @classmethod
-    def extract_config(cls, manifest: PackageManifest, **overrides) -> ApeConfig:
+    def extract_config(cls, manifest: "PackageManifest", **overrides) -> ApeConfig:
         """
         Calculate the ape-config data from a package manifest.
 

@@ -287,7 +287,9 @@ def _format_logger(
 
 
 def get_logger(
-    name: str, fmt: Optional[str] = None, handlers: Optional[Sequence[Callable[[str], str]]] = None
+    name: str,
+    fmt: Optional[str] = None,
+    handlers: Optional[Sequence[Callable[[str], str]]] = None,
 ) -> logging.Logger:
     """
     Get a logger with the given ``name`` and configure it for usage with Ape.

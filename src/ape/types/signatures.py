@@ -1,5 +1,5 @@
 from collections.abc import Iterator
-from typing import Optional, Union
+from typing import TYPE_CHECKING, Optional, Union
 
 from eth_account import Account
 from eth_account.messages import SignableMessage
@@ -9,13 +9,15 @@ from pydantic.dataclasses import dataclass
 
 from ape.utils.misc import as_our_module, log_instead_of_fail
 
-try:
-    # Only on Python 3.11
-    from typing import Self  # type: ignore
-except ImportError:
-    from typing_extensions import Self  # type: ignore
+if TYPE_CHECKING:
+    from ape.types.address import AddressType
 
-from ape.types.address import AddressType
+    try:
+        # Only on Python 3.11
+        from typing import Self  # type: ignore
+    except ImportError:
+        from typing_extensions import Self  # type: ignore
+
 
 # Fix 404 in doc link.
 as_our_module(
@@ -89,7 +91,7 @@ class _Signature:
         yield self.s
 
     @classmethod
-    def from_rsv(cls, rsv: HexBytes) -> Self:
+    def from_rsv(cls, rsv: HexBytes) -> "Self":
         # NOTE: Values may be padded.
         if len(rsv) != 65:
             raise ValueError("Length of RSV bytes must be 65.")
@@ -97,7 +99,7 @@ class _Signature:
         return cls(r=HexBytes(rsv[:32]), s=HexBytes(rsv[32:64]), v=rsv[64])
 
     @classmethod
-    def from_vrs(cls, vrs: HexBytes) -> Self:
+    def from_vrs(cls, vrs: HexBytes) -> "Self":
         # NOTE: Values may be padded.
         if len(vrs) != 65:
             raise ValueError("Length of VRS bytes must be 65.")
@@ -122,7 +124,7 @@ class MessageSignature(_Signature):
     """
 
 
-def recover_signer(msg: SignableMessage, sig: MessageSignature) -> AddressType:
+def recover_signer(msg: SignableMessage, sig: MessageSignature) -> "AddressType":
     """
     Get the address of the signer.
 

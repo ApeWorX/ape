@@ -6,13 +6,11 @@ from contextlib import contextmanager
 from functools import partial, singledispatchmethod
 from pathlib import Path
 from statistics import mean, median
-from typing import IO, Optional, Union, cast
+from typing import IO, TYPE_CHECKING, Optional, Union, cast
 
 import pandas as pd
-from eth_pydantic_types import HexBytes
 from ethpm_types import ABI, ContractType
 from rich.box import SIMPLE
-from rich.console import Console as RichConsole
 from rich.table import Table
 
 from ape.api.address import BaseAddress
@@ -42,10 +40,15 @@ from ape.exceptions import (
 from ape.logging import get_rich_console, logger
 from ape.managers.base import BaseManager
 from ape.types.address import AddressType
-from ape.types.trace import GasReport, SourceTraceback
-from ape.types.vm import SnapshotID
 from ape.utils.basemodel import BaseInterfaceModel
 from ape.utils.misc import is_evm_precompile, is_zero_hex, log_instead_of_fail, nonreentrant
+
+if TYPE_CHECKING:
+    from eth_pydantic_types import HexBytes
+    from rich.console import Console as RichConsole
+
+    from ape.types.trace import GasReport, SourceTraceback
+    from ape.types.vm import SnapshotID
 
 
 class BlockContainer(BaseManager):
@@ -1131,7 +1134,7 @@ class ContractCache(BaseManager):
         self,
         address: Union[str, AddressType],
         contract_type: Optional[ContractType] = None,
-        txn_hash: Optional[Union[str, HexBytes]] = None,
+        txn_hash: Optional[Union[str, "HexBytes"]] = None,
         abi: Optional[Union[list[ABI], dict, str, Path]] = None,
     ) -> ContractInstance:
         """
@@ -1413,7 +1416,7 @@ class ReportManager(BaseManager):
     **NOTE**: This class is not part of the public API.
     """
 
-    def show_gas(self, report: GasReport, file: Optional[IO[str]] = None):
+    def show_gas(self, report: "GasReport", file: Optional[IO[str]] = None):
         tables: list[Table] = []
 
         for contract_id, method_calls in report.items():
@@ -1454,16 +1457,16 @@ class ReportManager(BaseManager):
         self.echo(*tables, file=file)
 
     def echo(
-        self, *rich_items, file: Optional[IO[str]] = None, console: Optional[RichConsole] = None
+        self, *rich_items, file: Optional[IO[str]] = None, console: Optional["RichConsole"] = None
     ):
         console = console or get_rich_console(file)
         console.print(*rich_items)
 
     def show_source_traceback(
         self,
-        traceback: SourceTraceback,
+        traceback: "SourceTraceback",
         file: Optional[IO[str]] = None,
-        console: Optional[RichConsole] = None,
+        console: Optional["RichConsole"] = None,
         failing: bool = True,
     ):
         console = console or get_rich_console(file)
@@ -1471,7 +1474,7 @@ class ReportManager(BaseManager):
         console.print(str(traceback), style=style)
 
     def show_events(
-        self, events: list, file: Optional[IO[str]] = None, console: Optional[RichConsole] = None
+        self, events: list, file: Optional[IO[str]] = None, console: Optional["RichConsole"] = None
     ):
         console = console or get_rich_console(file)
         console.print("Events emitted:")
@@ -1587,7 +1590,7 @@ class ChainManager(BaseManager):
         cls_name = getattr(type(self), "__name__", ChainManager.__name__)
         return f"<{cls_name} ({props})>"
 
-    def snapshot(self) -> SnapshotID:
+    def snapshot(self) -> "SnapshotID":
         """
         Record the current state of the blockchain with intent to later
         call the method :meth:`~ape.managers.chain.ChainManager.revert`
@@ -1607,7 +1610,7 @@ class ChainManager(BaseManager):
 
         return snapshot_id
 
-    def restore(self, snapshot_id: Optional[SnapshotID] = None):
+    def restore(self, snapshot_id: Optional["SnapshotID"] = None):
         """
         Regress the current call using the given snapshot ID.
         Allows developers to go back to a previous state.

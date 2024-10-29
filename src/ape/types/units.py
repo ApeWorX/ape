@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import TYPE_CHECKING, Any, Optional
 
 from pydantic_core.core_schema import (
     CoreSchema,
@@ -7,10 +7,12 @@ from pydantic_core.core_schema import (
     no_info_plain_validator_function,
     plain_serializer_function_ser_schema,
 )
-from typing_extensions import TypeAlias
 
 from ape.exceptions import ConversionError
 from ape.utils.basemodel import ManagerAccessMixin
+
+if TYPE_CHECKING:
+    from typing_extensions import TypeAlias
 
 
 class CurrencyValueComparable(int):
@@ -72,7 +74,7 @@ class CurrencyValueComparable(int):
 CurrencyValueComparable.__name__ = int.__name__
 
 
-CurrencyValue: TypeAlias = CurrencyValueComparable
+CurrencyValue: "TypeAlias" = CurrencyValueComparable
 """
 An alias to :class:`~ape.types.CurrencyValueComparable` for
 situations when you know for sure the type is a currency-value

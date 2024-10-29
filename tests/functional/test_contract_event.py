@@ -1,6 +1,6 @@
 import time
 from queue import Queue
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 import pytest
 from eth_pydantic_types import HexBytes
@@ -8,10 +8,12 @@ from eth_pydantic_types.hash import HashBytes20
 from eth_utils import to_hex
 from ethpm_types import ContractType
 
-from ape.api.transactions import ReceiptAPI
 from ape.exceptions import ProviderError
 from ape.types.events import ContractLog
 from ape.types.units import CurrencyValueComparable
+
+if TYPE_CHECKING:
+    from ape.api.transactions import ReceiptAPI
 
 
 @pytest.fixture
@@ -38,7 +40,7 @@ def test_contract_logs_from_receipts(owner, contract_instance, assert_log_values
     receipt_1 = contract_instance.setNumber(2, sender=owner)
     receipt_2 = contract_instance.setNumber(3, sender=owner)
 
-    def assert_receipt_logs(receipt: ReceiptAPI, num: int):
+    def assert_receipt_logs(receipt: "ReceiptAPI", num: int):
         logs = event_type.from_receipt(receipt)
         assert len(logs) == 1
         assert_log_values(logs[0], num)

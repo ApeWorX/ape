@@ -1,30 +1,32 @@
 from pathlib import Path
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 import click
 import pytest
 from _pytest._code.code import Traceback as PytestTraceback
 from rich import print as rich_print
 
-from ape.api.networks import ProviderContextManager
 from ape.exceptions import ConfigError
 from ape.logging import LogLevel
-from ape.pytest.config import ConfigWrapper
-from ape.pytest.coverage import CoverageTracker
-from ape.pytest.fixtures import ReceiptCapture
-from ape.pytest.gas import GasTracker
-from ape.types.coverage import CoverageReport
 from ape.utils.basemodel import ManagerAccessMixin
 from ape_console._cli import console
+
+if TYPE_CHECKING:
+    from ape.api.networks import ProviderContextManager
+    from ape.pytest.config import ConfigWrapper
+    from ape.pytest.coverage import CoverageTracker
+    from ape.pytest.fixtures import ReceiptCapture
+    from ape.pytest.gas import GasTracker
+    from ape.types.coverage import CoverageReport
 
 
 class PytestApeRunner(ManagerAccessMixin):
     def __init__(
         self,
-        config_wrapper: ConfigWrapper,
-        receipt_capture: ReceiptCapture,
-        gas_tracker: GasTracker,
-        coverage_tracker: CoverageTracker,
+        config_wrapper: "ConfigWrapper",
+        receipt_capture: "ReceiptCapture",
+        gas_tracker: "GasTracker",
+        coverage_tracker: "CoverageTracker",
     ):
         self.config_wrapper = config_wrapper
         self.receipt_capture = receipt_capture
@@ -36,11 +38,11 @@ class PytestApeRunner(ManagerAccessMixin):
         self.coverage_tracker = coverage_tracker
 
     @property
-    def _provider_context(self) -> ProviderContextManager:
+    def _provider_context(self) -> "ProviderContextManager":
         return self.network_manager.parse_network_choice(self.config_wrapper.network)
 
     @property
-    def _coverage_report(self) -> Optional[CoverageReport]:
+    def _coverage_report(self) -> Optional["CoverageReport"]:
         return self.coverage_tracker.data.report if self.coverage_tracker.data else None
 
     def pytest_exception_interact(self, report, call):

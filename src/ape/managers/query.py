@@ -14,7 +14,7 @@ from ape.api.query import (
     QueryAPI,
     QueryType,
 )
-from ape.api.transactions import ReceiptAPI, TransactionAPI
+from ape.api.transactions import ReceiptAPI, TransactionAPI  # noqa: TC002
 from ape.contracts.base import ContractLog, LogFilter
 from ape.exceptions import QueryEngineError
 from ape.logging import logger

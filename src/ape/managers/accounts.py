@@ -25,7 +25,7 @@ _DEFAULT_SENDERS: list[AccountAPI] = []
 @contextlib.contextmanager
 def _use_sender(
     account: Union[AccountAPI, TestAccountAPI]
-) -> Generator[AccountAPI, TestAccountAPI, None]:
+) -> "Generator[AccountAPI, TestAccountAPI, None]":
     try:
         _DEFAULT_SENDERS.append(account)
         yield account
@@ -160,7 +160,7 @@ class TestAccountManager(list, ManagerAccessMixin):
     def generate_test_account(self, container_name: str = "test") -> TestAccountAPI:
         return self.containers[container_name].generate_account()
 
-    def use_sender(self, account_id: Union[TestAccountAPI, AddressType, int]) -> ContextManager:
+    def use_sender(self, account_id: Union[TestAccountAPI, AddressType, int]) -> "ContextManager":
         account = account_id if isinstance(account_id, TestAccountAPI) else self[account_id]
         return _use_sender(account)
 
@@ -412,7 +412,7 @@ class AccountManager(BaseManager):
     def use_sender(
         self,
         account_id: Union[AccountAPI, AddressType, str, int],
-    ) -> ContextManager:
+    ) -> "ContextManager":
         if not isinstance(account_id, AccountAPI):
             if isinstance(account_id, int) or is_hex(account_id):
                 account = self[account_id]

@@ -1,11 +1,13 @@
 from abc import abstractmethod
-from typing import Optional
-
-from ethpm_types import ContractType
+from typing import TYPE_CHECKING, Optional
 
 from ape.api.networks import NetworkAPI
-from ape.types.address import AddressType
 from ape.utils.basemodel import BaseInterfaceModel
+
+if TYPE_CHECKING:
+    from ethpm_types import ContractType
+
+    from ape.types.address import AddressType
 
 
 class ExplorerAPI(BaseInterfaceModel):
@@ -18,7 +20,7 @@ class ExplorerAPI(BaseInterfaceModel):
     network: NetworkAPI
 
     @abstractmethod
-    def get_address_url(self, address: AddressType) -> str:
+    def get_address_url(self, address: "AddressType") -> str:
         """
         Get an address URL, such as for a transaction.
 
@@ -42,7 +44,7 @@ class ExplorerAPI(BaseInterfaceModel):
         """
 
     @abstractmethod
-    def get_contract_type(self, address: AddressType) -> Optional[ContractType]:
+    def get_contract_type(self, address: "AddressType") -> Optional["ContractType"]:
         """
         Get the contract type for a given address if it has been published to this explorer.
 
@@ -54,7 +56,7 @@ class ExplorerAPI(BaseInterfaceModel):
         """
 
     @abstractmethod
-    def publish_contract(self, address: AddressType):
+    def publish_contract(self, address: "AddressType"):
         """
         Publish a contract to the explorer.
 
