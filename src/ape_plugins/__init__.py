@@ -1,7 +1,8 @@
-from ape import plugins
-from ape.api.config import ConfigDict
+from ape.plugins import Config, register
 
 
-@plugins.register(plugins.Config)
+@register(Config)
 def config_class():
+    from ape.api.config import ConfigDict
+
     return ConfigDict

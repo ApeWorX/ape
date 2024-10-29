@@ -14,7 +14,6 @@ from ape.exceptions import (
     NetworkNotFoundError,
     ProviderNotFoundError,
 )
-from ape.utils.basemodel import ManagerAccessMixin as access
 
 if TYPE_CHECKING:
     from ape.api.accounts import AccountAPI
@@ -26,6 +25,8 @@ _ACCOUNT_TYPE_FILTER = Union[
 
 
 def _get_accounts(key: _ACCOUNT_TYPE_FILTER) -> list["AccountAPI"]:
+    from ape.utils.basemodel import ManagerAccessMixin as access
+
     accounts = access.account_manager
 
     add_test_accounts = False
@@ -68,8 +69,11 @@ class Alias(click.Choice):
         # NOTE: we purposely skip the constructor of `Choice`
         self.case_sensitive = False
         self._key_filter = key
+
+    @cached_property
+    def choices(self) -> Sequence:  # type: ignore[override]
         module = import_module("ape.types.basic")
-        self.choices = module._LazySequence(self._choices_iterator)
+        return module._LazySequence(self._choices_iterator)
 
     @property
     def _choices_iterator(self) -> Iterator[str]:
@@ -206,6 +210,8 @@ class AccountAliasPromptChoice(PromptChoice):
         else:
             alias = value
 
+        from ape.utils.basemodel import ManagerAccessMixin as access
+
         accounts = access.account_manager
         if isinstance(alias, str) and alias.upper().startswith("TEST::"):
             idx_str = alias.upper().replace("TEST::", "")
@@ -235,6 +241,8 @@ class AccountAliasPromptChoice(PromptChoice):
                 click.echo(f"{idx}. {choice}")
                 did_print = True
 
+        from ape.utils.basemodel import ManagerAccessMixin as access
+
         accounts = access.account_manager
         len_test_accounts = len(accounts.test_accounts) - 1
         if len_test_accounts > 0:
@@ -261,6 +269,7 @@ class AccountAliasPromptChoice(PromptChoice):
         Returns:
             :class:`~ape.api.accounts.AccountAPI`
         """
+        from ape.utils.basemodel import ManagerAccessMixin as access
 
         accounts = access.account_manager
         if not self.choices or len(self.choices) == 0:
@@ -348,18 +357,28 @@ class NetworkChoice(click.Choice):
         base_type: Optional[type] = None,
         callback: Optional[Callable] = None,
     ):
-        provider_module = import_module("ape.api.providers")
-        base_type = provider_module.ProviderAPI if base_type is None else base_type
-        if not issubclass(base_type, (provider_module.ProviderAPI, str)):
-            raise TypeError(f"Unhandled type '{base_type}' for NetworkChoice.")
-
-        self.base_type = base_type
+        self._base_type = base_type
         self.callback = callback
         self.case_sensitive = case_sensitive
         self.ecosystem = ecosystem
         self.network = network
         self.provider = provider
         # NOTE: Purposely avoid super().init for performance reasons.
+
+    @property
+    def base_type(self) -> type["ProviderAPI"]:
+        # perf: property exists to delay import ProviderAPI at init time.
+        from ape.api.providers import ProviderAPI
+
+        if self._base_type is not None:
+            return self._base_type
+
+        self._base_type = ProviderAPI
+        return ProviderAPI
+
+    @base_type.setter
+    def base_type(self, value):
+        self._base_type = value
 
     @cached_property
     def choices(self) -> Sequence[Any]:  # type: ignore[override]
@@ -369,6 +388,8 @@ class NetworkChoice(click.Choice):
         return "[ecosystem-name][:[network-name][:[provider-name]]]"
 
     def convert(self, value: Any, param: Optional[Parameter], ctx: Optional[Context]) -> Any:
+        from ape.utils.basemodel import ManagerAccessMixin as access
+
         choice: Optional[Union[str, "ProviderAPI"]]
         networks = access.network_manager
         if not value:
@@ -406,8 +427,9 @@ class NetworkChoice(click.Choice):
                     ) from err
 
         if choice not in (None, _NONE_NETWORK) and isinstance(choice, str):
-            provider_module = import_module("ape.api.providers")
-            if issubclass(self.base_type, provider_module.ProviderAPI):
+            from ape.api.providers import ProviderAPI
+
+            if issubclass(self.base_type, ProviderAPI):
                 # Return the provider.
                 choice = networks.get_provider_from_choice(network_choice=value)
 
@@ -454,3 +476,18 @@ def output_format_choice(options: Optional[list[OutputFormat]] = None) -> Choice
 
     # Uses `str` form of enum for CLI choices.
     return click.Choice([o.value for o in options], case_sensitive=False)
+
+
+class LazyChoice(Choice):
+    """
+    A simple lazy-choice where choices are evaluated lazily.
+    """
+
+    def __init__(self, get_choices: Callable[[], Sequence[str]], case_sensitive: bool = False):
+        self._get_choices = get_choices
+        self.case_sensitive = case_sensitive
+        # Note: Purposely avoid super init.
+
+    @cached_property
+    def choices(self) -> Sequence[str]:  # type: ignore[override]
+        return self._get_choices()

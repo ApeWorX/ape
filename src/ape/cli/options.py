@@ -3,11 +3,10 @@ from collections.abc import Callable
 from functools import partial
 from importlib import import_module
 from pathlib import Path
-from typing import Any, NoReturn, Optional, Union
+from typing import TYPE_CHECKING, Any, NoReturn, Optional, Union
 
 import click
 from click import Option
-from ethpm_types import ContractType
 
 from ape.cli.choices import (
     _ACCOUNT_TYPE_FILTER,
@@ -21,12 +20,14 @@ from ape.cli.commands import ConnectedProviderCommand
 from ape.cli.paramtype import JSON, Noop
 from ape.exceptions import Abort, ProjectError
 from ape.logging import DEFAULT_LOG_LEVEL, ApeLogger, LogLevel, logger
-from ape.utils.basemodel import ManagerAccessMixin
+
+if TYPE_CHECKING:
+    from ethpm_types.contract_type import ContractType
 
 _VERBOSITY_VALUES = ("--verbosity", "-v")
 
 
-class ApeCliContextObject(ManagerAccessMixin, dict):
+class ApeCliContextObject(dict):
     """
     A ``click`` context object class. Use via :meth:`~ape.cli.options.ape_cli_context()`.
     It provides common CLI utilities for ape, such as logging or
@@ -45,6 +46,8 @@ class ApeCliContextObject(ManagerAccessMixin, dict):
         try:
             return self.__getattribute__(item)
         except AttributeError:
+            from ape.utils.basemodel import ManagerAccessMixin
+
             return getattr(ManagerAccessMixin, item)
 
     @staticmethod
@@ -174,14 +177,12 @@ class NetworkOption(Option):
         provider = kwargs.pop("provider", None)
         default = kwargs.pop("default", "auto")
 
-        provider_module = import_module("ape.api.providers")
-        base_type = kwargs.pop("base_type", provider_module.ProviderAPI)
-
         callback = kwargs.pop("callback", None)
 
         # NOTE: If using network_option, this part is skipped
         #  because parsing happens earlier to handle advanced usage.
         if not kwargs.get("type"):
+            base_type = kwargs.pop("base_type", None)
             kwargs["type"] = NetworkChoice(
                 case_sensitive=False,
                 ecosystem=ecosystem,
@@ -204,6 +205,8 @@ class NetworkOption(Option):
             else:
                 # NOTE: Use a function as the default so it is calculated lazily
                 def fn():
+                    from ape.utils.basemodel import ManagerAccessMixin
+
                     return ManagerAccessMixin.network_manager.default_ecosystem.name
 
                 default = fn
@@ -344,6 +347,8 @@ def _update_context_with_network(ctx, provider, requested_network_objects):
 
 
 def _get_provider(value, default, keep_as_choice_str):
+    from ape.utils.basemodel import ManagerAccessMixin
+
     use_default = value is None and default == "auto"
     provider_module = import_module("ape.api.providers")
     ProviderAPI = provider_module.ProviderAPI
@@ -431,9 +436,11 @@ def account_option(account_type: _ACCOUNT_TYPE_FILTER = None) -> Callable:
     )
 
 
-def _load_contracts(ctx, param, value) -> Optional[Union[ContractType, list[ContractType]]]:
+def _load_contracts(ctx, param, value) -> Optional[Union["ContractType", list["ContractType"]]]:
     if not value:
         return None
+
+    from ape.utils.basemodel import ManagerAccessMixin
 
     if len(ManagerAccessMixin.local_project.contracts) == 0:
         raise ProjectError("Project has no contracts.")
@@ -442,7 +449,7 @@ def _load_contracts(ctx, param, value) -> Optional[Union[ContractType, list[Cont
     # and therefore we should also return a list.
     is_multiple = isinstance(value, (tuple, list))
 
-    def get_contract(contract_name: str) -> ContractType:
+    def get_contract(contract_name: str) -> "ContractType":
         if contract_name not in ManagerAccessMixin.local_project.contracts:
             raise ProjectError(f"No contract named '{value}'")
 
@@ -523,6 +530,8 @@ def incompatible_with(incompatible_opts) -> type[click.Option]:
 
 
 def _project_callback(ctx, param, val):
+    from ape.utils.basemodel import ManagerAccessMixin
+
     pm = None
     if not val:
         pm = ManagerAccessMixin.local_project

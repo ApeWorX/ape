@@ -139,7 +139,7 @@ def test_import_alias_already_in_use(ape_cli, runner):
 
 @run_once
 def test_import_account_instantiation_failure(mocker, ape_cli, runner):
-    eth_account_from_key_patch = mocker.patch("ape_accounts._cli.EthAccount.from_key")
+    eth_account_from_key_patch = mocker.patch("ape_accounts._cli._account_from_key")
     eth_account_from_key_patch.side_effect = Exception("Can't instantiate this account!")
     result = runner.invoke(
         ape_cli,

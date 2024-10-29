@@ -1,19 +1,16 @@
 from importlib import import_module
 
-from ape import plugins
-from ape.api.config import PluginConfig
+from ape.plugins import Config, QueryPlugin, register
 
 
-class CacheConfig(PluginConfig):
-    size: int = 1024**3  # 1gb
-
-
-@plugins.register(plugins.Config)
+@register(Config)
 def config_class():
+    from ape_cache.config import CacheConfig
+
     return CacheConfig
 
 
-@plugins.register(plugins.QueryPlugin)
+@register(QueryPlugin)
 def query_engines():
     query = import_module("ape_cache.query")
     return query.CacheQueryProvider
@@ -21,13 +18,18 @@ def query_engines():
 
 def __getattr__(name):
     if name == "CacheQueryProvider":
-        query = import_module("ape_cache.query")
-        return query.CacheQueryProvider
+        module = import_module("ape_cache.query")
+        return module.CacheQueryProvider
+
+    elif name == "CacheConfig":
+        module = import_module("ape_cache.config")
+        return module.CacheConfig
 
     else:
         raise AttributeError(name)
 
 
 __all__ = [
+    "CacheConfig",
     "CacheQueryProvider",
 ]

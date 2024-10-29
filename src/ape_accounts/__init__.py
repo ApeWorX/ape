@@ -1,17 +1,18 @@
-from ape import plugins
+from importlib import import_module
+from typing import Any
 
-from .accounts import (
-    AccountContainer,
-    KeyfileAccount,
-    generate_account,
-    import_account_from_mnemonic,
-    import_account_from_private_key,
-)
+from ape.plugins import AccountPlugin, register
 
 
-@plugins.register(plugins.AccountPlugin)
+@register(AccountPlugin)
 def account_types():
+    from ape_accounts.accounts import AccountContainer, KeyfileAccount
+
     return AccountContainer, KeyfileAccount
+
+
+def __getattr__(name: str) -> Any:
+    return getattr(import_module("ape_accounts.accounts"), name)
 
 
 __all__ = [

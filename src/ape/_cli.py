@@ -1,13 +1,14 @@
 import difflib
 import re
 import sys
-import warnings
 from collections.abc import Iterable
+from functools import cached_property
 from gettext import gettext
 from importlib import import_module
 from importlib.metadata import entry_points
 from pathlib import Path
 from typing import Any, Optional
+from warnings import catch_warnings, simplefilter
 
 import click
 import rich
@@ -17,7 +18,6 @@ from click import Context
 from ape.cli.options import ape_cli_context
 from ape.exceptions import Abort, ApeException, ConfigError, handle_ape_exception
 from ape.logging import logger
-from ape.utils.basemodel import ManagerAccessMixin as access
 
 _DIFFLIB_CUT_OFF = 0.6
 
@@ -26,6 +26,8 @@ def display_config(ctx, param, value):
     # NOTE: This is necessary not to interrupt how version or help is intercepted
     if not value or ctx.resilient_parsing:
         return
+
+    from ape.utils.basemodel import ManagerAccessMixin as access
 
     click.echo("# Current configuration")
 
@@ -37,6 +39,8 @@ def display_config(ctx, param, value):
 
 
 def _validate_config():
+    from ape.utils.basemodel import ManagerAccessMixin as access
+
     project = access.local_project
     try:
         _ = project.config
@@ -47,7 +51,6 @@ def _validate_config():
 
 
 class ApeCLI(click.MultiCommand):
-    _commands: Optional[dict] = None
     _CLI_GROUP_NAME = "ape_cli_subcommands"
 
     def parse_args(self, ctx: Context, args: list[str]) -> list[str]:
@@ -60,6 +63,8 @@ class ApeCLI(click.MultiCommand):
         return super().parse_args(ctx, args)
 
     def format_commands(self, ctx, formatter) -> None:
+        from ape.utils.basemodel import ManagerAccessMixin as access
+
         commands = []
         for subcommand in self.list_commands(ctx):
             cmd = self.get_command(ctx, subcommand)
@@ -142,25 +147,21 @@ class ApeCLI(click.MultiCommand):
 
         raise usage_error
 
-    @property
+    @cached_property
     def commands(self) -> dict:
-        if self._commands:
-            return self._commands
-
         _entry_points = entry_points()
         eps: Iterable
-        if select_fn := getattr(_entry_points, "select", None):
-            # NOTE: Using getattr because mypy.
-            eps = select_fn(group=self._CLI_GROUP_NAME)
-        else:
-            # Python 3.9. Can remove once we drop support.
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore")
+
+        try:
+            eps = _entry_points.select(group=self._CLI_GROUP_NAME)
+        except AttributeError:
+            # Fallback for Python 3.9
+            with catch_warnings():
+                simplefilter("ignore")
                 eps = _entry_points.get(self._CLI_GROUP_NAME, [])  # type: ignore
 
         commands = {cmd.name.replace("_", "-").replace("ape-", ""): cmd.load for cmd in eps}
-        self._commands = {k: commands[k] for k in sorted(commands)}
-        return self._commands
+        return dict(sorted(commands.items()))
 
     def list_commands(self, ctx) -> list[str]:
         return [k for k in self.commands]

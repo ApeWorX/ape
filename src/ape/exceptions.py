@@ -14,13 +14,14 @@ from typing import TYPE_CHECKING, Any, Callable, Optional, Union, cast
 import click
 from eth_typing import Hash32, HexStr
 from eth_utils import humanize_hash, to_hex
-from ethpm_types import ContractType
-from ethpm_types.abi import ConstructorABI, ErrorABI, MethodABI
 from rich import print as rich_print
 
 from ape.logging import LogLevel, logger
 
 if TYPE_CHECKING:
+    from ethpm_types.abi import ConstructorABI, ErrorABI, MethodABI
+    from ethpm_types.contract_type import ContractType
+
     from ape.api.networks import NetworkAPI
     from ape.api.providers import SubprocessProvider
     from ape.api.trace import TraceAPI
@@ -90,7 +91,7 @@ class MissingDeploymentBytecodeError(ContractDataError):
     Raised when trying to deploy an interface or empty data.
     """
 
-    def __init__(self, contract_type: ContractType):
+    def __init__(self, contract_type: "ContractType"):
         message = "Cannot deploy: contract"
         if name := contract_type.name:
             message = f"{message} '{name}'"
@@ -109,7 +110,7 @@ class ArgumentsLengthError(ContractDataError):
     def __init__(
         self,
         arguments_length: int,
-        inputs: Union[MethodABI, ConstructorABI, int, list, None] = None,
+        inputs: Union["MethodABI", "ConstructorABI", int, list, None] = None,
         **kwargs,
     ):
         prefix = (
@@ -120,7 +121,7 @@ class ArgumentsLengthError(ContractDataError):
             super().__init__(f"{prefix}.")
             return
 
-        inputs_ls: list[Union[MethodABI, ConstructorABI, int]] = (
+        inputs_ls: list[Union["MethodABI", "ConstructorABI", int]] = (
             inputs if isinstance(inputs, list) else [inputs]
         )
         if not inputs_ls:
@@ -223,7 +224,7 @@ class TransactionError(ApeException):
         return receiver
 
     @cached_property
-    def contract_type(self) -> Optional[ContractType]:
+    def contract_type(self) -> Optional["ContractType"]:
         if not (address := self.address):
             # Contract address not found.
             return None
@@ -849,7 +850,7 @@ class CustomError(ContractLogicError):
 
     def __init__(
         self,
-        abi: ErrorABI,
+        abi: "ErrorABI",
         inputs: dict[str, Any],
         txn: Optional[FailedTxn] = None,
         trace: _TRACE_ARG = None,

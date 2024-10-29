@@ -1,10 +1,12 @@
 from collections.abc import Iterator
-
-from ape.api.explorers import ExplorerAPI
-from ape.api.networks import EcosystemAPI, NetworkAPI
-from ape.api.providers import ProviderAPI
+from typing import TYPE_CHECKING
 
 from .pluggy_patch import PluginType, hookspec
+
+if TYPE_CHECKING:
+    from ape.api.explorers import ExplorerAPI
+    from ape.api.networks import EcosystemAPI, NetworkAPI
+    from ape.api.providers import ProviderAPI
 
 
 class EcosystemPlugin(PluginType):
@@ -15,7 +17,7 @@ class EcosystemPlugin(PluginType):
     """
 
     @hookspec  # type: ignore[empty-body]
-    def ecosystems(self) -> Iterator[type[EcosystemAPI]]:
+    def ecosystems(self) -> Iterator[type["EcosystemAPI"]]:
         """
         A hook that must return an iterator of :class:`ape.api.networks.EcosystemAPI`
         subclasses.
@@ -39,7 +41,7 @@ class NetworkPlugin(PluginType):
     """
 
     @hookspec  # type: ignore[empty-body]
-    def networks(self) -> Iterator[tuple[str, str, type[NetworkAPI]]]:
+    def networks(self) -> Iterator[tuple[str, str, type["NetworkAPI"]]]:
         """
         A hook that must return an iterator of tuples of:
 
@@ -67,7 +69,9 @@ class ProviderPlugin(PluginType):
     """
 
     @hookspec
-    def providers(self) -> Iterator[tuple[str, str, type[ProviderAPI]]]:  # type: ignore[empty-body]
+    def providers(  # type: ignore[empty-body]
+        self,
+    ) -> Iterator[tuple[str, str, type["ProviderAPI"]]]:
         """
         A hook that must return an iterator of tuples of:
 
@@ -93,7 +97,9 @@ class ExplorerPlugin(PluginType):
     """
 
     @hookspec
-    def explorers(self) -> Iterator[tuple[str, str, type[ExplorerAPI]]]:  # type: ignore[empty-body]
+    def explorers(  # type: ignore[empty-body]
+        self,
+    ) -> Iterator[tuple[str, str, type["ExplorerAPI"]]]:
         """
         A hook that must return an iterator of tuples of:
 

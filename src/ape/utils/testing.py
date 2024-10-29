@@ -1,8 +1,5 @@
 from collections import namedtuple
 
-from eth_account import Account
-from eth_account.hdaccount import HDPath
-from eth_account.hdaccount.mnemonic import Mnemonic
 from eth_utils import to_hex
 
 DEFAULT_NUMBER_OF_TEST_ACCOUNTS = 10
@@ -47,6 +44,9 @@ def generate_dev_accounts(
     Returns:
         list[:class:`~ape.utils.GeneratedDevAccount`]: List of development accounts.
     """
+    # perf: lazy imports so module loads faster.
+    from eth_account.hdaccount.mnemonic import Mnemonic
+
     seed = Mnemonic.to_seed(mnemonic)
     hd_path_format = (
         hd_path if "{}" in hd_path or "{0}" in hd_path else f"{hd_path.rstrip('/')}/{{}}"
@@ -58,6 +58,10 @@ def generate_dev_accounts(
 
 
 def _generate_dev_account(hd_path, index: int, seed: bytes) -> GeneratedDevAccount:
+    # perf: lazy imports so module loads faster.
+    from eth_account.account import Account
+    from eth_account.hdaccount import HDPath
+
     return GeneratedDevAccount(
         address=Account.from_key(
             private_key := to_hex(HDPath(hd_path.format(index)).derive(seed))

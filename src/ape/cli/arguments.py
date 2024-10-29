@@ -7,15 +7,14 @@ from click import BadArgumentUsage
 
 from ape.cli.choices import _ACCOUNT_TYPE_FILTER, Alias
 from ape.logging import logger
-from ape.utils.basemodel import ManagerAccessMixin
-from ape.utils.os import get_full_extension
-from ape.utils.validators import _validate_account_alias
 
 if TYPE_CHECKING:
     from ape.managers.project import ProjectManager
 
 
 def _alias_callback(ctx, param, value):
+    from ape.utils.validators import _validate_account_alias
+
     return _validate_account_alias(value)
 
 
@@ -28,7 +27,6 @@ def existing_alias_argument(account_type: _ACCOUNT_TYPE_FILTER = None, **kwargs)
           If given, limits the type of account the user may choose from.
         **kwargs: click.argument overrides.
     """
-
     type_ = kwargs.pop("type", Alias(key=account_type))
     return click.argument("alias", type=type_, **kwargs)
 
@@ -45,12 +43,14 @@ def non_existing_alias_argument(**kwargs):
     return click.argument("alias", callback=callback, **kwargs)
 
 
-class _ContractPaths(ManagerAccessMixin):
+class _ContractPaths:
     """
     Helper callback class for handling CLI-given contract paths.
     """
 
     def __init__(self, value, project: Optional["ProjectManager"] = None):
+        from ape.utils.basemodel import ManagerAccessMixin
+
         self.value = value
         self.missing_compilers: set[str] = set()  # set of .ext
         self.project = project or ManagerAccessMixin.local_project
@@ -105,14 +105,21 @@ class _ContractPaths(ManagerAccessMixin):
 
     @property
     def exclude_patterns(self) -> set[str]:
-        return self.config_manager.get_config("compile").exclude or set()
+        from ape.utils.basemodel import ManagerAccessMixin as access
+
+        return access.config_manager.get_config("compile").exclude or set()
 
     def do_exclude(self, path: Union[Path, str]) -> bool:
         return self.project.sources.is_excluded(path)
 
     def compiler_is_unknown(self, path: Union[Path, str]) -> bool:
+        from ape.utils.basemodel import ManagerAccessMixin
+        from ape.utils.os import get_full_extension
+
         ext = get_full_extension(path)
-        unknown_compiler = ext and ext not in self.compiler_manager.registered_compilers
+        unknown_compiler = (
+            ext and ext not in ManagerAccessMixin.compiler_manager.registered_compilers
+        )
         if unknown_compiler and ext not in self.missing_compilers:
             self.missing_compilers.add(ext)
 

@@ -1,5 +1,5 @@
 import json
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from importlib import import_module
 from typing import TYPE_CHECKING
 
@@ -8,24 +8,22 @@ import yaml
 from rich import print as echo_rich_text
 from rich.tree import Tree
 
-from ape.cli.choices import OutputFormat
+from ape.cli.choices import LazyChoice, OutputFormat
 from ape.cli.options import ape_cli_context, network_option, output_format_option
 from ape.exceptions import NetworkError
 from ape.logging import LogLevel
-from ape.types.basic import _LazySequence
-from ape.utils.basemodel import ManagerAccessMixin as access
 
 if TYPE_CHECKING:
     from ape.api.providers import SubprocessProvider
 
 
-def _filter_option(name: str, options):
+def _filter_option(name: str, get_options: Callable[[], Sequence[str]]):
     return click.option(
         f"--{name}",
         f"{name}_filter",
         multiple=True,
         help=f"Filter the results by {name}",
-        type=click.Choice(options),
+        type=LazyChoice(get_options),
     )
 
 
@@ -36,10 +34,14 @@ def cli():
     """
 
 
-def _lazy_get(name: str) -> _LazySequence:
+def _lazy_get(name: str) -> Sequence:
     # NOTE: Using fn generator to maintain laziness.
     def gen():
+        from ape.utils.basemodel import ManagerAccessMixin as access
+
         yield from getattr(access.network_manager, f"{name}_names")
+
+    from ape.types.basic import _LazySequence
 
     return _LazySequence(gen)
 
@@ -47,9 +49,9 @@ def _lazy_get(name: str) -> _LazySequence:
 @cli.command(name="list", short_help="List registered networks")
 @ape_cli_context()
 @output_format_option()
-@_filter_option("ecosystem", _lazy_get("ecosystem"))
-@_filter_option("network", _lazy_get("network"))
-@_filter_option("provider", _lazy_get("provider"))
+@_filter_option("ecosystem", lambda: _lazy_get("ecosystem"))
+@_filter_option("network", lambda: _lazy_get("network"))
+@_filter_option("provider", lambda: _lazy_get("provider"))
 def _list(cli_ctx, output_format, ecosystem_filter, network_filter, provider_filter):
     """
     List all the registered ecosystems, networks, and providers.
