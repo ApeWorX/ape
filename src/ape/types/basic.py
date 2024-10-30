@@ -1,5 +1,4 @@
 from collections.abc import Callable, Iterator, Sequence
-from importlib import import_module
 from typing import Annotated, TypeVar, Union, overload
 
 from pydantic import BeforeValidator
@@ -11,7 +10,7 @@ def _hex_int_validator(value, info):
         return value
 
     # NOTE: Allows this module to load lazier.
-    access = import_module("ape.utils.basemodel").ManagerAccessMixin
+    from ape.utils.basemodel import ManagerAccessMixin as access
 
     convert = access.conversion_manager.convert
     return convert(value, int)

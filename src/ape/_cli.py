@@ -4,7 +4,6 @@ import sys
 from collections.abc import Iterable
 from functools import cached_property
 from gettext import gettext
-from importlib import import_module
 from importlib.metadata import entry_points
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional
@@ -65,6 +64,7 @@ class ApeCLI(click.MultiCommand):
         return super().parse_args(ctx, args)
 
     def format_commands(self, ctx, formatter) -> None:
+        from ape.plugins._utils import PluginMetadataList
         from ape.utils.basemodel import ManagerAccessMixin as access
 
         commands = []
@@ -86,10 +86,8 @@ class ApeCLI(click.MultiCommand):
             "Plugin": [],
             "3rd-Party Plugin": [],
         }
-        plugin_utils = import_module("ape.plugins._utils")
-        metadata_cls = plugin_utils.PluginMetadataList
         plugin_manager = access.plugin_manager
-        pl_metadata = metadata_cls.load(plugin_manager, include_available=False)
+        pl_metadata = PluginMetadataList.load(plugin_manager, include_available=False)
         for cli_name, cmd in commands:
             help = cmd.get_short_help_str(limit)
             plugin = pl_metadata.get_plugin(cli_name, check_available=False)

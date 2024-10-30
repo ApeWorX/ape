@@ -1,7 +1,6 @@
 import inspect
 from collections.abc import Callable
 from functools import partial
-from importlib import import_module
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, NoReturn, Optional, Union
 
@@ -347,11 +346,10 @@ def _update_context_with_network(ctx, provider, requested_network_objects):
 
 
 def _get_provider(value, default, keep_as_choice_str):
+    from ape.api.providers import ProviderAPI
     from ape.utils.basemodel import ManagerAccessMixin
 
     use_default = value is None and default == "auto"
-    provider_module = import_module("ape.api.providers")
-    ProviderAPI = provider_module.ProviderAPI
 
     if not keep_as_choice_str and use_default:
         default_ecosystem = ManagerAccessMixin.network_manager.default_ecosystem

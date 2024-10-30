@@ -1,5 +1,4 @@
 from importlib import import_module
-from typing import Any
 
 from ape.plugins import Config, register
 
@@ -11,7 +10,7 @@ def config_class():
     return NetworksConfig
 
 
-def __getattr__(name: str) -> Any:
+def __getattr__(name: str):
     if name in ("NetworksConfig", "CustomNetwork"):
         return getattr(import_module("ape_networks.config"), name)
 

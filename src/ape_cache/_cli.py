@@ -12,8 +12,9 @@ if TYPE_CHECKING:
 
 
 def get_engine() -> "CacheQueryProvider":
-    basemodel = import_module("ape.utils.basemodel")
-    return basemodel.ManagerAccessMixin.query_manager.engines["cache"]
+    from ape.utils.basemodel import ManagerAccessMixin
+
+    return ManagerAccessMixin.query_manager.engines["cache"]
 
 
 @click.group(short_help="Query from caching database")

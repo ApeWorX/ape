@@ -1,5 +1,4 @@
 from importlib import import_module
-from typing import Any
 
 from ape.plugins import AccountPlugin, register
 
@@ -11,7 +10,7 @@ def account_types():
     return AccountContainer, KeyfileAccount
 
 
-def __getattr__(name: str) -> Any:
+def __getattr__(name: str):
     return getattr(import_module("ape_accounts.accounts"), name)
 
 
