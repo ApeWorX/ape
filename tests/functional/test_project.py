@@ -209,8 +209,13 @@ def test_getattr(tmp_project):
 
 
 def test_getattr_not_exists(tmp_project):
-    with pytest.raises(AttributeError):
+    expected = (
+        r"'LocalProject' object has no attribute 'nope'\. Also checked extra\(s\) 'contracts'\."
+    )
+    with pytest.raises(AttributeError, match=expected) as err:
         _ = tmp_project.nope
+
+    assert "ape/managers/project.py:" in repr(err.traceback[-1])
 
 
 def test_getattr_detects_changes(tmp_project):
