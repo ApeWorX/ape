@@ -1,5 +1,4 @@
 import inspect
-from importlib import import_module
 from typing import TYPE_CHECKING, Any, Optional
 
 import click
@@ -26,6 +25,7 @@ def get_param_from_ctx(ctx: "Context", param: str) -> Optional[Any]:
 
 
 def parse_network(ctx: "Context") -> Optional["ProviderContextManager"]:
+    from ape.api.providers import ProviderAPI
     from ape.utils.basemodel import ManagerAccessMixin as access
 
     interactive = get_param_from_ctx(ctx, "interactive")
@@ -36,8 +36,7 @@ def parse_network(ctx: "Context") -> Optional["ProviderContextManager"]:
         return provider.network.use_provider(provider, disconnect_on_exit=not interactive)
 
     provider = get_param_from_ctx(ctx, "network")
-    provider_module = import_module("ape.api.providers")
-    if provider is not None and isinstance(provider, provider_module.ProviderAPI):
+    if provider is not None and isinstance(provider, ProviderAPI):
         return provider.network.use_provider(provider, disconnect_on_exit=not interactive)
 
     elif provider not in (None, _NONE_NETWORK) and isinstance(provider, str):
@@ -72,9 +71,10 @@ class ConnectedProviderCommand(click.Command):
         super().__init__(*args, **kwargs)
 
     def parse_args(self, ctx: "Context", args: list[str]) -> list[str]:
+        from ape.api.providers import ProviderAPI
+
         arguments = args  # Renamed for better pdb support.
-        provider_module = import_module("ape.api.providers")
-        base_type = provider_module.ProviderAPI if self._use_cls_types else str
+        base_type = ProviderAPI if self._use_cls_types else str
         if existing_option := next(
             iter(
                 x

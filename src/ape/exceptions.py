@@ -5,7 +5,6 @@ import time
 import traceback
 from collections.abc import Collection, Iterable
 from functools import cached_property
-from importlib import import_module
 from inspect import getframeinfo, stack
 from pathlib import Path
 from types import CodeType, TracebackType
@@ -922,7 +921,8 @@ def _get_custom_python_traceback(
     #  https://github.com/pallets/jinja/blob/main/src/jinja2/debug.py#L142
 
     if project is None:
-        access = import_module("ape.utils.basemodel").ManagerAccessMixin
+        from ape.utils.basemodel import ManagerAccessMixin as access
+
         project = access.local_project
 
     if not (base_path := getattr(project, "path", None)):

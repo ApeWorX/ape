@@ -1,43 +1,48 @@
-from importlib import import_module
-from typing import Any
-
-
-def __getattr__(name: str) -> Any:
+def __getattr__(name: str):
     if name == "AccountManager":
-        module = import_module("ape.managers.accounts")
-        return module.AccountManager
+        from ape.managers.accounts import AccountManager
+
+        return AccountManager
 
     elif name == "ChainManager":
-        module = import_module("ape.managers.chain")
-        return module.ChainManager
+        from ape.managers.chain import ChainManager
+
+        return ChainManager
 
     elif name == "CompilerManager":
-        module = import_module("ape.managers.compilers")
-        return module.CompilerManager
+        from ape.managers.compilers import CompilerManager
+
+        return CompilerManager
 
     elif name == "ConfigManager":
-        module = import_module("ape.managers.config")
-        return module.ConfigManager
+        from ape.managers.config import ConfigManager
+
+        return ConfigManager
 
     elif name == "ConversionManager":
-        module = import_module("ape.managers.converters")
-        return module.ConversionManager
+        from ape.managers.converters import ConversionManager
+
+        return ConversionManager
 
     elif name == "NetworkManager":
-        module = import_module("ape.managers.networks")
-        return module.NetworkManager
+        from ape.managers.networks import NetworkManager
+
+        return NetworkManager
 
     elif name == "PluginManager":
-        module = import_module("ape.managers.plugins")
-        return module.PluginManager
+        from ape.managers.plugins import PluginManager
+
+        return PluginManager
 
     elif name == "ProjectManager":
-        module = import_module("ape.managers.project")
-        return module.ProjectManager
+        from ape.managers.project import ProjectManager
+
+        return ProjectManager
 
     elif name == "QueryManager":
-        module = import_module("ape.managers.query")
-        return module.QueryManager
+        from ape.managers.query import QueryManager
+
+        return QueryManager
 
     else:
         raise AttributeError(name)

@@ -1,13 +1,11 @@
 import signal
 import threading
-from typing import Any
 
 if threading.current_thread() is threading.main_thread():
     # If we are in the main thread, we can safely set the signal handler
     signal.signal(signal.SIGINT, lambda s, f: _sys.exit(130))
 
 import sys as _sys
-from importlib import import_module
 
 __all__ = [
     "accounts",
@@ -23,16 +21,18 @@ __all__ = [
 ]
 
 
-def __getattr__(name: str) -> Any:
+def __getattr__(name: str):
     if name not in __all__:
         raise AttributeError(name)
 
     elif name == "reverts":
-        contextmanagers = import_module("ape.pytest.contextmanagers")
-        return contextmanagers.RevertsContextManager
+        from ape.pytest.contextmanagers import RevertsContextManager
+
+        return RevertsContextManager
 
     else:
-        access = import_module("ape.managers.project").ManagerAccessMixin
+        from ape.utils.basemodel import ManagerAccessMixin as access
+
         if name == "Contract":
             return access.chain_manager.contracts.instance_at
 

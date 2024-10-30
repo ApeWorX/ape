@@ -1,6 +1,5 @@
 import json
 from collections.abc import Callable, Sequence
-from importlib import import_module
 from typing import TYPE_CHECKING
 
 import click
@@ -118,10 +117,11 @@ def run(cli_ctx, provider):
     Start a subprocess node as if running independently
     and stream stdout and stderr.
     """
+    from ape.api.providers import SubprocessProvider
+
     # Ignore extra loggers, such as web3 loggers.
     cli_ctx.logger._extra_loggers = {}
-    providers_module = import_module("ape.api.providers")
-    if not isinstance(provider, providers_module.SubprocessProvider):
+    if not isinstance(provider, SubprocessProvider):
         cli_ctx.abort(
             f"`ape networks run` requires a provider that manages a process, not '{provider.name}'."
         )

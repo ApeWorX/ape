@@ -72,8 +72,9 @@ class Alias(click.Choice):
 
     @cached_property
     def choices(self) -> Sequence:  # type: ignore[override]
-        module = import_module("ape.types.basic")
-        return module._LazySequence(self._choices_iterator)
+        from ape.types.basic import _LazySequence
+
+        return _LazySequence(self._choices_iterator)
 
     @property
     def _choices_iterator(self) -> Iterator[str]:
@@ -172,8 +173,9 @@ def select_account(
     Returns:
         :class:`~ape.api.accounts.AccountAPI`
     """
-    account_module = import_module("ape.api.accounts")
-    if key and isinstance(key, type) and not issubclass(key, account_module.AccountAPI):
+    from ape.api.accounts import AccountAPI
+
+    if key and isinstance(key, type) and not issubclass(key, AccountAPI):
         raise AccountsError(f"Cannot return accounts with type '{key}'.")
 
     prompt = AccountAliasPromptChoice(prompt_message=prompt_message, key=key)
@@ -196,8 +198,12 @@ class AccountAliasPromptChoice(PromptChoice):
         self._key_filter = key
         self._prompt_message = prompt_message or "Select an account"
         self.name = name
-        module = import_module("ape.types.basic")
-        self.choices = module._LazySequence(self._choices_iterator)
+
+    @cached_property
+    def choices(self) -> Sequence[str]:  # type: ignore[override]
+        from ape.types.basic import _LazySequence
+
+        return _LazySequence(self._choices_iterator)
 
     def convert(
         self, value: Any, param: Optional[Parameter], ctx: Optional[Context]
