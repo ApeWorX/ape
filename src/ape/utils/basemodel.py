@@ -1,3 +1,7 @@
+"""
+TODO: In 0.9, move this module to `ape.types`.
+"""
+
 import inspect
 from abc import ABC
 from collections.abc import Callable, Iterator, Sequence
