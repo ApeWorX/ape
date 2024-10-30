@@ -5,7 +5,6 @@ import click
 from click import BadParameter
 
 from ape.cli.options import ape_cli_context
-from ape.utils._github import github_client
 
 GITIGNORE_CONTENT = """
 # Ape stuff
@@ -45,12 +44,15 @@ def validate_github_repo(ctx, param, value):
     help="Clone a template from Github",
     callback=validate_github_repo,
 )
-def cli(cli_ctx, github):
+@click.option("--name", "project_name", prompt=True, help="A project name")
+def cli(cli_ctx, github, project_name):
     """
     ``ape init`` allows the user to create an ape project with
     default folders and ape-config.yaml.
     """
     if github:
+        from ape.utils._github import github_client
+
         org, repo = github
         github_client.clone_repo(org, repo, Path.cwd())
         shutil.rmtree(Path.cwd() / ".git", ignore_errors=True)
@@ -76,6 +78,5 @@ def cli(cli_ctx, github):
         if ape_config.exists():
             cli_ctx.logger.warning(f"'{ape_config}' exists")
         else:
-            project_name = click.prompt("Please enter project name")
             ape_config.write_text(f"name: {project_name}\n", encoding="utf8")
             cli_ctx.logger.success(f"{project_name} is written in ape-config.yaml")
