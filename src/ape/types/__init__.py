@@ -26,12 +26,26 @@ from ape.types.signatures import MessageSignature, SignableMessage, TransactionS
 from ape.types.trace import ContractFunctionPath, ControlFlow, GasReport, SourceTraceback
 from ape.types.units import CurrencyValue, CurrencyValueComparable
 from ape.types.vm import BlockID, ContractCode, SnapshotID
+from ape.utils.basemodel import (
+    BaseInterface,
+    BaseInterfaceModel,
+    BaseModel,
+    ExtraAttributesMixin,
+    ExtraModelAttributes,
+    ManagerAccessMixin,
+    get_attribute_with_extras,
+    get_item_with_extras,
+    only_raise_attribute_error,
+)
 
 __all__ = [
     "_LazySequence",
     "ABI",
     "AddressType",
     "AutoGasLimit",
+    "BaseInterface",
+    "BaseInterfaceModel",
+    "BaseModel",
     "BlockID",
     "Bytecode",
     "Checksum",
@@ -50,13 +64,19 @@ __all__ = [
     "CoverageStatement",
     "CurrencyValue",
     "CurrencyValueComparable",
+    "ExtraAttributesMixin",
+    "ExtraModelAttributes",
     "GasLimit",
     "GasReport",
+    "get_attribute_with_extras",
+    "get_item_with_extras",
     "HexInt",
     "HexBytes",
     "LogFilter",
+    "ManagerAccessMixin",
     "MessageSignature",
     "MockContractLog",
+    "only_raise_attribute_error",
     "PackageManifest",
     "PackageMeta",
     "RawAddress",
