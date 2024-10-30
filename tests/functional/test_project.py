@@ -215,6 +215,8 @@ def test_getattr_not_exists(tmp_project):
     with pytest.raises(AttributeError, match=expected) as err:
         _ = tmp_project.nope
 
+    # Was the case where the last entry was from Ape's basemodel stuff.
+    # Now, it points at the project manager last.
     assert "ape/managers/project.py:" in repr(err.traceback[-1])
 
 
