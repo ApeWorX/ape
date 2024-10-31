@@ -179,12 +179,13 @@ class ScriptCommand(click.MultiCommand):
 
     @property
     def commands(self) -> dict[str, Union[click.Command, click.Group]]:
-        from ape.utils.basemodel import ManagerAccessMixin as access
-
-        if not access.local_project.scripts_folder.is_dir():
+        # perf: Don't references `.local_project.scripts_folder` here;
+        #   it's too slow when doing just doing `--help`.
+        scripts_folder = Path.cwd() / "scripts"
+        if not scripts_folder.is_dir():
             return {}
 
-        return self._get_cli_commands(access.local_project.scripts_folder)
+        return self._get_cli_commands(scripts_folder)
 
     def _get_cli_commands(self, base_path: Path) -> dict:
         commands: dict[str, Command] = {}
