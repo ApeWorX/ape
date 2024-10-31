@@ -1,24 +1,7 @@
 import sys
 from pathlib import Path
-from typing import TYPE_CHECKING, Optional
 
 from ape.exceptions import ConfigError
-from ape.pytest.config import ConfigWrapper
-from ape.pytest.coverage import CoverageTracker
-from ape.pytest.fixtures import PytestApeFixtures, ReceiptCapture
-from ape.pytest.gas import GasTracker
-from ape.pytest.runners import PytestApeRunner
-from ape.utils.basemodel import ManagerAccessMixin
-
-if TYPE_CHECKING:
-    from ape.api.networks import EcosystemAPI
-
-
-def _get_default_network(ecosystem: Optional["EcosystemAPI"] = None) -> str:
-    if ecosystem is None:
-        ecosystem = ManagerAccessMixin.network_manager.default_ecosystem
-
-    return ecosystem.name
 
 
 def pytest_addoption(parser):
@@ -40,7 +23,6 @@ def pytest_addoption(parser):
     add_option(
         "--network",
         action="store",
-        default=_get_default_network(),
         help="Override the default network and provider (see ``ape networks list`` for options).",
     )
     add_option(
@@ -64,7 +46,7 @@ def pytest_addoption(parser):
         action="store",
         help="A comma-separated list of contract:method-name glob-patterns to ignore.",
     )
-    parser.addoption("--coverage", action="store_true", help="Collect contract coverage.")
+    add_option("--coverage", action="store_true", help="Collect contract coverage.")
 
     # NOTE: Other pytest plugins, such as hypothesis, should integrate with pytest separately
 
@@ -86,17 +68,27 @@ def pytest_configure(config):
                 except AttributeError:
                     pass
 
-    config_wrapper = ConfigWrapper(config)
-    receipt_capture = ReceiptCapture(config_wrapper)
-    gas_tracker = GasTracker(config_wrapper)
-    coverage_tracker = CoverageTracker(config_wrapper)
-
     if not config.option.verbose:
         # Enable verbose output if stdout capture is disabled
         config.option.verbose = config.getoption("capture") == "no"
     # else: user has already changes verbosity to an equal or higher level; avoid downgrading.
 
+    if "--help" in config.invocation_params.args:
+        # perf: Don't bother setting up runner if only showing help.
+        return
+
+    from ape.pytest.config import ConfigWrapper
+    from ape.pytest.coverage import CoverageTracker
+    from ape.pytest.fixtures import PytestApeFixtures, ReceiptCapture
+    from ape.pytest.gas import GasTracker
+    from ape.pytest.runners import PytestApeRunner
+    from ape.utils.basemodel import ManagerAccessMixin
+
     # Register the custom Ape test runner
+    config_wrapper = ConfigWrapper(config)
+    receipt_capture = ReceiptCapture(config_wrapper)
+    gas_tracker = GasTracker(config_wrapper)
+    coverage_tracker = CoverageTracker(config_wrapper)
     runner = PytestApeRunner(config_wrapper, receipt_capture, gas_tracker, coverage_tracker)
     config.pluginmanager.register(runner, "ape-test")
 
