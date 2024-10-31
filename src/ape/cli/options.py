@@ -1,4 +1,5 @@
 import inspect
+import sys
 from collections.abc import Callable
 from functools import partial
 from pathlib import Path
@@ -528,6 +529,11 @@ def incompatible_with(incompatible_opts) -> type[click.Option]:
 
 
 def _project_callback(ctx, param, val):
+    if "--help" in sys.argv or "-h" in sys.argv:
+        # Perf: project option is eager; have to check sys.argv to
+        #  know to exit early when only doing --help.
+        return
+
     from ape.utils.basemodel import ManagerAccessMixin
 
     pm = None
