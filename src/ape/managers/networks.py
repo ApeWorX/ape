@@ -126,15 +126,19 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
             :class:`~ape.api.networks.ProviderContextManager`
         """
         network_name = self.network.name
-        forked_network_name = (
-            network_name if network_name.endswith("-fork") else f"{network_name}-fork"
-        )
+        is_fork_already = network_name.endswith("-fork")
+        forked_network_name = network_name if is_fork_already else f"{network_name}-fork"
         try:
             forked_network = self.ecosystem.get_network(forked_network_name)
         except NetworkNotFoundError as err:
             raise NetworkError(f"Unable to fork network '{network_name}'.") from err
 
         provider_settings = provider_settings or {}
+        if is_fork_already:
+            # Forking a fork- to ensure is using a different Port,
+            # use the "auto-port" feature.
+            provider_settings["uri"] = "auto"
+
         fork_settings = {}
         if block_number is not None:
             # Negative block_number means relative to HEAD
