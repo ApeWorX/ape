@@ -4,7 +4,7 @@ from collections.abc import Iterable, Iterator, Sequence
 from enum import Enum
 from functools import cached_property
 from shutil import which
-from typing import Any, Optional
+from typing import TYPE_CHECKING, Any, Optional
 from urllib.parse import urlparse
 
 import click
@@ -18,6 +18,9 @@ from ape.utils._github import github_client
 from ape.utils.basemodel import BaseInterfaceModel, BaseModel
 from ape.utils.misc import _get_distributions, get_package_version, log_instead_of_fail
 from ape.version import version as ape_version_str
+
+if TYPE_CHECKING:
+    from ape.managers.plugins import PluginManager
 
 # Plugins maintained OSS by ApeWorX (and trusted)
 # Use `uv pip` if installed, otherwise `python -m pip`
@@ -202,7 +205,7 @@ class PluginMetadataList(BaseModel):
     third_party: "PluginGroup"
 
     @classmethod
-    def load(cls, plugin_manager, include_available: bool = True):
+    def load(cls, plugin_manager: "PluginManager", include_available: bool = True):
         plugins = plugin_manager.registered_plugins
         if include_available:
             plugins = plugins.union(github_client.available_plugins)
