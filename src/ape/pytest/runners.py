@@ -72,15 +72,22 @@ class PytestApeRunner(ManagerAccessMixin):
             # Else, it gets way too noisy.
             show_locals = not self.config_wrapper.show_internal
 
-            report.longrepr = call.excinfo.getrepr(
-                funcargs=True,
-                abspath=Path.cwd(),
-                showlocals=show_locals,
-                style="short",
-                tbfilter=False,
-                truncate_locals=True,
-                chain=False,
-            )
+            try:
+                here = Path.cwd()
+
+            except FileNotFoundError:
+                pass  # In a temp-folder, most likely.
+
+            else:
+                report.longrepr = call.excinfo.getrepr(
+                    funcargs=True,
+                    abspath=here,
+                    showlocals=show_locals,
+                    style="short",
+                    tbfilter=False,
+                    truncate_locals=True,
+                    chain=False,
+                )
 
         if self.config_wrapper.interactive and report.failed:
             traceback = call.excinfo.traceback[-1]
