@@ -2217,7 +2217,7 @@ class LocalProject(Project):
             err.args = (message,)
             raise  # The same exception (keep the stack the same height).
 
-    @property
+    @cached_property
     def path(self) -> Path:
         """
         The path to the project's "base" (where contract source IDs are relative to).
