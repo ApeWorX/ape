@@ -14,13 +14,12 @@ from ape.cli.commands import ConnectedProviderCommand
 from ape.cli.options import _VERBOSITY_VALUES, _create_verbosity_kwargs, verbosity_option
 from ape.exceptions import ApeException, handle_ape_exception
 from ape.logging import logger
-from ape.utils.basemodel import ManagerAccessMixin as access
-from ape.utils.os import get_relative_path, use_temp_sys_path
-from ape_console._cli import console
 
 
 @contextmanager
 def use_scripts_sys_path(path: Path):
+    from ape.utils.os import use_temp_sys_path
+
     # First, ensure there is not an existing scripts module.
     scripts = sys.modules.get("scripts")
     if scripts:
@@ -71,6 +70,8 @@ class ScriptCommand(click.MultiCommand):
         self._has_warned_missing_hook: set[Path] = set()
 
     def invoke(self, ctx: Context) -> Any:
+        from ape.utils.basemodel import ManagerAccessMixin as access
+
         try:
             return super().invoke(ctx)
         except Exception as err:
@@ -95,6 +96,9 @@ class ScriptCommand(click.MultiCommand):
                 raise
 
     def _get_command(self, filepath: Path) -> Union[click.Command, click.Group, None]:
+        from ape.utils.basemodel import ManagerAccessMixin as access
+        from ape.utils.os import get_relative_path
+
         relative_filepath = get_relative_path(filepath, access.local_project.path)
 
         # First load the code module by compiling it
@@ -175,6 +179,8 @@ class ScriptCommand(click.MultiCommand):
 
     @property
     def commands(self) -> dict[str, Union[click.Command, click.Group]]:
+        from ape.utils.basemodel import ManagerAccessMixin as access
+
         if not access.local_project.scripts_folder.is_dir():
             return {}
 
@@ -223,6 +229,8 @@ class ScriptCommand(click.MultiCommand):
         return result
 
     def _launch_console(self):
+        from ape.utils.basemodel import ManagerAccessMixin as access
+
         trace = inspect.trace()
         trace_frames = [
             x for x in trace if x.filename.startswith(str(access.local_project.scripts_folder))
@@ -246,6 +254,8 @@ class ScriptCommand(click.MultiCommand):
             # Avoid keeping a reference to a frame to avoid reference cycles.
             if frame:
                 del frame
+
+        from ape_console._cli import console
 
         return console(project=access.local_project, extra_locals=extra_locals, embed=True)
 
