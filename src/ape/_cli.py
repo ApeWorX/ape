@@ -6,19 +6,15 @@ from functools import cached_property
 from gettext import gettext
 from importlib.metadata import entry_points
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Optional
+from typing import Any, Optional
 from warnings import catch_warnings, simplefilter
 
 import click
-import rich
 import yaml
 
 from ape.cli.options import ape_cli_context
-from ape.exceptions import Abort, ApeException, ConfigError, handle_ape_exception
+from ape.exceptions import Abort, ApeException, handle_ape_exception
 from ape.logging import logger
-
-if TYPE_CHECKING:
-    from click import Context
 
 _DIFFLIB_CUT_OFF = 0.6
 
@@ -39,29 +35,8 @@ def display_config(ctx, param, value):
     ctx.exit()  # NOTE: Must exit to bypass running ApeCLI
 
 
-def _validate_config():
-    from ape.utils.basemodel import ManagerAccessMixin as access
-
-    project = access.local_project
-    try:
-        _ = project.config
-    except ConfigError as err:
-        rich.print(err)
-        # Exit now to avoid weird problems.
-        sys.exit(1)
-
-
 class ApeCLI(click.MultiCommand):
     _CLI_GROUP_NAME = "ape_cli_subcommands"
-
-    def parse_args(self, ctx: "Context", args: list[str]) -> list[str]:
-        # Validate the config before any argument parsing,
-        # as arguments may utilize config.
-        if "--help" not in args and args != []:
-            # perf: don't bother w/ config if only doing --help.
-            _validate_config()
-
-        return super().parse_args(ctx, args)
 
     def format_commands(self, ctx, formatter) -> None:
         from ape.plugins._utils import PluginMetadataList
