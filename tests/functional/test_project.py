@@ -687,9 +687,10 @@ class TestProject:
 
             os.chdir(temp_dir)
             expected = r"[.\n]*Input should be a valid string\n-->1: name:\n   2:   {asdf}[.\n]*"
+            weird_project = Project(temp_dir)
             try:
                 with pytest.raises(ConfigError, match=expected):
-                    _ = Project(temp_dir)
+                    _ = weird_project.path
             finally:
                 os.chdir(here)
 
