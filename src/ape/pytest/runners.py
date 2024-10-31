@@ -9,7 +9,6 @@ from rich import print as rich_print
 from ape.exceptions import ConfigError
 from ape.logging import LogLevel
 from ape.utils.basemodel import ManagerAccessMixin
-from ape_console._cli import console
 
 if TYPE_CHECKING:
     from ape.api.networks import ProviderContextManager
@@ -90,6 +89,8 @@ class PytestApeRunner(ManagerAccessMixin):
                 )
 
         if self.config_wrapper.interactive and report.failed:
+            from ape_console._cli import console
+
             traceback = call.excinfo.traceback[-1]
 
             # Suspend capsys to ignore our own output.
@@ -124,6 +125,7 @@ class PytestApeRunner(ManagerAccessMixin):
             click.echo("Starting interactive mode. Type `exit` to halt current test.")
 
             namespace = {"_callinfo": call, **globals_dict, **locals_dict}
+
             console(extra_locals=namespace, project=self.local_project, embed=True)
 
             if capman:

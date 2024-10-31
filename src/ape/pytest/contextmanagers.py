@@ -4,7 +4,6 @@ from typing import Optional, Union
 
 from ethpm_types.abi import ErrorABI
 
-from ape.contracts import ContractInstance
 from ape.exceptions import ContractLogicError, CustomError, TransactionError
 from ape.utils.basemodel import ManagerAccessMixin
 
@@ -105,6 +104,9 @@ class RevertsContextManager(ManagerAccessMixin):
             raise AssertionError(f"{assertion_error_prefix} but got '{actual}'.")
 
     def _check_custom_error(self, exception: Union[CustomError]):
+        # perf: avoid loading from contracts namespace until needed.
+        from ape.contracts import ContractInstance
+
         expected_error_cls = self.expected_message
 
         if not isinstance(expected_error_cls, ErrorABI) and not isinstance(

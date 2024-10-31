@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING, Callable, Optional, Union
 import click
 
 from ape.logging import logger
-from ape.types.coverage import CoverageProject, CoverageReport
 from ape.utils.basemodel import ManagerAccessMixin
 from ape.utils.misc import get_current_timestamp_ms
 from ape.utils.os import get_full_extension, get_relative_path
@@ -17,6 +16,7 @@ if TYPE_CHECKING:
 
     from ape.managers.project import ProjectManager
     from ape.pytest.config import ConfigWrapper
+    from ape.types.coverage import CoverageReport
     from ape.types.trace import ContractFunctionPath, ControlFlow, SourceTraceback
 
 
@@ -30,7 +30,7 @@ class CoverageData(ManagerAccessMixin):
         self._sources: Union[
             Iterable["ContractSource"], Callable[[], Iterable["ContractSource"]]
         ] = sources
-        self._report: Optional[CoverageReport] = None
+        self._report: Optional["CoverageReport"] = None
 
     @property
     def sources(self) -> list["ContractSource"]:
@@ -45,7 +45,7 @@ class CoverageData(ManagerAccessMixin):
         return self._sources
 
     @property
-    def report(self) -> CoverageReport:
+    def report(self) -> "CoverageReport":
         if self._report is None:
             self._report = self._init_coverage_profile()
 
@@ -57,7 +57,9 @@ class CoverageData(ManagerAccessMixin):
 
     def _init_coverage_profile(
         self,
-    ) -> CoverageReport:
+    ) -> "CoverageReport":
+        from ape.types.coverage import CoverageProject, CoverageReport
+
         # source_id -> pc(s) -> times hit
         project_coverage = CoverageProject(name=self.project.name or "__local__")
 
@@ -161,7 +163,7 @@ class CoverageTracker(ManagerAccessMixin):
 
     @property
     def data(self) -> Optional[CoverageData]:
-        if not self.config_wrapper.track_coverage:
+        if not self.enabled:
             return None
 
         elif self._data is None:

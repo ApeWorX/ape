@@ -1,14 +1,17 @@
 from functools import cached_property
 from typing import TYPE_CHECKING, Any, Optional, Union
 
-from ape.types.trace import ContractFunctionPath
 from ape.utils.basemodel import ManagerAccessMixin
 
 if TYPE_CHECKING:
     from _pytest.config import Config as PytestConfig
 
+    from ape.types.trace import ContractFunctionPath
 
-def _get_config_exclusions(config) -> list[ContractFunctionPath]:
+
+def _get_config_exclusions(config) -> list["ContractFunctionPath"]:
+    from ape.types.trace import ContractFunctionPath
+
     return [
         ContractFunctionPath(contract_name=x.contract_name, method_name=x.method_name)
         for x in config.exclude
@@ -74,10 +77,12 @@ class ConfigWrapper(ManagerAccessMixin):
         return self.pytest_config.getoption("--show-internal")
 
     @cached_property
-    def gas_exclusions(self) -> list[ContractFunctionPath]:
+    def gas_exclusions(self) -> list["ContractFunctionPath"]:
         """
         The combination of both CLI values and config values.
         """
+        from ape.types.trace import ContractFunctionPath
+
         cli_value = self.pytest_config.getoption("--gas-exclude")
         exclusions = (
             [ContractFunctionPath.from_str(item) for item in cli_value.split(",")]
@@ -89,7 +94,7 @@ class ConfigWrapper(ManagerAccessMixin):
         return exclusions
 
     @cached_property
-    def coverage_exclusions(self) -> list[ContractFunctionPath]:
+    def coverage_exclusions(self) -> list["ContractFunctionPath"]:
         return _get_config_exclusions(self.ape_test_config.coverage)
 
     def get_pytest_plugin(self, name: str) -> Optional[Any]:
