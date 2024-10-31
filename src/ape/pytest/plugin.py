@@ -64,12 +64,13 @@ def pytest_addoption(parser):
         action="store",
         help="A comma-separated list of contract:method-name glob-patterns to ignore.",
     )
-    parser.addoption("--coverage", action="store_true", help="Collect contract coverage.")
+    add_option("--coverage", action="store_true", help="Collect contract coverage.")
 
     # NOTE: Other pytest plugins, such as hypothesis, should integrate with pytest separately
 
 
 def pytest_configure(config):
+    breakpoint()
     # Do not include ape internals in tracebacks unless explicitly asked
     if not config.getoption("--show-internal"):
         if path_str := sys.modules["ape"].__file__:
