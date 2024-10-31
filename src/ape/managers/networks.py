@@ -137,7 +137,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         if is_fork_already:
             # Forking a fork- to ensure is using a different Port,
             # use the "auto-port" feature.
-            provider_settings["uri"] = "auto"
+            provider_settings["host"] = "auto"
 
         fork_settings = {}
         if block_number is not None:
