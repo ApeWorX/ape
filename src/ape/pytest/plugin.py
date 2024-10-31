@@ -2,12 +2,6 @@ import sys
 from pathlib import Path
 
 from ape.exceptions import ConfigError
-from ape.pytest.config import ConfigWrapper
-from ape.pytest.coverage import CoverageTracker
-from ape.pytest.fixtures import PytestApeFixtures, ReceiptCapture
-from ape.pytest.gas import GasTracker
-from ape.pytest.runners import PytestApeRunner
-from ape.utils.basemodel import ManagerAccessMixin
 
 
 def pytest_addoption(parser):
@@ -74,8 +68,6 @@ def pytest_configure(config):
                 except AttributeError:
                     pass
 
-    config_wrapper = ConfigWrapper(config)
-
     if not config.option.verbose:
         # Enable verbose output if stdout capture is disabled
         config.option.verbose = config.getoption("capture") == "no"
@@ -85,7 +77,15 @@ def pytest_configure(config):
         # perf: Don't bother setting up running if only showing help.
         return
 
+    from ape.pytest.config import ConfigWrapper
+    from ape.pytest.coverage import CoverageTracker
+    from ape.pytest.fixtures import PytestApeFixtures, ReceiptCapture
+    from ape.pytest.gas import GasTracker
+    from ape.pytest.runners import PytestApeRunner
+    from ape.utils.basemodel import ManagerAccessMixin
+
     # Register the custom Ape test runner
+    config_wrapper = ConfigWrapper(config)
     receipt_capture = ReceiptCapture(config_wrapper)
     gas_tracker = GasTracker(config_wrapper)
     coverage_tracker = CoverageTracker(config_wrapper)
