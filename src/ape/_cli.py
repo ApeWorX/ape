@@ -65,7 +65,6 @@ class ApeCLI(click.MultiCommand):
 
     def format_commands(self, ctx, formatter) -> None:
         from ape.plugins._utils import PluginMetadataList
-        from ape.utils.basemodel import ManagerAccessMixin as access
 
         commands = []
         for subcommand in self.list_commands(ctx):
@@ -86,8 +85,7 @@ class ApeCLI(click.MultiCommand):
             "Plugin": [],
             "3rd-Party Plugin": [],
         }
-        plugin_manager = access.plugin_manager
-        pl_metadata = PluginMetadataList.load(plugin_manager, include_available=False)
+        pl_metadata = PluginMetadataList.from_package_names(f"ape_{c[0]}" for c in commands)
         for cli_name, cmd in commands:
             help = cmd.get_short_help_str(limit)
             plugin = pl_metadata.get_plugin(cli_name, check_available=False)
