@@ -2,7 +2,6 @@ from typing import TYPE_CHECKING, Optional
 
 from evm_trace.gas import merge_reports
 
-from ape.types.trace import GasReport
 from ape.utils.basemodel import ManagerAccessMixin
 from ape.utils.trace import _exclude_gas, parse_gas_table
 
@@ -13,7 +12,7 @@ if TYPE_CHECKING:
     from ape.api.trace import TraceAPI
     from ape.pytest.config import ConfigWrapper
     from ape.types.address import AddressType
-    from ape.types.trace import ContractFunctionPath
+    from ape.types.trace import ContractFunctionPath, GasReport
 
 
 class GasTracker(ManagerAccessMixin):
@@ -24,7 +23,7 @@ class GasTracker(ManagerAccessMixin):
 
     def __init__(self, config_wrapper: "ConfigWrapper"):
         self.config_wrapper = config_wrapper
-        self.session_gas_report: Optional[GasReport] = None
+        self.session_gas_report: Optional["GasReport"] = None
 
     @property
     def enabled(self) -> bool:
