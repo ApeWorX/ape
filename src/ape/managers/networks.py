@@ -134,7 +134,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
             raise NetworkError(f"Unable to fork network '{network_name}'.") from err
 
         provider_settings = provider_settings or {}
-        if is_fork_already:
+        if is_fork_already and "host" not in provider_settings:
             # Forking a fork- to ensure is using a different Port,
             # use the "auto-port" feature.
             provider_settings["host"] = "auto"
