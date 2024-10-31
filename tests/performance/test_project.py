@@ -1,4 +1,5 @@
 def test_get_contract(benchmark, project_with_contracts):
+    _ = project_with_contracts.Other  # Ensure compiled first.
     benchmark.pedantic(
         lambda *args, **kwargs: project_with_contracts.get_contract(*args, **kwargs),
         args=(("Other",),),
