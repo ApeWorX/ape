@@ -2214,8 +2214,10 @@ class LocalProject(Project):
                         "missing compilers for extensions: " + f'{", ".join(sorted(missing_exts))}?'
                     )
 
-            err.args = (message,)
-            raise  # The same exception (keep the stack the same height).
+            # NOTE: Purposely discard the stack-trace and raise a new exception.
+            #   This shows a better stack-trace to the user (rather than weird
+            #   BaseModel internals).
+            raise AttributeError(message)
 
     @cached_property
     def path(self) -> Path:
