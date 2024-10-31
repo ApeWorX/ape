@@ -2132,8 +2132,6 @@ class LocalProject(Project):
 
         super().__init__(manifest, config_override=self._config_override)
 
-        self.path = self._base_path / (self.config.base_path or "")
-
         # NOTE: Avoid pointlessly adding info to the __local__ manifest.
         # This is mainly for dependencies.
         if self.manifest_path.stem != "__local__" and not manifest.sources:
@@ -2218,6 +2216,13 @@ class LocalProject(Project):
 
             err.args = (message,)
             raise  # The same exception (keep the stack the same height).
+
+    @property
+    def path(self) -> Path:
+        """
+        The path to the project's "base" (where contract source IDs are relative to).
+        """
+        return self._base_path / (self.config.base_path or "")
 
     @property
     def _contract_sources(self) -> list[ContractSource]:
