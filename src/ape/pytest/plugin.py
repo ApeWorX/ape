@@ -74,7 +74,7 @@ def pytest_configure(config):
     # else: user has already changes verbosity to an equal or higher level; avoid downgrading.
 
     if "--help" in config.invocation_params.args:
-        # perf: Don't bother setting up running if only showing help.
+        # perf: Don't bother setting up runner if only showing help.
         return
 
     from ape.pytest.config import ConfigWrapper
