@@ -34,7 +34,12 @@ def get_relative_path(target: Path, anchor: Path) -> Path:
     Compute the relative path of ``target`` relative to ``anchor``,
     which may or may not share a common ancestor.
 
-    **NOTE**: Both paths must be absolute.
+    **NOTE ON PERFORMANCE**: Both paths must be absolute to
+    use this method. If you know both methods are absolute,
+    this method is a performance boost. If you have to first
+    call `.absolute()` on the paths, use
+    `target.relative_to(anchor)` instead; as it will be
+    faster in that case.
 
     Args:
         target (pathlib.Path): The path we are interested in.
@@ -43,11 +48,6 @@ def get_relative_path(target: Path, anchor: Path) -> Path:
     Returns:
         pathlib.Path: The new path to the target path from the anchor path.
     """
-    if not target.is_absolute():
-        raise ValueError("'target' must be an absolute path.")
-    if not anchor.is_absolute():
-        raise ValueError("'anchor' must be an absolute path.")
-
     # Calculate common prefix length
     common_parts = 0
     for target_part, anchor_part in zip(target.parts, anchor.parts):
