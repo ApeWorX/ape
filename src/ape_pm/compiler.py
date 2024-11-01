@@ -11,7 +11,6 @@ from ethpm_types import ContractType
 from ape.api.compiler import CompilerAPI
 from ape.exceptions import CompilerError, ContractLogicError
 from ape.logging import logger
-from ape.utils.os import get_relative_path
 
 if TYPE_CHECKING:
     from ape.managers.project import ProjectManager
@@ -41,7 +40,7 @@ class InterfaceCompiler(CompilerAPI):
     ) -> Iterator[ContractType]:
         project = project or self.local_project
         source_ids = {
-            p: f"{get_relative_path(p, project.path.absolute())}" if p.is_absolute() else str(p)
+            p: f"{p.relative_to(project.path)}" if p.is_absolute() else str(p)
             for p in contract_filepaths
         }
         logger.info(f"Compiling {', '.join(source_ids.values())}.")
