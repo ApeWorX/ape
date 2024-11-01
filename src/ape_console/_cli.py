@@ -175,10 +175,9 @@ def _launch_console(
     from ape_console.config import ConsoleConfig
 
     ipython_kwargs = {"user_ns": namespace, "config": ipy_config}
-    if embed:
-        if code:
-            raise ValueError("Cannot use `code` argument with embed mode.")
-
+    if code:
+        _execute_code(code, **ipython_kwargs)
+    elif embed:
         IPython.embed(**ipython_kwargs, colors="Neutral", banner1=banner)
     else:
         ipy_config.TerminalInteractiveShell.colors = "Neutral"
@@ -188,11 +187,7 @@ def _launch_console(
         if console_config.plugins:
             ipy_config.InteractiveShellApp.extensions.extend(console_config.plugins)
 
-        if code:
-            _execute_code(code, **ipython_kwargs)
-
-        else:
-            IPython.start_ipython(**ipython_kwargs, argv=())
+        IPython.start_ipython(**ipython_kwargs, argv=())
 
 
 def _execute_code(code: list[str], **ipython_kwargs):
