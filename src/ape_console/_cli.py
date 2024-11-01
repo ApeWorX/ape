@@ -192,5 +192,6 @@ def _launch_console(
 
 def _execute_code(code: list[str], **ipython_kwargs):
     shell = InteractiveShell.instance(**ipython_kwargs)
+    # NOTE: Using `store_history=True` just so the cell IDs are accurate.
     for line in code:
-        shell.run_cell(line)
+        shell.run_cell(line, store_history=True)
