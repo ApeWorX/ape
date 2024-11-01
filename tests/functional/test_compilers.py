@@ -77,7 +77,7 @@ def test_compile(compilers, project_with_contract, factory):
     Testing both stringified paths and path-object paths.
     """
     path = next(iter(project_with_contract.sources.paths))
-    actual = compilers.compile((factory(path),))
+    actual = compilers.compile((factory(path),), project=project_with_contract)
     contract_name = path.stem
     assert contract_name in [x.name for x in actual]
 
