@@ -317,6 +317,8 @@ def test_console_code(integ_project, mocker, console_runner):
     """
     Testing the -c | --code option.
     """
-    result = console_runner.invoke("--project", f"{integ_project.path}", "--code", "chain\nx = 3\nx + 1")
-    expected = 'Out[1]: <ChainManager (id=1337)>\nOut[3]: 4\n'
+    result = console_runner.invoke(
+        "--project", f"{integ_project.path}", "--code", "chain\nx = 3\nx + 1"
+    )
+    expected = "Out[1]: <ChainManager (id=1337)>\nOut[3]: 4\n"
     assert result.output == expected
