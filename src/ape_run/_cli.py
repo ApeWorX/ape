@@ -17,6 +17,7 @@ from ape.logging import logger
 
 @contextmanager
 def use_scripts_sys_path(path: Path):
+    # perf: avoid importing at top of module so `--help` is faster.
     from ape.utils.os import use_temp_sys_path
 
     # First, ensure there is not an existing scripts module.
@@ -176,7 +177,7 @@ class ScriptCommand(click.MultiCommand):
 
     @property
     def commands(self) -> dict[str, Union[click.Command, click.Group]]:
-        # perf: Don't references `.local_project.scripts_folder` here;
+        # perf: Don't reference `.local_project.scripts_folder` here;
         #   it's too slow when doing just doing `--help`.
         scripts_folder = Path.cwd() / "scripts"
         if not scripts_folder.is_dir():
