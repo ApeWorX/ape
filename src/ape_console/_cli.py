@@ -9,6 +9,7 @@ from types import ModuleType
 from typing import TYPE_CHECKING, Any, Optional, cast
 
 import click
+from IPython import InteractiveShell
 
 from ape.cli.commands import ConnectedProviderCommand
 from ape.cli.options import ape_cli_context, project_option
@@ -21,6 +22,11 @@ if TYPE_CHECKING:
 CONSOLE_EXTRAS_FILENAME = "ape_console_extras.py"
 
 
+def _code_callback(ctx, param, value) -> list[str]:
+    breakpoint()
+    return value.splitlines()
+
+
 @click.command(
     cls=ConnectedProviderCommand,
     short_help="Load the console",
@@ -28,10 +34,11 @@ CONSOLE_EXTRAS_FILENAME = "ape_console_extras.py"
 )
 @ape_cli_context()
 @project_option(hidden=True)  # Hidden as mostly used for test purposes.
-def cli(cli_ctx, project):
+@click.option("-c", "--code", help="Program passed in as a string", callback=_code_callback)
+def cli(cli_ctx, project, code):
     """Opens a console for the local project."""
     verbose = cli_ctx.logger.level == logging.DEBUG
-    return console(project=project, verbose=verbose)
+    return console(project=project, verbose=verbose, code=code)
 
 
 def import_extras_file(file_path) -> ModuleType:
@@ -95,6 +102,7 @@ def console(
     verbose: bool = False,
     extra_locals: Optional[dict] = None,
     embed: bool = False,
+    code: Optional[list[str]] = None,
 ):
     import IPython
     from IPython.terminal.ipapp import Config as IPythonConfig
@@ -149,16 +157,25 @@ def console(
         # Required for click.testing.CliRunner support.
         embed = True
 
-    _launch_console(namespace, ipy_config, embed, banner)
+    _launch_console(namespace, ipy_config, embed, banner, code=code)
 
 
-def _launch_console(namespace: dict, ipy_config: "IPythonConfig", embed: bool, banner: str):
+def _launch_console(
+    namespace: dict,
+    ipy_config: "IPythonConfig",
+    embed: bool,
+    banner: str,
+    code: Optional[list[str]],
+):
     import IPython
 
     from ape_console.config import ConsoleConfig
 
     ipython_kwargs = {"user_ns": namespace, "config": ipy_config}
     if embed:
+        if code:
+            raise ValueError("Cannot use `code` argument with embed mode.")
+
         IPython.embed(**ipython_kwargs, colors="Neutral", banner1=banner)
     else:
         ipy_config.TerminalInteractiveShell.colors = "Neutral"
@@ -168,4 +185,15 @@ def _launch_console(namespace: dict, ipy_config: "IPythonConfig", embed: bool, b
         if console_config.plugins:
             ipy_config.InteractiveShellApp.extensions.extend(console_config.plugins)
 
-        IPython.start_ipython(**ipython_kwargs, argv=())
+        if code:
+            _execute_code(code, **ipython_kwargs)
+
+        else:
+            IPython.start_ipython(**ipython_kwargs, argv=())
+
+
+def _execute_code(code: list[str], **ipython_kwargs):
+    shell = InteractiveShell.instance(**ipython_kwargs)
+    for line in code:
+        result = shell.run_cell(line)
+        click.echo(result.result)
