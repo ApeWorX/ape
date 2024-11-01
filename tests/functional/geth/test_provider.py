@@ -11,6 +11,7 @@ from hexbytes import HexBytes
 from web3 import AutoProvider, Web3
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.exceptions import ExtraDataLengthError
+from web3.middleware import ExtraDataToPOAMiddleware
 from web3.providers import HTTPProvider
 
 from ape.exceptions import (
@@ -25,7 +26,6 @@ from ape.exceptions import (
     VirtualMachineError,
 )
 from ape.utils import to_int
-from ape.utils._web3_compat import ExtraDataToPOAMiddleware
 from ape_ethereum.ecosystem import Block
 from ape_ethereum.provider import DEFAULT_SETTINGS, EthereumNodeProvider
 from ape_ethereum.trace import TraceApproach

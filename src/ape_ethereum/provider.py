@@ -19,7 +19,7 @@ from eth_utils import add_0x_prefix, is_hex, to_hex
 from evmchains import PUBLIC_CHAIN_META, get_random_rpc
 from pydantic.dataclasses import dataclass
 from requests import HTTPError
-from web3 import HTTPProvider, IPCProvider, Web3
+from web3 import HTTPProvider, IPCProvider, Web3, WebSocketProvider
 from web3 import __version__ as web3_version
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.exceptions import (
@@ -35,6 +35,7 @@ except ImportError:
     Web3RPCError = ValueError  # type: ignore
 
 from web3.gas_strategies.rpc import rpc_gas_price_strategy
+from web3.middleware import ExtraDataToPOAMiddleware
 from web3.middleware.validation import MAX_EXTRADATA_LENGTH
 from web3.providers import AutoProvider
 from web3.providers.auto import load_provider_from_environment
@@ -63,7 +64,6 @@ from ape.logging import logger, sanitize_url
 from ape.types.events import ContractLog, LogFilter
 from ape.types.gas import AutoGasLimit
 from ape.types.trace import SourceTraceback
-from ape.utils._web3_compat import ExtraDataToPOAMiddleware, WebsocketProvider
 from ape.utils.basemodel import ManagerAccessMixin
 from ape.utils.misc import DEFAULT_MAX_RETRIES_TX, gas_estimation_error_message, to_int
 from ape.utils.rpc import request_with_retry
@@ -1633,7 +1633,7 @@ def _create_web3(
 
         providers.append(lambda: HTTPProvider(endpoint_uri=http, request_kwargs=request_kwargs))
     if ws := ws_uri:
-        providers.append(lambda: WebsocketProvider(endpoint_uri=ws))
+        providers.append(lambda: WebSocketProvider(endpoint_uri=ws))
 
     provider = AutoProvider(potential_providers=providers)
     return Web3(provider)
