@@ -1,23 +1,16 @@
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import click
 from packaging.version import Version
 
 from ape.cli.options import ape_cli_context, skip_confirmation_option
 from ape.logging import logger
-from ape.plugins._utils import (
-    PIP_COMMAND,
-    ModifyPluginResultHandler,
-    PluginMetadata,
-    PluginMetadataList,
-    PluginType,
-    ape_version,
-    get_plugin_dists,
-)
-from ape.utils.misc import load_config
+
+if TYPE_CHECKING:
+    from ape.plugins._utils import PluginMetadata
 
 
 @click.group(short_help="Manage ape plugins")
@@ -33,7 +26,10 @@ def plugins_argument():
     or plugins loaded from the local config file.
     """
 
-    def load_from_file(ctx, file_path: Path) -> list[PluginMetadata]:
+    def load_from_file(ctx, file_path: Path) -> list["PluginMetadata"]:
+        from ape.plugins._utils import PluginMetadata
+        from ape.utils.misc import load_config
+
         if file_path.is_dir():
             name_options = (
                 "ape-config.yaml",
@@ -55,6 +51,8 @@ def plugins_argument():
         return []
 
     def callback(ctx, param, value: tuple[str]):
+        from ape.plugins._utils import PluginMetadata
+
         res = []
         if not value:
             ctx.obj.abort("You must give at least one requirement to install.")
@@ -93,6 +91,8 @@ def upgrade_option(help: str = "", **kwargs):
 
 
 def _display_all_callback(ctx, param, value):
+    from ape.plugins._utils import PluginType
+
     return (
         (PluginType.CORE, PluginType.INSTALLED, PluginType.THIRD_PARTY, PluginType.AVAILABLE)
         if value
@@ -112,6 +112,8 @@ def _display_all_callback(ctx, param, value):
     help="Display all plugins installed and available (including Core)",
 )
 def _list(cli_ctx, to_display):
+    from ape.plugins._utils import PluginMetadataList, PluginType
+
     include_available = PluginType.AVAILABLE in to_display
     metadata = PluginMetadataList.load(cli_ctx.plugin_manager, include_available=include_available)
     if output := metadata.to_str(include=to_display):
@@ -128,7 +130,7 @@ def _list(cli_ctx, to_display):
 @plugins_argument()
 @skip_confirmation_option("Don't ask for confirmation to install the plugins")
 @upgrade_option(help="Upgrade the plugin to the newest available version")
-def install(cli_ctx, plugins: list[PluginMetadata], skip_confirmation: bool, upgrade: bool):
+def install(cli_ctx, plugins: list["PluginMetadata"], skip_confirmation: bool, upgrade: bool):
     """Install plugins"""
 
     failures_occurred = False
@@ -170,6 +172,7 @@ def install(cli_ctx, plugins: list[PluginMetadata], skip_confirmation: bool, upg
 @skip_confirmation_option("Don't ask for confirmation to install the plugins")
 def uninstall(cli_ctx, plugins, skip_confirmation):
     """Uninstall plugins"""
+    from ape.plugins._utils import ModifyPluginResultHandler
 
     failures_occurred = False
     did_warn_about_version = False
@@ -217,6 +220,7 @@ def update():
     """
     Update Ape and all plugins to the next version
     """
+    from ape.plugins._utils import ape_version
 
     _change_version(ape_version.next_version_range)
 
@@ -249,6 +253,8 @@ def _install(name, spec, exit_on_fail: bool = True) -> int:
     Returns:
         The process return-code.
     """
+    from ape.plugins._utils import PIP_COMMAND
+
     arguments = [*PIP_COMMAND, "install", f"{name}{spec}", "--quiet"]
 
     # Run the installation process and capture output for error checking
@@ -281,6 +287,8 @@ def _change_version(spec: str):
     # This will also update core Ape.
     # NOTE: It is possible plugins may depend on each other and may update in
     #   an order causing some error codes to pop-up, so we ignore those for now.
+    from ape.plugins._utils import get_plugin_dists
+
     plugin_retcode = 0
     for plugin in get_plugin_dists():
         logger.info(f"Updating {plugin} ...")
