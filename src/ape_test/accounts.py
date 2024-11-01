@@ -13,7 +13,6 @@ from eth_utils import to_bytes, to_hex
 from ape.api.accounts import TestAccountAPI, TestAccountContainerAPI
 from ape.exceptions import ProviderNotConnectedError, SignatureError
 from ape.types.signatures import MessageSignature, TransactionSignature
-from ape.utils._web3_compat import sign_hash
 from ape.utils.testing import (
     DEFAULT_NUMBER_OF_TEST_ACCOUNTS,
     DEFAULT_TEST_HD_PATH,
@@ -167,7 +166,7 @@ class TestAccount(TestAccountAPI):
     def sign_raw_msghash(self, msghash: HexBytes) -> MessageSignature:
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            signed_msg = sign_hash(msghash, self.private_key)
+            signed_msg = EthAccount.unsafe_sign_hash(msghash, self.private_key)
 
         return MessageSignature(
             v=signed_msg.v,
