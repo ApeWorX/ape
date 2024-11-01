@@ -8,7 +8,7 @@ from io import BytesIO
 from pathlib import Path
 from typing import Any, Optional, Union
 
-from requests import Session
+from requests import HTTPError, Session
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
@@ -224,8 +224,34 @@ class _GithubClient:
     def _request(self, method: str, url: str, **kwargs) -> Any:
         url = f"{self.API_URL_PREFIX}/{url}"
         response = self.__session.request(method, url, **kwargs)
-        response.raise_for_status()
-        return response.json()
+
+        try:
+            response.raise_for_status()
+        except HTTPError as err:
+            if err.response.status_code == 401 and self.__session.headers.get("Authorization"):
+                token = self.__session.headers["Authorization"]
+                del self.__session.headers["Authorization"]
+                response = self.__session.request(method, url, **kwargs)
+                try:
+                    response.raise_for_status()  # Raise exception if the retry also fails
+                except HTTPError:
+                    # Even without the Authorization token, the request still failed.
+                    # Raise the original error in this case. Also, put back token just in case.
+                    self.__session.headers["Authorization"] = token
+                    raise err
+                else:
+                    # The request failed with Authorization but succeeded without.
+                    # Let the user know their token is likely expired.
+                    logger.warning(
+                        "Requests are not authorized! GITHUB_ACCESS_TOKEN is likely expired; "
+                        "received 401 when attempted to use it. If you need GitHub authorization, "
+                        "try resetting your token."
+                    )
+                    return response.json()
+
+        else:
+            # Successful response status code!
+            return response.json()
 
 
 github_client = _GithubClient()
