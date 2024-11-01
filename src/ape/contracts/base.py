@@ -9,7 +9,6 @@ from typing import TYPE_CHECKING, Any, Optional, Union
 import click
 from eth_pydantic_types import HexBytes
 from eth_utils import to_hex
-from ethpm_types.contract_type import ABI_W_SELECTOR_T, ContractType
 
 from ape.api.address import Address, BaseAddress
 from ape.api.query import (
@@ -44,10 +43,9 @@ from ape.utils.basemodel import (
 from ape.utils.misc import log_instead_of_fail
 
 if TYPE_CHECKING:
-    from ethpm_types.abi import ConstructorABI, ErrorABI
+    from ethpm_types.abi import ConstructorABI, ErrorABI, EventABI, MethodABI
+    from ethpm_types.contract_type import ABI_W_SELECTOR_T, ContractType
     from pandas import DataFrame
-
-    from ethpm_types.abi import EventABI, MethodABI
 
     from ape.api.transactions import ReceiptAPI, TransactionAPI
     from ape.types.address import AddressType
@@ -798,7 +796,7 @@ class ContractEvent(BaseInterfaceModel):
 
 
 class ContractTypeWrapper(ManagerAccessMixin):
-    contract_type: ContractType
+    contract_type: "ContractType"
     base_path: Optional[Path] = None
 
     @property
@@ -810,7 +808,7 @@ class ContractTypeWrapper(ManagerAccessMixin):
         return self.contract_type.selector_identifiers
 
     @property
-    def identifier_lookup(self) -> dict[str, ABI_W_SELECTOR_T]:
+    def identifier_lookup(self) -> dict[str, "ABI_W_SELECTOR_T"]:
         """
         Provides a mapping of method, error, and event selector identifiers to
         ABI Types.
@@ -924,7 +922,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
     def __init__(
         self,
         address: "AddressType",
-        contract_type: ContractType,
+        contract_type: "ContractType",
         txn_hash: Optional[Union[str, HexBytes]] = None,
     ) -> None:
         super().__init__()
@@ -958,7 +956,9 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
         return super().__call__(*args, **kwargs)
 
     @classmethod
-    def from_receipt(cls, receipt: "ReceiptAPI", contract_type: ContractType) -> "ContractInstance":
+    def from_receipt(
+        cls, receipt: "ReceiptAPI", contract_type: "ContractType"
+    ) -> "ContractInstance":
         """
         Create a contract instance from the contract deployment receipt.
         """
@@ -1076,7 +1076,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
 
         else:
             # Didn't find anything that matches
-            name = self.contract_type.name or ContractType.__name__
+            name = self.contract_type.name or "ContractType"
             raise ApeAttributeError(f"'{name}' has no attribute '{method_name}'.")
 
     def invoke_transaction(self, method_name: str, *args, **kwargs) -> "ReceiptAPI":
@@ -1111,7 +1111,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
 
         else:
             # Didn't find anything that matches
-            name = self.contract_type.name or ContractType.__name__
+            name = self.contract_type.name or "ContractType"
             raise ApeAttributeError(f"'{name}' has no attribute '{method_name}'.")
 
     def get_event_by_signature(self, signature: str) -> ContractEvent:
@@ -1340,7 +1340,7 @@ class ContractContainer(ContractTypeWrapper, ExtraAttributesMixin):
         contract_container = project.MyContract  # Assuming there is a contract named "MyContract"
     """
 
-    def __init__(self, contract_type: ContractType) -> None:
+    def __init__(self, contract_type: "ContractType") -> None:
         self.contract_type = contract_type
 
     @log_instead_of_fail(default="<ContractContainer>")
