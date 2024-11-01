@@ -23,10 +23,14 @@ CONSOLE_EXTRAS_FILENAME = "ape_console_extras.py"
 
 
 def _code_callback(ctx, param, value) -> list[str]:
+    if not value:
+        return value
+
     # NOTE: newlines are escaped in code automatically, so we
     #   need to de-escape them. Any actually escaped newlines
     #   will still be escaped.
     value = value.replace("\\n", "\n").replace("\\t", "\t").replace("\\b", "\b")
+
     return value.splitlines()
 
 
