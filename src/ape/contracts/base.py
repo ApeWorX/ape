@@ -11,7 +11,6 @@ from eth_pydantic_types import HexBytes
 from eth_utils import to_hex
 from ethpm_types.abi import EventABI, MethodABI
 from ethpm_types.contract_type import ABI_W_SELECTOR_T, ContractType
-from IPython.lib.pretty import for_type
 
 from ape.api.accounts import AccountAPI
 from ape.api.address import Address, BaseAddress
@@ -900,6 +899,9 @@ class ContractTypeWrapper(ManagerAccessMixin):
         info = _get_info()
         error_type.info = error_type.__doc__ = info  # type: ignore
         if info:
+            # perf: Avoid forcing everyone to import from IPython.
+            from IPython.lib.pretty import for_type
+
             error_type._repr_pretty_ = repr_pretty_for_assignment  # type: ignore
 
             # Register the dynamically-created type with IPython so it integrates.
