@@ -23,7 +23,10 @@ CONSOLE_EXTRAS_FILENAME = "ape_console_extras.py"
 
 
 def _code_callback(ctx, param, value) -> list[str]:
-    breakpoint()
+    # NOTE: newlines are escaped in code automatically, so we
+    #   need to de-escape them. Any actually escaped newlines
+    #   will still be escaped.
+    value = value.replace("\\n", "\n").replace("\\t", "\t").replace("\\b", "\b")
     return value.splitlines()
 
 
@@ -195,5 +198,4 @@ def _launch_console(
 def _execute_code(code: list[str], **ipython_kwargs):
     shell = InteractiveShell.instance(**ipython_kwargs)
     for line in code:
-        result = shell.run_cell(line)
-        click.echo(result.result)
+        shell.run_cell(line)
