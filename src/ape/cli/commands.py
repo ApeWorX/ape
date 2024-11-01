@@ -72,7 +72,7 @@ class ConnectedProviderCommand(click.Command):
 
     def parse_args(self, ctx: "Context", args: list[str]) -> list[str]:
         arguments = args  # Renamed for better pdb support.
-        base_type = None if self._use_cls_types else str
+        base_type: Optional[type] = None if self._use_cls_types else str
         if existing_option := next(
             iter(
                 x
