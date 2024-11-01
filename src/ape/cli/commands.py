@@ -71,10 +71,8 @@ class ConnectedProviderCommand(click.Command):
         super().__init__(*args, **kwargs)
 
     def parse_args(self, ctx: "Context", args: list[str]) -> list[str]:
-        from ape.api.providers import ProviderAPI
-
         arguments = args  # Renamed for better pdb support.
-        base_type = ProviderAPI if self._use_cls_types else str
+        base_type: Optional[type] = None if self._use_cls_types else str
         if existing_option := next(
             iter(
                 x
@@ -85,13 +83,20 @@ class ConnectedProviderCommand(click.Command):
             ),
             None,
         ):
+            if base_type is None:
+                from ape.api.providers import ProviderAPI
+
+                base_type = ProviderAPI
+
             # Checking instance above, not sure why mypy still mad.
             existing_option.type.base_type = base_type  # type: ignore
 
         else:
             # Add the option automatically.
+            # NOTE: Local import here only avoids circular import issues.
             from ape.cli.options import NetworkOption
 
+            # NOTE: None base-type will default to `ProviderAPI`.
             option = NetworkOption(base_type=base_type, callback=self._network_callback)
             self.params.append(option)
 
