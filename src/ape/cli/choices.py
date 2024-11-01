@@ -373,11 +373,11 @@ class NetworkChoice(click.Choice):
 
     @property
     def base_type(self) -> type["ProviderAPI"]:
-        # perf: property exists to delay import ProviderAPI at init time.
-        from ape.api.providers import ProviderAPI
-
         if self._base_type is not None:
             return self._base_type
+
+        # perf: property exists to delay import ProviderAPI at init time.
+        from ape.api.providers import ProviderAPI
 
         self._base_type = ProviderAPI
         return ProviderAPI
