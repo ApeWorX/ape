@@ -229,13 +229,15 @@ class _GithubClient:
             response.raise_for_status()
         except HTTPError as err:
             if err.response.status_code == 401 and self.__session.headers.get("Authorization"):
+                token = self.__session.headers["Authorization"]
                 del self.__session.headers["Authorization"]
                 response = self.__session.request(method, url, **kwargs)
                 try:
                     response.raise_for_status()  # Raise exception if the retry also fails
                 except HTTPError:
                     # Even without the Authorization token, the request still failed.
-                    # Raise the original error in this case.
+                    # Raise the original error in this case. Also, put back token just in case.
+                    self.__session.headers["Authorization"] = token
                     raise err
                 else:
                     # The request failed with Authorization but succeeded without.
