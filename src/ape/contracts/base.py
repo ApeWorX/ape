@@ -7,7 +7,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional, Union
 
 import click
-import pandas as pd
 from eth_pydantic_types import HexBytes
 from eth_utils import to_hex
 from ethpm_types.abi import EventABI, MethodABI
@@ -50,6 +49,7 @@ from ape.utils.misc import log_instead_of_fail
 
 if TYPE_CHECKING:
     from ethpm_types.abi import ConstructorABI, ErrorABI
+    from pandas import DataFrame
 
     from ape.api.transactions import ReceiptAPI, TransactionAPI
 
@@ -616,7 +616,7 @@ class ContractEvent(BaseInterfaceModel):
         stop_block: Optional[int] = None,
         step: int = 1,
         engine_to_use: Optional[str] = None,
-    ) -> pd.DataFrame:
+    ) -> "DataFrame":
         """
         Iterate through blocks for log events
 
@@ -635,6 +635,8 @@ class ContractEvent(BaseInterfaceModel):
         Returns:
             pd.DataFrame
         """
+        # perf: pandas import is really slow. Avoid importing at module level.
+        import pandas as pd
 
         if start_block < 0:
             start_block = self.chain_manager.blocks.height + start_block
