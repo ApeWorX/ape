@@ -224,7 +224,6 @@ class _GithubClient:
     def _request(self, method: str, url: str, **kwargs) -> Any:
         url = f"{self.API_URL_PREFIX}/{url}"
         response = self.__session.request(method, url, **kwargs)
-        response.raise_for_status()
         return response.json()
 
 

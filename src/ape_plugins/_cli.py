@@ -112,7 +112,8 @@ def _display_all_callback(ctx, param, value):
     help="Display all plugins installed and available (including Core)",
 )
 def _list(cli_ctx, to_display):
-    metadata = PluginMetadataList.load(cli_ctx.plugin_manager)
+    include_available = PluginType.AVAILABLE in to_display
+    metadata = PluginMetadataList.load(cli_ctx.plugin_manager, include_available=include_available)
     if output := metadata.to_str(include=to_display):
         click.echo(output)
         if not metadata.installed and not metadata.third_party:
