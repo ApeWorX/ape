@@ -19,9 +19,7 @@ from eth_utils import add_0x_prefix, is_hex, to_hex
 from evmchains import PUBLIC_CHAIN_META, get_random_rpc
 from pydantic.dataclasses import dataclass
 from requests import HTTPError
-from web3 import HTTPProvider, IPCProvider, Web3
-from web3 import WebsocketProvider as WebSocketProvider
-from web3._utils.http import construct_user_agent
+from web3 import HTTPProvider, IPCProvider, Web3, WebSocketProvider
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.exceptions import (
     ExtraDataLengthError,
@@ -30,7 +28,7 @@ from web3.exceptions import (
     TransactionNotFound,
 )
 from web3.gas_strategies.rpc import rpc_gas_price_strategy
-from web3.middleware import geth_poa_middleware as ExtraDataToPOAMiddleware
+from web3.middleware import ExtraDataToPOAMiddleware
 from web3.middleware.validation import MAX_EXTRADATA_LENGTH
 from web3.providers import AutoProvider
 from web3.providers.auto import load_provider_from_environment
@@ -1326,9 +1324,7 @@ class EthereumNodeProvider(Web3Provider, ABC):
     name: str = "node"
 
     # NOTE: Appends user-agent to base User-Agent string.
-    request_header: dict = {
-        "User-Agent": construct_user_agent(str(HTTPProvider)),
-    }
+    request_header: dict = {}
 
     @property
     def uri(self) -> str:

@@ -166,7 +166,7 @@ class TestAccount(TestAccountAPI):
     def sign_raw_msghash(self, msghash: HexBytes) -> MessageSignature:
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            signed_msg = EthAccount.signHash(msghash, self.private_key)
+            signed_msg = EthAccount.unsafe_sign_hash(msghash, self.private_key)
 
         return MessageSignature(
             v=signed_msg.v,

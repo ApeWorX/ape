@@ -255,7 +255,7 @@ class KeyfileAccount(AccountAPI):
         # Also, we have already warned the user about the safety.
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            signed_msg = EthAccount.signHash(msghash, self.__key)
+            signed_msg = EthAccount.unsafe_sign_hash(msghash, self.__key)
 
         return MessageSignature(
             v=signed_msg.v,
