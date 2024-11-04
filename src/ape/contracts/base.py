@@ -32,7 +32,7 @@ from ape.logging import get_rich_console, logger
 from ape.types.events import ContractLog, LogFilter, MockContractLog
 from ape.utils.abi import StructParser, _enrich_natspec
 from ape.utils.basemodel import (
-    BaseInterfaceModel,
+    BaseInterface,
     ExtraAttributesMixin,
     ExtraModelAttributes,
     ManagerAccessMixin,
@@ -435,7 +435,7 @@ class ContractTransactionHandler(ContractMethodHandler):
         )
 
 
-class ContractEvent(BaseInterfaceModel):
+class ContractEvent(BaseInterface):
     """
     The types of events on a :class:`~ape.contracts.base.ContractInstance`.
     Use the event types via ``.`` access on the contract instances.
