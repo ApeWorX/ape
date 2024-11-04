@@ -1940,7 +1940,6 @@ class Project(ProjectManager):
 
         self._config_override = overrides
         _ = self.config
-
         self.account_manager.test_accounts.reset()
 
     def extract_manifest(self) -> PackageManifest:
