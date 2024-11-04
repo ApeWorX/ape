@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 from typing import cast
 
@@ -16,6 +17,7 @@ from web3.providers import HTTPProvider
 from ape.exceptions import (
     APINotImplementedError,
     BlockNotFoundError,
+    ConfigError,
     ContractLogicError,
     NetworkMismatchError,
     ProviderError,
@@ -125,6 +127,23 @@ def test_uri_non_dev_and_not_configured(mocker, ethereum):
 
     actual = provider.uri
     assert actual == expected
+
+
+def test_uri_invalid(geth_provider, project, ethereum):
+    settings = geth_provider.provider_settings
+    geth_provider.provider_settings = {}
+    value = "I AM NOT A URI OF ANY KIND!"
+    config = {"node": {"ethereum": {"local": {"uri": value}}}}
+
+    try:
+        with project.temp_config(**config):
+            # Assert we use the config value.
+            expected = rf"Invalid URI \(not HTTP, WS, or IPC\): {re.escape(value)}"
+            with pytest.raises(ConfigError, match=expected):
+                _ = geth_provider.uri
+
+    finally:
+        geth_provider.provider_settings = settings
 
 
 @geth_process_test
