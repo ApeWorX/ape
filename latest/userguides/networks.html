@@ -129,6 +129,7 @@ data-aria-dark="Switch to auto color mode">
     <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
 <li><a class="reference internal" href="#selecting-a-network">Selecting a Network</a></li>
 <li><a class="reference internal" href="#l2-networks">L2 Networks</a></li>
+<li><a class="reference internal" href="#evmchains-networks">evmchains Networks</a></li>
 <li><a class="reference internal" href="#custom-network-connection">Custom Network Connection</a><ul>
 <li><a class="reference internal" href="#custom-networks-by-config">Custom Networks By Config</a><ul>
 <li><a class="reference internal" href="#rpc-url">RPC URL</a></li>
@@ -183,8 +184,9 @@ data-aria-dark="Switch to auto color mode">
           <section id="networks">
 <h1>Networks<a class="headerlink" href="#networks" title="Link to this heading"></a></h1>
 <p>When interacting with a blockchain, you will have to select an ecosystem (e.g. Ethereum, Arbitrum, or Fantom), a network (e.g. Mainnet or Sepolia) and a provider (e.g. Eth-Tester, Node (Geth), or Alchemy).
-Networks are part of ecosystems and typically defined in plugins.
-For example, the <code class="docutils literal notranslate"><span class="pre">ape-ethereum</span></code> plugin comes with Ape and can be used for handling EVM-like behavior.</p>
+The <code class="docutils literal notranslate"><span class="pre">ape-ethereum</span></code> ecosystem and network(s) plugin comes with Ape and can be used for handling EVM-like behavior.
+Networks are part of ecosystems and typically defined in plugins or custom-network configurations.
+However, Ape works out-of-the-box (in a limited way) with any network defined in the <a class="reference external" href="https://github.com/ApeWorX/evmchains">evmchains</a> library.</p>
 <section id="selecting-a-network">
 <h2>Selecting a Network<a class="headerlink" href="#selecting-a-network" title="Link to this heading"></a></h2>
 <p>Before discussing how to add custom networks or install L2 network plugins, you need to know how to specify the network choice.
@@ -201,7 +203,7 @@ The following is a list of common Ape commands that can use the <code class="doc
 </span><span data-line="2">ape<span class="w"> </span>console<span class="w"> </span>--network<span class="w"> </span>arbitrum:testnet:alchemy<span class="w"> </span><span class="c1"># NOTICE: All networks, even from other ecosystems, use this.</span>
 </span></pre></div>
 </div>
-<p>To see all possible values for <code class="docutils literal notranslate"><span class="pre">--network</span></code>, run the command:</p>
+<p>To see all networks that work with the <code class="docutils literal notranslate"><span class="pre">--network</span></code> flag (besides those <em>only</em> defined in <code class="docutils literal notranslate"><span class="pre">evmchains</span></code>), run the command:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>networks<span class="w"> </span>list
 </span></pre></div>
 </div>
@@ -288,6 +290,18 @@ This logic does not have to live in the base <code class="docutils literal notra
 </span></pre></div>
 </div>
 <p>In the remainder of this guide, any example below using Ethereum, you can replace with an L2 ecosystem’s name and network combination.</p>
+</section>
+<section id="evmchains-networks">
+<h2>evmchains Networks<a class="headerlink" href="#evmchains-networks" title="Link to this heading"></a></h2>
+<p>If a network is in the <a class="reference external" href="https://github.com/ApeWorX/evmchains">evmchains</a> library, it will work in Ape automatically, even without a plugin or any custom configuration for that network.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>console<span class="w"> </span>--network<span class="w"> </span>moonbeam
+</span></pre></div>
+</div>
+<p>This works because the <code class="docutils literal notranslate"><span class="pre">moonbeam</span></code> network data is available in the <code class="docutils literal notranslate"><span class="pre">evmchains</span></code> library, and Ape is able to look it up.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Support for networks from evm-chains alone may be limited and require additional configuration to work in production use-cases.</p>
+</div>
 </section>
 <section id="custom-network-connection">
 <h2>Custom Network Connection<a class="headerlink" href="#custom-network-connection" title="Link to this heading"></a></h2>
