@@ -22,7 +22,6 @@ from requests import HTTPError
 from web3 import HTTPProvider, IPCProvider, Web3
 from web3 import WebsocketProvider as WebSocketProvider
 from web3._utils.http import construct_user_agent
-from web3.exceptions import BlockNotFound
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.exceptions import (
     ExtraDataLengthError,
