@@ -16,7 +16,7 @@ import requests
 from eth_pydantic_types import HexBytes
 from eth_typing import BlockNumber, HexStr
 from eth_utils import add_0x_prefix, is_hex, to_hex
-from evmchains import get_random_rpc
+from evmchains import PUBLIC_CHAIN_META, get_random_rpc
 from pydantic.dataclasses import dataclass
 from requests import HTTPError
 from web3 import HTTPProvider, IPCProvider, Web3
@@ -1547,6 +1547,18 @@ class EthereumNodeProvider(Web3Provider, ABC):
             self.web3.middleware_onion.inject(ExtraDataToPOAMiddleware, layer=0)
 
         self.network.verify_chain_id(chain_id)
+
+        # Correct network name, if using custom-URL approach.
+        if self.network.name == "custom":
+            for ecosystem_name, network in PUBLIC_CHAIN_META.items():
+                for network_name, meta in network.items():
+                    if "chainId" not in meta or meta["chainId"] != chain_id:
+                        continue
+
+                    # Network found.
+                    self.network.name = network_name
+                    self.network.ecosystem.name = ecosystem_name
+                    break
 
     def disconnect(self):
         self._call_trace_approach = None
