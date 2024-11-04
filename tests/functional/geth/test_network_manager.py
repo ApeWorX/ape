@@ -39,6 +39,8 @@ def test_fork_upstream_provider(networks, mock_geth_sepolia, geth_provider, mock
             del geth_provider.provider_settings["uri"]
 
 
+# NOTE: Test is flakey because random URLs may be offline when test runs; avoid CI failure.
+@pytest.mark.flaky(reruns=5)
 @geth_process_test
 @pytest.mark.parametrize(
     "connection_str", ("moonbeam:moonriver", "https://moonriver.api.onfinality.io/public")
