@@ -68,6 +68,7 @@ from ape_ethereum.transactions import AccessList, AccessListTransaction, Transac
 if TYPE_CHECKING:
     from ethpm_types import EventABI
 
+    from ape.api.config import PluginConfig
     from ape.api.trace import TraceAPI
     from ape.types.address import AddressType
     from ape.types.vm import BlockID, ContractCode
@@ -1340,7 +1341,7 @@ class EthereumNodeProvider(Web3Provider, ABC):
             else:
                 raise TypeError(f"Not an URI: {uri}")
 
-        config = self.config.get(self.network.ecosystem.name, None)
+        config: "PluginConfig" = self.config.get(self.network.ecosystem.name, None)
         if config is None:
             if rpc := self._get_random_rpc():
                 return rpc
@@ -1351,7 +1352,7 @@ class EthereumNodeProvider(Web3Provider, ABC):
             raise ProviderError(f"Please configure a URL for '{self.network_choice}'.")
 
         # Use value from config file
-        network_config = config.get(self.network.name) or DEFAULT_SETTINGS
+        network_config = (config or {}).get(self.network.name) or DEFAULT_SETTINGS
 
         if "url" in network_config:
             raise ConfigError("Unknown provider setting 'url'. Did you mean 'uri'?")
@@ -1370,10 +1371,11 @@ class EthereumNodeProvider(Web3Provider, ABC):
 
         settings_uri = network_config.get(key, DEFAULT_SETTINGS["uri"])
         if _is_uri(settings_uri):
+            # Is true if HTTP, WS, or IPC.
             return settings_uri
 
-        # Likely was an IPC Path (or websockets) and will connect that way.
-        return super().http_uri or ""
+        # Is not HTTP, WS, or IPC. Raise an error.
+        raise ConfigError(f"Invalid URI (not HTTP, WS, or IPC): {settings_uri}")
 
     @property
     def http_uri(self) -> Optional[str]:
@@ -1524,9 +1526,16 @@ class EthereumNodeProvider(Web3Provider, ABC):
         for option in ("earliest", "latest"):
             try:
                 block = self.web3.eth.get_block(option)  # type: ignore[arg-type]
+
             except ExtraDataLengthError:
                 is_likely_poa = True
                 break
+
+            except BlockNotFoundError:
+                # Some chains are "light" and we may not be able to detect
+                # if it need PoA middleware.
+                continue
+
             else:
                 is_likely_poa = (
                     "proofOfAuthorityData" in block
