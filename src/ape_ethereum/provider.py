@@ -1530,7 +1530,7 @@ class EthereumNodeProvider(Web3Provider, ABC):
                 is_likely_poa = True
                 break
 
-            except BlockNotFoundError:
+            except Exception:
                 # Some chains are "light" and we may not be able to detect
                 # if it need PoA middleware.
                 continue
