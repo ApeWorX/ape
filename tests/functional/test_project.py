@@ -673,8 +673,12 @@ class TestProject:
     def test_init(self, with_dependencies_project_path):
         # Purpose not using `project_with_contracts` fixture.
         project = Project(with_dependencies_project_path)
-        project.manifest_path.unlink(missing_ok=True)
         assert project.path == with_dependencies_project_path
+        project.manifest_path.unlink(missing_ok=True)
+
+        #  Re-init to show it doesn't create the manifest file.
+        project = Project(with_dependencies_project_path)
+
         # Manifest should have been created by default.
         assert not project.manifest_path.is_file()
 
