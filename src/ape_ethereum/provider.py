@@ -1340,7 +1340,7 @@ class EthereumNodeProvider(Web3Provider, ABC):
             else:
                 raise TypeError(f"Not an URI: {uri}")
 
-        config = self.config.model_dump().get(self.network.ecosystem.name, None)
+        config = self.config.get(self.network.ecosystem.name, None)
         if config is None:
             if rpc := self._get_random_rpc():
                 return rpc
