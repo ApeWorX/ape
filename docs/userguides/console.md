@@ -164,3 +164,18 @@ Out[3]: '0.00040634 ETH'
 In [4]: %bal 0xE3747e6341E0d3430e6Ea9e2346cdDCc2F8a4b5b
 Out[4]: '0.00040634 ETH'
 ```
+
+## Executing Code
+
+You can also use the `ape console` to execute programs directly from strings.
+This is similar to the `python -c|--code` option except it will display the output cell.
+Anything available in `ape console` is also available in `ape console --code`.
+
+```shell
+ape console -c 'project.name'
+Out[1]: 'my-project'
+ape console -c 'x = 3\nx + 1'
+Out[1]: 4
+ape console -c 'networks.active_provider.name'
+Out[1]: 'test'
+```
