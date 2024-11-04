@@ -441,7 +441,8 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         if ecosystem_name in self.ecosystem_names:
             return self.ecosystems[ecosystem_name]
 
-        elif ecosystem_name in PUBLIC_CHAIN_META:
+        elif ecosystem_name.lower().replace(" ", "-") in PUBLIC_CHAIN_META:
+            ecosystem_name = ecosystem_name.lower().replace(" ", "-")
             symbol = None
             for net in PUBLIC_CHAIN_META[ecosystem_name].values():
                 if not (native_currency := net.get("nativeCurrency")):
