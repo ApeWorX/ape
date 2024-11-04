@@ -139,6 +139,7 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#bal">%bal</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#executing-code">Executing Code</a></li>
 </ul>
 </div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
   </aside>
@@ -334,6 +335,20 @@ To do this, run the following from <em>any</em> <code class="docutils literal no
 </span></pre></div>
 </div>
 </section>
+</section>
+<section id="executing-code">
+<h2>Executing Code<a class="headerlink" href="#executing-code" title="Link to this heading"></a></h2>
+<p>You can also use the <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">console</span></code> to execute programs directly from strings.
+This is similar to the <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-c|--code</span></code> option except it will display the output cell.
+Anything available in <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">console</span></code> is also available in <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">console</span> <span class="pre">--code</span></code>.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>console<span class="w"> </span>-c<span class="w"> </span><span class="s1">&#39;project.name&#39;</span>
+</span><span data-line="2">Out<span class="o">[</span><span class="m">1</span><span class="o">]</span>:<span class="w"> </span><span class="s1">&#39;my-project&#39;</span>
+</span><span data-line="3">ape<span class="w"> </span>console<span class="w"> </span>-c<span class="w"> </span><span class="s1">&#39;x = 3\nx + 1&#39;</span>
+</span><span data-line="4">Out<span class="o">[</span><span class="m">1</span><span class="o">]</span>:<span class="w"> </span><span class="m">4</span>
+</span><span data-line="5">ape<span class="w"> </span>console<span class="w"> </span>-c<span class="w"> </span><span class="s1">&#39;networks.active_provider.name&#39;</span>
+</span><span data-line="6">Out<span class="o">[</span><span class="m">1</span><span class="o">]</span>:<span class="w"> </span><span class="s1">&#39;test&#39;</span>
+</span></pre></div>
+</div>
 </section>
 </section>
 
