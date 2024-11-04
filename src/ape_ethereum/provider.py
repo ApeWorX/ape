@@ -1525,13 +1525,16 @@ class EthereumNodeProvider(Web3Provider, ABC):
         for option in ("earliest", "latest"):
             try:
                 block = self.web3.eth.get_block(option)  # type: ignore[arg-type]
+            
             except ExtraDataLengthError:
                 is_likely_poa = True
                 break
-            except BlockNotFound:
-                # Weird node implementation.
-                is_likely_poa = False
-                break
+            
+            except Exception:
+                # Some chains are "light" and we may not be able to detect
+                # if it need PoA middleware.
+                continue
+            
             else:
                 is_likely_poa = (
                     "proofOfAuthorityData" in block
