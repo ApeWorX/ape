@@ -43,7 +43,7 @@ from ape.utils.os import (
 
 
 def _path_to_source_id(path: Path, root_path: Path) -> str:
-    return f"{get_relative_path(path.absolute(), root_path.absolute())}"
+    return f"{path.relative_to(root_path)}"
 
 
 class SourceManager(BaseManager):
@@ -495,9 +495,7 @@ class ContractManager(BaseManager):
         ):
             self._compile_contracts(needs_compile)
 
-        src_ids = [
-            f"{get_relative_path(Path(p).absolute(), self.project.path)}" for p in path_ls_final
-        ]
+        src_ids = [f"{Path(p).relative_to(self.project.path)}" for p in path_ls_final]
         for contract_type in (self.project.manifest.contract_types or {}).values():
             if contract_type.source_id and contract_type.source_id in src_ids:
                 yield ContractContainer(contract_type)
@@ -1942,7 +1940,6 @@ class Project(ProjectManager):
 
         self._config_override = overrides
         _ = self.config
-
         self.account_manager.test_accounts.reset()
 
     def extract_manifest(self) -> PackageManifest:

@@ -435,27 +435,10 @@ def test_fails():
 
 @skip_projects_except("with-contracts")
 def test_watch(mocker, integ_project, runner, ape_cli):
-    mock_event_handler = mocker.MagicMock()
-    event_handler_patch = mocker.patch("ape_test._cli._create_event_handler")
-    event_handler_patch.return_value = mock_event_handler
-
-    mock_observer = mocker.MagicMock()
-    observer_patch = mocker.patch("ape_test._cli._create_observer")
-    observer_patch.return_value = mock_observer
-
-    run_subprocess_patch = mocker.patch("ape_test._cli.run_subprocess")
-    run_main_loop_patch = mocker.patch("ape_test._cli._run_main_loop")
-    run_main_loop_patch.side_effect = SystemExit  # Avoid infinite loop.
+    runner_patch = mocker.patch("ape_test._cli._run_with_observer")
 
     # Only passing `-s` so we have an extra arg to test.
     result = runner.invoke(ape_cli, ("test", "--watch", "-s"))
     assert result.exit_code == 0
 
-    # The observer started, then the main runner exits, and the observer stops + joins.
-    assert mock_observer.start.call_count == 1
-    assert mock_observer.stop.call_count == 1
-    assert mock_observer.join.call_count == 1
-
-    # NOTE: We had a bug once where the args it received were not strings.
-    #   (wasn't deconstructing), so this check is important.
-    run_subprocess_patch.assert_called_once_with(["ape", "test", "-s"])
+    runner_patch.assert_called_once_with((Path("contracts"), Path("tests")), 0.5, "-s")

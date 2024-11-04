@@ -5,20 +5,23 @@ from ape import plugins
 
 @plugins.register(plugins.Config)
 def config_class():
-    module = import_module("ape_test.config")
-    return module.ApeTestConfig
+    from ape_test.config import ApeTestConfig
+
+    return ApeTestConfig
 
 
 @plugins.register(plugins.AccountPlugin)
 def account_types():
-    module = import_module("ape_test.accounts")
-    return module.TestAccountContainer, module.TestAccount
+    from ape_test.accounts import TestAccount, TestAccountContainer
+
+    return TestAccountContainer, TestAccount
 
 
 @plugins.register(plugins.ProviderPlugin)
 def providers():
-    module = import_module("ape_test.provider")
-    yield "ethereum", "local", module.LocalProvider
+    from ape_test.provider import LocalProvider
+
+    yield "ethereum", "local", LocalProvider
 
 
 def __getattr__(name: str):

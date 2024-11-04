@@ -7,7 +7,7 @@ import click
 from ape.logging import logger
 from ape.utils.basemodel import ManagerAccessMixin
 from ape.utils.misc import get_current_timestamp_ms
-from ape.utils.os import get_full_extension, get_relative_path
+from ape.utils.os import get_full_extension
 from ape.utils.trace import parse_coverage_tables
 
 if TYPE_CHECKING:
@@ -92,7 +92,7 @@ class CoverageData(ManagerAccessMixin):
         self, src_path: Path, pcs: Iterable[int], inc_fn_hits: bool = True
     ) -> tuple[set[int], list[str]]:
         if hasattr(self.project, "path"):
-            source_id = str(get_relative_path(src_path.absolute(), self.project.path))
+            source_id = f"{src_path.relative_to(self.project.path)}"
         else:
             source_id = str(src_path)
 
