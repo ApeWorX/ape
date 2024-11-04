@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 from typing import cast
 
@@ -137,7 +138,7 @@ def test_uri_invalid(geth_provider, project, ethereum):
     try:
         with project.temp_config(**config):
             # Assert we use the config value.
-            expected = f"Invalid URI (not HTTP, WS, or IPC): {value}"
+            expected = rf"Invalid URI \(not HTTP, WS, or IPC\): {re.escape(value)}"
             with pytest.raises(ConfigError, match=expected):
                 _ = geth_provider.uri
 
