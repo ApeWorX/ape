@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Any, Optional, Union
 import click
 from eth_pydantic_types import HexBytes
 from eth_utils import to_hex
+from ethpm_types.abi import EventABI
 
 from ape.api.address import Address, BaseAddress
 from ape.api.query import (
@@ -32,7 +33,7 @@ from ape.logging import get_rich_console, logger
 from ape.types.events import ContractLog, LogFilter, MockContractLog
 from ape.utils.abi import StructParser, _enrich_natspec
 from ape.utils.basemodel import (
-    BaseInterface,
+    BaseInterfaceModel,
     ExtraAttributesMixin,
     ExtraModelAttributes,
     ManagerAccessMixin,
@@ -43,7 +44,7 @@ from ape.utils.basemodel import (
 from ape.utils.misc import log_instead_of_fail
 
 if TYPE_CHECKING:
-    from ethpm_types.abi import ConstructorABI, ErrorABI, EventABI, MethodABI
+    from ethpm_types.abi import ConstructorABI, ErrorABI, MethodABI
     from ethpm_types.contract_type import ABI_W_SELECTOR_T, ContractType
     from pandas import DataFrame
 
@@ -435,7 +436,8 @@ class ContractTransactionHandler(ContractMethodHandler):
         )
 
 
-class ContractEvent(BaseInterface):
+# TODO: In Ape 0.9 - make not a BaseModel - no reason to.
+class ContractEvent(BaseInterfaceModel):
     """
     The types of events on a :class:`~ape.contracts.base.ContractInstance`.
     Use the event types via ``.`` access on the contract instances.
@@ -447,7 +449,7 @@ class ContractEvent(BaseInterface):
     """
 
     contract: "ContractTypeWrapper"
-    abi: "EventABI"
+    abi: EventABI
     _logs: Optional[list[ContractLog]] = None
 
     def __init__(self, *args, **kwargs):
