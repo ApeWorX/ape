@@ -4,7 +4,7 @@ from collections import defaultdict
 from collections.abc import Iterable, Iterator, Mapping
 from dataclasses import dataclass, field
 from fnmatch import fnmatch
-from functools import cached_property
+from functools import cached_property, singledispatchmethod
 from typing import TYPE_CHECKING, ClassVar, Optional
 
 import pytest
@@ -313,21 +313,15 @@ class FixtureMap(dict[Scope, list[str]]):
     def _arg2fixturedefs(self) -> Mapping:
         return self._item.session._fixturemanager._arg2fixturedefs
 
+    @singledispatchmethod
     def __setitem__(self, key, value):
-        # NOTE: Not using singledispatchmethod because it requires
-        #  types at runtime.
-        if isinstance(key, Scope):
-            self.__setitem_scope(key, value)
-        elif isinstance(key, str):
-            self.__setitem_str(key, value)
-        elif isinstance(key, int):
-            self.__setitem_int(key, value)
-
         raise NotImplementedError(type(key))
 
+    @__setitem__.register
     def __setitem_int(self, key: int, value: list[str]):
         super().__setitem__(Scope(key), value)
 
+    @__setitem__.register
     def __setitem_str(self, key: str, value: list[str]):
         for scope in Scope:
             if f"{scope}" == key:
@@ -336,9 +330,11 @@ class FixtureMap(dict[Scope, list[str]]):
 
         raise KeyError(key)
 
+    @__setitem__.register
     def __setitem_scope(self, key: Scope, value: list[str]):
         super().__setitem__(key, value)
 
+    @singledispatchmethod
     def __getitem__(self, key):
         # NOTE: Not using singledispatchmethod because it requires
         #  types at runtime.
@@ -351,9 +347,11 @@ class FixtureMap(dict[Scope, list[str]]):
 
         raise NotImplementedError(type(key))
 
+    @__getitem__.register
     def __getitem_int(self, key: int) -> list[str]:
         return super().__getitem__(Scope(key))
 
+    @__getitem__.register
     def __getitem_str(self, key: str) -> list[str]:
         for scope in Scope:
             if f"{scope}" == key:
@@ -361,6 +359,7 @@ class FixtureMap(dict[Scope, list[str]]):
 
         raise KeyError(key)
 
+    @__getitem__.register
     def __getitem_scope(self, key: Scope) -> list[str]:
         return super().__getitem__(key)
 
