@@ -327,8 +327,9 @@ def test_gas_price(eth_tester_provider):
 
 def test_get_code(eth_tester_provider, vyper_contract_instance):
     address = vyper_contract_instance.address
+    block_number = vyper_contract_instance.creation_metadata.block
     assert eth_tester_provider.get_code(address) == eth_tester_provider.get_code(
-        address, block_id=1
+        address, block_id=block_number
     )
 
 
