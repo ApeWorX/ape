@@ -1340,7 +1340,7 @@ class EthereumNodeProvider(Web3Provider, ABC):
             else:
                 raise TypeError(f"Not an URI: {uri}")
 
-        config = self.config.model_dump().get(self.network.ecosystem.name, None)
+        config: dict = self.config.get(self.network.ecosystem.name, None)
         if config is None:
             if rpc := self._get_random_rpc():
                 return rpc
@@ -1351,7 +1351,7 @@ class EthereumNodeProvider(Web3Provider, ABC):
             raise ProviderError(f"Please configure a URL for '{self.network_choice}'.")
 
         # Use value from config file
-        network_config = config.get(self.network.name) or DEFAULT_SETTINGS
+        network_config: dict = (config or {}).get(self.network.name) or DEFAULT_SETTINGS
 
         if "url" in network_config:
             raise ConfigError("Unknown provider setting 'url'. Did you mean 'uri'?")
@@ -1370,10 +1370,11 @@ class EthereumNodeProvider(Web3Provider, ABC):
 
         settings_uri = network_config.get(key, DEFAULT_SETTINGS["uri"])
         if _is_uri(settings_uri):
+            # Is true if HTTP, WS, or IPC.
             return settings_uri
 
-        # Likely was an IPC Path (or websockets) and will connect that way.
-        return super().http_uri or ""
+        # Is not HTTP, WS, or IPC. Raise an error.
+        raise ConfigError(f"Invalid URI (not HTTP, WS, or IPC): {settings_uri}")
 
     @property
     def http_uri(self) -> Optional[str]:

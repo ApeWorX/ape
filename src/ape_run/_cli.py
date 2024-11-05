@@ -8,19 +8,18 @@ from runpy import run_module
 from typing import Any, Union
 
 import click
-from click import Command, Context, Option
 
 from ape.cli.commands import ConnectedProviderCommand
 from ape.cli.options import _VERBOSITY_VALUES, _create_verbosity_kwargs, verbosity_option
 from ape.exceptions import ApeException, handle_ape_exception
 from ape.logging import logger
-from ape.utils.basemodel import ManagerAccessMixin as access
-from ape.utils.os import get_relative_path, use_temp_sys_path
-from ape_console._cli import console
 
 
 @contextmanager
 def use_scripts_sys_path(path: Path):
+    # perf: avoid importing at top of module so `--help` is faster.
+    from ape.utils.os import use_temp_sys_path
+
     # First, ensure there is not an existing scripts module.
     scripts = sys.modules.get("scripts")
     if scripts:
@@ -70,7 +69,9 @@ class ScriptCommand(click.MultiCommand):
         self._command_called = None
         self._has_warned_missing_hook: set[Path] = set()
 
-    def invoke(self, ctx: Context) -> Any:
+    def invoke(self, ctx: click.Context) -> Any:
+        from ape.utils.basemodel import ManagerAccessMixin as access
+
         try:
             return super().invoke(ctx)
         except Exception as err:
@@ -95,7 +96,8 @@ class ScriptCommand(click.MultiCommand):
                 raise
 
     def _get_command(self, filepath: Path) -> Union[click.Command, click.Group, None]:
-        relative_filepath = get_relative_path(filepath, access.local_project.path)
+        scripts_folder = Path.cwd() / "scripts"
+        relative_filepath = filepath.relative_to(scripts_folder)
 
         # First load the code module by compiling it
         # NOTE: This does not execute the module
@@ -122,14 +124,14 @@ class ScriptCommand(click.MultiCommand):
 
             self._namespace[filepath.stem] = cli_ns
             cli_obj = cli_ns["cli"]
-            if not isinstance(cli_obj, Command):
+            if not isinstance(cli_obj, click.Command):
                 logger.warning("Found `cli()` method but it is not a click command.")
                 return None
 
             params = [getattr(x, "name", None) for x in cli_obj.params]
             if "verbosity" not in params:
                 option_kwargs = _create_verbosity_kwargs()
-                option = Option(_VERBOSITY_VALUES, **option_kwargs)
+                option = click.Option(_VERBOSITY_VALUES, **option_kwargs)
                 cli_obj.params.append(option)
 
             cli_obj.name = filepath.stem if cli_obj.name in ("cli", "", None) else cli_obj.name
@@ -175,13 +177,16 @@ class ScriptCommand(click.MultiCommand):
 
     @property
     def commands(self) -> dict[str, Union[click.Command, click.Group]]:
-        if not access.local_project.scripts_folder.is_dir():
+        # perf: Don't reference `.local_project.scripts_folder` here;
+        #   it's too slow when doing just doing `--help`.
+        scripts_folder = Path.cwd() / "scripts"
+        if not scripts_folder.is_dir():
             return {}
 
-        return self._get_cli_commands(access.local_project.scripts_folder)
+        return self._get_cli_commands(scripts_folder)
 
     def _get_cli_commands(self, base_path: Path) -> dict:
-        commands: dict[str, Command] = {}
+        commands: dict[str, click.Command] = {}
 
         for filepath in base_path.iterdir():
             if filepath.stem.startswith("_"):
@@ -194,6 +199,7 @@ class ScriptCommand(click.MultiCommand):
                 subcommands = self._get_cli_commands(filepath)
                 for subcommand in subcommands.values():
                     group.add_command(subcommand)
+
                 commands[filepath.stem] = group
 
             if filepath.suffix == ".py":
@@ -223,6 +229,8 @@ class ScriptCommand(click.MultiCommand):
         return result
 
     def _launch_console(self):
+        from ape.utils.basemodel import ManagerAccessMixin as access
+
         trace = inspect.trace()
         trace_frames = [
             x for x in trace if x.filename.startswith(str(access.local_project.scripts_folder))
@@ -246,6 +254,8 @@ class ScriptCommand(click.MultiCommand):
             # Avoid keeping a reference to a frame to avoid reference cycles.
             if frame:
                 del frame
+
+        from ape_console._cli import console
 
         return console(project=access.local_project, extra_locals=extra_locals, embed=True)
 
