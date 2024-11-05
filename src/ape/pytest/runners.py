@@ -8,6 +8,7 @@ from rich import print as rich_print
 
 from ape.exceptions import ConfigError, ProviderNotConnectedError
 from ape.logging import LogLevel
+from ape.pytest.utils import Scope
 from ape.utils.basemodel import ManagerAccessMixin
 
 if TYPE_CHECKING:
@@ -172,8 +173,6 @@ class PytestApeRunner(ManagerAccessMixin):
             self._setup_isolation(item)
 
     def _setup_isolation(self, item):
-        from ape.pytest.utils import Scope
-
         fixtures = self.fixture_manager.get_fixtures(item)
         for scope in (Scope.SESSION, Scope.PACKAGE, Scope.MODULE, Scope.CLASS):
             if not (
@@ -274,8 +273,6 @@ class PytestApeRunner(ManagerAccessMixin):
                 self.fixture_manager.add_fixture_info(fixture_name, teardown_block=block_number)
 
     def _track_fixture_blocks(self, fixture_name: str) -> bool:
-        from ape.pytest.utils import Scope
-
         if not self.fixture_manager.is_custom(fixture_name):
             return False
 
