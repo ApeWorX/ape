@@ -70,11 +70,6 @@ def test_authorization(my_contract, owner, not_owner):
         my_contract.authorized_method(sender=not_owner)
 ```
 
-```{note}
-Ape has built-in test and fixture isolation for all pytest scopes.
-To disable isolation add the `--disable-isolation` flag when running `ape test`
-```
-
 ## Fixtures
 
 Now that we have discussed the full flow of a test, let's dive deeper into the specific parts, starting with `pytest.fixtures`.
@@ -200,11 +195,9 @@ You also have access to the `project` you are testing. You will need this to dep
 ```python
 import pytest
 
-
 @pytest.fixture
 def owner(accounts):
     return accounts[0]
-
 
 @pytest.fixture
 def my_contract(project, owner):
@@ -225,6 +218,72 @@ def my_contract(Contract):
 ```
 
 It has the same interface as the [ChainManager](../methoddocs/managers.html#ape.managers.chain.ChainManager).
+
+## Isolation
+
+By default, tests run with chain-isolation.
+This means, at the start of each test, a snapshot is taken.
+After each test completes, the chain reverts to that snapshot from the beginning of the test.
+
+By default, every `pytest` fixture is `function` scoped, meaning it will be replayed each time it is requested (no result-caching).
+For example, if you deploy a contract in a function-scoped fixture, it will be re-deployed each time the fixture gets used in your tests.
+To only deploy once, you can use different scopes, such as `"session"`, `"package"`, `"module"`, or `"class"`, and you **must** use these fixtures right away, either via `autouse=True` or using them in the first collected tests.
+Otherwise, higher-scoped fixtures that arrive late in a Pytest session will cause the snapshotting system to have to rebase itself, which can be costly.
+For example, if you define a session scoped fixture that deploys a contract and makes transactions, the state changes from those transactions remain in subsequent tests, whether those tests use that fixture or not.
+However, if a new fixture of a session scope comes into play after module, package, or class scoped snapshots have already been taken, those lower-scoped fixtures are now invalid and have to re-run after the session fixture to ensure the session fixture remains in the session-snapshot.
+
+In the following example, the `my_contract` fixture gets deployed upon its first usage, which happens in the test `test_my_contract_0()`.
+During the test `test_something_else()`, it may not have been deployed yet, as it was not requested, and it is defined before the other tests.
+Then, during `test_my_contract_1()`, instead of deploying again, it uses the cached result from the session-scoped fixture and the chain still has it in its state because the fixture is session-scoped and runs before the test-isolation.
+
+```python
+import pytest
+
+@pytest.fixture(scope="session")
+def my_contract(accounts, project):
+    owner = accounts[0]
+    contract = project.MyContract.deploy(sender=owner)
+    # Can also do stateful transactions in a session-scoped fixture.
+    contract.initialize(sender=owner)
+    return contract
+
+def test_something_else():
+    ...
+
+def test_my_contract_0(my_contract):
+    my_contract.myMethod()
+
+def test_my_contract_1(my_contract):
+    my_contract.myMethod()
+```
+
+To disable isolation, run `ape test` with the `--disable-isolation` flag.
+When isolation is disabled, the blockchain's state persists as the tests run.
+This will be more performant and less complex, but will also cause non-deterministic results in your tests as each test inherits the state of whatever was run before it.
+
+This may be further complicated when running with other pytest plugins such as `pytest-xdist` or `pytest-split` which re-arranges the order that tests are executed in (not recommended to use these plugins together with ape until more proper integrations are developed).
+
+```shell
+ape test --disable-isolation
+```
+
+```{warning}
+Be mindful if, when, and how you define non-function scoped fixtures.
+Pytest activates fixtures in the order they are used.
+If a session scoped fixture comes into play after package, module, or class scoped fixtures, the isolation logic has to invalidate each of those scopes and replay them after the session scoped, which causes any benefits of package, module, or class scopes to be void.
+If you are using higher-scoped fixtures for parametrized fixtures with lower-scoped fixtures, each itertion of the parametried fixture invalidates the lower-level fixtures each time, rendering everything to behave as function scoped until the end of the parametrized fixtures first run-through.
+```
+
+If you are using chain-isolation and have a higher-scoped fixture that you know is for-sure not chain-altering, you can use `ape.fixture` and the `chain_isolation` flag, and it may improve performance:
+
+```python
+import ape
+from ape_tokens import tokens
+
+@ape.fixture(scope="session", chain_isolation=False, params=("WETH", "DAI", "BAT"))
+def token_addresses(request):
+    return tokens[request].address
+```
 
 ## Ape testing commands
 
@@ -345,7 +404,8 @@ You may also supply an `re.Pattern` object to assert on a message pattern, rathe
 import ape
 import re
 
-# Matches explicitly "foo" or "bar"
+# Matches
+# "foo" or "bar"
 with ape.reverts(re.compile(r"^(foo|bar)$")):
     ...
 ```
@@ -396,8 +456,9 @@ You may also supply an `re.Pattern` object to assert on a dev message pattern, r
 
 ```python
 import ape
+import re
 
-# Matches explictly "dev: foo" or "dev: bar"
+# Matches "dev: foo" or "dev: bar"
 with ape.reverts(dev_message=re.compile(r"^dev: (foo|bar)$")):
     ...
 ```
