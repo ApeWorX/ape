@@ -14,6 +14,7 @@ __all__ = [
     "config",
     "convert",
     "Contract",
+    "fixture",
     "networks",
     "project",
     "Project",  # So you can load other projects
@@ -29,6 +30,11 @@ def __getattr__(name: str):
         from ape.pytest.contextmanagers import RevertsContextManager
 
         return RevertsContextManager
+
+    elif name == "fixture":
+        from ape.pytest.fixtures import fixture
+
+        return fixture
 
     else:
         from ape.utils.basemodel import ManagerAccessMixin as access

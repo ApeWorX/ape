@@ -625,7 +625,7 @@ class UnknownSnapshotError(ChainError):
             # Is block hash
             snapshot_id = humanize_hash(cast(Hash32, snapshot_id))
 
-        super().__init__(f"Unknown snapshot ID '{str(snapshot_id)}'.")
+        super().__init__(f"Unknown snapshot ID '{snapshot_id}'.")
 
 
 class QueryEngineError(ApeException):
