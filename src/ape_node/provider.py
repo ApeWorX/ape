@@ -208,7 +208,7 @@ class GethDevProcess(BaseGethProcess):
 
     def _clean(self):
         if self._data_dir.is_dir():
-            shutil.rmtree(self._data_dir)
+            shutil.rmtree(self._data_dir, ignore_errors=True)
 
         # dir must exist when initializing chain.
         self._data_dir.mkdir(parents=True, exist_ok=True)

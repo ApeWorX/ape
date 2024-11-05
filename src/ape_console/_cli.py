@@ -9,7 +9,6 @@ from types import ModuleType
 from typing import TYPE_CHECKING, Any, Optional, cast
 
 import click
-from IPython import InteractiveShell
 
 from ape.cli.commands import ConnectedProviderCommand
 from ape.cli.options import ape_cli_context, project_option
@@ -195,6 +194,8 @@ def _launch_console(
 
 
 def _execute_code(code: list[str], **ipython_kwargs):
+    from IPython import InteractiveShell
+
     shell = InteractiveShell.instance(**ipython_kwargs)
     # NOTE: Using `store_history=True` just so the cell IDs are accurate.
     for line in code:
