@@ -394,7 +394,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
             :class:`~ape.api.transactions.TransactionAPI`
         """
 
-        # NOTE: Allow overriding nonce, assume user understand what this does
+        # NOTE: Allow overriding nonce, assume user understands what this does
         if txn.nonce is None:
             txn.nonce = self.nonce
         elif txn.nonce < self.nonce:
