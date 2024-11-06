@@ -60,7 +60,7 @@ class BlockAPI(BaseInterfaceModel):
     An abstract class representing a block and its attributes.
     """
 
-    # NOTE: All fields in this class (and it's subclasses) should not be `Optional`
+    # NOTE: All fields in this class (and its subclasses) should not be `Optional`
     #       except the edge cases noted below
 
     num_transactions: HexInt = 0
@@ -231,7 +231,7 @@ class ProviderAPI(BaseInterfaceModel):
     @abstractmethod
     def connect(self):
         """
-        Connect a to a provider, such as start-up a process or create an HTTP connection.
+        Connect to a provider, such as start-up a process or create an HTTP connection.
         """
 
     @abstractmethod
@@ -352,7 +352,7 @@ class ProviderAPI(BaseInterfaceModel):
     def make_request(self, rpc: str, parameters: Optional[Iterable] = None) -> Any:
         """
         Make a raw RPC request to the provider.
-        Advanced featues such as tracing may utilize this to by-pass unnecessary
+        Advanced features such as tracing may utilize this to by-pass unnecessary
         class-serializations.
         """
 
@@ -933,7 +933,7 @@ class TestProviderAPI(ProviderAPI):
     @abstractmethod
     def auto_mine(self) -> bool:
         """
-        Enable or disbale automine.
+        Enable or disable automine.
         """
 
     def _increment_call_func_coverage_hit_count(self, txn: TransactionAPI):
