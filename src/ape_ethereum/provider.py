@@ -1341,6 +1341,7 @@ class EthereumNodeProvider(Web3Provider, ABC):
                 raise TypeError(f"Not an URI: {uri}")
 
         config: dict = self.config.get(self.network.ecosystem.name, None)
+        breakpoint()
         if config is None:
             if rpc := self._get_random_rpc():
                 return rpc
@@ -1352,7 +1353,6 @@ class EthereumNodeProvider(Web3Provider, ABC):
 
         # Use value from config file
         network_config: dict = (config or {}).get(self.network.name) or DEFAULT_SETTINGS
-
         if "url" in network_config:
             raise ConfigError("Unknown provider setting 'url'. Did you mean 'uri'?")
         elif "http_uri" in network_config:

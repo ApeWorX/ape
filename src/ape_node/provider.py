@@ -139,6 +139,9 @@ class GethDevProcess(BaseGethProcess):
             kwargs_ctor["ipc_path"] = f"{ipc_path}"
         if not kwargs_ctor.get("ws_enabled"):
             kwargs_ctor["ws_api"] = None
+            kwargs_ctor["ws_enabled"] = False
+            kwargs_ctor["ws_addr"] = None
+            kwargs_ctor["ws_port"] = None
 
         geth_kwargs = construct_test_chain_kwargs(**kwargs_ctor)
 
@@ -309,6 +312,22 @@ class EthereumNetworkConfig(PluginConfig):
 
     model_config = SettingsConfigDict(extra="allow")
 
+    @field_validator("local", mode="before")
+    @classmethod
+    def _validate_local(cls, value):
+        value = value or {}
+        if not value:
+            return {**DEFAULT_SETTINGS.copy(), "chain_id": DEFAULT_TEST_CHAIN_ID}
+
+        if "chain_id" not in value:
+            value["chain_id"] = DEFAULT_TEST_CHAIN_ID
+        if "uri" not in value and "ipc_path" in value or "ws_uri" in value or "http_uri" in value:
+            # No need to add default HTTP URI if was given only IPC Path
+            return {**{k: v for k,v in DEFAULT_SETTINGS.items() if k != "uri"}, **value}
+
+        return {**DEFAULT_SETTINGS, **value}
+
+
 
 class EthereumNodeConfig(PluginConfig):
     """
@@ -463,8 +482,9 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
         extra_accounts = list({a.lower() for a in extra_accounts})
         test_config["extra_funded_accounts"] = extra_accounts
         test_config["initial_balance"] = self.test_config.balance
-
-        return GethDevProcess.from_uri(self.uri, self.data_dir, **test_config)
+        uri = self.ws_uri or self.uri
+        breakpoint()
+        return GethDevProcess.from_uri(uri, self.data_dir, **test_config)
 
     def disconnect(self):
         # Must disconnect process first.
