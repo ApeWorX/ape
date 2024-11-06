@@ -128,7 +128,7 @@ class GethDevProcess(BaseGethProcess):
         if hostname is not None:
             kwargs_ctor["rpc_addr"] = hostname
         if port is not None:
-            kwargs_ctor["port"] = port
+            kwargs_ctor["port"] = f"{port}"
         if ws_hostname:
             kwargs_ctor["ws_enabled"] = True
             kwargs_ctor["ws_addr"] = ws_hostname
