@@ -2281,10 +2281,10 @@ class LocalProject(Project):
             return default_project
 
         # ape-config.yaml does no exist. Check for another ProjectAPI type.
-        project_classes: list[type[ProjectAPI]] = [
-            t[1] for t in list(self.plugin_manager.projects)  # type: ignore
-        ]
-        plugins = [t for t in project_classes if not issubclass(t, ApeProject)]
+        project_classes: Iterator[type[ProjectAPI]] = (
+            t[1] for t in self.plugin_manager.projects  # type: ignore
+        )
+        plugins = (t for t in project_classes if not issubclass(t, ApeProject))
         for api in plugins:
             if instance := api.attempt_validate(path=self._base_path):
                 return instance

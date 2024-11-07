@@ -195,12 +195,13 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         Custom network data defined in various ape-config files
         or added adhoc to the network manager.
         """
+        return [*self._custom_networks_from_config, *self._custom_networks]
+
+    @cached_property
+    def _custom_networks_from_config(self) -> list[dict]:
         return [
-            *[
-                n.model_dump(by_alias=True)
-                for n in self.config_manager.get_config("networks").get("custom", [])
-            ],
-            *self._custom_networks,
+            n.model_dump(by_alias=True)
+            for n in self.config_manager.get_config("networks").get("custom", [])
         ]
 
     @property
@@ -209,14 +210,23 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         All the registered ecosystems in ``ape``, such as ``ethereum``.
         """
         plugin_ecosystems = self._plugin_ecosystems
+        custom_ecosystems = self._custom_ecosystems
+        return {**custom_ecosystems, **plugin_ecosystems}
 
-        # Load config-based custom ecosystems.
-        # NOTE: Non-local projects will automatically add their custom networks
-        #   to `self.custom_networks`.
+    @cached_property
+    def _plugin_ecosystems(self) -> dict[str, "EcosystemAPI"]:
+        # Load plugins.
+        plugins = self.plugin_manager.ecosystems
+        return {n: cls(name=n) for n, cls in plugins}  # type: ignore[operator]
+
+    @cached_property
+    def _custom_ecosystems(self) -> dict[str, "EcosystemAPI"]:
         custom_networks: list = self.custom_networks
+        plugin_ecosystems = self._plugin_ecosystems
+        custom_ecosystems: dict[str, "EcosystemAPI"] = {}
         for custom_network in custom_networks:
             ecosystem_name = custom_network["ecosystem"]
-            if ecosystem_name in plugin_ecosystems:
+            if ecosystem_name in plugin_ecosystems or ecosystem_name in custom_ecosystems:
                 # Already included in a prior network.
                 continue
 
@@ -240,9 +250,9 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
                 update={"name": ecosystem_name},
                 cache_clear=("_networks_from_plugins", "_networks_from_evmchains"),
             )
-            plugin_ecosystems[ecosystem_name] = ecosystem_cls
+            custom_ecosystems[ecosystem_name] = ecosystem_cls
 
-        return {**self._evmchains_ecosystems, **plugin_ecosystems}
+        return {**self._evmchains_ecosystems, **plugin_ecosystems, **custom_ecosystems}
 
     @cached_property
     def _plugin_ecosystems(self) -> dict[str, "EcosystemAPI"]:
@@ -462,10 +472,45 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         Returns:
             :class:`~ape.api.networks.EcosystemAPI`
         """
-        if ecosystem_name in self.ecosystem_names:
-            return self.ecosystems[ecosystem_name]
+        # NOTE: This method purposely avoids "just checking self.ecosystems"
+        #   for performance reasons and exiting the search as early as possible.
+        ecosystem_name = ecosystem_name.lower().replace(" ", "-")
+        try:
+            return self._plugin_ecosystems[ecosystem_name]
+        except KeyError:
+            pass
+
+        # Check if custom.
+        try:
+            return self._custom_ecosystems[ecosystem_name]
+        except KeyError:
+            pass
+
+        if ecosystem := self._get_ecosystem_from_evmchains(ecosystem_name):
+            return ecosystem
 
         raise EcosystemNotFoundError(ecosystem_name, options=self.ecosystem_names)
+
+    def _get_ecosystem_from_evmchains(self, ecosystem_name: str) -> Optional["EcosystemAPI"]:
+        if ecosystem_name not in PUBLIC_CHAIN_META:
+            return None
+
+        symbol = None
+        for net in PUBLIC_CHAIN_META[ecosystem_name].values():
+            if not (native_currency := net.get("nativeCurrency")):
+                continue
+
+            if "symbol" not in native_currency:
+                continue
+
+            symbol = native_currency["symbol"]
+            break
+
+        symbol = symbol or "ETH"
+
+        # Is an EVM chain, can automatically make a class using evm-chains.
+        evm_class = self._plugin_ecosystems["ethereum"].__class__
+        return evm_class(name=ecosystem_name, fee_token_symbol=symbol)
 
     def get_provider_from_choice(
         self,
@@ -587,9 +632,9 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         if name := self._default_ecosystem_name:
             return name
 
-        return self.config_manager.default_ecosystem or "ethereum"
+        return self.local_project.config.default_ecosystem or "ethereum"
 
-    @property
+    @cached_property
     def default_ecosystem(self) -> "EcosystemAPI":
         """
         The default ecosystem. Call
@@ -598,7 +643,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         only a single ecosystem installed, such as Ethereum, then get
         that ecosystem.
         """
-        return self.ecosystems[self.default_ecosystem_name]
+        return self.get_ecosystem(self.default_ecosystem_name)
 
     def set_default_ecosystem(self, ecosystem_name: str):
         """
