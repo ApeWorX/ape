@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Optional, Union
 
 from evmchains import PUBLIC_CHAIN_META
 
-from ape.api.networks import EcosystemAPI, NetworkAPI, ProviderContextManager
+from ape.api.networks import ProviderContextManager
 from ape.exceptions import EcosystemNotFoundError, NetworkError, NetworkNotFoundError
 from ape.managers.base import BaseManager
 from ape.utils.basemodel import (
@@ -17,6 +17,7 @@ from ape.utils.misc import _dict_overlay, log_instead_of_fail
 from ape_ethereum.provider import EthereumNodeProvider
 
 if TYPE_CHECKING:
+    from ape.api.networks import EcosystemAPI, NetworkAPI
     from ape.api.providers import ProviderAPI
     from ape.utils.rpc import RPCHeaders
 
@@ -62,7 +63,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         self._active_provider = new_value
 
     @property
-    def network(self) -> NetworkAPI:
+    def network(self) -> "NetworkAPI":
         """
         The current network if connected to one.
 
@@ -76,7 +77,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         return self.provider.network
 
     @property
-    def ecosystem(self) -> EcosystemAPI:
+    def ecosystem(self) -> "EcosystemAPI":
         """
         The current ecosystem if connected to one.
 
@@ -203,7 +204,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         ]
 
     @property
-    def ecosystems(self) -> dict[str, EcosystemAPI]:
+    def ecosystems(self) -> dict[str, "EcosystemAPI"]:
         """
         All the registered ecosystems in ``ape``, such as ``ethereum``.
         """
@@ -244,7 +245,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         return {**self._evmchains_ecosystems, **plugin_ecosystems}
 
     @cached_property
-    def _plugin_ecosystems(self) -> dict[str, EcosystemAPI]:
+    def _plugin_ecosystems(self) -> dict[str, "EcosystemAPI"]:
         # Load plugins.
         plugins = self.plugin_manager.ecosystems
         return {n: cls(name=n) for n, cls in plugins}  # type: ignore[operator]
@@ -347,7 +348,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         )
 
     @only_raise_attribute_error
-    def __getattr__(self, attr_name: str) -> EcosystemAPI:
+    def __getattr__(self, attr_name: str) -> "EcosystemAPI":
         """
         Get an ecosystem via ``.`` access.
 
@@ -448,7 +449,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
             if ecosystem_has_providers:
                 yield ecosystem_name
 
-    def get_ecosystem(self, ecosystem_name: str) -> EcosystemAPI:
+    def get_ecosystem(self, ecosystem_name: str) -> "EcosystemAPI":
         """
         Get the ecosystem for the given name.
 
@@ -589,7 +590,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         return self.config_manager.default_ecosystem or "ethereum"
 
     @property
-    def default_ecosystem(self) -> EcosystemAPI:
+    def default_ecosystem(self) -> "EcosystemAPI":
         """
         The default ecosystem. Call
         :meth:`~ape.managers.networks.NetworkManager.set_default_ecosystem` to

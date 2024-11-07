@@ -102,10 +102,10 @@ class ApeConsoleNamespace(dict):
         # Override to set items directly into the dictionary
         super().__setitem__(key, value)
 
-    def __contains__(self, item: str):
+    def __contains__(self, item: str) -> bool:  # type: ignore
         return self.get(item) is not None
 
-    def update(self, mapping, **kwargs) -> None:
+    def update(self, mapping, **kwargs) -> None:  # type: ignore
         # Override to update the dictionary directly
         super().update(mapping, **kwargs)
 
