@@ -61,6 +61,9 @@ from ape import plugins
 # Here, we register our provider plugin so we can use it in 'ape'.
 @plugins.register(plugins.ProviderPlugin)
 def providers():
+    # NOTE: By keeping this import local, we avoid slower plugin load times.
+    from ape_my_plugin.provider import MyProvider
+    
     # NOTE: 'MyProvider' defined in a prior code-block.
     yield "ethereum", "local", MyProvider
 ```
@@ -68,6 +71,11 @@ def providers():
 This decorator hooks into ape core and ties everything together by looking for all local installed site-packages that start with `ape_`.
 Then, it will loop through these potential `ape` plugins and see which ones have created a plugin type registration.
 If the plugin type registration is found, then `ape` knows this package is a plugin and attempts to process it according to its registration interface.
+
+```{warning}
+Ensure your plugin's `__init__.py` file imports quickly by keeping all expensive imports in the hook functions locally.
+This helps Ape register plugins faster, which is required when checking for API implementations.
+```
 
 ### CLI Plugins
 

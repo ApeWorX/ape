@@ -224,13 +224,21 @@ Two plugins with the same API may do entirely different things and yet be interc
 </span><span data-line="3"><span class="c1"># Here, we register our provider plugin so we can use it in &#39;ape&#39;.</span>
 </span><span data-line="4"><span class="nd">@plugins</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">plugins</span><span class="o">.</span><span class="n">ProviderPlugin</span><span class="p">)</span>
 </span><span data-line="5"><span class="k">def</span> <span class="nf">providers</span><span class="p">():</span>
-</span><span data-line="6">    <span class="c1"># NOTE: &#39;MyProvider&#39; defined in a prior code-block.</span>
-</span><span data-line="7">    <span class="k">yield</span> <span class="s2">&quot;ethereum&quot;</span><span class="p">,</span> <span class="s2">&quot;local&quot;</span><span class="p">,</span> <span class="n">MyProvider</span>
+</span><span data-line="6">    <span class="c1"># NOTE: By keeping this import local, we avoid slower plugin load times.</span>
+</span><span data-line="7">    <span class="kn">from</span> <span class="nn">ape_my_plugin.provider</span> <span class="kn">import</span> <span class="n">MyProvider</span>
+</span><span data-line="8">    
+</span><span data-line="9">    <span class="c1"># NOTE: &#39;MyProvider&#39; defined in a prior code-block.</span>
+</span><span data-line="10">    <span class="k">yield</span> <span class="s2">&quot;ethereum&quot;</span><span class="p">,</span> <span class="s2">&quot;local&quot;</span><span class="p">,</span> <span class="n">MyProvider</span>
 </span></pre></div>
 </div>
 <p>This decorator hooks into ape core and ties everything together by looking for all local installed site-packages that start with <code class="docutils literal notranslate"><span class="pre">ape_</span></code>.
 Then, it will loop through these potential <code class="docutils literal notranslate"><span class="pre">ape</span></code> plugins and see which ones have created a plugin type registration.
 If the plugin type registration is found, then <code class="docutils literal notranslate"><span class="pre">ape</span></code> knows this package is a plugin and attempts to process it according to its registration interface.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Ensure your plugin’s <code class="docutils literal notranslate"><span class="pre">__init__.py</span></code> file imports quickly by keeping all expensive imports in the hook functions locally.
+This helps Ape register plugins faster, which is required when checking for API implementations.</p>
+</div>
 </section>
 <section id="cli-plugins">
 <h3>CLI Plugins<a class="headerlink" href="#cli-plugins" title="Link to this heading"></a></h3>
