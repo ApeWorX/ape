@@ -353,4 +353,4 @@ def test_explorer_when_adhoc_network_supported(networks, mocker):
 
 def test_evm_chains_auto_forked_networks_exist(networks):
     # NOTE: Moonbeam networks exist in evmchains only; that is how Ape knows about them.
-    assert issubclass(networks.moonbeam.moonriver_fork, ForkedNetworkAPI)
+    assert isinstance(networks.moonbeam.moonriver_fork, ForkedNetworkAPI)

@@ -325,7 +325,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
             for network_name, data in PUBLIC_CHAIN_META.get(self.name, {}).items()
             if network_name not in self._networks_from_plugins
         }
-        forked_networks: dict[str, type[ForkedNetworkAPI]] = {}
+        forked_networks: dict[str, ForkedNetworkAPI] = {}
         for network_name, network in networks.items():
             if network_name.endswith("-fork"):
                 # Already a fork.
@@ -336,7 +336,9 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
                 # The forked version of this network is already known.
                 continue
 
-            forked_networks[fork_network_name] = ForkedNetworkAPI
+            forked_networks[fork_network_name] = ForkedNetworkAPI(
+                name=fork_network_name, ecosystem=self
+            )
 
         return {**networks, **forked_networks}
 
