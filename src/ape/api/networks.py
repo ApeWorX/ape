@@ -318,13 +318,27 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
     @cached_property
     def _networks_from_evmchains(self) -> dict[str, "NetworkAPI"]:
         # NOTE: Purposely exclude plugins here so we also prefer plugins.
-        return {
+        networks = {
             network_name: create_network_type(data["chainId"], data["chainId"])(
                 name=network_name, ecosystem=self
             )
             for network_name, data in PUBLIC_CHAIN_META.get(self.name, {}).items()
             if network_name not in self._networks_from_plugins
         }
+        forked_networks: dict[str, type[ForkedNetworkAPI]] = {}
+        for network_name, network in networks.items():
+            if network_name.endswith("-fork"):
+                # Already a fork.
+                continue
+
+            fork_network_name = f"{network_name}-fork"
+            if any(x == fork_network_name for x in networks):
+                # The forked version of this network is already known.
+                continue
+
+            forked_networks[fork_network_name] = ForkedNetworkAPI
+
+        return {**networks, **forked_networks}
 
     def __post_init__(self):
         if len(self.networks) == 0:
@@ -535,7 +549,6 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         Returns:
           :class:`~ape.api.networks.NetworkAPI`
         """
-
         names = {network_name, network_name.replace("-", "_"), network_name.replace("_", "-")}
         networks = self.networks
         for name in names:
