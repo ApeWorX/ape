@@ -438,7 +438,26 @@ def test_custom_networks_defined_in_non_local_project(custom_networks_config_dic
 
     with ape.Project.create_temporary_project(config_override=custom_networks) as temp_project:
         nm = temp_project.network_manager
+
+        # Tests `.get_ecosystem()` for custom networks.
         ecosystem = nm.get_ecosystem(eco_name)
         assert ecosystem.name == eco_name
+
         network = ecosystem.get_network(net_name)
         assert network.name == net_name
+
+
+def test_get_ecosystem(networks):
+    ethereum = networks.get_ecosystem("ethereum")
+    assert isinstance(ethereum, EcosystemAPI)
+    assert ethereum.name == "ethereum"
+
+
+def test_get_ecosystem_from_evmchains(networks):
+    """
+    Show we can call `.get_ecosystem()` for an ecosystem only
+    defined in evmchains.
+    """
+    moonbeam = networks.get_ecosystem("moonbeam")
+    assert isinstance(moonbeam, EcosystemAPI)
+    assert moonbeam.name == "moonbeam"
