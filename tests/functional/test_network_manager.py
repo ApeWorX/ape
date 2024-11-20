@@ -240,7 +240,7 @@ def test_parse_network_choice_multiple_contexts(
 
 
 def test_getattr_ecosystem_with_hyphenated_name(networks, ethereum):
-    networks.ecosystems["hyphen-in-name"] = networks.ecosystems["ethereum"]
+    networks._plugin_ecosystems["hyphen-in-name"] = networks.ecosystems["ethereum"]
     assert networks.hyphen_in_name  # Make sure does not raise AttributeError
     del networks.ecosystems["hyphen-in-name"]
 
