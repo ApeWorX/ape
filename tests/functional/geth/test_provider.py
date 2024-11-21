@@ -844,6 +844,7 @@ def test_auto_mine(geth_provider):
     assert geth_provider.auto_mine is True
 
 
+@geth_process_test
 def test_geth_dev_from_uri_http(data_folder):
     geth_dev = GethDevProcess.from_uri("http://localhost:6799", data_folder)
     kwargs = geth_dev.geth_kwargs
@@ -865,6 +866,7 @@ def test_geth_dev_from_uri_ws(data_folder):
     assert kwargs["ws_port"] == "6799"
 
 
+@geth_process_test
 def test_geth_dev_from_uri_ipc(data_folder):
     geth_dev = GethDevProcess.from_uri("path/to/geth.ipc", data_folder)
     kwargs = geth_dev.geth_kwargs
