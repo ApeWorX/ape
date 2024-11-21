@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 
 from ape.exceptions import ConfigError
+from ape.pytest.config import ConfigWrapper
 from ape.pytest.runners import PytestApeRunner
 from ape_test import ApeTestConfig
 from ape_test._watch import run_with_observer
@@ -16,6 +17,32 @@ class TestApeTestConfig:
         actual = cfg.balance
         expected = 10_000_000_000_000_000_000  # 10 ETH in WEI
         assert actual == expected
+
+
+class TestConfigWrapper:
+    def test_verbosity(self, mocker):
+        """
+        Show it returns the same as pytest_config's.
+        """
+        pytest_cfg = mocker.MagicMock()
+        pytest_cfg.option.verbose = False
+        wrapper = ConfigWrapper(pytest_cfg)
+        assert wrapper.verbosity is False
+
+    def test_verbosity_when_no_capture(self, mocker):
+        """
+        Shows we enable verbose output when no-capture is set.
+        """
+
+        def get_opt(name: str):
+            return "no" if name == "capture" else None
+
+        pytest_cfg = mocker.MagicMock()
+        pytest_cfg.option.verbose = False  # Start off as False
+        pytest_cfg.getoption.side_effect = get_opt
+
+        wrapper = ConfigWrapper(pytest_cfg)
+        assert wrapper.verbosity is True
 
 
 def test_connect_to_mainnet_by_default(mocker):
