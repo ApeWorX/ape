@@ -4,7 +4,7 @@ TODO: In 0.9, move this module to `ape.types`.
 
 import inspect
 from abc import ABC
-from collections.abc import Callable, Iterator, Sequence
+from collections.abc import Callable, Iterator, Mapping, Sequence
 from importlib import import_module
 from pathlib import Path
 from sys import getrecursionlimit
@@ -413,7 +413,7 @@ class BaseModel(EthpmTypesBaseModel):
     def model_copy(
         self: "Model",
         *,
-        update: Optional[dict[str, Any]] = None,
+        update: Optional[Mapping[str, Any]] = None,
         deep: bool = False,
         cache_clear: Optional[Sequence[str]] = None,
     ) -> "Model":

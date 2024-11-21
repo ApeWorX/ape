@@ -23,7 +23,7 @@ QueryType = Union[
 
 @cache
 def _basic_columns(Model: type[BaseInterfaceModel]) -> set[str]:
-    columns = set(Model.model_fields)
+    columns = set(Model.__pydantic_fields__)
 
     # TODO: Remove once `ReceiptAPI` fields cleaned up for better processing
     if Model == ReceiptAPI:
