@@ -649,7 +649,7 @@ class ContractEvent(BaseInterfaceModel):
                 f"the chain length ({self.chain_manager.blocks.height})."
             )
         query: dict = {
-            "columns": list(ContractLog.model_fields) if columns[0] == "*" else columns,
+            "columns": list(ContractLog.__pydantic_fields__) if columns[0] == "*" else columns,
             "event": self.abi,
             "start_block": start_block,
             "stop_block": stop_block,
@@ -720,7 +720,7 @@ class ContractEvent(BaseInterfaceModel):
 
         addresses = list(set([contract_address] + (extra_addresses or [])))
         contract_event_query = ContractEventQuery(
-            columns=list(ContractLog.model_fields.keys()),
+            columns=list(ContractLog.__pydantic_fields__),
             contract=addresses,
             event=self.abi,
             search_topics=search_topics,

@@ -419,7 +419,7 @@ class ConversionManager(BaseManager):
         return converted_arguments
 
     def convert_method_kwargs(self, kwargs) -> dict:
-        fields = TransactionAPI.model_fields
+        fields = TransactionAPI.__pydantic_fields__
 
         def get_real_type(type_):
             all_types = getattr(type_, "_typevar_types", [])
