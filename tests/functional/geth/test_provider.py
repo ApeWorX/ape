@@ -134,6 +134,7 @@ def test_uri_non_dev_and_not_configured(mocker, ethereum):
     assert actual == expected
 
 
+@geth_process_test
 def test_uri_invalid(geth_provider, project, ethereum):
     settings = geth_provider.provider_settings
     geth_provider.provider_settings = {}
