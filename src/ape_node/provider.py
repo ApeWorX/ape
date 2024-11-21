@@ -225,18 +225,6 @@ class GethDevProcess(BaseGethProcess):
     def _ws_port(self) -> Optional[str]:
         return self.geth_kwargs.get("ws_port")
 
-    @cached_property
-    def ipc_path(self) -> str:
-        # Can remove if https://github.com/ethereum/py-geth/pull/239 merged.
-        return self.geth_kwargs.get("ipc_path") or os.path.abspath(
-            os.path.expanduser(
-                os.path.join(
-                    self.data_dir,
-                    "geth.ipc",
-                )
-            )
-        )
-
     def connect(self, timeout: int = 60):
         self._log_connection()
         self.start()
