@@ -159,8 +159,6 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#ape.contracts.base.ContractEvent"><code class="docutils literal notranslate"><span class="pre">ContractEvent</span></code></a><ul>
 <li><a class="reference internal" href="#ape.contracts.base.ContractEvent.__call__"><code class="docutils literal notranslate">__call__()</span></code></a></li>
 <li><a class="reference internal" href="#ape.contracts.base.ContractEvent.__iter__"><code class="docutils literal notranslate">__iter__()</span></code></a></li>
-<li><a class="reference internal" href="#ape.contracts.base.ContractEvent.__pydantic_computed_fields__"><code class="docutils literal notranslate">__pydantic_computed_fields__</span></code></a></li>
-<li><a class="reference internal" href="#ape.contracts.base.ContractEvent.__pydantic_fields__"><code class="docutils literal notranslate">__pydantic_fields__</span></code></a></li>
 <li><a class="reference internal" href="#ape.contracts.base.ContractEvent.__repr__"><code class="docutils literal notranslate">__repr__()</span></code></a></li>
 <li><a class="reference internal" href="#ape.contracts.base.ContractEvent.__signature__"><code class="docutils literal notranslate">__signature__</span></code></a></li>
 <li><a class="reference internal" href="#ape.contracts.base.ContractEvent.from_receipt"><code class="docutils literal notranslate">from_receipt()</span></code></a></li>
@@ -521,19 +519,6 @@ Use the event types via <code class="docutils literal notranslate"><span class="
 <dt class="sig sig-object py" id="ape.contracts.base.ContractEvent.__iter__">
 <span class="sig-name descname"><span class="pre">__iter__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="types.html#ape.types.events.ContractLog" title="ape.types.events.ContractLog"><span class="pre">ContractLog</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.contracts.base.ContractEvent.__iter__" title="Link to this definition"></a></dt>
 <dd><p>Get all logs that have occurred for this event.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.contracts.base.ContractEvent.__pydantic_computed_fields__">
-<span class="sig-name descname"><span class="pre">__pydantic_computed_fields__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#ape.contracts.base.ContractEvent.__pydantic_computed_fields__" title="Link to this definition"></a></dt>
-<dd><p>A dictionary of computed field names and their corresponding [<cite>ComputedFieldInfo</cite>][pydantic.fields.ComputedFieldInfo] objects.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ape.contracts.base.ContractEvent.__pydantic_fields__">
-<span class="sig-name descname"><span class="pre">__pydantic_fields__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">FieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'abi':</span> <span class="pre">FieldInfo(annotation=EventABI,</span> <span class="pre">required=True),</span> <span class="pre">'contract':</span> <span class="pre">FieldInfo(annotation=ContractTypeWrapper,</span> <span class="pre">required=True)}</span></em><a class="headerlink" href="#ape.contracts.base.ContractEvent.__pydantic_fields__" title="Link to this definition"></a></dt>
-<dd><p>A dictionary of field names and their corresponding [<cite>FieldInfo</cite>][pydantic.fields.FieldInfo] objects.
-This replaces <cite>Model.__fields__</cite> from Pydantic V1.</p>
 </dd></dl>
 
 <dl class="py method">
