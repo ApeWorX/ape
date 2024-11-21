@@ -349,3 +349,8 @@ def test_explorer_when_adhoc_network_supported(networks, mocker):
     ]
     assert network.explorer is not None
     assert network.explorer.name == NAME
+
+
+def test_evm_chains_auto_forked_networks_exist(networks):
+    # NOTE: Moonbeam networks exist in evmchains only; that is how Ape knows about them.
+    assert isinstance(networks.moonbeam.moonriver_fork, ForkedNetworkAPI)
