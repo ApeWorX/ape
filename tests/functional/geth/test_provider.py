@@ -862,3 +862,12 @@ def test_geth_dev_from_uri_ws(data_folder):
     assert kwargs["ws_enabled"] is True
     assert kwargs["ws_addr"] == "localhost"
     assert kwargs["ws_port"] == "6799"
+
+
+def test_geth_dev_from_uri_ipc(data_folder):
+    geth_dev = GethDevProcess.from_uri("path/to/geth.ipc", data_folder)
+    kwargs = geth_dev.geth_kwargs
+    assert kwargs["ipc_path"] == "path/to/geth.ipc"
+    assert kwargs.get("ws_api") is None
+    assert kwargs.get("ws_addr") is None
+    assert kwargs.get("rpc_addr") is None

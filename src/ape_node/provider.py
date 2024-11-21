@@ -1,7 +1,5 @@
 import atexit
-import os
 import shutil
-from functools import cached_property
 from pathlib import Path
 from subprocess import DEVNULL, PIPE, Popen
 from typing import TYPE_CHECKING, Any, Optional, Union
@@ -311,10 +309,9 @@ class EthereumNetworkConfig(PluginConfig):
             value["chain_id"] = DEFAULT_TEST_CHAIN_ID
         if "uri" not in value and "ipc_path" in value or "ws_uri" in value or "http_uri" in value:
             # No need to add default HTTP URI if was given only IPC Path
-            return {**{k: v for k,v in DEFAULT_SETTINGS.items() if k != "uri"}, **value}
+            return {**{k: v for k, v in DEFAULT_SETTINGS.items() if k != "uri"}, **value}
 
         return {**DEFAULT_SETTINGS, **value}
-
 
 
 class EthereumNodeConfig(PluginConfig):
