@@ -483,7 +483,6 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
         test_config["extra_funded_accounts"] = extra_accounts
         test_config["initial_balance"] = self.test_config.balance
         uri = self.ws_uri or self.uri
-        breakpoint()
         return GethDevProcess.from_uri(uri, self.data_dir, **test_config)
 
     def disconnect(self):
