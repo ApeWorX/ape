@@ -849,7 +849,7 @@ def test_geth_dev_from_uri_http(data_folder):
     geth_dev = GethDevProcess.from_uri("http://localhost:6799", data_folder)
     kwargs = geth_dev.geth_kwargs
     assert kwargs["rpc_addr"] == "localhost"
-    assert kwargs["port"] == "6799"
+    assert kwargs["rpc_port"] == "6799"
     assert kwargs["ws_enabled"] is False
     assert kwargs.get("ws_api") is None
     assert kwargs.get("ws_addr") is None
