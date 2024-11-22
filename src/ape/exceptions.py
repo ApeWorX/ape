@@ -22,7 +22,7 @@ if TYPE_CHECKING:
     from ethpm_types.contract_type import ContractType
 
     from ape.api.networks import NetworkAPI
-    from ape.api.providers import SubprocessProvider
+    from ape.api.providers import ProviderAPI, SubprocessProvider
     from ape.api.trace import TraceAPI
     from ape.api.transactions import ReceiptAPI, TransactionAPI
     from ape.managers.project import ProjectManager
@@ -590,29 +590,39 @@ class ContractNotFoundError(ChainError):
     Raised when a contract is not found at an address.
     """
 
-    # TODO: In 0.9, pass in provider object directly (instead of network choice + name)
-    def __init__(self, address: "AddressType", has_explorer: bool, network_choice: str):
+    def __init__(self, address: "AddressType", provider: Optional["ProviderAPI"] = None):
+        try:
+            msg = self._create_message(address, provider=provider)
+        except Exception as err:
+            # Don't let errors occurring within exception handling to
+            # ruin the exception completely.
+            logger.error(f"Failed to create proper error message because of: {err}")
+            msg = f"Failed to get contract type for address '{address}'."
+
+        super().__init__(msg)
+
+    @classmethod
+    def _create_message(
+        cls, address: "AddressType", provider: Optional["ProviderAPI"] = None
+    ) -> str:
         msg = f"Failed to get contract type for address '{address}'."
+        if not provider:
+            return msg
 
-        # NOTE: Network name is optional to avoid breaking change.
-        choice_parts = network_choice.split(":")
-        if len(choice_parts) > 1:
-            network_name = network_choice.split(":")[1]
-        else:
-            network_name = network_choice
+        network_name = provider.network_choice.split(":")[1]
 
-        if has_explorer:
-            msg += " Contract may need verification."
+        if provider.network.explorer:
+            msg += " Contract may need verification (if relying on an explorer)."
         elif network_name != "local":
             # Only bother mentioning explorer plugins if we are not the local network.
             msg += (
-                f" Current network '{network_choice}' has no associated "
+                f" Current network '{provider.network_choice}' has no associated "
                 "explorer plugin. Try installing an explorer plugin using "
                 f"{click.style(text='ape plugins install etherscan', fg='green')}, "
                 "or using a network with explorer support."
             )
 
-        super().__init__(msg)
+        return msg
 
 
 class UnknownSnapshotError(ChainError):
