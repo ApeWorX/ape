@@ -565,7 +565,11 @@ def _project_callback(ctx, param, val):
 
 def project_option(**kwargs):
     _type = kwargs.pop("type", None)
-    callback = _project_path_callback if issubclass(_type, Path) else _project_callback
+    callback = (
+        _project_path_callback
+        if (isinstance(_type, type) and issubclass(_type, Path))
+        else _project_callback
+    )
     return click.option(
         "--project",
         help="The path to a local project or manifest",

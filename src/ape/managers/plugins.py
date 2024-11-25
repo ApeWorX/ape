@@ -124,8 +124,13 @@ class PluginManager:
         if self.__registered:
             return
 
-        plugins = ({n.replace("-", "_") for n in get_plugin_dists()})
+        handled = set()
+        plugins = (n.replace("-", "_") for n in get_plugin_dists())
         for module_name in chain(plugins, iter(CORE_PLUGINS)):
+            if module_name in handled:
+                continue
+
+            handled.add(module_name)
             try:
                 module = import_module(module_name)
                 pluggy_manager.register(module)

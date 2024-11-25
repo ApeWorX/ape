@@ -209,24 +209,31 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         """
         All the registered ecosystems in ``ape``, such as ``ethereum``.
         """
-        plugin_ecosystems = self._plugin_ecosystems
-        custom_ecosystems = self._custom_ecosystems
-        return {**custom_ecosystems, **plugin_ecosystems}
+        return {
+            **self._evmchains_ecosystems,
+            **self._plugin_ecosystems,
+            **self._custom_ecosystems,
+        }
 
     @cached_property
     def _plugin_ecosystems(self) -> dict[str, "EcosystemAPI"]:
-        # Load plugins.
-        plugins = self.plugin_manager.ecosystems
-        return {n: cls(name=n) for n, cls in plugins}  # type: ignore[operator]
+        # Load plugins (possibly for first time).
+        plugins: list[tuple] = self.plugin_manager.ecosystems
+        return {n: cls(name=n) for n, cls in plugins}
 
     @cached_property
     def _custom_ecosystems(self) -> dict[str, "EcosystemAPI"]:
         custom_networks: list = self.custom_networks
         plugin_ecosystems = self._plugin_ecosystems
+        evm_chains = self._evmchains_ecosystems
         custom_ecosystems: dict[str, "EcosystemAPI"] = {}
         for custom_network in custom_networks:
             ecosystem_name = custom_network["ecosystem"]
-            if ecosystem_name in plugin_ecosystems or ecosystem_name in custom_ecosystems:
+            if (
+                ecosystem_name in plugin_ecosystems
+                or ecosystem_name in evm_chains
+                or ecosystem_name in custom_ecosystems
+            ):
                 # Already included in a prior network.
                 continue
 
@@ -255,14 +262,8 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         return {**self._evmchains_ecosystems, **plugin_ecosystems, **custom_ecosystems}
 
     @cached_property
-    def _plugin_ecosystems(self) -> dict[str, "EcosystemAPI"]:
-        # Load plugins.
-        plugins = self.plugin_manager.ecosystems
-        return {n: cls(name=n) for n, cls in plugins}  # type: ignore[operator]
-
-    @cached_property
-    def _evmchains_ecosystems(self) -> dict[str, EcosystemAPI]:
-        ecosystems: dict[str, EcosystemAPI] = {}
+    def _evmchains_ecosystems(self) -> dict[str, "EcosystemAPI"]:
+        ecosystems: dict[str, "EcosystemAPI"] = {}
         for name in PUBLIC_CHAIN_META:
             ecosystem_name = name.lower().replace(" ", "-")
             symbol = None
@@ -718,6 +719,12 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
             ecosystem_data["networks"].append(network_data)
 
         return ecosystem_data
+
+    def _invalidate_cache(self):
+        # NOTE: Called when changing config programmatically.
+        self.__dict__.pop("_custom_ecosystems", None)
+        self.__dict__.pop("_custom_networks_from_config", None)
+        self._custom_networks = []
 
 
 def _validate_filter(arg: Optional[Union[list[str], str]], options: set[str]):

@@ -1941,6 +1941,7 @@ class Project(ProjectManager):
         self._config_override = overrides
         _ = self.config
         self.account_manager.test_accounts.reset()
+        self.network_manager._invalidate_cache()
 
     def extract_manifest(self) -> PackageManifest:
         # Attempt to compile, if needed.

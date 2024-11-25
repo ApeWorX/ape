@@ -250,9 +250,53 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         Returns:
             dict[str, :class:`~ape.api.networks.NetworkAPI`]
         """
-        networks = {**self._networks_from_plugins}
+        return {
+            **self._networks_from_evmchains,
+            **self._networks_from_plugins,
+            **self._custom_networks,
+        }
 
-        # Include configured custom networks.
+    @cached_property
+    def _networks_from_plugins(self) -> dict[str, "NetworkAPI"]:
+        return {
+            network_name: network_class(name=network_name, ecosystem=self)
+            for _, (ecosystem_name, network_name, network_class) in self.plugin_manager.networks
+            if ecosystem_name == self.name
+        }
+
+    @cached_property
+    def _networks_from_evmchains(self) -> dict[str, "NetworkAPI"]:
+        # NOTE: Purposely exclude plugins here so we also prefer plugins.
+        networks = {
+            network_name: create_network_type(data["chainId"], data["chainId"])(
+                name=network_name, ecosystem=self
+            )
+            for network_name, data in PUBLIC_CHAIN_META.get(self.name, {}).items()
+            if network_name not in self._networks_from_plugins
+        }
+        forked_networks: dict[str, ForkedNetworkAPI] = {}
+        for network_name, network in networks.items():
+            if network_name.endswith("-fork"):
+                # Already a fork.
+                continue
+
+            fork_network_name = f"{network_name}-fork"
+            if any(x == fork_network_name for x in networks):
+                # The forked version of this network is already known.
+                continue
+
+            forked_networks[fork_network_name] = ForkedNetworkAPI(
+                name=fork_network_name, ecosystem=self
+            )
+
+        return {**networks, **forked_networks}
+
+    @property
+    def _custom_networks(self) -> dict[str, "NetworkAPI"]:
+        """
+        Networks from config.
+        """
+        networks: dict[str, "NetworkAPI"] = {}
         custom_networks: list[dict] = [
             n
             for n in self.network_manager.custom_networks
@@ -300,47 +344,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
             network_api._is_custom = True
             networks[net_name] = network_api
 
-        # Add any remaining networks from EVM chains here (but don't override).
-        # NOTE: Only applicable to EVM-based ecosystems, of course.
-        #   Otherwise, this is a no-op.
-        networks = {**self._networks_from_evmchains, **networks}
-
         return networks
-
-    @cached_property
-    def _networks_from_plugins(self) -> dict[str, "NetworkAPI"]:
-        return {
-            network_name: network_class(name=network_name, ecosystem=self)
-            for _, (ecosystem_name, network_name, network_class) in self.plugin_manager.networks
-            if ecosystem_name == self.name
-        }
-
-    @cached_property
-    def _networks_from_evmchains(self) -> dict[str, "NetworkAPI"]:
-        # NOTE: Purposely exclude plugins here so we also prefer plugins.
-        networks = {
-            network_name: create_network_type(data["chainId"], data["chainId"])(
-                name=network_name, ecosystem=self
-            )
-            for network_name, data in PUBLIC_CHAIN_META.get(self.name, {}).items()
-            if network_name not in self._networks_from_plugins
-        }
-        forked_networks: dict[str, ForkedNetworkAPI] = {}
-        for network_name, network in networks.items():
-            if network_name.endswith("-fork"):
-                # Already a fork.
-                continue
-
-            fork_network_name = f"{network_name}-fork"
-            if any(x == fork_network_name for x in networks):
-                # The forked version of this network is already known.
-                continue
-
-            forked_networks[fork_network_name] = ForkedNetworkAPI(
-                name=fork_network_name, ecosystem=self
-            )
-
-        return {**networks, **forked_networks}
 
     def __post_init__(self):
         if len(self.networks) == 0:
