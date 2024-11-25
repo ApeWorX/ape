@@ -133,7 +133,7 @@ class PluginManager:
             handled.add(module_name)
             try:
                 module = import_module(module_name)
-                pluggy_manager.register(module)
+                pluggy_manager.register(module, name=module_name)
             except Exception as err:
                 if module_name in CORE_PLUGINS or module_name == "ape":
                     # Always raise core plugin registration errors.

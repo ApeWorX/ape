@@ -264,7 +264,10 @@ def network_option(
 
         def callback(ctx, param, value):
             keep_as_choice_str = param.type.base_type is str
-            provider_obj = _get_provider(value, default, keep_as_choice_str)
+            try:
+                provider_obj = _get_provider(value, default, keep_as_choice_str)
+            except Exception as err:
+                raise click.BadOptionUsage("--network", str(err), ctx)
 
             if provider_obj:
                 _update_context_with_network(ctx, provider_obj, requested_network_objects)

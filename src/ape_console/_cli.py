@@ -207,8 +207,13 @@ def console(
         # Required for click.testing.CliRunner support.
         embed = True
 
-    namespace = ApeConsoleNamespace(**(extra_locals or {}))
+    namespace = _create_namespace(**(extra_locals or {}))
     _launch_console(namespace, ipy_config, embed, banner, code=code)
+
+
+def _create_namespace(**values) -> dict:
+    # Abstracted for testing purposes.
+    return ApeConsoleNamespace(**values)
 
 
 def _launch_console(

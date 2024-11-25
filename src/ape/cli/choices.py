@@ -8,7 +8,12 @@ from typing import TYPE_CHECKING, Any, Optional, Union
 import click
 from click import Choice, Context, Parameter
 
-from ape.exceptions import AccountsError
+from ape.exceptions import (
+    AccountsError,
+    EcosystemNotFoundError,
+    NetworkNotFoundError,
+    ProviderNotFoundError,
+)
 
 if TYPE_CHECKING:
     from ape.api.accounts import AccountAPI
@@ -396,7 +401,10 @@ class NetworkChoice(click.Choice):
             from ape.utils.basemodel import ManagerAccessMixin as access
 
             networks = access.network_manager
-            value = networks.get_provider_from_choice(network_choice=value)
+            try:
+                value = networks.get_provider_from_choice(network_choice=value)
+            except (EcosystemNotFoundError, NetworkNotFoundError, ProviderNotFoundError) as err:
+                self.fail(str(err))
 
         return self.callback(ctx, param, value) if self.callback else value
 

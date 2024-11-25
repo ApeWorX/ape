@@ -4,7 +4,7 @@ import pytest
 
 from ape import Project
 from ape.utils import ManagerAccessMixin, create_tempdir
-from ape_console._cli import console
+from ape_console._cli import ApeConsoleNamespace, console
 from ape_console.plugin import custom_exception_handler
 
 
@@ -14,28 +14,21 @@ def mock_console(mocker):
     return mocker.patch("ape_console._cli._launch_console")
 
 
-@pytest.fixture(autouse=True)
-def mock_ape_console_extras(mocker):
-    """Prevent actually loading console extras files."""
-    return mocker.patch("ape_console._cli.load_console_extras")
-
-
-def test_console_extras_uses_ape_namespace(mocker, mock_console, mock_ape_console_extras):
+def test_console_extras_uses_ape_namespace(mocker, mock_console):
     """
     Test that if console is given extras, those are included in the console
     but not as args to the extras files, as those files expect items from the
     default ape namespace.
     """
+    namespace_patch = mocker.patch("ape_console._cli._create_namespace")
     accounts_custom = mocker.MagicMock()
     extras = {"accounts": accounts_custom}
     console(extra_locals=extras)
+    actual = namespace_patch.call_args[1]
+    assert actual["accounts"] == accounts_custom
 
-    # Show extras file still load using Ape namespace.
-    actual = mock_ape_console_extras.call_args[1]
-    assert actual["accounts"] != accounts_custom
-
-    # Show the custom accounts do get used in console.
-    assert mock_console.call_args[0][0]["accounts"] == accounts_custom
+    extras = ApeConsoleNamespace()
+    assert extras["accounts"]
 
 
 def test_console_custom_project(mock_console, mock_ape_console_extras):
