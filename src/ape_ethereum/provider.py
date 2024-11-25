@@ -1352,7 +1352,6 @@ class EthereumNodeProvider(Web3Provider, ABC):
 
         # Use value from config file
         network_config: dict = (config or {}).get(self.network.name) or DEFAULT_SETTINGS
-
         if "url" in network_config:
             raise ConfigError("Unknown provider setting 'url'. Did you mean 'uri'?")
         elif "http_uri" in network_config:
