@@ -44,7 +44,7 @@ extras_require = {
     ],
     "doc": ["sphinx-ape"],
     "release": [  # `release` GitHub Action job uses this
-        "setuptools",  # Installation tool
+        "setuptools>=75",  # Installation tool
         "wheel",  # Packaging tool
         "twine==3.8.0",  # Package upload tool
     ],
