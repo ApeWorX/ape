@@ -157,7 +157,7 @@ data-aria-dark="Switch to auto color mode">
           <section id="proxy-contracts">
 <h1>Proxy Contracts<a class="headerlink" href="#proxy-contracts" title="Link to this heading"></a></h1>
 <p>Ape is able to detect proxy contracts so that it uses the target interface when interacting with a contract.
-The following proxies are supporting in <code class="docutils literal notranslate"><span class="pre">ape-ethereum</span></code>:</p>
+The following proxies are supported in <code class="docutils literal notranslate"><span class="pre">ape-ethereum</span></code>:</p>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
 <thead>
@@ -210,7 +210,7 @@ See <a class="reference external" href="./contracts.html">this guide</a> to lear
 </span><span data-line="3"><span class="n">my_contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span><span class="s2">&quot;0x...&quot;</span><span class="p">)</span>
 </span></pre></div>
 </div>
-<p>Ape will check the address you give it and detect if hosts a proxy contract.
+<p>Ape will check the address you give it and detect if it hosts a proxy contract.
 In the case where it determines the address is a proxy contract, it resolves the address of the implementation (every proxy is different) and returns the interface for the implementation contract.
 This allows you to still call methods as you normally do on proxy contracts.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="c1"># `my_contract` address points to a proxy with no methods in the interface</span>

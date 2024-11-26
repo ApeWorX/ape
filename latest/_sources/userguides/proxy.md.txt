@@ -1,7 +1,7 @@
 # Proxy Contracts
 
 Ape is able to detect proxy contracts so that it uses the target interface when interacting with a contract.
-The following proxies are supporting in `ape-ethereum`:
+The following proxies are supported in `ape-ethereum`:
 
 | Proxy Type   | Short Description                 |
 | ------------ | --------------------------------- |
@@ -27,7 +27,7 @@ from ape import Contract
 my_contract = Contract("0x...")
 ```
 
-Ape will check the address you give it and detect if hosts a proxy contract.
+Ape will check the address you give it and detect if it hosts a proxy contract.
 In the case where it determines the address is a proxy contract, it resolves the address of the implementation (every proxy is different) and returns the interface for the implementation contract.
 This allows you to still call methods as you normally do on proxy contracts.
 
