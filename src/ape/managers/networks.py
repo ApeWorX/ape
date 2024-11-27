@@ -259,7 +259,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
             )
             custom_ecosystems[ecosystem_name] = ecosystem_cls
 
-        return {**self._evmchains_ecosystems, **plugin_ecosystems, **custom_ecosystems}
+        return custom_ecosystems
 
     @cached_property
     def _evmchains_ecosystems(self) -> dict[str, "EcosystemAPI"]:

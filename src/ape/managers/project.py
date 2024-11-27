@@ -1631,8 +1631,14 @@ class ProjectManager(ExtraAttributesMixin, BaseManager):
     def create_temporary_project(
         cls, config_override: Optional[dict] = None
     ) -> Iterator["LocalProject"]:
+        cls._invalidate_project_dependent_caches()
         with create_tempdir() as path:
             yield LocalProject(path, config_override=config_override)
+
+    @classmethod
+    def _invalidate_project_dependent_caches(cls):
+        cls.account_manager.test_accounts.reset()
+        cls.network_manager._invalidate_cache()
 
 
 class Project(ProjectManager):
@@ -1940,8 +1946,7 @@ class Project(ProjectManager):
 
         self._config_override = overrides
         _ = self.config
-        self.account_manager.test_accounts.reset()
-        self.network_manager._invalidate_cache()
+        self._invalidate_project_dependent_caches()
 
     def extract_manifest(self) -> PackageManifest:
         # Attempt to compile, if needed.
