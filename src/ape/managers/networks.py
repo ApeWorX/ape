@@ -538,7 +538,6 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         Returns:
             :class:`~ape.api.providers.ProviderAPI`
         """
-
         if network_choice is None:
             default_network = self.default_ecosystem.default_network
             return default_network.get_provider(provider_settings=provider_settings)

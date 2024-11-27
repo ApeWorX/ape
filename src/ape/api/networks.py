@@ -1151,20 +1151,16 @@ class NetworkAPI(BaseInterfaceModel):
         Returns:
             :class:`~ape.api.providers.ProviderAPI`
         """
-        provider_name = provider_name or self.default_provider_name
-        if not provider_name:
-            from ape.managers.config import CONFIG_FILE_NAME
-
+        if not (provider_name := provider_name or self.default_provider_name):
             raise NetworkError(
                 f"No default provider for network '{self.name}'. "
-                f"Set one in your {CONFIG_FILE_NAME}:\n"
+                "Set one in your pyproject.toml/ape-config.yaml file:\n"
                 f"\n{self.ecosystem.name}:"
                 f"\n  {self.name}:"
                 "\n    default_provider: <DEFAULT_PROVIDER>"
             )
 
         provider_settings = provider_settings or {}
-
         if ":" in provider_name:
             # NOTE: Shortcut that allows `--network ecosystem:network:http://...` to work
             provider_settings["uri"] = provider_name
@@ -1174,19 +1170,20 @@ class NetworkAPI(BaseInterfaceModel):
             provider_settings["ipc_path"] = provider_name
             provider_name = "node"
 
-        # If it can fork Ethereum (and we are asking for it) assume it can fork this one.
-        # TODO: Refactor this approach to work for custom-forked non-EVM networks.
-        common_forking_providers = self.network_manager.ethereum.mainnet_fork.providers
         if provider_name in self.providers:
             provider = self.providers[provider_name](provider_settings=provider_settings)
             return _set_provider(provider)
 
-        elif self.is_fork and provider_name in common_forking_providers:
-            provider = common_forking_providers[provider_name](
-                provider_settings=provider_settings,
-                network=self,
-            )
-            return _set_provider(provider)
+        elif self.is_fork:
+            # If it can fork Ethereum (and we are asking for it) assume it can fork this one.
+            # TODO: Refactor this approach to work for custom-forked non-EVM networks.
+            common_forking_providers = self.network_manager.ethereum.mainnet_fork.providers
+            if provider_name in common_forking_providers:
+                provider = common_forking_providers[provider_name](
+                    provider_settings=provider_settings,
+                    network=self,
+                )
+                return _set_provider(provider)
 
         raise ProviderNotFoundError(
             provider_name,
