@@ -978,8 +978,8 @@ def test_networks_when_custom_ecosystem(
 
 def test_networks_multiple_networks_with_same_name(custom_networks_config_dict, ethereum, project):
     data = copy.deepcopy(custom_networks_config_dict)
-    data["networks"]["custom"][0]["name"] = "foonet"  # There already is a foonet in "ethereum".
-    data["networks"]["custom"][1]["name"] = "foonet"  # There already is a foonet in "ethereum".
+    data["networks"]["custom"][0]["name"] = "foonet"
+    data["networks"]["custom"][1]["name"] = "foonet"
     expected = ".*More than one network named 'foonet' in ecosystem 'ethereum'.*"
     with project.temp_config(**data):
         with pytest.raises(NetworkError, match=expected):

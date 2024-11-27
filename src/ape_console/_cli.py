@@ -66,6 +66,8 @@ def import_extras_file(file_path) -> ModuleType:
 class ApeConsoleNamespace(dict):
     def __init__(self, **kwargs):
         # Initialize the dictionary with provided keyword arguments
+        project = kwargs.get("project", self._ape.project)
+        kwargs["project"] = self._ape.Project(project) if isinstance(project, Path) else project
         super().__init__(**kwargs)
 
     def __getitem__(self, key: str):
@@ -115,11 +117,11 @@ class ApeConsoleNamespace(dict):
 
     @cached_property
     def _local_path(self) -> Path:
-        return self._ape.project.path.joinpath(CONSOLE_EXTRAS_FILENAME)
+        return self["project"].path.joinpath(CONSOLE_EXTRAS_FILENAME)
 
     @cached_property
     def _global_path(self) -> Path:
-        return self._ape.project.config_manager.DATA_FOLDER.joinpath(CONSOLE_EXTRAS_FILENAME)
+        return self._ape.config.DATA_FOLDER.joinpath(CONSOLE_EXTRAS_FILENAME)
 
     @cached_property
     def _local_extras(self) -> dict:
