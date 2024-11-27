@@ -88,7 +88,7 @@ class ApeConsoleNamespace(dict):
             self[key] = res  # Cache the result
             return res
 
-        # Attempt to retrieve the key from the Ape module
+        # Attempt to retrieve the key from the Ape module.
         try:
             res = self._get_from_ape(key)
         except AttributeError:
@@ -114,14 +114,20 @@ class ApeConsoleNamespace(dict):
         return import_module("ape")
 
     @cached_property
+    def _local_path(self) -> Path:
+        return self._ape.project.path.joinpath(CONSOLE_EXTRAS_FILENAME)
+
+    @cached_property
+    def _global_path(self) -> Path:
+        return self._ape.project.config_manager.DATA_FOLDER.joinpath(CONSOLE_EXTRAS_FILENAME)
+
+    @cached_property
     def _local_extras(self) -> dict:
-        path = self._ape.project.path.joinpath(CONSOLE_EXTRAS_FILENAME)
-        return self._load_extras_file(path)
+        return self._load_extras_file(self._local_path)
 
     @cached_property
     def _global_extras(self) -> dict:
-        path = self._ape.project.config_manager.DATA_FOLDER.joinpath(CONSOLE_EXTRAS_FILENAME)
-        return self._load_extras_file(path)
+        return self._load_extras_file(self._global_path)
 
     def get(self, key: str, default: Optional[Any] = None):
         try:
@@ -171,10 +177,14 @@ def console(
     from ape.utils.misc import _python_version
     from ape.version import version as ape_version
 
+    extra_locals = extra_locals or {}
     if project is None:
         from ape.utils.basemodel import ManagerAccessMixin
 
         project = ManagerAccessMixin.local_project
+
+    else:
+        extra_locals["project"] = project
 
     project_path: Path = project if isinstance(project, Path) else project.path
     banner = ""
@@ -207,7 +217,7 @@ def console(
         # Required for click.testing.CliRunner support.
         embed = True
 
-    namespace = _create_namespace(**(extra_locals or {}))
+    namespace = _create_namespace(**extra_locals)
     _launch_console(namespace, ipy_config, embed, banner, code=code)
 
 
