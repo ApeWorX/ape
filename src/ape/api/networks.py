@@ -1083,7 +1083,7 @@ class NetworkAPI(BaseInterfaceModel):
         """
         return self.name == "custom" and not self._is_custom
 
-    @cached_property
+    @property
     def providers(self):  # -> dict[str, Partial[ProviderAPI]]
         """
         The providers of the network, such as Infura, Alchemy, or Node.
@@ -1091,12 +1091,13 @@ class NetworkAPI(BaseInterfaceModel):
         Returns:
             dict[str, partial[:class:`~ape.api.providers.ProviderAPI`]]
         """
-        from ape.plugins._utils import clean_plugin_name
-
         providers = {}
         for _, plugin_tuple in self._get_plugin_providers():
             ecosystem_name, network_name, provider_class = plugin_tuple
-            provider_name = clean_plugin_name(provider_class.__module__.split(".")[0])
+            provider_name = (
+                provider_class.__module__.split(".")[0].replace("_", "-").replace("ape-", "")
+            )
+
             is_custom_with_config = self._is_custom and self.default_provider_name == provider_name
             # NOTE: Custom networks that are NOT from config must work with any provider.
             #    Also, ensure we are only adding forked providers for forked networks and
@@ -1105,8 +1106,8 @@ class NetworkAPI(BaseInterfaceModel):
             # TODO: In 0.9, add a better way for class-level ForkedProviders to define
             #   themselves as "Fork" providers.
             if (
-                self.is_adhoc
-                or (self.ecosystem.name == ecosystem_name and self.name == network_name)
+                (self.ecosystem.name == ecosystem_name and self.name == network_name)
+                or self.is_adhoc
                 or (
                     is_custom_with_config
                     and (
@@ -1133,6 +1134,11 @@ class NetworkAPI(BaseInterfaceModel):
     def _get_plugin_providers(self):
         # NOTE: Abstracted for testing purposes.
         return self.plugin_manager.providers
+
+    def _get_plugin_provider_names(self) -> Iterator[str]:
+        for _, plugin_tuple in self._get_plugin_providers():
+            ecosystem_name, network_name, provider_class = plugin_tuple
+            yield provider_class.__module__.split(".")[0].replace("_", "-").replace("ape-", "")
 
     def get_provider(
         self,
