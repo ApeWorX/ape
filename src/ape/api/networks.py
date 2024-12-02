@@ -1083,7 +1083,7 @@ class NetworkAPI(BaseInterfaceModel):
         """
         return self.name == "custom" and not self._is_custom
 
-    @property
+    @cached_property
     def providers(self):  # -> dict[str, Partial[ProviderAPI]]
         """
         The providers of the network, such as Infura, Alchemy, or Node.
