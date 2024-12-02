@@ -6,6 +6,11 @@ try:
 except ImportError:
     from web3.middleware import geth_poa_middleware as ExtraDataToPOAMiddleware  # type: ignore
 
+try:
+    from web3.providers import WebsocketProviderV2 as WebsocketProvider  # type: ignore
+except ImportError:
+    from web3.providers import WebSocketProvider as WebsocketProvider  # type: ignore
+
 
 def sign_hash(msghash, private_key):
     try:
@@ -19,4 +24,5 @@ def sign_hash(msghash, private_key):
 __all__ = [
     "ExtraDataToPOAMiddleware",
     "sign_hash",
+    "WebsocketProvider",
 ]
