@@ -98,6 +98,7 @@ setup(
         "ijson>=3.1.4,<4",
         "ipython>=8.18.1,<9",
         "lazyasd>=0.1.4",
+        "asttokens>=2.4.1,<3",  # Peer dependency; w/o pin container build fails.
         # Pandas peer-dep: Numpy 2.0 causes issues for some users.
         "numpy<2",
         "packaging>=23.0,<24",
@@ -120,7 +121,7 @@ setup(
         # All version pins dependent on web3[tester]
         "eth-abi",
         "eth-account",
-        "eth-typing",
+        "eth-typing>=3.5.2,<4",
         "eth-utils",
         "hexbytes",
         "py-geth>=5.1.0,<6",
