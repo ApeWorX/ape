@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en" data-accent-color="lime" data-content_root="../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>ape-ethereum - ape documentation</title><link rel="shortcut icon" href="../_static/favicon.ico"/><link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="ape-node" href="ape_node.html" /><link rel="prev" title="ape-compile" href="ape_compile.html" />
+      <link rel="canonical" href="ape/methoddocs/ape_ethereum.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=397bb51e" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=83eaa723" />
+    <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    <meta property="og:type" content="website"/>
+<meta property="og:url" content="ape/methoddocs/ape_ethereum.html"/>
+<meta property="og:title" content="ape-ethereum"/>
+<meta name="twitter:card" content="summary"/>
+  </head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="../index.html">
+      <img class="light-logo" src="../_static/logo_grey.svg" alt="ape" height="28" loading="lazy" />
+      <img class="dark-logo" src="../_static/logo_green.svg" alt="ape" height="28" loading="lazy" />
+      <strong>ape</strong>
+    </a>
+    <div class="sy-head-nav" id="HeadNav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials"></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="HeadNav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2 -translate-x-2"></span>
+          <span class="hamburger_3 -translate-x-1"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading" aria-level="3"><span class="caption-text">User Guides</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/quickstart.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/accounts.html">Accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/networks.html">Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/forking_networks.html">Forking Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/contracts.html">Contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/proxy.html">Proxy Contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/installing_plugins.html">Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/projects.html">Developing Projects with Ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/config.html">Configure Ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/compile.html">Compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/console.html">Console</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/transactions.html">Transactions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/trace.html">Traces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/scripts.html">Scripting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/testing.html">Testing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/reverts.html">Reverts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/publishing.html">Publishing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/clis.html">CLIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/data.html">Querying Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/developing_plugins.html">Developing Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/logging.html">Logging</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">CLI Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../commands/accounts.html">accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/compile.html">compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/console.html">console</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/init.html">init</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/networks.html">networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/plugins.html">plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/pm.html">pm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/run.html">run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/test.html">test</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Core Python Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="ape.html">ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">ape.api</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">ape.cli</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contracts.html">ape.contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="exceptions.html">ape.exceptions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="managers.html">ape.managers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugins.html">ape.plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="types.html">ape.types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">ape.utils</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Plugin Python Reference</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="ape_accounts.html">ape-accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ape_compile.html">ape-compile</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">ape-ethereum</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#module-ape_ethereum.multicall">ape-ethereum.multicall</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ape_node.html">ape-node</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ape_pm.html">ape-pm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ape_test.html">ape-test</a></li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#">ape-ethereum</a></li>
+<li><a class="reference internal" href="#module-ape_ethereum.multicall">ape-ethereum.multicall</a><ul>
+<li><a class="reference internal" href="#ape_ethereum.multicall.BaseMulticall"><code class="docutils literal notranslate"><span class="pre">BaseMulticall</span></code></a><ul>
+<li><a class="reference internal" href="#ape_ethereum.multicall.BaseMulticall.add"><code class="docutils literal notranslate">.add()</span></code></a></li>
+<li><a class="reference internal" href="#ape_ethereum.multicall.BaseMulticall.inject"><code class="docutils literal notranslate">.inject()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ape_ethereum.multicall.Call"><code class="docutils literal notranslate"><span class="pre">Call</span></code></a><ul>
+<li><a class="reference internal" href="#ape_ethereum.multicall.Call.__call__"><code class="docutils literal notranslate">.__call__()</span></code></a></li>
+<li><a class="reference internal" href="#ape_ethereum.multicall.Call.add"><code class="docutils literal notranslate">.add()</span></code></a></li>
+<li><a class="reference internal" href="#ape_ethereum.multicall.Call.as_transaction"><code class="docutils literal notranslate">.as_transaction()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ape_ethereum.multicall.Transaction"><code class="docutils literal notranslate"><span class="pre">Transaction</span></code></a><ul>
+<li><a class="reference internal" href="#ape_ethereum.multicall.Transaction.__call__"><code class="docutils literal notranslate">.__call__()</span></code></a></li>
+<li><a class="reference internal" href="#ape_ethereum.multicall.Transaction.as_transaction"><code class="docutils literal notranslate">.as_transaction()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6"><div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../index.html"><span itemprop="name">ape</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">ape-ethereum</strong>
+        <meta itemprop="position" content="2" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+        <article class="yue" role="main">
+          <section id="module-ape_ethereum">
+<span id="ape-ethereum"></span><h1>ape-ethereum<a class="headerlink" href="#module-ape_ethereum" title="Link to this heading"></a></h1>
+</section>
+<section id="module-ape_ethereum.multicall">
+<span id="ape-ethereum-multicall"></span><h1>ape-ethereum.multicall<a class="headerlink" href="#module-ape_ethereum.multicall" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="ape_ethereum.multicall.BaseMulticall">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape_ethereum.multicall.</span></span><span class="sig-name descname"><span class="pre">BaseMulticall</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">AddressType</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'0xcA11bde05977b3631167028862bE2a173976CA11'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">supported_chains</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_ethereum.multicall.BaseMulticall" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="utils.html#ape.utils.basemodel.ManagerAccessMixin" title="ape.utils.basemodel.ManagerAccessMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">ManagerAccessMixin</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ape_ethereum.multicall.BaseMulticall.add">
+<span class="sig-name descname"><span class="pre">add</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">call</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ContractMethodHandler</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allowFailure</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ape_ethereum.multicall.BaseMulticall" title="ape_ethereum.multicall.handlers.BaseMulticall"><span class="pre">BaseMulticall</span></a></span></span><a class="headerlink" href="#ape_ethereum.multicall.BaseMulticall.add" title="Link to this definition"></a></dt>
+<dd><p>Adds a call to the Multicall session object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>InvalidOption</strong> – If one
+    of the kwarg modifiers is not able to be used.</p>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>call</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ContractMethodHandler</span></code>) – The method to call.</p></li>
+<li><p><strong>*args</strong> – The arguments to invoke the method with.</p></li>
+<li><p><strong>allowFailure</strong> (<em>bool</em>) – Whether the call is allowed to fail.</p></li>
+<li><p><strong>value</strong> (<em>int</em>) – The amount of ether to forward with the call.</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>returns itself</dt><dd><p>to emulate a builder pattern.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#ape_ethereum.multicall.BaseMulticall" title="ape_ethereum.multicall.handlers.BaseMulticall"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseMulticall</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape_ethereum.multicall.BaseMulticall.inject">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">inject</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ModuleType</span></span></span><a class="headerlink" href="#ape_ethereum.multicall.BaseMulticall.inject" title="Link to this definition"></a></dt>
+<dd><p>Create the multicall module contract on-chain, so we can use it.
+Must use a provider that supports <code class="docutils literal notranslate"><span class="pre">debug_setCode</span></code>.</p>
+<p>Usage example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape_ethereum</span> <span class="kn">import</span> <span class="n">multicall</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">)</span>
+</span><span data-line="4"><span class="k">def</span> <span class="nf">use_multicall</span><span class="p">():</span>
+</span><span data-line="5">    <span class="c1"># NOTE: use this fixture any test where you want to use a multicall</span>
+</span><span data-line="6">    <span class="k">return</span> <span class="n">multicall</span><span class="o">.</span><span class="n">BaseMulticall</span><span class="o">.</span><span class="n">inject</span><span class="p">()</span>
+</span></pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape_ethereum.multicall.Call">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape_ethereum.multicall.</span></span><span class="sig-name descname"><span class="pre">Call</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">AddressType</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'0xcA11bde05977b3631167028862bE2a173976CA11'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">supported_chains</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_ethereum.multicall.Call" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ape_ethereum.multicall.BaseMulticall" title="ape_ethereum.multicall.handlers.BaseMulticall"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseMulticall</span></code></a></p>
+<p>Create a sequence of calls to execute at once using <code class="docutils literal notranslate"><span class="pre">eth_call</span></code> via the Multicall3 contract.</p>
+<p>Usage example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape_ethereum</span> <span class="kn">import</span> <span class="n">multicall</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="n">call</span> <span class="o">=</span> <span class="n">multicall</span><span class="o">.</span><span class="n">Call</span><span class="p">()</span>
+</span><span data-line="4"><span class="n">call</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">contract</span><span class="o">.</span><span class="n">myMethod</span><span class="p">,</span> <span class="o">*</span><span class="n">call_args</span><span class="p">)</span>
+</span><span data-line="5"><span class="n">call</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">contract</span><span class="o">.</span><span class="n">myMethod</span><span class="p">,</span> <span class="o">*</span><span class="n">call_args</span><span class="p">)</span>
+</span><span data-line="6"><span class="o">...</span>  <span class="c1"># Add as many calls as desired</span>
+</span><span data-line="7"><span class="n">call</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">contract</span><span class="o">.</span><span class="n">myMethod</span><span class="p">,</span> <span class="o">*</span><span class="n">call_args</span><span class="p">)</span>
+</span><span data-line="8"><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">call</span><span class="p">()</span>  <span class="c1"># Performs multicall</span>
+</span><span data-line="9"><span class="c1"># or, using a builder pattern:</span>
+</span><span data-line="10"><span class="n">call</span> <span class="o">=</span> <span class="n">multicall</span><span class="o">.</span><span class="n">Call</span><span class="p">()</span>
+</span><span data-line="11">    <span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">contract</span><span class="o">.</span><span class="n">myMethod</span><span class="p">,</span> <span class="o">*</span><span class="n">call_args</span><span class="p">)</span>
+</span><span data-line="12">    <span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">contract</span><span class="o">.</span><span class="n">myMethod</span><span class="p">,</span> <span class="o">*</span><span class="n">call_args</span><span class="p">)</span>
+</span><span data-line="13">    <span class="o">...</span>  <span class="c1"># Add as many calls as desired</span>
+</span><span data-line="14">    <span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">contract</span><span class="o">.</span><span class="n">myMethod</span><span class="p">,</span> <span class="o">*</span><span class="n">call_args</span><span class="p">)</span>
+</span><span data-line="15"><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">call</span><span class="p">()</span>  <span class="c1"># Performs multicall</span>
+</span></pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="ape_ethereum.multicall.Call.__call__">
+<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">call_kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape_ethereum.multicall.Call.__call__" title="Link to this definition"></a></dt>
+<dd><p>Perform the Multicall call. This call will trigger again every time the <code class="docutils literal notranslate"><span class="pre">Call</span></code> object
+is called.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>UnsupportedChainError</strong> – If there is not an instance of Multicall3 deployed
+    on the current chain at the expected address.</p>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>**call_kwargs</strong> – the kwargs to pass through to the call handler.</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>the sequence of values produced by performing each call stored</dt><dd><p>by this instance.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Iterator[Any]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape_ethereum.multicall.Call.add">
+<span class="sig-name descname"><span class="pre">add</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">call</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ContractMethodHandler</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_ethereum.multicall.Call.add" title="Link to this definition"></a></dt>
+<dd><p>Adds a call to the Multicall session object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>InvalidOption</strong> – If one
+    of the kwarg modifiers is not able to be used.</p>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>call</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ContractMethodHandler</span></code>) – The method to call.</p></li>
+<li><p><strong>*args</strong> – The arguments to invoke the method with.</p></li>
+<li><p><strong>allowFailure</strong> (<em>bool</em>) – Whether the call is allowed to fail.</p></li>
+<li><p><strong>value</strong> (<em>int</em>) – The amount of ether to forward with the call.</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>returns itself</dt><dd><p>to emulate a builder pattern.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#ape_ethereum.multicall.BaseMulticall" title="ape_ethereum.multicall.handlers.BaseMulticall"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseMulticall</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape_ethereum.multicall.Call.as_transaction">
+<span class="sig-name descname"><span class="pre">as_transaction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">txn_kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="api.html#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><span class="pre">TransactionAPI</span></a></span></span><a class="headerlink" href="#ape_ethereum.multicall.Call.as_transaction" title="Link to this definition"></a></dt>
+<dd><p>Encode the Multicall transaction as a <code class="docutils literal notranslate"><span class="pre">TransactionAPI</span></code> object, but do not execute it.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="api.html#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransactionAPI</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape_ethereum.multicall.Transaction">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape_ethereum.multicall.</span></span><span class="sig-name descname"><span class="pre">Transaction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">AddressType</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'0xcA11bde05977b3631167028862bE2a173976CA11'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">supported_chains</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_ethereum.multicall.Transaction" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ape_ethereum.multicall.BaseMulticall" title="ape_ethereum.multicall.handlers.BaseMulticall"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseMulticall</span></code></a></p>
+<p>Create a sequence of calls to execute at once using <code class="docutils literal notranslate"><span class="pre">eth_sendTransaction</span></code>
+via the Multicall3 contract.</p>
+<p>Usage example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape_ethereum.multicall</span> <span class="kn">import</span> <span class="n">Transaction</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="n">txn</span> <span class="o">=</span> <span class="n">Transaction</span><span class="p">()</span>
+</span><span data-line="4"><span class="n">txn</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">contract</span><span class="o">.</span><span class="n">myMethod</span><span class="p">,</span> <span class="o">*</span><span class="n">call_args</span><span class="p">)</span>
+</span><span data-line="5"><span class="n">txn</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">contract</span><span class="o">.</span><span class="n">myMethod</span><span class="p">,</span> <span class="o">*</span><span class="n">call_args</span><span class="p">)</span>
+</span><span data-line="6"><span class="o">...</span>  <span class="c1"># Add as many calls as desired to execute</span>
+</span><span data-line="7"><span class="n">txn</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">contract</span><span class="o">.</span><span class="n">myMethod</span><span class="p">,</span> <span class="o">*</span><span class="n">call_args</span><span class="p">)</span>
+</span><span data-line="8"><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">txn</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">my_signer</span><span class="p">)</span><span class="o">.</span><span class="n">return_data</span>  <span class="c1"># Sends the multicall transaction</span>
+</span><span data-line="9"><span class="c1"># or, using a builder pattern:</span>
+</span><span data-line="10"><span class="n">txn</span> <span class="o">=</span> <span class="n">Transaction</span><span class="p">()</span>
+</span><span data-line="11">    <span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">contract</span><span class="o">.</span><span class="n">myMethod</span><span class="p">,</span> <span class="o">*</span><span class="n">call_args</span><span class="p">)</span>
+</span><span data-line="12">    <span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">contract</span><span class="o">.</span><span class="n">myMethod</span><span class="p">,</span> <span class="o">*</span><span class="n">call_args</span><span class="p">)</span>
+</span><span data-line="13">    <span class="o">...</span>  <span class="c1"># Add as many calls as desired to execute</span>
+</span><span data-line="14">    <span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">contract</span><span class="o">.</span><span class="n">myMethod</span><span class="p">,</span> <span class="o">*</span><span class="n">call_args</span><span class="p">)</span>
+</span><span data-line="15"><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">txn</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">my_signer</span><span class="p">)</span><span class="o">.</span><span class="n">return_data</span>  <span class="c1"># Sends the multicall transaction</span>
+</span></pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="ape_ethereum.multicall.Transaction.__call__">
+<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">txn_kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="api.html#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><span class="pre">ReceiptAPI</span></a></span></span><a class="headerlink" href="#ape_ethereum.multicall.Transaction.__call__" title="Link to this definition"></a></dt>
+<dd><p>Execute the Multicall transaction. The transaction will broadcast again every time
+the <code class="docutils literal notranslate"><span class="pre">Transaction</span></code> object is called.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>UnsupportedChain</strong> – If there is not an instance of Multicall3 deployed
+    on the current chain at the expected address.</p>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>**txn_kwargs</strong> – the kwargs to pass through to the transaction handler.</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="api.html#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReceiptAPI</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape_ethereum.multicall.Transaction.as_transaction">
+<span class="sig-name descname"><span class="pre">as_transaction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">txn_kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="api.html#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><span class="pre">TransactionAPI</span></a></span></span><a class="headerlink" href="#ape_ethereum.multicall.Transaction.as_transaction" title="Link to this definition"></a></dt>
+<dd><p>Encode the Multicall transaction as a <code class="docutils literal notranslate"><span class="pre">TransactionAPI</span></code> object, but do not execute it.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="api.html#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransactionAPI</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"><div class="navigation-prev">
+    <a href="ape_compile.html">
+      <i class="i-lucide chevron-left"></i>
+      <div class="page-info">
+        <span>Previous</span><div class="title">ape-compile</div></div>
+    </a>
+  </div><div class="navigation-next">
+    <a href="ape_node.html">
+      <div class="page-info">
+        <span>Next</span>
+        <div class="title">ape-node</div>
+      </div>
+      <i class="i-lucide chevron-right"></i>
+    </a>
+  </div></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2024, ApeWorX LTD</p>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials"></div>
+    </div>
+  </div>
+</footer>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script data-domain="docs.apeworx.io" defer="defer" src="https://plausible.io/js/script.js"></script>
+      <script src="../_static/shibuya.js?v=e2e99575"></script></body>
+</html>
