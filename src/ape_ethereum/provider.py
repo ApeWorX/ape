@@ -27,8 +27,13 @@ from web3.exceptions import (
     MethodUnavailable,
     TimeExhausted,
     TransactionNotFound,
-    Web3RPCError,
 )
+
+try:
+    from web3.exceptions import Web3RPCError
+except ImportError:
+    Web3RPCError = ValueError
+
 from web3.gas_strategies.rpc import rpc_gas_price_strategy
 from web3.middleware.validation import MAX_EXTRADATA_LENGTH
 from web3.providers import AutoProvider
@@ -124,6 +129,24 @@ def assert_web3_provider_uri_env_var_not_set():
     )
 
 
+def _post_send_transaction(tx: TransactionAPI, receipt: ReceiptAPI):
+    """Execute post-transaction ops"""
+
+    # TODO: Optional configuration?
+    if tx.receiver and Address(tx.receiver).is_contract:
+        # Look for and print any contract logging
+        try:
+            receipt.show_debug_logs()
+        except TransactionNotFound:
+            # Receipt never published. Likely failed.
+            pass
+        except Exception as err:
+            # Avoid letting debug logs causes program crashes.
+            logger.debug(f"Unable to show debug logs: {err}")
+
+    logger.info(f"Confirmed {receipt.txn_hash} (total fees paid = {receipt.total_fees_paid})")
+
+
 class Web3Provider(ProviderAPI, ABC):
     """
     A base provider mixin class that uses the
@@ -160,7 +183,7 @@ class Web3Provider(ProviderAPI, ABC):
             @wraps(send_tx)
             def send_tx_wrapper(self, txn: TransactionAPI) -> ReceiptAPI:
                 receipt = send_tx(self, txn)
-                self._post_send_transaction(txn, receipt)
+                _post_send_transaction(txn, receipt)
                 return receipt
 
             return send_tx_wrapper
@@ -1006,35 +1029,9 @@ class Web3Provider(ProviderAPI, ABC):
     def send_transaction(self, txn: TransactionAPI) -> ReceiptAPI:
         vm_err = None
         txn_data = None
-        txn_hash = None
         try:
-            if txn.sender is not None and txn.signature is None:
-                # Missing signature, user likely trying to use an unlocked account.
-                attempt_send = True
-                if (
-                    self.network.is_dev
-                    and txn.sender not in self.account_manager.test_accounts._impersonated_accounts
-                ):
-                    try:
-                        self.account_manager.test_accounts.impersonate_account(txn.sender)
-                    except NotImplementedError:
-                        # Unable to impersonate. Try sending as raw-tx.
-                        attempt_send = False
-
-                if attempt_send:
-                    # For some reason, some nodes have issues with integer-types.
-                    txn_data = {
-                        k: to_hex(v) if isinstance(v, int) else v
-                        for k, v in txn.model_dump(by_alias=True, mode="json").items()
-                    }
-                    tx_params = cast(TxParams, txn_data)
-                    txn_hash = to_hex(self.web3.eth.send_transaction(tx_params))
-                # else: attempt raw tx
-
-            if txn_hash is None:
-                txn_hash = to_hex(self.web3.eth.send_raw_transaction(txn.serialize_transaction()))
-
-        except (ValueError, Web3ContractLogicError, Web3RPCError) as err:
+            txn_hash = self._send_transaction(txn)
+        except (Web3RPCError, Web3ContractLogicError) as err:
             vm_err = self.get_virtual_machine_error(
                 err, txn=txn, set_ape_traceback=txn.raise_on_revert
             )
@@ -1102,22 +1099,35 @@ class Web3Provider(ProviderAPI, ABC):
 
         return receipt
 
-    def _post_send_transaction(self, tx: TransactionAPI, receipt: ReceiptAPI):
-        """Execute post-transaction ops"""
+    def _send_transaction(self, txn: TransactionAPI) -> str:
+        txn_hash = None
+        if txn.sender is not None and txn.signature is None:
+            # Missing signature, user likely trying to use an unlocked account.
+            attempt_send = True
+            if (
+                self.network.is_dev
+                and txn.sender not in self.account_manager.test_accounts._impersonated_accounts
+            ):
+                try:
+                    self.account_manager.test_accounts.impersonate_account(txn.sender)
+                except NotImplementedError:
+                    # Unable to impersonate. Try sending as raw-tx.
+                    attempt_send = False
 
-        # TODO: Optional configuration?
-        if tx.receiver and Address(tx.receiver).is_contract:
-            # Look for and print any contract logging
-            try:
-                receipt.show_debug_logs()
-            except TransactionNotFound:
-                # Receipt never published. Likely failed.
-                pass
-            except Exception as err:
-                # Avoid letting debug logs causes program crashes.
-                logger.debug(f"Unable to show debug logs: {err}")
+            if attempt_send:
+                # For some reason, some nodes have issues with integer-types.
+                txn_data = {
+                    k: to_hex(v) if isinstance(v, int) else v
+                    for k, v in txn.model_dump(by_alias=True, mode="json").items()
+                }
+                tx_params = cast(TxParams, txn_data)
+                txn_hash = to_hex(self.web3.eth.send_transaction(tx_params))
+            # else: attempt raw tx
 
-        logger.info(f"Confirmed {receipt.txn_hash} (total fees paid = {receipt.total_fees_paid})")
+        if txn_hash is None:
+            txn_hash = to_hex(self.web3.eth.send_raw_transaction(txn.serialize_transaction()))
+
+        return txn_hash
 
     def _post_connect(self):
         # Register the console contract for trace enrichment
