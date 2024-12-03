@@ -20,12 +20,14 @@ from evmchains import PUBLIC_CHAIN_META, get_random_rpc
 from pydantic.dataclasses import dataclass
 from requests import HTTPError
 from web3 import HTTPProvider, IPCProvider, Web3
+from web3 import __version__ as web3_version
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.exceptions import (
     ExtraDataLengthError,
     MethodUnavailable,
     TimeExhausted,
     TransactionNotFound,
+    Web3RPCError,
 )
 from web3.gas_strategies.rpc import rpc_gas_price_strategy
 from web3.middleware.validation import MAX_EXTRADATA_LENGTH
@@ -1032,7 +1034,7 @@ class Web3Provider(ProviderAPI, ABC):
             if txn_hash is None:
                 txn_hash = to_hex(self.web3.eth.send_raw_transaction(txn.serialize_transaction()))
 
-        except (ValueError, Web3ContractLogicError) as err:
+        except (ValueError, Web3ContractLogicError, Web3RPCError) as err:
             vm_err = self.get_virtual_machine_error(
                 err, txn=txn, set_ape_traceback=txn.raise_on_revert
             )
@@ -1324,7 +1326,7 @@ class EthereumNodeProvider(Web3Provider, ABC):
     name: str = "node"
 
     # NOTE: Appends user-agent to base User-Agent string.
-    request_header: dict = {}
+    request_header: dict = {"User-Agent": f"EthereumNodeProvider/web3.py/{web3_version}"}
 
     @property
     def uri(self) -> str:
