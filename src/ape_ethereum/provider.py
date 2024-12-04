@@ -32,7 +32,7 @@ from web3.exceptions import (
 try:
     from web3.exceptions import Web3RPCError
 except ImportError:
-    Web3RPCError = ValueError
+    Web3RPCError = ValueError  # type: ignore
 
 from web3.gas_strategies.rpc import rpc_gas_price_strategy
 from web3.middleware.validation import MAX_EXTRADATA_LENGTH
