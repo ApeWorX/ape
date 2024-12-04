@@ -1,6 +1,6 @@
 # ape-node
 
 ```{eval-rst}
-.. automodule:: ape_node
+.. automodule:: ape_node.provider
     :members:
 ```
