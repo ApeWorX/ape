@@ -119,11 +119,11 @@ setup(
         "watchdog>=3.0,<4",
         # ** Dependencies maintained by Ethereum Foundation **
         "eth-abi>=5.1.0,<6",
-        "eth-account>=0.13.4,<0.14",
+        "eth-account>=0.11.3,<0.14",
         "eth-typing>=3.5.2,<6",
-        "eth-utils>=5.1.0,<6",
-        "hexbytes>=1.2.1,<2",
-        "py-geth>=5.1.0,<6",
+        "eth-utils>=2.1.0,<6",
+        "hexbytes>=0.3.1,<2",
+        "py-geth>=3.14.0,<6",
         "trie>=3.0.1,<4",  # Peer: stricter pin needed for uv support.
         "web3[tester]>=6.20.3,<8",
         # ** Dependencies maintained by ApeWorX **
