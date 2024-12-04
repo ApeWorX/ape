@@ -1,6 +1,6 @@
 # ape-compile
 
 ```{eval-rst}
-.. automodule:: ape_compile
+.. automodule:: ape_compile.config
     :members:
 ```
