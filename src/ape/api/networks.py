@@ -814,7 +814,7 @@ class ProviderContextManager(ManagerAccessMixin):
         current_id = self.provider_stack.pop()
 
         # Disconnect the provider in same cases.
-        if self.disconnect_map[current_id]:
+        if self.disconnect_map.get(current_id):
             if provider := self.network_manager.active_provider:
                 provider.disconnect()
 
