@@ -6,7 +6,7 @@ There are two locations you can place config files.
 1. In the root of your project
 2. In your `$HOME/.ape` directory (global)
 
-Project settings take precedent, but global settings allow you to configure preferences across all projects, such as your default mainnet provider (e.g. Alchemy versus running your own node).
+Project settings take precedence, but global settings allow you to configure preferences across all projects, such as your default mainnet provider (e.g. Alchemy versus running your own node).
 
 This guide serves as an index of some settings you can include in any `ape-config.yaml` file.
 This guide is **PURPOSELY** alphabetized to facilitate easier look-up of keys.

@@ -51,7 +51,7 @@ Follow [this guide](./networks.html) for more information on networks in Ape.
 
 ## Namespace Extras
 
-You can also create scripts to be included in the console namespace by adding a file (`ape_console_extras.py`) to your root project directory.  All non-internal symbols from this file will be included in the console namespace.  Internal symbols are prefixed by an underscore (`_`).
+You can also create scripts to be included in the console namespace by adding a file (`ape_console_extras.py`) to your root project directory. All non-internal symbols from this file will be included in the console namespace. Internal symbols are prefixed by an underscore (`_`).
 
 An example file might look something like this:
 
@@ -75,7 +75,7 @@ Out[2]: '0x68f768988e9bd4be971d527f72483f321975fa52aff9692b6d0e0af71fb77aaf'
 
 ### Init Function
 
-If you include a function named `ape_init_extras`, it will be executed with the symbols from the existing namespace being provided as keyword arguments.  This allows you to alter the scripts namespace using locals already included in the Ape namespace.  If you return a `dict`, these values will be added to the console namespace.  For example, you could set up an initialized Web3.py object by using one from an existing Ape Provider.
+If you include a function named `ape_init_extras`, it will be executed with the symbols from the existing namespace being provided as keyword arguments. This allows you to alter the scripts namespace using locals already included in the Ape namespace. If you return a `dict`, these values will be added to the console namespace. For example, you could set up an initialized Web3.py object by using one from an existing Ape Provider.
 
 ```python
 def ape_init_extras(chain):
@@ -91,7 +91,7 @@ Out[1]: 1
 
 ### Global Extras
 
-You can also add an `ape_console_extras.py` file to the global ape data directory (`$HOME/.ape/ape_console_extras.py`) and it will execute regardless of what project context you are in.  This may be useful for variables and utility functions you use across all of your projects.
+You can also add an `ape_console_extras.py` file to the global ape data directory (`$HOME/.ape/ape_console_extras.py`) and it will execute regardless of what project context you are in. This may be useful for variables and utility functions you use across all of your projects.
 
 ## Configure
 
@@ -163,4 +163,19 @@ Out[3]: '0.00040634 ETH'
 
 In [4]: %bal 0xE3747e6341E0d3430e6Ea9e2346cdDCc2F8a4b5b
 Out[4]: '0.00040634 ETH'
+```
+
+## Executing Code
+
+You can also use the `ape console` to execute programs directly from strings.
+This is similar to the `python -c|--code` option except it will display the output cell.
+Anything available in `ape console` is also available in `ape console --code`.
+
+```shell
+ape console -c 'project.name'
+Out[1]: 'my-project'
+ape console -c 'x = 3\nx + 1'
+Out[1]: 4
+ape console -c 'networks.active_provider.name'
+Out[1]: 'test'
 ```

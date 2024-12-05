@@ -433,7 +433,7 @@ class AccountHistory(BaseInterfaceModel):
                 next(
                     self.query_manager.query(
                         AccountTransactionQuery(
-                            columns=list(ReceiptAPI.model_fields),
+                            columns=list(ReceiptAPI.__pydantic_fields__),
                             account=self.address,
                             start_nonce=index,
                             stop_nonce=index,
@@ -471,7 +471,7 @@ class AccountHistory(BaseInterfaceModel):
             list(
                 self.query_manager.query(
                     AccountTransactionQuery(
-                        columns=list(ReceiptAPI.model_fields),
+                        columns=list(ReceiptAPI.__pydantic_fields__),
                         account=self.address,
                         start_nonce=start,
                         stop_nonce=stop - 1,

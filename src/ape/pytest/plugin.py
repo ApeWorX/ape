@@ -68,11 +68,6 @@ def pytest_configure(config):
                 except AttributeError:
                     pass
 
-    if not config.option.verbose:
-        # Enable verbose output if stdout capture is disabled
-        config.option.verbose = config.getoption("capture") == "no"
-    # else: user has already changes verbosity to an equal or higher level; avoid downgrading.
-
     if "--help" in config.invocation_params.args:
         # perf: Don't bother setting up runner if only showing help.
         return

@@ -8,7 +8,6 @@ import pytest
 from eth_utils import to_hex
 from ethpm_types import Compiler, ContractType, PackageManifest, Source
 from ethpm_types.manifest import PackageName
-from pydantic_core import Url
 
 import ape
 from ape import Project
@@ -305,7 +304,8 @@ def test_meta(project):
         assert project.meta.license == "MIT"
         assert project.meta.description == "Zoologist meme protocol"
         assert project.meta.keywords == ["Indiana", "Knight's Templar"]
-        assert project.meta.links == {"apeworx.io": Url("https://apeworx.io")}
+        assert len(project.meta.links) == 1
+        assert f"{project.meta.links['apeworx.io']}" == "https://apeworx.io/"
 
 
 def test_extract_manifest(tmp_project, mock_sepolia, vyper_contract_instance):
@@ -673,8 +673,12 @@ class TestProject:
     def test_init(self, with_dependencies_project_path):
         # Purpose not using `project_with_contracts` fixture.
         project = Project(with_dependencies_project_path)
-        project.manifest_path.unlink(missing_ok=True)
         assert project.path == with_dependencies_project_path
+        project.manifest_path.unlink(missing_ok=True)
+
+        #  Re-init to show it doesn't create the manifest file.
+        project = Project(with_dependencies_project_path)
+
         # Manifest should have been created by default.
         assert not project.manifest_path.is_file()
 

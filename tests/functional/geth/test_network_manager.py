@@ -37,3 +37,19 @@ def test_fork_upstream_provider(networks, mock_geth_sepolia, geth_provider, mock
             geth_provider.provider_settings["uri"] = orig
         else:
             del geth_provider.provider_settings["uri"]
+
+
+# NOTE: Test is flakey because random URLs may be offline when test runs; avoid CI failure.
+@pytest.mark.flaky(reruns=5)
+@geth_process_test
+@pytest.mark.parametrize(
+    "connection_str", ("moonbeam:moonriver", "https://moonriver.api.onfinality.io/public")
+)
+def test_parse_network_choice_evmchains(networks, connection_str):
+    """
+    Show we can (without having a plugin installed) connect to a network
+    that evm-chains knows about.
+    """
+    with networks.parse_network_choice(connection_str) as moon_provider:
+        assert moon_provider.network.name == "moonriver"
+        assert moon_provider.network.ecosystem.name == "moonbeam"

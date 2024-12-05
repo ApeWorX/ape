@@ -1,4 +1,5 @@
 import inspect
+import sys
 from collections.abc import Callable
 from functools import partial
 from pathlib import Path
@@ -263,7 +264,10 @@ def network_option(
 
         def callback(ctx, param, value):
             keep_as_choice_str = param.type.base_type is str
-            provider_obj = _get_provider(value, default, keep_as_choice_str)
+            try:
+                provider_obj = _get_provider(value, default, keep_as_choice_str)
+            except Exception as err:
+                raise click.BadOptionUsage("--network", str(err), ctx)
 
             if provider_obj:
                 _update_context_with_network(ctx, provider_obj, requested_network_objects)
@@ -527,7 +531,16 @@ def incompatible_with(incompatible_opts) -> type[click.Option]:
     return IncompatibleOption
 
 
+def _project_path_callback(ctx, param, val):
+    return Path(val) if val else Path.cwd()
+
+
 def _project_callback(ctx, param, val):
+    if "--help" in sys.argv or "-h" in sys.argv:
+        # Perf: project option is eager; have to check sys.argv to
+        #  know to exit early when only doing --help.
+        return
+
     from ape.utils.basemodel import ManagerAccessMixin
 
     pm = None
@@ -554,10 +567,16 @@ def _project_callback(ctx, param, val):
 
 
 def project_option(**kwargs):
+    _type = kwargs.pop("type", None)
+    callback = (
+        _project_path_callback
+        if (isinstance(_type, type) and issubclass(_type, Path))
+        else _project_callback
+    )
     return click.option(
         "--project",
         help="The path to a local project or manifest",
-        callback=_project_callback,
+        callback=callback,
         metavar="PATH",
         is_eager=True,
         **kwargs,

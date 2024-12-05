@@ -240,7 +240,7 @@ def test_parse_network_choice_multiple_contexts(
 
 
 def test_getattr_ecosystem_with_hyphenated_name(networks, ethereum):
-    networks.ecosystems["hyphen-in-name"] = networks.ecosystems["ethereum"]
+    networks._plugin_ecosystems["hyphen-in-name"] = networks.ecosystems["ethereum"]
     assert networks.hyphen_in_name  # Make sure does not raise AttributeError
     del networks.ecosystems["hyphen-in-name"]
 
@@ -252,6 +252,38 @@ def test_getattr_custom_ecosystem(networks, custom_networks_config_dict, project
     with project.temp_config(**data):
         actual = getattr(networks, "custom_ecosystem")
         assert isinstance(actual, EcosystemAPI)
+
+
+def test_getattr_plugin_ecosystem_same_as_evm_chains(mocker, networks):
+    """
+    Simulated having a plugin ecosystem installed.
+    """
+    optimismy = mocker.MagicMock()
+    networks._plugin_ecosystems["optimismy"] = optimismy
+    actual = networks.optimismy
+    del networks._plugin_ecosystems["optimismy"]
+    assert actual == optimismy
+
+
+def test_getattr_evm_chains_ecosystem(networks):
+    """
+    Show we can getattr evm-chains only ecosystems.
+    """
+    actual = networks.moonbeam
+    assert actual.name == "moonbeam"
+
+
+def test_getattr_plugin_ecosystem_same_name_as_evm_chains(mocker, networks):
+    """
+    Show when an ecosystem is both in evm-chains and an installed plugin
+    that Ape prefers the installed plugin.
+    """
+    moonbeam_plugin = mocker.MagicMock()
+    networks._plugin_ecosystems["moonbeam"] = moonbeam_plugin
+    actual = networks.moonbeam
+    del networks._plugin_ecosystems["moonbeam"]
+    assert actual == moonbeam_plugin
+    assert actual != networks._evmchains_ecosystems["moonbeam"]
 
 
 @pytest.mark.parametrize("scheme", ("http", "https"))
@@ -444,7 +476,26 @@ def test_custom_networks_defined_in_non_local_project(custom_networks_config_dic
 
     with ape.Project.create_temporary_project(config_override=custom_networks) as temp_project:
         nm = temp_project.network_manager
+
+        # Tests `.get_ecosystem()` for custom networks.
         ecosystem = nm.get_ecosystem(eco_name)
         assert ecosystem.name == eco_name
+
         network = ecosystem.get_network(net_name)
         assert network.name == net_name
+
+
+def test_get_ecosystem(networks):
+    ethereum = networks.get_ecosystem("ethereum")
+    assert isinstance(ethereum, EcosystemAPI)
+    assert ethereum.name == "ethereum"
+
+
+def test_get_ecosystem_from_evmchains(networks):
+    """
+    Show we can call `.get_ecosystem()` for an ecosystem only
+    defined in evmchains.
+    """
+    moonbeam = networks.get_ecosystem("moonbeam")
+    assert isinstance(moonbeam, EcosystemAPI)
+    assert moonbeam.name == "moonbeam"

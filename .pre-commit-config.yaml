@@ -37,7 +37,7 @@ repos:
         ]
 
 -   repo: https://github.com/executablebooks/mdformat
-    rev: 0.7.18
+    rev: 0.7.19
     hooks:
     -   id: mdformat
         additional_dependencies: [mdformat-gfm, mdformat-frontmatter, mdformat-pyproject]

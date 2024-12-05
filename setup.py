@@ -16,6 +16,7 @@ extras_require = {
         "pytest-cov>=4.0.0,<5",  # Coverage analyzer plugin
         "pytest-mock",  # For creating mocks
         "pytest-benchmark",  # For performance tests
+        "pytest-rerunfailures",  # For flakey tests
         "pytest-timeout>=2.2.0,<3",  # For avoiding timing out during tests
         "hypothesis>=6.2.0,<7.0",  # Strategy-based fuzzer
         "hypothesis-jsonschema==0.19.0",  # JSON Schema fuzzer extension
@@ -36,14 +37,14 @@ extras_require = {
         "flake8-pydantic",  # For detecting issues with Pydantic models
         "flake8-type-checking",  # Detect imports to move in/out of type-checking blocks
         "isort>=5.13.2,<6",  # Import sorting linter
-        "mdformat>=0.7.18",  # Auto-formatter for markdown
+        "mdformat>=0.7.19",  # Auto-formatter for markdown
         "mdformat-gfm>=0.3.5",  # Needed for formatting GitHub-flavored markdown
         "mdformat-frontmatter>=0.4.1",  # Needed for frontmatters-style headers in issue templates
-        "mdformat-pyproject>=0.0.1",  # Allows configuring in pyproject.toml
+        "mdformat-pyproject>=0.0.2",  # Allows configuring in pyproject.toml
     ],
     "doc": ["sphinx-ape"],
     "release": [  # `release` GitHub Action job uses this
-        "setuptools",  # Installation tool
+        "setuptools>=75",  # Installation tool
         "wheel",  # Packaging tool
         "twine==3.8.0",  # Package upload tool
     ],
@@ -97,12 +98,13 @@ setup(
         "ijson>=3.1.4,<4",
         "ipython>=8.18.1,<9",
         "lazyasd>=0.1.4",
+        "asttokens>=2.4.1,<3",  # Peer dependency; w/o pin container build fails.
         # Pandas peer-dep: Numpy 2.0 causes issues for some users.
         "numpy<2",
         "packaging>=23.0,<24",
         "pandas>=2.2.2,<3",
         "pluggy>=1.3,<2",
-        "pydantic>=2.6.4,<3",
+        "pydantic>=2.10.0,<3",
         "pydantic-settings>=2.5.2,<3",
         "pytest>=8.0,<9.0",
         "python-dateutil>=2.8.2,<3",
@@ -119,15 +121,15 @@ setup(
         # All version pins dependent on web3[tester]
         "eth-abi",
         "eth-account",
-        "eth-typing",
+        "eth-typing>=3.5.2,<4",
         "eth-utils",
         "hexbytes",
-        "py-geth>=5.0.0-beta.2,<6",
+        "py-geth>=5.1.0,<6",
         "trie>=3.0.1,<4",  # Peer: stricter pin needed for uv support.
         "web3[tester]>=6.17.2,<7",
         # ** Dependencies maintained by ApeWorX **
         "eip712>=0.2.10,<0.3",
-        "ethpm-types>=0.6.17,<0.7",
+        "ethpm-types>=0.6.19,<0.7",
         "eth_pydantic_types>=0.1.3,<0.2",
         "evmchains>=0.1.0,<0.2",
         "evm-trace>=0.2.3,<0.3",
@@ -169,5 +171,6 @@ setup(
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
     ],
 )

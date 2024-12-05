@@ -14,7 +14,7 @@ project                             # The root project directory
 └── ape-config.yaml                 # The ape project configuration file
 ```
 
-Notice that you can configure you ape project using the `ape-config.yaml` file.
+Notice that you can configure your ape project using the `ape-config.yaml` file.
 See the [configuration guide](./config.html) for a more detailed explanation of settings you can adjust.
 
 ## The Local Project

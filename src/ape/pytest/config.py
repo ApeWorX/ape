@@ -27,6 +27,18 @@ class ConfigWrapper(ManagerAccessMixin):
 
     def __init__(self, pytest_config: "PytestConfig"):
         self.pytest_config = pytest_config
+        if not self.verbosity:
+            # Enable verbose output if stdout capture is disabled
+            self.verbosity = self.pytest_config.getoption("capture") == "no"
+        # else: user has already changes verbosity to an equal or higher level; avoid downgrading.
+
+    @property
+    def verbosity(self) -> int:
+        return self.pytest_config.option.verbose
+
+    @verbosity.setter
+    def verbosity(self, value):
+        self.pytest_config.option.verbose = value
 
     @cached_property
     def supports_tracing(self) -> bool:

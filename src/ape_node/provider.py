@@ -3,6 +3,7 @@ import shutil
 from pathlib import Path
 from subprocess import DEVNULL, PIPE, Popen
 from typing import TYPE_CHECKING, Any, Optional, Union
+from urllib.parse import urlparse
 
 from eth_utils import add_0x_prefix, to_hex
 from evmchains import get_random_rpc
@@ -13,7 +14,6 @@ from pydantic import field_validator
 from pydantic_settings import SettingsConfigDict
 from requests.exceptions import ConnectionError
 from web3.middleware import geth_poa_middleware as ExtraDataToPOAMiddleware
-from yarl import URL
 
 from ape.api.config import PluginConfig
 from ape.api.providers import SubprocessProvider, TestProviderAPI
@@ -90,13 +90,17 @@ def create_genesis_data(alloc: Alloc, chain_id: int) -> "GenesisDataTypedDict":
 class GethDevProcess(BaseGethProcess):
     """
     A developer-configured geth that only exists until disconnected.
+    (Implementation detail of the local node provider).
     """
 
     def __init__(
         self,
         data_dir: Path,
-        hostname: str = DEFAULT_HOSTNAME,
-        port: int = DEFAULT_PORT,
+        hostname: Optional[str] = None,
+        port: Optional[int] = None,
+        ipc_path: Optional[Path] = None,
+        ws_hostname: Optional[str] = None,
+        ws_port: Optional[str] = None,
         mnemonic: str = DEFAULT_TEST_MNEMONIC,
         number_of_accounts: int = DEFAULT_NUMBER_OF_TEST_ACCOUNTS,
         chain_id: int = DEFAULT_TEST_CHAIN_ID,
@@ -111,23 +115,33 @@ class GethDevProcess(BaseGethProcess):
             raise NodeSoftwareNotInstalledError()
 
         self._data_dir = data_dir
-        self._hostname = hostname
-        self._port = port
         self.is_running = False
         self._auto_disconnect = auto_disconnect
 
-        geth_kwargs = construct_test_chain_kwargs(
-            data_dir=self.data_dir,
-            geth_executable=executable,
-            rpc_addr=hostname,
-            rpc_port=f"{port}",
-            network_id=f"{chain_id}",
-            ws_enabled=False,
-            ws_addr=None,
-            ws_origins=None,
-            ws_port=None,
-            ws_api=None,
-        )
+        kwargs_ctor: dict = {
+            "data_dir": self.data_dir,
+            "geth_executable": executable,
+            "network_id": f"{chain_id}",
+        }
+        if hostname is not None:
+            kwargs_ctor["rpc_addr"] = hostname
+        if port is not None:
+            kwargs_ctor["rpc_port"] = f"{port}"
+        if ws_hostname:
+            kwargs_ctor["ws_enabled"] = True
+            kwargs_ctor["ws_addr"] = ws_hostname
+        if ws_port:
+            kwargs_ctor["ws_enabled"] = True
+            kwargs_ctor["ws_port"] = f"{ws_port}"
+        if ipc_path is not None:
+            kwargs_ctor["ipc_path"] = f"{ipc_path}"
+        if not kwargs_ctor.get("ws_enabled"):
+            kwargs_ctor["ws_api"] = None
+            kwargs_ctor["ws_enabled"] = False
+            kwargs_ctor["ws_addr"] = None
+            kwargs_ctor["ws_port"] = None
+
+        geth_kwargs = construct_test_chain_kwargs(**kwargs_ctor)
 
         # Ensure a clean data-dir.
         self._clean()
@@ -147,44 +161,98 @@ class GethDevProcess(BaseGethProcess):
 
     @classmethod
     def from_uri(cls, uri: str, data_folder: Path, **kwargs):
-        parsed_uri = URL(uri)
-
-        if parsed_uri.host not in ("localhost", "127.0.0.1"):
-            raise ConnectionError(f"Unable to start Geth on non-local host {parsed_uri.host}.")
-
-        port = parsed_uri.port if parsed_uri.port is not None else DEFAULT_PORT
         mnemonic = kwargs.get("mnemonic", DEFAULT_TEST_MNEMONIC)
         number_of_accounts = kwargs.get("number_of_accounts", DEFAULT_NUMBER_OF_TEST_ACCOUNTS)
         balance = kwargs.get("initial_balance", DEFAULT_TEST_ACCOUNT_BALANCE)
         extra_accounts = [a.lower() for a in kwargs.get("extra_funded_accounts", [])]
 
-        return cls(
-            data_folder,
-            auto_disconnect=kwargs.get("auto_disconnect", True),
-            executable=kwargs.get("executable"),
-            extra_funded_accounts=extra_accounts,
-            hd_path=kwargs.get("hd_path", DEFAULT_TEST_HD_PATH),
-            hostname=parsed_uri.host,
-            initial_balance=balance,
-            mnemonic=mnemonic,
-            number_of_accounts=number_of_accounts,
-            port=port,
-        )
+        process_kwargs = {
+            "auto_disconnect": kwargs.get("auto_disconnect", True),
+            "executable": kwargs.get("executable"),
+            "extra_funded_accounts": extra_accounts,
+            "hd_path": kwargs.get("hd_path", DEFAULT_TEST_HD_PATH),
+            "initial_balance": balance,
+            "mnemonic": mnemonic,
+            "number_of_accounts": number_of_accounts,
+        }
+
+        parsed_uri = urlparse(uri)
+        if not parsed_uri.netloc:
+            path = Path(parsed_uri.path)
+            if path.suffix == ".ipc":
+                # Was given an IPC path.
+                process_kwargs["ipc_path"] = path
+
+            else:
+                raise ConnectionError(f"Unrecognized path type: '{path}'.")
+
+        elif hostname := parsed_uri.hostname:
+            if hostname not in ("localhost", "127.0.0.1"):
+                raise ConnectionError(
+                    f"Unable to start Geth on non-local host {parsed_uri.hostname}."
+                )
+
+            if parsed_uri.scheme.startswith("ws"):
+                process_kwargs["ws_hostname"] = hostname
+                process_kwargs["ws_port"] = parsed_uri.port or DEFAULT_PORT
+            elif parsed_uri.scheme.startswith("http"):
+                process_kwargs["hostname"] = hostname or DEFAULT_HOSTNAME
+                process_kwargs["port"] = parsed_uri.port or DEFAULT_PORT
+            else:
+                raise ConnectionError(f"Unsupported scheme: '{parsed_uri.scheme}'.")
+
+        return cls(data_folder, **process_kwargs)
 
     @property
     def data_dir(self) -> str:
         return f"{self._data_dir}"
 
+    @property
+    def _hostname(self) -> Optional[str]:
+        return self.geth_kwargs.get("rpc_addr")
+
+    @property
+    def _port(self) -> Optional[str]:
+        return self.geth_kwargs.get("rpc_port")
+
+    @property
+    def _ws_hostname(self) -> Optional[str]:
+        return self.geth_kwargs.get("ws_addr")
+
+    @property
+    def _ws_port(self) -> Optional[str]:
+        return self.geth_kwargs.get("ws_port")
+
     def connect(self, timeout: int = 60):
-        home = str(Path.home())
-        ipc_path = self.ipc_path.replace(home, "$HOME")
-        logger.info(f"Starting geth (HTTP='{self._hostname}:{self._port}', IPC={ipc_path}).")
+        self._log_connection()
         self.start()
         self.wait_for_rpc(timeout=timeout)
 
         # Register atexit handler to make sure disconnect is called for normal object lifecycle.
         if self._auto_disconnect:
             atexit.register(self.disconnect)
+
+    def _log_connection(self):
+        home = str(Path.home())
+        ipc_path = self.ipc_path.replace(home, "$HOME")
+
+        http_log = ""
+        if self._hostname:
+            http_log = f"HTTP={self._hostname}"
+            if port := self._port:
+                http_log = f"{http_log}:{port}"
+
+        ipc_log = f"IPC={ipc_path}"
+
+        ws_log = ""
+        if self._ws_hostname:
+            ws_log = f"WS={self._ws_hostname}"
+            if port := self._ws_port:
+                ws_log = f"{ws_log}:{port}"
+
+        connection_logs = ", ".join(x for x in (http_log, ipc_log, ws_log) if x)
+
+        logger.info(f"Starting geth ({connection_logs}).")
 
     def start(self):
         if self.is_running:
@@ -208,7 +276,7 @@ class GethDevProcess(BaseGethProcess):
 
     def _clean(self):
         if self._data_dir.is_dir():
-            shutil.rmtree(self._data_dir)
+            shutil.rmtree(self._data_dir, ignore_errors=True)
 
         # dir must exist when initializing chain.
         self._data_dir.mkdir(parents=True, exist_ok=True)
@@ -229,6 +297,21 @@ class EthereumNetworkConfig(PluginConfig):
     local: dict = {**DEFAULT_SETTINGS.copy(), "chain_id": DEFAULT_TEST_CHAIN_ID}
 
     model_config = SettingsConfigDict(extra="allow")
+
+    @field_validator("local", mode="before")
+    @classmethod
+    def _validate_local(cls, value):
+        value = value or {}
+        if not value:
+            return {**DEFAULT_SETTINGS.copy(), "chain_id": DEFAULT_TEST_CHAIN_ID}
+
+        if "chain_id" not in value:
+            value["chain_id"] = DEFAULT_TEST_CHAIN_ID
+        if "uri" not in value and "ipc_path" in value or "ws_uri" in value or "http_uri" in value:
+            # No need to add default HTTP URI if was given only IPC Path
+            return {**{k: v for k, v in DEFAULT_SETTINGS.items() if k != "uri"}, **value}
+
+        return {**DEFAULT_SETTINGS, **value}
 
 
 class EthereumNodeConfig(PluginConfig):
@@ -384,8 +467,8 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
         extra_accounts = list({a.lower() for a in extra_accounts})
         test_config["extra_funded_accounts"] = extra_accounts
         test_config["initial_balance"] = self.test_config.balance
-
-        return GethDevProcess.from_uri(self.uri, self.data_dir, **test_config)
+        uri = self.ws_uri or self.uri
+        return GethDevProcess.from_uri(uri, self.data_dir, **test_config)
 
     def disconnect(self):
         # Must disconnect process first.

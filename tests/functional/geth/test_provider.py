@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 from typing import cast
 
@@ -16,6 +17,7 @@ from web3.providers import HTTPProvider
 from ape.exceptions import (
     APINotImplementedError,
     BlockNotFoundError,
+    ConfigError,
     ContractLogicError,
     NetworkMismatchError,
     ProviderError,
@@ -41,6 +43,11 @@ from tests.conftest import GETH_URI, geth_process_test
 @pytest.fixture
 def web3_factory(mocker):
     return mocker.patch("ape_ethereum.provider._create_web3")
+
+
+@pytest.fixture
+def process_factory_patch(mocker):
+    return mocker.patch("ape_node.provider.GethDevProcess.from_uri")
 
 
 @pytest.fixture
@@ -125,6 +132,24 @@ def test_uri_non_dev_and_not_configured(mocker, ethereum):
 
     actual = provider.uri
     assert actual == expected
+
+
+@geth_process_test
+def test_uri_invalid(geth_provider, project, ethereum):
+    settings = geth_provider.provider_settings
+    geth_provider.provider_settings = {}
+    value = "I AM NOT A URI OF ANY KIND!"
+    config = {"node": {"ethereum": {"local": {"uri": value}}}}
+
+    try:
+        with project.temp_config(**config):
+            # Assert we use the config value.
+            expected = rf"Invalid URI \(not HTTP, WS, or IPC\): {re.escape(value)}"
+            with pytest.raises(ConfigError, match=expected):
+                _ = geth_provider.uri
+
+    finally:
+        geth_provider.provider_settings = settings
 
 
 @geth_process_test
@@ -236,7 +261,18 @@ def test_connect_to_chain_that_started_poa(mock_web3, web3_factory, ethereum):
 
 
 @geth_process_test
-def test_connect_using_only_ipc_for_uri(project, networks, geth_provider):
+def test_connect_using_only_ipc_for_uri_already_connected(project, networks, geth_provider):
+    """
+    Shows we can remote-connect to a node that is already running when it exposes its IPC path.
+    """
+    ipc_path = geth_provider.ipc_path
+    with project.temp_config(node={"ethereum": {"local": {"uri": f"{ipc_path}"}}}):
+        with networks.ethereum.local.use_provider("node") as node:
+            assert node.uri == f"{ipc_path}"
+
+
+@geth_process_test
+def test_connect_using_ipc(process_factory_patch, project, networks, geth_provider):
     ipc_path = geth_provider.ipc_path
     with project.temp_config(node={"ethereum": {"local": {"uri": f"{ipc_path}"}}}):
         with networks.ethereum.local.use_provider("node") as node:
@@ -775,9 +811,8 @@ def test_trace_approach_config(project):
 
 
 @geth_process_test
-def test_start(mocker, convert, project, geth_provider):
+def test_start(process_factory_patch, convert, project, geth_provider):
     amount = convert("100_000 ETH", int)
-    spy = mocker.spy(GethDevProcess, "from_uri")
 
     with project.temp_config(test={"balance": amount}):
         try:
@@ -785,10 +820,57 @@ def test_start(mocker, convert, project, geth_provider):
         except Exception:
             pass  # Exceptions are fine here.
 
-        actual = spy.call_args[1]["balance"]
-        assert actual == amount
+    actual = process_factory_patch.call_args[1]["balance"]
+    assert actual == amount
+
+
+@geth_process_test
+@pytest.mark.parametrize("key", ("uri", "ws_uri"))
+def test_start_from_ws_uri(process_factory_patch, project, geth_provider, key):
+    uri = "ws://localhost:5677"
+
+    with project.temp_config(node={"ethereum": {"local": {key: uri}}}):
+        try:
+            geth_provider.start()
+        except Exception:
+            pass  # Exceptions are fine here.
+
+    actual = process_factory_patch.call_args[0][0]  # First "arg"
+    assert actual == uri
 
 
 @geth_process_test
 def test_auto_mine(geth_provider):
     assert geth_provider.auto_mine is True
+
+
+@geth_process_test
+def test_geth_dev_from_uri_http(data_folder):
+    geth_dev = GethDevProcess.from_uri("http://localhost:6799", data_folder)
+    kwargs = geth_dev.geth_kwargs
+    assert kwargs["rpc_addr"] == "localhost"
+    assert kwargs["rpc_port"] == "6799"
+    assert kwargs["ws_enabled"] is False
+    assert kwargs.get("ws_api") is None
+    assert kwargs.get("ws_addr") is None
+    assert kwargs.get("ws_port") is None
+
+
+@geth_process_test
+def test_geth_dev_from_uri_ws(data_folder):
+    geth_dev = GethDevProcess.from_uri("ws://localhost:6799", data_folder)
+    kwargs = geth_dev.geth_kwargs
+    assert kwargs.get("rpc_addr") is None
+    assert kwargs["ws_enabled"] is True
+    assert kwargs["ws_addr"] == "localhost"
+    assert kwargs["ws_port"] == "6799"
+
+
+@geth_process_test
+def test_geth_dev_from_uri_ipc(data_folder):
+    geth_dev = GethDevProcess.from_uri("path/to/geth.ipc", data_folder)
+    kwargs = geth_dev.geth_kwargs
+    assert kwargs["ipc_path"] == "path/to/geth.ipc"
+    assert kwargs.get("ws_api") is None
+    assert kwargs.get("ws_addr") is None
+    assert kwargs.get("rpc_addr") is None

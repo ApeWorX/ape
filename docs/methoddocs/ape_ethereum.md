@@ -1,7 +1,27 @@
 # ape-ethereum
 
 ```{eval-rst}
-.. automodule:: ape_ethereum
+.. automodule:: ape_ethereum.ecosystem
+    :members:
+```
+
+```{eval-rst}
+.. automodule:: ape_ethereum.provider
+    :members:
+```
+
+```{eval-rst}
+.. automodule:: ape_ethereum.proxies
+    :members:
+```
+
+```{eval-rst}
+.. automodule:: ape_ethereum.trace
+    :members:
+```
+
+```{eval-rst}
+.. automodule:: ape_ethereum.transactions
     :members:
 ```
 
