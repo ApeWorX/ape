@@ -383,6 +383,12 @@ def test_fork(networks, mock_sepolia, mock_fork_provider):
     with ctx as provider:
         assert provider.name == "mock"
         assert provider.network.name == "sepolia-fork"
+        # Fork the fork.
+        ctx2 = networks.fork()
+        with ctx2 as provider2:
+            assert provider2.partial_call[1]["provider_settings"]["host"] == "auto"
+            assert provider2.name == "mock"
+            assert provider2.network.name == "sepolia-fork"
 
 
 def test_fork_specify_provider(networks, mock_sepolia, mock_fork_provider):
