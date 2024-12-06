@@ -138,7 +138,7 @@ Suppose the name of the script is `foobar`, you can run it via:
 ape run foobar
 ```
 
-Without specifying `--network`, the script with connect to your default network.
+Without specifying `--network`, the script will connect to your default network.
 Else, specify the network using the `--network` flag:
 
 ```shell
