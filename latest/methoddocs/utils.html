@@ -216,6 +216,7 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#module-ape.utils.rpc">RPC</a><ul>
 <li><a class="reference internal" href="#ape.utils.rpc.RPCHeaders"><code class="docutils literal notranslate"><span class="pre">RPCHeaders</span></code></a></li>
 <li><a class="reference internal" href="#ape.utils.rpc.allow_disconnected"><code class="docutils literal notranslate"><span class="pre">allow_disconnected()</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.rpc.request_with_retry"><code class="docutils literal notranslate"><span class="pre">request_with_retry()</span></code></a></li>
 <li><a class="reference internal" href="#ape.utils.rpc.stream_response"><code class="docutils literal notranslate"><span class="pre">stream_response()</span></code></a></li>
 </ul>
 </li>
@@ -1056,6 +1057,32 @@ warns and returns <code class="docutils literal notranslate"><span class="pre">N
 </span><span data-line="7">    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">chain</span><span class="o">.</span><span class="n">snapshot</span><span class="p">()</span>
 </span></pre></div>
 </div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ape.utils.rpc.request_with_retry">
+<span class="sig-prename descclassname"><span class="pre">ape.utils.rpc.</span></span><span class="sig-name descname"><span class="pre">request_with_retry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_retry_delay</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">retry_backoff_factor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_retry_delay</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">30000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_retries</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">retry_jitter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">250</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_rate_limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">Exception</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.rpc.request_with_retry" title="Link to this definition"></a></dt>
+<dd><p>Make a request with 429/rate-limit retry logic.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>func</strong> (<em>Callable</em>) – The function to run with rate-limit handling logic.</p></li>
+<li><p><strong>min_retry_delay</strong> (<em>int</em>) – The amount of milliseconds to wait before
+retrying the request. Defaults to <code class="docutils literal notranslate"><span class="pre">1_000</span></code> (one second).</p></li>
+<li><p><strong>retry_backoff_factor</strong> (<em>int</em>) – The multiplier applied to the retry delay
+after each failed attempt. Defaults to <code class="docutils literal notranslate"><span class="pre">2</span></code>.</p></li>
+<li><p><strong>max_retry_delay</strong> (<em>int</em>) – The maximum length of the retry delay.
+Defaults to <code class="docutils literal notranslate"><span class="pre">30_000</span></code> (30 seconds).</p></li>
+<li><p><strong>max_retries</strong> (<em>int</em>) – The maximum number of retries.
+Defaults to <code class="docutils literal notranslate"><span class="pre">10</span></code>.</p></li>
+<li><p><strong>retry_jitter</strong> (<em>int</em>) – A random number of milliseconds up to this limit
+is added to each retry delay. Defaults to <code class="docutils literal notranslate"><span class="pre">250</span></code> milliseconds.</p></li>
+<li><p><strong>is_rate_limit</strong> (<em>Callable</em><em>[</em><em>[</em><em>Exception</em><em>]</em><em>, </em><em>bool</em><em>] </em><em>| </em><em>None</em>) – A custom handler
+for detecting rate-limits. Defaults to checking for a 429 status
+code on an HTTPError.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
