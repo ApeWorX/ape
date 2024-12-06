@@ -22,7 +22,12 @@ from ape.exceptions import (
 )
 from ape.types.events import LogFilter
 from ape.utils.testing import DEFAULT_TEST_ACCOUNT_BALANCE, DEFAULT_TEST_CHAIN_ID
-from ape_ethereum.provider import WEB3_PROVIDER_URI_ENV_VAR_NAME, Web3Provider, _sanitize_web3_url
+from ape_ethereum.provider import (
+    WEB3_PROVIDER_URI_ENV_VAR_NAME,
+    EthereumNodeProvider,
+    Web3Provider,
+    _sanitize_web3_url,
+)
 from ape_ethereum.transactions import TransactionStatusEnum, TransactionType
 from ape_test import LocalProvider
 
@@ -466,6 +471,33 @@ def test_make_request_handles_http_error_method_not_allowed(eth_tester_provider,
             eth_tester_provider.make_request("ape_thisDoesNotExist")
     finally:
         eth_tester_provider._web3 = real_web3
+
+
+def test_make_request_rate_limiting(mocker, ethereum, mock_web3):
+    provider = EthereumNodeProvider(network=ethereum.local)
+    provider._web3 = mock_web3
+
+    class RateLimitTester:
+        tries = 3
+        _try = 0
+        tries_made = 0
+
+        def rate_limit_hook(self, rpc, params):
+            self.tries_made += 1
+            if self._try >= self.tries:
+                self._try = 0
+                return {"success": True}
+            else:
+                self._try += 1
+                response = mocker.MagicMock()
+                response.status_code = 429
+                raise HTTPError(response=response)
+
+    rate_limit_tester = RateLimitTester()
+    mock_web3.provider.make_request.side_effect = rate_limit_tester.rate_limit_hook
+    result = provider.make_request("ape_testRateLimiting", parameters=[])
+    assert rate_limit_tester.tries_made == rate_limit_tester.tries + 1
+    assert result == {"success": True}
 
 
 def test_base_fee(eth_tester_provider):

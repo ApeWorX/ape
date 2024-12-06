@@ -30,7 +30,7 @@ from web3.exceptions import (
 )
 
 try:
-    from web3.exceptions import Web3RPCError
+    from web3.exceptions import Web3RPCError  # type: ignore
 except ImportError:
     Web3RPCError = ValueError  # type: ignore
 
@@ -66,6 +66,7 @@ from ape.types.trace import SourceTraceback
 from ape.utils._web3_compat import ExtraDataToPOAMiddleware, WebsocketProvider
 from ape.utils.basemodel import ManagerAccessMixin
 from ape.utils.misc import DEFAULT_MAX_RETRIES_TX, gas_estimation_error_message, to_int
+from ape.utils.rpc import request_with_retry
 from ape_ethereum._print import CONSOLE_ADDRESS, console_contract
 from ape_ethereum.trace import CallTrace, TraceApproach, TransactionTrace
 from ape_ethereum.transactions import AccessList, AccessListTransaction, TransactionStatusEnum
@@ -1134,8 +1135,10 @@ class Web3Provider(ProviderAPI, ABC):
         self.chain_manager.contracts._cache_contract_type(CONSOLE_ADDRESS, console_contract)
 
     def make_request(self, rpc: str, parameters: Optional[Iterable] = None) -> Any:
-        parameters = parameters or []
+        return request_with_retry(lambda: self._make_request(rpc, parameters=parameters))
 
+    def _make_request(self, rpc: str, parameters: Optional[Iterable] = None) -> Any:
+        parameters = parameters or []
         try:
             result = self.web3.provider.make_request(RPCEndpoint(rpc), parameters)
         except HTTPError as err:
@@ -1143,6 +1146,9 @@ class Web3Provider(ProviderAPI, ABC):
                 raise APINotImplementedError(
                     f"RPC method '{rpc}' is not implemented by this node instance."
                 )
+
+            elif err.response.status_code == 429:
+                raise  # Raise as-is so rate-limit handling picks it up.
 
             raise ProviderError(str(err)) from err
 
