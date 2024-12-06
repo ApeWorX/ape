@@ -20,7 +20,7 @@ If you want to get started now, see the [Quickstart](#quickstart) section.
 
 Read our [technical documentation](https://docs.apeworx.io/ape/stable/) to get a deeper understanding of our open source Framework.
 
-Read our [academic platform](https://academy.apeworx.io/) will help you master Ape Framework with tutorials and challenges.
+Read our [academic platform](https://academy.apeworx.io/) which will help you master Ape Framework with tutorials and challenges.
 
 ## Prerequisite
 
