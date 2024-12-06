@@ -549,10 +549,16 @@ class IsolationManager(ManagerAccessMixin):
     supported: bool = True
     snapshots: SnapshotRegistry = SnapshotRegistry()
 
-    def __init__(self, config_wrapper: "ConfigWrapper", receipt_capture: "ReceiptCapture"):
+    def __init__(
+        self,
+        config_wrapper: "ConfigWrapper",
+        receipt_capture: "ReceiptCapture",
+        chain_snapshots: Optional[dict] = None,
+    ):
         self.config_wrapper = config_wrapper
         self.receipt_capture = receipt_capture
         self._records: list[str] = []
+        self._chain_snapshots = chain_snapshots
 
     @cached_property
     def _track_transactions(self) -> bool:
@@ -561,6 +567,10 @@ class IsolationManager(ManagerAccessMixin):
             and self.provider.is_connected
             and (self.config_wrapper.track_gas or self.config_wrapper.track_coverage)
         )
+
+    @property
+    def chain_snapshots(self) -> dict:
+        return self._chain_snapshots or self.chain_manager._snapshots
 
     def get_snapshot(self, scope: Scope) -> Snapshot:
         return self.snapshots[scope]
@@ -634,7 +644,7 @@ class IsolationManager(ManagerAccessMixin):
         if snapshot_id is None:
             return
 
-        elif snapshot_id not in self.chain_manager._snapshots[self.provider.chain_id]:
+        elif snapshot_id not in self.chain_snapshots[self.provider.chain_id]:
             # Still clear out.
             self.snapshots.clear_snapshot_id(scope)
             return
@@ -643,7 +653,7 @@ class IsolationManager(ManagerAccessMixin):
             self._records.append(f"restoring '{scope.name.upper()}'")
 
         try:
-            self.chain_manager.restore(snapshot_id)
+            self._restore(snapshot_id)
         except NotImplementedError:
             logger.warning(
                 "The connected provider does not support snapshotting. "
@@ -653,6 +663,9 @@ class IsolationManager(ManagerAccessMixin):
             self.supported = False
 
         self.snapshots.clear_snapshot_id(scope)
+
+    def _restore(self, snapshot_id: "SnapshotID"):
+        self.chain_manager.restore(snapshot_id)
 
     def show_records(self):
         if not self._records:
