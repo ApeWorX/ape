@@ -463,8 +463,9 @@ def remove_disk_writes_deployments(chain):
         chain.contracts._deployments_mapping_cache.unlink()
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="session", autouse=True)
 def logger():
+    _logger.set_level(LogLevel.ERROR)
     return _logger
 
 
