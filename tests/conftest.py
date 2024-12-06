@@ -420,7 +420,7 @@ def ape_caplog(caplog):
 
         def set_levels(self, caplog_level: LogLevel = LogLevel.WARNING):
             self.level = caplog_level
-            logger.set_level(LogLevel.INFO)
+            logger.set_level(LogLevel.WARNING)
             caplog.set_level(caplog_level)
 
         def assert_last_log(self, message: str):
@@ -446,7 +446,7 @@ def ape_caplog(caplog):
 
                 # Reset levels in case they got switched.
                 self.set_levels()
-                logger.set_level(LogLevel.INFO)
+                logger.set_level(LogLevel.ERROR)
                 caplog.set_level(LogLevel.WARNING)
 
             pytest.fail(self.fail_message)
