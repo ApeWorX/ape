@@ -480,8 +480,10 @@ def test_make_request_rate_limiting(mocker, ethereum, mock_web3):
     class RateLimitTester:
         tries = 3
         _try = 0
+        tries_made = 0
 
         def rate_limit_hook(self, rpc, params):
+            self.tries_made += 1
             if self._try >= self.tries:
                 self._try = 0
                 return {"success": True}
@@ -494,6 +496,7 @@ def test_make_request_rate_limiting(mocker, ethereum, mock_web3):
     rate_limit_tester = RateLimitTester()
     mock_web3.provider.make_request.side_effect = rate_limit_tester.rate_limit_hook
     result = provider.make_request("ape_testRateLimiting", parameters=[])
+    assert rate_limit_tester.tries_made == rate_limit_tester.tries + 1
     assert result == {"success": True}
 
 
