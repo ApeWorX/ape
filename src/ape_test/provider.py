@@ -107,19 +107,34 @@ class ApeTester(EthereumTesterProvider):
     ):
         self.config = config
         self.chain_id = chain_id
+        self._backend = backend
         self._ethereum_tester = None if backend is None else EthereumTester(backend)
 
     @property
     def ethereum_tester(self) -> EthereumTester:
         if self._ethereum_tester is None:
-            backend = ApeEVMBackend(self.config)
-            self._ethereum_tester = EthereumTester(backend)
+            self._backend = ApeEVMBackend(self.config)
+            self._ethereum_tester = EthereumTester(self._backend)
 
         return self._ethereum_tester
 
     @ethereum_tester.setter
     def ethereum_tester(self, value):
         self._ethereum_tester = value
+        self._backend = value.backend
+
+    @property
+    def backend(self) -> "ApeEVMBackend":
+        if self._backend is None:
+            self._backend = ApeEVMBackend(self.config)
+            self._ethereum_tester = EthereumTester(self._backend)
+
+        return self._backend
+
+    @backend.setter
+    def backend(self, value):
+        self._backend = value
+        self._ethereum_tester = EthereumTester(self._backend)
 
     @cached_property
     def api_endpoints(self) -> dict:  # type: ignore
@@ -143,7 +158,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
 
     @property
     def evm_backend(self) -> ApeEVMBackend:
-        return self.tester.ethereum_tester.backend
+        return self.tester.backend
 
     @cached_property
     def tester(self) -> ApeTester:
