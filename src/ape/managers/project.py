@@ -1,4 +1,5 @@
 import json
+import os
 import random
 import shutil
 from collections.abc import Callable, Iterable, Iterator
@@ -2567,6 +2568,36 @@ class LocalProject(Project):
 
         self.sources._path_cache = None
         self._clear_cached_config()
+
+    def chdir(self, path: Path):
+        """
+        Change the local project to the new path.
+
+        Args:
+            path (Path): The path of the new project.
+        """
+        if self.path == path:
+            return  # Already there!
+
+        os.chdir(path)
+
+        # Clear cached properties.
+        for prop in (
+            "path",
+            "_deduced_contracts_folder",
+            "project_api",
+            "contracts",
+            "interfaces_folder",
+            "sources",
+        ):
+            self.__dict__.pop(prop, None)
+
+        # Re-initialize
+        self._session_source_change_check = set()
+        self._config_override = {}
+        self._base_path = Path(path).resolve()
+        self.manifest_path = self._base_path / ".build" / "__local__.json"
+        self._manifest = self.load_manifest()
 
     def reload_config(self):
         """
