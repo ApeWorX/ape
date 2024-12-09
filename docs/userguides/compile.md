@@ -121,7 +121,7 @@ vyper = compilers.get_compiler("vyper", settings=settings["vyper"])
 vyper.compile([Path("path/to/contract.vy")])
 
 solidity = compilers.get_compiler("solidity", settings=settings["solidity"])
-vyper.compile([Path("path/to/contract.sol")])
+solidity.compile([Path("path/to/contract.sol")])
 ```
 
 ## Compile Source Code

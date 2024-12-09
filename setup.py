@@ -44,7 +44,7 @@ extras_require = {
     ],
     "doc": ["sphinx-ape"],
     "release": [  # `release` GitHub Action job uses this
-        "setuptools",  # Installation tool
+        "setuptools>=75",  # Installation tool
         "wheel",  # Packaging tool
         "twine==3.8.0",  # Package upload tool
     ],
@@ -98,6 +98,7 @@ setup(
         "ijson>=3.1.4,<4",
         "ipython>=8.18.1,<9",
         "lazyasd>=0.1.4",
+        "asttokens>=2.4.1,<3",  # Peer dependency; w/o pin container build fails.
         # Pandas peer-dep: Numpy 2.0 causes issues for some users.
         "numpy<2",
         "packaging>=23.0,<24",
@@ -117,15 +118,14 @@ setup(
         "urllib3>=2.0.0,<3",
         "watchdog>=3.0,<4",
         # ** Dependencies maintained by Ethereum Foundation **
-        # All version pins dependent on web3[tester]
-        "eth-abi",
-        "eth-account",
-        "eth-typing",
-        "eth-utils",
-        "hexbytes",
-        "py-geth>=5.0.0-beta.2,<6",
+        "eth-abi>=5.1.0,<6",
+        "eth-account>=0.11.3,<0.14",
+        "eth-typing>=3.5.2,<6",
+        "eth-utils>=2.1.0,<6",
+        "hexbytes>=0.3.1,<2",
+        "py-geth>=3.14.0,<6",
         "trie>=3.0.1,<4",  # Peer: stricter pin needed for uv support.
-        "web3[tester]>=6.17.2,<7",
+        "web3[tester]>=6.20.1,<8",
         # ** Dependencies maintained by ApeWorX **
         "eip712>=0.2.10,<0.3",
         "ethpm-types>=0.6.19,<0.7",
@@ -170,5 +170,6 @@ setup(
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
     ],
 )

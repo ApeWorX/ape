@@ -11,7 +11,6 @@ from hexbytes import HexBytes
 from web3 import AutoProvider, Web3
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.exceptions import ExtraDataLengthError
-from web3.middleware import geth_poa_middleware as ExtraDataToPOAMiddleware
 from web3.providers import HTTPProvider
 
 from ape.exceptions import (
@@ -26,6 +25,7 @@ from ape.exceptions import (
     VirtualMachineError,
 )
 from ape.utils import to_int
+from ape.utils._web3_compat import ExtraDataToPOAMiddleware
 from ape_ethereum.ecosystem import Block
 from ape_ethereum.provider import DEFAULT_SETTINGS, EthereumNodeProvider
 from ape_ethereum.trace import TraceApproach
@@ -43,6 +43,11 @@ from tests.conftest import GETH_URI, geth_process_test
 @pytest.fixture
 def web3_factory(mocker):
     return mocker.patch("ape_ethereum.provider._create_web3")
+
+
+@pytest.fixture
+def process_factory_patch(mocker):
+    return mocker.patch("ape_node.provider.GethDevProcess.from_uri")
 
 
 @pytest.fixture
@@ -129,6 +134,7 @@ def test_uri_non_dev_and_not_configured(mocker, ethereum):
     assert actual == expected
 
 
+@geth_process_test
 def test_uri_invalid(geth_provider, project, ethereum):
     settings = geth_provider.provider_settings
     geth_provider.provider_settings = {}
@@ -255,7 +261,18 @@ def test_connect_to_chain_that_started_poa(mock_web3, web3_factory, ethereum):
 
 
 @geth_process_test
-def test_connect_using_only_ipc_for_uri(project, networks, geth_provider):
+def test_connect_using_only_ipc_for_uri_already_connected(project, networks, geth_provider):
+    """
+    Shows we can remote-connect to a node that is already running when it exposes its IPC path.
+    """
+    ipc_path = geth_provider.ipc_path
+    with project.temp_config(node={"ethereum": {"local": {"uri": f"{ipc_path}"}}}):
+        with networks.ethereum.local.use_provider("node") as node:
+            assert node.uri == f"{ipc_path}"
+
+
+@geth_process_test
+def test_connect_using_ipc(process_factory_patch, project, networks, geth_provider):
     ipc_path = geth_provider.ipc_path
     with project.temp_config(node={"ethereum": {"local": {"uri": f"{ipc_path}"}}}):
         with networks.ethereum.local.use_provider("node") as node:
@@ -518,6 +535,22 @@ def test_send_transaction_when_no_error_and_receipt_fails(
 
     finally:
         geth_provider._web3 = start_web3
+
+
+@geth_process_test
+def test_send_transaction_exceed_block_gas_limit(chain, geth_provider, geth_contract, geth_account):
+    """
+    Shows that the local geth node will retry the transaction
+    with a new gas if this happens, automatically.
+    """
+    transaction = geth_contract.setNumber.as_transaction(23333322101, sender=geth_account)
+    prepared = geth_account.prepare_transaction(transaction)
+    prepared.gas_limit += 100000
+    signed = geth_account.sign_transaction(prepared)
+    expected_gas_limit = chain.blocks.head.gas_limit
+    geth_provider.send_transaction(signed)
+    tx_sent = geth_account.history[-1]
+    assert tx_sent.gas_limit == expected_gas_limit
 
 
 @geth_process_test
@@ -794,9 +827,8 @@ def test_trace_approach_config(project):
 
 
 @geth_process_test
-def test_start(mocker, convert, project, geth_provider):
+def test_start(process_factory_patch, convert, project, geth_provider):
     amount = convert("100_000 ETH", int)
-    spy = mocker.spy(GethDevProcess, "from_uri")
 
     with project.temp_config(test={"balance": amount}):
         try:
@@ -804,10 +836,57 @@ def test_start(mocker, convert, project, geth_provider):
         except Exception:
             pass  # Exceptions are fine here.
 
-        actual = spy.call_args[1]["balance"]
-        assert actual == amount
+    actual = process_factory_patch.call_args[1]["balance"]
+    assert actual == amount
+
+
+@geth_process_test
+@pytest.mark.parametrize("key", ("uri", "ws_uri"))
+def test_start_from_ws_uri(process_factory_patch, project, geth_provider, key):
+    uri = "ws://localhost:5677"
+
+    with project.temp_config(node={"ethereum": {"local": {key: uri}}}):
+        try:
+            geth_provider.start()
+        except Exception:
+            pass  # Exceptions are fine here.
+
+    actual = process_factory_patch.call_args[0][0]  # First "arg"
+    assert actual == uri
 
 
 @geth_process_test
 def test_auto_mine(geth_provider):
     assert geth_provider.auto_mine is True
+
+
+@geth_process_test
+def test_geth_dev_from_uri_http(data_folder):
+    geth_dev = GethDevProcess.from_uri("http://localhost:6799", data_folder)
+    kwargs = geth_dev.geth_kwargs
+    assert kwargs["rpc_addr"] == "localhost"
+    assert kwargs["rpc_port"] == "6799"
+    assert kwargs["ws_enabled"] is False
+    assert kwargs.get("ws_api") is None
+    assert kwargs.get("ws_addr") is None
+    assert kwargs.get("ws_port") is None
+
+
+@geth_process_test
+def test_geth_dev_from_uri_ws(data_folder):
+    geth_dev = GethDevProcess.from_uri("ws://localhost:6799", data_folder)
+    kwargs = geth_dev.geth_kwargs
+    assert kwargs.get("rpc_addr") is None
+    assert kwargs["ws_enabled"] is True
+    assert kwargs["ws_addr"] == "localhost"
+    assert kwargs["ws_port"] == "6799"
+
+
+@geth_process_test
+def test_geth_dev_from_uri_ipc(data_folder):
+    geth_dev = GethDevProcess.from_uri("path/to/geth.ipc", data_folder)
+    kwargs = geth_dev.geth_kwargs
+    assert kwargs["ipc_path"] == "path/to/geth.ipc"
+    assert kwargs.get("ws_api") is None
+    assert kwargs.get("ws_addr") is None
+    assert kwargs.get("rpc_addr") is None

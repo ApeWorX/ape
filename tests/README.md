@@ -4,7 +4,7 @@ Due to its plugin-based architecture and registration as a pytest plugin, testin
 
 ### MyPy Type Annotations
 
-This codebase uses MyPy extensively, not only to help aide in finding typing issues within the codebase, but also as a means to help plugin writers avoid integration issues with the library.
+This codebase uses MyPy extensively, not only to help aid in finding typing issues within the codebase, but also as a means to help plugin writers avoid integration issues with the library.
 Please try to use MyPy Type Annotations as much as possible in the Core codebase, except where there exists an issue that would hugely complicate its use from a lack of available machinery.
 
 ### Functional Tests

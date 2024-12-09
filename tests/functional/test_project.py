@@ -179,7 +179,7 @@ def test_isolate_in_tempdir(project):
 
 def test_isolate_in_tempdir_does_not_alter_sources(project):
     # First, create a bad source.
-    with project.temp_config(contracts_folder="tests"):
+    with project.temp_config(contracts_folder="build"):
         new_src = project.contracts_folder / "newsource.json"
         new_src.write_text("this is not json, oops")
         project.sources.refresh()  # Only need to be called when run with other tests.
@@ -193,8 +193,8 @@ def test_isolate_in_tempdir_does_not_alter_sources(project):
             project.sources.refresh()
 
         # Ensure "newsource" did not persist in the in-memory manifest.
-        assert "tests/newsource.json" in actual, project.path
-        assert "tests/newsource.json" not in (project.manifest.sources or {})
+        assert "build/newsource.json" in actual
+        assert "build/newsource.json" not in (project.manifest.sources or {})
 
 
 def test_in_tempdir(project, tmp_project):
@@ -1053,3 +1053,14 @@ class TestDeploymentManager:
                 return
 
         assert False, "Failed to find expected URI"
+
+
+def test_chdir(project):
+    original_path = project.path
+    with create_tempdir() as new_path:
+        project.chdir(new_path)
+        assert project.path == new_path
+
+    # Undo.
+    project.chdir(original_path)
+    assert project.path == original_path

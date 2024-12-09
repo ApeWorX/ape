@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=51.1.1", "wheel", "setuptools_scm[toml]>=5.0,<8"]
+requires = ["setuptools>=75.0.0", "wheel", "setuptools_scm[toml]>=5.0"]
 
 [tool.mypy]
 exclude = ["build/", "dist/", "docs/", "tests/integration/cli/projects/"]
@@ -21,7 +21,7 @@ write_to = "src/ape/version.py"
 # character.
 [tool.black]
 line-length = 100
-target-version = ['py39', 'py310', 'py311', 'py312']
+target-version = ['py39', 'py310', 'py311', 'py312', 'py313']
 include = '\.pyi?$'
 
 [tool.pytest.ini_options]

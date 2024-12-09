@@ -1,4 +1,5 @@
 import json
+import os
 import random
 import shutil
 from collections.abc import Callable, Iterable, Iterator
@@ -1631,8 +1632,14 @@ class ProjectManager(ExtraAttributesMixin, BaseManager):
     def create_temporary_project(
         cls, config_override: Optional[dict] = None
     ) -> Iterator["LocalProject"]:
+        cls._invalidate_project_dependent_caches()
         with create_tempdir() as path:
             yield LocalProject(path, config_override=config_override)
+
+    @classmethod
+    def _invalidate_project_dependent_caches(cls):
+        cls.account_manager.test_accounts.reset()
+        cls.network_manager._invalidate_cache()
 
 
 class Project(ProjectManager):
@@ -1940,7 +1947,7 @@ class Project(ProjectManager):
 
         self._config_override = overrides
         _ = self.config
-        self.account_manager.test_accounts.reset()
+        self._invalidate_project_dependent_caches()
 
     def extract_manifest(self) -> PackageManifest:
         # Attempt to compile, if needed.
@@ -2281,10 +2288,10 @@ class LocalProject(Project):
             return default_project
 
         # ape-config.yaml does no exist. Check for another ProjectAPI type.
-        project_classes: list[type[ProjectAPI]] = [
-            t[1] for t in list(self.plugin_manager.projects)  # type: ignore
-        ]
-        plugins = [t for t in project_classes if not issubclass(t, ApeProject)]
+        project_classes: Iterator[type[ProjectAPI]] = (
+            t[1] for t in self.plugin_manager.projects  # type: ignore
+        )
+        plugins = (t for t in project_classes if not issubclass(t, ApeProject))
         for api in plugins:
             if instance := api.attempt_validate(path=self._base_path):
                 return instance
@@ -2561,6 +2568,36 @@ class LocalProject(Project):
 
         self.sources._path_cache = None
         self._clear_cached_config()
+
+    def chdir(self, path: Path):
+        """
+        Change the local project to the new path.
+
+        Args:
+            path (Path): The path of the new project.
+        """
+        if self.path == path:
+            return  # Already there!
+
+        os.chdir(path)
+
+        # Clear cached properties.
+        for prop in (
+            "path",
+            "_deduced_contracts_folder",
+            "project_api",
+            "contracts",
+            "interfaces_folder",
+            "sources",
+        ):
+            self.__dict__.pop(prop, None)
+
+        # Re-initialize
+        self._session_source_change_check = set()
+        self._config_override = {}
+        self._base_path = Path(path).resolve()
+        self.manifest_path = self._base_path / ".build" / "__local__.json"
+        self._manifest = self.load_manifest()
 
     def reload_config(self):
         """
