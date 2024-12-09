@@ -22,7 +22,7 @@ from ape.exceptions import (
     UnknownSnapshotError,
 )
 from ape.types.events import LogFilter
-from ape.utils.testing import DEFAULT_TEST_ACCOUNT_BALANCE, DEFAULT_TEST_CHAIN_ID
+from ape.utils.testing import DEFAULT_TEST_CHAIN_ID
 from ape_ethereum.provider import (
     WEB3_PROVIDER_URI_ENV_VAR_NAME,
     EthereumNodeProvider,

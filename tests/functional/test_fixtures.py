@@ -1,11 +1,13 @@
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 import pytest
 
 from ape.exceptions import BlockNotFoundError
 from ape.pytest.fixtures import IsolationManager, PytestApeFixtures
 from ape.pytest.utils import Scope
-from ape.types.vm import SnapshotID
+
+if TYPE_CHECKING:
+    from ape.types.vm import SnapshotID
 
 
 @pytest.fixture
@@ -88,7 +90,7 @@ def test_isolation_snapshot_id_types(snapshot_id, fixtures):
         restore_call_count = 0
         restore_called_with = []
 
-        def take_snapshot(self) -> Optional[SnapshotID]:
+        def take_snapshot(self) -> Optional["SnapshotID"]:
             self.take_call_count += 1
             return snapshot_id
 
@@ -145,7 +147,7 @@ def test_isolation_restore_fails_avoids_snapshot_next_time(fixtures):
             chain_snapshots[self.provider.chain_id] = ["123"]
             return "123"
 
-        def _restore(self, snapshot_id: SnapshotID):
+        def _restore(self, snapshot_id: "SnapshotID"):
             self.restore_called = True
             raise NotImplementedError()
 
