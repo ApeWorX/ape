@@ -271,7 +271,15 @@ More information on publishing contracts can be found in <a class="reference ext
 </span><span data-line="3"><span class="n">contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span><span class="s2">&quot;0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45&quot;</span><span class="p">)</span>
 </span></pre></div>
 </div>
-<p>It will fetch the <code class="docutils literal notranslate"><span class="pre">contract-type</span></code> using the explorer plugin from the active network, such as <a class="reference external" href="https://github.com/ApeWorX/ape-etherscan">ape-etherscan</a>.</p>
+<p>If the contract ABI and/or code is cached on disk or in memory (such as from a previous deploy or retrieval), it will use it.
+Otherwise, it will fetch the <code class="docutils literal notranslate"><span class="pre">ContractType</span></code> using the explorer plugin from the active network, such as <a class="reference external" href="https://github.com/ApeWorX/ape-etherscan">ape-etherscan</a>.</p>
+<p>To avoid fetching the contract from an explorer such as Etherscan, use <code class="docutils literal notranslate"><span class="pre">fetch_from_explorer=False</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">Contract</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="n">contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span><span class="s2">&quot;0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45&quot;</span><span class="p">,</span> <span class="n">fetch_from_explorer</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span></pre></div>
+</div>
+<p>This also avoids checking for an updated <code class="docutils literal notranslate"><span class="pre">ContractType</span></code> and forces Ape to only use types cached to disk or in memory.</p>
 <p>If you have the <a class="reference external" href="https://github.com/ApeWorX/ape-ens">ENS plugin</a> installed, you can use <code class="docutils literal notranslate"><span class="pre">.eth</span></code> domain names as the argument:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">Contract</span>
 </span><span data-line="2">
