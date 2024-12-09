@@ -75,7 +75,12 @@ def pytest_configure(config):
 
     from ape.pytest.config import ConfigWrapper
     from ape.pytest.coverage import CoverageTracker
-    from ape.pytest.fixtures import PytestApeFixtures, ReceiptCapture
+    from ape.pytest.fixtures import (
+        FixtureManager,
+        IsolationManager,
+        PytestApeFixtures,
+        ReceiptCapture,
+    )
     from ape.pytest.gas import GasTracker
     from ape.pytest.runners import PytestApeRunner
     from ape.utils.basemodel import ManagerAccessMixin
@@ -86,16 +91,25 @@ def pytest_configure(config):
     # Register the custom Ape test runner
     config_wrapper = ConfigWrapper(config)
     receipt_capture = ReceiptCapture(config_wrapper)
+    isolation_manager = IsolationManager(config_wrapper, receipt_capture)
+    fixture_manager = FixtureManager(config_wrapper, isolation_manager)
     gas_tracker = GasTracker(config_wrapper)
     coverage_tracker = CoverageTracker(config_wrapper)
-    runner = PytestApeRunner(config_wrapper, receipt_capture, gas_tracker, coverage_tracker)
+    runner = PytestApeRunner(
+        config_wrapper,
+        isolation_manager,
+        receipt_capture,
+        gas_tracker,
+        coverage_tracker,
+        fixture_manager=fixture_manager,
+    )
     config.pluginmanager.register(runner, "ape-test")
 
     # Inject runner for access to gas and coverage trackers.
     ManagerAccessMixin._test_runner = runner
 
     # Include custom fixtures for project, accounts etc.
-    fixtures = PytestApeFixtures(config_wrapper, receipt_capture)
+    fixtures = PytestApeFixtures(config_wrapper, isolation_manager)
     config.pluginmanager.register(fixtures, "ape-fixtures")
 
     # Add custom markers

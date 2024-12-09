@@ -82,7 +82,7 @@ def package_names() -> set[str]:
 
 
 @pytest.fixture
-def plugin_metadata(package_names) -> PluginMetadataList:
+def plugin_metadata(package_names, plugin_test_env) -> PluginMetadataList:
     names = {x for x in package_names}
     names.remove("ape-installed")
     names.add(f"ape-installed==0.{ape_version.minor}.0")

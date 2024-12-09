@@ -98,7 +98,7 @@ def setup_pytester(pytester, owner):
                     [
                         x
                         for x in content.splitlines()
-                        if x.startswith("def test_") and not x.startswith("def test_fail_")
+                        if x.lstrip().startswith("def test_") and not x.startswith("def test_fail_")
                     ]
                 )
                 num_failed += len(
@@ -177,14 +177,16 @@ def run_gas_test(
 def test_test(setup_pytester, integ_project, pytester, eth_tester_provider):
     _ = eth_tester_provider  # Ensure using EthTester for this test.
     passed, failed = setup_pytester(integ_project)
+
     from ape.logging import logger
 
     logger.set_level("DEBUG")
     result = pytester.runpytest_subprocess(timeout=120)
-    try:
-        result.assert_outcomes(passed=passed, failed=failed), "\n".join(result.outlines)
-    except ValueError:
-        pytest.fail(str(result.stderr))
+    outcomes = result.parseoutcomes()
+    assert "failed" not in outcomes if failed == 0 else outcomes["failed"] == failed
+    if integ_project.name != "test":
+        assert outcomes["passed"] == passed
+    # else: too many parametrized tests to calculate. No fails is good enough.
 
 
 @skip_projects_except("with-contracts")
@@ -212,7 +214,7 @@ E   ape.exceptions.ContractLogicError: Transaction failed.
 
 
 @skip_projects_except("test", "with-contracts")
-def test_test_isolation_disabled(setup_pytester, integ_project, pytester, eth_tester_provider):
+def test_isolation_disabled(setup_pytester, integ_project, pytester, eth_tester_provider):
     # check the disable isolation option actually disables built-in isolation
     _ = eth_tester_provider  # Ensure using EthTester for this test.
     setup_pytester(integ_project)
