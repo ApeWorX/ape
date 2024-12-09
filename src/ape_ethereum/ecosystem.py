@@ -518,18 +518,16 @@ class Ethereum(EcosystemAPI):
             return ProxyInfo(type=_type, target=target)
 
         # safe >=1.1.0 provides `masterCopy()`, which is also stored in slot 0
-        # detect safe-specific bytecode of push32 keccak256("masterCopy()")
-        safe_pattern = b"\x7f" + keccak(text="masterCopy()")[:4] + bytes(28)
-        if to_hex(safe_pattern) in code:
-            try:
-                singleton = ContractCall(MASTER_COPY_ABI, address)(skip_trace=True)
-                slot_0 = self.provider.get_storage(address, 0)
-                target = self.conversion_manager.convert(slot_0[-20:], AddressType)
-                # NOTE: `target` is set in initialized proxies
-                if target != ZERO_ADDRESS and target == singleton:
-                    return ProxyInfo(type=ProxyType.GnosisSafe, target=target)
-            except ApeException:
-                pass
+        # call it and check that target matches
+        try:
+            singleton = ContractCall(MASTER_COPY_ABI, address)(skip_trace=True)
+            slot_0 = self.provider.get_storage(address, 0)
+            target = self.conversion_manager.convert(slot_0[-20:], AddressType)
+            # NOTE: `target` is set in initialized proxies
+            if target != ZERO_ADDRESS and target == singleton:
+                return ProxyInfo(type=ProxyType.GnosisSafe, target=target)
+        except ApeException:
+            pass
 
         # eip-897 delegate proxy, read `proxyType()` and `implementation()`
         # perf: only make a call when a proxyType() selector is mentioned in the code
