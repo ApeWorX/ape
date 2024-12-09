@@ -16,8 +16,6 @@ def test_deploy(
     not_owner,
     contract_container,
     networks_connected_to_tester,
-    project,
-    chain,
     clean_contracts_cache,
 ):
     contract = contract_container.deploy(4, sender=not_owner, something_else="IGNORED")
@@ -35,8 +33,6 @@ def test_deploy_wrong_number_of_arguments(
     not_owner,
     contract_container,
     networks_connected_to_tester,
-    project,
-    chain,
     clean_contracts_cache,
 ):
     expected = (
@@ -163,3 +159,8 @@ def test_source_id(contract_container):
     expected = contract_container.contract_type.source_id
     # Is just a pass-through (via extras-model), but making sure it works.
     assert actual == expected
+
+
+def test_at(vyper_contract_instance, vyper_contract_container):
+    instance = vyper_contract_container.at(vyper_contract_instance.address)
+    assert instance == vyper_contract_instance
