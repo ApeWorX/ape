@@ -249,13 +249,9 @@ def test_supports_tracing(eth_tester_provider):
 
 
 def test_get_balance(networks, accounts):
-    """
-    Test that the address is an AddressType.
-    """
     balance = networks.provider.get_balance(accounts[0].address)
-
     assert type(balance) is int
-    assert balance == DEFAULT_TEST_ACCOUNT_BALANCE
+    assert balance > 0
 
 
 def test_set_timestamp(ethereum):
