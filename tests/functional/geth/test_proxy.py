@@ -62,13 +62,13 @@ def test_uups_proxy(get_contract_type, geth_contract, owner, ethereum):
 def test_minimal_proxy(get_contract_type, geth_contract, owner, ethereum):
 
     _type = get_contract_type("MinimalProxyFactory")
-    contract = ContractContainer(_type)
+    contract = ContractContainer(_type)                         
 
     target = geth_contract.address
-    # deloy CreateMinimalProxy.vy -> factory
+    # deploy MinimalProxyFactory.vy
     factory = owner.deploy(contract)
     vyper_proxy = factory.deploy(target, sender=owner)
-    proxy_address = to_checksum_address("0x" + (vyper_proxy.logs[0]["data"].hex())[26:])
+    proxy_address = to_checksum_address("0x" + (vyper_proxy.logs[0]["data"].hex())[-40:])
     actual = ethereum.get_proxy_info(proxy_address)
 
     assert actual is not None
