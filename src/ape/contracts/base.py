@@ -1429,9 +1429,11 @@ class ContractContainer(ContractTypeWrapper, ExtraAttributesMixin):
         Returns:
             :class:`~ape.contracts.ContractInstance`
         """
-
         return self.chain_manager.contracts.instance_at(
-            address, self.contract_type, txn_hash=txn_hash
+            address,
+            self.contract_type,
+            txn_hash=txn_hash,
+            fetch_from_explorer=False,
         )
 
     @cached_property

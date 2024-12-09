@@ -164,3 +164,33 @@ def test_source_id(contract_container):
 def test_at(vyper_contract_instance, vyper_contract_container):
     instance = vyper_contract_container.at(vyper_contract_instance.address)
     assert instance == vyper_contract_instance
+
+
+def test_at_not_compiled_avoid_fetch(
+    project_with_contract, mock_explorer, eth_tester_provider, owner
+):
+    """
+    Tests an annoying condition where Ape would try to
+    fetch a contract from an explorer if it was not
+    compiled but still coming from the local project (e.g.
+    from `at()`).
+    """
+    # Grab the container - note: this always compiles!
+    container = project_with_contract.Contract
+    instance = container.deploy(sender=owner)
+
+    # Hack off the fact that it was compiled.
+    project_with_contract.clean()
+
+    # Simulate having an explorer plugin installed (e.g. ape-etherscan).
+    eth_tester_provider.network.explorer = mock_explorer
+
+    # Attempt to create an instance. It should use the explorer at all!
+    instance2 = container.at(instance.address)
+
+    assert instance == instance2
+    # Ensure explorer was not used at all.
+    assert mock_explorer.get_contract_type.call_count == 0
+
+    # Clean up test.
+    eth_tester_provider.network.explorer = None
