@@ -1053,3 +1053,14 @@ class TestDeploymentManager:
                 return
 
         assert False, "Failed to find expected URI"
+
+
+def test_chdir(project):
+    original_path = project.path
+    with create_tempdir() as new_path:
+        project.chdir(new_path)
+        assert project.path == new_path
+
+    # Undo.
+    project.chdir(original_path)
+    assert project.path == original_path

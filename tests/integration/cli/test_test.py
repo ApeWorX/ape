@@ -442,3 +442,28 @@ def test_watch(mocker, integ_project, runner, ape_cli):
     assert result.exit_code == 0
 
     runner_patch.assert_called_once_with((Path("contracts"), Path("tests")), 0.5, "-s")
+
+
+@skip_projects_except("with-contracts")
+def test_project_option(integ_project, ape_cli, runner):
+    _ = integ_project  # NOTE: Not actually used, but avoid running across all projects.
+
+    # NOTE: Using isolated filesystem so that
+    with runner.isolated_filesystem():
+        # Setup a project
+        project_name = "test-token-project"
+        project_dir = Path.cwd() / project_name
+        tests_dir = project_dir / "tests"
+        tests_dir.mkdir(parents=True)
+
+        # Setup a test
+        test_file = tests_dir / "test_project_option.py"
+        test_text = """
+def test_project_option():
+    assert True
+""".lstrip()
+        test_file.write_text(test_text)
+
+        result = runner.invoke(ape_cli, ("test", "--project", f"./{project_name}"))
+        assert "1 passed" in result.output
+        assert result.exit_code == 0
