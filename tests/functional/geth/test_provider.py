@@ -538,6 +538,22 @@ def test_send_transaction_when_no_error_and_receipt_fails(
 
 
 @geth_process_test
+def test_send_transaction_exceed_block_gas_limit(chain, geth_provider, geth_contract, geth_account):
+    """
+    Shows that the local geth node will retry the transaction
+    with a new gas if this happens, automatically.
+    """
+    transaction = geth_contract.setNumber.as_transaction(23333322101, sender=geth_account)
+    prepared = geth_account.prepare_transaction(transaction)
+    prepared.gas_limit += 100000
+    signed = geth_account.sign_transaction(prepared)
+    expected_gas_limit = chain.blocks.head.gas_limit
+    geth_provider.send_transaction(signed)
+    tx_sent = geth_account.history[-1]
+    assert tx_sent.gas_limit == expected_gas_limit
+
+
+@geth_process_test
 def test_send_call(geth_provider, ethereum, tx_for_call):
     actual = geth_provider.send_call(tx_for_call)
     assert to_int(actual) == 0

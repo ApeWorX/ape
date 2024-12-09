@@ -16,6 +16,7 @@ from requests.exceptions import ConnectionError
 
 from ape.api.config import PluginConfig
 from ape.api.providers import SubprocessProvider, TestProviderAPI
+from ape.exceptions import VirtualMachineError
 from ape.logging import LogLevel, logger
 from ape.utils._web3_compat import ExtraDataToPOAMiddleware
 from ape.utils.misc import ZERO_ADDRESS, log_instead_of_fail, raises_not_implemented
@@ -40,6 +41,7 @@ if TYPE_CHECKING:
     from geth.types import GenesisDataTypedDict
 
     from ape.api.accounts import TestAccountAPI
+    from ape.api.transactions import ReceiptAPI, TransactionAPI
     from ape.types.vm import SnapshotID
 
 
@@ -484,6 +486,24 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
         self.chain_manager._snapshots[self.chain_id] = []
 
         super().disconnect()
+
+    def send_transaction(self, txn: "TransactionAPI") -> "ReceiptAPI":
+        try:
+            return super().send_transaction(txn)
+        except VirtualMachineError as err:
+            if (
+                txn.sender in self.account_manager.test_accounts
+                and "exceeds block gas limit" in str(err)
+            ):
+                # Changed, possibly due to other transactions (x-dist?).
+                # Retry using block gas limit.
+                txn.gas_limit = self.chain_manager.blocks.head.gas_limit
+                account = self.account_manager.test_accounts[txn.sender]
+                signed_transaction = account.sign_transaction(txn)
+                logger.debug("Gas-limit exceeds block gas limit. Retrying using block gas limit.")
+                return super().send_transaction(signed_transaction)
+
+            raise  # Whatever error it already is (Ape-ified from ape-ethereum.provider base).
 
     def snapshot(self) -> "SnapshotID":
         return self._get_latest_block().number or 0
