@@ -7,7 +7,7 @@ import click
 import pytest
 from click import Command
 
-from ape.cli.options import ape_cli_context, project_option
+from ape.cli.options import ape_cli_context
 from ape.logging import LogLevel, _get_level
 
 
@@ -79,7 +79,6 @@ class ApeTestCommand(Command):
 @ape_cli_context(
     default_log_level=LogLevel.WARNING.value,
 )
-@project_option(type=Path, cd=True)
 @click.option(
     "-w",
     "--watch",
@@ -104,7 +103,7 @@ class ApeTestCommand(Command):
     help="Delay between polling cycles for `ape test --watch`. Defaults to 0.5 seconds.",
 )
 @click.argument("pytest_args", nargs=-1, type=click.UNPROCESSED)
-def cli(cli_ctx, project, watch, watch_folders, watch_delay, pytest_args):
+def cli(cli_ctx, watch, watch_folders, watch_delay, pytest_args):
     pytest_arg_ls = [*pytest_args]
     if pytest_verbosity := cli_ctx.get("pytest_verbosity"):
         pytest_arg_ls.append(pytest_verbosity)

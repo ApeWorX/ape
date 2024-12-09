@@ -573,21 +573,10 @@ def project_option(**kwargs):
         if (isinstance(_type, type) and issubclass(_type, Path))
         else _project_callback
     )
-    cd = kwargs.pop("cd", False)
-
-    def callback_wrapper(ctx, param, val):
-        result = callback(ctx, param, val)
-        if cd:
-            # The CLI requested we also change directories into this path.
-            path = getattr(result, "path", result)  # project.path or path
-            ctx.obj.local_project.chdir(path.expanduser().resolve())
-
-        return result
-
     return click.option(
         "--project",
         help="The path to a local project or manifest",
-        callback=callback_wrapper,
+        callback=callback,
         metavar="PATH",
         is_eager=True,
         **kwargs,

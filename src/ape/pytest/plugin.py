@@ -47,6 +47,7 @@ def pytest_addoption(parser):
         help="A comma-separated list of contract:method-name glob-patterns to ignore.",
     )
     add_option("--coverage", action="store_true", help="Collect contract coverage.")
+    add_option("--project", action="store", help="Change Ape's project")
 
     # NOTE: Other pytest plugins, such as hypothesis, should integrate with pytest separately
 
@@ -78,6 +79,9 @@ def pytest_configure(config):
     from ape.pytest.gas import GasTracker
     from ape.pytest.runners import PytestApeRunner
     from ape.utils.basemodel import ManagerAccessMixin
+
+    if project := config.getoption("--project"):
+        ManagerAccessMixin.local_project.chdir(project)
 
     # Register the custom Ape test runner
     config_wrapper = ConfigWrapper(config)
