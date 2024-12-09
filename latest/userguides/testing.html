@@ -138,6 +138,7 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#contract-fixture">Contract fixture</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#isolation">Isolation</a></li>
 <li><a class="reference internal" href="#ape-testing-commands">Ape testing commands</a></li>
 <li><a class="reference internal" href="#test-providers">Test Providers</a><ul>
 <li><a class="reference internal" href="#mining">Mining</a></li>
@@ -254,11 +255,6 @@ A test passes if all the <code class="docutils literal notranslate"><span class=
 </span><span data-line="21">        <span class="n">my_contract</span><span class="o">.</span><span class="n">authorized_method</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">not_owner</span><span class="p">)</span>
 </span></pre></div>
 </div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Ape has built-in test and fixture isolation for all pytest scopes.
-To disable isolation add the <code class="docutils literal notranslate"><span class="pre">--disable-isolation</span></code> flag when running <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">test</span></code></p>
-</div>
 </section>
 <section id="fixtures">
 <h2>Fixtures<a class="headerlink" href="#fixtures" title="Link to this heading"></a></h2>
@@ -361,16 +357,14 @@ Access each <a class="reference external" href="../methoddocs/api.html?highlight
 <p>You also have access to the <code class="docutils literal notranslate"><span class="pre">project</span></code> you are testing. You will need this to deploy your contracts in your tests.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span> <span class="nn">pytest</span>
 </span><span data-line="2">
-</span><span data-line="3">
-</span><span data-line="4"><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span data-line="5"><span class="k">def</span> <span class="nf">owner</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
-</span><span data-line="6">    <span class="k">return</span> <span class="n">accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-</span><span data-line="7">
-</span><span data-line="8">
-</span><span data-line="9"><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span data-line="10"><span class="k">def</span> <span class="nf">my_contract</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="n">owner</span><span class="p">):</span>
-</span><span data-line="11">    <span class="c1">#           ^ use the &#39;project&#39; fixture from the &#39;ape-test&#39; plugin</span>
-</span><span data-line="12">    <span class="k">return</span> <span class="n">owner</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="p">)</span>
+</span><span data-line="3"><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+</span><span data-line="4"><span class="k">def</span> <span class="nf">owner</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
+</span><span data-line="5">    <span class="k">return</span> <span class="n">accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</span><span data-line="6">
+</span><span data-line="7"><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+</span><span data-line="8"><span class="k">def</span> <span class="nf">my_contract</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="n">owner</span><span class="p">):</span>
+</span><span data-line="9">    <span class="c1">#           ^ use the &#39;project&#39; fixture from the &#39;ape-test&#39; plugin</span>
+</span><span data-line="10">    <span class="k">return</span> <span class="n">owner</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="p">)</span>
 </span></pre></div>
 </div>
 <p>It has the same interface as the <a class="reference external" href="../methoddocs/managers.html#module-ape.managers.project.manager">ProjectManager</a>.</p>
@@ -385,6 +379,64 @@ Access each <a class="reference external" href="../methoddocs/api.html?highlight
 </div>
 <p>It has the same interface as the <a class="reference external" href="../methoddocs/managers.html#ape.managers.chain.ChainManager">ChainManager</a>.</p>
 </section>
+</section>
+<section id="isolation">
+<h2>Isolation<a class="headerlink" href="#isolation" title="Link to this heading"></a></h2>
+<p>By default, tests run with chain-isolation.
+This means, at the start of each test, a snapshot is taken.
+After each test completes, the chain reverts to that snapshot from the beginning of the test.</p>
+<p>By default, every <code class="docutils literal notranslate"><span class="pre">pytest</span></code> fixture is <code class="docutils literal notranslate"><span class="pre">function</span></code> scoped, meaning it will be replayed each time it is requested (no result-caching).
+For example, if you deploy a contract in a function-scoped fixture, it will be re-deployed each time the fixture gets used in your tests.
+To only deploy once, you can use different scopes, such as <code class="docutils literal notranslate"><span class="pre">&quot;session&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;package&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;module&quot;</span></code>, or <code class="docutils literal notranslate"><span class="pre">&quot;class&quot;</span></code>, and you <strong>must</strong> use these fixtures right away, either via <code class="docutils literal notranslate"><span class="pre">autouse=True</span></code> or using them in the first collected tests.
+Otherwise, higher-scoped fixtures that arrive late in a Pytest session will cause the snapshotting system to have to rebase itself, which can be costly.
+For example, if you define a session scoped fixture that deploys a contract and makes transactions, the state changes from those transactions remain in subsequent tests, whether those tests use that fixture or not.
+However, if a new fixture of a session scope comes into play after module, package, or class scoped snapshots have already been taken, those lower-scoped fixtures are now invalid and have to re-run after the session fixture to ensure the session fixture remains in the session-snapshot.</p>
+<p>In the following example, the <code class="docutils literal notranslate"><span class="pre">my_contract</span></code> fixture gets deployed upon its first usage, which happens in the test <code class="docutils literal notranslate"><span class="pre">test_my_contract_0()</span></code>.
+During the test <code class="docutils literal notranslate"><span class="pre">test_something_else()</span></code>, it may not have been deployed yet, as it was not requested, and it is defined before the other tests.
+Then, during <code class="docutils literal notranslate"><span class="pre">test_my_contract_1()</span></code>, instead of deploying again, it uses the cached result from the session-scoped fixture and the chain still has it in its state because the fixture is session-scoped and runs before the test-isolation.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span> <span class="nn">pytest</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">)</span>
+</span><span data-line="4"><span class="k">def</span> <span class="nf">my_contract</span><span class="p">(</span><span class="n">accounts</span><span class="p">,</span> <span class="n">project</span><span class="p">):</span>
+</span><span data-line="5">    <span class="n">owner</span> <span class="o">=</span> <span class="n">accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</span><span data-line="6">    <span class="n">contract</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">owner</span><span class="p">)</span>
+</span><span data-line="7">    <span class="c1"># Can also do stateful transactions in a session-scoped fixture.</span>
+</span><span data-line="8">    <span class="n">contract</span><span class="o">.</span><span class="n">initialize</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">owner</span><span class="p">)</span>
+</span><span data-line="9">    <span class="k">return</span> <span class="n">contract</span>
+</span><span data-line="10">
+</span><span data-line="11"><span class="k">def</span> <span class="nf">test_something_else</span><span class="p">():</span>
+</span><span data-line="12">    <span class="o">...</span>
+</span><span data-line="13">
+</span><span data-line="14"><span class="k">def</span> <span class="nf">test_my_contract_0</span><span class="p">(</span><span class="n">my_contract</span><span class="p">):</span>
+</span><span data-line="15">    <span class="n">my_contract</span><span class="o">.</span><span class="n">myMethod</span><span class="p">()</span>
+</span><span data-line="16">
+</span><span data-line="17"><span class="k">def</span> <span class="nf">test_my_contract_1</span><span class="p">(</span><span class="n">my_contract</span><span class="p">):</span>
+</span><span data-line="18">    <span class="n">my_contract</span><span class="o">.</span><span class="n">myMethod</span><span class="p">()</span>
+</span></pre></div>
+</div>
+<p>To disable isolation, run <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">test</span></code> with the <code class="docutils literal notranslate"><span class="pre">--disable-isolation</span></code> flag.
+When isolation is disabled, the blockchain’s state persists as the tests run.
+This will be more performant and less complex, but will also cause non-deterministic results in your tests as each test inherits the state of whatever was run before it.</p>
+<p>This may be further complicated when running with other pytest plugins such as <code class="docutils literal notranslate"><span class="pre">pytest-xdist</span></code> or <code class="docutils literal notranslate"><span class="pre">pytest-split</span></code> which re-arranges the order that tests are executed in (not recommended to use these plugins together with ape until more proper integrations are developed).</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--disable-isolation
+</span></pre></div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Be mindful if, when, and how you define non-function scoped fixtures.
+Pytest activates fixtures in the order they are used.
+If a session scoped fixture comes into play after package, module, or class scoped fixtures, the isolation logic has to invalidate each of those scopes and replay them after the session scoped, which causes any benefits of package, module, or class scopes to be void.
+If you are using higher-scoped fixtures for parametrized fixtures with lower-scoped fixtures, each itertion of the parametried fixture invalidates the lower-level fixtures each time, rendering everything to behave as function scoped until the end of the parametrized fixtures first run-through.</p>
+</div>
+<p>If you are using chain-isolation and have a higher-scoped fixture that you know is for-sure not chain-altering, you can use <code class="docutils literal notranslate"><span class="pre">ape.fixture</span></code> and the <code class="docutils literal notranslate"><span class="pre">chain_isolation</span></code> flag, and it may improve performance:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span> <span class="nn">ape</span>
+</span><span data-line="2"><span class="kn">from</span> <span class="nn">ape_tokens</span> <span class="kn">import</span> <span class="n">tokens</span>
+</span><span data-line="3">
+</span><span data-line="4"><span class="nd">@ape</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">,</span> <span class="n">chain_isolation</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;WETH&quot;</span><span class="p">,</span> <span class="s2">&quot;DAI&quot;</span><span class="p">,</span> <span class="s2">&quot;BAT&quot;</span><span class="p">))</span>
+</span><span data-line="5"><span class="k">def</span> <span class="nf">token_addresses</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+</span><span data-line="6">    <span class="k">return</span> <span class="n">tokens</span><span class="p">[</span><span class="n">request</span><span class="p">]</span><span class="o">.</span><span class="n">address</span>
+</span></pre></div>
+</div>
 </section>
 <section id="ape-testing-commands">
 <h2>Ape testing commands<a class="headerlink" href="#ape-testing-commands" title="Link to this heading"></a></h2>
@@ -482,9 +534,10 @@ If the message in the <code class="docutils literal notranslate"><span class="pr
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span> <span class="nn">ape</span>
 </span><span data-line="2"><span class="kn">import</span> <span class="nn">re</span>
 </span><span data-line="3">
-</span><span data-line="4"><span class="c1"># Matches explicitly &quot;foo&quot; or &quot;bar&quot;</span>
-</span><span data-line="5"><span class="k">with</span> <span class="n">ape</span><span class="o">.</span><span class="n">reverts</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^(foo|bar)$&quot;</span><span class="p">)):</span>
-</span><span data-line="6">    <span class="o">...</span>
+</span><span data-line="4"><span class="c1"># Matches</span>
+</span><span data-line="5"><span class="c1"># &quot;foo&quot; or &quot;bar&quot;</span>
+</span><span data-line="6"><span class="k">with</span> <span class="n">ape</span><span class="o">.</span><span class="n">reverts</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^(foo|bar)$&quot;</span><span class="p">)):</span>
+</span><span data-line="7">    <span class="o">...</span>
 </span></pre></div>
 </div>
 </section>
@@ -523,10 +576,11 @@ These can be helpful in optimizing for gas usage and keeping revert reason strin
 <p>Because <code class="docutils literal notranslate"><span class="pre">dev_message</span></code> relies on transaction tracing to function, you must use a provider like <a class="reference external" href="https://github.com/ApeWorX/ape-hardhat">ape-hardhat</a> when testing with <code class="docutils literal notranslate"><span class="pre">dev_message</span></code>.</p>
 <p>You may also supply an <code class="docutils literal notranslate"><span class="pre">re.Pattern</span></code> object to assert on a dev message pattern, rather than on an exact match.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span> <span class="nn">ape</span>
-</span><span data-line="2">
-</span><span data-line="3"><span class="c1"># Matches explictly &quot;dev: foo&quot; or &quot;dev: bar&quot;</span>
-</span><span data-line="4"><span class="k">with</span> <span class="n">ape</span><span class="o">.</span><span class="n">reverts</span><span class="p">(</span><span class="n">dev_message</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^dev: (foo|bar)$&quot;</span><span class="p">)):</span>
-</span><span data-line="5">    <span class="o">...</span>
+</span><span data-line="2"><span class="kn">import</span> <span class="nn">re</span>
+</span><span data-line="3">
+</span><span data-line="4"><span class="c1"># Matches &quot;dev: foo&quot; or &quot;dev: bar&quot;</span>
+</span><span data-line="5"><span class="k">with</span> <span class="n">ape</span><span class="o">.</span><span class="n">reverts</span><span class="p">(</span><span class="n">dev_message</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^dev: (foo|bar)$&quot;</span><span class="p">)):</span>
+</span><span data-line="6">    <span class="o">...</span>
 </span></pre></div>
 </div>
 </section>
