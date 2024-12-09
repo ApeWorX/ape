@@ -12,8 +12,6 @@ from ape.pytest.utils import Scope
 from ape.utils.basemodel import ManagerAccessMixin
 
 if TYPE_CHECKING:
-    from _pytest.reports import TestReport
-
     from ape.api.networks import ProviderContextManager
     from ape.pytest.config import ConfigWrapper
     from ape.pytest.coverage import CoverageTracker
@@ -309,10 +307,6 @@ class PytestApeRunner(ManagerAccessMixin):
 
         self._provider_context.push_provider()
         self._provider_is_connected = True
-
-    def pytest_runtest_logreport(self, report: "TestReport"):
-        if self.config_wrapper.verbosity >= 3:
-            self.isolation_manager.show_records()
 
     def pytest_terminal_summary(self, terminalreporter):
         """

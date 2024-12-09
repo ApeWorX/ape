@@ -9,7 +9,6 @@ from typing import TYPE_CHECKING, ClassVar, Optional
 
 import pytest
 from eth_utils import to_hex
-from rich import print as rich_print
 
 from ape.exceptions import BlockNotFoundError, ChainError, ProviderNotConnectedError
 from ape.logging import logger
@@ -195,9 +194,6 @@ class FixtureManager(ManagerAccessMixin):
                 log = "rebase"
                 if rebase.return_scope is not None:
                     log = f"{log} scope={rebase.return_scope}"
-
-                log = f"{log} invalidated-fixtures='{', '.join(invalidated)}'"
-                self.isolation_manager._records.append(log)
 
     def _get_rebase(self, scope: Scope) -> Optional[FixtureRebase]:
         # Check for fixtures that are now invalid. For example, imagine a session
@@ -557,7 +553,6 @@ class IsolationManager(ManagerAccessMixin):
     ):
         self.config_wrapper = config_wrapper
         self.receipt_capture = receipt_capture
-        self._records: list[str] = []
         self._chain_snapshots = chain_snapshots
 
     @cached_property
@@ -613,9 +608,6 @@ class IsolationManager(ManagerAccessMixin):
         if not self.supported:
             return
 
-        if self.config_wrapper.verbosity:
-            self._records.append(f"snapshot-taken '{scope.name.upper()}'")
-
         try:
             snapshot_id = self.take_snapshot()
         except Exception:
@@ -649,9 +641,6 @@ class IsolationManager(ManagerAccessMixin):
             self.snapshots.clear_snapshot_id(scope)
             return
 
-        if self.config_wrapper.verbosity:
-            self._records.append(f"restoring '{scope.name.upper()}'")
-
         try:
             self._restore(snapshot_id)
         except NotImplementedError:
@@ -666,14 +655,6 @@ class IsolationManager(ManagerAccessMixin):
 
     def _restore(self, snapshot_id: "SnapshotID"):
         self.chain_manager.restore(snapshot_id)
-
-    def show_records(self):
-        if not self._records:
-            return
-
-        records_str = "\n".join(self._records)
-        rich_print(f"\n{records_str}")
-        self._records = []
 
 
 class ReceiptCapture(ManagerAccessMixin):
