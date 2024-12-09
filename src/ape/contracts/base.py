@@ -1407,7 +1407,10 @@ class ContractContainer(ContractTypeWrapper, ExtraAttributesMixin):
         return self.chain_manager.contracts.get_deployments(self)
 
     def at(
-        self, address: "AddressType", txn_hash: Optional[Union[str, HexBytes]] = None
+        self,
+        address: "AddressType",
+        txn_hash: Optional[Union[str, HexBytes]] = None,
+        fetch_from_explorer: bool = True,
     ) -> ContractInstance:
         """
         Get a contract at the given address.
@@ -1425,6 +1428,7 @@ class ContractContainer(ContractTypeWrapper, ExtraAttributesMixin):
               a different ABI than :attr:`~ape.contracts.ContractContainer.contract_type`.
             txn_hash (Union[str, HexBytes]): The hash of the transaction that deployed the
               contract, if available. Defaults to ``None``.
+            fetch_from_explorer (bool): Set to ``False`` to avoid fetching from an explorer.
 
         Returns:
             :class:`~ape.contracts.ContractInstance`
@@ -1433,7 +1437,7 @@ class ContractContainer(ContractTypeWrapper, ExtraAttributesMixin):
             address,
             self.contract_type,
             txn_hash=txn_hash,
-            fetch_from_explorer=False,
+            fetch_from_explorer=fetch_from_explorer,
         )
 
     @cached_property

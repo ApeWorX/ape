@@ -166,7 +166,7 @@ def test_at(vyper_contract_instance, vyper_contract_container):
     assert instance == vyper_contract_instance
 
 
-def test_at_not_compiled_avoid_fetch(
+def test_at_fetch_from_explorer_false(
     project_with_contract, mock_explorer, eth_tester_provider, owner
 ):
     """
@@ -186,7 +186,7 @@ def test_at_not_compiled_avoid_fetch(
     eth_tester_provider.network.explorer = mock_explorer
 
     # Attempt to create an instance. It should use the explorer at all!
-    instance2 = container.at(instance.address)
+    instance2 = container.at(instance.address, fetch_from_explorer=False)
 
     assert instance == instance2
     # Ensure explorer was not used at all.
