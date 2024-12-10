@@ -6,11 +6,13 @@ from collections.abc import Callable, Iterator, Sequence
 from contextlib import contextmanager
 from enum import IntEnum
 from pathlib import Path
-from typing import IO, Any, Optional, Union
+from typing import IO, TYPE_CHECKING, Any, Optional, Union
 from urllib.parse import urlparse, urlunparse
 
 import click
-from rich.console import Console as RichConsole
+
+if TYPE_CHECKING:
+    from rich.console import Console as RichConsole
 
 
 class LogLevel(IntEnum):
@@ -338,12 +340,15 @@ logger = ApeLogger.create()
 
 
 class _RichConsoleFactory:
-    rich_console_map: dict[str, RichConsole] = {}
+    rich_console_map: dict[str, "RichConsole"] = {}
 
-    def get_console(self, file: Optional[IO[str]] = None, **kwargs) -> RichConsole:
+    def get_console(self, file: Optional[IO[str]] = None, **kwargs) -> "RichConsole":
         # Configure custom file console
         file_id = str(file)
         if file_id not in self.rich_console_map:
+            # perf: delay importing from rich, as it is slow.
+            from rich.console import Console as RichConsole
+
             self.rich_console_map[file_id] = RichConsole(file=file, width=100, **kwargs)
 
         return self.rich_console_map[file_id]
@@ -352,7 +357,7 @@ class _RichConsoleFactory:
 _factory = _RichConsoleFactory()
 
 
-def get_rich_console(file: Optional[IO[str]] = None, **kwargs) -> RichConsole:
+def get_rich_console(file: Optional[IO[str]] = None, **kwargs) -> "RichConsole":
     """
     Get an Ape-configured rich console.
 
@@ -363,7 +368,7 @@ def get_rich_console(file: Optional[IO[str]] = None, **kwargs) -> RichConsole:
     Returns:
         ``rich.Console``.
     """
-    return _factory.get_console(file)
+    return _factory.get_console(file, **kwargs)
 
 
 __all__ = ["DEFAULT_LOG_LEVEL", "logger", "LogLevel", "ApeLogger", "get_rich_console"]
