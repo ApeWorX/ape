@@ -9,13 +9,7 @@ from cchecksum import to_checksum_address
 from dateutil.parser import parse
 from eth_pydantic_types import Address, HexBytes
 from eth_typing.evm import ChecksumAddress
-from eth_utils import (
-    is_0x_prefixed,
-    is_checksum_address,
-    is_hex,
-    is_hex_address,
-    to_int,
-)
+from eth_utils import is_0x_prefixed, is_checksum_address, is_hex, is_hex_address, to_int
 
 from ape.api.address import BaseAddress
 from ape.api.convert import ConverterAPI
