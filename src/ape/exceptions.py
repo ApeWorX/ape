@@ -8,16 +8,15 @@ from functools import cached_property
 from inspect import getframeinfo, stack
 from pathlib import Path
 from types import CodeType, TracebackType
-from typing import TYPE_CHECKING, Any, Callable, Optional, Union, cast
+from typing import TYPE_CHECKING, Any, Callable, Optional, Union
 
 import click
-from eth_typing import Hash32, HexStr
-from eth_utils import humanize_hash, to_hex
 from rich import print as rich_print
 
 from ape.logging import LogLevel, logger
 
 if TYPE_CHECKING:
+    from eth_typing import HexStr
     from ethpm_types.abi import ConstructorABI, ErrorABI, MethodABI
     from ethpm_types.contract_type import ContractType
 
@@ -521,9 +520,11 @@ class BlockNotFoundError(ProviderError):
 
     def __init__(self, block_id: "BlockID", reason: Optional[str] = None):
         if isinstance(block_id, bytes):
-            block_id_str = to_hex(block_id)
+            block_id_str = block_id.hex()
+            if not block_id_str.startswith("0x"):
+                block_id_str = f"0x{block_id_str}"
         else:
-            block_id_str = HexStr(str(block_id))
+            block_id_str: "HexStr" = f"{block_id}"  # type: ignore
 
         message = (
             "Missing latest block."
@@ -621,11 +622,26 @@ class UnknownSnapshotError(ChainError):
     """
 
     def __init__(self, snapshot_id: "SnapshotID"):
+        snapshot_id_str: str
         if isinstance(snapshot_id, bytes):
-            # Is block hash
-            snapshot_id = humanize_hash(cast(Hash32, snapshot_id))
+            # Is block hash. Logic borrowed from `eth_utils.humanize_hash()`.
+            if len(snapshot_id) <= 5:
+                snapshot_id_str = snapshot_id.hex()
+            else:
+                value_hex = snapshot_id.hex()
+                head = value_hex[:4]
+                tail_idx = -1 * 4
+                tail = value_hex[tail_idx:]
+                snapshot_id_str = f"{head}..{tail}"
 
-        super().__init__(f"Unknown snapshot ID '{snapshot_id}'.")
+            snapshot_id_str = (
+                f"0x{snapshot_id_str}" if not snapshot_id_str.startswith("0x") else snapshot_id_str
+            )
+
+        else:
+            snapshot_id_str = f"{snapshot_id}"  # type: ignore
+
+        super().__init__(f"Unknown snapshot ID '{snapshot_id_str}'.")
 
 
 class QueryEngineError(ApeException):
