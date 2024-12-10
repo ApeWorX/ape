@@ -11,6 +11,7 @@ from ape.exceptions import (
     ContractNotFoundError,
     NetworkNotFoundError,
     TransactionError,
+    UnknownSnapshotError,
     handle_ape_exception,
 )
 from ape.types.trace import SourceTraceback
@@ -246,3 +247,15 @@ class TestContractNotFoundError:
             "Try installing an explorer plugin using \x1b[32mape plugins install etherscan"
             "\x1b[0m, or using a network with explorer support."
         )
+
+
+class TestUnknownSnapshotError:
+    def test_bytes(self):
+        snapshot_id = b"asdfasdfasdf"
+        err = UnknownSnapshotError(snapshot_id)
+        assert str(err) == "Unknown snapshot ID '6173..6466'."
+
+    @pytest.mark.parametrize("snapshot_id", (123, "123"))
+    def test_not_bytes(self, snapshot_id):
+        err = UnknownSnapshotError(snapshot_id)
+        assert str(err) == "Unknown snapshot ID '123'."

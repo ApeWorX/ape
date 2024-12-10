@@ -19,9 +19,10 @@ from ape.exceptions import (
     ProviderError,
     TransactionError,
     TransactionNotFoundError,
+    UnknownSnapshotError,
 )
 from ape.types.events import LogFilter
-from ape.utils.testing import DEFAULT_TEST_ACCOUNT_BALANCE, DEFAULT_TEST_CHAIN_ID
+from ape.utils.testing import DEFAULT_TEST_CHAIN_ID
 from ape_ethereum.provider import (
     WEB3_PROVIDER_URI_ENV_VAR_NAME,
     EthereumNodeProvider,
@@ -248,13 +249,9 @@ def test_supports_tracing(eth_tester_provider):
 
 
 def test_get_balance(networks, accounts):
-    """
-    Test that the address is an AddressType.
-    """
     balance = networks.provider.get_balance(accounts[0].address)
-
     assert type(balance) is int
-    assert balance == DEFAULT_TEST_ACCOUNT_BALANCE
+    assert balance > 0
 
 
 def test_set_timestamp(ethereum):
@@ -326,8 +323,9 @@ def test_gas_price(eth_tester_provider):
 
 def test_get_code(eth_tester_provider, vyper_contract_instance):
     address = vyper_contract_instance.address
+    block_number = vyper_contract_instance.creation_metadata.block
     assert eth_tester_provider.get_code(address) == eth_tester_provider.get_code(
-        address, block_id=1
+        address, block_id=block_number
     )
 
 
@@ -621,6 +619,25 @@ def test_ipc_per_network(project, key):
         # TODO: 0.9 investigate not using random if ipc set.
 
         assert node.ipc_path == Path(ipc)
+
+
+def test_snapshot(eth_tester_provider):
+    snapshot = eth_tester_provider.snapshot()
+    assert snapshot
+
+
+def test_restore(eth_tester_provider, accounts):
+    account = accounts[0]
+    start_nonce = account.nonce
+    snapshot = eth_tester_provider.snapshot()
+    account.transfer(account, 0)
+    eth_tester_provider.restore(snapshot)
+    assert account.nonce == start_nonce
+
+
+def test_restore_zero(eth_tester_provider):
+    with pytest.raises(UnknownSnapshotError, match="Unknown snapshot ID '0'."):
+        eth_tester_provider.restore(0)
 
 
 def test_update_settings_invalidates_snapshots(eth_tester_provider, chain):

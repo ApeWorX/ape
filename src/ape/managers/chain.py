@@ -28,6 +28,7 @@ from ape.api.transactions import ReceiptAPI
 from ape.contracts import ContractContainer, ContractInstance
 from ape.exceptions import (
     APINotImplementedError,
+    BlockNotFoundError,
     ChainError,
     ContractNotFoundError,
     ConversionError,
@@ -75,10 +76,15 @@ class BlockContainer(BaseManager):
         """
         The latest block number.
         """
-        if self.head.number is None:
+        try:
+            head = self.head
+        except BlockNotFoundError:
+            return 0
+
+        if head.number is None:
             raise ChainError("Latest block has no number.")
 
-        return self.head.number
+        return head.number
 
     @property
     def network_confirmations(self) -> int:
