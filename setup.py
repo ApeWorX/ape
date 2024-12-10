@@ -94,6 +94,7 @@ setup(
     },
     include_package_data=True,
     install_requires=[
+        "cchecksum>=0.0.3,<1",
         "click>=8.1.6,<9",
         "ijson>=3.1.4,<4",
         "ipython>=8.18.1,<9",
