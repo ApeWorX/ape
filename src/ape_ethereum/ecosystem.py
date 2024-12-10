@@ -4,6 +4,7 @@ from decimal import Decimal
 from functools import cached_property
 from typing import TYPE_CHECKING, Any, ClassVar, Optional, Union, cast
 
+from cchecksum import to_checksum_address
 from eth_abi import decode, encode
 from eth_abi.exceptions import InsufficientDataBytes, NonEmptyPaddingBytes
 from eth_pydantic_types import HexBytes
@@ -17,7 +18,6 @@ from eth_utils import (
     is_hex_address,
     keccak,
     to_bytes,
-    to_checksum_address,
     to_hex,
 )
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, MethodABI

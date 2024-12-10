@@ -3,7 +3,8 @@ from importlib import import_module
 from typing import TYPE_CHECKING, Optional
 
 import click
-from eth_utils import to_checksum_address, to_hex
+from cchecksum import to_checksum_address
+from eth_utils import to_hex
 
 from ape.cli.arguments import existing_alias_argument, non_existing_alias_argument
 from ape.cli.options import ape_cli_context

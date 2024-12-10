@@ -5,6 +5,7 @@ from decimal import Decimal
 from functools import cached_property
 from typing import TYPE_CHECKING, Any, Union
 
+from cchecksum import to_checksum_address
 from dateutil.parser import parse
 from eth_pydantic_types import Address, HexBytes
 from eth_typing.evm import ChecksumAddress
@@ -13,7 +14,6 @@ from eth_utils import (
     is_checksum_address,
     is_hex,
     is_hex_address,
-    to_checksum_address,
     to_int,
 )
 
