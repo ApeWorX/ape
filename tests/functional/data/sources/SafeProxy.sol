@@ -1,7 +1,10 @@
-// SPDX-License-Identifier: LGPL-3.0-only
+/ SPDX-License-Identifier: LGPL-3.0-only
 /* solhint-disable one-contract-per-file */
+
 pragma solidity >=0.7.0 <0.8.0;
 
+
+//copied from https://github.com/safe-global/safe-smart-account/blob/main/contracts/proxies/SafeProxy.sol
 
 contract SafeProxy {
     // Singleton always needs to be first declared variable, to ensure that it is at the same location in the contracts to which calls are delegated.
