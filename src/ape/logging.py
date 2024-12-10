@@ -7,10 +7,10 @@ from contextlib import contextmanager
 from enum import IntEnum
 from pathlib import Path
 from typing import IO, Any, Optional, Union
+from urllib.parse import urlparse, urlunparse
 
 import click
 from rich.console import Console as RichConsole
-from yarl import URL
 
 
 class LogLevel(IntEnum):
@@ -325,11 +325,13 @@ def _get_level(level: Optional[Union[str, int, LogLevel]] = None) -> str:
 def sanitize_url(url: str) -> str:
     """Removes sensitive information from given URL"""
 
-    url_obj = URL(url).with_user(None).with_password(None)
+    parsed = urlparse(url)
+    new_netloc = parsed.hostname or ""
+    if parsed.port:
+        new_netloc += f":{parsed.port}"
 
-    # If there is a path, hide it but show that you are hiding it.
-    # Use string interpolation to prevent URL-character encoding.
-    return f"{url_obj.with_path('')}/{HIDDEN_MESSAGE}" if url_obj.path else f"{url}"
+    new_url = urlunparse(parsed._replace(netloc=new_netloc, path=""))
+    return f"{new_url}/{HIDDEN_MESSAGE}" if parsed.path else new_url
 
 
 logger = ApeLogger.create()
