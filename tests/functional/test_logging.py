@@ -3,7 +3,7 @@ import pytest
 from click.testing import CliRunner
 
 from ape.cli import ape_cli_context
-from ape.logging import LogLevel, logger
+from ape.logging import LogLevel, logger, sanitize_url
 
 
 @pytest.fixture
@@ -121,3 +121,12 @@ def test_at_level():
         assert logger.level == level_to_set
 
     assert logger.level == initial_level
+
+
+@pytest.mark.parametrize(
+    "url", ("https://user:password@example.com/v1/API_KEY", "https://example.com/v1/API_KEY")
+)
+def test_sanitize_url(url):
+    actual = sanitize_url(url)
+    expected = "https://example.com/[hidden]"
+    assert actual == expected
