@@ -1,0 +1,49 @@
+{
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_singleton",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+      {
+      "stateMutability": "payable",
+      "type": "fallback"
+    }
+  ],
+  "contractName": "SafeProxy",
+  "deploymentBytecode": {
+    "bytecode": "0x608060405234801561001057600080fd5b506040516101473803806101478339818101604052602081101561003357600080fd5b50516001600160a01b03811661007a5760405162461bcd60e51b81526004018080602001828103825260228152602001806101256022913960400191505060405180910390fd5b600080546001600160a01b039092166001600160a01b0319909216919091179055607c806100a96000396000f3fe608060405260008054813563530ca43760e11b14156028576001600160f41b0381168252602082f35b3682833781823684845af490503d82833e806041573d82fd5b503d81f3fea2646970667358221220a47dd8169e42c0cddf67ea4002d222dfb51d4610cb7a4846430abf7d73f7e5a564736f6c63430007060033496e76616c69642073696e676c65746f6e20616464726573732070726f7669646564"
+  },
+  "devdoc": {
+    "kind": "dev",
+    "methods": {
+      "constructor": {
+        "params": {
+          "_singleton": "Singleton address."
+        }
+      }
+    },
+    "version": 1
+  },
+  "methodIdentifiers": {},
+  "runtimeBytecode": {
+    "bytecode": "0x608060405260008054813563530ca43760e11b14156028576001600160f41b0381168252602082f35b3682833781823684845af490503d82833e806041573d82fd5b503d81f3fea2646970667358221220a47dd8169e42c0cddf67ea4002d222dfb51d4610cb7a4846430abf7d73f7e5a564736f6c63430007060033"
+  },
+  "sourceId": "tests/functional/data/sources/GnosisSafe.sol",
+  "sourcemap": "120:1964:0:-:0;;;565:152;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;565:152:0;-1:-1:-1;;;;;615:24:0;;607:71;;;;-1:-1:-1;;;607:71:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;688:9;:22;;-1:-1:-1;;;;;688:22:0;;;-1:-1:-1;;;;;;688:22:0;;;;;;;;;120:1964;;;;;;",
+  "userdoc": {
+    "kind": "user",
+    "methods": {
+      "constructor": {
+        "notice": "Constructor function sets address of singleton contract."
+      }
+    },
+    "version": 1
+  }
+}
