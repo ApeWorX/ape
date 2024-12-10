@@ -13,22 +13,6 @@ from tempfile import TemporaryDirectory, gettempdir
 from typing import Any, Optional, Union
 
 
-# TODO: This method is no longer needed since the dropping of 3.9
-#   Delete in Ape 0.9 release.
-def is_relative_to(path: Path, target: Path) -> bool:
-    """
-    Search a path and determine its relevancy.
-
-    Args:
-        path (str): Path represents a filesystem to find.
-        target (str): Path represents a filesystem to match.
-
-    Returns:
-        bool: ``True`` if the path is relative to the target path or ``False``.
-    """
-    return target.is_relative_to(path)
-
-
 def get_relative_path(target: Path, anchor: Path) -> Path:
     """
     Compute the relative path of ``target`` relative to ``anchor``,
