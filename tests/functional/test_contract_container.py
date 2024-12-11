@@ -10,6 +10,7 @@ from ape.exceptions import (
     ProjectError,
 )
 from ape_ethereum.ecosystem import ProxyType
+from tests.conftest import explorer_test
 
 
 def test_deploy(
@@ -166,6 +167,7 @@ def test_at(vyper_contract_instance, vyper_contract_container):
     assert instance == vyper_contract_instance
 
 
+@explorer_test
 def test_at_fetch_from_explorer_false(
     project_with_contract, mock_explorer, eth_tester_provider, owner
 ):
