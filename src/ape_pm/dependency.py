@@ -457,7 +457,7 @@ class PythonDependency(DependencyAPI):
             # Is pypi: specified; has no special path.
             return None
 
-        elif python := self.python:
+        elif python := self.site_package:
             try:
                 return get_package_path(python)
             except ValueError as err:
@@ -467,10 +467,15 @@ class PythonDependency(DependencyAPI):
 
     @property
     def package_id(self) -> str:
-        if pkg_id := (self.pypi or self.python):
+        if pkg_id := (self.pypi or self.site_package):
             return pkg_id
 
         raise ProjectError("Must provide either 'pypi:' or 'python:' for python-base dependencies.")
+
+    @property
+    def python(self) -> str:
+        logger.warning("'.python' is deprecated. Please use 'site_package'.")
+        return self.site_package
 
     @property
     def version_id(self) -> str:
@@ -480,7 +485,7 @@ class PythonDependency(DependencyAPI):
                 # I doubt this is a possible condition, but just in case.
                 raise ProjectError(f"Missing version from PyPI for package '{self.package_id}'.")
 
-        elif self.python:
+        elif self.site_package:
             try:
                 vers = f"{metadata.version(self.package_id)}"
             except metadata.PackageNotFoundError as err:
@@ -505,7 +510,7 @@ class PythonDependency(DependencyAPI):
         if self.pypi:
             return self.download_archive_url
 
-        elif self.python and (path := self.path):
+        elif self.site_package and (path := self.path):
             # Local site-package path.
             return path.as_uri()
 
