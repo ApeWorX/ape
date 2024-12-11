@@ -405,7 +405,6 @@ def _get_version_from_package_json(
     return data.get("version")
 
 
-# TODO: Rename to `PyPIDependency` in 0.9.
 class PythonDependency(DependencyAPI):
     """
     A dependency installed from Python tooling, such as `pip`.
