@@ -57,19 +57,39 @@ def test_uups_proxy(get_contract_type, geth_contract, owner, ethereum):
 
 
 @geth_process_test
-def test_gnosis_safe(get_contract_type, geth_contract, owner, ethereum):
+def test_gnosis_safe(get_contract_type, geth_contract, owner, ethereum, chain):
+    # Setup a proxy contract.
     _type = get_contract_type("SafeProxy")
     contract = ContractContainer(_type)
-
     target = geth_contract.address
+    proxy_instance = owner.deploy(contract, target)
 
-    contract_instance = owner.deploy(contract, target)
-
-    actual = ethereum.get_proxy_info(contract_instance.address)
-
+    # (test)
+    actual = ethereum.get_proxy_info(proxy_instance.address)
     assert actual is not None
     assert actual.type == ProxyType.GnosisSafe
     assert actual.target == target
+
+    # Ensure we can call the proxy-method.
+    assert proxy_instance.masterCopy()
+
+    # Ensure we can target methods.
+    assert isinstance(proxy_instance.myNumber(), int)
+
+    # Ensure this works with new instances.
+    proxy_instance_ref_2 = chain.contracts.instance_at(proxy_instance.address)
+    assert proxy_instance_ref_2.masterCopy()
+    assert isinstance(proxy_instance_ref_2.myNumber(), int)
+
+    # Same - but clear the proxy ABI from the cached type.
+    chain.contracts._local_contract_types[proxy_instance.address].abi = [
+        x
+        for x in chain.contracts._local_contract_types[proxy_instance.address].abi
+        if x.type == "function" and x.name != "masterCopy"
+    ]
+    proxy_instance_ref_3 = chain.contracts.instance_at(proxy_instance.address)
+    assert proxy_instance_ref_3.masterCopy()
+    assert isinstance(proxy_instance_ref_3.myNumber(), int)
 
 
 @geth_process_test

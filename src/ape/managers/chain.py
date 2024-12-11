@@ -798,25 +798,47 @@ class ContractCache(BaseManager):
         """
 
         address = contract_instance.address
-        contract_type = contract_instance.contract_type
+        contract_type = contract_instance.contract_type  # may be a proxy
 
         # Cache contract type in memory before proxy check,
         # in case it is needed somewhere. It may get overridden.
         self._local_contract_types[address] = contract_type
 
-        proxy_info = self.provider.network.ecosystem.get_proxy_info(address)
-        if proxy_info:
+        if proxy_info := self.provider.network.ecosystem.get_proxy_info(address):
+            # The user is caching a deployment of a proxy with the target already set.
             self.cache_proxy_info(address, proxy_info)
-            contract_type = self.get(proxy_info.target) or contract_type
-            if contract_type:
+            if implementation_contract := self.get(proxy_info.target):
+                # Include proxy ABIs but ignore fallback/ctor etc.
+                proxy_abis = [
+                    abi for abi in contract_type.abi if abi.type in ("error", "event", "function")
+                ]
+                implementation_contract.abi.extend(proxy_abis)
+
+                # Include "hidden" ABIs, such as Safe's `masterCopy()`.
+                if proxy_info.abi and proxy_info.abi.signature not in [
+                    abi.signature for abi in contract_type.abi
+                ]:
+                    implementation_contract.abi.append(proxy_info.abi)
+
+                self._cache_contract_type(address, implementation_contract)
+
+                # Use this contract type in the user's contract instance.
+                contract_instance.contract_type = implementation_contract
+
+            else:
+                # No implementation yet. Just cache proxy.
                 self._cache_contract_type(address, contract_type)
 
-            return
+        else:
+            # Regular contract. Cache normally.
+            self._cache_contract_type(address, contract_type)
 
+        # Cache the deployment now.
         txn_hash = contract_instance.txn_hash
-        self._cache_contract_type(address, contract_type)
         if contract_type.name:
             self._cache_deployment(address, contract_type, txn_hash)
+
+        return contract_type
 
     def cache_proxy_info(self, address: AddressType, proxy_info: ProxyInfoAPI):
         """
@@ -1261,6 +1283,12 @@ class ContractCache(BaseManager):
                     txn_hash = deployment["transaction_hash"]
                     break
 
+        # Include proxy-related ABIs.
+        if info := self.get_proxy_info(contract_address):
+            if proxy_abi := info.abi:
+                if proxy_abi.signature not in [x.signature for x in contract_type.abi]:
+                    contract_type.abi.append(proxy_abi)
+
         return ContractInstance(contract_address, contract_type, txn_hash=txn_hash)
 
     def instance_from_receipt(
@@ -1271,6 +1299,7 @@ class ContractCache(BaseManager):
 
         Args:
             receipt (:class:`~ape.api.transactions.ReceiptAPI`): The receipt.
+            contract_type (ContractType): The deployed contract type.
 
         Returns:
             :class:`~ape.contracts.base.ContractInstance`
