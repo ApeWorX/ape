@@ -236,8 +236,11 @@ class TestContractNotFoundError:
         for the local-network, as 99.9% of the time it is
         confusing.
         """
+        eth_tester_provider.network.explorer = None  # Ensure no explorer is set.
         err = ContractNotFoundError(ZERO_ADDRESS, provider=eth_tester_provider)
-        assert str(err) == f"Failed to get contract type for address '{ZERO_ADDRESS}'."
+        actual = f"{err}"
+        expected = f"Failed to get contract type for address '{ZERO_ADDRESS}'."
+        assert actual == expected
 
     def test_fork_network(self, mocker, mock_sepolia):
         provider = mocker.MagicMock()

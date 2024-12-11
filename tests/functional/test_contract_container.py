@@ -190,3 +190,4 @@ def test_at_fetch_from_explorer_false(
 
     # Clean up test.
     eth_tester_provider.network.explorer = None
+    assert eth_tester_provider.network.explorer is None
