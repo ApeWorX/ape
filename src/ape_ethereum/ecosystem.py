@@ -514,7 +514,7 @@ class Ethereum(EcosystemAPI):
             if _type == ProxyType.Beacon:
                 target = ContractCall(IMPLEMENTATION_ABI, target)(skip_trace=True)
 
-            return ProxyInfo(type=_type, target=target, abi=MASTER_COPY_ABI)
+            return ProxyInfo(type=_type, target=target, abi=IMPLEMENTATION_ABI)
 
         # safe >=1.1.0 provides `masterCopy()`, which is also stored in slot 0
         # call it and check that target matches
