@@ -15,7 +15,7 @@ from ape.exceptions import (
     handle_ape_exception,
 )
 from ape.types.trace import SourceTraceback
-from ape.utils.misc import LOCAL_NETWORK_NAME, ZERO_ADDRESS
+from ape.utils.misc import ZERO_ADDRESS
 from ape_ethereum.transactions import DynamicFeeTransaction, Receipt
 
 
@@ -230,20 +230,27 @@ class TestContractLogicError:
 
 
 class TestContractNotFoundError:
-    def test_local_network(self):
+    def test_local_network(self, eth_tester_provider):
         """
         Testing we are NOT mentioning explorer plugins
         for the local-network, as 99.9% of the time it is
         confusing.
         """
-        err = ContractNotFoundError(ZERO_ADDRESS, False, f"ethereum:{LOCAL_NETWORK_NAME}:test")
-        assert str(err) == f"Failed to get contract type for address '{ZERO_ADDRESS}'."
+        eth_tester_provider.network.explorer = None  # Ensure no explorer is set.
+        err = ContractNotFoundError(ZERO_ADDRESS, provider=eth_tester_provider)
+        actual = f"{err}"
+        expected = f"Failed to get contract type for address '{ZERO_ADDRESS}'."
+        assert actual == expected
 
-    def test_fork_network(self):
-        err = ContractNotFoundError(ZERO_ADDRESS, False, "ethereum:sepolia-fork:test")
+    def test_fork_network(self, mocker, mock_sepolia):
+        provider = mocker.MagicMock()
+        provider.network = mock_sepolia
+        mock_sepolia.explorer = None
+        provider.network_choice = "ethereum:sepolia:node"
+        err = ContractNotFoundError(ZERO_ADDRESS, provider=provider)
         assert str(err) == (
             f"Failed to get contract type for address '{ZERO_ADDRESS}'. "
-            "Current network 'ethereum:sepolia-fork:test' has no associated explorer plugin. "
+            "Current network 'ethereum:sepolia:node' has no associated explorer plugin. "
             "Try installing an explorer plugin using \x1b[32mape plugins install etherscan"
             "\x1b[0m, or using a network with explorer support."
         )

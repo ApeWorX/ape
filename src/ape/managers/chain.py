@@ -621,6 +621,796 @@ class TransactionHistory(BaseManager):
         return self._account_history_cache[address_key]
 
 
+class ContractCache(BaseManager):
+    """
+    A collection of cached contracts. Contracts can be cached in two ways:
+
+    1. An in-memory cache of locally deployed contracts
+    2. A cache of contracts per network (only permanent networks are stored this way)
+
+    When retrieving a contract, if a :class:`~ape.api.explorers.ExplorerAPI` is used,
+    it will be cached to disk for faster look-up next time.
+    """
+
+    _local_contract_types: dict[AddressType, ContractType] = {}
+    _local_proxies: dict[AddressType, ProxyInfoAPI] = {}
+    _local_blueprints: dict[str, ContractType] = {}
+    _local_deployments_mapping: dict[str, dict] = {}
+    _local_contract_creation: dict[str, ContractCreation] = {}
+
+    # chain_id -> address -> custom_err
+    # Cached to prevent calling `new_class` multiple times with conflicts.
+    _custom_error_types: dict[int, dict[AddressType, set[type[CustomError]]]] = {}
+
+    @property
+    def _network(self) -> NetworkAPI:
+        return self.provider.network
+
+    @property
+    def _ecosystem_name(self) -> str:
+        return self._network.ecosystem.name
+
+    @property
+    def _is_live_network(self) -> bool:
+        if not self.network_manager.active_provider:
+            return False
+
+        return not self._network.is_dev
+
+    @property
+    def _data_network_name(self) -> str:
+        return self._network.name.replace("-fork", "")
+
+    @property
+    def _network_cache(self) -> Path:
+        return self._network.ecosystem.data_folder / self._data_network_name
+
+    @property
+    def _contract_types_cache(self) -> Path:
+        return self._network_cache / "contract_types"
+
+    @property
+    def _deployments_mapping_cache(self) -> Path:
+        return self._network.ecosystem.data_folder / "deployments_map.json"
+
+    @property
+    def _proxy_info_cache(self) -> Path:
+        return self._network_cache / "proxy_info"
+
+    @property
+    def _blueprint_cache(self) -> Path:
+        return self._network_cache / "blueprints"
+
+    @property
+    def _contract_creation_cache(self) -> Path:
+        return self._network_cache / "contract_creation"
+
+    @property
+    def _full_deployments(self) -> dict:
+        deployments = self._local_deployments_mapping
+        if self._is_live_network:
+            deployments = {**deployments, **self._load_deployments_cache()}
+
+        return deployments
+
+    @property
+    def _deployments(self) -> dict:
+        if not self.network_manager.active_provider:
+            return {}
+
+        deployments = self._full_deployments
+        return deployments.get(self._ecosystem_name, {}).get(self._data_network_name, {})
+
+    @_deployments.setter
+    def _deployments(self, value):
+        deployments = self._full_deployments
+        ecosystem_deployments = self._local_deployments_mapping.get(self._ecosystem_name, {})
+        ecosystem_deployments[self._data_network_name] = value
+        self._local_deployments_mapping[self._ecosystem_name] = ecosystem_deployments
+
+        if self._is_live_network:
+            self._write_deployments_mapping(
+                {**deployments, self._ecosystem_name: ecosystem_deployments}
+            )
+
+    def __setitem__(self, address: AddressType, contract_type: ContractType):
+        """
+        Cache the given contract type. Contracts are cached in memory per session.
+        In live networks, contracts also get cached to disk at
+        ``.ape/{ecosystem_name}/{network_name}/contract_types/{address}.json``
+        for faster look-up next time.
+
+        Args:
+            address (AddressType): The on-chain address of the contract.
+            contract_type (ContractType): The contract's type.
+        """
+
+        if self.network_manager.active_provider:
+            address = self.provider.network.ecosystem.decode_address(int(address, 16))
+        else:
+            logger.warning("Not connected to a provider. Assuming Ethereum-style checksums.")
+            ethereum = self.network_manager.ethereum
+            address = ethereum.decode_address(int(address, 16))
+
+        self._cache_contract_type(address, contract_type)
+
+        # NOTE: The txn_hash is not included when caching this way.
+        if contract_type.name:
+            self._cache_deployment(address, contract_type)
+
+    def __delitem__(self, address: AddressType):
+        """
+        Delete a cached contract.
+        If using a live network, it will also delete the file-cache for the contract.
+
+        Args:
+            address (AddressType): The address to remove from the cache.
+        """
+
+        if address in self._local_contract_types:
+            del self._local_contract_types[address]
+
+        # Delete proxy.
+        if address in self._local_proxies:
+            info = self._local_proxies[address]
+            target = info.target
+            del self._local_proxies[address]
+
+            # Also delete target.
+            if target in self._local_contract_types:
+                del self._local_contract_types[target]
+
+        if self._is_live_network:
+            if self._contract_types_cache.is_dir():
+                address_file = self._contract_types_cache / f"{address}.json"
+                address_file.unlink(missing_ok=True)
+
+            if self._proxy_info_cache.is_dir():
+                disk_info = self._get_proxy_info_from_disk(address)
+                if disk_info:
+                    target = disk_info.target
+                    address_file = self._proxy_info_cache / f"{address}.json"
+                    address_file.unlink()
+
+                    # Also delete the target.
+                    self.__delitem__(target)
+
+    def __contains__(self, address: AddressType) -> bool:
+        return self.get(address) is not None
+
+    def cache_deployment(self, contract_instance: ContractInstance):
+        """
+        Cache the given contract instance's type and deployment information.
+
+        Args:
+            contract_instance (:class:`~ape.contracts.base.ContractInstance`): The contract
+              to cache.
+        """
+
+        address = contract_instance.address
+        contract_type = contract_instance.contract_type
+
+        # Cache contract type in memory before proxy check,
+        # in case it is needed somewhere. It may get overridden.
+        self._local_contract_types[address] = contract_type
+
+        proxy_info = self.provider.network.ecosystem.get_proxy_info(address)
+        if proxy_info:
+            self.cache_proxy_info(address, proxy_info)
+            contract_type = self.get(proxy_info.target) or contract_type
+            if contract_type:
+                self._cache_contract_type(address, contract_type)
+
+            return
+
+        txn_hash = contract_instance.txn_hash
+        self._cache_contract_type(address, contract_type)
+        if contract_type.name:
+            self._cache_deployment(address, contract_type, txn_hash)
+
+    def cache_proxy_info(self, address: AddressType, proxy_info: ProxyInfoAPI):
+        """
+        Cache proxy info for a particular address, useful for plugins adding already
+        deployed proxies. When you deploy a proxy locally, it will also call this method.
+
+        Args:
+            address (AddressType): The address of the proxy contract.
+            proxy_info (:class:`~ape.api.networks.ProxyInfo`): The proxy info class
+              to cache.
+        """
+        if self.get_proxy_info(address) and self._is_live_network:
+            return
+
+        self._local_proxies[address] = proxy_info
+
+        if self._is_live_network:
+            self._cache_proxy_info_to_disk(address, proxy_info)
+
+    def cache_blueprint(self, blueprint_id: str, contract_type: ContractType):
+        """
+        Cache a contract blueprint.
+
+        Args:
+            blueprint_id (``str``): The ID of the blueprint. For example, in EIP-5202,
+              it would be the address of the deployed blueprint. For Starknet, it would
+              be the class identifier.
+            contract_type (``ContractType``): The contract type associated with the blueprint.
+        """
+
+        if self.get_blueprint(blueprint_id) and self._is_live_network:
+            return
+
+        self._local_blueprints[blueprint_id] = contract_type
+
+        if self._is_live_network:
+            self._cache_blueprint_to_disk(blueprint_id, contract_type)
+
+    def get_proxy_info(self, address: AddressType) -> Optional[ProxyInfoAPI]:
+        """
+        Get proxy information about a contract using its address,
+        either from a local cache, a disk cache, or the provider.
+
+        Args:
+            address (AddressType): The address of the proxy contract.
+
+        Returns:
+            Optional[:class:`~ape.api.networks.ProxyInfoAPI`]
+        """
+        return self._local_proxies.get(address) or self._get_proxy_info_from_disk(address)
+
+    def get_creation_metadata(self, address: AddressType) -> Optional[ContractCreation]:
+        """
+        Get contract creation metadata containing txn_hash, deployer, factory, block.
+
+        Args:
+            address (AddressType): The address of the contract.
+
+        Returns:
+            Optional[:class:`~ape.api.query.ContractCreation`]
+        """
+        if creation := self._local_contract_creation.get(address):
+            return creation
+
+        # read from disk
+        elif creation := self._get_contract_creation_from_disk(address):
+            self._local_contract_creation[address] = creation
+            return creation
+
+        # query and cache
+        query = ContractCreationQuery(columns=["*"], contract=address)
+        get_creation = self.query_manager.query(query)
+
+        try:
+            if not (creation := next(get_creation, None)):  # type: ignore[arg-type]
+                return None
+
+        except QueryEngineError:
+            return None
+
+        if self._is_live_network:
+            self._cache_contract_creation_to_disk(address, creation)
+
+        self._local_contract_creation[address] = creation
+        return creation
+
+    def get_blueprint(self, blueprint_id: str) -> Optional[ContractType]:
+        """
+        Get a cached blueprint contract type.
+
+        Args:
+            blueprint_id (``str``): The unique identifier used when caching
+              the blueprint.
+
+        Returns:
+            ``ContractType``
+        """
+
+        return self._local_blueprints.get(blueprint_id) or self._get_blueprint_from_disk(
+            blueprint_id
+        )
+
+    def _get_errors(
+        self, address: AddressType, chain_id: Optional[int] = None
+    ) -> set[type[CustomError]]:
+        if chain_id is None and self.network_manager.active_provider is not None:
+            chain_id = self.provider.chain_id
+        elif chain_id is None:
+            raise ValueError("Missing chain ID.")
+
+        if chain_id not in self._custom_error_types:
+            return set()
+
+        errors = self._custom_error_types[chain_id]
+        if address in errors:
+            return errors[address]
+
+        return set()
+
+    def _cache_error(
+        self, address: AddressType, error: type[CustomError], chain_id: Optional[int] = None
+    ):
+        if chain_id is None and self.network_manager.active_provider is not None:
+            chain_id = self.provider.chain_id
+        elif chain_id is None:
+            raise ValueError("Missing chain ID.")
+
+        if chain_id not in self._custom_error_types:
+            self._custom_error_types[chain_id] = {address: set()}
+        elif address not in self._custom_error_types[chain_id]:
+            self._custom_error_types[chain_id][address] = set()
+
+        self._custom_error_types[chain_id][address].add(error)
+
+    def _cache_contract_type(self, address: AddressType, contract_type: ContractType):
+        self._local_contract_types[address] = contract_type
+        if self._is_live_network:
+            # NOTE: We don't cache forked network contracts in this method to avoid caching
+            # deployments from a fork. However, if you retrieve a contract from an explorer
+            # when using a forked network, it will still get cached to disk.
+            self._cache_contract_to_disk(address, contract_type)
+
+    def _cache_deployment(
+        self, address: AddressType, contract_type: ContractType, txn_hash: Optional[str] = None
+    ):
+        deployments = self._deployments
+        contract_deployments = deployments.get(contract_type.name or "", [])
+        new_deployment = {"address": address, "transaction_hash": txn_hash}
+        contract_deployments.append(new_deployment)
+        self._deployments = {**deployments, contract_type.name: contract_deployments}
+
+    def __getitem__(self, address: AddressType) -> ContractType:
+        contract_type = self.get(address)
+        if not contract_type:
+            # Create error message from custom exception cls.
+            err = ContractNotFoundError(address, provider=self.provider)
+            # Must raise KeyError.
+            raise KeyError(str(err))
+
+        return contract_type
+
+    def get_multiple(
+        self, addresses: Collection[AddressType], concurrency: Optional[int] = None
+    ) -> dict[AddressType, ContractType]:
+        """
+        Get contract types for all given addresses.
+
+        Args:
+            addresses (list[AddressType): A list of addresses to get contract types for.
+            concurrency (Optional[int]): The number of threads to use. Defaults to
+              ``min(4, len(addresses))``.
+
+        Returns:
+            dict[AddressType, ContractType]: A mapping of addresses to their respective
+            contract types.
+        """
+        if not addresses:
+            logger.warning("No addresses provided.")
+            return {}
+
+        def get_contract_type(addr: AddressType):
+            addr = self.conversion_manager.convert(addr, AddressType)
+            ct = self.get(addr)
+
+            if not ct:
+                logger.warning(f"Failed to locate contract at '{addr}'.")
+                return addr, None
+            else:
+                return addr, ct
+
+        converted_addresses: list[AddressType] = []
+        for address in converted_addresses:
+            if not self.conversion_manager.is_type(address, AddressType):
+                converted_address = self.conversion_manager.convert(address, AddressType)
+                converted_addresses.append(converted_address)
+            else:
+                converted_addresses.append(address)
+
+        contract_types = {}
+        default_max_threads = 4
+        max_threads = (
+            concurrency
+            if concurrency is not None
+            else min(len(addresses), default_max_threads) or default_max_threads
+        )
+        with ThreadPoolExecutor(max_workers=max_threads) as pool:
+            for address, contract_type in pool.map(get_contract_type, addresses):
+                if contract_type is None:
+                    continue
+
+                contract_types[address] = contract_type
+
+        return contract_types
+
+    @nonreentrant(key_fn=lambda *args, **kwargs: args[1])
+    def get(
+        self,
+        address: AddressType,
+        default: Optional[ContractType] = None,
+        fetch_from_explorer: bool = True,
+    ) -> Optional[ContractType]:
+        """
+        Get a contract type by address.
+        If the contract is cached, it will return the contract from the cache.
+        Otherwise, if on a live network, it fetches it from the
+        :class:`~ape.api.explorers.ExplorerAPI`.
+
+        Args:
+            address (AddressType): The address of the contract.
+            default (Optional[ContractType]): A default contract when none is found.
+              Defaults to ``None``.
+            fetch_from_explorer (bool): Set to ``False`` to avoid fetching from an
+              explorer. Defaults to ``True``. Only fetches if it needs to (uses disk
+              & memory caching otherwise).
+
+        Returns:
+            Optional[ContractType]: The contract type if it was able to get one,
+              otherwise the default parameter.
+        """
+
+        try:
+            address_key: AddressType = self.conversion_manager.convert(address, AddressType)
+        except ConversionError:
+            if not address.startswith("0x"):
+                # Still raise conversion errors for ENS and such.
+                raise
+
+            # In this case, it at least _looked_ like an address.
+            return None
+
+        if contract_type := self._local_contract_types.get(address_key):
+            if default and default != contract_type:
+                # Replacing contract type
+                self._local_contract_types[address_key] = default
+                return default
+
+            return contract_type
+
+        if self._network.is_local:
+            # Don't check disk-cache or explorer when using local
+            if default:
+                self._local_contract_types[address_key] = default
+
+            return default
+
+        if not (contract_type := self._get_contract_type_from_disk(address_key)):
+            # Contract could be a minimal proxy
+            proxy_info = self._local_proxies.get(address_key) or self._get_proxy_info_from_disk(
+                address_key
+            )
+
+            if not proxy_info:
+                proxy_info = self.provider.network.ecosystem.get_proxy_info(address_key)
+                if proxy_info and self._is_live_network:
+                    self._cache_proxy_info_to_disk(address_key, proxy_info)
+
+            if proxy_info:
+                self._local_proxies[address_key] = proxy_info
+                return self.get(proxy_info.target, default=default)
+
+            if not self.provider.get_code(address_key):
+                if default:
+                    self._local_contract_types[address_key] = default
+                    self._cache_contract_to_disk(address_key, default)
+
+                return default
+
+            # Also gets cached to disk for faster lookup next time.
+            if fetch_from_explorer:
+                contract_type = self._get_contract_type_from_explorer(address_key)
+
+        # Cache locally for faster in-session look-up.
+        if contract_type:
+            self._local_contract_types[address_key] = contract_type
+
+        if not contract_type:
+            if default:
+                self._local_contract_types[address_key] = default
+                self._cache_contract_to_disk(address_key, default)
+
+            return default
+
+        if default and default != contract_type:
+            # Replacing contract type
+            self._local_contract_types[address_key] = default
+            self._cache_contract_to_disk(address_key, default)
+            return default
+
+        return contract_type
+
+    @classmethod
+    def get_container(cls, contract_type: ContractType) -> ContractContainer:
+        """
+        Get a contract container for the given contract type.
+
+        Args:
+            contract_type (ContractType): The contract type to wrap.
+
+        Returns:
+            ContractContainer: A container object you can deploy.
+        """
+
+        return ContractContainer(contract_type)
+
+    def instance_at(
+        self,
+        address: Union[str, AddressType],
+        contract_type: Optional[ContractType] = None,
+        txn_hash: Optional[Union[str, "HexBytes"]] = None,
+        abi: Optional[Union[list[ABI], dict, str, Path]] = None,
+        fetch_from_explorer: bool = True,
+    ) -> ContractInstance:
+        """
+        Get a contract at the given address. If the contract type of the contract is known,
+        either from a local deploy or a :class:`~ape.api.explorers.ExplorerAPI`, it will use that
+        contract type. You can also provide the contract type from which it will cache and use
+        next time.
+
+        Raises:
+            TypeError: When passing an invalid type for the `contract_type` arguments
+              (expects `ContractType`).
+            :class:`~ape.exceptions.ContractNotFoundError`: When the contract type is not found.
+
+        Args:
+            address (Union[str, AddressType]): The address of the plugin. If you are using the ENS
+              plugin, you can also provide an ENS domain name.
+            contract_type (Optional[``ContractType``]): Optionally provide the contract type
+              in case it is not already known.
+            txn_hash (Optional[Union[str, HexBytes]]): The hash of the transaction responsible for
+              deploying the contract, if known. Useful for publishing. Defaults to ``None``.
+            abi (Optional[Union[list[ABI], dict, str, Path]]): Use an ABI str, dict, path,
+              or ethpm models to create a contract instance class.
+            fetch_from_explorer (bool): Set to ``False`` to avoid fetching from the explorer.
+              Defaults to ``True``. Won't fetch unless it needs to (uses disk & memory caching
+              first).
+
+        Returns:
+            :class:`~ape.contracts.base.ContractInstance`
+        """
+
+        if self.conversion_manager.is_type(address, AddressType):
+            contract_address = cast(AddressType, address)
+        else:
+            try:
+                contract_address = self.conversion_manager.convert(address, AddressType)
+            except ConversionError as err:
+                raise ValueError(f"Unknown address value '{address}'.") from err
+
+        try:
+            # Always attempt to get an existing contract type to update caches
+            contract_type = self.get(
+                contract_address, default=contract_type, fetch_from_explorer=fetch_from_explorer
+            )
+        except Exception as err:
+            if contract_type or abi:
+                # If a default contract type was provided, don't error and use it.
+                logger.error(str(err))
+            else:
+                raise  # Current exception
+
+        if abi:
+            # if the ABI is a str then convert it to a JSON dictionary.
+            if isinstance(abi, Path) or (
+                isinstance(abi, str) and "{" not in abi and Path(abi).is_file()
+            ):
+                # Handle both absolute and relative paths
+                abi_path = Path(abi)
+                if not abi_path.is_absolute():
+                    abi_path = self.local_project.path / abi
+
+                try:
+                    abi = json.loads(abi_path.read_text())
+                except Exception as err:
+                    if contract_type:
+                        # If a default contract type was provided, don't error and use it.
+                        logger.error(str(err))
+                    else:
+                        raise  # Current exception
+
+            elif isinstance(abi, str):
+                # JSON str
+                try:
+                    abi = json.loads(abi)
+                except Exception as err:
+                    if contract_type:
+                        # If a default contract type was provided, don't error and use it.
+                        logger.error(str(err))
+                    else:
+                        raise  # Current exception
+
+            # If the ABI was a str, it should be a list now.
+            if isinstance(abi, list):
+                contract_type = ContractType(abi=abi)
+
+                # Ensure we cache the contract-types from ABI!
+                self[contract_address] = contract_type
+
+            else:
+                raise TypeError(
+                    f"Invalid ABI type '{type(abi)}', expecting str, list[ABI] or a JSON file."
+                )
+
+        if not contract_type:
+            raise ContractNotFoundError(contract_address, provider=self.provider)
+
+        elif not isinstance(contract_type, ContractType):
+            raise TypeError(
+                f"Expected type '{ContractType.__name__}' for argument 'contract_type'."
+            )
+
+        if not txn_hash:
+            # Check for txn_hash in deployments.
+            deployments = self._deployments.get(contract_type.name) or []
+            for deployment in deployments[::-1]:
+                if deployment["address"] == contract_address and "transaction_hash" in deployment:
+                    txn_hash = deployment["transaction_hash"]
+                    break
+
+        return ContractInstance(contract_address, contract_type, txn_hash=txn_hash)
+
+    def instance_from_receipt(
+        self, receipt: ReceiptAPI, contract_type: ContractType
+    ) -> ContractInstance:
+        """
+        A convenience method for creating instances from receipts.
+
+        Args:
+            receipt (:class:`~ape.api.transactions.ReceiptAPI`): The receipt.
+
+        Returns:
+            :class:`~ape.contracts.base.ContractInstance`
+        """
+        # NOTE: Mostly just needed this method to avoid a local import.
+        return ContractInstance.from_receipt(receipt, contract_type)
+
+    def get_deployments(self, contract_container: ContractContainer) -> list[ContractInstance]:
+        """
+        Retrieves previous deployments of a contract container or contract type.
+        Locally deployed contracts are saved for the duration of the script and read from
+        ``_local_deployments_mapping``, while those deployed on a live network are written to
+        disk in ``deployments_map.json``.
+
+        Args:
+            contract_container (:class:`~ape.contracts.ContractContainer`): The
+              ``ContractContainer`` with deployments.
+
+        Returns:
+            list[:class:`~ape.contracts.ContractInstance`]: Returns a list of contracts that
+            have been deployed.
+        """
+
+        contract_type = contract_container.contract_type
+        contract_name = contract_type.name
+        if not contract_name:
+            return []
+
+        config_deployments = []
+        if self.network_manager.active_provider:
+            ecosystem_name = self.provider.network.ecosystem.name
+            network_name = self.provider.network.name
+            all_config_deployments = (
+                self.config_manager.deployments if self.config_manager.deployments else {}
+            )
+            ecosystem_deployments = all_config_deployments.get(ecosystem_name, {})
+            network_deployments = ecosystem_deployments.get(network_name, {})
+            config_deployments = [
+                c for c in network_deployments if c["contract_type"] == contract_name
+            ]
+
+        deployments = [*config_deployments, *self._deployments.get(contract_name, [])]
+        if not deployments:
+            return []
+
+        instances: list[ContractInstance] = []
+        for deployment in deployments:
+            address = deployment["address"]
+            txn_hash = deployment.get("transaction_hash")
+            instance = ContractInstance(address, contract_type, txn_hash=txn_hash)
+            instances.append(instance)
+
+        return instances
+
+    def clear_local_caches(self):
+        """
+        Reset local caches to a blank state.
+        """
+        self._local_contract_types = {}
+        self._local_proxies = {}
+        self._local_blueprints = {}
+        self._local_deployments_mapping = {}
+        self._local_contract_creation = {}
+
+    def _get_contract_type_from_disk(self, address: AddressType) -> Optional[ContractType]:
+        address_file = self._contract_types_cache / f"{address}.json"
+        if not address_file.is_file():
+            return None
+
+        return ContractType.model_validate_json(address_file.read_text())
+
+    def _get_proxy_info_from_disk(self, address: AddressType) -> Optional[ProxyInfoAPI]:
+        address_file = self._proxy_info_cache / f"{address}.json"
+        if not address_file.is_file():
+            return None
+
+        return ProxyInfoAPI.model_validate_json(address_file.read_text())
+
+    def _get_blueprint_from_disk(self, blueprint_id: str) -> Optional[ContractType]:
+        contract_file = self._blueprint_cache / f"{blueprint_id}.json"
+        if not contract_file.is_file():
+            return None
+
+        return ContractType.model_validate_json(contract_file.read_text())
+
+    def _get_contract_type_from_explorer(self, address: AddressType) -> Optional[ContractType]:
+        if not self._network.explorer:
+            return None
+
+        try:
+            contract_type = self._network.explorer.get_contract_type(address)
+        except Exception as err:
+            explorer_name = self._network.explorer.name
+            if "rate limit" in str(err).lower():
+                # Don't show any additional error message during rate limit errors,
+                # if it can be helped, as it may scare users into thinking their
+                # contracts are not verified.
+                message = str(err)
+            else:
+                # Carefully word this message in a way that doesn't hint at
+                # any one specific reason, such as un-verified source code,
+                # which is potentially a scare for users.
+                message = (
+                    f"Attempted to retrieve contract type from explorer '{explorer_name}' "
+                    f"from address '{address}' but encountered an exception: {err}\n"
+                )
+
+            logger.error(message)
+            return None
+
+        if contract_type:
+            # Cache contract so faster look-up next time.
+            self._cache_contract_to_disk(address, contract_type)
+
+        return contract_type
+
+    def _get_contract_creation_from_disk(self, address: AddressType) -> Optional[ContractCreation]:
+        path = self._contract_creation_cache / f"{address}.json"
+        if not path.is_file():
+            return None
+
+        return ContractCreation.model_validate_json(path.read_text())
+
+    def _cache_contract_to_disk(self, address: AddressType, contract_type: ContractType):
+        self._contract_types_cache.mkdir(exist_ok=True, parents=True)
+        address_file = self._contract_types_cache / f"{address}.json"
+        address_file.write_text(contract_type.model_dump_json(), encoding="utf8")
+
+    def _cache_proxy_info_to_disk(self, address: AddressType, proxy_info: ProxyInfoAPI):
+        self._proxy_info_cache.mkdir(exist_ok=True, parents=True)
+        address_file = self._proxy_info_cache / f"{address}.json"
+        address_file.write_text(proxy_info.model_dump_json(), encoding="utf8")
+
+    def _cache_blueprint_to_disk(self, blueprint_id: str, contract_type: ContractType):
+        self._blueprint_cache.mkdir(exist_ok=True, parents=True)
+        blueprint_file = self._blueprint_cache / f"{blueprint_id}.json"
+        blueprint_file.write_text(contract_type.model_dump_json(), encoding="utf8")
+
+    def _cache_contract_creation_to_disk(self, address: AddressType, creation: ContractCreation):
+        self._contract_creation_cache.mkdir(exist_ok=True, parents=True)
+        path = self._contract_creation_cache / f"{address}.json"
+        path.write_text(creation.model_dump_json(), encoding="utf8")
+
+    def _load_deployments_cache(self) -> dict:
+        return (
+            json.loads(self._deployments_mapping_cache.read_text(encoding="utf8"))
+            if self._deployments_mapping_cache.is_file()
+            else {}
+        )
+
+    def _write_deployments_mapping(self, deployments_map: dict):
+        self._deployments_mapping_cache.parent.mkdir(exist_ok=True, parents=True)
+        with self._deployments_mapping_cache.open("w") as fp:
+            json.dump(deployments_map, fp, sort_keys=True, indent=2, default=sorted)
+
+
 class ReportManager(BaseManager):
     """
     A class representing the active Ape session. Useful for tracking data and

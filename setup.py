@@ -121,6 +121,7 @@ setup(
         # ** Dependencies maintained by Ethereum Foundation **
         "eth-abi>=5.1.0,<6",
         "eth-account>=0.13.4,<0.14",
+        "eth-tester>=0.12.0b2,<0.13",  # Peer: stricter pin needed for [tester].
         "eth-typing>=5.0.1,<6",
         "eth-utils>=5.1.0,<6",
         "hexbytes>=1.2.1,<2",

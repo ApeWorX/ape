@@ -10,6 +10,7 @@ from ape.exceptions import (
     ProjectError,
 )
 from ape_ethereum.ecosystem import ProxyType
+from tests.conftest import explorer_test
 
 
 def test_deploy(
@@ -181,6 +182,7 @@ def test_at(vyper_contract_instance, vyper_contract_container):
     assert instance == vyper_contract_instance
 
 
+@explorer_test
 def test_at_fetch_from_explorer_false(
     project_with_contract, mock_explorer, eth_tester_provider, owner
 ):
@@ -202,4 +204,5 @@ def test_at_fetch_from_explorer_false(
     assert mock_explorer.get_contract_type.call_count == 0
 
     # Clean up test.
-    eth_tester_provider.network.__dict__.pop("explorer")
+    eth_tester_provider.network.explorer = None
+    assert eth_tester_provider.network.explorer is None
