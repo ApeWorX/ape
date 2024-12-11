@@ -551,7 +551,7 @@ class ContractEvent(BaseInterfaceModel):
 
     def __call__(self, *args: Any, **kwargs: Any) -> MockContractLog:
         """
-        Create a mock-instance of a log using this event ABI and contract-instance.
+        Create a mock-instance of a log using this event ABI and the contract address.
 
         Args:
             *args: Position arguments for the event.
@@ -807,6 +807,8 @@ class ContractEvent(BaseInterfaceModel):
             )
 
 
+# TODO: In 0.9, just make `_events_` or ContractEvent possibly handle multiple ABIs
+#   much like the transactions handlers do. OR at least take the opportunty to refactor.
 class ContractEventWrapper:
     """
     A wrapper used when multiple events have the same so that
