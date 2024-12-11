@@ -420,7 +420,7 @@ def ape_caplog(caplog):
 
         def set_levels(self, caplog_level: LogLevel = LogLevel.WARNING):
             self.level = caplog_level
-            logger.set_level(LogLevel.WARNING)
+            logger.set_level(caplog_level)
             caplog.set_level(caplog_level)
 
         def assert_last_log(self, message: str):

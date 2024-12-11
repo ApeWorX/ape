@@ -20,7 +20,8 @@ def test_info(simple_runner):
     @group_for_testing.command()
     @ape_cli_context()
     def cmd(cli_ctx):
-        cli_ctx.logger.info("this is a test")
+        with cli_ctx.logger.at_level(LogLevel.INFO):
+            cli_ctx.logger.info("this is a test")
 
     result = simple_runner.invoke(group_for_testing, "cmd")
     assert "INFO" in result.output
