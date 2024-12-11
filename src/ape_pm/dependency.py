@@ -472,7 +472,7 @@ class PythonDependency(DependencyAPI):
         raise ProjectError("Must provide either 'pypi:' or 'python:' for python-base dependencies.")
 
     @property
-    def python(self) -> str:
+    def python(self) -> Optional[str]:
         logger.warning("'.python' is deprecated. Please use 'site_package'.")
         return self.site_package
 
