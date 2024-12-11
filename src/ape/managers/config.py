@@ -16,7 +16,7 @@ from ape.utils.basemodel import (
 )
 from ape.utils.misc import log_instead_of_fail
 from ape.utils.os import create_tempdir, in_tempdir
-from ape.utils.rpc import RPCHeaders
+from ape.utils.rpc import USER_AGENT, RPCHeaders
 
 if TYPE_CHECKING:
     from ethpm_types import PackageManifest
@@ -39,6 +39,10 @@ class ConfigManager(ExtraAttributesMixin, BaseManager):
         else:
             self.DATA_FOLDER = data_folder or Path.home() / ".ape"
 
+        request_header = request_header or {
+            "User-Agent": USER_AGENT,
+            "Content-Type": "application/json",
+        }
         self.REQUEST_HEADER = request_header or {}
 
     def __ape_extra_attributes__(self):
