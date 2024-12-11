@@ -77,7 +77,7 @@ You can also specify the `python:` key for already-installed dependencies:
 
 ```yaml
 dependencies:
-   - python: snekmate
+   - site_package: snekmate
      config_override:
        contracts_folder: .
 ```

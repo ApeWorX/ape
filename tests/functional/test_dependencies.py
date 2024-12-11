@@ -597,7 +597,7 @@ class TestGitHubDependency:
 
 
 class TestPythonDependency:
-    @pytest.fixture(scope="class", params=("python", "pypi"))
+    @pytest.fixture(scope="class", params=("site_package", "python", "pypi"))
     def python_dependency(self, request):
         return PythonDependency.model_validate({request.param: "web3"})
 
@@ -613,7 +613,7 @@ class TestPythonDependency:
 
     def test_version_id_not_found(self):
         name = "xxthisnameisnotarealpythonpackagexx"
-        dependency = PythonDependency.model_validate({"python": name})
+        dependency = PythonDependency.model_validate({"site_package": name})
         expected = f"Dependency '{name}' not installed."
         with pytest.raises(ProjectError, match=expected):
             _ = dependency.version_id

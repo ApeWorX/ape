@@ -411,8 +411,7 @@ class PythonDependency(DependencyAPI):
     A dependency installed from Python tooling, such as `pip`.
     """
 
-    # TODO: Rename this `site_package_name` in 0.9.
-    python: Optional[str] = None
+    site_package: Optional[str] = None
     """
     The Python site-package name, such as ``"snekmate"``. Cannot use
     with ``pypi:``. Requires the dependency to have been installed
@@ -434,12 +433,20 @@ class PythonDependency(DependencyAPI):
     @model_validator(mode="before")
     @classmethod
     def validate_model(cls, values):
+        # TODO: In 0.9, remove this check and require 'site_package'.
+        if "python" in values:
+            logger.warning(
+                "'python' key name is deprecated. Use 'site_package' for "
+                "already-installed packages or 'pypi' to download the package from PyPI."
+            )
+            values["site_package"] = values.pop("python")
+
         if "name" not in values:
-            if name := values.get("python") or values.get("pypi"):
+            if name := values.get("site_package") or values.get("pypi"):
                 values["name"] = name
             else:
                 raise ValueError(
-                    "Must set either 'pypi:' or 'python': when using Python dependencies"
+                    "Must set either 'pypi:' or 'site_package': when using Python dependencies"
                 )
 
         return values
