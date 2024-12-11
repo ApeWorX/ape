@@ -1,0 +1,587 @@
+{
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "addr",
+          "type": "address"
+        }
+      ],
+      "name": "Log",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "name": "master_copy",
+          "type": "address"
+        }
+      ],
+      "name": "deploy",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "ast": {
+    "ast_type": "Module",
+    "children": [
+      {
+        "ast_type": "EventDef",
+        "children": [
+          {
+            "ast_type": "AnnAssign",
+            "children": [
+              {
+                "ast_type": "Name",
+                "children": [],
+                "classification": 1,
+                "col_offset": 10,
+                "end_col_offset": 17,
+                "end_lineno": 2,
+                "lineno": 2,
+                "src": {
+                  "jump_code": "",
+                  "length": 7,
+                  "start": 21
+                }
+              },
+              {
+                "ast_type": "Name",
+                "children": [],
+                "classification": 1,
+                "col_offset": 4,
+                "end_col_offset": 8,
+                "end_lineno": 2,
+                "lineno": 2,
+                "src": {
+                  "jump_code": "",
+                  "length": 4,
+                  "start": 15
+                }
+              }
+            ],
+            "classification": 0,
+            "col_offset": 4,
+            "end_col_offset": 17,
+            "end_lineno": 2,
+            "lineno": 2,
+            "src": {
+              "jump_code": "",
+              "length": 13,
+              "start": 15
+            }
+          }
+        ],
+        "classification": 0,
+        "col_offset": 0,
+        "end_col_offset": 17,
+        "end_lineno": 2,
+        "lineno": 1,
+        "name": "Log",
+        "src": {
+          "jump_code": "",
+          "length": 28
+        }
+      },
+      {
+        "ast_type": "FunctionDef",
+        "children": [
+          {
+            "ast_type": "arguments",
+            "children": [
+              {
+                "ast_type": "arg",
+                "children": [
+                  {
+                    "ast_type": "Name",
+                    "children": [],
+                    "classification": 1,
+                    "col_offset": 24,
+                    "end_col_offset": 31,
+                    "end_lineno": 5,
+                    "lineno": 5,
+                    "src": {
+                      "jump_code": "",
+                      "length": 7,
+                      "start": 64
+                    }
+                  }
+                ],
+                "classification": 0,
+                "col_offset": 11,
+                "end_col_offset": 31,
+                "end_lineno": 5,
+                "lineno": 5,
+                "src": {
+                  "jump_code": "",
+                  "length": 20,
+                  "start": 51
+                }
+              }
+            ],
+            "classification": 1,
+            "col_offset": 11,
+            "end_col_offset": 31,
+            "end_lineno": 5,
+            "lineno": 5,
+            "src": {
+              "jump_code": "",
+              "length": 20,
+              "start": 51
+            }
+          },
+          {
+            "ast_type": "AnnAssign",
+            "children": [
+              {
+                "ast_type": "Name",
+                "children": [],
+                "classification": 1,
+                "col_offset": 10,
+                "end_col_offset": 17,
+                "end_lineno": 6,
+                "lineno": 6,
+                "src": {
+                  "jump_code": "",
+                  "length": 7,
+                  "start": 95
+                }
+              },
+              {
+                "ast_type": "Name",
+                "children": [],
+                "classification": 1,
+                "col_offset": 4,
+                "end_col_offset": 8,
+                "end_lineno": 6,
+                "lineno": 6,
+                "src": {
+                  "jump_code": "",
+                  "length": 4,
+                  "start": 89
+                }
+              },
+              {
+                "ast_type": "Call",
+                "children": [
+                  {
+                    "ast_type": "Name",
+                    "children": [],
+                    "classification": 1,
+                    "col_offset": 44,
+                    "end_col_offset": 55,
+                    "end_lineno": 6,
+                    "lineno": 6,
+                    "src": {
+                      "jump_code": "",
+                      "length": 11,
+                      "start": 129
+                    }
+                  },
+                  {
+                    "ast_type": "Name",
+                    "children": [],
+                    "classification": 1,
+                    "col_offset": 20,
+                    "end_col_offset": 43,
+                    "end_lineno": 6,
+                    "lineno": 6,
+                    "src": {
+                      "jump_code": "",
+                      "length": 23,
+                      "start": 105
+                    }
+                  }
+                ],
+                "classification": 0,
+                "col_offset": 20,
+                "end_col_offset": 56,
+                "end_lineno": 6,
+                "lineno": 6,
+                "src": {
+                  "jump_code": "",
+                  "length": 36,
+                  "start": 105
+                }
+              }
+            ],
+            "classification": 0,
+            "col_offset": 4,
+            "end_col_offset": 56,
+            "end_lineno": 6,
+            "lineno": 6,
+            "src": {
+              "jump_code": "",
+              "length": 52,
+              "start": 89
+            }
+          },
+          {
+            "ast_type": "Log",
+            "children": [
+              {
+                "ast_type": "Call",
+                "children": [
+                  {
+                    "ast_type": "Name",
+                    "children": [],
+                    "classification": 1,
+                    "col_offset": 12,
+                    "end_col_offset": 16,
+                    "end_lineno": 7,
+                    "lineno": 7,
+                    "src": {
+                      "jump_code": "",
+                      "length": 4,
+                      "start": 154
+                    }
+                  },
+                  {
+                    "ast_type": "Name",
+                    "children": [],
+                    "classification": 1,
+                    "col_offset": 8,
+                    "end_col_offset": 11,
+                    "end_lineno": 7,
+                    "lineno": 7,
+                    "src": {
+                      "jump_code": "",
+                      "length": 3,
+                      "start": 150
+                    }
+                  }
+                ],
+                "classification": 0,
+                "col_offset": 8,
+                "end_col_offset": 17,
+                "end_lineno": 7,
+                "lineno": 7,
+                "src": {
+                  "jump_code": "",
+                  "length": 9,
+                  "start": 150
+                }
+              }
+            ],
+            "classification": 0,
+            "col_offset": 4,
+            "end_col_offset": 17,
+            "end_lineno": 7,
+            "lineno": 7,
+            "src": {
+              "jump_code": "",
+              "length": 13,
+              "start": 146
+            }
+          },
+          {
+            "ast_type": "Return",
+            "children": [
+              {
+                "ast_type": "Name",
+                "children": [],
+                "classification": 1,
+                "col_offset": 11,
+                "end_col_offset": 15,
+                "end_lineno": 9,
+                "lineno": 9,
+                "src": {
+                  "jump_code": "",
+                  "length": 4,
+                  "start": 172
+                }
+              }
+            ],
+            "classification": 0,
+            "col_offset": 4,
+            "end_col_offset": 15,
+            "end_lineno": 9,
+            "lineno": 9,
+            "src": {
+              "jump_code": "",
+              "length": 11,
+              "start": 165
+            }
+          },
+          {
+            "ast_type": "Name",
+            "children": [],
+            "classification": 1,
+            "col_offset": 1,
+            "end_col_offset": 9,
+            "end_lineno": 4,
+            "lineno": 4,
+            "src": {
+              "jump_code": "",
+              "length": 8,
+              "start": 31
+            }
+          },
+          {
+            "ast_type": "Name",
+            "children": [],
+            "classification": 1,
+            "col_offset": 36,
+            "end_col_offset": 43,
+            "end_lineno": 5,
+            "lineno": 5,
+            "src": {
+              "jump_code": "",
+              "length": 7,
+              "start": 76
+            }
+          }
+        ],
+        "classification": 1,
+        "col_offset": 0,
+        "end_col_offset": 15,
+        "end_lineno": 9,
+        "lineno": 5,
+        "name": "deploy",
+        "src": {
+          "jump_code": "",
+          "length": 136,
+          "start": 40
+        }
+      }
+    ],
+    "classification": 0,
+    "col_offset": 0,
+    "end_col_offset": 15,
+    "end_lineno": 9,
+    "lineno": 1,
+    "src": {
+      "jump_code": "",
+      "length": 176
+    }
+  },
+  "contractName": "MinimalProxyFactory",
+  "deploymentBytecode": {
+    "bytecode": "0x6100c161000f6000396100c16000f35f3560e01c634c96a38981186100b9576024361034176100bd576004358060a01c6100bd576040527f602d3d8160093d39f3363d3d373d3d3d363d730000000000000000000000000060805260405160601b6093527f5af43d82803e903d91602b57fd5bf3000000000000000000000000000000000060a752603660805ff080156100bd576060527fb8a00d6d8ca1be30bfec34d8f97e55f0f0fd9eeb7fb46e030516363d4cfe1ad660605160805260206080a160206060f35b5f5ffd5b5f80fd8418c18000a1657679706572830004000012"
+  },
+  "dev_messages": {},
+  "devdoc": {},
+  "methodIdentifiers": {
+    "deploy(address)": "0x4c96a389"
+  },
+  "pcmap": {
+    "0": {
+      "location": [
+        1,
+        0,
+        9,
+        15
+      ]
+    },
+    "120": {
+      "location": [
+        6,
+        20,
+        6,
+        56
+      ]
+    },
+    "121": {
+      "dev": "dev: CREATE_FAILED",
+      "location": null
+    },
+    "123": {
+      "dev": "dev: CREATE_FAILED",
+      "location": null
+    },
+    "125": {
+      "dev": "dev: CREATE_FAILED",
+      "location": null
+    },
+    "126": {
+      "dev": "dev: CREATE_FAILED",
+      "location": null
+    },
+    "127": {
+      "dev": "dev: CREATE_FAILED",
+      "location": null
+    },
+    "128": {
+      "dev": "dev: CREATE_FAILED",
+      "location": null
+    },
+    "129": {
+      "dev": "dev: CREATE_FAILED",
+      "location": null
+    },
+    "132": {
+      "dev": "dev: CREATE_FAILED",
+      "location": null
+    },
+    "133": {
+      "location": [
+        6,
+        4,
+        6,
+        56
+      ]
+    },
+    "135": {
+      "location": [
+        6,
+        4,
+        6,
+        56
+      ]
+    },
+    "136": {
+      "location": [
+        7,
+        4,
+        7,
+        17
+      ]
+    },
+    "169": {
+      "location": [
+        7,
+        12,
+        7,
+        16
+      ]
+    },
+    "177": {
+      "location": [
+        7,
+        4,
+        7,
+        17
+      ]
+    },
+    "179": {
+      "location": [
+        7,
+        4,
+        7,
+        17
+      ]
+    },
+    "180": {
+      "location": [
+        5,
+        0,
+        9,
+        15
+      ]
+    },
+    "182": {
+      "location": [
+        9,
+        11,
+        9,
+        15
+      ]
+    },
+    "184": {
+      "location": [
+        5,
+        0,
+        9,
+        15
+      ]
+    },
+    "188": {
+      "dev": "dev: Fallback not defined",
+      "location": null
+    },
+    "22": {
+      "dev": "dev: Invalid calldata or value",
+      "location": [
+        1,
+        0,
+        9,
+        15
+      ]
+    },
+    "25": {
+      "dev": "dev: Invalid calldata or value",
+      "location": [
+        1,
+        0,
+        9,
+        15
+      ]
+    },
+    "33": {
+      "dev": "dev: Integer overflow",
+      "location": [
+        1,
+        0,
+        9,
+        15
+      ]
+    },
+    "36": {
+      "dev": "dev: Integer overflow",
+      "location": [
+        1,
+        0,
+        9,
+        15
+      ]
+    },
+    "37": {
+      "location": [
+        5,
+        11,
+        5,
+        31
+      ]
+    },
+    "39": {
+      "location": [
+        5,
+        11,
+        5,
+        31
+      ]
+    },
+    "73": {
+      "dev": "dev: CREATE_FAILED",
+      "location": null
+    },
+    "75": {
+      "location": [
+        6,
+        20,
+        6,
+        56
+      ]
+    },
+    "76": {
+      "location": [
+        6,
+        44,
+        6,
+        55
+      ]
+    },
+    "84": {
+      "location": [
+        6,
+        20,
+        6,
+        56
+      ]
+    }
+  },
+  "runtimeBytecode": {
+    "bytecode": "0x5f3560e01c634c96a38981186100b9576024361034176100bd576004358060a01c6100bd576040527f602d3d8160093d39f3363d3d373d3d3d363d730000000000000000000000000060805260405160601b6093527f5af43d82803e903d91602b57fd5bf3000000000000000000000000000000000060a752603660805ff080156100bd576060527fb8a00d6d8ca1be30bfec34d8f97e55f0f0fd9eeb7fb46e030516363d4cfe1ad660605160805260206080a160206060f35b5f5ffd5b5f80fd"
+  },
+  "sourceId": "tests/functional/data/sources/MinimalProxyFactory.vy",
+  "sourcemap": "0:176:0:-;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1:-;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1:-;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1:-;51:20:0;-1:-1:-1;51:20:0;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;105:36:0;129:11:0;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;105:36:0;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;105:36:0;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1:-;89:52:0;-1:-1:-1;89:52:0;146:13:0;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;154:4:0;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1;146:13:0;-1:-1:-1;146:13:0;40:136:0;-1:-1:-1;172:4:0;-1:-1:-1;40:136:0;-1:-1:-1:-;-1:-1:-1;-1:-1:-1;-1:-1:-1;-1:-1:-1:-;-1:-1:-1;-1:-1:-1;-1:-1:-1",
+  "userdoc": {}
+}

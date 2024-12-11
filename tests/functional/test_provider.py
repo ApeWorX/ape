@@ -612,13 +612,11 @@ def test_ipc_per_network(project, key):
     ipc = "path/to/example.ipc"
     with project.temp_config(node={"ethereum": {"sepolia": {key: ipc}}}):
         node = project.network_manager.ethereum.sepolia.get_provider("node")
-        if key != "ipc_path":
-            assert node.uri == ipc
-        # else: uri gets to set to random HTTP from default settings,
-        # but we may want to change that behavior.
-        # TODO: 0.9 investigate not using random if ipc set.
-
         assert node.ipc_path == Path(ipc)
+        if key == "uri":
+            assert node.uri == ipc
+        # else: uri ends up as a random HTTP URI from evmchains.
+        # TODO: Do we want to change this in 0.9?
 
 
 def test_snapshot(eth_tester_provider):
