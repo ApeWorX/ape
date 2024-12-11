@@ -253,7 +253,7 @@ class TestUnknownSnapshotError:
     def test_bytes(self):
         snapshot_id = b"asdfasdfasdf"
         err = UnknownSnapshotError(snapshot_id)
-        assert str(err) == "Unknown snapshot ID '6173..6466'."
+        assert str(err) == "Unknown snapshot ID '0x6173..6466'."
 
     @pytest.mark.parametrize("snapshot_id", (123, "123"))
     def test_not_bytes(self, snapshot_id):
