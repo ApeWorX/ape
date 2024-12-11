@@ -4,6 +4,7 @@ from ethpm_types import ContractType
 from ape import Contract
 from ape.contracts import ContractInstance
 from ape.exceptions import ContractNotFoundError, ConversionError
+from ape.logging import LogLevel
 from ape_ethereum.proxies import _make_minimal_proxy
 from tests.conftest import explorer_test, skip_if_plugin_installed
 
@@ -310,11 +311,13 @@ def test_get_multiple(vyper_contract_instance, solidity_contract_instance, chain
     )
 
 
-def test_get_multiple_no_addresses(chain, caplog):
-    contract_map = chain.contracts.get_multiple([])
+def test_get_multiple_no_addresses(chain, ape_caplog):
+    with ape_caplog.at_level(LogLevel.WARNING):
+        contract_map = chain.contracts.get_multiple([])
+        assert "WARNING" in ape_caplog.records[-1].levelname
+        assert "No addresses provided." in ape_caplog.messages[-1]
+
     assert not contract_map
-    assert "WARNING" in caplog.records[-1].levelname
-    assert "No addresses provided." in caplog.messages[-1]
 
 
 def test_get_multiple_include_non_contract_address(vyper_contract_instance, chain, owner):
