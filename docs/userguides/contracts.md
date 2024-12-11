@@ -111,7 +111,18 @@ from ape import Contract
 contract = Contract("0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45")
 ```
 
-It will fetch the `contract-type` using the explorer plugin from the active network, such as [ape-etherscan](https://github.com/ApeWorX/ape-etherscan).
+If the contract ABI and/or code is cached on disk or in memory (such as from a previous deploy or retrieval), it will use it.
+Otherwise, it will fetch the `ContractType` using the explorer plugin from the active network, such as [ape-etherscan](https://github.com/ApeWorX/ape-etherscan).
+
+To avoid fetching the contract from an explorer such as Etherscan, use `fetch_from_explorer=False`.
+
+```python
+from ape import Contract
+
+contract = Contract("0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45", fetch_from_explorer=False)
+```
+
+This also avoids checking for an updated `ContractType` and forces Ape to only use types cached to disk or in memory.
 
 If you have the [ENS plugin](https://github.com/ApeWorX/ape-ens) installed, you can use `.eth` domain names as the argument:
 

@@ -314,7 +314,9 @@ def test_network_option_specify_custom_network(
         def cmd(network):
             click.echo(f"Value is '{getattr(network, 'name', network)}'")
 
-        result = runner.invoke(cmd, ("--network", f"ethereum:{network_name}:node"))
+        result = runner.invoke(
+            cmd, ("--network", f"ethereum:{network_name}:node"), catch_exceptions=False
+        )
         assert result.exit_code == 0
         assert f"Value is '{network_name}'" in result.output
 

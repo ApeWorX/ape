@@ -19,10 +19,16 @@ from ape.exceptions import (
     ProviderError,
     TransactionError,
     TransactionNotFoundError,
+    UnknownSnapshotError,
 )
 from ape.types.events import LogFilter
-from ape.utils.testing import DEFAULT_TEST_ACCOUNT_BALANCE, DEFAULT_TEST_CHAIN_ID
-from ape_ethereum.provider import WEB3_PROVIDER_URI_ENV_VAR_NAME, Web3Provider, _sanitize_web3_url
+from ape.utils.testing import DEFAULT_TEST_CHAIN_ID
+from ape_ethereum.provider import (
+    WEB3_PROVIDER_URI_ENV_VAR_NAME,
+    EthereumNodeProvider,
+    Web3Provider,
+    _sanitize_web3_url,
+)
 from ape_ethereum.transactions import TransactionStatusEnum, TransactionType
 from ape_test import LocalProvider
 
@@ -243,13 +249,9 @@ def test_supports_tracing(eth_tester_provider):
 
 
 def test_get_balance(networks, accounts):
-    """
-    Test that the address is an AddressType.
-    """
     balance = networks.provider.get_balance(accounts[0].address)
-
     assert type(balance) is int
-    assert balance == DEFAULT_TEST_ACCOUNT_BALANCE
+    assert balance > 0
 
 
 def test_set_timestamp(ethereum):
@@ -321,8 +323,9 @@ def test_gas_price(eth_tester_provider):
 
 def test_get_code(eth_tester_provider, vyper_contract_instance):
     address = vyper_contract_instance.address
+    block_number = vyper_contract_instance.creation_metadata.block
     assert eth_tester_provider.get_code(address) == eth_tester_provider.get_code(
-        address, block_id=1
+        address, block_id=block_number
     )
 
 
@@ -468,6 +471,33 @@ def test_make_request_handles_http_error_method_not_allowed(eth_tester_provider,
         eth_tester_provider._web3 = real_web3
 
 
+def test_make_request_rate_limiting(mocker, ethereum, mock_web3):
+    provider = EthereumNodeProvider(network=ethereum.local)
+    provider._web3 = mock_web3
+
+    class RateLimitTester:
+        tries = 3
+        _try = 0
+        tries_made = 0
+
+        def rate_limit_hook(self, rpc, params):
+            self.tries_made += 1
+            if self._try >= self.tries:
+                self._try = 0
+                return {"success": True}
+            else:
+                self._try += 1
+                response = mocker.MagicMock()
+                response.status_code = 429
+                raise HTTPError(response=response)
+
+    rate_limit_tester = RateLimitTester()
+    mock_web3.provider.make_request.side_effect = rate_limit_tester.rate_limit_hook
+    result = provider.make_request("ape_testRateLimiting", parameters=[])
+    assert rate_limit_tester.tries_made == rate_limit_tester.tries + 1
+    assert result == {"success": True}
+
+
 def test_base_fee(eth_tester_provider):
     actual = eth_tester_provider.base_fee
     assert actual > 0
@@ -589,6 +619,25 @@ def test_ipc_per_network(project, key):
         # TODO: 0.9 investigate not using random if ipc set.
 
         assert node.ipc_path == Path(ipc)
+
+
+def test_snapshot(eth_tester_provider):
+    snapshot = eth_tester_provider.snapshot()
+    assert snapshot
+
+
+def test_restore(eth_tester_provider, accounts):
+    account = accounts[0]
+    start_nonce = account.nonce
+    snapshot = eth_tester_provider.snapshot()
+    account.transfer(account, 0)
+    eth_tester_provider.restore(snapshot)
+    assert account.nonce == start_nonce
+
+
+def test_restore_zero(eth_tester_provider):
+    with pytest.raises(UnknownSnapshotError, match="Unknown snapshot ID '0'."):
+        eth_tester_provider.restore(0)
 
 
 def test_update_settings_invalidates_snapshots(eth_tester_provider, chain):

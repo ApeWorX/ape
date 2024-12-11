@@ -6,7 +6,7 @@ from importlib import import_module
 from typing import TYPE_CHECKING, Any, Optional, Union
 
 import click
-from click import BadParameter, Choice, Context, Parameter
+from click import Choice, Context, Parameter
 
 from ape.exceptions import (
     AccountsError,
@@ -360,7 +360,7 @@ class NetworkChoice(click.Choice):
         ecosystem: _NETWORK_FILTER = None,
         network: _NETWORK_FILTER = None,
         provider: _NETWORK_FILTER = None,
-        base_type: Optional[type] = None,
+        base_type: Optional[Union[type, str]] = None,
         callback: Optional[Callable] = None,
     ):
         self._base_type = base_type
@@ -372,15 +372,14 @@ class NetworkChoice(click.Choice):
         # NOTE: Purposely avoid super().init for performance reasons.
 
     @property
-    def base_type(self) -> type["ProviderAPI"]:
+    def base_type(self) -> Union[type["ProviderAPI"], str]:
         if self._base_type is not None:
             return self._base_type
 
-        # perf: property exists to delay import ProviderAPI at init time.
-        from ape.api.providers import ProviderAPI
-
-        self._base_type = ProviderAPI
-        return ProviderAPI
+        # perf: Keep base-type as a forward-ref when only using the default.
+        #   so things load faster.
+        self._base_type = "ProviderAPI"
+        return self._base_type
 
     @base_type.setter
     def base_type(self, value):
@@ -394,62 +393,20 @@ class NetworkChoice(click.Choice):
         return "[ecosystem-name][:[network-name][:[provider-name]]]"
 
     def convert(self, value: Any, param: Optional[Parameter], ctx: Optional[Context]) -> Any:
-        from ape.utils.basemodel import ManagerAccessMixin as access
+        if not value or value.lower() in ("none", "null"):
+            return self.callback(ctx, param, _NONE_NETWORK) if self.callback else _NONE_NETWORK
 
-        choice: Optional[Union[str, "ProviderAPI"]]
-        networks = access.network_manager
-        if not value:
-            choice = None
+        if self.base_type == "ProviderAPI" or isinstance(self.base_type, type):
+            # Return the provider.
+            from ape.utils.basemodel import ManagerAccessMixin as access
 
-        elif value.lower() in ("none", "null"):
-            choice = _NONE_NETWORK
-
-        elif self.is_custom_value(value):
-            # By-pass choice constraints when using custom network.
-            choice = value
-
-        else:
-            # Regular conditions.
+            networks = access.network_manager
             try:
-                # Validate result.
-                choice = super().convert(value, param, ctx)
-            except BadParameter:
-                # Attempt to get the provider anyway.
-                # Sometimes, depending on the provider, it'll still work.
-                # (as-is the case for custom-forked networks).
-                try:
-                    choice = networks.get_provider_from_choice(network_choice=value)
+                value = networks.get_provider_from_choice(network_choice=value)
+            except (EcosystemNotFoundError, NetworkNotFoundError, ProviderNotFoundError) as err:
+                self.fail(str(err))
 
-                except (EcosystemNotFoundError, NetworkNotFoundError, ProviderNotFoundError) as err:
-                    # This error makes more sense, as it has attempted parsing.
-                    # Show this message as the BadParameter message.
-                    raise click.BadParameter(str(err)) from err
-
-                except Exception as err:
-                    # If an error was not raised for some reason, raise a simpler error.
-                    # NOTE: Still avoid showing the massive network options list.
-                    raise click.BadParameter(
-                        "Invalid network choice. Use `ape networks list` to see options."
-                    ) from err
-
-        if choice not in (None, _NONE_NETWORK) and isinstance(choice, str):
-            from ape.api.providers import ProviderAPI
-
-            if issubclass(self.base_type, ProviderAPI):
-                # Return the provider.
-                choice = networks.get_provider_from_choice(network_choice=value)
-
-        return self.callback(ctx, param, choice) if self.callback else choice
-
-    @classmethod
-    def is_custom_value(cls, value) -> bool:
-        return (
-            value is not None
-            and isinstance(value, str)
-            and cls.CUSTOM_NETWORK_PATTERN.match(value) is not None
-            or str(value).startswith("http://")
-            or str(value).startswith("https://")
-        )
+        return self.callback(ctx, param, value) if self.callback else value
 
 
 class OutputFormat(Enum):

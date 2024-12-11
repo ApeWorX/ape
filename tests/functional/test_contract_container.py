@@ -16,8 +16,6 @@ def test_deploy(
     not_owner,
     contract_container,
     networks_connected_to_tester,
-    project,
-    chain,
     clean_contracts_cache,
 ):
     contract = contract_container.deploy(4, sender=not_owner, something_else="IGNORED")
@@ -35,8 +33,6 @@ def test_deploy_wrong_number_of_arguments(
     not_owner,
     contract_container,
     networks_connected_to_tester,
-    project,
-    chain,
     clean_contracts_cache,
 ):
     expected = (
@@ -163,3 +159,32 @@ def test_source_id(contract_container):
     expected = contract_container.contract_type.source_id
     # Is just a pass-through (via extras-model), but making sure it works.
     assert actual == expected
+
+
+def test_at(vyper_contract_instance, vyper_contract_container):
+    instance = vyper_contract_container.at(vyper_contract_instance.address)
+    assert instance == vyper_contract_instance
+
+
+def test_at_fetch_from_explorer_false(
+    project_with_contract, mock_explorer, eth_tester_provider, owner
+):
+    # Grab the container - note: this always compiles!
+    container = project_with_contract.Contract
+    instance = container.deploy(sender=owner)
+
+    # Hack off the fact that it was compiled.
+    project_with_contract.clean()
+
+    # Simulate having an explorer plugin installed (e.g. ape-etherscan).
+    eth_tester_provider.network.explorer = mock_explorer
+
+    # Attempt to create an instance. It should NOT use the explorer at all!
+    instance2 = container.at(instance.address, fetch_from_explorer=False)
+
+    assert instance == instance2
+    # Ensure explorer was not used at all.
+    assert mock_explorer.get_contract_type.call_count == 0
+
+    # Clean up test.
+    eth_tester_provider.network.explorer = None

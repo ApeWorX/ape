@@ -84,7 +84,13 @@ def __getattr__(name: str):
 
         return getattr(process_module, name)
 
-    elif name in ("USER_AGENT", "RPCHeaders", "allow_disconnected", "stream_response"):
+    elif name in (
+        "USER_AGENT",
+        "RPCHeaders",
+        "allow_disconnected",
+        "request_with_retry",
+        "stream_response",
+    ):
         import ape.utils.rpc as rpc_module
 
         return getattr(rpc_module, name)
@@ -166,6 +172,7 @@ __all__ = [
     "path_match",
     "raises_not_implemented",
     "returns_array",
+    "request_with_retry",
     "RPCHeaders",
     "run_in_tempdir",
     "run_until_complete",

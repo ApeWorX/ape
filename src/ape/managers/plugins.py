@@ -1,6 +1,7 @@
 from collections.abc import Generator, Iterable, Iterator
 from functools import cached_property
 from importlib import import_module
+from itertools import chain
 from typing import Any, Optional
 
 from ape.exceptions import ApeAttributeError
@@ -123,13 +124,16 @@ class PluginManager:
         if self.__registered:
             return
 
-        plugins = list({n.replace("-", "_") for n in get_plugin_dists()})
-        plugin_modules = tuple([*plugins, *CORE_PLUGINS])
+        handled = set()
+        plugins = (n.replace("-", "_") for n in get_plugin_dists())
+        for module_name in chain(plugins, iter(CORE_PLUGINS)):
+            if module_name in handled:
+                continue
 
-        for module_name in plugin_modules:
+            handled.add(module_name)
             try:
                 module = import_module(module_name)
-                pluggy_manager.register(module)
+                pluggy_manager.register(module, name=module_name)
             except Exception as err:
                 if module_name in CORE_PLUGINS or module_name == "ape":
                     # Always raise core plugin registration errors.

@@ -55,7 +55,7 @@ def test_instance_at_uses_given_contract_type_when_retrieval_fails(mocker, chain
     expected_fail_message = "LOOK_FOR_THIS_FAIL_MESSAGE"
     existing_fn = chain.contracts.get
 
-    def fn(addr, default=None):
+    def fn(addr, default=None, **kwargs):
         if addr == new_address:
             raise ValueError(expected_fail_message)
 

@@ -7,7 +7,9 @@ from typing import TYPE_CHECKING, Any, Optional, cast
 
 from eth.exceptions import HeaderNotFound
 from eth_pydantic_types import HexBytes
+from eth_tester import EthereumTester  # type: ignore
 from eth_tester.backends import PyEVMBackend  # type: ignore
+from eth_tester.backends.pyevm.main import setup_tester_chain  # type: ignore
 from eth_tester.exceptions import TransactionFailed  # type: ignore
 from eth_utils import is_0x_prefixed, to_hex
 from eth_utils.exceptions import ValidationError
@@ -41,6 +43,104 @@ if TYPE_CHECKING:
     from ape.api.transactions import ReceiptAPI, TransactionAPI
     from ape.types.events import ContractLog, LogFilter
     from ape.types.vm import BlockID, SnapshotID
+    from ape_test.config import ApeTestConfig
+
+
+class ApeEVMBackend(PyEVMBackend):
+    """
+    A lazier version of PyEVMBackend for the Ape framework.
+    """
+
+    def __init__(self, config: "ApeTestConfig"):
+        self.config = config
+        # Lazily set.
+        self._chain = None
+
+    @property
+    def hd_path(self) -> str:
+        return (self.config.hd_path or DEFAULT_TEST_HD_PATH).rstrip("/")
+
+    @property
+    def balance(self) -> int:
+        return self.config.balance
+
+    @property
+    def genesis_state(self) -> dict:
+        return self.generate_genesis_state(
+            mnemonic=self.config.mnemonic,
+            overrides={"balance": self.balance},
+            num_accounts=self.config.number_of_accounts,
+            hd_path=self.hd_path,
+        )
+
+    @cached_property
+    def _setup_tester_chain(self):
+        return setup_tester_chain(
+            None,
+            self.genesis_state,
+            self.config.number_of_accounts,
+            None,
+            self.config.mnemonic,
+            self.config.hd_path,
+        )
+
+    @property
+    def account_keys(self):
+        return self._setup_tester_chain[0]
+
+    @property
+    def chain(self):
+        if self._chain is None:
+            # Initial chain.
+            self._chain = self._setup_tester_chain[1]
+
+        return self._chain
+
+    @chain.setter
+    def chain(self, value):
+        self._chain = value  # Changes during snapshot reverting.
+
+
+class ApeTester(EthereumTesterProvider):
+    def __init__(
+        self, config: "ApeTestConfig", chain_id: int, backend: Optional[ApeEVMBackend] = None
+    ):
+        self.config = config
+        self.chain_id = chain_id
+        self._backend = backend
+        self._ethereum_tester = None if backend is None else EthereumTester(backend)
+
+    @property
+    def ethereum_tester(self) -> EthereumTester:
+        if self._ethereum_tester is None:
+            self._backend = ApeEVMBackend(self.config)
+            self._ethereum_tester = EthereumTester(self._backend)
+
+        return self._ethereum_tester
+
+    @ethereum_tester.setter
+    def ethereum_tester(self, value):
+        self._ethereum_tester = value
+        self._backend = value.backend
+
+    @property
+    def backend(self) -> "ApeEVMBackend":
+        if self._backend is None:
+            self._backend = ApeEVMBackend(self.config)
+            self._ethereum_tester = EthereumTester(self._backend)
+
+        return self._backend
+
+    @backend.setter
+    def backend(self, value):
+        self._backend = value
+        self._ethereum_tester = EthereumTester(self._backend)
+
+    @cached_property
+    def api_endpoints(self) -> dict:  # type: ignore
+        endpoints = {**API_ENDPOINTS}
+        endpoints["eth"] = merge(endpoints["eth"], {"chainId": static_return(self.chain_id)})
+        return endpoints
 
 
 class LocalProvider(TestProviderAPI, Web3Provider):
@@ -53,32 +153,16 @@ class LocalProvider(TestProviderAPI, Web3Provider):
     )
 
     @property
-    def evm_backend(self) -> PyEVMBackend:
-        if self._evm_backend is None:
-            raise ProviderNotConnectedError()
+    def config(self) -> "ApeTestConfig":  # type: ignore
+        return super().config  # type: ignore
 
-        return self._evm_backend
+    @property
+    def evm_backend(self) -> ApeEVMBackend:
+        return self.tester.backend
 
     @cached_property
-    def tester(self):
-        chain_id = self.settings.chain_id
-        if self._web3 is not None:
-            connected_chain_id = self.make_request("eth_chainId")
-            if connected_chain_id == chain_id:
-                # Is already connected and settings have not changed.
-                return
-
-        hd_path = (self.config.hd_path or DEFAULT_TEST_HD_PATH).rstrip("/")
-        state_overrides = {"balance": self.test_config.balance}
-        self._evm_backend = PyEVMBackend.from_mnemonic(
-            genesis_state_overrides=state_overrides,
-            hd_path=hd_path,
-            mnemonic=self.config.mnemonic,
-            num_accounts=self.config.number_of_accounts,
-        )
-        endpoints = {**API_ENDPOINTS}
-        endpoints["eth"] = merge(endpoints["eth"], {"chainId": static_return(chain_id)})
-        return EthereumTesterProvider(ethereum_tester=self._evm_backend, api_endpoints=endpoints)
+    def tester(self) -> ApeTester:
+        return ApeTester(self.config, self.settings.chain_id)
 
     @property
     def auto_mine(self) -> bool:
@@ -98,12 +182,10 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         return self.evm_backend.get_block_by_number("latest")["gas_limit"]
 
     def connect(self):
-        if "tester" in self.__dict__:
-            del self.__dict__["tester"]
-
+        self.__dict__.pop("tester", None)
         self._web3 = Web3(self.tester)
         # Handle disabling auto-mine if the user requested via config.
-        if self.config.provider.auto_mine is False:
+        if self.settings.auto_mine is False:
             self.auto_mine = False  # type: ignore[misc]
 
     def disconnect(self):
@@ -308,13 +390,18 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         return self.evm_backend.take_snapshot()
 
     def restore(self, snapshot_id: "SnapshotID"):
-        if snapshot_id:
-            current_hash = self._get_latest_block_rpc().get("hash")
-            if current_hash != snapshot_id:
-                try:
-                    return self.evm_backend.revert_to_snapshot(snapshot_id)
-                except HeaderNotFound:
-                    raise UnknownSnapshotError(snapshot_id)
+        # NOTE: Snapshot ID can be 0!
+        if snapshot_id is None:
+            return
+
+        current_hash = self._get_latest_block_rpc().get("hash")
+        if current_hash == snapshot_id:
+            return
+
+        try:
+            return self.evm_backend.revert_to_snapshot(snapshot_id)
+        except (HeaderNotFound, ValidationError):
+            raise UnknownSnapshotError(snapshot_id)
 
     def set_timestamp(self, new_timestamp: int):
         current_timestamp = self.evm_backend.get_block_by_number("pending")["timestamp"]

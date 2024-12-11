@@ -11,7 +11,6 @@ from hexbytes import HexBytes
 from web3 import AutoProvider, Web3
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.exceptions import ExtraDataLengthError
-from web3.middleware import geth_poa_middleware as ExtraDataToPOAMiddleware
 from web3.providers import HTTPProvider
 
 from ape.exceptions import (
@@ -26,6 +25,7 @@ from ape.exceptions import (
     VirtualMachineError,
 )
 from ape.utils import to_int
+from ape.utils._web3_compat import ExtraDataToPOAMiddleware
 from ape_ethereum.ecosystem import Block
 from ape_ethereum.provider import DEFAULT_SETTINGS, EthereumNodeProvider
 from ape_ethereum.trace import TraceApproach
@@ -535,6 +535,22 @@ def test_send_transaction_when_no_error_and_receipt_fails(
 
     finally:
         geth_provider._web3 = start_web3
+
+
+@geth_process_test
+def test_send_transaction_exceed_block_gas_limit(chain, geth_provider, geth_contract, geth_account):
+    """
+    Shows that the local geth node will retry the transaction
+    with a new gas if this happens, automatically.
+    """
+    transaction = geth_contract.setNumber.as_transaction(23333322101, sender=geth_account)
+    prepared = geth_account.prepare_transaction(transaction)
+    prepared.gas_limit += 100000
+    signed = geth_account.sign_transaction(prepared)
+    expected_gas_limit = chain.blocks.head.gas_limit
+    geth_provider.send_transaction(signed)
+    tx_sent = geth_account.history[-1]
+    assert tx_sent.gas_limit == expected_gas_limit
 
 
 @geth_process_test
