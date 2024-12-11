@@ -392,7 +392,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
                 return network
 
         if LOCAL_NETWORK_NAME in self.networks:
-            # Default to the LOCAL_NETWORK_NAME, at last resort.
+            # Default to the LOCAL_NETWORK_NAME, as 'last' resort (unless isn't one?).
             return LOCAL_NETWORK_NAME
 
         elif len(self.networks) >= 1:
@@ -1444,11 +1444,9 @@ def create_network_type(chain_id: int, network_id: int, is_fork: bool = False) -
     return network_def
 
 
-# TODO: Can remove in 0.9 since `LOCAL_NETWORK_NAME` doesn't need to be here.
 __all__ = [
     "create_network_type",
     "EcosystemAPI",
-    "LOCAL_NETWORK_NAME",  # Have to leave for backwards compat.
     "ForkedNetworkAPI",
     "NetworkAPI",
     "ProviderContextManager",
