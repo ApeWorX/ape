@@ -17,7 +17,6 @@ from pydantic import ConfigDict
 from ape.exceptions import ApeAttributeError, ApeIndexError, ProviderNotConnectedError
 from ape.logging import logger
 from ape.utils.misc import log_instead_of_fail, raises_not_implemented
-from ape.utils.rpc import USER_AGENT
 
 if TYPE_CHECKING:
     from pydantic.main import Model
@@ -173,9 +172,7 @@ class ManagerAccessMixin:
         The :class:`~ape.managers.config.ConfigManager`.
         """
         config = import_module("ape.managers.config")
-        return config.ConfigManager(
-            request_header={"User-Agent": USER_AGENT, "Content-Type": "application/json"},
-        )
+        return config.ConfigManager()
 
     @manager_access
     def conversion_manager(cls) -> "ConversionManager":
