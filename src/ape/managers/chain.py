@@ -807,19 +807,9 @@ class ContractCache(BaseManager):
             # The user is caching a deployment of a proxy with the target already set.
             self.cache_proxy_info(address, proxy_info)
             if implementation_contract := self.get(proxy_info.target):
-                # Include proxy ABIs but ignore fallback/ctor etc.
-                proxy_abis = [
-                    abi for abi in contract_type.abi if abi.type in ("error", "event", "function")
-                ]
-
-                # Include "hidden" ABIs, such as Safe's `masterCopy()`.
-                if proxy_info.abi and proxy_info.abi.signature not in [
-                    abi.signature for abi in contract_type.abi
-                ]:
-                    proxy_abis.append(proxy_info.abi)
-
-                updated_proxy_contract = implementation_contract.model_copy(deep=True)
-                updated_proxy_contract.abi.extend(proxy_abis)
+                updated_proxy_contract = _get_combined_contract_type(
+                    contract_type, proxy_info, implementation_contract
+                )
                 self._cache_contract_type(address, updated_proxy_contract)
 
                 # Use this contract type in the user's contract instance.
@@ -1080,7 +1070,6 @@ class ContractCache(BaseManager):
             Optional[ContractType]: The contract type if it was able to get one,
               otherwise the default parameter.
         """
-
         try:
             address_key: AddressType = self.conversion_manager.convert(address, AddressType)
         except ConversionError:
@@ -1107,19 +1096,35 @@ class ContractCache(BaseManager):
             return default
 
         if not (contract_type := self._get_contract_type_from_disk(address_key)):
-            # Contract could be a minimal proxy
+            # Contract is not cached yet. Check broader sources, such as an explorer.
+            # First, detect if this is a proxy.
             proxy_info = self._local_proxies.get(address_key) or self._get_proxy_info_from_disk(
                 address_key
             )
-
             if not proxy_info:
                 proxy_info = self.provider.network.ecosystem.get_proxy_info(address_key)
                 if proxy_info and self._is_live_network:
                     self._cache_proxy_info_to_disk(address_key, proxy_info)
 
             if proxy_info:
+                # Contract is a proxy.
                 self._local_proxies[address_key] = proxy_info
-                return self.get(proxy_info.target, default=default)
+                implementation_contract_type = self.get(proxy_info.target, default=default)
+                proxy_contract_type = (
+                    self._get_contract_type_from_explorer(address_key)
+                    if fetch_from_explorer
+                    else None
+                )
+                if proxy_contract_type:
+                    contract_type_to_cache = _get_combined_contract_type(
+                        proxy_contract_type, proxy_info, implementation_contract_type
+                    )
+                else:
+                    contract_type_to_cache = implementation_contract_type
+
+                self._local_contract_types[address_key] = contract_type_to_cache
+                self._cache_contract_to_disk(address_key, contract_type_to_cache)
+                return contract_type_to_cache
 
             if not self.provider.get_code(address_key):
                 if default:
@@ -1282,12 +1287,6 @@ class ContractCache(BaseManager):
                 if deployment["address"] == contract_address and "transaction_hash" in deployment:
                     txn_hash = deployment["transaction_hash"]
                     break
-
-        # Include proxy-related ABIs.
-        if info := self.get_proxy_info(contract_address):
-            if proxy_abi := info.abi:
-                if proxy_abi.signature not in [x.signature for x in contract_type.abi]:
-                    contract_type.abi.append(proxy_abi)
 
         return ContractInstance(contract_address, contract_type, txn_hash=txn_hash)
 
@@ -1795,3 +1794,23 @@ class ChainManager(BaseManager):
             raise TransactionNotFoundError(transaction_hash=transaction_hash)
 
         return receipt
+
+
+def _get_combined_contract_type(
+    proxy_contract_type: ContractType,
+    proxy_info: ProxyInfoAPI,
+    implementation_contract_type: ContractType,
+) -> ContractType:
+    proxy_abis = [
+        abi for abi in proxy_contract_type.abi if abi.type in ("error", "event", "function")
+    ]
+
+    # Include "hidden" ABIs, such as Safe's `masterCopy()`.
+    if proxy_info.abi and proxy_info.abi.signature not in [
+        abi.signature for abi in implementation_contract_type.abi
+    ]:
+        proxy_abis.append(proxy_info.abi)
+
+    combined_contract_type = implementation_contract_type.model_copy(deep=True)
+    combined_contract_type.abi.extend(proxy_abis)
+    return combined_contract_type
