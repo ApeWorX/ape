@@ -242,19 +242,19 @@ Bypass the original failing attempt by including a <code class="docutils literal
 </span></pre></div>
 </div>
 <p>When using the <code class="docutils literal notranslate"><span class="pre">pypi:</span></code> key, dependencies are downloaded and extracted from PyPI using an HTTP requests library.</p>
-<p>You can also specify the <code class="docutils literal notranslate"><span class="pre">python:</span></code> key for already-installed dependencies:</p>
+<p>You can also specify the <code class="docutils literal notranslate"><span class="pre">site_package:</span></code> key for already-installed dependencies:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">dependencies</span><span class="p">:</span>
-</span><span data-line="2"><span class="w">   </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">python</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">snekmate</span>
+</span><span data-line="2"><span class="w">   </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">site_package</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">snekmate</span>
 </span><span data-line="3"><span class="w">     </span><span class="nt">config_override</span><span class="p">:</span>
 </span><span data-line="4"><span class="w">       </span><span class="nt">contracts_folder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.</span>
 </span></pre></div>
 </div>
-<p>Using <code class="docutils literal notranslate"><span class="pre">python:</span></code> requires the package to be installed in your <code class="docutils literal notranslate"><span class="pre">sys.path</span></code> (site-packages) folder, generally via <code class="docutils literal notranslate"><span class="pre">pip</span></code> or some other tool.
+<p>Using <code class="docutils literal notranslate"><span class="pre">site_package:</span></code> requires the package to be installed in your <code class="docutils literal notranslate"><span class="pre">sys.path</span></code> (site-packages) folder, generally via <code class="docutils literal notranslate"><span class="pre">pip</span></code> or some other tool.
 The <code class="docutils literal notranslate"><span class="pre">contracts_folder</span></code> override, in this case, is often needed because the site-package does not have the root source-folder included.
-Additionally, <code class="docutils literal notranslate"><span class="pre">python:</span></code> specified dependencies may also be lacking project-configuration files, such as the <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code>.
+Additionally, <code class="docutils literal notranslate"><span class="pre">site_package:</span></code> specified dependencies may also be lacking project-configuration files, such as the <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code>.
 Compilers such as <code class="docutils literal notranslate"><span class="pre">vyper</span></code> encourage users to use <code class="docutils literal notranslate"><span class="pre">pip</span></code> to publish and install smart-contract dependencies (other vyper files), but some features in Ape may be limited if the dependency is not also specified in your config somewhere.</p>
-<p>If wanting to use a dependency from <code class="docutils literal notranslate"><span class="pre">PyPI</span></code>, we recommend using the <code class="docutils literal notranslate"><span class="pre">pypi:</span></code> key instead of the <code class="docutils literal notranslate"><span class="pre">python:</span></code> key.
-However, the <code class="docutils literal notranslate"><span class="pre">python:</span></code> key works great if you already used <code class="docutils literal notranslate"><span class="pre">pip</span></code> to install the dependency, especially if the dependency is not available on <code class="docutils literal notranslate"><span class="pre">PyPI</span></code>.</p>
+<p>If wanting to use a dependency from <code class="docutils literal notranslate"><span class="pre">PyPI</span></code>, we recommend using the <code class="docutils literal notranslate"><span class="pre">pypi:</span></code> key instead of the <code class="docutils literal notranslate"><span class="pre">site_package:</span></code> key.
+However, the <code class="docutils literal notranslate"><span class="pre">site_package:</span></code> key works great if you already used <code class="docutils literal notranslate"><span class="pre">pip</span></code> to install the dependency, especially if the dependency is not available on <code class="docutils literal notranslate"><span class="pre">PyPI</span></code>.</p>
 </section>
 <section id="local">
 <h3>Local<a class="headerlink" href="#local" title="Link to this heading"></a></h3>
