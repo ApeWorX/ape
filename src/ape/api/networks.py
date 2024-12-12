@@ -65,6 +65,14 @@ class ProxyInfoAPI(BaseModel):
     target: AddressType
     """The address of the implementation contract."""
 
+    @property
+    def abi(self) -> Optional["MethodABI"]:
+        """
+        Some proxies have special ABIs which may not exist in their
+        contract-types by default, such as Safe's ``masterCopy()``.
+        """
+        return None
+
 
 class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
     """

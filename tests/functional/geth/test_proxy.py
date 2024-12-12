@@ -73,7 +73,7 @@ def test_gnosis_safe(get_contract_type, geth_contract, owner, ethereum, chain):
     # Ensure we can call the proxy-method.
     assert proxy_instance.masterCopy()
 
-    # Ensure we can target methods.
+    # Ensure we can call target methods.
     assert isinstance(proxy_instance.myNumber(), int)
 
     # Ensure this works with new instances.
