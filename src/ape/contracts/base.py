@@ -554,7 +554,7 @@ class ContractEvent(BaseInterfaceModel):
         Create a mock-instance of a log using this event ABI and the contract address.
 
         Args:
-            *args: Position arguments for the event.
+            *args: Positional arguments for the event.
             **kwargs: Key-word arguments for the event.
 
         Returns:
@@ -853,7 +853,7 @@ class ContractEventWrapper:
         Create a mock contract log using the first working ABI.
 
         Args:
-            *args: Position arguments for the event.
+            *args: Positional arguments for the event.
             **kwargs: Key-word arguments for the event.
 
         Returns:
