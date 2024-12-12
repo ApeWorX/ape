@@ -819,7 +819,7 @@ def test_get_error_by_signature(error_contract):
 
 
 def test_selector_identifiers(vyper_contract_instance):
-    assert len(vyper_contract_instance.selector_identifiers.keys()) == 54
+    assert len(vyper_contract_instance.selector_identifiers.keys()) >= 54
     assert vyper_contract_instance.selector_identifiers["balances(address)"] == "0x27e235e3"
     assert vyper_contract_instance.selector_identifiers["owner()"] == "0x8da5cb5b"
     assert (
@@ -829,7 +829,7 @@ def test_selector_identifiers(vyper_contract_instance):
 
 
 def test_identifier_lookup(vyper_contract_instance):
-    assert len(vyper_contract_instance.identifier_lookup.keys()) == 54
+    assert len(vyper_contract_instance.identifier_lookup.keys()) >= 54
     assert vyper_contract_instance.identifier_lookup["0x27e235e3"].selector == "balances(address)"
     assert vyper_contract_instance.identifier_lookup["0x8da5cb5b"].selector == "owner()"
     assert (

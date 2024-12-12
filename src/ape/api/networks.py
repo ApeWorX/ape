@@ -65,6 +65,43 @@ class ProxyInfoAPI(BaseModel):
     target: AddressType
     """The address of the implementation contract."""
 
+    type_name: str = ""
+
+    @model_validator(mode="before")
+    @classmethod
+    def _validate_type_name(cls, model):
+        if "type_name" in model:
+            return model
+
+        elif _type := model.get("type"):
+            # Attempt to figure out the type name.
+            if name := getattr(_type, "name", None):
+                # ProxyEnum - such as from 'ape-ethereum'.
+                model["type_name"] = name
+            else:
+                # Not sure.
+                try:
+                    model["type_name"] = f"{_type}"
+                except Exception:
+                    pass
+
+        return model
+
+    @log_instead_of_fail(default="<ProxyInfoAPI>")
+    def __repr__(self) -> str:
+        if _type := self.type_name:
+            return f"<Proxy {_type} target={self.target}>"
+
+        return "<Proxy target={self.target}"
+
+    @property
+    def abi(self) -> Optional["MethodABI"]:
+        """
+        Some proxies have special ABIs which may not exist in their
+        contract-types by default, such as Safe's ``masterCopy()``.
+        """
+        return None
+
 
 class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
     """

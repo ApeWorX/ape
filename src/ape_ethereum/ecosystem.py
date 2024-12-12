@@ -462,8 +462,7 @@ class Ethereum(EcosystemAPI):
         if isinstance(contract_code, bytes):
             contract_code = to_hex(contract_code)
 
-        code = contract_code[2:]
-        if not code:
+        if not (code := contract_code[2:]):
             return None
 
         patterns = {
@@ -515,7 +514,7 @@ class Ethereum(EcosystemAPI):
             if _type == ProxyType.Beacon:
                 target = ContractCall(IMPLEMENTATION_ABI, target)(skip_trace=True)
 
-            return ProxyInfo(type=_type, target=target)
+            return ProxyInfo(type=_type, target=target, abi=IMPLEMENTATION_ABI)
 
         # safe >=1.1.0 provides `masterCopy()`, which is also stored in slot 0
         # call it and check that target matches
@@ -525,7 +524,8 @@ class Ethereum(EcosystemAPI):
             target = self.conversion_manager.convert(slot_0[-20:], AddressType)
             # NOTE: `target` is set in initialized proxies
             if target != ZERO_ADDRESS and target == singleton:
-                return ProxyInfo(type=ProxyType.GnosisSafe, target=target)
+                return ProxyInfo(type=ProxyType.GnosisSafe, target=target, abi=MASTER_COPY_ABI)
+
         except ApeException:
             pass
 
@@ -541,7 +541,7 @@ class Ethereum(EcosystemAPI):
                 target = ContractCall(IMPLEMENTATION_ABI, address)(skip_trace=True)
                 # avoid recursion
                 if target != ZERO_ADDRESS:
-                    return ProxyInfo(type=ProxyType.Delegate, target=target)
+                    return ProxyInfo(type=ProxyType.Delegate, target=target, abi=IMPLEMENTATION_ABI)
 
             except (ApeException, ValueError):
                 pass
