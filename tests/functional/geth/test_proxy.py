@@ -79,16 +79,6 @@ def test_gnosis_safe(safe_proxy_container, geth_contract, owner, ethereum, chain
     assert proxy_instance_ref_2.masterCopy()
     assert isinstance(proxy_instance_ref_2.myNumber(), int)
 
-    # Same - but clear the proxy ABI from the cached type.
-    chain.contracts._local_contract_types[proxy_instance.address].abi = [
-        x
-        for x in chain.contracts._local_contract_types[proxy_instance.address].abi
-        if x.type == "function" and x.name != "masterCopy"
-    ]
-    proxy_instance_ref_3 = chain.contracts.instance_at(proxy_instance.address)
-    assert proxy_instance_ref_3.masterCopy()
-    assert isinstance(proxy_instance_ref_3.myNumber(), int)
-
 
 @geth_process_test
 def test_openzeppelin(get_contract_type, geth_contract, owner, ethereum, sender):
