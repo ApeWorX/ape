@@ -432,12 +432,10 @@ class PythonDependency(DependencyAPI):
     @model_validator(mode="before")
     @classmethod
     def validate_model(cls, values):
-        # TODO: In 0.9, remove this check and require 'site_package'.
         if "python" in values:
-            logger.warning(
-                "'python' key name is deprecated. Use 'site_package' for "
-                "already-installed packages or 'pypi' to download the package from PyPI."
-            )
+            # `.python` is the old key but we have to always support it
+            # so dependencies-of-dependencies always work, even when referencing
+            # older projects.
             values["site_package"] = values.pop("python")
 
         if "name" not in values:
@@ -473,7 +471,7 @@ class PythonDependency(DependencyAPI):
 
     @property
     def python(self) -> Optional[str]:
-        logger.warning("'.python' is deprecated. Please use 'site_package'.")
+        # For backwards-compat; serves as an undocumented alias.
         return self.site_package
 
     @property
