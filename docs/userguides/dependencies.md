@@ -73,22 +73,22 @@ dependencies:
 
 When using the `pypi:` key, dependencies are downloaded and extracted from PyPI using an HTTP requests library.
 
-You can also specify the `python:` key for already-installed dependencies:
+You can also specify the `site_package:` key for already-installed dependencies:
 
 ```yaml
 dependencies:
-   - python: snekmate
+   - site_package: snekmate
      config_override:
        contracts_folder: .
 ```
 
-Using `python:` requires the package to be installed in your `sys.path` (site-packages) folder, generally via `pip` or some other tool.
+Using `site_package:` requires the package to be installed in your `sys.path` (site-packages) folder, generally via `pip` or some other tool.
 The `contracts_folder` override, in this case, is often needed because the site-package does not have the root source-folder included.
-Additionally, `python:` specified dependencies may also be lacking project-configuration files, such as the `ape-config.yaml`.
+Additionally, `site_package:` specified dependencies may also be lacking project-configuration files, such as the `ape-config.yaml`.
 Compilers such as `vyper` encourage users to use `pip` to publish and install smart-contract dependencies (other vyper files), but some features in Ape may be limited if the dependency is not also specified in your config somewhere.
 
-If wanting to use a dependency from `PyPI`, we recommend using the `pypi:` key instead of the `python:` key.
-However, the `python:` key works great if you already used `pip` to install the dependency, especially if the dependency is not available on `PyPI`.
+If wanting to use a dependency from `PyPI`, we recommend using the `pypi:` key instead of the `site_package:` key.
+However, the `site_package:` key works great if you already used `pip` to install the dependency, especially if the dependency is not available on `PyPI`.
 
 ### Local
 

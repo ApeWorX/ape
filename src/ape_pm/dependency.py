@@ -405,14 +405,12 @@ def _get_version_from_package_json(
     return data.get("version")
 
 
-# TODO: Rename to `PyPIDependency` in 0.9.
 class PythonDependency(DependencyAPI):
     """
     A dependency installed from Python tooling, such as `pip`.
     """
 
-    # TODO: Rename this `site_package_name` in 0.9.
-    python: Optional[str] = None
+    site_package: Optional[str] = None
     """
     The Python site-package name, such as ``"snekmate"``. Cannot use
     with ``pypi:``. Requires the dependency to have been installed
@@ -434,12 +432,18 @@ class PythonDependency(DependencyAPI):
     @model_validator(mode="before")
     @classmethod
     def validate_model(cls, values):
+        if "python" in values:
+            # `.python` is the old key but we have to always support it
+            # so dependencies-of-dependencies always work, even when referencing
+            # older projects.
+            values["site_package"] = values.pop("python")
+
         if "name" not in values:
-            if name := values.get("python") or values.get("pypi"):
+            if name := values.get("site_package") or values.get("pypi"):
                 values["name"] = name
             else:
                 raise ValueError(
-                    "Must set either 'pypi:' or 'python': when using Python dependencies"
+                    "Must set either 'pypi:' or 'site_package': when using Python dependencies"
                 )
 
         return values
@@ -450,7 +454,7 @@ class PythonDependency(DependencyAPI):
             # Is pypi: specified; has no special path.
             return None
 
-        elif python := self.python:
+        elif python := self.site_package:
             try:
                 return get_package_path(python)
             except ValueError as err:
@@ -460,10 +464,15 @@ class PythonDependency(DependencyAPI):
 
     @property
     def package_id(self) -> str:
-        if pkg_id := (self.pypi or self.python):
+        if pkg_id := (self.pypi or self.site_package):
             return pkg_id
 
         raise ProjectError("Must provide either 'pypi:' or 'python:' for python-base dependencies.")
+
+    @property
+    def python(self) -> Optional[str]:
+        # For backwards-compat; serves as an undocumented alias.
+        return self.site_package
 
     @property
     def version_id(self) -> str:
@@ -473,7 +482,7 @@ class PythonDependency(DependencyAPI):
                 # I doubt this is a possible condition, but just in case.
                 raise ProjectError(f"Missing version from PyPI for package '{self.package_id}'.")
 
-        elif self.python:
+        elif self.site_package:
             try:
                 vers = f"{metadata.version(self.package_id)}"
             except metadata.PackageNotFoundError as err:
@@ -498,7 +507,7 @@ class PythonDependency(DependencyAPI):
         if self.pypi:
             return self.download_archive_url
 
-        elif self.python and (path := self.path):
+        elif self.site_package and (path := self.path):
             # Local site-package path.
             return path.as_uri()
 
