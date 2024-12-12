@@ -57,12 +57,10 @@ def test_uups_proxy(get_contract_type, geth_contract, owner, ethereum):
 
 
 @geth_process_test
-def test_gnosis_safe(get_contract_type, geth_contract, owner, ethereum, chain):
+def test_gnosis_safe(safe_proxy_container, geth_contract, owner, ethereum, chain):
     # Setup a proxy contract.
-    _type = get_contract_type("SafeProxy")
-    contract = ContractContainer(_type)
     target = geth_contract.address
-    proxy_instance = owner.deploy(contract, target)
+    proxy_instance = owner.deploy(safe_proxy_container, target)
 
     # (test)
     actual = ethereum.get_proxy_info(proxy_instance.address)

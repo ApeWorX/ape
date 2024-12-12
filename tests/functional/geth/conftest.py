@@ -8,6 +8,12 @@ from ape_node.provider import Node
 from tests.functional.data.python import TRACE_RESPONSE
 
 
+@pytest.fixture(scope="session")
+def safe_proxy_container(get_contract_type):
+    proxy_type = get_contract_type("SafeProxy")
+    return ContractContainer(proxy_type)
+
+
 @pytest.fixture
 def parity_trace_response():
     return TRACE_RESPONSE
