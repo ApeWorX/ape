@@ -1,5 +1,5 @@
 from enum import IntEnum, auto
-from typing import cast
+from typing import Optional, cast
 
 from eth_pydantic_types.hex import HexStr
 from ethpm_types import ContractType, MethodABI
@@ -68,6 +68,15 @@ class ProxyType(IntEnum):
 
 class ProxyInfo(ProxyInfoAPI):
     type: ProxyType
+
+    def __init__(self, **kwargs):
+        abi = kwargs.pop("abi", None)
+        super().__init__(**kwargs)
+        self._abi = abi
+
+    @property
+    def abi(self) -> Optional[MethodABI]:
+        return self._abi
 
 
 MASTER_COPY_ABI = MethodABI(
