@@ -13,7 +13,7 @@ from eth_account._utils.signing import (
 from eth_pydantic_types import HexBytes
 from eth_utils import keccak, to_int
 from evmchains import PUBLIC_CHAIN_META
-from pydantic import field_validator, model_validator
+from pydantic import model_validator
 
 from ape.exceptions import (
     CustomError,
