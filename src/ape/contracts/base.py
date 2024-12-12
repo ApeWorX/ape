@@ -550,6 +550,16 @@ class ContractEvent(BaseInterfaceModel):
         return sum(1 for _ in logs)
 
     def __call__(self, *args: Any, **kwargs: Any) -> MockContractLog:
+        """
+        Create a mock-instance of a log using this event ABI and the contract address.
+
+        Args:
+            *args: Positional arguments for the event.
+            **kwargs: Key-word arguments for the event.
+
+        Returns:
+            :class:`~ape.types.events.MockContractLog`
+        """
         # Create a dictionary from the positional arguments
         event_args: dict[Any, Any] = dict(zip((ipt.name for ipt in self.abi.inputs), args))
         if overlapping_keys := set(event_args).intersection(kwargs):
@@ -825,6 +835,41 @@ class ContractEvent(BaseInterfaceModel):
                 new_block_timeout=new_block_timeout,
                 events=[self.abi],
             )
+
+
+# TODO: In 0.9, just make `_events_` or ContractEvent possibly handle multiple ABIs
+#   much like the transactions handlers do. OR at least take the opportunty to refactor.
+class ContractEventWrapper:
+    """
+    A wrapper used when multiple events have the same so that
+    you can still create mock-logs.
+    """
+
+    def __init__(self, events: list[ContractEvent]):
+        self.events = events
+
+    def __call__(self, *args, **kwargs) -> MockContractLog:
+        """
+        Create a mock contract log using the first working ABI.
+
+        Args:
+            *args: Positional arguments for the event.
+            **kwargs: Key-word arguments for the event.
+
+        Returns:
+            :class:`~ape.types.events.MockContractLog`
+        """
+        # TODO: Use composite error.
+        errors = []
+        for evt in self.events:
+            try:
+                return evt(*args, **kwargs)
+            except ValueError as err:
+                errors.append(err)
+                continue  # not a match
+
+        error_str = ", ".join([f"{e}" for e in errors])
+        raise ValueError(f"Could not make a mock contract log. Errors: {error_str}")
 
 
 class ContractTypeWrapper(ManagerAccessMixin):
@@ -1336,10 +1381,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
         elif attr_name in self._events_:
             evt_options = self._events_[attr_name]
             if len(evt_options) > 1:
-                raise ApeAttributeError(
-                    f"Multiple events named '{attr_name}' in '{self.contract_type.name}'.\n"
-                    f"Use '{self.get_event_by_signature.__name__}' look-up."
-                )
+                return ContractEventWrapper(evt_options)
 
             return evt_options[0]
 
