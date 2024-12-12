@@ -838,7 +838,7 @@ class ContractEventWrapper:
                 errors.append(err)
                 continue  # not a match
 
-        error_str = ", ".join(errors)
+        error_str = ", ".join([f"{e}" for e in errors])
         raise ValueError(f"Could not make a mock contract log. Errors: {error_str}")
 
 
