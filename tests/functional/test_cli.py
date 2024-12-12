@@ -585,7 +585,8 @@ def test_contract_file_paths_argument_missing_solidity(
     pm = project_with_source_files_contract
     with pm.isolate_in_tempdir() as tmp_project:
         arguments = (name, "--project", f"{tmp_project.path}")
-        result = runner.invoke(contracts_paths_cmd, arguments)
+        with logger.at_level(LogLevel.WARNING):
+            result = runner.invoke(contracts_paths_cmd, arguments)
 
     expected = (
         "Missing compilers for the following file types: '.sol'. "
