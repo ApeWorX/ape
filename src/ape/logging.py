@@ -6,11 +6,13 @@ from collections.abc import Callable, Iterator, Sequence
 from contextlib import contextmanager
 from enum import IntEnum
 from pathlib import Path
-from typing import IO, Any, Optional, Union
+from typing import IO, TYPE_CHECKING, Any, Optional, Union
+from urllib.parse import urlparse, urlunparse
 
 import click
-from rich.console import Console as RichConsole
-from yarl import URL
+
+if TYPE_CHECKING:
+    from rich.console import Console as RichConsole
 
 
 class LogLevel(IntEnum):
@@ -325,23 +327,28 @@ def _get_level(level: Optional[Union[str, int, LogLevel]] = None) -> str:
 def sanitize_url(url: str) -> str:
     """Removes sensitive information from given URL"""
 
-    url_obj = URL(url).with_user(None).with_password(None)
+    parsed = urlparse(url)
+    new_netloc = parsed.hostname or ""
+    if parsed.port:
+        new_netloc += f":{parsed.port}"
 
-    # If there is a path, hide it but show that you are hiding it.
-    # Use string interpolation to prevent URL-character encoding.
-    return f"{url_obj.with_path('')}/{HIDDEN_MESSAGE}" if url_obj.path else f"{url}"
+    new_url = urlunparse(parsed._replace(netloc=new_netloc, path=""))
+    return f"{new_url}/{HIDDEN_MESSAGE}" if parsed.path else new_url
 
 
 logger = ApeLogger.create()
 
 
 class _RichConsoleFactory:
-    rich_console_map: dict[str, RichConsole] = {}
+    rich_console_map: dict[str, "RichConsole"] = {}
 
-    def get_console(self, file: Optional[IO[str]] = None, **kwargs) -> RichConsole:
+    def get_console(self, file: Optional[IO[str]] = None, **kwargs) -> "RichConsole":
         # Configure custom file console
         file_id = str(file)
         if file_id not in self.rich_console_map:
+            # perf: delay importing from rich, as it is slow.
+            from rich.console import Console as RichConsole
+
             self.rich_console_map[file_id] = RichConsole(file=file, width=100, **kwargs)
 
         return self.rich_console_map[file_id]
@@ -350,7 +357,7 @@ class _RichConsoleFactory:
 _factory = _RichConsoleFactory()
 
 
-def get_rich_console(file: Optional[IO[str]] = None, **kwargs) -> RichConsole:
+def get_rich_console(file: Optional[IO[str]] = None, **kwargs) -> "RichConsole":
     """
     Get an Ape-configured rich console.
 
@@ -361,7 +368,7 @@ def get_rich_console(file: Optional[IO[str]] = None, **kwargs) -> RichConsole:
     Returns:
         ``rich.Console``.
     """
-    return _factory.get_console(file)
+    return _factory.get_console(file, **kwargs)
 
 
 __all__ = ["DEFAULT_LOG_LEVEL", "logger", "LogLevel", "ApeLogger", "get_rich_console"]

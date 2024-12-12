@@ -1,0 +1,57 @@
+{
+  "abi": [
+    {
+      "inputs": [],
+      "name": "proxyType",
+      "outputs": [
+        {
+          "name": "proxyTypeId",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "implementation",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "name": "_target",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    }
+  ],
+  "contractName": "ERCProxy",
+  "deploymentBytecode": {
+    "bytecode": "0x608060405234801561001057600080fd5b5060405160208061014a833981016040525160008054600160a060020a03909216600160a060020a031990921691909117905560f9806100516000396000f30060806040526004361060485763ffffffff7c01000000000000000000000000000000000000000000000000000000006000350416634555d5c98114604d5780635c60da1b146071575b600080fd5b348015605857600080fd5b50605f60ac565b60408051918252519081900360200190f35b348015607c57600080fd5b50608360b1565b6040805173ffffffffffffffffffffffffffffffffffffffff9092168252519081900360200190f35b600190565b60005473ffffffffffffffffffffffffffffffffffffffff16905600a165627a7a72305820ae971f5c593cbaf95a4ff9c244af7a9afd16cda9faff299ef9f50e1953626a340029"
+  },
+  "devdoc": {
+    "methods": {}
+  },
+  "methodIdentifiers": {
+    "implementation()": "0x5c60da1b",
+    "proxyType()": "0x4555d5c9"
+  },
+  "runtimeBytecode": {
+    "bytecode": "0x60806040526004361060485763ffffffff7c01000000000000000000000000000000000000000000000000000000006000350416634555d5c98114604d5780635c60da1b146071575b600080fd5b348015605857600080fd5b50605f60ac565b60408051918252519081900360200190f35b348015607c57600080fd5b50608360b1565b6040805173ffffffffffffffffffffffffffffffffffffffff9092168252519081900360200190f35b600190565b60005473ffffffffffffffffffffffffffffffffffffffff16905600a165627a7a72305820ae971f5c593cbaf95a4ff9c244af7a9afd16cda9faff299ef9f50e1953626a340029"
+  },
+  "sourceId": "tests/functional/data/sources/DelegateProxy.sol",
+  "sourcemap": "27:278:0:-;;;77:56;8:9:-1;5:2;;;30:1;27;20:12;5:2;77:56:0;;;;;;;;;;;;;112:6;:16;;-1:-1:-1;;;;;112:16:0;;;-1:-1:-1;;;;;;112:16:0;;;;;;;;;27:278;;;;;;",
+  "userdoc": {
+    "methods": {}
+  }
+}
