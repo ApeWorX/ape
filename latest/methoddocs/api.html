@@ -396,7 +396,9 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#ape.api.networks.ProxyInfoAPI.__pydantic_fields__"><code class="docutils literal notranslate">__pydantic_fields__</span></code></a></li>
 <li><a class="reference internal" href="#ape.api.networks.ProxyInfoAPI.__pydantic_fields_set__"><code class="docutils literal notranslate">__pydantic_fields_set__</span></code></a></li>
 <li><a class="reference internal" href="#ape.api.networks.ProxyInfoAPI.__pydantic_private__"><code class="docutils literal notranslate">__pydantic_private__</span></code></a></li>
+<li><a class="reference internal" href="#ape.api.networks.ProxyInfoAPI.__repr__"><code class="docutils literal notranslate">__repr__()</span></code></a></li>
 <li><a class="reference internal" href="#ape.api.networks.ProxyInfoAPI.__signature__"><code class="docutils literal notranslate">__signature__</span></code></a></li>
+<li><a class="reference internal" href="#ape.api.networks.ProxyInfoAPI.abi"><code class="docutils literal notranslate">abi</span></code></a></li>
 <li><a class="reference internal" href="#ape.api.networks.ProxyInfoAPI.target"><code class="docutils literal notranslate">target</span></code></a></li>
 </ul>
 </li>
@@ -3067,7 +3069,7 @@ an instance of this context manager.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ape.api.networks.ProxyInfoAPI">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.api.networks.</span></span><span class="sig-name descname"><span class="pre">ProxyInfoAPI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><span class="pre">ChecksumAddress</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_AddressValidator</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.networks.ProxyInfoAPI" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.api.networks.</span></span><span class="sig-name descname"><span class="pre">ProxyInfoAPI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><span class="pre">ChecksumAddress</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_AddressValidator</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.networks.ProxyInfoAPI" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="utils.html#ape.utils.basemodel.BaseModel" title="ape.utils.basemodel.BaseModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModel</span></code></a></p>
 <p>Information about a proxy contract.</p>
 <dl class="py attribute">
@@ -3084,7 +3086,7 @@ an instance of this context manager.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.api.networks.ProxyInfoAPI.__pydantic_fields__">
-<span class="sig-name descname"><span class="pre">__pydantic_fields__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">FieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'target':</span> <span class="pre">FieldInfo(annotation=NewType,</span> <span class="pre">required=True,</span> <span class="pre">metadata=[&lt;class</span> <span class="pre">'ape.types.address._AddressValidator'&gt;])}</span></em><a class="headerlink" href="#ape.api.networks.ProxyInfoAPI.__pydantic_fields__" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">__pydantic_fields__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">FieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'target':</span> <span class="pre">FieldInfo(annotation=NewType,</span> <span class="pre">required=True,</span> <span class="pre">metadata=[&lt;class</span> <span class="pre">'ape.types.address._AddressValidator'&gt;]),</span> <span class="pre">'type_name':</span> <span class="pre">FieldInfo(annotation=str,</span> <span class="pre">required=False,</span> <span class="pre">default='')}</span></em><a class="headerlink" href="#ape.api.networks.ProxyInfoAPI.__pydantic_fields__" title="Link to this definition"></a></dt>
 <dd><p>A dictionary of field names and their corresponding [<cite>FieldInfo</cite>][pydantic.fields.FieldInfo] objects.
 This replaces <cite>Model.__fields__</cite> from Pydantic V1.</p>
 </dd></dl>
@@ -3101,10 +3103,23 @@ This replaces <cite>Model.__fields__</cite> from Pydantic V1.</p>
 <dd><p>Values of private attributes set on the model instance.</p>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.api.networks.ProxyInfoAPI.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#ape.api.networks.ProxyInfoAPI.__repr__" title="Link to this definition"></a></dt>
+<dd><p>Return repr(self).</p>
+</dd></dl>
+
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.api.networks.ProxyInfoAPI.__signature__">
-<span class="sig-name descname"><span class="pre">__signature__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">Signature</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;Signature</span> <span class="pre">(*,</span> <span class="pre">target:</span> <span class="pre">typing.Annotated[eth_typing.evm.ChecksumAddress,</span> <span class="pre">&lt;class</span> <span class="pre">'ape.types.address._AddressValidator'&gt;])</span> <span class="pre">-&gt;</span> <span class="pre">None&gt;</span></em><a class="headerlink" href="#ape.api.networks.ProxyInfoAPI.__signature__" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">__signature__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">Signature</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;Signature</span> <span class="pre">(*,</span> <span class="pre">target:</span> <span class="pre">typing.Annotated[eth_typing.evm.ChecksumAddress,</span> <span class="pre">&lt;class</span> <span class="pre">'ape.types.address._AddressValidator'&gt;],</span> <span class="pre">type_name:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'')</span> <span class="pre">-&gt;</span> <span class="pre">None&gt;</span></em><a class="headerlink" href="#ape.api.networks.ProxyInfoAPI.__signature__" title="Link to this definition"></a></dt>
 <dd><p>The synthesized <cite>__init__</cite> [<cite>Signature</cite>][inspect.Signature] of the model.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.api.networks.ProxyInfoAPI.abi">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">abi</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">MethodABI</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.networks.ProxyInfoAPI.abi" title="Link to this definition"></a></dt>
+<dd><p>Some proxies have special ABIs which may not exist in their
+contract-types by default, such as Safe’s <code class="docutils literal notranslate"><span class="pre">masterCopy()</span></code>.</p>
 </dd></dl>
 
 <dl class="py attribute">
