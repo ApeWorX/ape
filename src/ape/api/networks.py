@@ -87,8 +87,6 @@ class ProxyInfoAPI(BaseModel):
 
         return model
 
-        # else: no way of knowing name.
-
     @log_instead_of_fail(default="<ProxyInfoAPI>")
     def __repr__(self) -> str:
         if _type := self.type_name:
