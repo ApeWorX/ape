@@ -1375,14 +1375,14 @@ class ContractCache(BaseManager):
         if not address_file.is_file():
             return None
 
-        return ProxyInfoAPI.model_validate_json(address_file.read_text())
+        return ProxyInfoAPI.model_validate_json(address_file.read_text(encoding="utf8"))
 
     def _get_blueprint_from_disk(self, blueprint_id: str) -> Optional[ContractType]:
         contract_file = self._blueprint_cache / f"{blueprint_id}.json"
         if not contract_file.is_file():
             return None
 
-        return ContractType.model_validate_json(contract_file.read_text())
+        return ContractType.model_validate_json(contract_file.read_text(encoding="utf8"))
 
     def _get_contract_type_from_explorer(self, address: AddressType) -> Optional[ContractType]:
         if not self._network.explorer:

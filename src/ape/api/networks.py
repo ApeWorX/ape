@@ -13,7 +13,7 @@ from eth_account._utils.signing import (
 from eth_pydantic_types import HexBytes
 from eth_utils import keccak, to_int
 from evmchains import PUBLIC_CHAIN_META
-from pydantic import model_validator
+from pydantic import field_validator, model_validator
 
 from ape.exceptions import (
     CustomError,
@@ -64,6 +64,37 @@ class ProxyInfoAPI(BaseModel):
 
     target: AddressType
     """The address of the implementation contract."""
+
+    type_name: str = ""
+
+    @model_validator(mode="before")
+    @classmethod
+    def _validate_type_name(cls, model):
+        if "type_name" in model:
+            return model
+
+        elif _type := model.get("type"):
+            # Attempt to figure out the type name.
+            if name := getattr(_type, "name", None):
+                # ProxyEnum - such as from 'ape-ethereum'.
+                model["type_name"] = name
+            else:
+                # Not sure.
+                try:
+                    model["type_name"] = f"{_type}"
+                except Exception:
+                    pass
+
+        return model
+
+        # else: no way of knowing name.
+
+    @log_instead_of_fail(default="<ProxyInfoAPI>")
+    def __repr__(self) -> str:
+        if _type := self.type_name:
+            return f"<Proxy {_type} target={self.target}>"
+
+        return "<Proxy target={self.target}"
 
     @property
     def abi(self) -> Optional["MethodABI"]:
