@@ -634,19 +634,19 @@ class ContractEvent(BaseInterfaceModel):
         # perf: pandas import is really slow. Avoid importing at module level.
         import pandas as pd
 
+        HEAD = self.chain_manager.blocks.height
         if start_block < 0:
-            start_block = self.chain_manager.blocks.height + start_block
+            start_block = HEAD + start_block
 
         if stop_block is None:
-            stop_block = self.chain_manager.blocks.height
+            stop_block = HEAD
 
         elif stop_block < 0:
-            stop_block = self.chain_manager.blocks.height + stop_block
+            stop_block = HEAD + stop_block
 
-        elif stop_block > self.chain_manager.blocks.height:
+        elif stop_block > HEAD:
             raise ChainError(
-                f"'stop={stop_block}' cannot be greater than "
-                f"the chain length ({self.chain_manager.blocks.height})."
+                f"'stop={stop_block}' cannot be greater than the chain length ({HEAD})."
             )
         query: dict = {
             "columns": list(ContractLog.__pydantic_fields__) if columns[0] == "*" else columns,
@@ -692,12 +692,12 @@ class ContractEvent(BaseInterfaceModel):
         Returns:
             Iterator[:class:`~ape.contracts.base.ContractLog`]
         """
-
         if not (contract_address := getattr(self.contract, "address", None)):
             return
 
         start_block = None
         stop_block = None
+        HEAD = self.chain_manager.blocks.height  # Current block height
 
         if stop is None:
             contract = None
@@ -706,27 +706,57 @@ class ContractEvent(BaseInterfaceModel):
             except Exception:
                 pass
 
-            if contract:
-                if creation := contract.creation_metadata:
-                    start_block = creation.block
+            # Determine the start block from contract creation metadata
+            if contract and (creation := contract.creation_metadata):
+                start_block = creation.block
 
-            stop_block = start_or_stop
+            # Handle single parameter usage (like Python's range(stop))
+            if start_or_stop == 0:
+                # stop==0 is the same as stop==HEAD
+                # because of the -1 (turns to negative).
+                stop_block = HEAD + 1
+            elif start_or_stop >= 0:
+                # Given like range(1)
+                stop_block = min(start_or_stop - 1, HEAD)
+            else:
+                # Give like range(-1)
+                stop_block = HEAD + start_or_stop
 
         elif start_or_stop is not None and stop is not None:
-            start_block = start_or_stop
-            stop_block = stop - 1
+            # Handle cases where both start and stop are provided
+            if start_or_stop >= 0:
+                start_block = min(start_or_stop, HEAD)
+            else:
+                # Negative start relative to HEAD
+                adjusted_value = HEAD + start_or_stop + 1
+                start_block = max(adjusted_value, 0)
 
-        stop_block = min(stop_block, self.chain_manager.blocks.height)
+            if stop == 0:
+                # stop==0 is the same as stop==HEAD
+                # because of the -1 (turns to negative).
+                stop_block = HEAD
+            elif stop > 0:
+                # Positive stop, capped to the chain HEAD
+                stop_block = min(stop - 1, HEAD)
+            else:
+                # Negative stop.
+                adjusted_value = HEAD + stop
+                stop_block = max(adjusted_value, 0)
 
+        # Gather all addresses to query (contract and any extra ones provided)
         addresses = list(set([contract_address] + (extra_addresses or [])))
+
+        # Construct the event query
         contract_event_query = ContractEventQuery(
-            columns=list(ContractLog.__pydantic_fields__),
+            columns=list(ContractLog.__pydantic_fields__),  # Ensure all necessary columns
             contract=addresses,
             event=self.abi,
             search_topics=search_topics,
-            start_block=start_block or 0,
-            stop_block=stop_block,
+            start_block=start_block or 0,  # Default to block 0 if not set
+            stop_block=stop_block,  # None means query to the current HEAD
         )
+
+        # Execute the query and yield results
         yield from self.query_manager.query(contract_event_query)  # type: ignore
 
     def from_receipt(self, receipt: "ReceiptAPI") -> list[ContractLog]:
