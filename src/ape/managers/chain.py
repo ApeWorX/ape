@@ -796,7 +796,6 @@ class ContractCache(BaseManager):
             contract_instance (:class:`~ape.contracts.base.ContractInstance`): The contract
               to cache.
         """
-
         address = contract_instance.address
         contract_type = contract_instance.contract_type  # may be a proxy
 
@@ -809,20 +808,18 @@ class ContractCache(BaseManager):
             self.cache_proxy_info(address, proxy_info)
             if implementation_contract := self.get(proxy_info.target):
                 # Include proxy ABIs but ignore fallback/ctor etc.
-                abis = list(implementation_contract.abi)
                 proxy_abis = [
                     abi for abi in contract_type.abi if abi.type in ("error", "event", "function")
                 ]
-                abis.extend(proxy_abis)
 
                 # Include "hidden" ABIs, such as Safe's `masterCopy()`.
                 if proxy_info.abi and proxy_info.abi.signature not in [
                     abi.signature for abi in contract_type.abi
                 ]:
-                    abis.append(proxy_info.abi)
+                    proxy_abis.append(proxy_info.abi)
 
-                updated_proxy_contract = implementation_contract.model_copy()
-                updated_proxy_contract.abi = abis
+                updated_proxy_contract = implementation_contract.model_copy(deep=True)
+                updated_proxy_contract.abi.extend(proxy_abis)
                 self._cache_contract_type(address, updated_proxy_contract)
 
                 # Use this contract type in the user's contract instance.

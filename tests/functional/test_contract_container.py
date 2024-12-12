@@ -100,20 +100,33 @@ def test_deployments(owner, eth_tester_provider, vyper_contract_container):
 
 
 def test_deploy_proxy(
-    owner, project, vyper_contract_instance, proxy_contract_container, chain, eth_tester_provider
+    owner, vyper_contract_instance, proxy_contract_container, chain, eth_tester_provider
 ):
     target = vyper_contract_instance.address
     proxy = proxy_contract_container.deploy(target, sender=owner)
+
+    # Ensure we can call both proxy and target methods on it.
+    assert proxy.implementation  # No attr err
+    assert proxy.myNumber  # No attr err
+
+    # Ensure caching works.
     assert proxy.address in chain.contracts._local_contract_types
     assert proxy.address in chain.contracts._local_proxies
 
-    actual = chain.contracts._local_proxies[proxy.address]
-    assert actual.target == target
-    assert actual.type == ProxyType.Delegate
+    # Show the cached proxy info is correct.
+    proxy_info = chain.contracts._local_proxies[proxy.address]
+    assert proxy_info.target == target
+    assert proxy_info.type == ProxyType.Delegate
 
     # Show we get the implementation contract type using the proxy address
-    implementation = chain.contracts.instance_at(proxy.address)
-    assert implementation.contract_type == vyper_contract_instance.contract_type
+    re_contract = chain.contracts.instance_at(proxy.address)
+    assert re_contract.contract_type == proxy.contract_type
+
+    # Show proxy methods are not available on target alone.
+    target = chain.contracts.instance_at(proxy_info.target)
+    assert target.myNumber  # No attr err
+    with pytest.raises(AttributeError):
+        _ = target.implementation
 
 
 def test_source_path_in_project(project_with_contract):
