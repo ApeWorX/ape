@@ -12,13 +12,7 @@ from pydantic import BaseModel
 from ape.api.networks import ProxyInfoAPI
 from ape.api.query import ContractCreation, ContractCreationQuery
 from ape.contracts.base import ContractContainer, ContractInstance
-from ape.exceptions import (
-    ContractNotFoundError,
-    ConversionError,
-    CustomError,
-    QueryEngineError,
-    ApeException,
-)
+from ape.exceptions import ApeException, ContractNotFoundError, ConversionError, CustomError
 from ape.logging import logger
 from ape.managers._deploymentscache import Deployment, DeploymentDiskCache
 from ape.managers.base import BaseManager
@@ -695,9 +689,13 @@ class ContractCache(BaseManager):
             )
 
         elif not isinstance(contract_type, ContractType):
-            raise TypeError(
-                f"Expected type '{ContractType.__name__}' for argument 'contract_type'."
-            )
+            prefix = f"Expected type '{ContractType.__name__}' for argument 'contract_type'"
+            try:
+                suffix = f"; Given '{type(contract_type).__name__}'."
+            except Exception:
+                suffix = "."
+
+            raise TypeError(f"{prefix}{suffix}")
 
         if not txn_hash:
             # Check for txn_hash in deployments.

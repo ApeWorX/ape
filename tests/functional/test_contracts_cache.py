@@ -38,7 +38,7 @@ def test_instance_at_when_given_contract_type(chain, contract_instance):
 
 
 def test_instance_at_when_given_name_as_contract_type(chain, contract_instance):
-    expected_match = "Expected type 'ContractType' for argument 'contract_type'."
+    expected_match = "Expected type 'ContractType' for argument 'contract_type'; Given 'str'."
     with pytest.raises(TypeError, match=expected_match):
         address = str(contract_instance.address)
         bad_contract_type = contract_instance.contract_type.name
