@@ -73,7 +73,7 @@ class TransactionAPI(BaseInterfaceModel):
     @classmethod
     def validate_gas_limit(cls, value):
         if value is None:
-            if not cls.network_manager.active_provider:
+            if not cls.network_manager.connected:
                 raise NetworkError("Must be connected to use default gas config.")
 
             value = cls.network_manager.active_provider.network.gas_limit
@@ -82,7 +82,7 @@ class TransactionAPI(BaseInterfaceModel):
             return None  # Delegate to `ProviderAPI.estimate_gas_cost`
 
         elif value == "max":
-            if not cls.network_manager.active_provider:
+            if not cls.network_manager.connected:
                 raise NetworkError("Must be connected to use 'max'.")
 
             return cls.network_manager.active_provider.max_gas

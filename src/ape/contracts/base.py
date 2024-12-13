@@ -1054,7 +1054,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
 
         # Cache creation.
         creation = ContractCreation.from_receipt(receipt)
-        cls.chain_manager.contracts._local_contract_creation[address] = creation
+        cls.chain_manager.contracts.contract_creations[address] = creation
 
         return instance
 

@@ -11,7 +11,7 @@ def test_get_contract_metadata(
 
     # hold onto block, setup mock.
     block = geth_provider.get_block(actual.block)
-    del chain.contracts._local_contract_creation[geth_contract.address]
+    del chain.contracts.contract_creations[geth_contract.address]
     mock_geth.web3.eth.get_block.return_value = block
 
     orig_web3 = chain.network_manager.active_provider._web3

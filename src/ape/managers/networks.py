@@ -63,6 +63,13 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         self._active_provider = new_value
 
     @property
+    def connected(self) -> bool:
+        """
+        ``True`` when there is an active provider.
+        """
+        return self.active_provider is not None
+
+    @property
     def network(self) -> "NetworkAPI":
         """
         The current network if connected to one.

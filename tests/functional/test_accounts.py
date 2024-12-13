@@ -240,7 +240,7 @@ def test_transfer_value_of_0(sender, receiver):
     assert receiver.balance == initial_balance
 
 
-def test_deploy(owner, contract_container, chain, clean_contracts_cache):
+def test_deploy(owner, contract_container, clean_contract_caches):
     contract = owner.deploy(contract_container, 0)
     assert contract.address
     assert contract.txn_hash
@@ -292,11 +292,11 @@ def test_deploy_proxy(owner, vyper_contract_instance, proxy_contract_container, 
     assert proxy.myNumber  # No attr err
 
     # Ensure was properly cached.
-    assert proxy.address in chain.contracts._local_contract_types
-    assert proxy.address in chain.contracts._local_proxies
+    assert proxy.address in chain.contracts.contract_types
+    assert proxy.address in chain.contracts.proxy_infos
 
     # Show the cached proxy info is correct.
-    proxy_info = chain.contracts._local_proxies[proxy.address]
+    proxy_info = chain.contracts.proxy_infos[proxy.address]
     assert proxy_info.target == target
     assert proxy_info.type == ProxyType.Delegate
     assert proxy_info.abi.name == "implementation"
@@ -345,7 +345,7 @@ def test_deploy_no_deployment_bytecode(owner, bytecode):
         owner.deploy(contract)
 
 
-def test_deploy_contract_type(owner, vyper_contract_type, chain, clean_contracts_cache):
+def test_deploy_contract_type(owner, vyper_contract_type, clean_contract_caches):
     contract = owner.deploy(vyper_contract_type, 0)
     assert contract.address
     assert contract.txn_hash

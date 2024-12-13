@@ -3,7 +3,8 @@ import pytest
 from ape.exceptions import ProviderNotConnectedError
 from ape.logging import logger
 from ape.managers.project import DependencyManager
-from ape.utils.basemodel import ManagerAccessMixin, only_raise_attribute_error
+from ape.utils.basemodel import DiskCacheableModel, ManagerAccessMixin, only_raise_attribute_error
+from ape.utils.os import create_tempdir
 
 
 class CustomClass(ManagerAccessMixin):
@@ -56,3 +57,38 @@ def test_only_raise_attribute_error_when_already_raises(mocker, ape_caplog):
 def test_dependency_manager():
     actual = ManagerAccessMixin.dependency_manager
     assert isinstance(actual, DependencyManager)
+
+
+class TestDiskCacheableModel:
+    @pytest.fixture(scope="class")
+    def ExampleModel(self):
+        class _ExampleModel(DiskCacheableModel):
+            aa: int
+            bb: str
+            cc: dict[str, dict[str, int]]
+
+        return _ExampleModel
+
+    def test_model_validate_file(self, ExampleModel):
+        with create_tempdir() as path:
+            file = path / "example.json"
+            json_str = '{"aa":123,"bb":"Hello Pydantic!","cc":{"1":{"2":3}}}'
+            file.write_text(json_str)
+            instance = ExampleModel.model_validate_file(file)
+            file.unlink()
+
+        assert instance.aa == 123
+        assert instance.bb == "Hello Pydantic!"
+        assert instance.cc == {"1": {"2": 3}}
+        # Show the path was already set.
+        assert instance._path == file
+
+    def test_model_dump_file(self, ExampleModel):
+        instance = ExampleModel(aa=123, bb="Hello Pydantic!", cc={"1": {"2": 3}})
+        expected = '{"aa":123,"bb":"Hello Pydantic!","cc":{"1":{"2":3}}}'
+        with create_tempdir() as path:
+            file = path / "example.json"
+            instance.model_dump_file(file)
+            actual = file.read_text()
+
+        assert actual == expected

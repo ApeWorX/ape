@@ -16,7 +16,7 @@ def test_deploy(
     not_owner,
     contract_container,
     networks_connected_to_tester,
-    clean_contracts_cache,
+    clean_contract_caches,
 ):
     contract = contract_container.deploy(4, sender=not_owner, something_else="IGNORED")
     assert contract.txn_hash
@@ -33,7 +33,7 @@ def test_deploy_wrong_number_of_arguments(
     not_owner,
     contract_container,
     networks_connected_to_tester,
-    clean_contracts_cache,
+    clean_contract_caches,
 ):
     expected = (
         r"The number of the given arguments \(0\) do not match what is defined in the "
@@ -110,11 +110,11 @@ def test_deploy_proxy(
     assert proxy.myNumber  # No attr err
 
     # Ensure caching works.
-    assert proxy.address in chain.contracts._local_contract_types
-    assert proxy.address in chain.contracts._local_proxies
+    assert proxy.address in chain.contracts.contract_types
+    assert proxy.address in chain.contracts.proxy_infos
 
     # Show the cached proxy info is correct.
-    proxy_info = chain.contracts._local_proxies[proxy.address]
+    proxy_info = chain.contracts.proxy_infos[proxy.address]
     assert proxy_info.target == target
     assert proxy_info.type == ProxyType.Delegate
 

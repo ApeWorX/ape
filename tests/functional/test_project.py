@@ -308,10 +308,10 @@ def test_meta(project):
         assert f"{project.meta.links['apeworx.io']}" == "https://apeworx.io/"
 
 
-def test_extract_manifest(tmp_project, mock_sepolia, vyper_contract_instance):
+def test_extract_manifest(tmp_project, vyper_contract_instance):
     contract_type = vyper_contract_instance.contract_type
     tmp_project.manifest.contract_types = {contract_type.name: contract_type}
-    tmp_project.deployments.track(vyper_contract_instance)
+    tmp_project.deployments.track(vyper_contract_instance, allow_dev=True)
 
     manifest = tmp_project.extract_manifest()
     assert type(manifest) is PackageManifest
@@ -1030,20 +1030,20 @@ class TestContractManager:
 
 class TestDeploymentManager:
     @pytest.fixture
-    def project(self, tmp_project, vyper_contract_instance, mock_sepolia):
+    def project(self, tmp_project, vyper_contract_instance):
         contract_type = vyper_contract_instance.contract_type
         tmp_project.manifest.contract_types = {contract_type.name: contract_type}
         return tmp_project
 
-    def test_track(self, project, vyper_contract_instance, mock_sepolia):
-        project.deployments.track(vyper_contract_instance)
+    def test_track(self, project, vyper_contract_instance):
+        project.deployments.track(vyper_contract_instance, allow_dev=True)
         deployment = next(iter(project.deployments), None)
         contract_type = vyper_contract_instance.contract_type
         assert deployment is not None
         assert deployment.contract_type == f"{contract_type.source_id}:{contract_type.name}"
 
-    def test_instance_map(self, project, vyper_contract_instance, mock_sepolia):
-        project.deployments.track(vyper_contract_instance)
+    def test_instance_map(self, project, vyper_contract_instance):
+        project.deployments.track(vyper_contract_instance, allow_dev=True)
         assert project.deployments.instance_map != {}
 
         bip122_chain_id = to_hex(project.provider.get_block(0).hash)
