@@ -4,7 +4,7 @@ from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
 from functools import cached_property
 from pathlib import Path
-from typing import TYPE_CHECKING, Generic, Optional, TypeVar, Union, cast
+from typing import TYPE_CHECKING, Generic, Optional, TypeVar, Union
 
 from ethpm_types import ABI, ContractType
 from pydantic import BaseModel
@@ -618,14 +618,20 @@ class ContractCache(BaseManager):
         Returns:
             :class:`~ape.contracts.base.ContractInstance`
         """
-
-        if self.conversion_manager.is_type(address, AddressType):
-            contract_address = cast(AddressType, address)
-        else:
+        if contract_type and not isinstance(contract_type, ContractType):
+            prefix = f"Expected type '{ContractType.__name__}' for argument 'contract_type'"
             try:
-                contract_address = self.conversion_manager.convert(address, AddressType)
-            except ConversionError as err:
-                raise ValueError(f"Unknown address value '{address}'.") from err
+                suffix = f"; Given '{type(contract_type).__name__}'."
+            except Exception:
+                suffix = "."
+
+            raise TypeError(f"{prefix}{suffix}")
+
+        try:
+            contract_address = self.conversion_manager.convert(address, AddressType)
+        except ConversionError:
+            # Attempt as str.
+            raise ValueError(f"Unknown address value '{address}'.")
 
         try:
             # Always attempt to get an existing contract type to update caches
@@ -688,18 +694,10 @@ class ContractCache(BaseManager):
                 self.provider.network_choice,
             )
 
-        elif not isinstance(contract_type, ContractType):
-            prefix = f"Expected type '{ContractType.__name__}' for argument 'contract_type'"
-            try:
-                suffix = f"; Given '{type(contract_type).__name__}'."
-            except Exception:
-                suffix = "."
-
-            raise TypeError(f"{prefix}{suffix}")
-
         if not txn_hash:
             # Check for txn_hash in deployments.
-            deployments = self.deployments[contract_type.name or ""]
+            contract_name = getattr(contract_type, "name", f"{contract_type}") or ""
+            deployments = self.deployments[contract_name]
             for deployment in deployments[::-1]:
                 if deployment.address == contract_address and deployment.transaction_hash:
                     txn_hash = deployment.transaction_hash
