@@ -1389,7 +1389,7 @@ class DependencyManager(BaseManager):
             dependency_id (str): The package ID of the dependency. You can also
               provide the short-name of the dependency.
             version (str): The version identifier.
-            allow_install (bool): If the dependendency API is known but the
+            allow_install (bool): If the dependency API is known but the
               project is not installed, attempt to install it. Defaults to ``True``.
 
         Raises:
@@ -1844,7 +1844,7 @@ class Project(ProjectManager):
                         *(matching_given_compiler.contractTypes or []),
                     }
                 )
-                # NOTE: Purposely we don't add the exising compiler back,
+                # NOTE: Purposely we don't add the existing compiler back,
                 #   as it is the same as the given compiler, (meaning same
                 #   name, version, and settings), and we have
                 #   merged their contract types.

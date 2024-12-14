@@ -838,7 +838,7 @@ class ContractEvent(BaseInterfaceModel):
 
 
 # TODO: In 0.9, just make `_events_` or ContractEvent possibly handle multiple ABIs
-#   much like the transactions handlers do. OR at least take the opportunty to refactor.
+#   much like the transactions handlers do. OR at least take the opportunity to refactor.
 class ContractEventWrapper:
     """
     A wrapper used when multiple events have the same so that
