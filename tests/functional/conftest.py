@@ -285,11 +285,9 @@ def project_with_source_files_contract(project_with_contract):
 
 
 @pytest.fixture
-def clean_contracts_cache(chain):
-    original_cached_contracts = chain.contracts._local_contract_types
-    chain.contracts._local_contract_types = {}
-    yield
-    chain.contracts._local_contract_types = original_cached_contracts
+def clean_contract_caches(chain):
+    with chain.contracts.use_temporary_caches():
+        yield
 
 
 @pytest.fixture
@@ -329,7 +327,7 @@ def mainnet_contract(chain):
             / f"{address}.json"
         )
         contract = ContractType.model_validate_json(path.read_text())
-        chain.contracts._local_contract_types[address] = contract
+        chain.contracts[address] = contract
         return contract
 
     return contract_getter
@@ -452,18 +450,7 @@ def assert_log_values(contract_instance):
     return _assert_log_values
 
 
-@pytest.fixture
-def remove_disk_writes_deployments(chain):
-    if chain.contracts._deployments_mapping_cache.is_file():
-        chain.contracts._deployments_mapping_cache.unlink()
-
-    yield
-
-    if chain.contracts._deployments_mapping_cache.is_file():
-        chain.contracts._deployments_mapping_cache.unlink()
-
-
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="session")
 def logger():
     _logger.set_level(LogLevel.ERROR)
     return _logger
@@ -794,6 +781,6 @@ def setup_custom_error(chain):
         contract_type = ContractType(abi=abi)
 
         # Hack in contract-type.
-        chain.contracts._local_contract_types[addr] = contract_type
+        chain.contracts.contract_types[addr] = contract_type
 
     return fn

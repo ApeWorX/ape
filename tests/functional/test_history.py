@@ -56,5 +56,4 @@ def test_history_caches_sender_over_address_key(
         # Actual is 0 because the receipt was cached under the sender.
         assert len(actual) == 0
     finally:
-        if "explorer" in network.__dict__:
-            del network.__dict__["explorer"]
+        network.__dict__.pop("explorer", None)

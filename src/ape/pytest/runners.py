@@ -320,7 +320,7 @@ class PytestApeRunner(ManagerAccessMixin):
 
     def _show_gas_report(self, terminalreporter):
         terminalreporter.section("Gas Profile")
-        if not self.network_manager.active_provider:
+        if not self.network_manager.connected:
             # Happens if never needed to connect (no tests)
             return
 
@@ -336,7 +336,7 @@ class PytestApeRunner(ManagerAccessMixin):
         if self.config_wrapper.ape_test_config.coverage.reports.terminal:
             terminalreporter.section("Coverage Profile")
 
-        if not self.network_manager.active_provider:
+        if not self.network_manager.connected:
             # Happens if never needed to connect (no tests)
             return
 

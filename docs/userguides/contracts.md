@@ -178,8 +178,9 @@ or
 ```python
 from ape import project
 
+
 def main():
-  my_contract = project.MyContract.deployments[-1]
+    my_contract = project.MyContract.deployments[-1]
 ```
 
 `my_contract` will be of type `ContractInstance`.

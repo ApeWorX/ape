@@ -129,7 +129,7 @@ class CacheQueryProvider(QueryAPI):
         if self.provider.network.is_local:
             return None
 
-        if not self.network_manager.active_provider:
+        if not self.network_manager.connected:
             raise QueryEngineError("Not connected to a provider")
 
         database_file = self._get_database_file(

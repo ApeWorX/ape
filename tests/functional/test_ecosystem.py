@@ -1080,7 +1080,7 @@ def test_decode_custom_error(chain, ethereum):
     addr = cast(AddressType, "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD")
 
     # Hack in contract-type.
-    chain.contracts._local_contract_types[addr] = contract_type
+    chain.contracts[addr] = contract_type
 
     actual = ethereum.decode_custom_error(data, addr)
     assert isinstance(actual, CustomError)
@@ -1109,7 +1109,7 @@ def test_decode_custom_error_selector_not_found(chain, ethereum):
     addr = cast(AddressType, "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD")
 
     # Hack in contract-type.
-    chain.contracts._local_contract_types[addr] = contract_type
+    chain.contracts.contract_types[addr] = contract_type
 
     tx = ethereum.create_transaction()
     actual = ethereum.decode_custom_error(data, addr, txn=tx)
