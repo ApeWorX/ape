@@ -561,12 +561,13 @@ def test_contract_file_paths_argument_given_subdir_relative_to_path(
 
 @skip_if_plugin_installed("vyper")
 def test_contract_file_paths_argument_missing_vyper(
-    project_with_source_files_contract, runner, contracts_paths_cmd
+    project_with_source_files_contract, runner, contracts_paths_cmd, ape_caplog
 ):
     name = "VyperContract"
     pm = project_with_source_files_contract
     arguments = (name, "--project", f"{pm.path}")
-    result = runner.invoke(contracts_paths_cmd, arguments)
+    with ape_caplog.at_level(LogLevel.INFO):
+        result = runner.invoke(contracts_paths_cmd, arguments)
 
     expected = (
         "Missing compilers for the following file types: '.vy'. "
@@ -584,7 +585,8 @@ def test_contract_file_paths_argument_missing_solidity(
     pm = project_with_source_files_contract
     with pm.isolate_in_tempdir() as tmp_project:
         arguments = (name, "--project", f"{tmp_project.path}")
-        result = runner.invoke(contracts_paths_cmd, arguments)
+        with logger.at_level(LogLevel.WARNING):
+            result = runner.invoke(contracts_paths_cmd, arguments)
 
     expected = (
         "Missing compilers for the following file types: '.sol'. "

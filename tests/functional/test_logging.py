@@ -20,7 +20,8 @@ def test_info(simple_runner):
     @group_for_testing.command()
     @ape_cli_context()
     def cmd(cli_ctx):
-        cli_ctx.logger.info("this is a test")
+        with cli_ctx.logger.at_level(LogLevel.INFO):
+            cli_ctx.logger.info("this is a test")
 
     result = simple_runner.invoke(group_for_testing, "cmd")
     assert "INFO" in result.output
@@ -45,7 +46,8 @@ def test_warning(simple_runner):
     @group_for_testing.command()
     @ape_cli_context()
     def cmd(cli_ctx):
-        cli_ctx.logger.warning("this is a test")
+        with cli_ctx.logger.at_level(LogLevel.WARNING):
+            cli_ctx.logger.warning("this is a test")
 
     result = simple_runner.invoke(group_for_testing, "cmd")
     assert "WARNING" in result.output
@@ -56,7 +58,8 @@ def test_warning_level_higher(simple_runner):
     @group_for_testing.command()
     @ape_cli_context()
     def cmd(cli_ctx):
-        cli_ctx.logger.warning("this is a test")
+        with cli_ctx.logger.at_level(LogLevel.WARNING.value + 1):
+            cli_ctx.logger.warning("this is a test")
 
     logger._did_parse_sys_argv = False
     result = simple_runner.invoke(group_for_testing, ("cmd", "-v", "ERROR"))
@@ -71,7 +74,8 @@ def test_success(simple_runner):
     @group_for_testing.command()
     @ape_cli_context(default_log_level=LogLevel.INFO.value)
     def cmd(cli_ctx):
-        cli_ctx.logger.success("this is a test")
+        with cli_ctx.logger.at_level(LogLevel.SUCCESS):
+            cli_ctx.logger.success("this is a test")
 
     logger._did_parse_sys_argv = False
     result = simple_runner.invoke(group_for_testing, "cmd")
@@ -83,7 +87,8 @@ def test_success_level_higher(simple_runner):
     @group_for_testing.command()
     @ape_cli_context()
     def cmd(cli_ctx):
-        cli_ctx.logger.success("this is a test")
+        with cli_ctx.logger.at_level(LogLevel.SUCCESS.value + 1):
+            cli_ctx.logger.success("this is a test")
 
     logger._did_parse_sys_argv = False
     result = simple_runner.invoke(group_for_testing, ("cmd", "-v", "WARNING"))
@@ -97,7 +102,8 @@ def test_format(simple_runner):
     def cmd(cli_ctx):
         cli_ctx.logger.format(fmt="%(message)s")
         try:
-            cli_ctx.logger.success("this is a test")
+            with cli_ctx.logger.at_level(LogLevel.SUCCESS):
+                cli_ctx.logger.success("this is a test")
         finally:
             cli_ctx.logger.format()
 

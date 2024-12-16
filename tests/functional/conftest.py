@@ -452,6 +452,7 @@ def assert_log_values(contract_instance):
 
 @pytest.fixture(scope="session")
 def logger():
+    _logger.set_level(LogLevel.ERROR)
     return _logger
 
 
