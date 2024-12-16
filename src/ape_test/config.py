@@ -158,6 +158,12 @@ class ApeTestConfig(PluginConfig):
     Settings for the provider.
     """
 
+    show_internal: bool = False
+    """
+    Set to ``True`` to always show Ape's internal stack-trace in errors,
+    useful for debugging the framework itself.
+    """
+
     @field_validator("balance", mode="before")
     @classmethod
     def validate_balance(cls, value):
