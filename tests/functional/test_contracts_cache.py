@@ -18,11 +18,6 @@ def contract_1(solidity_contract_container):
     return solidity_contract_container
 
 
-@pytest.fixture(autouse=True)
-def no_explorer(eth_tester_provider):
-    eth_tester_provider.network.__dict__["explorer"] = None
-
-
 def test_instance_at(chain, contract_instance):
     contract = chain.contracts.instance_at(str(contract_instance.address))
     assert contract.contract_type == contract_instance.contract_type
@@ -347,9 +342,9 @@ def test_get_attempts_explorer(
 
     # Hack in a way to publish on this local network.
     with create_mock_sepolia() as network:
+        del chain.contracts[contract.address]
         mock_explorer.get_contract_type.side_effect = get_contract_type
         network.__dict__["explorer"] = mock_explorer
-        del chain.contracts[contract.address]
         try:
             actual = chain.contracts.get(contract.address)
         finally:
@@ -366,6 +361,11 @@ def test_get_attempts_explorer_logs_errors_from_explorer(
 ):
     contract = owner.deploy(vyper_fallback_container)
     check_error_str = "__CHECK_FOR_THIS_ERROR__"
+    expected_log = (
+        f"Attempted to retrieve contract type from explorer 'mock' "
+        f"from address '{contract.address}' but encountered an "
+        f"exception: {check_error_str}"
+    )
 
     def get_contract_type(addr):
         if addr == contract.address:
@@ -374,14 +374,9 @@ def test_get_attempts_explorer_logs_errors_from_explorer(
         raise ValueError("nope")
 
     with create_mock_sepolia() as network:
+        del chain.contracts[contract.address]
         mock_explorer.get_contract_type.side_effect = get_contract_type
         network.__dict__["explorer"] = mock_explorer
-        expected_log = (
-            f"Attempted to retrieve contract type from explorer 'mock' "
-            f"from address '{contract.address}' but encountered an "
-            f"exception: {check_error_str}"
-        )
-        del chain.contracts[contract.address]
         try:
             actual = chain.contracts.get(contract.address)
         finally:
@@ -401,6 +396,8 @@ def test_get_attempts_explorer_logs_rate_limit_error_from_explorer(
     # Ensure is not cached locally.
     del chain.contracts[contract.address]
 
+    # For rate limit errors, we don't show anything else,
+    # as it may be confusing.
     check_error_str = "you have been rate limited"
 
     def get_contract_type(addr):
@@ -412,16 +409,12 @@ def test_get_attempts_explorer_logs_rate_limit_error_from_explorer(
     with create_mock_sepolia() as network:
         mock_explorer.get_contract_type.side_effect = get_contract_type
         network.__dict__["explorer"] = mock_explorer
-
-        # For rate limit errors, we don't show anything else,
-        # as it may be confusing.
-        expected_log = "you have been rate limited"
         try:
             actual = chain.contracts.get(contract.address)
         finally:
             network.__dict__["explorer"] = None
 
-        assert expected_log in ape_caplog.head
+        assert check_error_str in ape_caplog.head
         assert actual is None
         mock_explorer.get_contract_type.reset_mock()
 

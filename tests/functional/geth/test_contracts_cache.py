@@ -48,6 +48,8 @@ def test_get_proxy_from_explorer(
         # w/ both proxy ABIs and the target ABIs.
         contract_from_explorer = chain.contracts.instance_at(proxy_contract.address)
 
+        network.__dict__.pop("explorer", None)
+
         # Ensure we can call proxy methods!
         assert contract_from_explorer.masterCopy  # No attr error!
 

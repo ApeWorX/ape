@@ -59,12 +59,14 @@ def test_deploy_and_publish(owner, contract_container, dummy_live_network, mock_
     dummy_live_network.__dict__["explorer"] = mock_explorer
     contract = contract_container.deploy(0, sender=owner, publish=True, required_confirmations=0)
     mock_explorer.publish_contract.assert_called_once_with(contract.address)
+    dummy_live_network.__dict__["explorer"] = None
 
 
 def test_deploy_and_not_publish(owner, contract_container, dummy_live_network, mock_explorer):
     dummy_live_network.__dict__["explorer"] = mock_explorer
     contract_container.deploy(0, sender=owner, publish=False, required_confirmations=0)
     assert not mock_explorer.call_count
+    dummy_live_network.__dict__["explorer"] = None
 
 
 def test_deploy_privately(owner, contract_container):
@@ -190,7 +192,7 @@ def test_at_fetch_from_explorer_false(
     project_with_contract.clean()
 
     # Simulate having an explorer plugin installed (e.g. ape-etherscan).
-    eth_tester_provider.network.explorer = mock_explorer
+    eth_tester_provider.network.__dict__["explorer"] = mock_explorer
 
     # Attempt to create an instance. It should NOT use the explorer at all!
     instance2 = container.at(instance.address, fetch_from_explorer=False)
@@ -200,4 +202,4 @@ def test_at_fetch_from_explorer_false(
     assert mock_explorer.get_contract_type.call_count == 0
 
     # Clean up test.
-    eth_tester_provider.network.explorer = None
+    eth_tester_provider.network.__dict__.pop("explorer")

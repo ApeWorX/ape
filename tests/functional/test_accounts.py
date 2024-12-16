@@ -274,6 +274,7 @@ def test_deploy_and_publish(owner, contract_container, dummy_live_network, mock_
     dummy_live_network.__dict__["explorer"] = mock_explorer
     contract = owner.deploy(contract_container, 0, publish=True, required_confirmations=0)
     mock_explorer.publish_contract.assert_called_once_with(contract.address)
+    dummy_live_network.__dict__["explorer"] = None
 
 
 @explorer_test
@@ -281,6 +282,7 @@ def test_deploy_and_not_publish(owner, contract_container, dummy_live_network, m
     dummy_live_network.__dict__["explorer"] = mock_explorer
     owner.deploy(contract_container, 0, publish=True, required_confirmations=0)
     assert not mock_explorer.call_count
+    dummy_live_network.__dict__["explorer"] = None
 
 
 def test_deploy_proxy(owner, vyper_contract_instance, proxy_contract_container, chain):
