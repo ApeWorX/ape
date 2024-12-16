@@ -38,7 +38,7 @@ def test_instance_at_when_given_contract_type(chain, contract_instance):
 
 
 def test_instance_at_when_given_name_as_contract_type(chain, contract_instance):
-    expected_match = "Expected type 'ContractType' for argument 'contract_type'."
+    expected_match = "Expected type 'ContractType' for argument 'contract_type'; Given 'str'."
     with pytest.raises(TypeError, match=expected_match):
         address = str(contract_instance.address)
         bad_contract_type = contract_instance.contract_type.name
@@ -123,25 +123,24 @@ def test_cache_deployment_live_network(
     chain,
     vyper_contract_instance,
     vyper_contract_container,
-    remove_disk_writes_deployments,
+    clean_contract_caches,
     dummy_live_network,
 ):
     # Arrange - Ensure the contract is not cached anywhere
     address = vyper_contract_instance.address
     contract_name = vyper_contract_instance.contract_type.name
-    deployments = chain.contracts._deployments
-    contract_types = chain.contracts._local_contract_types
-    chain.contracts._local_contract_types = {
+    contract_types = chain.contracts.contract_types.memory
+    chain.contracts.contract_types.memory = {
         a: ct for a, ct in contract_types.items() if a != address
     }
-    chain.contracts._deployments = {n: d for n, d in deployments.items() if n != contract_name}
+    del chain.contracts.deployments[contract_name]
 
     # Act
     chain.contracts.cache_deployment(vyper_contract_instance)
 
     # Assert
     actual_deployments = chain.contracts.get_deployments(vyper_contract_container)
-    actual_contract_type = chain.contracts._get_contract_type_from_disk(address)
+    actual_contract_type = chain.contracts.contract_types[address]
     expected = vyper_contract_instance.contract_type
     assert len(actual_deployments) == 1
     assert actual_deployments[0].address == address
@@ -155,13 +154,7 @@ def test_cache_default_contract_type_when_used(solidity_contract_instance, chain
     contract_type = solidity_contract_instance.contract_type
 
     # Delete contract from local cache if it's there
-    if address in chain.contracts._local_contract_types:
-        del chain.contracts._local_contract_types[address]
-
-    # Delete cache file if it exists
-    cache_file = chain.contracts._contract_types_cache / f"{address}.json"
-    if cache_file.is_file():
-        cache_file.unlink()
+    del chain.contracts[address]
 
     # Create a contract using the contract type when nothing is cached.
     contract = Contract(address, contract_type=contract_type)
@@ -194,7 +187,7 @@ def test_contracts_getitem_contract_not_found(chain, eth_tester_provider):
 
 def test_deployments_mapping_cache_location(chain):
     # Arrange / Act
-    mapping_location = chain.contracts._deployments_mapping_cache
+    mapping_location = chain.contracts.deployments.cachefile
     split_mapping_location = str(mapping_location).split("/")
 
     # Assert
@@ -211,10 +204,7 @@ def test_deployments_when_offline(chain, networks_disconnected, vyper_contract_c
 
 def test_get_deployments_local(chain, owner, contract_0, contract_1):
     # Arrange
-    chain.contracts._local_deployments_mapping = {}
-    chain.contracts._local_contract_types = {}
-    starting_contracts_list_0 = chain.contracts.get_deployments(contract_0)
-    starting_contracts_list_1 = chain.contracts.get_deployments(contract_1)
+    chain.contracts.clear_local_caches()
     deployed_contract_0 = owner.deploy(contract_0, 900000000)
     deployed_contract_1 = owner.deploy(contract_1, 900000001)
 
@@ -226,16 +216,14 @@ def test_get_deployments_local(chain, owner, contract_0, contract_1):
     for contract_list in (contracts_list_0, contracts_list_1):
         assert type(contract_list[0]) is ContractInstance
 
-    index_0 = len(contracts_list_0) - len(starting_contracts_list_0) - 1
-    index_1 = len(contracts_list_1) - len(starting_contracts_list_1) - 1
-    actual_address_0 = contracts_list_0[index_0].address
+    actual_address_0 = contracts_list_0[-1].address
     assert actual_address_0 == deployed_contract_0.address
-    actual_address_1 = contracts_list_1[index_1].address
+    actual_address_1 = contracts_list_1[-1].address
     assert actual_address_1 == deployed_contract_1.address
 
 
 def test_get_deployments_live(
-    chain, owner, contract_0, contract_1, remove_disk_writes_deployments, dummy_live_network
+    chain, owner, contract_0, contract_1, clean_contract_caches, dummy_live_network
 ):
     deployed_contract_0 = owner.deploy(contract_0, 8000000, required_confirmations=0)
     deployed_contract_1 = owner.deploy(contract_1, 8000001, required_confirmations=0)
@@ -252,7 +240,7 @@ def test_get_deployments_live(
 
 
 def test_get_multiple_deployments_live(
-    chain, owner, contract_0, contract_1, remove_disk_writes_deployments, dummy_live_network
+    chain, owner, contract_0, contract_1, clean_contract_caches, dummy_live_network
 ):
     starting_contracts_list_0 = chain.contracts.get_deployments(contract_0)
     starting_contracts_list_1 = chain.contracts.get_deployments(contract_1)
@@ -354,9 +342,9 @@ def test_get_attempts_explorer(
 
     # Hack in a way to publish on this local network.
     with create_mock_sepolia() as network:
+        del chain.contracts[contract.address]
         mock_explorer.get_contract_type.side_effect = get_contract_type
         network.__dict__["explorer"] = mock_explorer
-        del chain.contracts[contract.address]
         try:
             actual = chain.contracts.get(contract.address)
         finally:
@@ -373,6 +361,11 @@ def test_get_attempts_explorer_logs_errors_from_explorer(
 ):
     contract = owner.deploy(vyper_fallback_container)
     check_error_str = "__CHECK_FOR_THIS_ERROR__"
+    expected_log = (
+        f"Attempted to retrieve contract type from explorer 'mock' "
+        f"from address '{contract.address}' but encountered an "
+        f"exception: {check_error_str}"
+    )
 
     def get_contract_type(addr):
         if addr == contract.address:
@@ -381,14 +374,9 @@ def test_get_attempts_explorer_logs_errors_from_explorer(
         raise ValueError("nope")
 
     with create_mock_sepolia() as network:
+        del chain.contracts[contract.address]
         mock_explorer.get_contract_type.side_effect = get_contract_type
         network.__dict__["explorer"] = mock_explorer
-        expected_log = (
-            f"Attempted to retrieve contract type from explorer 'mock' "
-            f"from address '{contract.address}' but encountered an "
-            f"exception: {check_error_str}"
-        )
-        del chain.contracts[contract.address]
         try:
             actual = chain.contracts.get(contract.address)
         finally:
@@ -408,6 +396,8 @@ def test_get_attempts_explorer_logs_rate_limit_error_from_explorer(
     # Ensure is not cached locally.
     del chain.contracts[contract.address]
 
+    # For rate limit errors, we don't show anything else,
+    # as it may be confusing.
     check_error_str = "you have been rate limited"
 
     def get_contract_type(addr):
@@ -419,16 +409,12 @@ def test_get_attempts_explorer_logs_rate_limit_error_from_explorer(
     with create_mock_sepolia() as network:
         mock_explorer.get_contract_type.side_effect = get_contract_type
         network.__dict__["explorer"] = mock_explorer
-
-        # For rate limit errors, we don't show anything else,
-        # as it may be confusing.
-        expected_log = "you have been rate limited"
         try:
             actual = chain.contracts.get(contract.address)
         finally:
             network.__dict__["explorer"] = None
 
-        assert expected_log in ape_caplog.head
+        assert check_error_str in ape_caplog.head
         assert actual is None
         mock_explorer.get_contract_type.reset_mock()
 
@@ -458,8 +444,7 @@ def test_get_creation_metadata(chain, vyper_contract_instance, owner):
 
 def test_delete_contract(vyper_contract_instance, chain):
     # Ensure we start with it cached.
-    if vyper_contract_instance.address not in chain.contracts:
-        chain.contracts[vyper_contract_instance.address] = vyper_contract_instance
+    chain.contracts[vyper_contract_instance.address] = vyper_contract_instance
 
     del chain.contracts[vyper_contract_instance.address]
     assert vyper_contract_instance.address not in chain.contracts
@@ -499,26 +484,22 @@ def test_clear_local_caches(chain, vyper_contract_instance, proxy_contract_conta
     # Ensure contract type exists.
     address = vyper_contract_instance.address
     # Ensure blueprint exists.
-    chain.contracts._local_blueprints[address] = vyper_contract_instance.contract_type
+    chain.contracts.blueprints[address] = vyper_contract_instance.contract_type
     # Ensure proxy exists.
     proxy = proxy_contract_container.deploy(address, sender=owner)
     # Ensure creation exists.
     _ = chain.contracts.get_creation_metadata(address)
 
     # Test setup verification.
-    assert (
-        address in chain.contracts._local_contract_types
-    ), "Setup failed - no contract type(s) cached"
-    assert proxy.address in chain.contracts._local_proxies, "Setup failed - no proxy cached"
-    assert (
-        address in chain.contracts._local_contract_creation
-    ), "Setup failed - no creation(s) cached"
+    assert address in chain.contracts.contract_types, "Setup failed - no contract type(s) cached"
+    assert proxy.address in chain.contracts.proxy_infos, "Setup failed - no proxy cached"
+    assert address in chain.contracts.contract_creations, "Setup failed - no creation(s) cached"
 
     # This is the method we are testing.
     chain.contracts.clear_local_caches()
 
     # Assertions - everything should be empty.
-    assert chain.contracts._local_proxies == {}
-    assert chain.contracts._local_blueprints == {}
-    assert chain.contracts._local_deployments_mapping == {}
-    assert chain.contracts._local_contract_creation == {}
+    assert chain.contracts.proxy_infos.memory == {}
+    assert chain.contracts.blueprints.memory == {}
+    assert chain.contracts.contract_types.memory == {}
+    assert chain.contracts.contract_creations.memory == {}

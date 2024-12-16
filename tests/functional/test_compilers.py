@@ -209,7 +209,7 @@ def test_enrich_error_custom_error(chain, compilers):
     err = ContractLogicError("0x6a12f104", contract_address=addr)
 
     # Hack in contract-type.
-    chain.contracts._local_contract_types[addr] = contract_type
+    chain.contracts.contract_types[addr] = contract_type
 
     # Enriching the error should produce a custom error from the ABI.
     actual = compilers.enrich_error(err)

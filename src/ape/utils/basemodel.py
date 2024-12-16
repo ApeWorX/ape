@@ -614,3 +614,58 @@ class BaseInterfaceModel(BaseInterface, BaseModel):
         """
         # Filter out protected/private members
         return [member for member in super().__dir__() if not member.startswith("_")]
+
+
+class DiskCacheableModel(BaseModel):
+    """
+    A model with extra utilities for caching to disk.
+    """
+
+    def __init__(self, *args, **kwargs):
+        path = kwargs.pop("path", None)
+        super().__init__(*args, **kwargs)
+        self._path = path
+
+    def model_dump_file(self, path: Optional[Path] = None, **kwargs):
+        """
+        Save this model to disk.
+
+        Args:
+            path (Optional[Path]): Optionally provide the path now
+              if one wasn't declared at init time. If given a directory,
+              saves the file in that dir with the name of class with a
+              .json suffix.
+            **kwargs: Extra kwargs to pass to ``.model_dump_json()``.
+        """
+        path = self._get_path(path=path)
+        json_str = self.model_dump_json(**kwargs)
+        path.unlink(missing_ok=True)
+        path.write_text(json_str)
+
+    @classmethod
+    def model_validate_file(cls, path: Path, **kwargs):
+        """
+        Validate a file.
+
+        Args:
+            path (Optional[Path]): Optionally provide the path now
+              if one wasn't declared at init time.
+            **kwargs: Extra kwargs to pass to ``.model_validate_json()``.
+        """
+        if json_str := path.read_text(encoding="utf8") if path.is_file() else "":
+            model = cls.model_validate_json(json_str, **kwargs)
+        else:
+            model = cls.model_validate({})
+
+        model._path = path
+        return model
+
+    def _get_path(self, path: Optional[Path] = None) -> Path:
+        if save_path := (path or self._path):
+            return save_path
+
+        elif save_path.is_dir():
+            name = self.__class__.__name__ or "Model"
+            return save_path / f"{name}.json"
+
+        raise ValueError("Unknown path for caching.")

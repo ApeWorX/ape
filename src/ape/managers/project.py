@@ -2003,7 +2003,7 @@ class DeploymentManager(ManagerAccessMixin):
 
         return result
 
-    def track(self, contract: ContractInstance):
+    def track(self, contract: ContractInstance, allow_dev: bool = False):
         """
         Indicate that a contract deployment should be included in the package manifest
         upon publication.
@@ -2014,9 +2014,9 @@ class DeploymentManager(ManagerAccessMixin):
         Args:
             contract (:class:`~ape.contracts.base.ContractInstance`): The contract
               to track as a deployment of the project.
+            allow_dev (bool): Set to ``True`` if simulating in a local dev environment.
         """
-
-        if self.provider.network.is_dev:
+        if not allow_dev and self.provider.network.is_dev:
             raise ProjectError("Can only publish deployments on a live network.")
 
         elif not (contract_name := contract.contract_type.name):

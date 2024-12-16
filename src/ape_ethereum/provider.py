@@ -1132,7 +1132,12 @@ class Web3Provider(ProviderAPI, ABC):
 
     def _post_connect(self):
         # Register the console contract for trace enrichment
-        self.chain_manager.contracts._cache_contract_type(CONSOLE_ADDRESS, console_contract)
+        self.chain_manager.contracts.cache_contract_type(
+            CONSOLE_ADDRESS,
+            console_contract,
+            ecosystem_key=self.network.ecosystem.name,
+            network_key=self.network.name,
+        )
 
     def make_request(self, rpc: str, parameters: Optional[Iterable] = None) -> Any:
         return request_with_retry(lambda: self._make_request(rpc, parameters=parameters))

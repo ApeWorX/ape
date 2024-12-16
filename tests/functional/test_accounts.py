@@ -240,7 +240,7 @@ def test_transfer_value_of_0(sender, receiver):
     assert receiver.balance == initial_balance
 
 
-def test_deploy(owner, contract_container, chain, clean_contracts_cache):
+def test_deploy(owner, contract_container, clean_contract_caches):
     contract = owner.deploy(contract_container, 0)
     assert contract.address
     assert contract.txn_hash
@@ -274,6 +274,7 @@ def test_deploy_and_publish(owner, contract_container, dummy_live_network, mock_
     dummy_live_network.__dict__["explorer"] = mock_explorer
     contract = owner.deploy(contract_container, 0, publish=True, required_confirmations=0)
     mock_explorer.publish_contract.assert_called_once_with(contract.address)
+    dummy_live_network.__dict__["explorer"] = None
 
 
 @explorer_test
@@ -281,6 +282,7 @@ def test_deploy_and_not_publish(owner, contract_container, dummy_live_network, m
     dummy_live_network.__dict__["explorer"] = mock_explorer
     owner.deploy(contract_container, 0, publish=True, required_confirmations=0)
     assert not mock_explorer.call_count
+    dummy_live_network.__dict__["explorer"] = None
 
 
 def test_deploy_proxy(owner, vyper_contract_instance, proxy_contract_container, chain):
@@ -292,11 +294,11 @@ def test_deploy_proxy(owner, vyper_contract_instance, proxy_contract_container, 
     assert proxy.myNumber  # No attr err
 
     # Ensure was properly cached.
-    assert proxy.address in chain.contracts._local_contract_types
-    assert proxy.address in chain.contracts._local_proxies
+    assert proxy.address in chain.contracts.contract_types
+    assert proxy.address in chain.contracts.proxy_infos
 
     # Show the cached proxy info is correct.
-    proxy_info = chain.contracts._local_proxies[proxy.address]
+    proxy_info = chain.contracts.proxy_infos[proxy.address]
     assert proxy_info.target == target
     assert proxy_info.type == ProxyType.Delegate
     assert proxy_info.abi.name == "implementation"
@@ -345,7 +347,7 @@ def test_deploy_no_deployment_bytecode(owner, bytecode):
         owner.deploy(contract)
 
 
-def test_deploy_contract_type(owner, vyper_contract_type, chain, clean_contracts_cache):
+def test_deploy_contract_type(owner, vyper_contract_type, clean_contract_caches):
     contract = owner.deploy(vyper_contract_type, 0)
     assert contract.address
     assert contract.txn_hash
