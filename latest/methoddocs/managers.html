@@ -7,7 +7,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=397bb51e" />
-    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=8441861a" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=aeb20d5c" />
     <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -190,9 +190,12 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#ape.managers.chain.ContractCache.__delitem__"><code class="docutils literal notranslate">__delitem__()</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.chain.ContractCache.__setitem__"><code class="docutils literal notranslate">__setitem__()</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.chain.ContractCache.cache_blueprint"><code class="docutils literal notranslate">cache_blueprint()</span></code></a></li>
+<li><a class="reference internal" href="#ape.managers.chain.ContractCache.cache_contract_creation"><code class="docutils literal notranslate">cache_contract_creation()</span></code></a></li>
+<li><a class="reference internal" href="#ape.managers.chain.ContractCache.cache_contract_type"><code class="docutils literal notranslate">cache_contract_type()</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.chain.ContractCache.cache_deployment"><code class="docutils literal notranslate">cache_deployment()</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.chain.ContractCache.cache_proxy_info"><code class="docutils literal notranslate">cache_proxy_info()</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.chain.ContractCache.clear_local_caches"><code class="docutils literal notranslate">clear_local_caches()</span></code></a></li>
+<li><a class="reference internal" href="#ape.managers.chain.ContractCache.deployments"><code class="docutils literal notranslate">deployments</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.chain.ContractCache.get"><code class="docutils literal notranslate">get()</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.chain.ContractCache.get_blueprint"><code class="docutils literal notranslate">get_blueprint()</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.chain.ContractCache.get_container"><code class="docutils literal notranslate">get_container()</span></code></a></li>
@@ -202,6 +205,7 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#ape.managers.chain.ContractCache.get_proxy_info"><code class="docutils literal notranslate">get_proxy_info()</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.chain.ContractCache.instance_at"><code class="docutils literal notranslate">instance_at()</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.chain.ContractCache.instance_from_receipt"><code class="docutils literal notranslate">instance_from_receipt()</span></code></a></li>
+<li><a class="reference internal" href="#ape.managers.chain.ContractCache.use_temporary_caches"><code class="docutils literal notranslate">use_temporary_caches()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#ape.managers.chain.BlockContainer"><code class="docutils literal notranslate"><span class="pre">BlockContainer</span></code></a><ul>
@@ -220,6 +224,7 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#ape.managers.chain.ChainManager.base_fee"><code class="docutils literal notranslate">base_fee</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.chain.ChainManager.blocks"><code class="docutils literal notranslate">blocks</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.chain.ChainManager.chain_id"><code class="docutils literal notranslate">chain_id</span></code></a></li>
+<li><a class="reference internal" href="#ape.managers.chain.ChainManager.contracts"><code class="docutils literal notranslate">contracts</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.chain.ChainManager.gas_price"><code class="docutils literal notranslate">gas_price</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.chain.ChainManager.get_receipt"><code class="docutils literal notranslate">get_receipt()</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.chain.ChainManager.history"><code class="docutils literal notranslate">history</span></code></a></li>
@@ -309,6 +314,7 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#module-ape.managers.networks">Networks</a><ul>
 <li><a class="reference internal" href="#ape.managers.networks.NetworkManager"><code class="docutils literal notranslate"><span class="pre">NetworkManager</span></code></a><ul>
 <li><a class="reference internal" href="#ape.managers.networks.NetworkManager.active_provider"><code class="docutils literal notranslate">active_provider</span></code></a></li>
+<li><a class="reference internal" href="#ape.managers.networks.NetworkManager.connected"><code class="docutils literal notranslate">connected</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.networks.NetworkManager.create_custom_provider"><code class="docutils literal notranslate">create_custom_provider()</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.networks.NetworkManager.custom_networks"><code class="docutils literal notranslate">custom_networks</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.networks.NetworkManager.default_ecosystem"><code class="docutils literal notranslate">default_ecosystem</span></code></a></li>
@@ -1052,7 +1058,7 @@ If using a live network, it will also delete the file-cache for the contract.</p
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.managers.chain.ContractCache.__setitem__">
-<span class="sig-name descname"><span class="pre">__setitem__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><span class="pre">ChecksumAddress</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_AddressValidator</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contract_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ContractType</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.chain.ContractCache.__setitem__" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">__setitem__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><span class="pre">ChecksumAddress</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_AddressValidator</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">item</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ContractType</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="api.html#ape.api.networks.ProxyInfoAPI" title="ape.api.networks.ProxyInfoAPI"><span class="pre">ProxyInfoAPI</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="api.html#ape.api.query.ContractCreation" title="ape.api.query.ContractCreation"><span class="pre">ContractCreation</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.chain.ContractCache.__setitem__" title="Link to this definition"></a></dt>
 <dd><p>Cache the given contract type. Contracts are cached in memory per session.
 In live networks, contracts also get cached to disk at
 <code class="docutils literal notranslate"><span class="pre">.ape/{ecosystem_name}/{network_name}/contract_types/{address}.json</span></code>
@@ -1061,7 +1067,8 @@ for faster look-up next time.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>address</strong> (<em>AddressType</em>) – The on-chain address of the contract.</p></li>
-<li><p><strong>contract_type</strong> (<em>ContractType</em>) – The contract’s type.</p></li>
+<li><p><strong>item</strong> (<em>ContractType</em><em> | </em><a class="reference internal" href="api.html#ape.api.networks.ProxyInfoAPI" title="ape.api.networks.ProxyInfoAPI"><em>ProxyInfoAPI</em></a><em> | </em><a class="reference internal" href="api.html#ape.api.query.ContractCreation" title="ape.api.query.ContractCreation"><em>ContractCreation</em></a>) – The contract’s type, proxy info,
+or creation metadata.</p></li>
 </ul>
 </dd>
 </dl>
@@ -1078,6 +1085,44 @@ for faster look-up next time.</p>
 it would be the address of the deployed blueprint. For Starknet, it would
 be the class identifier.</p></li>
 <li><p><strong>contract_type</strong> (<code class="docutils literal notranslate"><span class="pre">ContractType</span></code>) – The contract type associated with the blueprint.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.chain.ContractCache.cache_contract_creation">
+<span class="sig-name descname"><span class="pre">cache_contract_creation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><span class="pre">ChecksumAddress</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_AddressValidator</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contract_creation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="api.html#ape.api.query.ContractCreation" title="ape.api.query.ContractCreation"><span class="pre">ContractCreation</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ecosystem_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">network_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.chain.ContractCache.cache_contract_creation" title="Link to this definition"></a></dt>
+<dd><p>Cache a contract creation object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>address</strong> (<em>AddressType</em>) – The address of the contract.</p></li>
+<li><p><strong>contract_creation</strong> (<a class="reference internal" href="api.html#ape.api.query.ContractCreation" title="ape.api.query.ContractCreation"><em>ContractCreation</em></a>) – The object to cache.</p></li>
+<li><p><strong>ecosystem_key</strong> (<em>str</em><em> | </em><em>None</em>) – The ecosystem key. Defaults to
+the connected ecosystem’s name.</p></li>
+<li><p><strong>network_key</strong> (<em>str</em><em> | </em><em>None</em>) – The network key. Defaults to the
+connected network’s name.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.chain.ContractCache.cache_contract_type">
+<span class="sig-name descname"><span class="pre">cache_contract_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><span class="pre">ChecksumAddress</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_AddressValidator</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contract_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ContractType</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ecosystem_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">network_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.chain.ContractCache.cache_contract_type" title="Link to this definition"></a></dt>
+<dd><p>Cache a contract type at the given address for the given network.
+If not connected, you must provider both <code class="docutils literal notranslate"><span class="pre">ecosystem_key:</span></code> and
+<code class="docutils literal notranslate"><span class="pre">network_key::</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>address</strong> (<em>AddressType</em>) – The address key.</p></li>
+<li><p><strong>contract_type</strong> (<em>ContractType</em>) – The contract type to cache.</p></li>
+<li><p><strong>ecosystem_key</strong> (<em>str</em><em> | </em><em>None</em>) – The ecosystem key. Defaults to
+the connected ecosystem’s name.</p></li>
+<li><p><strong>network_key</strong> (<em>str</em><em> | </em><em>None</em>) – The network key. Defaults to the
+connected network’s name.</p></li>
 </ul>
 </dd>
 </dl>
@@ -1115,6 +1160,12 @@ to cache.</p></li>
 <dt class="sig sig-object py" id="ape.managers.chain.ContractCache.clear_local_caches">
 <span class="sig-name descname"><span class="pre">clear_local_caches</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.chain.ContractCache.clear_local_caches" title="Link to this definition"></a></dt>
 <dd><p>Reset local caches to a blank state.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.managers.chain.ContractCache.deployments">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">deployments</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">DeploymentDiskCache</span></em><a class="headerlink" href="#ape.managers.chain.ContractCache.deployments" title="Link to this definition"></a></dt>
+<dd><p>A manager for contract deployments across networks.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1291,7 +1342,7 @@ first).</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.managers.chain.ContractCache.instance_from_receipt">
-<span class="sig-name descname"><span class="pre">instance_from_receipt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">receipt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="api.html#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><span class="pre">ReceiptAPI</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">contract_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ContractType</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="contracts.html#ape.contracts.base.ContractInstance" title="ape.contracts.base.ContractInstance"><span class="pre">ContractInstance</span></a></span></span><a class="headerlink" href="#ape.managers.chain.ContractCache.instance_from_receipt" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">instance_from_receipt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">receipt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="api.html#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><span class="pre">ReceiptAPI</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">contract_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ContractType</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="contracts.html#ape.contracts.base.ContractInstance" title="ape.contracts.base.ContractInstance"><span class="pre">ContractInstance</span></a></span></span><a class="headerlink" href="#ape.managers.chain.ContractCache.instance_from_receipt" title="Link to this definition"></a></dt>
 <dd><p>A convenience method for creating instances from receipts.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1304,6 +1355,13 @@ first).</p></li>
 <dd class="field-even"><p><a class="reference internal" href="contracts.html#ape.contracts.base.ContractInstance" title="ape.contracts.base.ContractInstance"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractInstance</span></code></a></p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.chain.ContractCache.use_temporary_caches">
+<span class="sig-name descname"><span class="pre">use_temporary_caches</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.chain.ContractCache.use_temporary_caches" title="Link to this definition"></a></dt>
+<dd><p>Create temporary context where there are no cached items.
+Useful for testing.</p>
 </dd></dl>
 
 </dd></dl>
@@ -1516,6 +1574,12 @@ will use this property.</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">chain_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ape.managers.chain.ChainManager.chain_id" title="Link to this definition"></a></dt>
 <dd><p>The blockchain ID.
 See <a class="reference external" href="https://chainlist.org/">ChainList</a> for a comprehensive list of IDs.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.managers.chain.ChainManager.contracts">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">contracts</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ape.managers.chain.ContractCache" title="ape.managers._contractscache.ContractCache"><span class="pre">ContractCache</span></a></em><a class="headerlink" href="#ape.managers.chain.ChainManager.contracts" title="Link to this definition"></a></dt>
+<dd><p>A manager for cached contract-types, proxy info, and more.</p>
 </dd></dl>
 
 <dl class="py property">
@@ -2296,6 +2360,12 @@ However, use this singleton for more granular access to networks.</p>
 <dd><p>The currently connected provider if one exists. Otherwise, returns <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
 </dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.managers.networks.NetworkManager.connected">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">connected</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#ape.managers.networks.NetworkManager.connected" title="Link to this definition"></a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">True</span></code> when there is an active provider.</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.managers.networks.NetworkManager.create_custom_provider">
 <span class="sig-name descname"><span class="pre">create_custom_provider</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">connection_str:</span> <span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">provider_cls:</span> <span class="pre">type[ProviderAPI]</span> <span class="pre">=</span> <span class="pre">&lt;class</span> <span class="pre">'ape_ethereum.provider.EthereumNodeProvider'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">provider_name:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="api.html#ape.api.providers.ProviderAPI" title="ape.api.providers.ProviderAPI"><span class="pre">ProviderAPI</span></a></span></span><a class="headerlink" href="#ape.managers.networks.NetworkManager.create_custom_provider" title="Link to this definition"></a></dt>
@@ -2973,15 +3043,18 @@ as well none v-prefixed versions.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.managers.project.DeploymentManager.track">
-<span class="sig-name descname"><span class="pre">track</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contract</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="contracts.html#ape.contracts.base.ContractInstance" title="ape.contracts.base.ContractInstance"><span class="pre">ContractInstance</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.project.DeploymentManager.track" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">track</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contract</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="contracts.html#ape.contracts.base.ContractInstance" title="ape.contracts.base.ContractInstance"><span class="pre">ContractInstance</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_dev</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.project.DeploymentManager.track" title="Link to this definition"></a></dt>
 <dd><p>Indicate that a contract deployment should be included in the package manifest
 upon publication.</p>
 <p><strong>NOTE</strong>: Deployments are automatically tracked for contracts. However, only
 deployments passed to this method are included in the final, publishable manifest.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>contract</strong> (<a class="reference internal" href="contracts.html#ape.contracts.base.ContractInstance" title="ape.contracts.base.ContractInstance"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractInstance</span></code></a>) – The contract
-to track as a deployment of the project.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>contract</strong> (<a class="reference internal" href="contracts.html#ape.contracts.base.ContractInstance" title="ape.contracts.base.ContractInstance"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractInstance</span></code></a>) – The contract
+to track as a deployment of the project.</p></li>
+<li><p><strong>allow_dev</strong> (<em>bool</em>) – Set to <code class="docutils literal notranslate"><span class="pre">True</span></code> if simulating in a local dev environment.</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>

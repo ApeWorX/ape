@@ -7,7 +7,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=397bb51e" />
-    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=8441861a" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=aeb20d5c" />
     <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -152,6 +152,11 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#ape.utils.basemodel.BaseModel.model_copy"><code class="docutils literal notranslate">model_copy()</span></code></a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#ape.utils.basemodel.DiskCacheableModel"><code class="docutils literal notranslate"><span class="pre">DiskCacheableModel</span></code></a><ul>
+<li><a class="reference internal" href="#ape.utils.basemodel.DiskCacheableModel.model_dump_file"><code class="docutils literal notranslate">model_dump_file()</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.basemodel.DiskCacheableModel.model_validate_file"><code class="docutils literal notranslate">model_validate_file()</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#ape.utils.basemodel.ExtraAttributesMixin"><code class="docutils literal notranslate"><span class="pre">ExtraAttributesMixin</span></code></a></li>
 <li><a class="reference internal" href="#ape.utils.basemodel.ExtraModelAttributes"><code class="docutils literal notranslate"><span class="pre">ExtraModelAttributes</span></code></a><ul>
 <li><a class="reference internal" href="#ape.utils.basemodel.ExtraModelAttributes.additional_error_message"><code class="docutils literal notranslate">additional_error_message</span></code></a></li>
@@ -190,6 +195,7 @@ data-aria-dark="Switch to auto color mode">
 </ul>
 </li>
 <li><a class="reference internal" href="#module-ape.utils.os">OS</a><ul>
+<li><a class="reference internal" href="#ape.utils.os.CacheDirectory"><code class="docutils literal notranslate"><span class="pre">CacheDirectory</span></code></a></li>
 <li><a class="reference internal" href="#ape.utils.os.clean_path"><code class="docutils literal notranslate"><span class="pre">clean_path()</span></code></a></li>
 <li><a class="reference internal" href="#ape.utils.os.create_tempdir"><code class="docutils literal notranslate"><span class="pre">create_tempdir()</span></code></a></li>
 <li><a class="reference internal" href="#ape.utils.os.expand_environment_variables"><code class="docutils literal notranslate"><span class="pre">expand_environment_variables()</span></code></a></li>
@@ -442,6 +448,45 @@ before creating the new model. You should trust this data.</p></li>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>New model instance.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.utils.basemodel.DiskCacheableModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.utils.basemodel.</span></span><span class="sig-name descname"><span class="pre">DiskCacheableModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.basemodel.DiskCacheableModel" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ape.utils.basemodel.BaseModel" title="ape.utils.basemodel.BaseModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModel</span></code></a></p>
+<p>A model with extra utilities for caching to disk.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.utils.basemodel.DiskCacheableModel.model_dump_file">
+<span class="sig-name descname"><span class="pre">model_dump_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.basemodel.DiskCacheableModel.model_dump_file" title="Link to this definition"></a></dt>
+<dd><p>Save this model to disk.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="cli.html#ape.cli.paramtype.Path" title="ape.cli.paramtype.Path"><em>Path</em></a><em>]</em>) – Optionally provide the path now
+if one wasn’t declared at init time. If given a directory,
+saves the file in that dir with the name of class with a
+.json suffix.</p></li>
+<li><p><strong>**kwargs</strong> – Extra kwargs to pass to <code class="docutils literal notranslate"><span class="pre">.model_dump_json()</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.utils.basemodel.DiskCacheableModel.model_validate_file">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">model_validate_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.basemodel.DiskCacheableModel.model_validate_file" title="Link to this definition"></a></dt>
+<dd><p>Validate a file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="cli.html#ape.cli.paramtype.Path" title="ape.cli.paramtype.Path"><em>Path</em></a><em>]</em>) – Optionally provide the path now
+if one wasn’t declared at init time.</p></li>
+<li><p><strong>**kwargs</strong> – Extra kwargs to pass to <code class="docutils literal notranslate"><span class="pre">.model_validate_json()</span></code>.</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -760,6 +805,17 @@ callables as instance methods.</p>
 </section>
 <section id="module-ape.utils.os">
 <span id="os"></span><h2>OS<a class="headerlink" href="#module-ape.utils.os" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.utils.os.CacheDirectory">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.utils.os.</span></span><span class="sig-name descname"><span class="pre">CacheDirectory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.os.CacheDirectory" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A directory for caching data where each data item is named
+<code class="docutils literal notranslate"><span class="pre">&lt;key&gt;.json</span></code> and is in the directory. You can access the
+items by their key like a dictionary. This type is used
+in Ape’s contract-caching for ContractTypes, ProxyInfoAPI,
+and other model types.</p>
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="ape.utils.os.clean_path">
 <span class="sig-prename descclassname"><span class="pre">ape.utils.os.</span></span><span class="sig-name descname"><span class="pre">clean_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#ape.utils.os.clean_path" title="Link to this definition"></a></dt>

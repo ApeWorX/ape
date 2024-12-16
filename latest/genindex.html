@@ -7,7 +7,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="_static/pygments.css?v=397bb51e" />
-    <link rel="stylesheet" type="text/css" href="_static/shibuya.css?v=8441861a" />
+    <link rel="stylesheet" type="text/css" href="_static/shibuya.css?v=aeb20d5c" />
     <link media="print" rel="stylesheet" type="text/css" href="_static/print.css?v=20ff2c19" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1656,9 +1656,15 @@ data-aria-dark="Switch to auto color mode">
 </li>
       <li><a href="methoddocs/managers.html#ape.managers.chain.ContractCache.cache_blueprint">cache_blueprint() (ape.managers.chain.ContractCache method)</a>
 </li>
+      <li><a href="methoddocs/managers.html#ape.managers.chain.ContractCache.cache_contract_creation">cache_contract_creation() (ape.managers.chain.ContractCache method)</a>
+</li>
+      <li><a href="methoddocs/managers.html#ape.managers.chain.ContractCache.cache_contract_type">cache_contract_type() (ape.managers.chain.ContractCache method)</a>
+</li>
       <li><a href="methoddocs/managers.html#ape.managers.chain.ContractCache.cache_deployment">cache_deployment() (ape.managers.chain.ContractCache method)</a>
 </li>
       <li><a href="methoddocs/managers.html#ape.managers.chain.ContractCache.cache_proxy_info">cache_proxy_info() (ape.managers.chain.ContractCache method)</a>
+</li>
+      <li><a href="methoddocs/utils.html#ape.utils.os.CacheDirectory">CacheDirectory (class in ape.utils.os)</a>
 </li>
       <li><a href="methoddocs/ape_ethereum.html#ape_ethereum.multicall.Call">Call (class in ape_ethereum.multicall)</a>
 </li>
@@ -1825,8 +1831,12 @@ data-aria-dark="Switch to auto color mode">
         <li><a href="methoddocs/ape_test.html#ape_test.provider.LocalProvider.connect">(ape_test.provider.LocalProvider method)</a>
 </li>
       </ul></li>
+      <li><a href="methoddocs/managers.html#ape.managers.networks.NetworkManager.connected">connected (ape.managers.networks.NetworkManager property)</a>
+</li>
       <li><a href="methoddocs/cli.html#ape.cli.commands.ConnectedProviderCommand">ConnectedProviderCommand (class in ape.cli.commands)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.connection_id">connection_id (ape.api.providers.ProviderAPI property)</a>
 
       <ul>
@@ -1835,8 +1845,6 @@ data-aria-dark="Switch to auto color mode">
         <li><a href="methoddocs/ape_ethereum.html#ape_ethereum.provider.EthereumNodeProvider.connection_id">(ape_ethereum.provider.EthereumNodeProvider property)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.connection_str">connection_str (ape.api.providers.ProviderAPI property)</a>
 
       <ul>
@@ -1894,9 +1902,11 @@ data-aria-dark="Switch to auto color mode">
 </li>
       <li><a href="methoddocs/exceptions.html#ape.exceptions.ContractNotFoundError">ContractNotFoundError</a>
 </li>
-      <li><a href="methoddocs/managers.html#ape.managers.project.LocalProject.contracts">contracts (ape.managers.project.LocalProject property)</a>
+      <li><a href="methoddocs/managers.html#ape.managers.chain.ChainManager.contracts">contracts (ape.managers.chain.ChainManager property)</a>
 
       <ul>
+        <li><a href="methoddocs/managers.html#ape.managers.project.LocalProject.contracts">(ape.managers.project.LocalProject property)</a>
+</li>
         <li><a href="methoddocs/types.html#ape.types.coverage.ContractSourceCoverage.contracts">(ape.types.coverage.ContractSourceCoverage attribute)</a>
 </li>
       </ul></li>
@@ -2098,14 +2108,14 @@ data-aria-dark="Switch to auto color mode">
       </ul></li>
       <li><a href="methoddocs/exceptions.html#ape.exceptions.DecodingError">DecodingError</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/api.html#ape.api.config.ApeConfig.default_ecosystem">default_ecosystem (ape.api.config.ApeConfig attribute)</a>
 
       <ul>
         <li><a href="methoddocs/managers.html#ape.managers.networks.NetworkManager.default_ecosystem">(ape.managers.networks.NetworkManager property)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/utils.html#ape.utils.abi.StructParser.default_name">default_name (ape.utils.abi.StructParser property)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.networks.EcosystemAPI.default_network_name">default_network_name (ape.api.networks.EcosystemAPI property)</a>
@@ -2155,6 +2165,8 @@ data-aria-dark="Switch to auto color mode">
       <li><a href="methoddocs/contracts.html#ape.contracts.base.ContractContainer.deployments">deployments (ape.contracts.base.ContractContainer property)</a>
 
       <ul>
+        <li><a href="methoddocs/managers.html#ape.managers.chain.ContractCache.deployments">(ape.managers.chain.ContractCache property)</a>
+</li>
         <li><a href="methoddocs/managers.html#ape.managers.project.LocalProject.deployments">(ape.managers.project.LocalProject property)</a>
 </li>
       </ul></li>
@@ -2175,6 +2187,8 @@ data-aria-dark="Switch to auto color mode">
 </li>
       </ul></li>
       <li><a href="methoddocs/ape_test.html#ape_test.config.ApeTestConfig.disconnect_providers_after">disconnect_providers_after (ape_test.config.ApeTestConfig attribute)</a>
+</li>
+      <li><a href="methoddocs/utils.html#ape.utils.basemodel.DiskCacheableModel">DiskCacheableModel (class in ape.utils.basemodel)</a>
 </li>
       <li><a href="methoddocs/ape_ethereum.html#ape_ethereum.transactions.DynamicFeeTransaction">DynamicFeeTransaction (class in ape_ethereum.transactions)</a>
 </li>
@@ -2862,7 +2876,7 @@ data-aria-dark="Switch to auto color mode">
       </ul></li>
       <li><a href="methoddocs/managers.html#ape.managers.chain.ContractCache.instance_at">instance_at() (ape.managers.chain.ContractCache method)</a>
 </li>
-      <li><a href="methoddocs/managers.html#ape.managers.chain.ContractCache.instance_from_receipt">instance_from_receipt() (ape.managers.chain.ContractCache method)</a>
+      <li><a href="methoddocs/managers.html#ape.managers.chain.ContractCache.instance_from_receipt">instance_from_receipt() (ape.managers.chain.ContractCache class method)</a>
 </li>
       <li><a href="methoddocs/managers.html#ape.managers.project.DeploymentManager.instance_map">instance_map (ape.managers.project.DeploymentManager property)</a>
 </li>
@@ -3164,6 +3178,10 @@ data-aria-dark="Switch to auto color mode">
         <li><a href="methoddocs/types.html#ape.types.events.LogFilter.model_dump">(ape.types.events.LogFilter method)</a>
 </li>
       </ul></li>
+      <li><a href="methoddocs/utils.html#ape.utils.basemodel.DiskCacheableModel.model_dump_file">model_dump_file() (ape.utils.basemodel.DiskCacheableModel method)</a>
+</li>
+      <li><a href="methoddocs/utils.html#ape.utils.basemodel.DiskCacheableModel.model_validate_file">model_validate_file() (ape.utils.basemodel.DiskCacheableModel class method)</a>
+</li>
       <li>
     module
 
@@ -4467,10 +4485,10 @@ data-aria-dark="Switch to auto color mode">
       </ul></li>
       <li><a href="methoddocs/api.html#ape.api.networks.ForkedNetworkAPI.upstream_chain_id">upstream_chain_id (ape.api.networks.ForkedNetworkAPI property)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/api.html#ape.api.networks.ForkedNetworkAPI.upstream_network">upstream_network (ape.api.networks.ForkedNetworkAPI property)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/api.html#ape.api.networks.ForkedNetworkAPI.upstream_provider">upstream_provider (ape.api.networks.ForkedNetworkAPI property)</a>
 
       <ul>
@@ -4500,6 +4518,8 @@ data-aria-dark="Switch to auto color mode">
       <li><a href="methoddocs/api.html#ape.api.networks.NetworkAPI.use_provider">use_provider() (ape.api.networks.NetworkAPI method)</a>
 </li>
       <li><a href="methoddocs/utils.html#ape.utils.os.use_temp_sys_path">use_temp_sys_path (class in ape.utils.os)</a>
+</li>
+      <li><a href="methoddocs/managers.html#ape.managers.chain.ContractCache.use_temporary_caches">use_temporary_caches() (ape.managers.chain.ContractCache method)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.networks.ForkedNetworkAPI.use_upstream_provider">use_upstream_provider() (ape.api.networks.ForkedNetworkAPI method)</a>
 </li>
