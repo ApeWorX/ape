@@ -161,7 +161,8 @@ class ContractCache(BaseManager):
 
         Args:
             address (AddressType): The on-chain address of the contract.
-            item (ContractType): The contract's type.
+            item (ContractType | ProxyInfoAPI | ContractCreation): The contract's type, proxy info,
+              or creation metadata.
         """
         # Note: Can't cache blueprints this way.
         address = self.provider.network.ecosystem.decode_address(int(address, 16))
@@ -171,6 +172,8 @@ class ContractCache(BaseManager):
             self.cache_proxy_info(address, item)
         elif isinstance(item, ContractCreation):
             self.cache_contract_creation(address, item)
+        elif contract_type := getattr(item, "contract_type", None):
+            self.cache_contract_type(address, contract_type)
         else:
             raise TypeError(item)
 
@@ -243,6 +246,7 @@ class ContractCache(BaseManager):
         """
         del self.contract_types[address]
         self._delete_proxy(address)
+        del self.contract_creations[address]
 
     @contextmanager
     def use_temporary_caches(self):

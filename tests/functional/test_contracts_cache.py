@@ -18,6 +18,11 @@ def contract_1(solidity_contract_container):
     return solidity_contract_container
 
 
+@pytest.fixture(autouse=True)
+def no_explorer(eth_tester_provider):
+    eth_tester_provider.network.__dict__["explorer"] = None
+
+
 def test_instance_at(chain, contract_instance):
     contract = chain.contracts.instance_at(str(contract_instance.address))
     assert contract.contract_type == contract_instance.contract_type
@@ -446,8 +451,7 @@ def test_get_creation_metadata(chain, vyper_contract_instance, owner):
 
 def test_delete_contract(vyper_contract_instance, chain):
     # Ensure we start with it cached.
-    if vyper_contract_instance.address not in chain.contracts:
-        chain.contracts[vyper_contract_instance.address] = vyper_contract_instance
+    chain.contracts[vyper_contract_instance.address] = vyper_contract_instance
 
     del chain.contracts[vyper_contract_instance.address]
     assert vyper_contract_instance.address not in chain.contracts
