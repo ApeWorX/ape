@@ -58,7 +58,7 @@ def test_warning_level_higher(simple_runner):
     @group_for_testing.command()
     @ape_cli_context()
     def cmd(cli_ctx):
-        with cli_ctx.logger.at_level(LogLevel.WARNING):
+        with cli_ctx.logger.at_level(LogLevel.WARNING.value + 1):
             cli_ctx.logger.warning("this is a test")
 
     logger._did_parse_sys_argv = False
@@ -87,7 +87,7 @@ def test_success_level_higher(simple_runner):
     @group_for_testing.command()
     @ape_cli_context()
     def cmd(cli_ctx):
-        with cli_ctx.logger.at_level(LogLevel.SUCCESS):
+        with cli_ctx.logger.at_level(LogLevel.SUCCESS.value + 1):
             cli_ctx.logger.success("this is a test")
 
     logger._did_parse_sys_argv = False
