@@ -61,6 +61,19 @@ class TestApeTestConfig:
 
 
 class TestConfigWrapper:
+    @pytest.mark.parametrize(
+        "cli_value,config_value", [(True, False), (False, True), (False, False)]
+    )
+    def test_show_internal(self, mocker, cli_value, config_value):
+        pytest_cfg = mocker.MagicMock()
+        ape_test_cfg = mocker.MagicMock()
+        wrapper = ConfigWrapper(pytest_cfg)
+        wrapper.__dict__["ape_test_config"] = ape_test_cfg
+        expected = cli_value or config_value  # True if there is a True
+        pytest_cfg.getoption.return_value = cli_value
+        ape_test_cfg.show_internal = config_value
+        assert wrapper.show_internal is expected
+
     def test_verbosity(self, mocker):
         """
         Show it returns the same as pytest_config's.
