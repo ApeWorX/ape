@@ -161,4 +161,4 @@ compile:
 Then, after compiling, you should notice minified ABI json files in your `.build/abi` folder.
 This is useful if hosting these files on a web-server.
 
-To see the full list of supported output-extra, see [the OutputExtra enum documentation](../methoddocs/ape_compile.html#ape_compile.config.OutputExtras).
+To see the full list of supported output-extra, see [the OutputExtras enum documentation](../methoddocs/ape_compile.html#ape_compile.config.OutputExtras).
