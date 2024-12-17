@@ -27,7 +27,6 @@ def _list(cli_ctx, list_all):
     """
     List installed packages
     """
-
     dm = cli_ctx.dependency_manager
     packages = []
     dependencies = [*list(dm.get_project_dependencies(use_cache=True, allow_install=False))]
@@ -56,9 +55,14 @@ def _list(cli_ctx, list_all):
             else dependency.package_id
         )
 
+        try:
+            version = dependency.version
+        except ProjectError:
+            version = "<error>"
+
         item = {
             "name": name,
-            "version": dependency.version,
+            "version": version,
             "installed": is_installed,
             "compiled": is_compiled,
         }
