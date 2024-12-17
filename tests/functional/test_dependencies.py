@@ -682,6 +682,7 @@ class TestDependency:
 
     def test_installed_version_id_fails(self, project):
         class BadDependency(LocalDependency):
+            @property
             def version_id(self) -> str:
                 raise ValueError("boo!")
 
