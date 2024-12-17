@@ -681,12 +681,10 @@ class TestDependency:
         assert dependency.installed
 
     def test_installed_version_id_fails(self, project):
-        class BadDependency(LocalDependency):
-            @property
-            def version_id(self) -> str:
-                raise ValueError("boo!")
-
-        api = BadDependency(local=Path.cwd(), name="bad")
+        api = PythonDependency(
+            site_package="apethisdependencyisnotinstalled",
+            name="apethisdependencyisnotinstalled",
+        )
         dependency = Dependency(api, project)
         assert not dependency.installed
 
