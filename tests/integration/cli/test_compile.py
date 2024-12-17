@@ -363,8 +363,11 @@ def test_compile_only_dependency(ape_cli, runner, integ_project, clean_cache, ap
         "--include-dependencies",
     )
     result = runner.invoke(ape_cli, arguments, catch_exceptions=False)
-    assert result.exit_code == 0, result.output
+    assert result.exit_code == 1, result.output  # exit_code=1 because 1 dependency is bad.
     assert expected_log_message in result.output
+
+    error_str = "Dependency 'apedependencythatisnotinstalledape' not installed."
+    assert error_str in result.output
 
 
 @skip_projects_except("with-contracts")
