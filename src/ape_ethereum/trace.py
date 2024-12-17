@@ -235,7 +235,7 @@ class Trace(TraceAPI):
 
         # Barely enrich a calltree for performance reasons
         # (likely not a need to enrich the whole thing).
-        calltree = self.get_raw_calltree()
+        calltree = self.get_calltree()
         return self._get_return_value_from_calltree(calltree)
 
     @cached_property
@@ -248,9 +248,13 @@ class Trace(TraceAPI):
 
         return self._get_return_value_from_calltree(calltree)
 
-    def _get_return_value_from_calltree(self, calltree: dict) -> tuple[Optional[Any], ...]:
+    def _get_return_value_from_calltree(
+        self, calltree: Union[dict, CallTreeNode]
+    ) -> tuple[Optional[Any], ...]:
         num_outputs = 1
-        if raw_return_data := calltree.get("returndata"):
+        if raw_return_data := (
+            calltree.get("returndata") if isinstance(calltree, dict) else calltree.returndata
+        ):
             if abi := self._get_abi(calltree):
                 # Ensure we return a tuple with the correct length, even if fails.
                 num_outputs = len(abi.outputs)
