@@ -444,10 +444,10 @@ class Trace(TraceAPI):
     def _get_tree(self, verbose: bool = False) -> Tree:
         return parse_rich_tree(self.enriched_calltree, verbose=verbose)
 
-    def _get_abi(self, call: dict) -> Optional["MethodABI"]:
-        if not (addr := call.get("address")):
+    def _get_abi(self, call: Union[dict, CallTreeNode]) -> Optional["MethodABI"]:
+        if not (addr := call.get("address") if isinstance(call, dict) else call.address):
             return self.root_method_abi
-        if not (calldata := call.get("calldata")):
+        if not (calldata := call.get("calldata") if isinstance(call, dict) else call.calldata):
             return self.root_method_abi
         if not (contract_type := self.chain_manager.contracts.get(addr)):
             return self.root_method_abi
