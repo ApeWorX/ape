@@ -7,6 +7,9 @@ dependencies:
     config_override:
       contracts_folder: sources
 
+  - name: dependency-that-is-not-installed
+    site_package: apedependencythatisnotinstalledape
+
 compile:
   # NOTE: this should say `include_dependencies: false` below.
   # (it gets replaced with `true` in a test temporarily)

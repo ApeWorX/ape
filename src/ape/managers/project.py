@@ -655,7 +655,13 @@ class Dependency(BaseManager, ExtraAttributesMixin):
         if self._installation is not None:
             return True
 
-        elif self.project_path.is_dir():
+        try:
+            project_path = self.project_path
+        except ProjectError:
+            # Fails when version ID errors out (bad config / missing required install etc.)
+            return False
+
+        if project_path.is_dir():
             if any(x for x in self.project_path.iterdir() if not x.name.startswith(".")):
                 return True
 
@@ -1202,13 +1208,22 @@ class DependencyManager(BaseManager):
         """
 
         for api in self.config_apis:
+            try:
+                api_version_id = api.version_id
+            except Exception:
+                api_version_id = None
+
             if (name is not None and api.name != name and api.package_id != name) or (
-                version is not None and api.version_id != version
+                version is not None and api_version_id != version
             ):
                 continue
 
             # Ensure the dependency API data is known.
-            dependency = self.add(api)
+            if api_version_id is not None:
+                dependency = self.add(api)
+            else:
+                # Errored.
+                dependency = Dependency(api)
 
             if allow_install:
                 try:
@@ -1464,7 +1479,6 @@ class DependencyManager(BaseManager):
         Returns:
             class:`~ape.managers.project.Dependency`
         """
-
         api = self.decode_dependency(**dependency) if isinstance(dependency, dict) else dependency
         self.packages_cache.cache_api(api)
 

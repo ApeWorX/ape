@@ -29,7 +29,7 @@ class DependencyAPI(BaseInterfaceModel):
     def package_id(self) -> str:
         """
         The full name of the package, used for storage.
-        Example: ``OpenZeppelin/openzepplin-contracts``.
+        Example: ``OpenZeppelin/openzeppelin-contracts``.
         """
 
     @property

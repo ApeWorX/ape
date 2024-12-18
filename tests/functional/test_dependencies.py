@@ -216,6 +216,22 @@ def test_add_dependency_with_dependencies(project, with_dependencies_project_pat
     assert actual.version == "local"
 
 
+def test_get_project_dependencies(project, with_dependencies_project_path):
+    installed_package = {"name": "web3", "site_package": "web3"}
+    not_installed_package = {
+        "name": "apethisisnotarealpackageape",
+        "site_package": "apethisisnotarealpackageape",
+    }
+    with project.temp_config(dependencies=[installed_package, not_installed_package]):
+        dm = project.dependencies
+        actual = list(dm.get_project_dependencies())
+        assert len(actual) == 2
+        assert actual[0].name == "web3"
+        assert actual[0].installed
+        assert actual[1].name == "apethisisnotarealpackageape"
+        assert not actual[1].installed
+
+
 def test_install(project, mocker):
     with project.isolate_in_tempdir() as tmp_project:
         contracts_path = tmp_project.path / "src"
@@ -663,6 +679,14 @@ class TestDependency:
         assert not dependency.installed
         dependency.install()
         assert dependency.installed
+
+    def test_installed_version_id_fails(self, project):
+        api = PythonDependency(
+            site_package="apethisdependencyisnotinstalled",
+            name="apethisdependencyisnotinstalled",
+        )
+        dependency = Dependency(api, project)
+        assert not dependency.installed
 
     def test_compile(self, project):
         with create_tempdir() as path:
