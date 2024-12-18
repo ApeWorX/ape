@@ -345,7 +345,7 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
             same amount of gas as the given ``gas_limit``.
         """
 
-    @property
+    @cached_property
     def trace(self) -> "TraceAPI":
         """
         The :class:`~ape.api.trace.TraceAPI` of the transaction.
@@ -489,7 +489,7 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
         """
         return None
 
-    @property
+    @cached_property
     def return_value(self) -> Any:
         """
         Obtain the final return value of the call. Requires tracing to function,

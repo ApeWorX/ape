@@ -4,6 +4,7 @@ from typing import Optional
 import pytest
 from ethpm_types import MethodABI
 from ethpm_types.abi import ABIType
+from evm_trace import CallTreeNode
 from hexbytes import HexBytes
 
 from ape.utils import run_in_tempdir
@@ -494,8 +495,8 @@ def test_return_value_tuple(geth_provider):
         def transaction(self) -> dict:
             return transaction
 
-        def get_raw_calltree(self) -> dict:
-            return calltree
+        def get_calltree(self) -> CallTreeNode:
+            return CallTreeNode.model_validate(calltree)
 
         @property
         def root_method_abi(self) -> Optional[MethodABI]:

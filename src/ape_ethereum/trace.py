@@ -235,7 +235,7 @@ class Trace(TraceAPI):
 
         # Barely enrich a calltree for performance reasons
         # (likely not a need to enrich the whole thing).
-        calltree = self.get_raw_calltree()
+        calltree = self.get_calltree()
         return self._get_return_value_from_calltree(calltree)
 
     @cached_property
@@ -248,16 +248,22 @@ class Trace(TraceAPI):
 
         return self._get_return_value_from_calltree(calltree)
 
-    def _get_return_value_from_calltree(self, calltree: dict) -> tuple[Optional[Any], ...]:
+    def _get_return_value_from_calltree(
+        self, calltree: Union[dict, CallTreeNode]
+    ) -> tuple[Optional[Any], ...]:
         num_outputs = 1
-        if raw_return_data := calltree.get("returndata"):
+        if raw_return_data := (
+            calltree.get("returndata") if isinstance(calltree, dict) else calltree.returndata
+        ):
             if abi := self._get_abi(calltree):
                 # Ensure we return a tuple with the correct length, even if fails.
                 num_outputs = len(abi.outputs)
                 try:
                     return self._ecosystem.decode_returndata(abi, HexBytes(raw_return_data))
                 except Exception as err:
-                    logger.debug(f"Failed decoding raw returndata: {raw_return_data}. Error: {err}")
+                    logger.debug(
+                        f"Failed decoding raw returndata: {to_hex(raw_return_data)}. Error: {err}"
+                    )
                     return tuple([None for _ in range(num_outputs)])
 
         return tuple([None for _ in range(num_outputs)])
@@ -440,10 +446,10 @@ class Trace(TraceAPI):
     def _get_tree(self, verbose: bool = False) -> Tree:
         return parse_rich_tree(self.enriched_calltree, verbose=verbose)
 
-    def _get_abi(self, call: dict) -> Optional["MethodABI"]:
-        if not (addr := call.get("address")):
+    def _get_abi(self, call: Union[dict, CallTreeNode]) -> Optional["MethodABI"]:
+        if not (addr := call.get("address") if isinstance(call, dict) else call.address):
             return self.root_method_abi
-        if not (calldata := call.get("calldata")):
+        if not (calldata := call.get("calldata") if isinstance(call, dict) else call.calldata):
             return self.root_method_abi
         if not (contract_type := self.chain_manager.contracts.get(addr)):
             return self.root_method_abi
