@@ -119,6 +119,9 @@ class FixtureManager(ManagerAccessMixin):
         except (NotImplementedError, ProviderNotConnectedError):
             # Assume it's on since it can't be turned off.
             is_auto_mine = True
+        except AttributeError:
+            # If not a test-provider, we don't know.
+            return None
 
         if not is_auto_mine:
             # When auto-mine is disabled, it's unknown.

@@ -168,6 +168,16 @@ class TestFixtureManager:
         fixture_manager.add_fixture_info("bar", setup_block=1, teardown_block=2)
         assert fixture_manager.is_stateful("bar") is True
 
+    def test_is_stateful_when_not_using_test_provider(self, networks, fixture_manager, item):
+        fixture_manager._stateful_fixtures_cache = {}
+        live_provider = networks.ethereum.sepolia.get_provider("node")
+        provider = networks.active_provider
+        networks.active_provider = live_provider
+        for fixture in ("foo", "bar"):
+            actual = fixture_manager.is_stateful(fixture)
+            networks.active_provider = provider
+            assert actual is None
+
     def test_rebase(self, mocker, fixture_manager, fixture_map, create_fixture_info):
         # We must have already started our module-scope isolation.
         isolation_manager = IsolationManager(fixture_manager.config_wrapper, mocker.MagicMock())
