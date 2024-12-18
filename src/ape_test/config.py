@@ -128,6 +128,12 @@ class ApeTestConfig(PluginConfig):
     Configuration related to coverage reporting.
     """
 
+    enable_fixture_rebasing: bool = True
+    """
+    Set to ``False`` to ignore fixture rebasing when non-function
+    scoped fixtures become invalidated.
+    """
+
     disconnect_providers_after: bool = True
     """
     Set to ``False`` to keep providers connected at the end of the test run.

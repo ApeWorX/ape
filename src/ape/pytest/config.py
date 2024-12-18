@@ -89,6 +89,10 @@ class ConfigWrapper(ManagerAccessMixin):
         return self.pytest_config.getoption("--show-internal") or self.ape_test_config.show_internal
 
     @cached_property
+    def enable_fixture_rebasing(self) -> bool:
+        return self.ape_test_config.enable_fixture_rebasing
+
+    @cached_property
     def gas_exclusions(self) -> list["ContractFunctionPath"]:
         """
         The combination of both CLI values and config values.
