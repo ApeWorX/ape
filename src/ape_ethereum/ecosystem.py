@@ -589,29 +589,14 @@ class Ethereum(EcosystemAPI):
         }
 
         receipt_cls: type[Receipt]
-        if any(
-            x in data
-            for x in (
-                "blobGasPrice",
-                "blobGasUsed",
-                "blobVersionedHashes",
-                "maxFeePerBlobGas",
-                "blob_gas_price",
-                "blob_gas_used",
-            )
-        ):
-            blob_gas_price = data.get("blob_gas_price", data.get("blobGasPrice"))
+        if data.get("type") == 3:
+            receipt_cls = SharedBlobReceipt
+            blob_gas_price = data.get("blob_gas_price")
             if blob_gas_price is None:
-                # Not actually a blob-receipt? Some providers may give you
-                # empty values here when meaning the other types of receipts.
-                receipt_cls = Receipt
+                blob_gas_price = data.get("blobGasPrice")
 
-            else:
-                receipt_cls = SharedBlobReceipt
-                receipt_kwargs["blobGasPrice"] = blob_gas_price
-                receipt_kwargs["blobGasUsed"] = (
-                    data.get("blob_gas_used", data.get("blobGasUsed")) or 0
-                )
+            receipt_kwargs["blobGasPrice"] = blob_gas_price
+            receipt_kwargs["blobGasUsed"] = data.get("blob_gas_used", data.get("blobGasUsed")) or 0
 
         else:
             receipt_cls = Receipt
