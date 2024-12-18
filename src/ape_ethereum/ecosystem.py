@@ -588,6 +588,7 @@ class Ethereum(EcosystemAPI):
             "transaction": self.create_transaction(**data),
         }
 
+        receipt_cls: type[Receipt]
         if data.get("type") == 3:
             receipt_cls = SharedBlobReceipt
             blob_gas_price = data.get("blob_gas_price")
