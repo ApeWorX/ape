@@ -261,7 +261,9 @@ class Trace(TraceAPI):
                 try:
                     return self._ecosystem.decode_returndata(abi, HexBytes(raw_return_data))
                 except Exception as err:
-                    logger.debug(f"Failed decoding raw returndata: {raw_return_data}. Error: {err}")
+                    logger.debug(
+                        f"Failed decoding raw returndata: {to_hex(raw_return_data)}. Error: {err}"
+                    )
                     return tuple([None for _ in range(num_outputs)])
 
         return tuple([None for _ in range(num_outputs)])
