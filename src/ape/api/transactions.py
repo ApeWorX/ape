@@ -489,7 +489,7 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
         """
         return None
 
-    @property
+    @cached_property
     def return_value(self) -> Any:
         """
         Obtain the final return value of the call. Requires tracing to function,
