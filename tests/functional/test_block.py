@@ -20,13 +20,13 @@ def test_block(eth_tester_provider, vyper_contract_instance):
 
 def test_repr(block):
     actual = repr(block)
-    expected = f"<BlockAPI number={block.number} hash={block.hash}>"
+    expected = f"<Block number={block.number} hash={to_hex(block.hash)}>"
     assert actual == expected
 
     # Show it works when there is no hash.
     block.hash = None
     actual = repr(block)
-    expected = f"<BlockAPI number={block.number}>"
+    expected = f"<Block number={block.number}>"
     assert actual == expected
 
 
