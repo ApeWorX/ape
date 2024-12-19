@@ -151,12 +151,12 @@ class BlockAPI(BaseInterfaceModel):
         """
         All transactions in a block.
         """
-        if not (block_hash := self.hash):
+        if self.hash is None:
             # Unable to query transactions.
             return []
 
         try:
-            query = BlockTransactionQuery(columns=["*"], block_id=block_hash)
+            query = BlockTransactionQuery(columns=["*"], block_id=self.hash)
             return cast(list[TransactionAPI], list(self.query_manager.query(query)))
         except QueryEngineError as err:
             # NOTE: Re-raising a better error here because was confusing
