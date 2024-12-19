@@ -16,6 +16,7 @@ from signal import SIGINT, SIGTERM, signal
 from subprocess import DEVNULL, PIPE, Popen
 from typing import TYPE_CHECKING, Any, Optional, Union, cast
 
+from eth_utils import to_hex
 from pydantic import Field, computed_field, field_serializer, model_validator
 
 from ape.api.networks import NetworkAPI
@@ -95,7 +96,11 @@ class BlockAPI(BaseInterfaceModel):
 
     @log_instead_of_fail(default="<BlockAPI>")
     def __repr__(self) -> str:
-        return super().__repr__()
+        repr_str = f"{self.__class__.__name__} number={self.number}"
+        if hash := self.hash:
+            repr_str = f"{repr_str} hash={to_hex(hash)}"
+
+        return f"<{repr_str}>"
 
     @property
     def datetime(self) -> datetime.datetime:
@@ -146,6 +151,10 @@ class BlockAPI(BaseInterfaceModel):
         """
         All transactions in a block.
         """
+        if self.hash is None:
+            # Unable to query transactions.
+            return []
+
         try:
             query = BlockTransactionQuery(columns=["*"], block_id=self.hash)
             return cast(list[TransactionAPI], list(self.query_manager.query(query)))
