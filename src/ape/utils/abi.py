@@ -70,7 +70,7 @@ class StructParser:
         Convert dicts and other objects to struct inputs.
 
         Args:
-            values (Union[list, tuple]): A list of of input values.
+            values (Union[list, tuple]): A list of input values.
 
         Returns:
             Any: The same input values only decoded into structs when applicable.
@@ -129,7 +129,7 @@ class StructParser:
         This method also handles structs within structs as well as arrays of structs.
 
         Args:
-            values (Union[list, tuple]): A list of of output values.
+            values (Union[list, tuple]): A list of output values.
 
         Returns:
             Any: The same input values only decoded into structs when applicable.
