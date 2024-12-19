@@ -1,5 +1,6 @@
 import copy
 from pathlib import Path
+from typing import ClassVar
 from unittest import mock
 
 import pytest
@@ -204,6 +205,31 @@ def test_providers(ethereum):
     providers = network.providers
     assert "test" in providers
     assert "node" in providers
+
+
+def test_providers_NAME_defined(mocker):
+    """
+    Show that when a provider plugin used the NAME ClassVar,
+    the provider's name is that instead of the plugin's name.
+    """
+    ecosystem_name = "my-ecosystem"
+    network_name = "my-network"
+    provider_name = "my-provider"
+
+    class MyProvider(ProviderAPI):
+        NAME: ClassVar[str] = provider_name
+
+    class MyNetwork(NetworkAPI):
+        def _get_plugin_providers(self):
+            yield "my-provider-plugin", (ecosystem_name, network_name, MyProvider)
+
+    class MyEcosystem(Ethereum):
+        pass
+
+    ecosystem = MyEcosystem(name=ecosystem_name)
+    network = MyNetwork(name=network_name, ecosystem=ecosystem)
+    actual = list(network.providers)
+    assert actual == [provider_name]  # And not "my-provider-plugin"
 
 
 def test_providers_custom_network(project, custom_networks_config_dict, ethereum):

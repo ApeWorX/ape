@@ -14,7 +14,7 @@ from logging import FileHandler, Formatter, Logger, getLogger
 from pathlib import Path
 from signal import SIGINT, SIGTERM, signal
 from subprocess import DEVNULL, PIPE, Popen
-from typing import TYPE_CHECKING, Any, Optional, Union, cast
+from typing import TYPE_CHECKING, Any, ClassVar, Optional, Union, cast
 
 from pydantic import Field, computed_field, field_serializer, model_validator
 
@@ -179,8 +179,12 @@ class ProviderAPI(BaseInterfaceModel):
     plugin or the `ape-hardhat <https://github.com/ApeWorX/ape-hardhat>`__ plugin.
     """
 
+    # TODO: In 0.9, make not optional.
+    NAME: ClassVar[Optional[str]] = None
+
+    # TODO: Remove in 0.9 and have NAME be defined at the class-level (in plugins).
     name: str
-    """The name of the provider (should be the plugin name)."""
+    """(deprecated: use NAME). The name of the provider (should be the plugin name)."""
 
     network: NetworkAPI
     """A reference to the network this provider provides."""
