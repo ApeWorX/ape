@@ -201,8 +201,7 @@ class PytestApeRunner(ManagerAccessMixin):
 
             # Rebase if there are new fixtures found of non-function scope.
             # And there are stateful fixtures of lower scopes that need resetting.
-            may_need_rebase = bool(new_fixtures and snapshot.fixtures)
-            if may_need_rebase:
+            if self.fixture_manager.needs_rebase(new_fixtures, snapshot):
                 self.fixture_manager.rebase(scope, fixtures)
 
             # Append these fixtures so we know when new ones arrive
