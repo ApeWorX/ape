@@ -121,7 +121,10 @@ def test_run_interactive(scripts_runner, integ_project):
     scripts = [integ_project.scripts_folder / f"{s}.py" for s in error_names]
 
     # Show that the variable namespace from the script is available in the console.
-    user_input = "local_variable\nape.chain.provider.mine()\nape.chain.blocks.head\nexit\n"
+    user_input = (
+        "local_variable\nape.chain.provider.mine()\n"
+        "print(f'timestamp={ape.chain.blocks.head.timestamp}')\nexit\n"
+    )
 
     result = scripts_runner.invoke("--interactive", scripts[0].stem, input=user_input)
     assert result.exit_code == 0, result.output
