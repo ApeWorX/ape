@@ -87,7 +87,6 @@ def test_show_events(trace_print_capture, invoke_receipt):
     assert "newNum=[bright_magenta]1" in label
 
 
-
 def test_decode_logs(owner, contract_instance, assert_log_values):
     event_type = contract_instance.NumberChange
 
@@ -141,6 +140,23 @@ def test_decode_logs_multiple_event_types(owner, contract_instance, assert_log_v
     assert len(logs) == 2
     assert logs[0].foo == 0
     assert logs[1].bar == 1
+
+
+def test_decode_logs_not_checksummed_addresses(owner, contract_instance, assert_log_values):
+    """
+    If an RPC returns non-checksummed logs with non-checksummed addresses,
+    show we can still decode them.
+    """
+    start_number = contract_instance.myNumber()
+    tx = contract_instance.setNumber(1, sender=owner)
+    assert len(tx.logs) == 1
+
+    # Hack to make the address lower-case.
+    tx.logs[0]["address"] = tx.logs[0]["address"].lower()
+
+    events = tx.decode_logs()
+    assert len(events) == 1
+    assert_log_values(events[0], 1, start_number)
 
 
 def test_decode_logs_unspecified_abi_gets_all_logs(owner, contract_instance):
