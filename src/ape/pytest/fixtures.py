@@ -162,6 +162,11 @@ class FixtureManager(ManagerAccessMixin):
     def _get_cached_fixtures(self, nodeid: str) -> Optional["FixtureMap"]:
         return self._nodeid_to_fixture_map.get(nodeid)
 
+    def needs_rebase(self, new_fixtures: list[str], snapshot: "Snapshot") -> bool:
+        return self.config_wrapper.enable_fixture_rebasing and bool(
+            new_fixtures and snapshot.fixtures
+        )
+
     def rebase(self, scope: Scope, fixtures: "FixtureMap"):
         if not (rebase := self._get_rebase(scope)):
             # Rebase avoided: nothing would change.

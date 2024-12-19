@@ -178,6 +178,24 @@ class TestFixtureManager:
             networks.active_provider = provider
             assert actual is None
 
+    def test_needs_rebase(self, mocker, fixture_manager):
+        new_fixtures = ["new_fixture_1"]
+        snapshot = mocker.MagicMock()
+        actual = fixture_manager.needs_rebase(new_fixtures, snapshot)
+        assert actual
+
+        # Show you can disable fixture-rebasing.
+        original_value = fixture_manager.config_wrapper.__dict__.pop(
+            "enable_fixture_rebasing", True
+        )
+        fixture_manager.config_wrapper.__dict__["enable_fixture_rebasing"] = False
+        actual = fixture_manager.needs_rebase(new_fixtures, snapshot)
+
+        # (put back)
+        fixture_manager.config_wrapper.__dict__["enable_fixture_rebasing"] = original_value
+
+        assert not actual
+
     def test_rebase(self, mocker, fixture_manager, fixture_map, create_fixture_info):
         # We must have already started our module-scope isolation.
         isolation_manager = IsolationManager(fixture_manager.config_wrapper, mocker.MagicMock())
