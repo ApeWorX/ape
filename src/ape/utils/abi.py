@@ -3,9 +3,14 @@ from collections.abc import Sequence
 from dataclasses import make_dataclass
 from typing import Any, Optional, Union
 
-from eth_abi import decode, grammar
+from eth_abi import grammar
+from eth_abi.abi import decode
+from eth_abi.decoding import UnsignedIntegerDecoder
+from eth_abi.encoding import UnsignedIntegerEncoder
 from eth_abi.exceptions import DecodingError, InsufficientDataBytes
+from eth_abi.registry import BaseEquals, registry
 from eth_pydantic_types import HexBytes
+from eth_pydantic_types.validators import validate_bytes_size
 from eth_utils import decode_hex
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, EventABIType, MethodABI
 
@@ -13,6 +18,30 @@ from ape.logging import logger
 
 ARRAY_PATTERN = re.compile(r"[(*\w,? )]*\[\d*]")
 NATSPEC_KEY_PATTERN = re.compile(r"(@\w+)")
+
+
+class ApeUnsignedIntegerDecoder(UnsignedIntegerDecoder):
+    def read_data_from_stream(self, stream):
+        """
+        Override to pad the value instead of raise an error.
+        """
+        data_byte_size: int = self.data_byte_size  # type: ignore
+        data = stream.read(data_byte_size)
+
+        if len(data) != data_byte_size:
+            # Pad the value (instead of raising InsufficientBytesError).
+            data = validate_bytes_size(data, 32)
+
+        return data
+
+
+registry.unregister("uint")
+registry.register(
+    BaseEquals("uint"),
+    UnsignedIntegerEncoder,
+    ApeUnsignedIntegerDecoder,
+    label="uint",
+)
 
 
 def is_array(abi_type: Union[str, ABIType]) -> bool:
@@ -418,7 +447,9 @@ class LogInputABICollection:
     def event_name(self):
         return self.abi.name
 
-    def decode(self, topics: list[str], data: str, use_hex_on_fail: bool = False) -> dict:
+    def decode(
+        self, topics: list[str], data: Union[str, bytes], use_hex_on_fail: bool = False
+    ) -> dict:
         decoded = {}
         for abi, topic_value in zip(self.topic_abi_types, topics[1:]):
             # reference types as indexed arguments are written as a hash
