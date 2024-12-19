@@ -18,6 +18,18 @@ def test_block(eth_tester_provider, vyper_contract_instance):
     assert actual.number == data["number"]
 
 
+def test_repr(block):
+    actual = repr(block)
+    expected = f"<BlockAPI number={block.number} hash={block.hash}>"
+    assert actual == expected
+
+    # Show it works when there is no hash.
+    block.hash = None
+    actual = repr(block)
+    expected = f"<BlockAPI number={block.number}>"
+    assert actual == expected
+
+
 @pytest.mark.parametrize("mode", ("json", "python"))
 def test_model_dump(block, mode):
     actual = block.model_dump(mode=mode)

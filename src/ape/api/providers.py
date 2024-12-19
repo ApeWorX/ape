@@ -95,7 +95,11 @@ class BlockAPI(BaseInterfaceModel):
 
     @log_instead_of_fail(default="<BlockAPI>")
     def __repr__(self) -> str:
-        return super().__repr__()
+        repr_str = f"BlockAPI number={self.number}"
+        if hash := self.hash:
+            repr_str = f"{repr_str} hash={hash}"
+
+        return f"<{repr_str}>"
 
     @property
     def datetime(self) -> datetime.datetime:
