@@ -96,7 +96,7 @@ class TransactionAPI(BaseInterfaceModel):
         return value
 
     @property
-    def gas(self) -> int:
+    def gas(self) -> Optional[int]:
         """
         Alias for ``.gas_limit``.
         """
