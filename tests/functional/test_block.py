@@ -18,6 +18,18 @@ def test_block(eth_tester_provider, vyper_contract_instance):
     assert actual.number == data["number"]
 
 
+def test_repr(block):
+    actual = repr(block)
+    expected = f"<Block number={block.number} hash={to_hex(block.hash)}>"
+    assert actual == expected
+
+    # Show it works when there is no hash.
+    block.hash = None
+    actual = repr(block)
+    expected = f"<Block number={block.number}>"
+    assert actual == expected
+
+
 @pytest.mark.parametrize("mode", ("json", "python"))
 def test_model_dump(block, mode):
     actual = block.model_dump(mode=mode)
@@ -116,3 +128,14 @@ def test_model_validate_web3_block():
     data = BlockData(number=123, timestamp=123, gasLimit=123, gasUsed=100)  # type: ignore
     actual = Block.model_validate(data)
     assert actual.number == 123
+
+
+def test_transactions(block):
+    actual = block.transactions
+    expected: list = []
+    assert actual == expected
+
+    # Ensure still works when hash is None (was a bug where this crashed).
+    block.hash = None
+    block.__dict__.pop("transactions", None)  # Ensure not cached.
+    assert block.transactions == []

@@ -6,6 +6,7 @@ from typing import Optional
 
 import pytest
 
+from ape.logging import logger
 from ape.pytest.fixtures import PytestApeFixtures
 from tests.conftest import GETH_URI, geth_process_test
 from tests.integration.cli.utils import skip_projects_except
@@ -178,10 +179,9 @@ def test_test(setup_pytester, integ_project, pytester, eth_tester_provider):
     _ = eth_tester_provider  # Ensure using EthTester for this test.
     passed, failed = setup_pytester(integ_project)
 
-    from ape.logging import logger
+    with logger.at_level("DEBUG"):
+        result = pytester.runpytest_subprocess(timeout=120)
 
-    logger.set_level("DEBUG")
-    result = pytester.runpytest_subprocess(timeout=120)
     outcomes = result.parseoutcomes()
     assert "failed" not in outcomes if failed == 0 else outcomes["failed"] == failed
     if integ_project.name != "test":
