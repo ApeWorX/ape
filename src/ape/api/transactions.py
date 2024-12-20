@@ -134,6 +134,13 @@ class TransactionAPI(BaseInterfaceModel):
         """
 
     @property
+    def hash(self) -> HexBytes:
+        """
+        Alias for ``self.txn_hash``.
+        """
+        return self.txn_hash
+
+    @property
     def receipt(self) -> Optional["ReceiptAPI"]:
         """
         This transaction's associated published receipt, if it exists.
