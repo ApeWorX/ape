@@ -153,6 +153,7 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#ape_ethereum.ecosystem.Ethereum.encode_transaction"><code class="docutils literal notranslate">.encode_transaction()</span></code></a></li>
 <li><a class="reference internal" href="#ape_ethereum.ecosystem.Ethereum.enrich_trace"><code class="docutils literal notranslate">.enrich_trace()</span></code></a></li>
 <li><a class="reference internal" href="#ape_ethereum.ecosystem.Ethereum.fee_token_symbol"><code class="docutils literal notranslate">.fee_token_symbol</span></code></a></li>
+<li><a class="reference internal" href="#ape_ethereum.ecosystem.Ethereum.get_deployment_address"><code class="docutils literal notranslate">.get_deployment_address()</span></code></a></li>
 <li><a class="reference internal" href="#ape_ethereum.ecosystem.Ethereum.get_proxy_info"><code class="docutils literal notranslate">.get_proxy_info()</span></code></a></li>
 <li><a class="reference internal" href="#ape_ethereum.ecosystem.Ethereum.get_python_types"><code class="docutils literal notranslate">.get_python_types()</span></code></a></li>
 </ul>
@@ -689,6 +690,14 @@ plugin level.</p></li>
 <dt class="sig sig-object py" id="ape_ethereum.ecosystem.Ethereum.fee_token_symbol">
 <span class="sig-name descname"><span class="pre">fee_token_symbol</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_ethereum.ecosystem.Ethereum.fee_token_symbol" title="Link to this definition"></a></dt>
 <dd><p>The token symbol for the currency that pays for fees, such as ETH.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape_ethereum.ecosystem.Ethereum.get_deployment_address">
+<span class="sig-name descname"><span class="pre">get_deployment_address</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><span class="pre">ChecksumAddress</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_AddressValidator</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nonce</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><span class="pre">ChecksumAddress</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_AddressValidator</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape_ethereum.ecosystem.Ethereum.get_deployment_address" title="Link to this definition"></a></dt>
+<dd><p>Calculate the deployment address of a contract before it is deployed.
+This is useful if the address is an argument to another contract’s deployment
+and you have not yet deployed the first contract yet.</p>
 </dd></dl>
 
 <dl class="py method">

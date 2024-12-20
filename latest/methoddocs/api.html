@@ -137,6 +137,7 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#ape.api.accounts.AccountAPI.check_signature"><code class="docutils literal notranslate">check_signature()</span></code></a></li>
 <li><a class="reference internal" href="#ape.api.accounts.AccountAPI.declare"><code class="docutils literal notranslate">declare()</span></code></a></li>
 <li><a class="reference internal" href="#ape.api.accounts.AccountAPI.deploy"><code class="docutils literal notranslate">deploy()</span></code></a></li>
+<li><a class="reference internal" href="#ape.api.accounts.AccountAPI.get_deployment_address"><code class="docutils literal notranslate">get_deployment_address()</span></code></a></li>
 <li><a class="reference internal" href="#ape.api.accounts.AccountAPI.prepare_transaction"><code class="docutils literal notranslate">prepare_transaction()</span></code></a></li>
 <li><a class="reference internal" href="#ape.api.accounts.AccountAPI.sign_message"><code class="docutils literal notranslate">sign_message()</span></code></a></li>
 <li><a class="reference internal" href="#ape.api.accounts.AccountAPI.sign_raw_msghash"><code class="docutils literal notranslate">sign_raw_msghash()</span></code></a></li>
@@ -331,6 +332,7 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#ape.api.networks.EcosystemAPI.enrich_trace"><code class="docutils literal notranslate">enrich_trace()</span></code></a></li>
 <li><a class="reference internal" href="#ape.api.networks.EcosystemAPI.fee_token_decimals"><code class="docutils literal notranslate">fee_token_decimals</span></code></a></li>
 <li><a class="reference internal" href="#ape.api.networks.EcosystemAPI.fee_token_symbol"><code class="docutils literal notranslate">fee_token_symbol</span></code></a></li>
+<li><a class="reference internal" href="#ape.api.networks.EcosystemAPI.get_deployment_address"><code class="docutils literal notranslate">get_deployment_address()</span></code></a></li>
 <li><a class="reference internal" href="#ape.api.networks.EcosystemAPI.get_method_selector"><code class="docutils literal notranslate">get_method_selector()</span></code></a></li>
 <li><a class="reference internal" href="#ape.api.networks.EcosystemAPI.get_network"><code class="docutils literal notranslate">get_network()</span></code></a></li>
 <li><a class="reference internal" href="#ape.api.networks.EcosystemAPI.get_network_data"><code class="docutils literal notranslate">get_network_data()</span></code></a></li>
@@ -790,6 +792,26 @@ Defaults to <code class="docutils literal notranslate"><span class="pre">False</
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractInstance</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.api.accounts.AccountAPI.get_deployment_address">
+<span class="sig-name descname"><span class="pre">get_deployment_address</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nonce</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><span class="pre">ChecksumAddress</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_AddressValidator</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.api.accounts.AccountAPI.get_deployment_address" title="Link to this definition"></a></dt>
+<dd><p>Get a contract address before it is deployed. This is useful
+when you need to pass the contract address to another contract
+before deploying it.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>nonce</strong> (<em>int</em><em> | </em><em>None</em>) – Optionally provide a nonce. Defaults
+the account’s current nonce.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The contract address.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>AddressType</p>
 </dd>
 </dl>
 </dd></dl>
@@ -2506,6 +2528,14 @@ plugin level.</p></li>
 <dt class="sig sig-object py" id="ape.api.networks.EcosystemAPI.fee_token_symbol">
 <span class="sig-name descname"><span class="pre">fee_token_symbol</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape.api.networks.EcosystemAPI.fee_token_symbol" title="Link to this definition"></a></dt>
 <dd><p>The token symbol for the currency that pays for fees, such as ETH.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.api.networks.EcosystemAPI.get_deployment_address">
+<span class="sig-name descname"><span class="pre">get_deployment_address</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.networks.EcosystemAPI.get_deployment_address" title="Link to this definition"></a></dt>
+<dd><p>Calculate the deployment address of a contract before it is deployed.
+This is useful if the address is an argument to another contract’s deployment
+and you have not yet deployed the first contract yet.</p>
 </dd></dl>
 
 <dl class="py method">
