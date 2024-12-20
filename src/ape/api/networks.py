@@ -581,7 +581,9 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
 
     @raises_not_implemented
     def get_deployment_address(  # type: ignore[empty-body]
-        self, address: AddressType, nonce: int,
+        self,
+        address: AddressType,
+        nonce: int,
     ) -> AddressType:
         """
         Calculate the deployment address of a contract before it is deployed.
