@@ -406,3 +406,10 @@ def test_override_annotated_fields():
     my_tx = MyTransaction.model_validate({"chain_id": chain_id, "type": tx_type})
     assert my_tx.chain_id == chain_id
     assert my_tx.type == tx_type
+
+
+def test_gas(ethereum):
+    tx = ethereum.create_transaction(gas_limit=123)
+    assert tx.gas_limit == 123
+    # Show the `gas` alias works.
+    assert tx.gas == 123
