@@ -225,6 +225,10 @@ def test_txn_hash_and_receipt(owner, eth_tester_provider, ethereum, kwargs):
     txn = owner.prepare_transaction(txn)
     txn = owner.sign_transaction(txn)
     assert txn
+
+    # Show the .hash alias works.
+    assert txn.hash == txn.txn_hash
+
     actual = to_hex(txn.txn_hash)
     receipt = eth_tester_provider.send_transaction(txn)
 
