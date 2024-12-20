@@ -225,6 +225,10 @@ def test_txn_hash_and_receipt(owner, eth_tester_provider, ethereum, kwargs):
     txn = owner.prepare_transaction(txn)
     txn = owner.sign_transaction(txn)
     assert txn
+
+    # Show the .hash alias works.
+    assert txn.hash == txn.txn_hash
+
     actual = to_hex(txn.txn_hash)
     receipt = eth_tester_provider.send_transaction(txn)
 
@@ -406,3 +410,10 @@ def test_override_annotated_fields():
     my_tx = MyTransaction.model_validate({"chain_id": chain_id, "type": tx_type})
     assert my_tx.chain_id == chain_id
     assert my_tx.type == tx_type
+
+
+def test_gas(ethereum):
+    tx = ethereum.create_transaction(gas_limit=123)
+    assert tx.gas_limit == 123
+    # Show the `gas` alias works.
+    assert tx.gas == 123
