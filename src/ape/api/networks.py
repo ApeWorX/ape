@@ -1154,6 +1154,7 @@ class NetworkAPI(BaseInterfaceModel):
                 )
             ):
                 # NOTE: Lazily load provider config
+                provider_name = provider_class.NAME or provider_name
                 providers[provider_name] = partial(
                     provider_class,
                     name=provider_name,

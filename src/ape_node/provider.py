@@ -379,6 +379,7 @@ class NodeSoftwareNotInstalledError(ConnectionError):
 
 
 # NOTE: Using EthereumNodeProvider because of it's geth-derived default behavior.
+# TODO: In 0.9, change NAME to be `gethdev`, so for local networks it is more obvious.
 class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
     _process: Optional[GethDevProcess] = None
     name: str = "node"
