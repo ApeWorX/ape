@@ -96,7 +96,18 @@ class TransactionAPI(BaseInterfaceModel):
         return value
 
     @property
+    def gas(self) -> int:
+        """
+        Alias for ``.gas_limit``.
+        """
+        return self.gas_limit
+
+    @property
     def raise_on_revert(self) -> bool:
+        """
+        ``True`` means VM-reverts should raise exceptions.
+        ``False`` allows getting failed receipts.
+        """
         return self._raise_on_revert
 
     @raise_on_revert.setter
