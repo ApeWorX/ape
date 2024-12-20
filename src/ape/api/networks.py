@@ -579,6 +579,18 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
             Any: All of the values returned from the contract function.
         """
 
+    @raises_not_implemented
+    def get_deployment_address(  # type: ignore[empty-body]
+        self,
+        address: AddressType,
+        nonce: int,
+    ) -> AddressType:
+        """
+        Calculate the deployment address of a contract before it is deployed.
+        This is useful if the address is an argument to another contract's deployment
+        and you have not yet deployed the first contract yet.
+        """
+
     def get_network(self, network_name: str) -> "NetworkAPI":
         """
         Get the network for the given name.

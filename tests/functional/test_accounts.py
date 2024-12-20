@@ -921,3 +921,12 @@ def test_import_account_from_private_key_insecure_passphrase(delete_account_afte
 def test_load(account_manager, keyfile_account):
     account = account_manager.load(keyfile_account.alias)
     assert account == keyfile_account
+
+
+def test_get_deployment_address(owner, vyper_contract_container):
+    deployment_address_1 = owner.get_deployment_address()
+    deployment_address_2 = owner.get_deployment_address(nonce=owner.nonce + 1)
+    instance_1 = owner.deploy(vyper_contract_container, 490)
+    assert instance_1.address == deployment_address_1
+    instance_2 = owner.deploy(vyper_contract_container, 490)
+    assert instance_2.address == deployment_address_2
