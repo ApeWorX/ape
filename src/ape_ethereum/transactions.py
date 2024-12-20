@@ -314,7 +314,9 @@ class Receipt(ReceiptAPI):
             contract_types = self.chain_manager.contracts.get_multiple(addresses)
             # address → selector → abi
             selectors = {
-                address: {encode_hex(keccak(text=abi.selector)): abi for abi in contract.events}
+                address.lower(): {
+                    encode_hex(keccak(text=abi.selector)): abi for abi in contract.events
+                }
                 for address, contract in contract_types.items()
             }
 
@@ -339,10 +341,11 @@ class Receipt(ReceiptAPI):
             decoded_logs: ContractLogContainer = ContractLogContainer()
             for log in self.logs:
                 if contract_address := log.get("address"):
-                    if contract_address in selectors and (topics := log.get("topics")):
+                    lower_address = contract_address.lower()
+                    if lower_address in selectors and (topics := log.get("topics")):
                         selector = encode_hex(topics[0])
-                        if selector in selectors[contract_address]:
-                            event_abi = selectors[contract_address][selector]
+                        if selector in selectors[lower_address]:
+                            event_abi = selectors[lower_address][selector]
                             decoded_logs.extend(
                                 self.provider.network.ecosystem.decode_logs([log], event_abi)
                             )
