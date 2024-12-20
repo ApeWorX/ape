@@ -1203,3 +1203,9 @@ def test_enrich_trace_handles_events(ethereum, vyper_contract_instance, owner):
         }
     ]
     assert events == expected
+
+
+def test_get_deployment_address(ethereum, owner, vyper_contract_container):
+    actual = ethereum.get_deployment_address(owner.address, owner.nonce)
+    expected = owner.deploy(vyper_contract_container, 490)
+    assert actual == expected

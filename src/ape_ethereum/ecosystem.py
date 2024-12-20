@@ -4,6 +4,7 @@ from decimal import Decimal
 from functools import cached_property
 from typing import TYPE_CHECKING, Any, ClassVar, Optional, Union, cast
 
+import rlp  # type: ignore
 from cchecksum import to_checksum_address
 from eth_abi import decode, encode
 from eth_abi.exceptions import InsufficientDataBytes, NonEmptyPaddingBytes
@@ -1475,6 +1476,17 @@ class Ethereum(EcosystemAPI):
 
         # error never found.
         return None
+
+    def get_deployment_address(self, address: AddressType, nonce: int) -> AddressType:
+        """
+        Calculate the deployment address of a contract before it is deployed.
+        This is useful if the address is an argument to another contract's deployment
+        and you have not yet deployed the first contract yet.
+        """
+        sender_bytes = to_bytes(hexstr=address)
+        encoded = rlp.encode([sender_bytes, nonce])
+        address_bytes = keccak(encoded)[12:]
+        return self.decode_address(address_bytes)
 
 
 def parse_type(type_: dict[str, Any]) -> Union[str, tuple, list]:

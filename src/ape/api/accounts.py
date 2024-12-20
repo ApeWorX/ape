@@ -416,6 +416,28 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
 
         return txn
 
+    def get_deployment_address(self, nonce: Optional[int] = None) -> AddressType:
+        """
+        Get a contract address before it is deployed. This is useful
+        when you need to pass the contract address to another contract
+        before deploying it.
+
+        Args:
+            nonce (int | None): Optionally provide a nonce. Defaults
+              the account's current nonce.
+
+        Returns:
+            AddressType: The contract address.
+        """
+        # Use the connected network, if available. Else, default to Ethereum.
+        ecosystem = (
+            self.network_manager.active_provider.network.ecosystem
+            if self.network_manager.active_provider
+            else self.network_manager.ethereum
+        )
+        nonce = self.nonce if nonce is None else nonce
+        return ecosystem.get_deployment_address(self.address, nonce)
+
 
 class AccountContainerAPI(BaseInterfaceModel):
     """
