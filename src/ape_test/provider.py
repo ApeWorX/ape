@@ -5,6 +5,7 @@ from functools import cached_property
 from re import Pattern
 from typing import TYPE_CHECKING, Any, Optional, cast
 
+from cchecksum import to_checksum_address
 from eth.exceptions import HeaderNotFound
 from eth_pydantic_types import HexBytes
 from eth_tester import EthereumTester  # type: ignore
@@ -470,7 +471,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         address = private_key.public_key.to_canonical_address()
         return self.account_manager.init_test_account(
             index,
-            cast(AddressType, to_hex(address)),
+            to_checksum_address(address),
             str(private_key),
         )
 

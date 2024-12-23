@@ -1,5 +1,6 @@
 import warnings
 from collections.abc import Iterator
+from functools import cached_property
 from typing import TYPE_CHECKING, Any, Optional, cast
 
 from eip712.messages import EIP712Message
@@ -58,31 +59,48 @@ class TestAccountContainer(TestAccountContainerAPI):
 
     @property
     def accounts(self) -> Iterator["TestAccount"]:
-        for index in range(self.number_of_accounts):
-            yield cast(TestAccount, self.get_test_account(index))
+        if not self.generated_accounts:
+            # Generate all accounts for the first time.
+            self._generate_accounts_until(self.number_of_accounts - 1)
+
+        yield from self.generated_accounts
 
     def get_test_account(self, index: int) -> TestAccountAPI:
-        if index >= self.number_of_accounts:
-            new_index = index - self.number_of_accounts
-            return self.generated_accounts[new_index]
-
         try:
+            return self.generated_accounts[index]
+        except IndexError:
+            # Generate accounts up until the given index.
+            self._generate_accounts_until(index)
+            return self.generated_accounts[index]
+
+    def _generate_accounts_until(self, last_index: int):
+        start_idx = len(self.generated_accounts) - 1
+        for idx in range(start_idx, last_index + 1):
+            account = self._get_account(idx)
+            self.generated_accounts.append(account)
+
+    def _get_account(self, index: int):
+        # NOTE: this method does NOT append to generated_accounts.
+        try:
+            # If this returns, it was likely created during chain genesis.
             return self.provider.get_test_account(index)
         except (NotImplementedError, ProviderNotConnectedError):
-            return self.generate_account(index=index)
+            return self._generate_account(index=index)
 
     def generate_account(self, index: Optional[int] = None) -> "TestAccountAPI":
-        new_index = (
-            self.number_of_accounts + len(self.generated_accounts) if index is None else index
-        )
+        account = self._get_account(index=index)
+        self.generated_accounts.append(account)
+        return account
+
+    def _generate_account(self, index: Optional[int] = None):
+        # Generates the account w/o appending to generated_accounts.
+        new_index = len(self.generated_accounts) if index is None else index
         generated_account = generate_dev_accounts(
             self.mnemonic, 1, hd_path=self.hd_path, start_index=new_index
         )[0]
-        account = self.init_test_account(
+        return self.init_test_account(
             new_index, generated_account.address, generated_account.private_key
         )
-        self.generated_accounts.append(account)
-        return account
 
     @classmethod
     def init_test_account(
@@ -111,7 +129,8 @@ class TestAccount(TestAccountAPI):
 
     @property
     def address(self) -> "AddressType":
-        return self.network_manager.ethereum.decode_address(self.address_str)
+        # perf: assume is already checksummed (it is).
+        return self.address_str  # type: ignore
 
     def sign_message(self, msg: Any, **signer_options) -> Optional[MessageSignature]:
         # Convert str and int to SignableMessage if needed
