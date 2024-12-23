@@ -1,7 +1,7 @@
 # Developing Plugins
 
 Your plugin project can be any type of python project, so long as its package name starts with `ape-` (such as `ape-ethereum`).
-The module and plugin directory name must start with `ape_` (such as `ape_ethereum`).
+The module and plugin directory names must start with `ape_` (such as `ape_ethereum`).
 To create an `ape` plugin, implement one or more API classes from the `ape.api` namespace and/or add key
 `ape_cli_subcommands` to your entry-points list in your project's `setup.py`, depending on what type of plugin you want to create.
 This guide is intended to assist in both of those use cases.
