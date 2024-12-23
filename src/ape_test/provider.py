@@ -35,6 +35,7 @@ from ape.utils.misc import gas_estimation_error_message
 from ape.utils.testing import DEFAULT_TEST_HD_PATH
 from ape_ethereum.provider import Web3Provider
 from ape_ethereum.trace import TraceApproach, TransactionTrace
+from ape_ethereum.transactions import TransactionStatusEnum
 from ape_test.config import EthTesterProviderConfig
 
 if TYPE_CHECKING:
@@ -341,17 +342,24 @@ class LocalProvider(TestProviderAPI, Web3Provider):
                 txn_hash = to_hex(txn.txn_hash)
 
         required_confirmations = txn.required_confirmations or 0
-        if vm_err:
-            receipt = self._create_receipt(
-                required_confirmations=required_confirmations, error=vm_err, txn_hash=txn_hash
-            )
+        txn_dict = txn_dict or txn.model_dump(mode="json")
+
+        # Signature is typically excluded from the model fields,
+        # so we have to include it manually.
+        txn_dict["signature"] = txn.signature
+
+        if vm_err or not self.auto_mine:
+            receipt_data = {
+                **txn_dict,
+                "block_number": -1,  # Not yet confirmed,
+                "error": vm_err,
+                "provider": self,
+                "required_confirmations": required_confirmations,
+                "status": TransactionStatusEnum.NO_ERROR,
+                "txn_hash": txn_hash,
+            }
+            receipt = self.network.ecosystem.decode_receipt(receipt_data)
         else:
-            txn_dict = txn_dict or txn.model_dump(mode="json")
-
-            # Signature is typically excluded from the model fields,
-            # so we have to include it manually.
-            txn_dict["signature"] = txn.signature
-
             receipt = self.get_receipt(
                 txn_hash, required_confirmations=required_confirmations, transaction=txn_dict
             )
