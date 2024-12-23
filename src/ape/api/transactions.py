@@ -133,6 +133,7 @@ class TransactionAPI(BaseInterfaceModel):
         The calculated hash of the transaction.
         """
 
+    # TODO: In 0.9, simply rename txn_hash to hash.
     @property
     def hash(self) -> HexBytes:
         """
