@@ -252,8 +252,13 @@ def test_transfer_mixed_up_sender_and_value(sender, receiver):
         r"protects against accidentally passing the "
         r"`value` as the `receiver`\)."
     )
-    with pytest.raises(TypeError, match=expected):
+    with pytest.raises(AccountsError, match=expected):
         sender.transfer(123, receiver)
+
+    # Similarly show using currency-str (may fail for different error).
+    expected = r"Invalid `receiver` value: '123 wei'\."
+    with pytest.raises(AccountsError, match=expected):
+        sender.transfer("123 wei", receiver)
 
 
 def test_deploy(owner, contract_container, clean_contract_caches):
