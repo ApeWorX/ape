@@ -77,6 +77,7 @@ def test_await_confirmations_zero_confirmations(mocker, geth_account, geth_contr
     assert spy.call_count == 1
 
 
+@geth_process_test
 def test_transaction(geth_account, geth_contract):
     receipt = geth_contract.setNumber(1998, sender=geth_account)
     actual = receipt.transaction
