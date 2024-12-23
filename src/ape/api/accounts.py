@@ -220,6 +220,12 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         Returns:
             :class:`~ape.api.transactions.ReceiptAPI`
         """
+        if isinstance(account, int):
+            raise TypeError(
+                "Cannot use integer-type for the `receiver` argument in the "
+                "`.transfer()` method (this protects against accidentally passing "
+                "the `value` as the `receiver`)."
+            )
 
         receiver = self.conversion_manager.convert(account, AddressType)
         txn = self.provider.network.ecosystem.create_transaction(

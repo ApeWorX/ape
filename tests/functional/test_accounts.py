@@ -240,6 +240,22 @@ def test_transfer_value_of_0(sender, receiver):
     assert receiver.balance == initial_balance
 
 
+def test_transfer_mixed_up_sender_and_value(sender, receiver):
+    """
+    Testing the case where the user mixes up the argument order,
+    it should show a nicer error than it was previously, as this is
+    a common and easy mistake.
+    """
+    expected = (
+        r"Cannot use integer-type for the `receiver` "
+        r"argument in the `\.transfer\(\)` method \(this "
+        r"protects against accidentally passing the "
+        r"`value` as the `receiver`\)."
+    )
+    with pytest.raises(TypeError, match=expected):
+        sender.transfer(123, receiver)
+
+
 def test_deploy(owner, contract_container, clean_contract_caches):
     contract = owner.deploy(contract_container, 0)
     assert contract.address
