@@ -342,8 +342,15 @@ class LocalProvider(TestProviderAPI, Web3Provider):
                 txn_hash = to_hex(txn.txn_hash)
 
         required_confirmations = txn.required_confirmations or 0
+        txn_dict = txn_dict or txn.model_dump(mode="json")
+
+        # Signature is typically excluded from the model fields,
+        # so we have to include it manually.
+        txn_dict["signature"] = txn.signature
+
         if vm_err or not self.auto_mine:
             receipt_data = {
+                **txn_dict,
                 "block_number": -1,  # Not yet confirmed,
                 "error": vm_err,
                 "provider": self,
@@ -353,12 +360,6 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             }
             receipt = self.network.ecosystem.decode_receipt(receipt_data)
         else:
-            txn_dict = txn_dict or txn.model_dump(mode="json")
-
-            # Signature is typically excluded from the model fields,
-            # so we have to include it manually.
-            txn_dict["signature"] = txn.signature
-
             receipt = self.get_receipt(
                 txn_hash, required_confirmations=required_confirmations, transaction=txn_dict
             )
