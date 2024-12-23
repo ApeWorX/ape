@@ -525,7 +525,10 @@ def test_auto_mine(eth_tester_provider, owner):
     #  when auto mine is off, `ape-test` provider still waited
     #  for the receipt during send_transaction(). It should
     #  instead return early.
-    owner.transfer(owner, 123)
+    tx = owner.transfer(owner, 123)
+    assert not tx.confirmed
+    assert tx.sender == owner.address
+    assert tx.txn_hash is not None
 
     nonce_after_tx = owner.nonce
     block_after_tx = eth_tester_provider.get_block("latest").number
