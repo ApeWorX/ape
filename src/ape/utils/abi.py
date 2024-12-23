@@ -20,10 +20,17 @@ ARRAY_PATTERN = re.compile(r"[(*\w,? )]*\[\d*]")
 NATSPEC_KEY_PATTERN = re.compile(r"(@\w+)")
 
 
-class ApeUnsignedIntegerDecoder(UnsignedIntegerDecoder):
+class _ApeUnsignedIntegerDecoder(UnsignedIntegerDecoder):
+    """
+    This class exists because uint256 values when not-padded
+    always cause issues, even with strict=False.
+    It can be deleted if https://github.com/ethereum/eth-abi/pull/240
+    merges.
+    """
+
     def read_data_from_stream(self, stream):
         """
-        Override to pad the value instead of raise an error.
+        Override to pad the value instead of raising an error.
         """
         data_byte_size: int = self.data_byte_size  # type: ignore
         data = stream.read(data_byte_size)
@@ -39,7 +46,7 @@ registry.unregister("uint")
 registry.register(
     BaseEquals("uint"),
     UnsignedIntegerEncoder,
-    ApeUnsignedIntegerDecoder,
+    _ApeUnsignedIntegerDecoder,
     label="uint",
 )
 
@@ -458,33 +465,15 @@ class LogInputABICollection:
             hex_value = decode_hex(topic_value)
 
             try:
-                value = decode([abi_type], hex_value)[0]
+                value = decode([abi_type], hex_value, strict=False)[0]
             except InsufficientDataBytes as err:
-                warning_message = f"Failed to decode log topic '{self.event_name}'."
-
-                # Try again with strict=False
-                try:
-                    value = decode([abi_type], hex_value, strict=False)[0]
-                except Exception:
-                    # Even with strict=False, we failed to decode.
-                    # This should be a rare occasion, if it ever happens.
-                    logger.warn_from_exception(err, warning_message)
-                    if use_hex_on_fail:
-                        if abi.name not in decoded:
-                            # This allow logs to still be findable on the receipt.
-                            decoded[abi.name] = hex_value
+                if use_hex_on_fail:
+                    if abi.name not in decoded:
+                        # This allow logs to still be findable on the receipt.
+                        decoded[abi.name] = hex_value
 
                     else:
                         raise DecodingError(str(err)) from err
-
-                else:
-                    # This happens when providers accidentally leave off trailing zeroes.
-                    warning_message = (
-                        f"{warning_message} "
-                        "However, we are able to get a value using decode(strict=False)"
-                    )
-                    logger.warn_from_exception(err, warning_message)
-                    decoded[abi.name] = self.decode_value(abi_type, value)
 
             else:
                 # The data was formatted correctly and we were able to decode logs.
@@ -493,7 +482,6 @@ class LogInputABICollection:
 
         data_abi_types = [abi.canonical_type for abi in self.data_abi_types]
         hex_data = decode_hex(data) if isinstance(data, str) else data
-
         try:
             data_values = decode(data_abi_types, hex_data)
         except InsufficientDataBytes as err:
