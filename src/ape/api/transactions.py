@@ -96,7 +96,18 @@ class TransactionAPI(BaseInterfaceModel):
         return value
 
     @property
+    def gas(self) -> Optional[int]:
+        """
+        Alias for ``.gas_limit``.
+        """
+        return self.gas_limit
+
+    @property
     def raise_on_revert(self) -> bool:
+        """
+        ``True`` means VM-reverts should raise exceptions.
+        ``False`` allows getting failed receipts.
+        """
         return self._raise_on_revert
 
     @raise_on_revert.setter
@@ -121,6 +132,14 @@ class TransactionAPI(BaseInterfaceModel):
         """
         The calculated hash of the transaction.
         """
+
+    # TODO: In 0.9, simply rename txn_hash to hash.
+    @property
+    def hash(self) -> HexBytes:
+        """
+        Alias for ``self.txn_hash``.
+        """
+        return self.txn_hash
 
     @property
     def receipt(self) -> Optional["ReceiptAPI"]:
