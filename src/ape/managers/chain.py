@@ -32,7 +32,7 @@ from ape.managers._contractscache import ContractCache
 from ape.managers.base import BaseManager
 from ape.types.address import AddressType
 from ape.utils.basemodel import BaseInterfaceModel
-from ape.utils.misc import is_evm_precompile, is_zero_hex, log_instead_of_fail
+from ape.utils.misc import ZERO_ADDRESS, is_evm_precompile, is_zero_hex, log_instead_of_fail
 
 if TYPE_CHECKING:
     from rich.console import Console as RichConsole
@@ -591,7 +591,8 @@ class TransactionHistory(BaseManager):
         """
 
         self._hash_to_receipt_map[txn_receipt.txn_hash] = txn_receipt
-        address = self.conversion_manager.convert(txn_receipt.sender, AddressType)
+        key = txn_receipt.sender or ZERO_ADDRESS
+        address = self.conversion_manager.convert(key, AddressType)
         if address not in self._account_history_cache:
             self._account_history_cache[address] = AccountHistory(address=address)
 

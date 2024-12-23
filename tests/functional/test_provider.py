@@ -514,15 +514,30 @@ def test_create_access_list(eth_tester_provider, vyper_contract_instance, owner)
         eth_tester_provider.create_access_list(tx)
 
 
-def test_auto_mine(eth_tester_provider):
+def test_auto_mine(eth_tester_provider, owner):
     eth_tester_provider.auto_mine = False
     assert not eth_tester_provider.auto_mine
 
-    # Ensure can still manually mine.
-    block = eth_tester_provider.get_block("latest").number
+    block_before = eth_tester_provider.get_block("latest").number
+    nonce_before = owner.nonce
+
+    # NOTE: Before, this would wait until it timed out, because
+    #  when auto mine is off, `ape-test` provider still waited
+    #  for the receipt during send_transaction(). It should
+    #  instead return early.
+    tx = owner.transfer(owner, 123)
+    assert not tx.confirmed
+    assert tx.sender == owner.address
+    assert tx.txn_hash is not None
+
+    nonce_after_tx = owner.nonce
+    block_after_tx = eth_tester_provider.get_block("latest").number
+    assert nonce_before == nonce_after_tx, "Transaction should not have been mined."
+    assert block_before == block_after_tx, "Block height should not have increased."
+
     eth_tester_provider.mine()
-    next_block = eth_tester_provider.get_block("latest").number
-    assert next_block > block
+    block_after_mine = eth_tester_provider.get_block("latest").number
+    assert block_after_mine > block_after_tx
 
     eth_tester_provider.auto_mine = True
     assert eth_tester_provider.auto_mine
