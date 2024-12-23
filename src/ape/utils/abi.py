@@ -3,9 +3,14 @@ from collections.abc import Sequence
 from dataclasses import make_dataclass
 from typing import Any, Optional, Union
 
-from eth_abi import decode, grammar
+from eth_abi import grammar
+from eth_abi.abi import decode
+from eth_abi.decoding import UnsignedIntegerDecoder
+from eth_abi.encoding import UnsignedIntegerEncoder
 from eth_abi.exceptions import DecodingError, InsufficientDataBytes
+from eth_abi.registry import BaseEquals, registry
 from eth_pydantic_types import HexBytes
+from eth_pydantic_types.validators import validate_bytes_size
 from eth_utils import decode_hex
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, EventABIType, MethodABI
 
@@ -13,6 +18,37 @@ from ape.logging import logger
 
 ARRAY_PATTERN = re.compile(r"[(*\w,? )]*\[\d*]")
 NATSPEC_KEY_PATTERN = re.compile(r"(@\w+)")
+
+
+class _ApeUnsignedIntegerDecoder(UnsignedIntegerDecoder):
+    """
+    This class exists because uint256 values when not-padded
+    always cause issues, even with strict=False.
+    It can be deleted if https://github.com/ethereum/eth-abi/pull/240
+    merges.
+    """
+
+    def read_data_from_stream(self, stream):
+        """
+        Override to pad the value instead of raising an error.
+        """
+        data_byte_size: int = self.data_byte_size  # type: ignore
+        data = stream.read(data_byte_size)
+
+        if len(data) != data_byte_size:
+            # Pad the value (instead of raising InsufficientBytesError).
+            data = validate_bytes_size(data, 32)
+
+        return data
+
+
+registry.unregister("uint")
+registry.register(
+    BaseEquals("uint"),
+    UnsignedIntegerEncoder,
+    _ApeUnsignedIntegerDecoder,
+    label="uint",
+)
 
 
 def is_array(abi_type: Union[str, ABIType]) -> bool:
@@ -418,7 +454,9 @@ class LogInputABICollection:
     def event_name(self):
         return self.abi.name
 
-    def decode(self, topics: list[str], data: str, use_hex_on_fail: bool = False) -> dict:
+    def decode(
+        self, topics: list[str], data: Union[str, bytes], use_hex_on_fail: bool = False
+    ) -> dict:
         decoded = {}
         for abi, topic_value in zip(self.topic_abi_types, topics[1:]):
             # reference types as indexed arguments are written as a hash
@@ -427,33 +465,15 @@ class LogInputABICollection:
             hex_value = decode_hex(topic_value)
 
             try:
-                value = decode([abi_type], hex_value)[0]
+                value = decode([abi_type], hex_value, strict=False)[0]
             except InsufficientDataBytes as err:
-                warning_message = f"Failed to decode log topic '{self.event_name}'."
-
-                # Try again with strict=False
-                try:
-                    value = decode([abi_type], hex_value, strict=False)[0]
-                except Exception:
-                    # Even with strict=False, we failed to decode.
-                    # This should be a rare occasion, if it ever happens.
-                    logger.warn_from_exception(err, warning_message)
-                    if use_hex_on_fail:
-                        if abi.name not in decoded:
-                            # This allow logs to still be findable on the receipt.
-                            decoded[abi.name] = hex_value
+                if use_hex_on_fail:
+                    if abi.name not in decoded:
+                        # This allow logs to still be findable on the receipt.
+                        decoded[abi.name] = hex_value
 
                     else:
                         raise DecodingError(str(err)) from err
-
-                else:
-                    # This happens when providers accidentally leave off trailing zeroes.
-                    warning_message = (
-                        f"{warning_message} "
-                        "However, we are able to get a value using decode(strict=False)"
-                    )
-                    logger.warn_from_exception(err, warning_message)
-                    decoded[abi.name] = self.decode_value(abi_type, value)
 
             else:
                 # The data was formatted correctly and we were able to decode logs.
@@ -462,7 +482,6 @@ class LogInputABICollection:
 
         data_abi_types = [abi.canonical_type for abi in self.data_abi_types]
         hex_data = decode_hex(data) if isinstance(data, str) else data
-
         try:
             data_values = decode(data_abi_types, hex_data)
         except InsufficientDataBytes as err:
