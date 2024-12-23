@@ -1112,14 +1112,13 @@ as well as a block number or hash (HexBytes).</p>
 
 <dl class="py data">
 <dt class="sig sig-object py" id="ape.types.vm.SnapshotID">
-<span class="sig-prename descclassname"><span class="pre">ape.types.vm.</span></span><span class="sig-name descname"><span class="pre">SnapshotID</span></span><a class="headerlink" href="#ape.types.vm.SnapshotID" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">ape.types.vm.</span></span><span class="sig-name descname"><span class="pre">SnapshotID</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">typing.Any</span></em><a class="headerlink" href="#ape.types.vm.SnapshotID" title="Link to this definition"></a></dt>
 <dd><p>An ID representing a point in time on a blockchain, as used in the
 <a class="reference internal" href="managers.html#ape.managers.chain.ChainManager.snapshot" title="ape.managers.chain.ChainManager.snapshot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">snapshot()</span></code></a> and
-<a class="reference internal" href="managers.html#ape.managers.chain.ChainManager.snapshot" title="ape.managers.chain.ChainManager.snapshot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">snapshot()</span></code></a> methods. Can be a <code class="docutils literal notranslate"><span class="pre">str</span></code>, <code class="docutils literal notranslate"><span class="pre">int</span></code>, or <code class="docutils literal notranslate"><span class="pre">bytes</span></code>.
-Providers will expect and handle snapshot IDs differently. There shouldn’t be a need to change
-providers when using this feature, so there should not be confusion over this type in practical use
-cases.</p>
-<p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">bytes</span></code></p>
+<a class="reference internal" href="managers.html#ape.managers.chain.ChainManager.snapshot" title="ape.managers.chain.ChainManager.snapshot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">snapshot()</span></code></a> methods. Can be a <code class="docutils literal notranslate"><span class="pre">str</span></code>, <code class="docutils literal notranslate"><span class="pre">int</span></code>, <code class="docutils literal notranslate"><span class="pre">bytes</span></code>,
+<code class="docutils literal notranslate"><span class="pre">tuple[bytes,</span> <span class="pre">int]</span></code>, etc. Providers will expect and handle snapshot IDs differently.
+There shouldn’t be a need to change providers when using this feature, so there should not be
+confusion over this type in practical use cases.</p>
 </dd></dl>
 
 </section>
