@@ -1,7 +1,6 @@
 import warnings
 from collections.abc import Iterator
-from functools import cached_property
-from typing import TYPE_CHECKING, Any, Optional, cast
+from typing import TYPE_CHECKING, Any, Optional
 
 from eip712.messages import EIP712Message
 from eth_account import Account as EthAccount
@@ -34,7 +33,20 @@ class TestAccountContainer(TestAccountContainerAPI):
         super().__init__(*args, **kwargs)
 
     def __len__(self) -> int:
-        return self.number_of_accounts + len(self.generated_accounts)
+        return self.length
+
+    def __getitem__(self, item):
+        if isinstance(item, int):
+            return self.get_test_account(item)
+
+        return super().__getitem__(item)
+
+    @property
+    def length(self) -> int:
+        # Includes accounts generated outside of genesis, if there are any.
+        # This sill works in a lazy way via the max(), assuming the config
+        # value as the min value.
+        return max(self.number_of_accounts, len(self.generated_accounts))
 
     @property
     def config(self):
@@ -59,13 +71,12 @@ class TestAccountContainer(TestAccountContainerAPI):
 
     @property
     def accounts(self) -> Iterator["TestAccount"]:
-        if not self.generated_accounts:
-            # Generate all accounts for the first time.
-            self._generate_accounts_until(self.number_of_accounts - 1)
-
-        yield from self.generated_accounts
+        for index in range(self.length):
+            yield self.get_test_account(index)  # type: ignore
 
     def get_test_account(self, index: int) -> TestAccountAPI:
+        if index < 0:
+            index = self.length + index
         try:
             return self.generated_accounts[index]
         except IndexError:
@@ -74,7 +85,7 @@ class TestAccountContainer(TestAccountContainerAPI):
             return self.generated_accounts[index]
 
     def _generate_accounts_until(self, last_index: int):
-        start_idx = len(self.generated_accounts) - 1
+        start_idx = len(self.generated_accounts)
         for idx in range(start_idx, last_index + 1):
             account = self._get_account(idx)
             self.generated_accounts.append(account)
@@ -84,11 +95,18 @@ class TestAccountContainer(TestAccountContainerAPI):
         try:
             # If this returns, it was likely created during chain genesis.
             return self.provider.get_test_account(index)
-        except (NotImplementedError, ProviderNotConnectedError):
+        except (NotImplementedError, ProviderNotConnectedError, IndexError):
             return self._generate_account(index=index)
 
     def generate_account(self, index: Optional[int] = None) -> "TestAccountAPI":
-        account = self._get_account(index=index)
+        if index is None:
+            # Ensures we have generated the default accounts first.
+            self._generate_accounts_until(self.length - 1)
+            idx = self.length
+        else:
+            idx = index
+
+        account = self._get_account(index=idx)
         self.generated_accounts.append(account)
         return account
 

@@ -392,11 +392,11 @@ def test_send_transaction_sets_defaults(sender, receiver):
 
 
 def test_accounts_splice_access(accounts):
-    a, b = accounts[:2]
-    assert a == accounts[0]
-    assert b == accounts[1]
-    c = accounts[-1]
-    assert c == accounts[len(accounts) - 1]
+    alice, bob = accounts[:2]
+    assert alice == accounts[0]
+    assert bob == accounts[1]
+    cat = accounts[-1]
+    assert cat == accounts[len(accounts) - 1]
     expected = (len(accounts) // 2) if len(accounts) % 2 == 0 else (len(accounts) // 2 + 1)
     assert len(accounts[::2]) == expected
 
@@ -591,9 +591,9 @@ def test_custom_num_of_test_accounts_config(accounts, project):
         assert len(accounts) == custom_number_of_test_accounts
 
 
-def test_test_accounts_repr(accounts):
+def test_test_accounts_repr(accounts, config):
     actual = repr(accounts)
-    assert all(a.address in actual for a in accounts)
+    assert config.get_config("test").hd_path in actual
 
 
 def test_account_comparison_to_non_account(core_account):
