@@ -5,6 +5,7 @@ from functools import cached_property
 from re import Pattern
 from typing import TYPE_CHECKING, Any, Optional, cast
 
+from cchecksum import to_checksum_address
 from eth.exceptions import HeaderNotFound
 from eth_pydantic_types import HexBytes
 from eth_tester import EthereumTester  # type: ignore
@@ -30,7 +31,6 @@ from ape.exceptions import (
     VirtualMachineError,
 )
 from ape.logging import logger
-from ape.types.address import AddressType
 from ape.utils.misc import gas_estimation_error_message
 from ape.utils.testing import DEFAULT_TEST_HD_PATH
 from ape_ethereum.provider import Web3Provider
@@ -42,6 +42,7 @@ if TYPE_CHECKING:
     from ape.api.accounts import TestAccountAPI
     from ape.api.trace import TraceAPI
     from ape.api.transactions import ReceiptAPI, TransactionAPI
+    from ape.types.address import AddressType
     from ape.types.events import ContractLog, LogFilter
     from ape.types.vm import BlockID, SnapshotID
     from ape_test.config import ApeTestConfig
@@ -436,13 +437,13 @@ class LocalProvider(TestProviderAPI, Web3Provider):
     def mine(self, num_blocks: int = 1):
         self.evm_backend.mine_blocks(num_blocks)
 
-    def get_balance(self, address: AddressType, block_id: Optional["BlockID"] = None) -> int:
+    def get_balance(self, address: "AddressType", block_id: Optional["BlockID"] = None) -> int:
         # perf: Using evm_backend directly instead of going through web3.
         return self.evm_backend.get_balance(
             HexBytes(address), block_number="latest" if block_id is None else block_id
         )
 
-    def get_nonce(self, address: AddressType, block_id: Optional["BlockID"] = None) -> int:
+    def get_nonce(self, address: "AddressType", block_id: Optional["BlockID"] = None) -> int:
         return self.evm_backend.get_nonce(
             HexBytes(address), block_number="latest" if block_id is None else block_id
         )
@@ -469,7 +470,6 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         yield from self.network.ecosystem.decode_logs(log_gen, *log_filter.events)
 
     def get_test_account(self, index: int) -> "TestAccountAPI":
-        # NOTE: No need to cache here because it happens at the TestAccountManager already.
         try:
             private_key = self.evm_backend.account_keys[index]
         except IndexError as err:
@@ -478,7 +478,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         address = private_key.public_key.to_canonical_address()
         return self.account_manager.init_test_account(
             index,
-            cast(AddressType, to_hex(address)),
+            to_checksum_address(address),
             str(private_key),
         )
 

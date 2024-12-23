@@ -37,12 +37,10 @@ class TestAccountManager(list, ManagerAccessMixin):
     __test__ = False
 
     _impersonated_accounts: dict[AddressType, ImpersonatedAccount] = {}
-    _accounts_by_index: dict[int, AccountAPI] = {}
 
     @log_instead_of_fail(default="<TestAccountManager>")
     def __repr__(self) -> str:
-        accounts_str = ", ".join([a.address for a in self.accounts])
-        return f"[{accounts_str}]"
+        return f"<apetest-wallet {self.hd_path}>"
 
     @cached_property
     def containers(self) -> dict[str, TestAccountContainerAPI]:
@@ -53,6 +51,13 @@ class TestAccountManager(list, ManagerAccessMixin):
             plugin_name: container_type(name=plugin_name, account_type=account_type)
             for plugin_name, (container_type, account_type) in account_types
         }
+
+    @property
+    def hd_path(self) -> str:
+        """
+        The HD path used for generating the test accounts.
+        """
+        return self.config_manager.get_config("test").hd_path
 
     @property
     def accounts(self) -> Iterator[AccountAPI]:
@@ -76,16 +81,7 @@ class TestAccountManager(list, ManagerAccessMixin):
 
     @__getitem__.register
     def __getitem_int(self, account_id: int):
-        if account_id in self._accounts_by_index:
-            return self._accounts_by_index[account_id]
-
-        original_account_id = account_id
-        if account_id < 0:
-            account_id = len(self) + account_id
-
-        account = self.containers["test"].get_test_account(account_id)
-        self._accounts_by_index[original_account_id] = account
-        return account
+        return self.containers["test"].get_test_account(account_id)
 
     @__getitem__.register
     def __getitem_slice(self, account_id: slice):
@@ -173,7 +169,6 @@ class TestAccountManager(list, ManagerAccessMixin):
         )
 
     def reset(self):
-        self._accounts_by_index = {}
         for container in self.containers.values():
             container.reset()
 
