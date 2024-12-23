@@ -1080,6 +1080,9 @@ class Web3Provider(ProviderAPI, ABC):
             #   `nonce`, it's not needed anyway.
             txn_data.pop("nonce", None)
 
+            # Signature causes issues when making call (instead of tx)
+            txn_data.pop("signature", None)
+
             # NOTE: Using JSON mode since used as request data.
             txn_params = cast(TxParams, txn_data)
 
