@@ -53,7 +53,7 @@ def topics():
     return ["0xc52ec0ad7872dae440d886040390c13677df7bf3cca136d8d81e5e5e7dd62ff1"]
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def log_data_missing_trailing_zeroes():
     return HexBytes(
         "0x000000000000000000000000000000000000000000000000000000000000001e"
@@ -65,7 +65,9 @@ def log_data_missing_trailing_zeroes():
     )
 
 
-def test_decoding_with_strict(collection, topics, log_data_missing_trailing_zeroes, ape_caplog):
+def test_decode_data_missing_trailing_zeroes(
+    collection, topics, log_data_missing_trailing_zeroes, ape_caplog
+):
     """
     This test is for a time where Alchemy gave us log data when it was missing trailing zeroes.
     When using strict=False, it was able to properly decode. In this case, in Ape, we warn
@@ -82,6 +84,34 @@ def test_decoding_with_strict(collection, topics, log_data_missing_trailing_zero
         "stakingLimit": 0,
     }
     assert actual == expected
+
+
+def test_decode_topics_missing_leading_zeroes(vyper_contract_type):
+    # The second value here was the problem before... It has no leading zeroes
+    # and eth-abi is very strict about that.
+    topics = [
+        "0xa84473122c11e32cd505595f246a28418b8ecd6cf819f4e3915363fad1b8f968",
+        "0x0141",
+        "0x9f3d45ac20ccf04b45028b8080bb191eab93e29f7898ed43acf480dd80bba94d",
+    ]
+
+    # NOTE: data isn't really part of the test but still has to be included.
+    data = (
+        b"\x9c\xe2\xce\xf5\x9b\xf2\xdeu\x83f\xf8s\xdb\x7f&\xef\xab\x9bw\xf7\xcf"
+        b"\xe9\xc8I\xb6\xb5@\x04g\xa9)\x86\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+        b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+        b"\x00\x00\x00\x00\x00{\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+        b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+        b"\x00\x00`\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+        b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x07"
+        b"Dynamic\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+        b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+    )
+    abi = vyper_contract_type.events["NumberChange"]
+    collection = LogInputABICollection(abi)
+
+    actual = collection.decode(topics, data)
+    assert actual["newNum"] == 321  # NOTE: Was a bug where this causes issues.
 
 
 class TestStruct:

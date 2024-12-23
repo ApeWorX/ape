@@ -83,7 +83,7 @@ def test_isolation_restore_not_implemented(mocker, networks, fixtures):
         networks.active_provider = orig_provider
 
 
-@pytest.mark.parametrize("snapshot_id", (0, 1, "123"))
+@pytest.mark.parametrize("snapshot_id", (0, 1, "123", (b"123", 1)))
 def test_isolation_snapshot_id_types(snapshot_id, fixtures):
     class IsolationManagerWithCustomSnapshot(IsolationManager):
         take_call_count = 0
