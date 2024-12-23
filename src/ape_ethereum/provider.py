@@ -1047,6 +1047,10 @@ class Web3Provider(ProviderAPI, ABC):
             else self.network.required_confirmations
         )
         txn_data = txn_data or txn.model_dump(by_alias=True, mode="json")
+
+        # Signature is excluded from the model fields, so we have to include it manually.
+        txn_data["signature"] = txn.signature
+
         if vm_err:
             receipt = self._create_receipt(
                 block_number=-1,  # Not in a block.
@@ -1075,6 +1079,9 @@ class Web3Provider(ProviderAPI, ABC):
             # NOTE: For some reason, some providers have issues with
             #   `nonce`, it's not needed anyway.
             txn_data.pop("nonce", None)
+
+            # Signature causes issues when making call (instead of tx)
+            txn_data.pop("signature", None)
 
             # NOTE: Using JSON mode since used as request data.
             txn_params = cast(TxParams, txn_data)

@@ -368,9 +368,6 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         self.chain_manager.history.append(receipt)
 
         if receipt.failed:
-            # NOTE: Using JSON mode since used as request data.
-            txn_dict = txn_dict or txn.model_dump(mode="json")
-
             txn_dict["nonce"] += 1
             txn_params = cast(TxParams, txn_dict)
             txn_dict.pop("signature", None)

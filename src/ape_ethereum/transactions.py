@@ -112,6 +112,8 @@ class BaseTransaction(TransactionAPI):
 
         return signed_txn
 
+    # TODO: In 0.9, either use hex-str or hex-bytes between both this
+    #   and ReceiptAPI (make consistent).
     @property
     def txn_hash(self) -> HexBytes:
         txn_bytes = self.serialize_transaction()
