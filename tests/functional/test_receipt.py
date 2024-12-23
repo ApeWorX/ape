@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING
 
 import pytest
+from eth_utils import to_hex
 from rich.table import Table
 from rich.tree import Tree
 
@@ -268,6 +269,13 @@ def test_track_coverage(deploy_receipt, mocker):
 def test_access_from_tx(deploy_receipt):
     actual = deploy_receipt.transaction.receipt
     assert actual == deploy_receipt
+
+
+def test_transaction(owner, vyper_contract_instance):
+    receipt = vyper_contract_instance.setNumber(1999, sender=owner)
+    actual = receipt.transaction
+    assert actual.sender == owner.address
+    assert to_hex(actual.txn_hash) == receipt.txn_hash
 
 
 def test_transaction_validated_from_dict(ethereum, owner, deploy_receipt):

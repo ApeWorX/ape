@@ -348,7 +348,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         else:
             txn_dict = txn_dict or txn.model_dump(mode="json")
 
-            # Signature is typically excluded from the model fields,
+            # Signature is excluded from the model fields,
             # so we have to include it manually.
             txn_dict["signature"] = txn.signature
 
