@@ -341,9 +341,11 @@ class LocalProvider(TestProviderAPI, Web3Provider):
                 txn_hash = to_hex(txn.txn_hash)
 
         required_confirmations = txn.required_confirmations or 0
-        if vm_err:
+        if vm_err or not self.auto_mine:
             receipt = self._create_receipt(
-                required_confirmations=required_confirmations, error=vm_err, txn_hash=txn_hash
+                required_confirmations=required_confirmations,
+                error=vm_err,
+                txn_hash=txn_hash,
             )
         else:
             txn_dict = txn_dict or txn.model_dump(mode="json")

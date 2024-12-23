@@ -591,11 +591,12 @@ class TransactionHistory(BaseManager):
         """
 
         self._hash_to_receipt_map[txn_receipt.txn_hash] = txn_receipt
-        address = self.conversion_manager.convert(txn_receipt.sender, AddressType)
-        if address not in self._account_history_cache:
-            self._account_history_cache[address] = AccountHistory(address=address)
+        if txn_receipt.sender:
+            address = self.conversion_manager.convert(txn_receipt.sender, AddressType)
+            if address not in self._account_history_cache:
+                self._account_history_cache[address] = AccountHistory(address=address)
 
-        self._account_history_cache[address].append(txn_receipt)
+            self._account_history_cache[address].append(txn_receipt)
 
     def revert_to_block(self, block_number: int):
         """

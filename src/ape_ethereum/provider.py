@@ -722,6 +722,14 @@ class Web3Provider(ProviderAPI, ABC):
 
     def _create_receipt(self, **kwargs) -> ReceiptAPI:
         data = {"provider": self, **kwargs}
+
+        if "block_number" not in data:
+            # Likely not a confirmed receipt.
+            data["block_number"] = 1
+        if "status" not in data:
+            # May change if not yet confirmed.
+            data["status"] = TransactionStatusEnum.NO_ERROR
+
         return self.network.ecosystem.decode_receipt(data)
 
     def get_transactions_by_block(self, block_id: "BlockID") -> Iterator[TransactionAPI]:
