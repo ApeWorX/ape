@@ -1,6 +1,6 @@
-from typing import NewType, Optional, Union
+from typing import NewType, Optional, Union, List
 
-from pydantic import NonNegativeInt, field_validator
+from pydantic import NonNegativeInt, field_validator, BaseModel
 
 from ape.api.config import PluginConfig
 from ape.utils.basemodel import ManagerAccessMixin
@@ -18,7 +18,7 @@ class EthTesterProviderConfig(PluginConfig):
     auto_mine: bool = True
 
 
-class GasExclusion(PluginConfig):
+class GasExclusion(BaseModel):
     contract_name: str = "*"  # If only given method, searches across all contracts.
     method_name: Optional[str] = None  # By default, match all methods in a contract
 
@@ -31,7 +31,7 @@ class GasConfig(PluginConfig):
     Configuration related to test gas reports.
     """
 
-    exclude: list[GasExclusion] = []
+    exclude: Optional[List[GasExclusion]] = None
     """
     Contract methods patterns to skip. Specify ``contract_name:`` and not
     ``method_name:`` to skip all methods in the contract. Only specify
@@ -40,10 +40,16 @@ class GasConfig(PluginConfig):
     use ``prefix_*`` to skip all items with a certain prefix.
     """
 
-    reports: list[str] = []
+    reports: Optional[List[str]] = None
     """
     Report-types to use. Currently, only supports `terminal`.
     """
+
+    def __post_init__(self):
+        if self.exclude is None:
+            self.exclude = []
+        if self.reports is None:
+            self.reports = []
 
     @field_validator("reports", mode="before")
     @classmethod
@@ -107,7 +113,7 @@ class CoverageConfig(PluginConfig):
     Enable reports.
     """
 
-    exclude: list[CoverageExclusion] = []
+    exclude: Optional[List[CoverageExclusion]] = None
     """
     Contract methods patterns to skip. Specify ``contract_name:`` and not
     ``method_name:`` to skip all methods in the contract. Only specify
@@ -115,6 +121,10 @@ class CoverageConfig(PluginConfig):
     both to skip methods in a certain contracts. Entries use glob-rules;
     use ``prefix_*`` to skip all items with a certain prefix.
     """
+
+    def __post_init__(self):
+        if self.exclude is None:
+            self.exclude = []
 
 
 class ApeTestConfig(PluginConfig):
