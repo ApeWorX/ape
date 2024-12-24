@@ -81,7 +81,8 @@ if TYPE_CHECKING:
 
 DEFAULT_PORT = 8545
 DEFAULT_HOSTNAME = "localhost"
-DEFAULT_SETTINGS = {"uri": f"http://{DEFAULT_HOSTNAME}:{DEFAULT_PORT}"}
+DEFAULT_URI = f"http://{DEFAULT_HOSTNAME}:{DEFAULT_PORT}"
+DEFAULT_SETTINGS = {"uri": DEFAULT_URI}
 
 
 def _sanitize_web3_url(msg: str) -> str:
@@ -1358,29 +1359,28 @@ class EthereumNodeProvider(Web3Provider, ABC):
     request_header: dict = {"User-Agent": f"EthereumNodeProvider/web3.py/{web3_version}"}
 
     @property
-    def uri(self) -> str:
+    def _configured_uri(self) -> Optional[str]:
+        """
+        The URI passed in via settings.
+        """
         if "url" in self.provider_settings:
             raise ConfigError("Unknown provider setting 'url'. Did you mean 'uri'?")
+
         elif uri := self.provider_settings.get("uri"):
             if _is_uri(uri):
                 return uri
             else:
-                raise TypeError(f"Not an URI: {uri}")
+                raise ConfigError(f"Not an URI: {uri}")
 
         config: dict = self.config.get(self.network.ecosystem.name, None)
         if config is None:
-            if rpc := self._get_random_rpc():
-                return rpc
-            elif self.network.is_dev:
-                return DEFAULT_SETTINGS["uri"]
+            return None
 
-            # We have no way of knowing what URL the user wants.
-            raise ProviderError(f"Please configure a URL for '{self.network_choice}'.")
-
-        # Use value from config file
-        network_config: dict = (config or {}).get(self.network.name) or DEFAULT_SETTINGS
+        # Use value from config file.
+        network_config: dict = (config or {}).get(self.network.name, {})
         if "url" in network_config:
             raise ConfigError("Unknown provider setting 'url'. Did you mean 'uri'?")
+
         elif "http_uri" in network_config:
             key = "http_uri"
         elif "uri" in network_config:
@@ -1389,18 +1389,42 @@ class EthereumNodeProvider(Web3Provider, ABC):
             key = "ipc_path"
         elif "ws_uri" in network_config:
             key = "ws_uri"
-        elif rpc := self._get_random_rpc():
-            return rpc
         else:
             key = "uri"
 
-        settings_uri = network_config.get(key, DEFAULT_SETTINGS["uri"])
-        if _is_uri(settings_uri):
-            # Is true if HTTP, WS, or IPC.
+        settings_uri = network_config.get(key)
+        if settings_uri:
+            if not _is_uri(settings_uri):
+                raise ConfigError(f"Invalid RPC (not HTTP, WS, or IPC): '{settings_uri}'.")
+
             return settings_uri
 
-        # Is not HTTP, WS, or IPC. Raise an error.
-        raise ConfigError(f"Invalid URI (not HTTP, WS, or IPC): {settings_uri}")
+        return None
+
+    @property
+    def uri(self) -> str:
+        if uri := self._configured_uri:
+            return uri
+        elif uri := self._get_random_rpc():
+            return uri
+        elif self.network.is_dev:
+            return DEFAULT_URI
+
+        raise ProviderError("Missing URI.")
+
+    @property
+    def network_choice(self) -> str:
+        if uri := self._configured_uri:
+            # Ensure anything using the same choice uses the same RPC.
+            if self.network.name == "custom":
+                # Network was not really specified. Just use URI.
+                return uri
+
+            # User is using a value like `ethereum:mainnet:<uri>` or
+            # configured the URI in their Ape config.
+            return f"{self.network.choice}:{uri}"
+
+        return super().network_choice
 
     @property
     def http_uri(self) -> Optional[str]:

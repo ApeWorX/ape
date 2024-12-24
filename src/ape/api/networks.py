@@ -895,17 +895,6 @@ class ProviderContextManager(ManagerAccessMixin):
         self.connected_providers = {}
 
 
-def _set_provider(provider: "ProviderAPI") -> "ProviderAPI":
-    connection_id = provider.connection_id
-    if connection_id in ProviderContextManager.connected_providers:
-        # Likely multi-chain testing or utilizing multiple on-going connections.
-        provider = ProviderContextManager.connected_providers[connection_id]
-        if not provider.is_connected:
-            provider.connect()
-
-    return provider
-
-
 class NetworkAPI(BaseInterfaceModel):
     """
     A wrapper around a provider for a specific ecosystem.
@@ -1215,7 +1204,6 @@ class NetworkAPI(BaseInterfaceModel):
                 f"\n  {self.name}:"
                 "\n    default_provider: <DEFAULT_PROVIDER>"
             )
-
         provider_settings = provider_settings or {}
         if ":" in provider_name:
             # NOTE: Shortcut that allows `--network ecosystem:network:http://...` to work
@@ -1227,19 +1215,17 @@ class NetworkAPI(BaseInterfaceModel):
             provider_name = "node"
 
         if provider_name in self.providers:
-            provider = self.providers[provider_name](provider_settings=provider_settings)
-            return _set_provider(provider)
+            return self.providers[provider_name](provider_settings=provider_settings)
 
         elif self.is_fork:
             # If it can fork Ethereum (and we are asking for it) assume it can fork this one.
             # TODO: Refactor this approach to work for custom-forked non-EVM networks.
             common_forking_providers = self.network_manager.ethereum.mainnet_fork.providers
             if provider_name in common_forking_providers:
-                provider = common_forking_providers[provider_name](
+                return common_forking_providers[provider_name](
                     provider_settings=provider_settings,
                     network=self,
                 )
-                return _set_provider(provider)
 
         raise ProviderNotFoundError(
             provider_name,
