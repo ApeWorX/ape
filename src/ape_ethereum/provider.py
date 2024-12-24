@@ -1057,7 +1057,7 @@ class Web3Provider(ProviderAPI, ABC):
                 block_number=-1,  # Not in a block.
                 error=vm_err,
                 required_confirmations=required_confirmations,
-                status=TransactionStatusEnum.NO_ERROR,
+                status=TransactionStatusEnum.FAILING if vm_err else TransactionStatusEnum.NO_ERROR,
                 txn_hash=txn_hash,
                 **txn_data,
             )
