@@ -856,8 +856,26 @@ def test_start_from_ws_uri(process_factory_patch, project, geth_provider, key):
 
 
 @geth_process_test
-def test_auto_mine(geth_provider):
+def test_auto_mine(geth_provider, geth_account, geth_contract):
     assert geth_provider.auto_mine is True
+
+    class MyEthereumTestProvider(EthereumNodeProvider):
+        """
+        Simulates a provider like ape-foundry w/ auto-mine disabled.
+        """
+
+        @property
+        def auto_mine(self) -> bool:
+            return False
+
+    provider = MyEthereumTestProvider(network=geth_provider.network)
+    provider._web3 = geth_provider.web3  # Borrow connection.
+
+    tx = geth_contract.setNumber.as_transaction(123)
+    tx = geth_account.prepare_transaction(tx)
+    tx = geth_account.sign_transaction(tx)
+    receipt = provider.send_transaction(tx)
+    assert not receipt.confirmed
 
 
 @geth_process_test
