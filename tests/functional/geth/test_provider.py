@@ -836,11 +836,15 @@ def test_start(process_factory_patch, convert, project, geth_provider):
 def test_start_from_ws_uri(process_factory_patch, project, geth_provider, key):
     uri = "ws://localhost:5677"
 
+    settings = geth_provider.provider_settings
     with project.temp_config(node={"ethereum": {"local": {key: uri}}}):
+        geth_provider.provider_settings = {}
         try:
             geth_provider.start()
         except Exception:
             pass  # Exceptions are fine here.
+
+        geth_provider.provider_settings = settings
 
     actual = process_factory_patch.call_args[0][0]  # First "arg"
     assert actual == uri
