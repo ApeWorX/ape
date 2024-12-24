@@ -53,3 +53,14 @@ def test_parse_network_choice_evmchains(networks, connection_str):
     with networks.parse_network_choice(connection_str) as moon_provider:
         assert moon_provider.network.name == "moonriver"
         assert moon_provider.network.ecosystem.name == "moonbeam"
+
+        # When including the HTTP URL in the network choice,
+        # `provider.network_choice` should also include it.
+        # This ensures when relying on `provider.network_choice` for
+        # multiple connections that they all use the same HTTP URI.
+        expected_network_choice = (
+            f"moonbeam:moonriver:{connection_str}"
+            if "http" in connection_str
+            else f"{connection_str}:node"
+        )
+        assert moon_provider.network_choice == expected_network_choice

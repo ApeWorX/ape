@@ -35,7 +35,6 @@ from ape.exceptions import (
     ConversionError,
     CustomError,
     DecodingError,
-    ProviderError,
     SignatureError,
 )
 from ape.logging import logger
@@ -1459,7 +1458,7 @@ class Ethereum(EcosystemAPI):
         try:
             if not (last_addr := next(trace.get_addresses_used(reverse=True), None)):
                 return None
-        except ProviderError:
+        except Exception:
             # When unable to get trace-frames properly, such as eth-tester.
             return None
 

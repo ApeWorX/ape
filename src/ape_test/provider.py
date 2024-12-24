@@ -2,6 +2,7 @@ import re
 from ast import literal_eval
 from collections.abc import Iterator
 from functools import cached_property
+from pathlib import Path
 from re import Pattern
 from typing import TYPE_CHECKING, Any, Optional, cast
 
@@ -181,6 +182,18 @@ class LocalProvider(TestProviderAPI, Web3Provider):
     @property
     def max_gas(self) -> int:
         return self.evm_backend.get_block_by_number("latest")["gas_limit"]
+
+    @property
+    def http_uri(self) -> Optional[str]:
+        return None
+
+    @property
+    def ws_uri(self) -> Optional[str]:
+        return None
+
+    @property
+    def ipc_path(self) -> Optional[Path]:
+        return None
 
     def connect(self):
         self.__dict__.pop("tester", None)
