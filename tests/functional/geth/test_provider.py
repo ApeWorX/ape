@@ -135,7 +135,7 @@ def test_uri_invalid(geth_provider, project, ethereum):
     try:
         with project.temp_config(**config):
             # Assert we use the config value.
-            expected = rf"Invalid RPC \(not HTTP, WS, or IPC\): '{re.escape(value)}'\."
+            expected = rf"Invalid uri: {re.escape(value)}"
             with pytest.raises(ConfigError, match=expected):
                 _ = geth_provider.uri
 
