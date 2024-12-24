@@ -355,7 +355,9 @@ class LocalProvider(TestProviderAPI, Web3Provider):
                 "error": vm_err,
                 "provider": self,
                 "required_confirmations": required_confirmations,
-                "status": TransactionStatusEnum.NO_ERROR,
+                "status": (
+                    TransactionStatusEnum.FAILING if vm_err else TransactionStatusEnum.NO_ERROR
+                ),
                 "txn_hash": txn_hash,
             }
             receipt = self.network.ecosystem.decode_receipt(receipt_data)

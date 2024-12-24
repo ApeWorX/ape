@@ -1051,12 +1051,13 @@ class Web3Provider(ProviderAPI, ABC):
         # Signature is excluded from the model fields, so we have to include it manually.
         txn_data["signature"] = txn.signature
 
-        if vm_err:
+        manual_mining = not getattr(self, "auto_mine", True)
+        if vm_err or manual_mining:
             receipt = self._create_receipt(
                 block_number=-1,  # Not in a block.
                 error=vm_err,
                 required_confirmations=required_confirmations,
-                status=TransactionStatusEnum.FAILING,
+                status=TransactionStatusEnum.FAILING if vm_err else TransactionStatusEnum.NO_ERROR,
                 txn_hash=txn_hash,
                 **txn_data,
             )
