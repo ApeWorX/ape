@@ -9,7 +9,7 @@ from concurrent.futures import ThreadPoolExecutor
 from copy import copy
 from functools import cached_property, wraps
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Optional, Union, cast
+from typing import TYPE_CHECKING, Any, Callable, Optional, Union, cast
 
 import ijson  # type: ignore
 import requests
@@ -81,7 +81,8 @@ if TYPE_CHECKING:
 
 DEFAULT_PORT = 8545
 DEFAULT_HOSTNAME = "localhost"
-DEFAULT_SETTINGS = {"uri": f"http://{DEFAULT_HOSTNAME}:{DEFAULT_PORT}"}
+DEFAULT_HTTP_URI = f"http://{DEFAULT_HOSTNAME}:{DEFAULT_PORT}"
+DEFAULT_SETTINGS = {"uri": DEFAULT_HTTP_URI}
 
 
 def _sanitize_web3_url(msg: str) -> str:
@@ -210,49 +211,216 @@ class Web3Provider(ProviderAPI, ABC):
         raise ProviderNotConnectedError()
 
     @property
-    def http_uri(self) -> Optional[str]:
+    def _network_config(self) -> dict:
+        config: dict = self.config.get(self.network.ecosystem.name, None)
+        if config is None:
+            return {}
+
+        return (config or {}).get(self.network.name) or {}
+
+    def _get_configured_rpc(self, key: str, validator: Callable[[str], bool]) -> Optional[str]:
+        # key = "uri", "http_uri", "ws_uri", or "ipc_path"
+        settings = self.settings  # Includes self.provider_settings and top-level config.
+        result = None
+        rpc: str
+        if rpc := settings.get(key):
+            result = rpc
+
+        else:
+            # See if it was configured for the network directly.
+            config = self._network_config
+            if rpc := config.get(key):
+                result = rpc
+
+        if result:
+            if validator(result):
+                return result
+            else:
+                raise ConfigError(f"Invalid {key}: {result}")
+
+        # Not configured by the user.
+        return None
+
+    @property
+    def _configured_http_uri(self) -> Optional[str]:
+        return self._get_configured_rpc("http_uri", _is_http_url)
+
+    @property
+    def _configured_ws_uri(self) -> Optional[str]:
+        return self._get_configured_rpc("ws_uri", _is_ws_url)
+
+    @property
+    def _configured_ipc_path(self) -> Optional[str]:
+        return self._get_configured_rpc("ipc_path", _is_ipc_path)
+
+    @property
+    def _configured_uri(self) -> Optional[str]:
+        for key in ("uri", "url"):
+            if rpc := self._get_configured_rpc(key, _is_uri):
+                return rpc
+
+        return None
+
+    @property
+    def _configured_rpc(self) -> Optional[str]:
+        """
+        First of URI, HTTP_URI, WS_URI, IPC_PATH
+        found in the provider_settings or config.
+        """
+
+        # NOTE: Even though this only returns 1 value,
+        #   each configured URI is passed in to web3 and
+        #   will be used as each specific types of data
+        #   is requested.
+        if rpc := self._configured_uri:
+            # The user specifically configured "uri:"
+            return rpc
+
+        elif rpc := self._configured_http_uri:
+            # Use their configured HTTP URI.
+            return rpc
+
+        elif rpc := self._configured_ws_uri:
+            # Use their configured WS URI.
+            return rpc
+
+        elif rpc := self._configured_ipc_path:
+            return rpc
+
+        return None
+
+    def _get_connected_rpc(self, validator: Callable[[str], bool]) -> Optional[str]:
         """
         The connected HTTP URI. If using providers
         like `ape-node`, configure your URI and that will
         be returned here instead.
         """
-        try:
-            web3 = self.web3
-        except ProviderNotConnectedError:
-            if uri := getattr(self, "uri", None):
-                if _is_http_url(uri):
-                    return uri
+        if web3 := self._web3:
+            if endpoint_uri := getattr(web3.provider, "endpoint_uri", None):
+                if isinstance(endpoint_uri, str) and validator(endpoint_uri):
+                    return endpoint_uri
 
-            return None
+        return None
 
-        if (
-            hasattr(web3.provider, "endpoint_uri")
-            and isinstance(web3.provider.endpoint_uri, str)
-            and web3.provider.endpoint_uri.startswith("http")
-        ):
-            return web3.provider.endpoint_uri
+    @property
+    def _connected_http_uri(self) -> Optional[str]:
+        return self._get_connected_rpc(_is_http_url)
 
-        if uri := getattr(self, "uri", None):
-            if _is_http_url(uri):
+    @property
+    def _connected_ws_uri(self) -> Optional[str]:
+        return self._get_connected_rpc(_is_ws_url)
+
+    @property
+    def _connected_ipc_path(self) -> Optional[str]:
+        return self._get_connected_rpc(_is_ipc_path)
+
+    @property
+    def _connected_uri(self) -> Optional[str]:
+        return self._get_connected_rpc(_is_uri)
+
+    @property
+    def uri(self) -> str:
+        if rpc := self._connected_uri:
+            # The already connected RPC URI.
+            return rpc
+
+        elif rpc := self._configured_rpc:
+            # Any configured rpc from settings/config.
+            return rpc
+
+        elif rpc := self._default_http_uri:
+            # Default localhost RPC or random chain from `evmchains`
+            # (depending on network).
+            return rpc
+
+        # NOTE: Don't use default IPC path here. IPC must be
+        #   configured if it is the only RPC.
+
+        raise ProviderError("Missing URI.")
+
+    @property
+    def network_choice(self) -> str:
+        if uri := self._configured_uri:
+            # Ensure anything using the same choice uses the same RPC.
+            if self.network.name == "custom":
+                # Network was not really specified. Just use URI.
                 return uri
+
+            # User is using a value like `ethereum:mainnet:<uri>` or
+            # configured the URI in their Ape config.
+            return f"{self.network.choice}:{uri}"
+
+        return super().network_choice
+
+    @property
+    def http_uri(self) -> Optional[str]:
+        if rpc := self._connected_http_uri:
+            return rpc
+
+        elif rpc := self._configured_http_uri:
+            return rpc
+
+        elif rpc := self._configured_uri:
+            if _is_http_url(rpc):
+                # "uri" found in config/settings and is WS.
+                return rpc
+
+        return self._default_http_uri
+
+    @property
+    def _default_http_uri(self) -> Optional[str]:
+        if self.network.is_dev:
+            # Nothing is configured and we are running geth --dev.
+            # Use a default localhost value.
+            return DEFAULT_HTTP_URI
+
+        elif rpc := self._get_random_rpc():
+            # This works when the network is in `evmchains`.
+            return rpc
 
         return None
 
     @property
     def ws_uri(self) -> Optional[str]:
-        try:
-            web3 = self.web3
-        except ProviderNotConnectedError:
-            return None
+        if rpc := self._connected_ws_uri:
+            return rpc
 
-        if (
-            hasattr(web3.provider, "endpoint_uri")
-            and isinstance(web3.provider.endpoint_uri, str)
-            and web3.provider.endpoint_uri.startswith("ws")
-        ):
-            return web3.provider.endpoint_uri
+        elif rpc := self._configured_ws_uri:
+            # "ws_uri" found in config/settings
+            return rpc
+
+        elif rpc := self._configured_uri:
+            if _is_ws_url(rpc):
+                # "uri" found in config/settings and is WS.
+                return rpc
 
         return None
+
+    @property
+    def ipc_path(self) -> Optional[Path]:
+        if rpc := self._configured_ipc_path:
+            # "ipc_path" found in config/settings
+            return Path(rpc)
+
+        elif rpc := self._configured_uri:
+            if _is_ipc_path(rpc):
+                # "uri" found in config/settings and is IPC.
+                return Path(rpc)
+
+        return None
+
+    def _get_random_rpc(self) -> Optional[str]:
+        if self.network.is_dev:
+            return None
+
+        ecosystem = self.network.ecosystem.name
+        network = self.network.name
+
+        # Use public RPC if available
+        try:
+            return get_random_rpc(ecosystem, network)
+        except KeyError:
+            return None
 
     @property
     def client_version(self) -> str:
@@ -1358,96 +1526,6 @@ class EthereumNodeProvider(Web3Provider, ABC):
     request_header: dict = {"User-Agent": f"EthereumNodeProvider/web3.py/{web3_version}"}
 
     @property
-    def uri(self) -> str:
-        if "url" in self.provider_settings:
-            raise ConfigError("Unknown provider setting 'url'. Did you mean 'uri'?")
-        elif uri := self.provider_settings.get("uri"):
-            if _is_uri(uri):
-                return uri
-            else:
-                raise TypeError(f"Not an URI: {uri}")
-
-        config: dict = self.config.get(self.network.ecosystem.name, None)
-        if config is None:
-            if rpc := self._get_random_rpc():
-                return rpc
-            elif self.network.is_dev:
-                return DEFAULT_SETTINGS["uri"]
-
-            # We have no way of knowing what URL the user wants.
-            raise ProviderError(f"Please configure a URL for '{self.network_choice}'.")
-
-        # Use value from config file
-        network_config: dict = (config or {}).get(self.network.name) or DEFAULT_SETTINGS
-        if "url" in network_config:
-            raise ConfigError("Unknown provider setting 'url'. Did you mean 'uri'?")
-        elif "http_uri" in network_config:
-            key = "http_uri"
-        elif "uri" in network_config:
-            key = "uri"
-        elif "ipc_path" in network_config:
-            key = "ipc_path"
-        elif "ws_uri" in network_config:
-            key = "ws_uri"
-        elif rpc := self._get_random_rpc():
-            return rpc
-        else:
-            key = "uri"
-
-        settings_uri = network_config.get(key, DEFAULT_SETTINGS["uri"])
-        if _is_uri(settings_uri):
-            # Is true if HTTP, WS, or IPC.
-            return settings_uri
-
-        # Is not HTTP, WS, or IPC. Raise an error.
-        raise ConfigError(f"Invalid URI (not HTTP, WS, or IPC): {settings_uri}")
-
-    @property
-    def http_uri(self) -> Optional[str]:
-        uri = self.uri
-        return uri if _is_http_url(uri) else None
-
-    @property
-    def ws_uri(self) -> Optional[str]:
-        if "ws_uri" in self.provider_settings:
-            # Use adhoc, scripted value
-            return self.provider_settings["ws_uri"]
-
-        elif "uri" in self.provider_settings and _is_ws_url(self.provider_settings["uri"]):
-            return self.provider_settings["uri"]
-
-        config: dict = self.config.get(self.network.ecosystem.name, {})
-        if config == {}:
-            return super().ws_uri
-
-        # Use value from config file
-        network_config = config.get(self.network.name) or DEFAULT_SETTINGS
-        if "ws_uri" not in network_config:
-            if "uri" in network_config and _is_ws_url(network_config["uri"]):
-                return network_config["uri"]
-
-            return super().ws_uri
-
-        settings_uri = network_config.get("ws_uri")
-        if settings_uri and _is_ws_url(settings_uri):
-            return settings_uri
-
-        return super().ws_uri
-
-    def _get_random_rpc(self) -> Optional[str]:
-        if self.network.is_dev:
-            return None
-
-        ecosystem = self.network.ecosystem.name
-        network = self.network.name
-
-        # Use public RPC if available
-        try:
-            return get_random_rpc(ecosystem, network)
-        except KeyError:
-            return None
-
-    @property
     def connection_str(self) -> str:
         return self.uri or f"{self.ipc_path}"
 
@@ -1461,29 +1539,19 @@ class EthereumNodeProvider(Web3Provider, ABC):
         return sanitize_url(uri) if _is_http_url(uri) or _is_ws_url(uri) else uri
 
     @property
-    def ipc_path(self) -> Path:
-        if ipc := self.settings.ipc_path:
-            return ipc
-
-        config: dict = self.config.get(self.network.ecosystem.name, {})
-        network_config = config.get(self.network.name, {})
-        if ipc := network_config.get("ipc_path"):
-            return Path(ipc)
-
-        # Check `uri:` config.
-        uri = self.uri
-        if _is_ipc_path(uri):
-            return Path(uri)
-
-        # Default (used by geth-process).
-        return self.data_dir / "geth.ipc"
-
-    @property
     def data_dir(self) -> Path:
         if self.settings.data_dir:
             return self.settings.data_dir.expanduser()
 
         return _get_default_data_dir()
+
+    @property
+    def ipc_path(self) -> Path:
+        if path := super().ipc_path:
+            return path
+
+        # Default (used by geth-process).
+        return self.data_dir / "geth.ipc"
 
     @cached_property
     def _ots_api_level(self) -> Optional[int]:
@@ -1548,6 +1616,7 @@ class EthereumNodeProvider(Web3Provider, ABC):
         # NOTE: We have to check both earliest and latest
         #   because if the chain was _ever_ PoA, we need
         #   this middleware.
+        is_likely_poa = False
         for option in ("earliest", "latest"):
             try:
                 block = self.web3.eth.get_block(option)  # type: ignore[arg-type]
@@ -1682,8 +1751,8 @@ def _is_ws_url(val: str) -> bool:
     return val.startswith("wss://") or val.startswith("ws://")
 
 
-def _is_ipc_path(val: str) -> bool:
-    return val.endswith(".ipc")
+def _is_ipc_path(val: Union[str, Path]) -> bool:
+    return f"{val}".endswith(".ipc")
 
 
 class _LazyCallTrace(ManagerAccessMixin):

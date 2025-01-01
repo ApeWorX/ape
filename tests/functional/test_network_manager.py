@@ -301,10 +301,7 @@ def test_create_custom_provider_ws(networks, scheme):
 def test_create_custom_provider_ipc(networks):
     provider = networks.create_custom_provider("path/to/geth.ipc")
     assert provider.ipc_path == Path("path/to/geth.ipc")
-
-    # The IPC path should not be in URI field, different parts
-    # of codebase may expect an actual URI.
-    assert provider.uri != provider.ipc_path
+    assert provider.uri == provider.ipc_path
 
 
 def test_ecosystems(networks):

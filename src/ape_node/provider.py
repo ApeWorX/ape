@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING, Any, Optional, Union
 from urllib.parse import urlparse
 
 from eth_utils import add_0x_prefix, to_hex
-from evmchains import get_random_rpc
 from geth.chain import initialize_chain
 from geth.process import BaseGethProcess
 from geth.wrapper import construct_test_chain_kwargs
@@ -292,9 +291,9 @@ class GethDevProcess(BaseGethProcess):
 
 class EthereumNetworkConfig(PluginConfig):
     # Make sure you are running the right networks when you try for these
-    mainnet: dict = {"uri": get_random_rpc("ethereum", "mainnet")}
-    holesky: dict = {"uri": get_random_rpc("ethereum", "holesky")}
-    sepolia: dict = {"uri": get_random_rpc("ethereum", "sepolia")}
+    mainnet: dict = {}
+    holesky: dict = {}
+    sepolia: dict = {}
     # Make sure to run via `geth --dev` (or similar)
     local: dict = {**DEFAULT_SETTINGS.copy(), "chain_id": DEFAULT_TEST_CHAIN_ID}
 

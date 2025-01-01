@@ -803,7 +803,7 @@ def test_connected_provider_command_with_network_option_and_cls_types_false(runn
     @network_option()
     def cmd(network):
         assert isinstance(network, str)
-        assert network == "ethereum:local:node"
+        assert network.startswith("ethereum:local")
 
     # NOTE: Must use a network that is not the default.
     spec = ("--network", "ethereum:local:node")

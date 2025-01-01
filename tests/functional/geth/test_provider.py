@@ -6,7 +6,6 @@ import pytest
 from eth_pydantic_types import HashBytes32
 from eth_typing import HexStr
 from eth_utils import keccak, to_hex
-from evmchains import PUBLIC_CHAIN_META
 from hexbytes import HexBytes
 from web3 import AutoProvider, Web3
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
@@ -73,14 +72,6 @@ def test_uri(geth_provider):
 
 
 @geth_process_test
-def test_uri_localhost_not_running_uses_random_default(config):
-    cfg = config.get_config("node").ethereum.mainnet
-    assert cfg["uri"] in PUBLIC_CHAIN_META["ethereum"]["mainnet"]["rpc"]
-    cfg = config.get_config("node").ethereum.sepolia
-    assert cfg["uri"] in PUBLIC_CHAIN_META["ethereum"]["sepolia"]["rpc"]
-
-
-@geth_process_test
 def test_uri_when_configured(geth_provider, project, ethereum):
     settings = geth_provider.provider_settings
     geth_provider.provider_settings = {}
@@ -144,7 +135,7 @@ def test_uri_invalid(geth_provider, project, ethereum):
     try:
         with project.temp_config(**config):
             # Assert we use the config value.
-            expected = rf"Invalid URI \(not HTTP, WS, or IPC\): {re.escape(value)}"
+            expected = rf"Invalid uri: {re.escape(value)}"
             with pytest.raises(ConfigError, match=expected):
                 _ = geth_provider.uri
 
@@ -632,7 +623,7 @@ def test_send_call_skip_trace(mocker, geth_provider, ethereum, tx_for_call):
 @geth_process_test
 def test_network_choice(geth_provider):
     actual = geth_provider.network_choice
-    expected = "ethereum:local:node"
+    expected = "ethereum:local:http://127.0.0.1:5550"
     assert actual == expected
 
 
@@ -845,11 +836,15 @@ def test_start(process_factory_patch, convert, project, geth_provider):
 def test_start_from_ws_uri(process_factory_patch, project, geth_provider, key):
     uri = "ws://localhost:5677"
 
+    settings = geth_provider.provider_settings
     with project.temp_config(node={"ethereum": {"local": {key: uri}}}):
+        geth_provider.provider_settings = {}
         try:
             geth_provider.start()
         except Exception:
             pass  # Exceptions are fine here.
+
+        geth_provider.provider_settings = settings
 
     actual = process_factory_patch.call_args[0][0]  # First "arg"
     assert actual == uri
