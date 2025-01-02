@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en" data-accent-color="lime" data-content_root="../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Accounts - ape documentation</title><link rel="shortcut icon" href="../_static/favicon.ico"/><link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Networks" href="networks.html" /><link rel="prev" title="Overview" href="quickstart.html" />
+      <link rel="canonical" href="ape/userguides/accounts.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=397bb51e" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=10d1008b" />
+    <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    <meta property="og:type" content="website"/>
+<meta property="og:url" content="ape/userguides/accounts.html"/>
+<meta property="og:title" content="Accounts"/>
+<meta name="twitter:card" content="summary"/>
+  </head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="../index.html">
+      <img class="light-logo" src="../_static/logo_grey.svg" alt="ape" height="28" loading="lazy" />
+      <img class="dark-logo" src="../_static/logo_green.svg" alt="ape" height="28" loading="lazy" />
+      <strong>ape</strong>
+    </a>
+    <div class="sy-head-nav" id="HeadNav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials"></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="HeadNav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2 -translate-x-2"></span>
+          <span class="hamburger_3 -translate-x-1"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading" aria-level="3"><span class="caption-text">User Guides</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Overview</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="networks.html">Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="forking_networks.html">Forking Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contracts.html">Contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="proxy.html">Proxy Contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installing_plugins.html">Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="projects.html">Developing Projects with Ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Configure Ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="compile.html">Compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="console.html">Console</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transactions.html">Transactions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trace.html">Traces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scripts.html">Scripting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="testing.html">Testing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reverts.html">Reverts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="publishing.html">Publishing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="clis.html">CLIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="data.html">Querying Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="developing_plugins.html">Developing Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="logging.html">Logging</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">CLI Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../commands/accounts.html">accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/compile.html">compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/console.html">console</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/init.html">init</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/networks.html">networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/plugins.html">plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/pm.html">pm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/run.html">run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/test.html">test</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Core Python Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape.html">ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/api.html">ape.api</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/cli.html">ape.cli</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/contracts.html">ape.contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/exceptions.html">ape.exceptions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/managers.html">ape.managers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/plugins.html">ape.plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/types.html">ape.types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/utils.html">ape.utils</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Plugin Python Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_accounts.html">ape-accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_compile.html">ape-compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_ethereum.html">ape-ethereum</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_ethereum.html#module-ape_ethereum.multicall">ape-ethereum.multicall</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_node.html">ape-node</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_pm.html">ape-pm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_test.html">ape-test</a></li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#test-accounts">Test Accounts</a><ul>
+<li><a class="reference internal" href="#use-test-accounts-in-tests">Use test accounts in tests</a></li>
+<li><a class="reference internal" href="#use-test-accounts-outside-of-tests">Use test accounts outside of tests</a></li>
+<li><a class="reference internal" href="#creating-new-test-accounts">Creating new test accounts</a></li>
+<li><a class="reference internal" href="#default-sender-support">Default Sender Support</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#live-network-accounts">Live Network Accounts</a><ul>
+<li><a class="reference internal" href="#keyfile-accounts">Keyfile Accounts</a><ul>
+<li><a class="reference internal" href="#generating-new-accounts">Generating New Accounts</a></li>
+<li><a class="reference internal" href="#importing-existing-accounts">Importing Existing Accounts</a></li>
+<li><a class="reference internal" href="#exporting-accounts">Exporting Accounts</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id1">Default Sender Support</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#signing-messages">Signing Messages</a><ul>
+<li><a class="reference internal" href="#eip-712">EIP-712</a></li>
+<li><a class="reference internal" href="#verifying-signature">Verifying Signature</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#automation">Automation</a></li>
+<li><a class="reference internal" href="#hardware-wallets">Hardware Wallets</a></li>
+</ul>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6"><div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../index.html"><span itemprop="name">ape</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">Accounts</strong>
+        <meta itemprop="position" content="2" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+        <article class="yue" role="main">
+          <section id="accounts">
+<h1>Accounts<a class="headerlink" href="#accounts" title="Link to this heading"></a></h1>
+<p>Accounts in Ape come from <a class="reference external" href="../methoddocs/api.html#ape.api.accounts.AccountAPI">AccountAPI</a> implementations (e.g. from plugins).
+There are typically two types of accounts:</p>
+<ol class="arabic simple">
+<li><p>Test accounts</p></li>
+<li><p>Live network accounts</p></li>
+</ol>
+<p>Test accounts are useful for local network testing and debugging contracts.
+Live network accounts are for interacting with live blockchains and should be secured.</p>
+<p>To learn more about Ethereum accounts, see <a class="reference external" href="https://ethereum.org/en/developers/docs/accounts/">the Ethereum documentation</a>.</p>
+<section id="test-accounts">
+<h2>Test Accounts<a class="headerlink" href="#test-accounts" title="Link to this heading"></a></h2>
+<p>Ape ships with pytest fixtures to assist in writing your tests.</p>
+<section id="use-test-accounts-in-tests">
+<h3>Use test accounts in tests<a class="headerlink" href="#use-test-accounts-in-tests" title="Link to this heading"></a></h3>
+<p>Pre-funded test accounts are accessible via the <a class="reference external" href="./testing.html#accounts-fixture">accounts fixture</a>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">def</span> <span class="nf">test_my_contract_method</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
+</span><span data-line="2">    <span class="n">sender</span> <span class="o">=</span> <span class="n">accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</span><span data-line="3">    <span class="o">...</span>
+</span></pre></div>
+</div>
+</section>
+<section id="use-test-accounts-outside-of-tests">
+<h3>Use test accounts outside of tests<a class="headerlink" href="#use-test-accounts-outside-of-tests" title="Link to this heading"></a></h3>
+<p>To access the same prefunded accounts in your scripts or console, use the root <code class="docutils literal notranslate"><span class="pre">accounts</span></code> object and the <a class="reference external" href="../methoddocs/managers.html#ape.managers.accounts.AccountManager.test_accounts">test_accounts</a> property:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">sender</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">test_accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</span></pre></div>
+</div>
+<p>You can configure your test accounts using your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">test</span><span class="p">:</span>
+</span><span data-line="2"><span class="w">  </span><span class="nt">mnemonic</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test test test test test test test test test test test junk</span>
+</span><span data-line="3"><span class="w">  </span><span class="nt">number_of_accounts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
+</span></pre></div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>NEVER put a seed phrase with real funds here.</p>
+</div>
+<p>The accounts generated from this seed are solely for testing and debugging purposes.</p>
+</section>
+<section id="creating-new-test-accounts">
+<h3>Creating new test accounts<a class="headerlink" href="#creating-new-test-accounts" title="Link to this heading"></a></h3>
+<p>You can create a new test account by doing the following:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">test_accounts</span><span class="o">.</span><span class="n">generate_test_account</span><span class="p">()</span>
+</span></pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Creating a new test account means it will be unfunded by default.</p>
+</div>
+<p>Learn more about test accounts from the <a class="reference external" href="./testing.html#accounts-fixture">testing guide</a>.</p>
+<p>If your testing provider supports this feature, it is possible to directly set the balances of any address by performing the following action:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">account</span><span class="o">.</span><span class="n">balance</span> <span class="o">+=</span> <span class="nb">int</span><span class="p">(</span><span class="mf">1e18</span><span class="p">)</span>  <span class="c1"># Gives `account` 1 Ether</span>
+</span></pre></div>
+</div>
+</section>
+<section id="default-sender-support">
+<h3>Default Sender Support<a class="headerlink" href="#default-sender-support" title="Link to this heading"></a></h3>
+<p>In order to eliminate the usage of sender in contract calls, you can use <code class="docutils literal notranslate"><span class="pre">use_sender</span></code> context manager.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">with</span> <span class="n">accounts</span><span class="o">.</span><span class="n">use_sender</span><span class="p">(</span><span class="mi">0</span><span class="p">):</span> <span class="c1"># Use first account from test mnemonic</span>
+</span><span data-line="2">  <span class="n">contract</span><span class="o">.</span><span class="n">myFunction</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span><span data-line="3">
+</span><span data-line="4"><span class="k">with</span> <span class="n">accounts</span><span class="o">.</span><span class="n">use_sender</span><span class="p">(</span><span class="s2">&quot;&lt;address&gt;&quot;</span><span class="p">):</span> <span class="c1"># Impersonate an account</span>
+</span><span data-line="5">  <span class="n">contract</span><span class="o">.</span><span class="n">myFunction</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span><span data-line="6">
+</span><span data-line="7"><span class="k">with</span> <span class="n">accounts</span><span class="o">.</span><span class="n">use_sender</span><span class="p">(</span><span class="n">a</span><span class="p">):</span> <span class="c1"># a is a `TestAccountAPI` object</span>
+</span><span data-line="8">  <span class="n">contract</span><span class="o">.</span><span class="n">myFunction</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span></pre></div>
+</div>
+</section>
+</section>
+<section id="live-network-accounts">
+<h2>Live Network Accounts<a class="headerlink" href="#live-network-accounts" title="Link to this heading"></a></h2>
+<p>When using live networks, you need to get your accounts into Ape.
+To get your accounts in Ape, you must use an <code class="docutils literal notranslate"><span class="pre">accounts</span></code> plugin.
+Ape ships with a keyfile-based account plugin, but you can use any account plugin such as <code class="docutils literal notranslate"><span class="pre">ape-ledger</span></code>, <code class="docutils literal notranslate"><span class="pre">ape-trezor</span></code>, or a third-party plugin.</p>
+<section id="keyfile-accounts">
+<h3>Keyfile Accounts<a class="headerlink" href="#keyfile-accounts" title="Link to this heading"></a></h3>
+<p>Ape ships with a keyfile-based account plugin that lets you import and generate accounts.
+The premise of the plugin is that accounts are stored locally on your computer in the <code class="docutils literal notranslate"><span class="pre">$HOME/.ape/accounts</span></code> directory following the <code class="docutils literal notranslate"><span class="pre">keyfile</span></code> structure.
+Under-the-hood, this structure comes from the <a class="reference external" href="https://github.com/ethereum/eth-keyfile">eth-keyfile library</a> via the <a class="reference external" href="https://eth-account.readthedocs.io/en/stable/eth_account.html">eth-account</a> package.
+When Ape creates the keyfile, either from import or account-generation (described below!), it prompts you for a passphrase to use for encrypting the keyfile, similarly to how you would use a password in browser-based wallets.
+The keyfile stores the private key in an encrypted-at-rest state, which maximizes security of the locally-stored key material.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">ape-accounts</span></code> core plugin lets you use keyfile-based account to sign messages and transactions.
+When signing a message or transaction using an account from <code class="docutils literal notranslate"><span class="pre">ape-accounts</span></code>, you will be prompted to enter the passphrase you specified when importing or generating that account.</p>
+<p>All the available CLI commands for this account’s plugin can be found <a class="reference external" href="../commands/accounts.html">here</a>.</p>
+<section id="generating-new-accounts">
+<h4>Generating New Accounts<a class="headerlink" href="#generating-new-accounts" title="Link to this heading"></a></h4>
+<p>You can <a class="reference external" href="../commands/accounts.html#accounts-generate">generate</a> an account:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>accounts<span class="w"> </span>generate<span class="w"> </span>&lt;ALIAS&gt;
+</span></pre></div>
+</div>
+<p>Ape will prompt you for entropy which is used to increase randomness when creating your account.
+Ape will then prompt you whether you want to show your mnemonic.
+If you do not want to see your mnemonic you can select <code class="docutils literal notranslate"><span class="pre">n</span></code>.
+Alternatively, you can use the <code class="docutils literal notranslate"><span class="pre">--hide-mnemonic</span></code> option to skip the prompt.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>accounts<span class="w"> </span>generate<span class="w"> </span>&lt;ALIAS&gt;<span class="w"> </span>--hide-mnemonic
+</span></pre></div>
+</div>
+<p>If you elected to show your mnemonic Ape will then show you your newly generated mnemonic.
+Ape will then prompt you for a passphrase which you will need to enter twice to confirm.
+This passphrase is used to encrypt your account on disk, for extra security.
+You will be prompted for it each time you load your account, so make sure to remember it.
+After entering the passphrase Ape will then show you your new account address, HDPath, and account alias.
+If you want to use a custom HDPath, use the <code class="docutils literal notranslate"><span class="pre">--hd-path</span></code> option:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>accounts<span class="w"> </span>generate<span class="w"> </span>&lt;ALIAS&gt;<span class="w"> </span>--hd-path<span class="w"> </span>&lt;HDPATH&gt;
+</span></pre></div>
+</div>
+<p>If you do not use the <code class="docutils literal notranslate"><span class="pre">--hd-path</span></code> option, Ape will use the default HDPath of (Ethereum network, first account).
+If you want to use a custom mnemonic phrase word length, use the <code class="docutils literal notranslate"><span class="pre">--word-count</span></code> option:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>accounts<span class="w"> </span>generate<span class="w"> </span>&lt;ALIAS&gt;<span class="w"> </span>--word-count<span class="w"> </span>&lt;WORDCOUNT&gt;
+</span></pre></div>
+</div>
+<p>If you do not use the <code class="docutils literal notranslate"><span class="pre">--word-count</span></code> option, Ape will use the default word count of 12.
+You can use all of these together or separately to control the way Ape creates and displays your account information.</p>
+<p>This same functionality is also scriptable with the same inputs as the <code class="docutils literal notranslate"><span class="pre">generate</span></code> command:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape_accounts</span> <span class="kn">import</span> <span class="n">generate_account</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="n">account</span><span class="p">,</span> <span class="n">mnemonic</span> <span class="o">=</span> <span class="n">generate_account</span><span class="p">(</span><span class="s2">&quot;my-account&quot;</span><span class="p">,</span> <span class="s2">&quot;mySecureP@ssphrase&quot;</span><span class="p">)</span>
+</span><span data-line="4">
+</span><span data-line="5"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Save your mnemonic: </span><span class="si">{</span><span class="n">mnemonic</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</span><span data-line="6"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Your new account address is: </span><span class="si">{</span><span class="n">account</span><span class="o">.</span><span class="n">address</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</span></pre></div>
+</div>
+<p>See the <a class="reference external" href="../methoddocs/ape_accounts.html#ape_accounts.generate_account">documentation for <code class="docutils literal notranslate"><span class="pre">generate_account()</span></code></a> for more options.</p>
+</section>
+<section id="importing-existing-accounts">
+<h4>Importing Existing Accounts<a class="headerlink" href="#importing-existing-accounts" title="Link to this heading"></a></h4>
+<p>If you already have an account and wish to import it into Ape (say, from Metamask), you can use the <a class="reference external" href="../commands/accounts.html#accounts-import">import command</a>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>accounts<span class="w"> </span>import<span class="w"> </span>&lt;ALIAS&gt;
+</span></pre></div>
+</div>
+<p>It will prompt you for the private key.
+If you need help exporting your private key from Metamask, see <a class="reference external" href="https://metamask.zendesk.com/hc/en-us/articles/360015289632-How-to-export-an-account-s-private-key">this guide</a>.
+You can also import accounts from mnemonic seed by using the <code class="docutils literal notranslate"><span class="pre">--use-mnemonic</span></code> flag:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>accounts<span class="w"> </span>import<span class="w"> </span>&lt;ALIAS&gt;<span class="w"> </span>--use-mnemonic
+</span></pre></div>
+</div>
+<p>It will then prompt you for the <a class="reference external" href="https://en.bitcoin.it/wiki/Seed_phrase">mnemonic seed</a>.
+If you need help finding your mnemonic seed (Secret Recovery Phrase) in Metamask, see <a class="reference external" href="https://metamask.zendesk.com/hc/en-us/articles/360015290032-How-to-reveal-your-Secret-Recovery-Phrase">this guide</a>.
+In addition, you can also use a custom HDPath by using the <code class="docutils literal notranslate"><span class="pre">--hd-path</span></code> option:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>accounts<span class="w"> </span>import<span class="w"> </span>&lt;ALIAS&gt;<span class="w"> </span>--use-mnemonic<span class="w"> </span>--hd-path<span class="w"> </span>&lt;HDPATH&gt;
+</span></pre></div>
+</div>
+<p>If you use the <code class="docutils literal notranslate"><span class="pre">--hd-path</span></code> option, you will need to pass the <a class="reference external" href="https://help.myetherwallet.com/en/articles/5867305-hd-wallets-and-derivation-paths">HDPath</a> you’d like to use as an argument in the command.
+If you do not use the <code class="docutils literal notranslate"><span class="pre">--hd-path</span></code> option, Ape will use the default HDPath of (Ethereum network, first account).</p>
+<p>You can import an account programmatically using a seed phrase <a class="reference external" href="../methoddocs/ape_accounts.html#ape_accounts.import_account_from_mnemonic">using <code class="docutils literal notranslate"><span class="pre">import_account_from_mnemonic()</span></code></a>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape_accounts</span> <span class="kn">import</span> <span class="n">import_account_from_mnemonic</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="n">alias</span> <span class="o">=</span> <span class="s2">&quot;my-account&quot;</span>
+</span><span data-line="4"><span class="n">passphrase</span> <span class="o">=</span> <span class="s2">&quot;my$ecurePassphrase&quot;</span>
+</span><span data-line="5"><span class="n">mnemonic</span> <span class="o">=</span> <span class="s2">&quot;test test test test test test test test test test test junk&quot;</span>
+</span><span data-line="6">
+</span><span data-line="7"><span class="n">account</span> <span class="o">=</span> <span class="n">import_account_from_mnemonic</span><span class="p">(</span><span class="n">alias</span><span class="p">,</span> <span class="n">passphrase</span><span class="p">,</span> <span class="n">mnemonic</span><span class="p">)</span>
+</span><span data-line="8">
+</span><span data-line="9"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Your imported account address is: </span><span class="si">{</span><span class="n">account</span><span class="o">.</span><span class="n">address</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</span></pre></div>
+</div>
+<p>Or using a raw private key <a class="reference external" href="../methoddocs/ape_accounts.html#ape_accounts.import_account_from_private_key">using <code class="docutils literal notranslate"><span class="pre">import_account_from_private_key()</span></code></a>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span> <span class="nn">os</span>
+</span><span data-line="2"><span class="kn">from</span> <span class="nn">ape_accounts</span> <span class="kn">import</span> <span class="n">import_account_from_private_key</span>
+</span><span data-line="3">
+</span><span data-line="4"><span class="n">alias</span> <span class="o">=</span> <span class="s2">&quot;my-account&quot;</span>
+</span><span data-line="5"><span class="n">passphrase</span> <span class="o">=</span> <span class="s2">&quot;my SecurePassphrase&quot;</span>
+</span><span data-line="6"><span class="n">private_key</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">urandom</span><span class="p">(</span><span class="mi">32</span><span class="p">)</span><span class="o">.</span><span class="n">hex</span><span class="p">()</span>
+</span><span data-line="7">
+</span><span data-line="8"><span class="n">account</span> <span class="o">=</span> <span class="n">import_account_from_private_key</span><span class="p">(</span><span class="n">alias</span><span class="p">,</span> <span class="n">passphrase</span><span class="p">,</span> <span class="n">private_key</span><span class="p">)</span>
+</span><span data-line="9">
+</span><span data-line="10"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Your imported account address is: </span><span class="si">{</span><span class="n">account</span><span class="o">.</span><span class="n">address</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</span></pre></div>
+</div>
+</section>
+<section id="exporting-accounts">
+<h4>Exporting Accounts<a class="headerlink" href="#exporting-accounts" title="Link to this heading"></a></h4>
+<p>You can also <a class="reference external" href="../commands/accounts.html#accounts-export">export</a> the private key of an account:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>accounts<span class="w"> </span><span class="nb">export</span><span class="w"> </span>&lt;ALIAS&gt;
+</span></pre></div>
+</div>
+<p>Ape will ask you for the password to the account and then give you the private key of that account.
+You can then use that private key with <a class="reference external" href="../commands/accounts.html#accounts-import">import</a>.
+You can alternatively load the private key into <a class="reference external" href="https://metamask.zendesk.com/hc/en-us/articles/360015489331-How-to-import-an-account#h_01G01W07NV7Q94M7P1EBD5BYM4">Metamask wallet</a>.
+Then, in your scripts, you can <a class="reference external" href="../methoddocs/managers.html#ape.managers.accounts.AccountManager.load">load</a> an account:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;&lt;ALIAS&gt;&quot;</span><span class="p">)</span>
+</span></pre></div>
+</div>
+</section>
+</section>
+<section id="id1">
+<h3>Default Sender Support<a class="headerlink" href="#id1" title="Link to this heading"></a></h3>
+<p>In order to reduce repetition of adding <code class="docutils literal notranslate"><span class="pre">sender</span></code> in your contract calls, you can use <code class="docutils literal notranslate"><span class="pre">use_sender</span></code> context manager.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">with</span> <span class="n">accounts</span><span class="o">.</span><span class="n">use_sender</span><span class="p">(</span><span class="mi">0</span><span class="p">):</span>
+</span><span data-line="2">  <span class="n">contract</span><span class="o">.</span><span class="n">myFunction</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span><span data-line="3">
+</span><span data-line="4"><span class="k">with</span> <span class="n">accounts</span><span class="o">.</span><span class="n">use_sender</span><span class="p">(</span><span class="s2">&quot;&lt;address&gt;&quot;</span><span class="p">):</span>
+</span><span data-line="5">  <span class="n">contract</span><span class="o">.</span><span class="n">myFunction</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span><span data-line="6">
+</span><span data-line="7"><span class="k">with</span> <span class="n">accounts</span><span class="o">.</span><span class="n">use_sender</span><span class="p">(</span><span class="s2">&quot;&lt;alias&gt;&quot;</span><span class="p">):</span>
+</span><span data-line="8">  <span class="n">contract</span><span class="o">.</span><span class="n">myFunction</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span><span data-line="9">
+</span><span data-line="10"><span class="k">with</span> <span class="n">accounts</span><span class="o">.</span><span class="n">use_sender</span><span class="p">(</span><span class="n">a</span><span class="p">):</span> <span class="c1"># a is a `AccountAPI` object</span>
+</span><span data-line="11">  <span class="n">contract</span><span class="o">.</span><span class="n">myFunction</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span></pre></div>
+</div>
+</section>
+</section>
+<section id="signing-messages">
+<h2>Signing Messages<a class="headerlink" href="#signing-messages" title="Link to this heading"></a></h2>
+<p>You can sign messages with your accounts in Ape.
+To do this, use the <a class="reference external" href="../methoddocs/api.html#ape.api.accounts.AccountAPI.sign_message">sign_message</a> API.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span>
+</span><span data-line="2"><span class="kn">from</span> <span class="nn">eth_account.messages</span> <span class="kn">import</span> <span class="n">encode_defunct</span>
+</span><span data-line="3">
+</span><span data-line="4"><span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;&lt;ALIAS&gt;&quot;</span><span class="p">)</span>
+</span><span data-line="5"><span class="n">message</span> <span class="o">=</span> <span class="n">encode_defunct</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s2">&quot;Hello Apes!&quot;</span><span class="p">)</span>
+</span><span data-line="6"><span class="n">signature</span> <span class="o">=</span> <span class="n">account</span><span class="o">.</span><span class="n">sign_message</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+</span></pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Ape’s <code class="docutils literal notranslate"><span class="pre">sign_message</span></code> API intentionally accepts <code class="docutils literal notranslate"><span class="pre">Any</span></code> as the message argument type.</p>
+</div>
+<p>Account plugins decide what data-types to support.
+Most Ethereum account plugins, such as <code class="docutils literal notranslate"><span class="pre">ape-account</span></code>, are able to sign messages like the example above.
+However, you can also provide other types, such as a <code class="docutils literal notranslate"><span class="pre">str</span></code> directly:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;&lt;ALIAS&gt;&quot;</span><span class="p">)</span>
+</span><span data-line="4"><span class="n">signature</span> <span class="o">=</span> <span class="n">account</span><span class="o">.</span><span class="n">sign_message</span><span class="p">(</span><span class="s2">&quot;Hello Apes!&quot;</span><span class="p">)</span>
+</span></pre></div>
+</div>
+<section id="eip-712">
+<h3>EIP-712<a class="headerlink" href="#eip-712" title="Link to this heading"></a></h3>
+<p>Some account plugins are able to sign EIP-712 structured message types by utilizing the <code class="docutils literal notranslate"><span class="pre">eip712</span></code> package.
+Here is an example with custom EIP-712 classes:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span>
+</span><span data-line="2"><span class="kn">from</span> <span class="nn">eip712.messages</span> <span class="kn">import</span> <span class="n">EIP712Message</span><span class="p">,</span> <span class="n">EIP712Type</span>
+</span><span data-line="3">
+</span><span data-line="4"><span class="k">class</span> <span class="nc">Person</span><span class="p">(</span><span class="n">EIP712Type</span><span class="p">):</span>
+</span><span data-line="5">    <span class="n">name</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span>
+</span><span data-line="6">    <span class="n">wallet</span><span class="p">:</span> <span class="s2">&quot;address&quot;</span>
+</span><span data-line="7">
+</span><span data-line="8"><span class="k">class</span> <span class="nc">Mail</span><span class="p">(</span><span class="n">EIP712Message</span><span class="p">):</span>
+</span><span data-line="9">    <span class="n">_chainId_</span><span class="p">:</span> <span class="s2">&quot;uint256&quot;</span> <span class="o">=</span> <span class="mi">1</span>
+</span><span data-line="10">    <span class="n">_name_</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span> <span class="o">=</span> <span class="s2">&quot;Ether Mail&quot;</span>
+</span><span data-line="11">    <span class="n">_verifyingContract_</span><span class="p">:</span> <span class="s2">&quot;address&quot;</span> <span class="o">=</span> <span class="s2">&quot;0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC&quot;</span>
+</span><span data-line="12">    <span class="n">_version_</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span> <span class="o">=</span> <span class="s2">&quot;1&quot;</span>
+</span><span data-line="13">
+</span><span data-line="14">    <span class="n">sender</span><span class="p">:</span> <span class="n">Person</span>
+</span><span data-line="15">    <span class="n">receiver</span><span class="p">:</span> <span class="n">Person</span>
+</span><span data-line="16">
+</span><span data-line="17"><span class="n">alice</span> <span class="o">=</span> <span class="n">Person</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Alice&quot;</span><span class="p">,</span> <span class="n">wallet</span><span class="o">=</span><span class="s2">&quot;0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826&quot;</span><span class="p">)</span>
+</span><span data-line="18"><span class="n">bob</span> <span class="o">=</span> <span class="n">Person</span><span class="p">(</span><span class="s2">&quot;Bob&quot;</span><span class="p">,</span> <span class="s2">&quot;0xB0B0b0b0b0b0B000000000000000000000000000&quot;</span><span class="p">)</span>
+</span><span data-line="19"><span class="n">message</span> <span class="o">=</span> <span class="n">Mail</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">alice</span><span class="p">,</span> <span class="n">receiver</span><span class="o">=</span><span class="n">bob</span><span class="p">)</span>
+</span><span data-line="20">
+</span><span data-line="21"><span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;&lt;ALIAS&gt;&quot;</span><span class="p">)</span>
+</span><span data-line="22"><span class="n">account</span><span class="o">.</span><span class="n">sign_message</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+</span></pre></div>
+</div>
+</section>
+<section id="verifying-signature">
+<h3>Verifying Signature<a class="headerlink" href="#verifying-signature" title="Link to this heading"></a></h3>
+<p>Verify the signatures on your signed messages by using the <a class="reference external" href="../methoddocs/types.html#ape.types.signatures.recover_signer">recover_signer</a> function or the <a class="reference external" href="../methoddocs/api.html#ape.api.accounts.AccountAPI.check_signature">check_signature</a> function:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span>
+</span><span data-line="2"><span class="kn">from</span> <span class="nn">ape.types.signatures</span> <span class="kn">import</span> <span class="n">recover_signer</span>
+</span><span data-line="3"><span class="kn">from</span> <span class="nn">eth_account.messages</span> <span class="kn">import</span> <span class="n">encode_defunct</span>
+</span><span data-line="4">
+</span><span data-line="5"><span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;&lt;ALIAS&gt;&quot;</span><span class="p">)</span>
+</span><span data-line="6"><span class="n">message</span> <span class="o">=</span> <span class="n">encode_defunct</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s2">&quot;Hello Apes!&quot;</span><span class="p">)</span>
+</span><span data-line="7"><span class="n">signature</span> <span class="o">=</span> <span class="n">account</span><span class="o">.</span><span class="n">sign_message</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+</span><span data-line="8">
+</span><span data-line="9"><span class="c1"># Validate the signature by recovering the signer and asserting it is equal to the sender.</span>
+</span><span data-line="10"><span class="n">recovered_signer</span> <span class="o">=</span> <span class="n">recover_signer</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">signature</span><span class="p">)</span>
+</span><span data-line="11"><span class="k">assert</span> <span class="n">recovered_signer</span> <span class="o">==</span> <span class="n">account</span><span class="o">.</span><span class="n">address</span>
+</span><span data-line="12">
+</span><span data-line="13"><span class="c1"># NOTE: You can also use the `check_signature` method on an account, which returns a bool.</span>
+</span><span data-line="14"><span class="k">assert</span> <span class="n">account</span><span class="o">.</span><span class="n">check_signature</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">signature</span><span class="p">)</span>
+</span></pre></div>
+</div>
+</section>
+</section>
+<section id="automation">
+<h2>Automation<a class="headerlink" href="#automation" title="Link to this heading"></a></h2>
+<p>If you use your keyfile accounts in automation, such as CI/CD, you may need to programmatically unlock them and enable auto-sign.
+To do this, use a special environment variable for the account’s passphrase:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nb">export</span><span class="w"> </span>APE_ACCOUNTS_&lt;alias&gt;_PASSPHRASE<span class="o">=</span><span class="s2">&quot;a&quot;</span>
+</span></pre></div>
+</div>
+<p>Where <code class="docutils literal notranslate"><span class="pre">&lt;alias&gt;</span></code> is the name of the account you want to use.
+Now, you can use your account to make any transactions without subsequently providing your passphrase.</p>
+<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span>
+</span><span data-line="2"><span class="kn">from</span> <span class="nn">eth_account.messages</span> <span class="kn">import</span> <span class="n">encode_defunct</span>
+</span><span data-line="3">
+</span><span data-line="4"><span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;&lt;ALIAS&gt;&quot;</span><span class="p">)</span>
+</span><span data-line="5"><span class="n">account</span><span class="o">.</span><span class="n">set_autosign</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+</span><span data-line="6">
+</span><span data-line="7"><span class="c1"># Now, you will not be prompted to sign messages or transactions</span>
+</span><span data-line="8"><span class="n">message</span> <span class="o">=</span> <span class="n">encode_defunct</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s2">&quot;Hello Apes!&quot;</span><span class="p">)</span>
+</span><span data-line="9"><span class="n">signature</span> <span class="o">=</span> <span class="n">account</span><span class="o">.</span><span class="n">sign_message</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+</span></pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Alternatively, you may use the <code class="docutils literal notranslate"><span class="pre">passphrase=</span></code> kwarg on methods <code class="docutils literal notranslate"><span class="pre">account.set_autosign()</span></code> and <code class="docutils literal notranslate"><span class="pre">account.unlock()</span></code>, but we highly recommend using the environment variable approach to avoid accidentally leaking your passphrase.</p>
+</div>
+</section>
+<section id="hardware-wallets">
+<h2>Hardware Wallets<a class="headerlink" href="#hardware-wallets" title="Link to this heading"></a></h2>
+<p>Because of the plugin system in Ape, we are able to support other types of accounts including hardware wallet accounts.
+Check out these plugins:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/ApeWorX/ape-ledger">ape-ledger</a></p></li>
+<li><p><a class="reference external" href="https://github.com/ApeWorX/ape-trezor">ape-trezor</a></p></li>
+</ul>
+<p>To install one of these plugins, do the following:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>plugins<span class="w"> </span>install<span class="w"> </span>ledger
+</span></pre></div>
+</div>
+</section>
+</section>
+
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"><div class="navigation-prev">
+    <a href="quickstart.html">
+      <i class="i-lucide chevron-left"></i>
+      <div class="page-info">
+        <span>Previous</span><div class="title">Overview</div></div>
+    </a>
+  </div><div class="navigation-next">
+    <a href="networks.html">
+      <div class="page-info">
+        <span>Next</span>
+        <div class="title">Networks</div>
+      </div>
+      <i class="i-lucide chevron-right"></i>
+    </a>
+  </div></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2024, ApeWorX LTD</p>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials"></div>
+    </div>
+  </div>
+</footer>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script data-domain="docs.apeworx.io" defer="defer" src="https://plausible.io/js/script.js"></script>
+      <script src="../_static/shibuya.js?v=55e26b35"></script></body>
+</html>

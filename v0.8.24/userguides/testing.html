@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en" data-accent-color="lime" data-content_root="../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Testing - ape documentation</title><link rel="shortcut icon" href="../_static/favicon.ico"/><link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Reverts" href="reverts.html" /><link rel="prev" title="Scripting" href="scripts.html" />
+      <link rel="canonical" href="ape/userguides/testing.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=397bb51e" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=10d1008b" />
+    <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    <meta property="og:type" content="website"/>
+<meta property="og:url" content="ape/userguides/testing.html"/>
+<meta property="og:title" content="Testing"/>
+<meta name="twitter:card" content="summary"/>
+  </head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="../index.html">
+      <img class="light-logo" src="../_static/logo_grey.svg" alt="ape" height="28" loading="lazy" />
+      <img class="dark-logo" src="../_static/logo_green.svg" alt="ape" height="28" loading="lazy" />
+      <strong>ape</strong>
+    </a>
+    <div class="sy-head-nav" id="HeadNav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials"></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="HeadNav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2 -translate-x-2"></span>
+          <span class="hamburger_3 -translate-x-1"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading" aria-level="3"><span class="caption-text">User Guides</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="accounts.html">Accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="networks.html">Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="forking_networks.html">Forking Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contracts.html">Contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="proxy.html">Proxy Contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installing_plugins.html">Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="projects.html">Developing Projects with Ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Configure Ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="compile.html">Compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="console.html">Console</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transactions.html">Transactions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trace.html">Traces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scripts.html">Scripting</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Testing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reverts.html">Reverts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="publishing.html">Publishing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="clis.html">CLIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="data.html">Querying Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="developing_plugins.html">Developing Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="logging.html">Logging</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">CLI Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../commands/accounts.html">accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/compile.html">compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/console.html">console</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/init.html">init</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/networks.html">networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/plugins.html">plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/pm.html">pm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/run.html">run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/test.html">test</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Core Python Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape.html">ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/api.html">ape.api</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/cli.html">ape.cli</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/contracts.html">ape.contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/exceptions.html">ape.exceptions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/managers.html">ape.managers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/plugins.html">ape.plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/types.html">ape.types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/utils.html">ape.utils</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Plugin Python Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_accounts.html">ape-accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_compile.html">ape-compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_ethereum.html">ape-ethereum</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_ethereum.html#module-ape_ethereum.multicall">ape-ethereum.multicall</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_node.html">ape-node</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_pm.html">ape-pm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_test.html">ape-test</a></li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#pytest">Pytest</a></li>
+<li><a class="reference internal" href="#test-structure">Test Structure</a></li>
+<li><a class="reference internal" href="#test-pattern">Test Pattern</a></li>
+<li><a class="reference internal" href="#fixtures">Fixtures</a><ul>
+<li><a class="reference internal" href="#accounts-fixture">accounts fixture</a></li>
+<li><a class="reference internal" href="#chain-fixture">chain fixture</a></li>
+<li><a class="reference internal" href="#networks-fixture">networks fixture</a></li>
+<li><a class="reference internal" href="#project-fixture">project fixture</a></li>
+<li><a class="reference internal" href="#contract-fixture">Contract fixture</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#isolation">Isolation</a></li>
+<li><a class="reference internal" href="#ape-testing-commands">Ape testing commands</a></li>
+<li><a class="reference internal" href="#test-providers">Test Providers</a><ul>
+<li><a class="reference internal" href="#mining">Mining</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#advanced-testing-tips">Advanced Testing Tips</a></li>
+<li><a class="reference internal" href="#testing-transaction-reverts">Testing Transaction Reverts</a><ul>
+<li><a class="reference internal" href="#expected-message"><code class="docutils literal notranslate"><span class="pre">expected_message</span></code></a></li>
+<li><a class="reference internal" href="#dev-message"><code class="docutils literal notranslate"><span class="pre">dev_message</span></code></a></li>
+<li><a class="reference internal" href="#caveats">Caveats</a><ul>
+<li><a class="reference internal" href="#language-support">Language Support</a></li>
+<li><a class="reference internal" href="#inlining">Inlining</a></li>
+<li><a class="reference internal" href="#non-reentrant-functions">Non-reentrant Functions</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#custom-errors">Custom Errors</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#multi-chain-testing">Multi-chain Testing</a></li>
+<li><a class="reference internal" href="#gas-reporting">Gas Reporting</a></li>
+<li><a class="reference internal" href="#iterative-testing">Iterative Testing</a></li>
+<li><a class="reference internal" href="#contract-coverage">Contract Coverage</a></li>
+</ul>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6"><div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../index.html"><span itemprop="name">ape</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">Testing</strong>
+        <meta itemprop="position" content="2" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+        <article class="yue" role="main">
+          <section id="testing">
+<h1>Testing<a class="headerlink" href="#testing" title="Link to this heading"></a></h1>
+<p>Testing an ape project is important and easy.</p>
+<section id="pytest">
+<h2>Pytest<a class="headerlink" href="#pytest" title="Link to this heading"></a></h2>
+<p>Before learning how testing works in Ape, you should have an understanding of <a class="reference external" href="https://docs.pytest.org/en/7.4.x/">the pytest framework</a> and its concepts such as fixtures, mark-decorators, and pytest plugins such as x-dist, pytest-mock, and pytest-cov.
+Once you have learned about pytest, Ape testing becomes intuitive because it is built on top of pytest.
+In fact, <code class="docutils literal notranslate"><span class="pre">ape-test</span></code> is itself a <code class="docutils literal notranslate"><span class="pre">pytest</span></code> plugin!</p>
+<p>You write your smart-contracts much like you write regular Python tests.</p>
+</section>
+<section id="test-structure">
+<h2>Test Structure<a class="headerlink" href="#test-structure" title="Link to this heading"></a></h2>
+<p>Tests must be located in a project’s <code class="docutils literal notranslate"><span class="pre">tests/</span></code> directory. Each <strong>test file</strong> must start with <code class="docutils literal notranslate"><span class="pre">test_</span></code> and have the <code class="docutils literal notranslate"><span class="pre">.py</span></code> extension, such as <code class="docutils literal notranslate"><span class="pre">test_my_contract.py</span></code>.
+Each <strong>test method</strong> within the file must also start with <code class="docutils literal notranslate"><span class="pre">test_</span></code>.
+The following is an example test:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">def</span> <span class="nf">test_add</span><span class="p">():</span>
+</span><span data-line="2">    <span class="k">assert</span> <span class="mi">1</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">==</span> <span class="mi">2</span>
+</span></pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">pytest</span></code> assumes the <em>actual</em> value is on the left and the <em>expected</em> value is on the right.</p>
+</div>
+</section>
+<section id="test-pattern">
+<h2>Test Pattern<a class="headerlink" href="#test-pattern" title="Link to this heading"></a></h2>
+<p>Tests are generally divisible into three parts:</p>
+<ol class="arabic simple">
+<li><p>Set-up</p></li>
+<li><p>Invocation</p></li>
+<li><p>Assertion</p></li>
+</ol>
+<p>An example of the setup-phase would be creating a <code class="docutils literal notranslate"><span class="pre">pytest.fixture</span></code> that deploys our smart contract.
+(To learn more about pytest fixtures in Ape, see the <code class="docutils literal notranslate"><span class="pre">Fixtures</span></code> section below!)
+For now, what you need to know is that it’s a piece of code that executes before the test runs, and it is decorated with a <code class="docutils literal notranslate"><span class="pre">&#64;pytest.fixture</span></code>.</p>
+<p>The second phase is <code class="docutils literal notranslate"><span class="pre">Invocation</span></code>, which encompasses invoking the function we are testing.
+The last phase, <code class="docutils literal notranslate"><span class="pre">Assertion</span></code>, requires enacting on the expectation about how the code should behave.
+Let’s assume there is an <code class="docutils literal notranslate"><span class="pre">authorized_method()</span></code> that requires the owner of the contract to make the transaction.
+If the sender of the transaction is not the owner, the transaction will fail to complete and will revert.
+We use <code class="docutils literal notranslate"><span class="pre">assert</span></code> statements in Ape (and <code class="docutils literal notranslate"><span class="pre">pytest</span></code>) to check that our expectations are correct.
+A test passes if all the <code class="docutils literal notranslate"><span class="pre">assert</span></code> statements are <code class="docutils literal notranslate"><span class="pre">True</span></code> and it fails if any are <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
+<p>This is an example of how that test may look:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span> <span class="nn">ape</span>
+</span><span data-line="2"><span class="kn">import</span> <span class="nn">pytest</span>
+</span><span data-line="3">
+</span><span data-line="4"><span class="c1"># SETUP PHASE</span>
+</span><span data-line="5"><span class="c1"># NOTE: More on fixtures is discussed in later sections of this guide!</span>
+</span><span data-line="6"><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+</span><span data-line="7"><span class="k">def</span> <span class="nf">owner</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
+</span><span data-line="8">    <span class="k">return</span> <span class="n">accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</span><span data-line="9">
+</span><span data-line="10"><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+</span><span data-line="11"><span class="k">def</span> <span class="nf">my_contract</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="n">project</span><span class="p">):</span>
+</span><span data-line="12">    <span class="k">return</span> <span class="n">owner</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="p">)</span>
+</span><span data-line="13">
+</span><span data-line="14"><span class="k">def</span> <span class="nf">test_authorization</span><span class="p">(</span><span class="n">my_contract</span><span class="p">,</span> <span class="n">owner</span><span class="p">,</span> <span class="n">not_owner</span><span class="p">):</span>
+</span><span data-line="15">    <span class="c1"># INVOCATION PHASE</span>
+</span><span data-line="16">    <span class="n">my_contract</span><span class="o">.</span><span class="n">set_owner</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">owner</span><span class="p">)</span>
+</span><span data-line="17">    <span class="k">assert</span> <span class="n">owner</span> <span class="o">==</span> <span class="n">my_contract</span><span class="o">.</span><span class="n">owner</span><span class="p">()</span>
+</span><span data-line="18">
+</span><span data-line="19">    <span class="c1"># ASSERTION PHASE</span>
+</span><span data-line="20">    <span class="k">with</span> <span class="n">ape</span><span class="o">.</span><span class="n">reverts</span><span class="p">(</span><span class="s2">&quot;!authorized&quot;</span><span class="p">):</span>
+</span><span data-line="21">        <span class="n">my_contract</span><span class="o">.</span><span class="n">authorized_method</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">not_owner</span><span class="p">)</span>
+</span></pre></div>
+</div>
+</section>
+<section id="fixtures">
+<h2>Fixtures<a class="headerlink" href="#fixtures" title="Link to this heading"></a></h2>
+<p>Now that we have discussed the full flow of a test, let’s dive deeper into the specific parts, starting with <code class="docutils literal notranslate"><span class="pre">pytest.fixtures</span></code>.</p>
+<p>You can define and use <code class="docutils literal notranslate"><span class="pre">pytest</span></code> fixtures in your Ape tests.
+Learn more about fixtures from <a class="reference external" href="https://docs.pytest.org/en/7.1.x/explanation/fixtures.html">this guide</a>.
+The syntax and functionalities of fixtures work exactly the same in Ape as it does with <code class="docutils literal notranslate"><span class="pre">pytest</span></code>.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">ape-test</span></code> plugin comes with fixtures you will likely want to use.
+The following guide explains each fixture that comes with Ape.</p>
+<section id="accounts-fixture">
+<h3>accounts fixture<a class="headerlink" href="#accounts-fixture" title="Link to this heading"></a></h3>
+<p>You have access to test accounts.
+These accounts are automatically funded, and you can use them to transact in your tests.
+Access each <a class="reference external" href="../methoddocs/api.html?highlight=testaccount#ape.api.accounts.TestAccountAPI">test account</a> by index from the <code class="docutils literal notranslate"><span class="pre">accounts</span></code> fixture:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">def</span> <span class="nf">test_my_method</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
+</span><span data-line="2">    <span class="n">owner</span> <span class="o">=</span> <span class="n">accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</span><span data-line="3">    <span class="n">receiver</span> <span class="o">=</span> <span class="n">accounts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+</span></pre></div>
+</div>
+<p>For code readability and sustainability, create your own fixtures using the <code class="docutils literal notranslate"><span class="pre">accounts</span></code> fixture:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span> <span class="nn">pytest</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+</span><span data-line="4"><span class="k">def</span> <span class="nf">owner</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
+</span><span data-line="5">    <span class="k">return</span> <span class="n">accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</span><span data-line="6">
+</span><span data-line="7">
+</span><span data-line="8"><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+</span><span data-line="9"><span class="k">def</span> <span class="nf">receiver</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
+</span><span data-line="10">    <span class="k">return</span> <span class="n">accounts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+</span><span data-line="11">
+</span><span data-line="12">
+</span><span data-line="13"><span class="k">def</span> <span class="nf">test_my_method</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="n">receiver</span><span class="p">):</span>
+</span><span data-line="14">    <span class="o">...</span>
+</span></pre></div>
+</div>
+<p>You can configure your accounts by changing the <code class="docutils literal notranslate"><span class="pre">mnemonic</span></code>, <code class="docutils literal notranslate"><span class="pre">number_of_accounts</span></code>, and <code class="docutils literal notranslate"><span class="pre">balance</span></code> in the <code class="docutils literal notranslate"><span class="pre">test</span></code> section of your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">test</span><span class="p">:</span>
+</span><span data-line="2"><span class="w">  </span><span class="nt">mnemonic</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test test test test test test test test test test test junk</span>
+</span><span data-line="3"><span class="w">  </span><span class="nt">number_of_accounts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
+</span><span data-line="4"><span class="w">  </span><span class="nt">balance</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">100_000 ETH</span>
+</span></pre></div>
+</div>
+<p>If you are running tests against <code class="docutils literal notranslate"><span class="pre">anvil</span></code>, your generated test accounts may not correspond to the <code class="docutils literal notranslate"><span class="pre">anvil</span></code>’s default generated accounts despite using the same mnemonic. In such a case, you are able to specify a custom derivation path in <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code>:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">test</span><span class="p">:</span>
+</span><span data-line="2"><span class="w">  </span><span class="nt">mnemonic</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test test test test test test test test test test test junk</span>
+</span><span data-line="3"><span class="w">  </span><span class="nt">number_of_accounts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
+</span><span data-line="4"><span class="w">  </span><span class="nt">hd_path</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;m/44&#39;/60&#39;/0&#39;/0/{}&quot;</span>
+</span></pre></div>
+</div>
+<p>If you are using a provider that supports impersonating accounts, such as <a class="reference external" href="https://github.com/ApeWorX/ape-foundry">Foundry</a>, use the address as the key in the test-accounts manager:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+</span><span data-line="2"><span class="k">def</span> <span class="nf">vitalik</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
+</span><span data-line="3">    <span class="k">return</span> <span class="n">accounts</span><span class="p">[</span><span class="s2">&quot;0xab5801a7d398351b8be11c439e05c5b3259aec9b&quot;</span><span class="p">]</span>
+</span></pre></div>
+</div>
+<p>You can also call <code class="docutils literal notranslate"><span class="pre">accounts.impersonate_account()</span></code> for improved readability and performance.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+</span><span data-line="2"><span class="k">def</span> <span class="nf">vitalik</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
+</span><span data-line="3">    <span class="k">return</span> <span class="n">accounts</span><span class="o">.</span><span class="n">impersonate_account</span><span class="p">(</span><span class="s2">&quot;0xab5801a7d398351b8be11c439e05c5b3259aec9b&quot;</span><span class="p">)</span>
+</span></pre></div>
+</div>
+<p>Using a fork-provider such as <a class="reference external" href="https://github.com/ApeWorX/ape-hardhat">Hardhat</a>, when using a contract instance as the sender in a transaction, it will be automatically impersonated:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">def</span> <span class="nf">test_my_method</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="n">accounts</span><span class="p">):</span>
+</span><span data-line="2">    <span class="n">contract</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</span><span data-line="3">    <span class="n">other_contract</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">OtherContract</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</span><span data-line="4">    <span class="n">contract</span><span class="o">.</span><span class="n">my_method</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">other_contract</span><span class="p">)</span>
+</span></pre></div>
+</div>
+<p>It has the same interface as the <a class="reference external" href="../methoddocs/managers.html#ape.managers.accounts.TestAccountManager">TestAccountManager</a>, (same as doing <code class="docutils literal notranslate"><span class="pre">accounts.test_accounts</span></code> in a script or the console).</p>
+</section>
+<section id="chain-fixture">
+<h3>chain fixture<a class="headerlink" href="#chain-fixture" title="Link to this heading"></a></h3>
+<p>Use the chain fixture to access the connected provider or adjust blockchain settings.</p>
+<p>For example, increase the pending timestamp:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">def</span> <span class="nf">test_in_future</span><span class="p">(</span><span class="n">chain</span><span class="p">):</span>
+</span><span data-line="2">    <span class="n">chain</span><span class="o">.</span><span class="n">pending_timestamp</span> <span class="o">+=</span> <span class="mi">86000</span>
+</span><span data-line="3">    <span class="k">assert</span> <span class="s2">&quot;Something&quot;</span>
+</span><span data-line="4">    <span class="n">chain</span><span class="o">.</span><span class="n">pending_timestamp</span> <span class="o">+=</span> <span class="mi">86000</span>
+</span><span data-line="5">    <span class="k">assert</span> <span class="s2">&quot;Something else&quot;</span>
+</span></pre></div>
+</div>
+<p>It has the same interface as the <a class="reference external" href="../methoddocs/managers.html#ape.managers.chain.ChainManager">ChainManager</a>.</p>
+</section>
+<section id="networks-fixture">
+<h3>networks fixture<a class="headerlink" href="#networks-fixture" title="Link to this heading"></a></h3>
+<p>Use the <code class="docutils literal notranslate"><span class="pre">networks</span></code> fixture to change the active provider in tests.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">def</span> <span class="nf">test_multi_chain</span><span class="p">(</span><span class="n">networks</span><span class="p">):</span>
+</span><span data-line="2">    <span class="k">assert</span> <span class="s2">&quot;Something&quot;</span>  <span class="c1"># Make assertion in root network</span>
+</span><span data-line="3">
+</span><span data-line="4">    <span class="c1"># NOTE: Assume have ecosystem named &quot;foo&quot; with network &quot;local&quot; and provider &quot;bar&quot;</span>
+</span><span data-line="5">    <span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">foo</span><span class="o">.</span><span class="n">local</span><span class="o">.</span><span class="n">use_provider</span><span class="p">(</span><span class="s2">&quot;bar&quot;</span><span class="p">):</span>
+</span><span data-line="6">        <span class="k">assert</span> <span class="s2">&quot;Something else&quot;</span>
+</span></pre></div>
+</div>
+<p>It has the same interface as the <a class="reference external" href="../methoddocs/managers.html#ape.managers.networks.NetworkManager">NetworkManager</a>.</p>
+</section>
+<section id="project-fixture">
+<h3>project fixture<a class="headerlink" href="#project-fixture" title="Link to this heading"></a></h3>
+<p>You also have access to the <code class="docutils literal notranslate"><span class="pre">project</span></code> you are testing. You will need this to deploy your contracts in your tests.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span> <span class="nn">pytest</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+</span><span data-line="4"><span class="k">def</span> <span class="nf">owner</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
+</span><span data-line="5">    <span class="k">return</span> <span class="n">accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</span><span data-line="6">
+</span><span data-line="7"><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+</span><span data-line="8"><span class="k">def</span> <span class="nf">my_contract</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="n">owner</span><span class="p">):</span>
+</span><span data-line="9">    <span class="c1">#           ^ use the &#39;project&#39; fixture from the &#39;ape-test&#39; plugin</span>
+</span><span data-line="10">    <span class="k">return</span> <span class="n">owner</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="p">)</span>
+</span></pre></div>
+</div>
+<p>It has the same interface as the <a class="reference external" href="../methoddocs/managers.html#module-ape.managers.project.manager">ProjectManager</a>.</p>
+</section>
+<section id="contract-fixture">
+<h3>Contract fixture<a class="headerlink" href="#contract-fixture" title="Link to this heading"></a></h3>
+<p>Use the <code class="docutils literal notranslate"><span class="pre">Contract</span></code> fixture to create contract instances:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+</span><span data-line="2"><span class="k">def</span> <span class="nf">my_contract</span><span class="p">(</span><span class="n">Contract</span><span class="p">):</span>
+</span><span data-line="3">    <span class="k">return</span> <span class="n">Contract</span><span class="p">(</span><span class="o">&lt;</span><span class="n">address</span><span class="o">&gt;</span><span class="p">)</span>
+</span></pre></div>
+</div>
+<p>It has the same interface as the <a class="reference external" href="../methoddocs/managers.html#ape.managers.chain.ChainManager">ChainManager</a>.</p>
+</section>
+</section>
+<section id="isolation">
+<h2>Isolation<a class="headerlink" href="#isolation" title="Link to this heading"></a></h2>
+<p>By default, tests run with chain-isolation.
+This means, at the start of each test, a snapshot is taken.
+After each test completes, the chain reverts to that snapshot from the beginning of the test.</p>
+<p>By default, every <code class="docutils literal notranslate"><span class="pre">pytest</span></code> fixture is <code class="docutils literal notranslate"><span class="pre">function</span></code> scoped, meaning it will be replayed each time it is requested (no result-caching).
+For example, if you deploy a contract in a function-scoped fixture, it will be re-deployed each time the fixture gets used in your tests.
+To only deploy once, you can use different scopes, such as <code class="docutils literal notranslate"><span class="pre">&quot;session&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;package&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;module&quot;</span></code>, or <code class="docutils literal notranslate"><span class="pre">&quot;class&quot;</span></code>, and you <strong>must</strong> use these fixtures right away, either via <code class="docutils literal notranslate"><span class="pre">autouse=True</span></code> or using them in the first collected tests.
+Otherwise, higher-scoped fixtures that arrive late in a Pytest session will cause the snapshotting system to have to rebase itself, which can be costly.
+For example, if you define a session scoped fixture that deploys a contract and makes transactions, the state changes from those transactions remain in subsequent tests, whether those tests use that fixture or not.
+However, if a new fixture of a session scope comes into play after module, package, or class scoped snapshots have already been taken, those lower-scoped fixtures are now invalid and have to re-run after the session fixture to ensure the session fixture remains in the session-snapshot.</p>
+<p>In the following example, the <code class="docutils literal notranslate"><span class="pre">my_contract</span></code> fixture gets deployed upon its first usage, which happens in the test <code class="docutils literal notranslate"><span class="pre">test_my_contract_0()</span></code>.
+During the test <code class="docutils literal notranslate"><span class="pre">test_something_else()</span></code>, it may not have been deployed yet, as it was not requested, and it is defined before the other tests.
+Then, during <code class="docutils literal notranslate"><span class="pre">test_my_contract_1()</span></code>, instead of deploying again, it uses the cached result from the session-scoped fixture and the chain still has it in its state because the fixture is session-scoped and runs before the test-isolation.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span> <span class="nn">pytest</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">)</span>
+</span><span data-line="4"><span class="k">def</span> <span class="nf">my_contract</span><span class="p">(</span><span class="n">accounts</span><span class="p">,</span> <span class="n">project</span><span class="p">):</span>
+</span><span data-line="5">    <span class="n">owner</span> <span class="o">=</span> <span class="n">accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</span><span data-line="6">    <span class="n">contract</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">owner</span><span class="p">)</span>
+</span><span data-line="7">    <span class="c1"># Can also do stateful transactions in a session-scoped fixture.</span>
+</span><span data-line="8">    <span class="n">contract</span><span class="o">.</span><span class="n">initialize</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">owner</span><span class="p">)</span>
+</span><span data-line="9">    <span class="k">return</span> <span class="n">contract</span>
+</span><span data-line="10">
+</span><span data-line="11"><span class="k">def</span> <span class="nf">test_something_else</span><span class="p">():</span>
+</span><span data-line="12">    <span class="o">...</span>
+</span><span data-line="13">
+</span><span data-line="14"><span class="k">def</span> <span class="nf">test_my_contract_0</span><span class="p">(</span><span class="n">my_contract</span><span class="p">):</span>
+</span><span data-line="15">    <span class="n">my_contract</span><span class="o">.</span><span class="n">myMethod</span><span class="p">()</span>
+</span><span data-line="16">
+</span><span data-line="17"><span class="k">def</span> <span class="nf">test_my_contract_1</span><span class="p">(</span><span class="n">my_contract</span><span class="p">):</span>
+</span><span data-line="18">    <span class="n">my_contract</span><span class="o">.</span><span class="n">myMethod</span><span class="p">()</span>
+</span></pre></div>
+</div>
+<p>To disable isolation, run <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">test</span></code> with the <code class="docutils literal notranslate"><span class="pre">--disable-isolation</span></code> flag.
+When isolation is disabled, the blockchain’s state persists as the tests run.
+This will be more performant and less complex, but will also cause non-deterministic results in your tests as each test inherits the state of whatever was run before it.</p>
+<p>This may be further complicated when running with other pytest plugins such as <code class="docutils literal notranslate"><span class="pre">pytest-xdist</span></code> or <code class="docutils literal notranslate"><span class="pre">pytest-split</span></code> which re-arranges the order that tests are executed in (not recommended to use these plugins together with ape until more proper integrations are developed).</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--disable-isolation
+</span></pre></div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Be mindful if, when, and how you define non-function scoped fixtures.
+Pytest activates fixtures in the order they are used.
+If a session scoped fixture comes into play after package, module, or class scoped fixtures, the isolation logic has to invalidate each of those scopes and replay them after the session scoped, which causes any benefits of package, module, or class scopes to be void.
+If you are using higher-scoped fixtures for parametrized fixtures with lower-scoped fixtures, each itertion of the parametried fixture invalidates the lower-level fixtures each time, rendering everything to behave as function scoped until the end of the parametrized fixtures first run-through.</p>
+</div>
+<p>If you are using chain-isolation and have a higher-scoped fixture that you know is for-sure not chain-altering, you can use <code class="docutils literal notranslate"><span class="pre">ape.fixture</span></code> and the <code class="docutils literal notranslate"><span class="pre">chain_isolation</span></code> flag, and it may improve performance:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span> <span class="nn">ape</span>
+</span><span data-line="2"><span class="kn">from</span> <span class="nn">ape_tokens</span> <span class="kn">import</span> <span class="n">tokens</span>
+</span><span data-line="3">
+</span><span data-line="4"><span class="nd">@ape</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">,</span> <span class="n">chain_isolation</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;WETH&quot;</span><span class="p">,</span> <span class="s2">&quot;DAI&quot;</span><span class="p">,</span> <span class="s2">&quot;BAT&quot;</span><span class="p">))</span>
+</span><span data-line="5"><span class="k">def</span> <span class="nf">token_addresses</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+</span><span data-line="6">    <span class="k">return</span> <span class="n">tokens</span><span class="p">[</span><span class="n">request</span><span class="p">]</span><span class="o">.</span><span class="n">address</span>
+</span></pre></div>
+</div>
+</section>
+<section id="ape-testing-commands">
+<h2>Ape testing commands<a class="headerlink" href="#ape-testing-commands" title="Link to this heading"></a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span><span class="nb">test</span>
+</span></pre></div>
+</div>
+<p>To run a particular test:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span><span class="nb">test</span><span class="w"> </span>test_my_contract
+</span></pre></div>
+</div>
+<p>Use ape test <code class="docutils literal notranslate"><span class="pre">-I</span></code> to open the interactive mode at the point of exception. This allows the user to inspect the point of failure in your tests.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span><span class="nb">test</span><span class="w"> </span>test_my_contract<span class="w"> </span>-I<span class="w"> </span>-s
+</span></pre></div>
+</div>
+</section>
+<section id="test-providers">
+<h2>Test Providers<a class="headerlink" href="#test-providers" title="Link to this heading"></a></h2>
+<p>Out-of-the-box, your tests run using the <code class="docutils literal notranslate"><span class="pre">eth-tester</span></code> provider, which comes bundled with ape.
+If you have Ethereum node software installed, you can use the <code class="docutils literal notranslate"><span class="pre">ape-node</span></code> plugin that also comes with ape.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--network<span class="w"> </span>ethereum:local:node
+</span></pre></div>
+</div>
+<p>Each testing plugin should work the same way. You will have access to the same test accounts.</p>
+<p>Another option for testing providers is the <a class="reference external" href="https://github.com/ApeWorX/ape-hardhat">ape-hardhat</a> plugin, which does not come with <code class="docutils literal notranslate"><span class="pre">ape</span></code> but can be installed by including it in the <code class="docutils literal notranslate"><span class="pre">plugins</span></code> list in your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file or manually installing it using the command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>plugins<span class="w"> </span>install<span class="w"> </span>hardhat
+</span></pre></div>
+</div>
+<section id="mining">
+<h3>Mining<a class="headerlink" href="#mining" title="Link to this heading"></a></h3>
+<p>Test providers allow you to control mining.
+For example, mine an empty block using the <a class="reference external" href="../methoddocs/api.html#ape.api.providers.TestProviderAPI.mine">mine</a> method:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">chain</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="n">chain</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">mine</span><span class="p">()</span>
+</span></pre></div>
+</div>
+<p>You can also pass it a number of blocks to mine:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">chain</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="n">chain</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">mine</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+</span></pre></div>
+</div>
+<p>By default, testing providers automatically mine after sending transactions.
+However, you can disable this feature by setting the property.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">chain</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="n">chain</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">auto_mine</span> <span class="o">=</span> <span class="kc">False</span>
+</span><span data-line="4"><span class="c1"># You can also re-enable</span>
+</span><span data-line="5"><span class="n">chain</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">auto_mine</span> <span class="o">=</span> <span class="kc">True</span>
+</span></pre></div>
+</div>
+</section>
+</section>
+<section id="advanced-testing-tips">
+<h2>Advanced Testing Tips<a class="headerlink" href="#advanced-testing-tips" title="Link to this heading"></a></h2>
+<p>If you want to use sample projects, follow this link to <a class="reference external" href="https://github.com/ApeAcademy">Ape Academy</a>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1">project                     # The root project directory
+</span><span data-line="2">└── tests/                  # Project tests folder, ran using the &#39;ape test&#39; command to run all tests within the folder.
+</span><span data-line="3">    └── conftest.py         # A file to define global variable for testing
+</span><span data-line="4">    └── test_accounts.py    # A test file, if you want to ONLY run one test file you can use &#39;ape test test_accounts.py&#39; command
+</span><span data-line="5">    └── test_mint.py        # A test file
+</span></pre></div>
+</div>
+<p>Here is an example of a test function from a sample <a class="reference external" href="https://github.com/ApeAcademy/ERC721">NFT project</a></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">def</span> <span class="nf">test_account_balance</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="n">owner</span><span class="p">,</span> <span class="n">receiver</span><span class="p">,</span> <span class="n">nft</span><span class="p">):</span>
+</span><span data-line="2">    <span class="n">quantity</span> <span class="o">=</span> <span class="mi">1</span>
+</span><span data-line="3">    <span class="n">nft</span><span class="o">.</span><span class="n">mint</span><span class="p">(</span><span class="n">receiver</span><span class="p">,</span> <span class="n">quantity</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;0&quot;</span><span class="p">],</span> <span class="n">value</span><span class="o">=</span><span class="n">nft</span><span class="o">.</span><span class="n">PRICE</span><span class="p">()</span> <span class="o">*</span> <span class="n">quantity</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">owner</span><span class="p">)</span>
+</span><span data-line="4">    <span class="n">actual</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">balanceOf</span><span class="p">(</span><span class="n">receiver</span><span class="p">)</span>
+</span><span data-line="5">    <span class="n">expect</span> <span class="o">=</span> <span class="n">quantity</span>
+</span><span data-line="6">    <span class="k">assert</span> <span class="n">actual</span> <span class="o">==</span> <span class="n">expect</span>
+</span></pre></div>
+</div>
+</section>
+<section id="testing-transaction-reverts">
+<h2>Testing Transaction Reverts<a class="headerlink" href="#testing-transaction-reverts" title="Link to this heading"></a></h2>
+<p>Similar to <code class="docutils literal notranslate"><span class="pre">pytest.raises()</span></code>, you can use <code class="docutils literal notranslate"><span class="pre">ape.reverts()</span></code> to assert that contract transactions fail and revert.
+To learn more about reverts in Ape, see the <a class="reference external" href="./reverts.html">reverts guide</a>.</p>
+<p>From our earlier example we can see this in action:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span> <span class="nn">ape</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="k">def</span> <span class="nf">test_authorization</span><span class="p">(</span><span class="n">my_contract</span><span class="p">,</span> <span class="n">owner</span><span class="p">,</span> <span class="n">not_owner</span><span class="p">):</span>
+</span><span data-line="4">    <span class="n">my_contract</span><span class="o">.</span><span class="n">set_owner</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">owner</span><span class="p">)</span>
+</span><span data-line="5">    <span class="k">assert</span> <span class="n">owner</span> <span class="o">==</span> <span class="n">my_contract</span><span class="o">.</span><span class="n">owner</span><span class="p">()</span>
+</span><span data-line="6">
+</span><span data-line="7">    <span class="k">with</span> <span class="n">ape</span><span class="o">.</span><span class="n">reverts</span><span class="p">(</span><span class="s2">&quot;!authorized&quot;</span><span class="p">):</span>
+</span><span data-line="8">        <span class="n">my_contract</span><span class="o">.</span><span class="n">authorized_method</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">not_owner</span><span class="p">)</span>
+</span></pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">reverts()</span></code> takes two optional parameters:</p>
+<section id="expected-message">
+<h3><code class="docutils literal notranslate"><span class="pre">expected_message</span></code><a class="headerlink" href="#expected-message" title="Link to this heading"></a></h3>
+<p>This is the expected revert reason given when the transaction fails.
+If the message in the <code class="docutils literal notranslate"><span class="pre">ContractLogicError</span></code> raised by the transaction failure is empty or does not match the <code class="docutils literal notranslate"><span class="pre">expected_message</span></code>, then <code class="docutils literal notranslate"><span class="pre">ape.reverts()</span></code> will raise an <code class="docutils literal notranslate"><span class="pre">AssertionError</span></code>.</p>
+<p>You may also supply an <code class="docutils literal notranslate"><span class="pre">re.Pattern</span></code> object to assert on a message pattern, rather than on an exact match.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span> <span class="nn">ape</span>
+</span><span data-line="2"><span class="kn">import</span> <span class="nn">re</span>
+</span><span data-line="3">
+</span><span data-line="4"><span class="c1"># Matches</span>
+</span><span data-line="5"><span class="c1"># &quot;foo&quot; or &quot;bar&quot;</span>
+</span><span data-line="6"><span class="k">with</span> <span class="n">ape</span><span class="o">.</span><span class="n">reverts</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^(foo|bar)$&quot;</span><span class="p">)):</span>
+</span><span data-line="7">    <span class="o">...</span>
+</span></pre></div>
+</div>
+</section>
+<section id="dev-message">
+<h3><code class="docutils literal notranslate"><span class="pre">dev_message</span></code><a class="headerlink" href="#dev-message" title="Link to this heading"></a></h3>
+<p>This is the expected dev message corresponding to the line in the contract’s source code where the error occurred.
+These can be helpful in optimizing for gas usage and keeping revert reason strings shorter.</p>
+<p>Dev messages take the form of a comment in Vyper, and should be placed on the line that may cause a transaction revert:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">assert</span> <span class="n">x</span> <span class="o">!=</span> <span class="mi">0</span>  <span class="c1"># dev: invalid value</span>
+</span></pre></div>
+</div>
+<p>Take for example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="c1"># @version 0.3.7</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="nd">@external</span>
+</span><span data-line="4"><span class="k">def</span> <span class="nf">check_value</span><span class="p">(</span><span class="n">_value</span><span class="p">:</span> <span class="n">uint256</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+</span><span data-line="5">    <span class="k">assert</span> <span class="n">_value</span> <span class="o">!=</span> <span class="mi">0</span>  <span class="c1"># dev: invalid value</span>
+</span><span data-line="6">    <span class="k">return</span> <span class="kc">True</span>
+</span></pre></div>
+</div>
+<p>We can explicitly cause a transaction revert and check the failed line by supplying an expected <code class="docutils literal notranslate"><span class="pre">dev_message</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span> <span class="nn">ape</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="k">def</span> <span class="nf">test_authorization</span><span class="p">(</span><span class="n">my_contract</span><span class="p">,</span> <span class="n">owner</span><span class="p">):</span>
+</span><span data-line="4">    <span class="k">with</span> <span class="n">ape</span><span class="o">.</span><span class="n">reverts</span><span class="p">(</span><span class="n">dev_message</span><span class="o">=</span><span class="s2">&quot;dev: invalid value&quot;</span><span class="p">):</span>
+</span><span data-line="5">        <span class="n">my_contract</span><span class="o">.</span><span class="n">check_value</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">owner</span><span class="p">)</span>
+</span></pre></div>
+</div>
+<p>When the transaction reverts and <code class="docutils literal notranslate"><span class="pre">ContractLogicError</span></code> is raised, <code class="docutils literal notranslate"><span class="pre">ape.reverts()</span></code> will check the source contract to see if the failed line contains a message.</p>
+<p>There are a few scenarios where <code class="docutils literal notranslate"><span class="pre">AssertionError</span></code> will be raised when using <code class="docutils literal notranslate"><span class="pre">dev_message</span></code>:</p>
+<ul class="simple">
+<li><p>If the line in the source contract has a different dev message or no dev message</p></li>
+<li><p>If the contract source cannot be obtained</p></li>
+<li><p>If the transaction trace cannot be obtained</p></li>
+</ul>
+<p>Because <code class="docutils literal notranslate"><span class="pre">dev_message</span></code> relies on transaction tracing to function, you must use a provider like <a class="reference external" href="https://github.com/ApeWorX/ape-hardhat">ape-hardhat</a> when testing with <code class="docutils literal notranslate"><span class="pre">dev_message</span></code>.</p>
+<p>You may also supply an <code class="docutils literal notranslate"><span class="pre">re.Pattern</span></code> object to assert on a dev message pattern, rather than on an exact match.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span> <span class="nn">ape</span>
+</span><span data-line="2"><span class="kn">import</span> <span class="nn">re</span>
+</span><span data-line="3">
+</span><span data-line="4"><span class="c1"># Matches &quot;dev: foo&quot; or &quot;dev: bar&quot;</span>
+</span><span data-line="5"><span class="k">with</span> <span class="n">ape</span><span class="o">.</span><span class="n">reverts</span><span class="p">(</span><span class="n">dev_message</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^dev: (foo|bar)$&quot;</span><span class="p">)):</span>
+</span><span data-line="6">    <span class="o">...</span>
+</span></pre></div>
+</div>
+</section>
+<section id="caveats">
+<h3>Caveats<a class="headerlink" href="#caveats" title="Link to this heading"></a></h3>
+<section id="language-support">
+<h4>Language Support<a class="headerlink" href="#language-support" title="Link to this heading"></a></h4>
+<p>As of <code class="docutils literal notranslate"><span class="pre">ape</span></code> version <code class="docutils literal notranslate"><span class="pre">0.5.6</span></code>, <code class="docutils literal notranslate"><span class="pre">dev_messages</span></code> assertions are available for contracts compiled with <a class="reference external" href="https://github.com/ApeWorX/ape-vyper">ape-vyper</a>, but not for those compiled with <a class="reference external" href="https://github.com/ApeWorX/ape-solidity">ape-solidity</a> or <a class="reference external" href="https://github.com/ApeWorX/ape-cairo">ape-cairo</a>.</p>
+</section>
+<section id="inlining">
+<h4>Inlining<a class="headerlink" href="#inlining" title="Link to this heading"></a></h4>
+<p>Due to function inlining, the position of the <code class="docutils literal notranslate"><span class="pre">#</span> <span class="pre">dev:</span> <span class="pre">...</span></code> message may sometimes be one line higher than expected:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nd">@external</span>
+</span><span data-line="2"><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">_x</span><span class="p">:</span> <span class="n">decimal</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">decimal</span><span class="p">:</span>  <span class="c1"># dev: correct location</span>
+</span><span data-line="3">    <span class="k">return</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">_x</span><span class="p">)</span>  <span class="c1"># dev: incorrect location</span>
+</span></pre></div>
+</div>
+<p>This typically only applies when trying to add dev messages to statements containing built-in function calls.</p>
+</section>
+<section id="non-reentrant-functions">
+<h4>Non-reentrant Functions<a class="headerlink" href="#non-reentrant-functions" title="Link to this heading"></a></h4>
+<p>Similarly, if you require dev assertions for non-reentrant functions you must be sure to leave the comment on the function that should not have reentry:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nd">@internal</span>
+</span><span data-line="2"><span class="nd">@nonreentrant</span><span class="p">(</span><span class="s1">&#39;lock&#39;</span><span class="p">)</span>
+</span><span data-line="3"><span class="k">def</span> <span class="nf">_foo_internal</span><span class="p">():</span>  <span class="c1"># dev: correct location</span>
+</span><span data-line="4">    <span class="k">pass</span>
+</span><span data-line="5">
+</span><span data-line="6"><span class="nd">@external</span>
+</span><span data-line="7"><span class="nd">@nonreentrant</span><span class="p">(</span><span class="s1">&#39;lock&#39;</span><span class="p">)</span>
+</span><span data-line="8"><span class="k">def</span> <span class="nf">foo</span><span class="p">():</span>
+</span><span data-line="9">    <span class="bp">self</span><span class="o">.</span><span class="n">_foo_internal</span><span class="p">()</span>  <span class="c1"># dev: incorrect location</span>
+</span></pre></div>
+</div>
+</section>
+</section>
+<section id="custom-errors">
+<h3>Custom Errors<a class="headerlink" href="#custom-errors" title="Link to this heading"></a></h3>
+<p>In your tests, you can make assertions about custom errors raised.
+(For more information on custom errors, <a class="reference external" href="./reverts.html#custom-errors">see reverts guide on custom errors</a>.)</p>
+<p>For example, assume a custom exception in a Solidity contract (variable <code class="docutils literal notranslate"><span class="pre">contract</span></code>) is called <code class="docutils literal notranslate"><span class="pre">Unauthorized</span></code>.
+It can be accessed via <code class="docutils literal notranslate"><span class="pre">contract.Unauthorized</span></code>.
+We can ensure unauthorized withdraws are disallowed by writing the following test:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span> <span class="nn">ape</span>
+</span><span data-line="2"><span class="kn">import</span> <span class="nn">pytest</span>
+</span><span data-line="3">
+</span><span data-line="4"><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+</span><span data-line="5"><span class="k">def</span> <span class="nf">owner</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
+</span><span data-line="6">    <span class="k">return</span> <span class="n">accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</span><span data-line="7">
+</span><span data-line="8"><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+</span><span data-line="9"><span class="k">def</span> <span class="nf">hacker</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
+</span><span data-line="10">    <span class="k">return</span> <span class="n">accounts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+</span><span data-line="11">
+</span><span data-line="12"><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+</span><span data-line="13"><span class="k">def</span> <span class="nf">contract</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="n">project</span><span class="p">):</span>
+</span><span data-line="14">    <span class="k">return</span> <span class="n">owner</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="p">)</span>
+</span><span data-line="15">
+</span><span data-line="16"><span class="k">def</span> <span class="nf">test_unauthorized_withdraw</span><span class="p">(</span><span class="n">contract</span><span class="p">,</span> <span class="n">hacker</span><span class="p">):</span>
+</span><span data-line="17">    <span class="k">with</span> <span class="n">ape</span><span class="o">.</span><span class="n">reverts</span><span class="p">(</span><span class="n">contract</span><span class="o">.</span><span class="n">Unauthorized</span><span class="p">,</span> <span class="n">unauth_address</span><span class="o">=</span><span class="n">hacker</span><span class="o">.</span><span class="n">address</span><span class="p">):</span>
+</span><span data-line="18">        <span class="n">contract</span><span class="o">.</span><span class="n">withdraw</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">hacker</span><span class="p">)</span>
+</span></pre></div>
+</div>
+<p>You can also use custom error types from the contract container (from <code class="docutils literal notranslate"><span class="pre">ape.project</span></code> or the <code class="docutils literal notranslate"><span class="pre">project</span></code> fixture):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span> <span class="nn">ape</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="k">def</span> <span class="nf">test_unauthorized</span><span class="p">(</span><span class="n">contract</span><span class="p">,</span> <span class="n">hacker</span><span class="p">,</span> <span class="n">project</span><span class="p">):</span>
+</span><span data-line="4">    <span class="k">with</span> <span class="n">ape</span><span class="o">.</span><span class="n">reverts</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="o">.</span><span class="n">Unauthorized</span><span class="p">,</span> <span class="n">unauth_address</span><span class="o">=</span><span class="n">hacker</span><span class="o">.</span><span class="n">address</span><span class="p">):</span>
+</span><span data-line="5">        <span class="n">contract</span><span class="o">.</span><span class="n">withdraw</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">hacker</span><span class="p">)</span>
+</span></pre></div>
+</div>
+<p>You may need to use the container approach for asserting on custom errors that occur during failing <code class="docutils literal notranslate"><span class="pre">deploy</span></code> transactions because you won’t have access to the contract instance yet.
+Here is an example of what that may look like:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span> <span class="nn">ape</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="k">def</span> <span class="nf">test_error_on_deploy</span><span class="p">(</span><span class="n">account</span><span class="p">,</span> <span class="n">project</span><span class="p">):</span>
+</span><span data-line="4">    <span class="k">with</span> <span class="n">ape</span><span class="o">.</span><span class="n">reverts</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">Token</span><span class="o">.</span><span class="n">MyCustomError</span><span class="p">):</span>
+</span><span data-line="5">        <span class="n">ape</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">HasError</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">account</span><span class="p">)</span>
+</span></pre></div>
+</div>
+<p>Alternatively, you can attempt to use the address from the revert error to find the error type.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The address will only exist for transactions that were published (e.g. not for failures during estimating gas), and this may only work on certain providers.</p>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span> <span class="nn">ape</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="k">def</span> <span class="nf">test_error_on_deploy</span><span class="p">(</span><span class="n">account</span><span class="p">):</span>
+</span><span data-line="4">    <span class="c1"># NOTE: We are using `as rev` here to capture the revert info</span>
+</span><span data-line="5">    <span class="c1"># so we can attempt to lookup the contract later.</span>
+</span><span data-line="6">    <span class="k">with</span> <span class="n">ape</span><span class="o">.</span><span class="n">reverts</span><span class="p">()</span> <span class="k">as</span> <span class="n">rev</span><span class="p">:</span>
+</span><span data-line="7">        <span class="n">ape</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">HasError</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">account</span><span class="p">)</span>
+</span><span data-line="8">    
+</span><span data-line="9">    <span class="k">assert</span> <span class="n">rev</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">address</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;Receipt never found, contract never cached&quot;</span>
+</span><span data-line="10">    
+</span><span data-line="11">    <span class="c1"># Grab the cached instance using the error&#39;s address</span>
+</span><span data-line="12">    <span class="c1"># and assert the custom error this way.</span>
+</span><span data-line="13">    <span class="n">contract</span> <span class="o">=</span> <span class="n">ape</span><span class="o">.</span><span class="n">Contract</span><span class="p">(</span><span class="n">rev</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">address</span><span class="p">)</span>
+</span><span data-line="14">    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rev</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">contract</span><span class="o">.</span><span class="n">MyError</span><span class="p">)</span>
+</span></pre></div>
+</div>
+</section>
+</section>
+<section id="multi-chain-testing">
+<h2>Multi-chain Testing<a class="headerlink" href="#multi-chain-testing" title="Link to this heading"></a></h2>
+<p>The Ape framework supports connecting to alternative networks / providers in tests.</p>
+<p>To run an entire test using a specific network / provider combination, use the <code class="docutils literal notranslate"><span class="pre">use_network</span></code> pytest marker:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span> <span class="nn">pytest</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">use_network</span><span class="p">(</span><span class="s2">&quot;fantom:local:test&quot;</span><span class="p">)</span>
+</span><span data-line="4"><span class="k">def</span> <span class="nf">test_my_fantom_test</span><span class="p">(</span><span class="n">chain</span><span class="p">):</span>
+</span><span data-line="5">    <span class="k">assert</span> <span class="n">chain</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">ecosystem</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;fantom&quot;</span>
+</span><span data-line="6">
+</span><span data-line="7"><span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">use_network</span><span class="p">(</span><span class="s2">&quot;ethereum:local:test&quot;</span><span class="p">)</span>
+</span><span data-line="8"><span class="k">def</span> <span class="nf">test_my_ethereum_test</span><span class="p">(</span><span class="n">chain</span><span class="p">):</span>
+</span><span data-line="9">    <span class="k">assert</span> <span class="n">chain</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">ecosystem</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;ethereum&quot;</span>
+</span></pre></div>
+</div>
+<p>To switch networks mid-test, use the <code class="docutils literal notranslate"><span class="pre">networks</span></code> context-manager:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="c1"># Switch to Fantom mid test</span>
+</span><span data-line="2"><span class="k">def</span> <span class="nf">test_my_multichain_test</span><span class="p">(</span><span class="n">networks</span><span class="p">):</span>
+</span><span data-line="3">    <span class="c1"># The test starts in 1 ecosystem but switches to another</span>
+</span><span data-line="4">    <span class="k">assert</span> <span class="n">networks</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">ecosystem</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;ethereum&quot;</span>
+</span><span data-line="5">
+</span><span data-line="6">    <span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">fantom</span><span class="o">.</span><span class="n">local</span><span class="o">.</span><span class="n">use_provider</span><span class="p">(</span><span class="s2">&quot;test&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">provider</span><span class="p">:</span>
+</span><span data-line="7">        <span class="k">assert</span> <span class="n">provider</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">ecosystem</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;fantom&quot;</span>
+</span><span data-line="8">
+</span><span data-line="9">    <span class="c1"># You can also use the context manager like this:</span>
+</span><span data-line="10">    <span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">parse_network_choice</span><span class="p">(</span><span class="s2">&quot;fantom:local:test&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">provider</span><span class="p">:</span>
+</span><span data-line="11">       <span class="k">assert</span> <span class="n">provider</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">ecosystem</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;fantom&quot;</span>
+</span></pre></div>
+</div>
+<p>You can also set the network context in a pytest fixture.
+This is useful if certain fixtures must run in certain networks.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span> <span class="nn">pytest</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+</span><span data-line="4"><span class="k">def</span> <span class="nf">stark_contract</span><span class="p">(</span><span class="n">networks</span><span class="p">,</span> <span class="n">project</span><span class="p">):</span>
+</span><span data-line="5">    <span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">parse_network_choice</span><span class="p">(</span><span class="s2">&quot;starknet:local&quot;</span><span class="p">):</span>
+</span><span data-line="6">        <span class="k">yield</span> <span class="n">project</span><span class="o">.</span><span class="n">MyStarknetContract</span><span class="o">.</span><span class="n">deploy</span><span class="p">()</span>
+</span><span data-line="7">
+</span><span data-line="8"><span class="k">def</span> <span class="nf">test_starknet_thing</span><span class="p">(</span><span class="n">stark_contract</span><span class="p">,</span> <span class="n">stark_account</span><span class="p">):</span>
+</span><span data-line="9">    <span class="c1"># Uses the starknet connection via the stark_contract fixture</span>
+</span><span data-line="10">    <span class="n">receipt</span> <span class="o">=</span> <span class="n">stark_contract</span><span class="o">.</span><span class="n">my_method</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">stark_account</span><span class="p">)</span>
+</span><span data-line="11">    <span class="k">assert</span> <span class="ow">not</span> <span class="n">receipt</span><span class="o">.</span><span class="n">failed</span>
+</span></pre></div>
+</div>
+<p>When you exit a provider’s context, Ape <strong>does not</strong> disconnect the provider.
+When you re-enter that provider’s context, Ape uses the previously-connected provider.
+At the end of the tests, Ape disconnects all the providers.
+Thus, you can enter and exit a provider’s context as much as you need in tests.</p>
+</section>
+<section id="gas-reporting">
+<h2>Gas Reporting<a class="headerlink" href="#gas-reporting" title="Link to this heading"></a></h2>
+<p>To include a gas report at the end of your tests, you can use the <code class="docutils literal notranslate"><span class="pre">--gas</span></code> flag.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This feature works best when using a provider with tracing support, such as <a class="reference external" href="https://github.com/ApeWorX/ape-foundry">ape-foundry</a>.
+When not using a provider with adequate tracing support, such as <code class="docutils literal notranslate"><span class="pre">EthTester</span></code>, gas reporting is limited to receipt-level data.</p>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--network<span class="w"> </span>ethereum:local:foundry<span class="w"> </span>--gas
+</span></pre></div>
+</div>
+<p>At the end of test suite, you will see tables such as:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="w">                            </span>FundMe<span class="w"> </span>Gas
+</span><span data-line="2">
+</span><span data-line="3"><span class="w">  </span>Method<span class="w">           </span>Times<span class="w"> </span>called<span class="w">    </span>Min.<span class="w">    </span>Max.<span class="w">    </span>Mean<span class="w">   </span>Median
+</span><span data-line="4"><span class="w"> </span>────────────────────────────────────────────────────────────────
+</span><span data-line="5"><span class="w">  </span>fund<span class="w">                        </span><span class="m">8</span><span class="w">   </span><span class="m">57198</span><span class="w">   </span><span class="m">91398</span><span class="w">   </span><span class="m">82848</span><span class="w">    </span><span class="m">91398</span>
+</span><span data-line="6"><span class="w">  </span>withdraw<span class="w">                    </span><span class="m">2</span><span class="w">   </span><span class="m">28307</span><span class="w">   </span><span class="m">38679</span><span class="w">   </span><span class="m">33493</span><span class="w">    </span><span class="m">33493</span>
+</span><span data-line="7"><span class="w">  </span>changeOnStatus<span class="w">              </span><span class="m">2</span><span class="w">   </span><span class="m">23827</span><span class="w">   </span><span class="m">45739</span><span class="w">   </span><span class="m">34783</span><span class="w">    </span><span class="m">34783</span>
+</span><span data-line="8"><span class="w">  </span>getSecret<span class="w">                   </span><span class="m">1</span><span class="w">   </span><span class="m">24564</span><span class="w">   </span><span class="m">24564</span><span class="w">   </span><span class="m">24564</span><span class="w">    </span><span class="m">24564</span>
+</span><span data-line="9">
+</span><span data-line="10"><span class="w">                     </span>TestContract<span class="w"> </span>Gas
+</span><span data-line="11">
+</span><span data-line="12"><span class="w">  </span>Method<span class="w">      </span>Times<span class="w"> </span>called<span class="w">    </span>Min.<span class="w">    </span>Max.<span class="w">    </span>Mean<span class="w">   </span>Median
+</span><span data-line="13"><span class="w"> </span>───────────────────────────────────────────────────────────
+</span><span data-line="14"><span class="w">  </span>setNumber<span class="w">              </span><span class="m">1</span><span class="w">   </span><span class="m">51021</span><span class="w">   </span><span class="m">51021</span><span class="w">   </span><span class="m">51021</span><span class="w">    </span><span class="m">51021</span>
+</span></pre></div>
+</div>
+<p>The following demonstrates how to use the <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file to exclude contracts and / or methods from the gas report:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">test</span><span class="p">:</span>
+</span><span data-line="2"><span class="w">  </span><span class="nt">gas</span><span class="p">:</span>
+</span><span data-line="3"><span class="w">    </span><span class="nt">exclude</span><span class="p">:</span>
+</span><span data-line="4"><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">method_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">DEBUG_*</span><span class="w">         </span><span class="c1"># Exclude all methods starting with `DEBUG_`.</span>
+</span><span data-line="5"><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">contract_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MockToken</span><span class="w">     </span><span class="c1"># Exclude all methods in contract named `MockToken`.</span>
+</span><span data-line="6"><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">contract_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PoolContract</span><span class="w">  </span><span class="c1"># Exclude methods starting with `reset_` in `PoolContract`.</span>
+</span><span data-line="7"><span class="w">        </span><span class="nt">method_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">reset_*</span>
+</span></pre></div>
+</div>
+<p>Similarly, you can exclude sources via the CLI option <code class="docutils literal notranslate"><span class="pre">--gas-exclude</span></code>.
+The value <code class="docutils literal notranslate"><span class="pre">--gas-exclude</span></code> takes is a comma-separated list of colon-separated values representing the structure similar as above, except you must explicitly use <code class="docutils literal notranslate"><span class="pre">*</span></code> where meaning “all”.
+For example to exclude all methods starting with <code class="docutils literal notranslate"><span class="pre">DEBUG_</span></code>, you would do:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--gas<span class="w"> </span>--gas-exclude<span class="w"> </span><span class="s2">&quot;*:DEBUG_*&quot;</span>.
+</span></pre></div>
+</div>
+<p>To exclude all methods in the <code class="docutils literal notranslate"><span class="pre">MockToken</span></code> contract, do:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--gas<span class="w"> </span>--gas-exclude<span class="w"> </span>MockToken
+</span></pre></div>
+</div>
+<p>And finally, to exclude all methods starting with <code class="docutils literal notranslate"><span class="pre">reset_</span></code> in <code class="docutils literal notranslate"><span class="pre">PoolContract</span></code>, do:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--gas<span class="w"> </span>--gas-exclude<span class="w"> </span><span class="s2">&quot;PoolContract:reset_*&quot;</span>
+</span></pre></div>
+</div>
+</section>
+<section id="iterative-testing">
+<h2>Iterative Testing<a class="headerlink" href="#iterative-testing" title="Link to this heading"></a></h2>
+<p>Ape has a set of flags that controls running your test suite locally in a “watch” mode,
+which means watching for updates to files in your project and re-triggering the test suite.</p>
+<p>To enable this mode, run <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">test</span> <span class="pre">--watch</span></code> to set up this mode using the default settings.
+While in this mode, any time a <code class="docutils literal notranslate"><span class="pre">.py</span></code> file (i.e. your tests) or smart contract source file
+(i.e. any files that get compiled using your installed compiler plugins) is added, removed,
+or changed, then the <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">test</span></code> task will be re-triggered, based on a polling interval.</p>
+<p>To exit this mode, press Ctrl+D (on Linux or macOS) to stop the execution and undo it.</p>
+</section>
+<section id="contract-coverage">
+<h2>Contract Coverage<a class="headerlink" href="#contract-coverage" title="Link to this heading"></a></h2>
+<p>To get contract coverage, use the <code class="docutils literal notranslate"><span class="pre">--coverage</span></code> flag when running <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">test</span></code>:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--coverage
+</span></pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Some types of coverage require using a provider that supports transaction tracing, such as <code class="docutils literal notranslate"><span class="pre">ape-hardhat</span></code> or <code class="docutils literal notranslate"><span class="pre">ape-foundry</span></code>.</p>
+</div>
+<p>Without using a provider with adequate tracing support, coverage is limited to receipt-level data.</p>
+<p>Afterwards, you should see a coverage report looking something like:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="o">=============================================</span><span class="w"> </span>Coverage<span class="w"> </span><span class="nv">Profile</span><span class="w"> </span><span class="o">=============================================</span>
+</span><span data-line="2"><span class="w">               </span>Contract<span class="w"> </span>Coverage<span class="w">               </span>
+</span><span data-line="3"><span class="w">                                               </span>
+</span><span data-line="4"><span class="w">  </span>Name<span class="w">          </span>Stmts<span class="w">   </span>Miss<span class="w">   </span>Cover<span class="w">    </span>Funcs<span class="w">  </span>
+</span><span data-line="5"><span class="w"> </span>─────────────────────────────────────────────<span class="w"> </span>
+</span><span data-line="6"><span class="w">  </span>Contract.vy<span class="w">   </span><span class="m">7</span><span class="w">       </span><span class="m">1</span><span class="w">      </span><span class="m">85</span>.71%<span class="w">   </span><span class="m">80</span>.0%<span class="w"> </span>
+</span></pre></div>
+</div>
+<p>To generate other coverage reports such as XML or HTML, configure it like so:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">test</span><span class="p">:</span>
+</span><span data-line="2"><span class="w">  </span><span class="nt">coverage</span><span class="p">:</span>
+</span><span data-line="3"><span class="w">    </span><span class="nt">reports</span><span class="p">:</span>
+</span><span data-line="4"><span class="w">      </span><span class="nt">terminal</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">False</span><span class="w">  </span><span class="c1"># Disable the terminal table (True by default)</span>
+</span><span data-line="5"><span class="w">      </span><span class="nt">xml</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">True</span><span class="w">  </span><span class="c1"># Enable XML report (.build/coverage.xml)</span>
+</span><span data-line="6"><span class="w">      </span><span class="nt">html</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">True</span><span class="w">  </span><span class="c1"># Enable HTML report (.build/htmlcov)</span>
+</span></pre></div>
+</div>
+<p>To see a much more verbose coverage report, set the <code class="docutils literal notranslate"><span class="pre">terminal</span></code> field to a dictionary that includes <code class="docutils literal notranslate"><span class="pre">&quot;verbose&quot;:</span> <span class="pre">true</span></code>:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">test</span><span class="p">:</span>
+</span><span data-line="2"><span class="w">  </span><span class="nt">coverage</span><span class="p">:</span>
+</span><span data-line="3"><span class="w">    </span><span class="nt">reports</span><span class="p">:</span>
+</span><span data-line="4"><span class="w">      </span><span class="nt">terminal</span><span class="p">:</span>
+</span><span data-line="5"><span class="w">        </span><span class="nt">verbose</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">  </span><span class="c1"># Show verbose coverage information in the terminal.</span>
+</span></pre></div>
+</div>
+<p>Then, you will see table outputs like this:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="o">=====================================</span><span class="w"> </span>Coverage<span class="w"> </span><span class="nv">Profile</span><span class="w"> </span><span class="o">========================================</span>
+</span><span data-line="2"><span class="w">                </span>MyContract<span class="w"> </span>Coverage
+</span><span data-line="3">
+</span><span data-line="4"><span class="w">                         </span>Func<span class="w">   </span>Stmts<span class="w">   </span>Miss<span class="w">    </span>Cover
+</span><span data-line="5"><span class="w"> </span>─────────────────────────────────────────────────────
+</span><span data-line="6"><span class="w">                  </span>__builtin__<span class="w">       </span><span class="m">2</span><span class="w">      </span><span class="m">0</span><span class="w">   </span><span class="m">100</span>.0%
+</span><span data-line="7"><span class="w">            </span>_immutable_number<span class="w">       </span><span class="m">0</span><span class="w">      </span><span class="m">0</span><span class="w">   </span><span class="m">100</span>.0%
+</span><span data-line="8"><span class="w">                      </span>_number<span class="w">       </span><span class="m">0</span><span class="w">      </span><span class="m">0</span><span class="w">   </span><span class="m">100</span>.0%
+</span><span data-line="9"><span class="w">                 </span>foo_method<span class="o">()</span><span class="w">       </span><span class="m">1</span><span class="w">      </span><span class="m">0</span><span class="w">   </span><span class="m">100</span>.0%
+</span><span data-line="10"><span class="w">          </span>foo_method<span class="o">(</span>uint256<span class="o">)</span><span class="w">       </span><span class="m">1</span><span class="w">      </span><span class="m">0</span><span class="w">   </span><span class="m">100</span>.0%
+</span><span data-line="11"><span class="w">  </span>foo_method<span class="o">(</span>uint256,uint256<span class="o">)</span><span class="w">       </span><span class="m">3</span><span class="w">      </span><span class="m">0</span><span class="w">   </span><span class="m">100</span>.0%
+</span><span data-line="12"><span class="w">                  </span>view_method<span class="w">       </span><span class="m">1</span><span class="w">      </span><span class="m">0</span><span class="w">   </span><span class="m">100</span>.0%
+</span><span data-line="13">
+</span><span data-line="14"><span class="w">           </span><span class="nv">line</span><span class="o">=</span><span class="m">0</span>.0%,<span class="w"> </span><span class="nv">func</span><span class="o">=</span><span class="m">0</span>.0%
+</span></pre></div>
+</div>
+<p>This is useful when trying to find the missing areas to cover.
+The HTML report also supports <code class="docutils literal notranslate"><span class="pre">verbose:</span> <span class="pre">true</span></code> and it will show similar tables.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You may notice methods with zero statements.</p>
+</div>
+<p>One example of a method with zero statements may be from an auto-generated getter method for a public variable; certain versions of Vyper do not contain source mappings for these methods.
+However, Ape will still check to see if this method has been called in your tests.
+To get 100% coverage, you must call these methods in your tests.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Notice some methods use the full selector while others don’t.</p>
+</div>
+<p>Methods that use the selector mean that their short name is shared with other methods.
+This happens in Vyper from auto-generated kwarg-based methods.
+Thus, the full selector is used to distinguish the methods in the coverage (and gas) reports.</p>
+<p>Much like gas reporting, you can also exclude contracts and methods from tracking coverage using your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file.
+The following demonstrates how to do this:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">test</span><span class="p">:</span>
+</span><span data-line="2"><span class="w">  </span><span class="nt">coverage</span><span class="p">:</span>
+</span><span data-line="3"><span class="w">    </span><span class="nt">exclude</span><span class="p">:</span>
+</span><span data-line="4"><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">method_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">DEBUG_*</span><span class="w">         </span><span class="c1"># Exclude all methods starting with `DEBUG_`.</span>
+</span><span data-line="5"><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">contract_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MockToken</span><span class="w">     </span><span class="c1"># Exclude all methods in contract named `MockToken`.</span>
+</span><span data-line="6"><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">contract_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PoolContract</span><span class="w">  </span><span class="c1"># Exclude methods starting with `reset_` in `PoolContract`.</span>
+</span><span data-line="7"><span class="w">        </span><span class="nt">method_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">reset_*</span>
+</span></pre></div>
+</div>
+</section>
+</section>
+
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"><div class="navigation-prev">
+    <a href="scripts.html">
+      <i class="i-lucide chevron-left"></i>
+      <div class="page-info">
+        <span>Previous</span><div class="title">Scripting</div></div>
+    </a>
+  </div><div class="navigation-next">
+    <a href="reverts.html">
+      <div class="page-info">
+        <span>Next</span>
+        <div class="title">Reverts</div>
+      </div>
+      <i class="i-lucide chevron-right"></i>
+    </a>
+  </div></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2024, ApeWorX LTD</p>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials"></div>
+    </div>
+  </div>
+</footer>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script data-domain="docs.apeworx.io" defer="defer" src="https://plausible.io/js/script.js"></script>
+      <script src="../_static/shibuya.js?v=55e26b35"></script></body>
+</html>
