@@ -5,7 +5,6 @@ import pytest
 from evm_trace import CallTreeNode, CallType
 from hexbytes import HexBytes
 
-from ape.exceptions import ContractLogicError
 from ape_ethereum.trace import CallTrace, Trace, TraceApproach, TransactionTrace, parse_rich_tree
 from tests.functional.data.python import (
     TRACE_MISSING_GAS,
@@ -177,15 +176,7 @@ def test_transaction_trace_basic_approach_on_failed_call(chain, vyper_contract_i
     """
     Show we can use the basic approach for failed calls.
     """
-    # Get a failed tx
-    tx = None
-    try:
-        vyper_contract_instance.setNumber(0, sender=not_owner)
-    except ContractLogicError as err:
-        tx = err.txn
-
-    assert tx is not None, "Setup failed - could not get a failed txn."
-
+    tx = vyper_contract_instance.setNumber(0, sender=not_owner, raise_on_revert=False)
     trace = TransactionTrace.model_validate(
         {
             "call_trace_approach": None,
@@ -199,6 +190,80 @@ def test_transaction_trace_basic_approach_on_failed_call(chain, vyper_contract_i
     # Mostly just checking that it did not fail!
     assert actual is not None
     assert isinstance(actual, CallTreeNode)
+
+
+def test_transaction_trace_when_client_version_erigon(
+    mocker, vyper_contract_instance, not_owner, networks
+):
+    tx = vyper_contract_instance.setNumber(0, sender=not_owner, raise_on_revert=False)
+
+    mock_erigon = mocker.MagicMock()
+    mock_erigon.client_version = "erigon"
+
+    def side_effect(rpc, arguments):
+        if rpc == "trace_transaction":
+            return [
+                {
+                    "action": {
+                        "callType": "CALL",
+                        "from": not_owner.address,
+                        "gas": "0x00",
+                        "input": "0x00",
+                        "to": not_owner.address,
+                        "value": "0x00",
+                    },
+                    "blockHash": "0x123",
+                    "callType": "CALL",
+                    "subtraces": 0,
+                    "traceAddress": [int(vyper_contract_instance.address, 16)],
+                    "transactionHash": tx.txn_hash,
+                    "type": "",
+                }
+            ]
+
+    mock_erigon.make_request.side_effect = side_effect
+    trace = TransactionTrace.model_validate(
+        {
+            "call_trace_approach": None,
+            "debug_trace_transaction_parameters": {"enableMemory": True},
+            "transaction_hash": tx.txn_hash,
+            "transaction": tx,
+        }
+    )
+    provider = networks.provider
+    networks.active_provider = mock_erigon
+    actual = trace.get_calltree()
+    networks.provider = provider
+    assert isinstance(actual, CallTreeNode)
+    assert trace.call_trace_approach is TraceApproach.PARITY
+
+
+def test_transaction_trace_provider_does_not_implement_client_version(
+    mocker, vyper_contract_instance, not_owner, networks, ethereum, chain
+):
+    tx = vyper_contract_instance.setNumber(0, sender=not_owner, raise_on_revert=False)
+    mock_weird_node = mocker.MagicMock()
+    mock_weird_node.client_version.side_effect = AttributeError
+    mock_weird_node.network = ethereum.local
+
+    class HackyTransactionTrace(TransactionTrace):
+        def _discover_calltrace_approach(self) -> CallTreeNode:
+            # Not needed for test.
+            return None  # type: ignore
+
+    trace = HackyTransactionTrace.model_validate(
+        {
+            "call_trace_approach": None,
+            "debug_trace_transaction_parameters": {"enableMemory": True},
+            "transaction_hash": tx.txn_hash,
+            "transaction": tx,
+        }
+    )
+    provider = networks.provider
+    networks.active_provider = mock_weird_node
+    _ = trace.get_calltree()
+    networks.provider = provider
+    assert trace.call_trace_approach is not TraceApproach.PARITY
 
 
 def test_call_trace_debug_trace_call_not_supported(owner, vyper_contract_instance):
