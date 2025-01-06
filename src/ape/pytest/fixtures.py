@@ -213,13 +213,13 @@ class FixtureManager(ManagerAccessMixin):
         invalids = defaultdict(list)
         for next_snapshot in self.isolation_manager.next_snapshots(scope):
             if next_snapshot.identifier is None:
-                # Thankfully, we haven't reached this scope yet.
-                # In this case, things are running in a performant order.
+                # Thankfully, we haven't reached this scope yet (or it is disabled).
+                # In this case, things are running in a correct/performant order.
                 continue
 
             if scope_to_revert is None:
                 # Revert to the closest scope to use. For example, a new
-                # session comes in but we have already calculated a module
+                # session comes in, but we have already calculated a module
                 # and a class, revert to pre-module and invalidate the module
                 # and class fixtures.
                 scope_to_revert = next_snapshot.scope
@@ -604,16 +604,11 @@ class IsolationManager(ManagerAccessMixin):
         else:
             yield
 
-        # NOTE: self._supported may have gotten set to False
-        #   someplace else _after_ snapshotting succeeded.
-        if not self.supported:
-            return
-
         self.restore(scope)
 
     def set_snapshot(self, scope: Scope):
         # Also can be used to re-set snapshot.
-        if not self.supported:
+        if not self.supported or not self.config_wrapper.get_isolation(scope):
             return
 
         try:
@@ -640,6 +635,15 @@ class IsolationManager(ManagerAccessMixin):
 
     @allow_disconnected
     def restore(self, scope: Scope):
+        # NOTE: self._supported may have gotten set to False
+        #   someplace else _after_ snapshotting succeeded.
+        if not self.supported or not self.config_wrapper.get_isolation(scope):
+            return
+
+        self.restore_snapshot(scope)
+
+    @allow_disconnected
+    def restore_snapshot(self, scope: Scope):
         snapshot_id = self.snapshots.get_snapshot_id(scope)
         if snapshot_id is None:
             return

@@ -10,6 +10,7 @@ from ape.pytest.utils import Scope
 from ape.pytest.warnings import InvalidIsolationWarning
 from ape_test import ApeTestConfig
 from ape_test._watch import run_with_observer
+from ape_test.config import IsolationConfig
 
 
 @pytest.fixture
@@ -97,6 +98,53 @@ class TestConfigWrapper:
 
         wrapper = ConfigWrapper(pytest_cfg)
         assert wrapper.verbosity is True
+
+    @pytest.mark.parametrize("flag", (True, None))
+    def test_isolation_command_line(self, mocker, flag):
+        pytest_cfg = mocker.MagicMock()
+
+        def get_opt(name: str):
+            if name == "disable_isolation":
+                return flag
+
+        pytest_cfg.getoption.side_effect = get_opt
+        wrapper = ConfigWrapper(pytest_cfg)
+
+        if flag:
+            assert not wrapper.isolation
+            for scope in Scope:
+                assert not wrapper.get_isolation(scope)
+
+        else:
+            assert wrapper.isolation
+
+    def test_isolation_config(self, mocker):
+        pytest_cfg = mocker.MagicMock()
+        pytest_cfg.getoption.return_value = None
+        ape_test_cfg = ApeTestConfig()
+        wrapper = ConfigWrapper(pytest_cfg)
+        wrapper.__dict__["ape_test_config"] = ape_test_cfg
+
+        # Show can configure isolation as True.
+        ape_test_cfg.isolation = True
+        for scope in Scope:
+            assert wrapper.get_isolation(scope)
+
+        # Show can configure isolation as False.
+        ape_test_cfg.isolation = False
+        for scope in Scope:
+            assert not wrapper.get_isolation(scope)
+
+        # Show can configure individual scopes.
+        ape_test_cfg.isolation = IsolationConfig(
+            enable_session=True,
+            enable_package=False,
+            enable_function=True,
+        )
+        assert wrapper.get_isolation(Scope.SESSION)
+        assert not wrapper.get_isolation(Scope.PACKAGE)  # default
+        assert wrapper.get_isolation(Scope.MODULE)  # default
+        assert wrapper.get_isolation(Scope.FUNCTION)
 
 
 def test_connect_to_mainnet_by_default(mocker):

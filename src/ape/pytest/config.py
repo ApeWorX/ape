@@ -6,6 +6,7 @@ from ape.utils.basemodel import ManagerAccessMixin
 if TYPE_CHECKING:
     from _pytest.config import Config as PytestConfig
 
+    from ape.pytest.utils import Scope
     from ape.types.trace import ContractFunctionPath
 
 
@@ -21,7 +22,7 @@ def _get_config_exclusions(config) -> list["ContractFunctionPath"]:
 class ConfigWrapper(ManagerAccessMixin):
     """
     A class aggregating settings choices from both the pytest command line
-    as well as the ``ape-config.yaml`` file. Also serves as a wrapper around the
+    and the ``ape-config.yaml`` file. Also serves as a wrapper around the
     Pytest config object for ease-of-use and code-sharing.
     """
 
@@ -118,3 +119,11 @@ class ConfigWrapper(ManagerAccessMixin):
             return self.pytest_config.pluginmanager.get_plugin(name)
 
         return None
+
+    def get_isolation(self, scope: "Scope"):
+        if self.pytest_config.getoption("disable_isolation"):
+            # Was disabled via command-line.
+            return False
+
+        # Check Ape's config.
+        return self.ape_test_config.get_isolation(scope)

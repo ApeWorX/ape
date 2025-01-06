@@ -227,7 +227,7 @@ After each test completes, the chain reverts to that snapshot from the beginning
 
 By default, every `pytest` fixture is `function` scoped, meaning it will be replayed each time it is requested (no result-caching).
 For example, if you deploy a contract in a function-scoped fixture, it will be re-deployed each time the fixture gets used in your tests.
-To only deploy once, you can use different scopes, such as `"session"`, `"package"`, `"module"`, or `"class"`, and you **must** use these fixtures right away, either via `autouse=True` or using them in the first collected tests.
+To only deploy once, you can use different scopes, such as `"session"`, `"package"`, `"module"`, or `"class"`, and you **should** use these fixtures right away, either via `autouse=True` or using them in the first collected tests.
 Otherwise, higher-scoped fixtures that arrive late in a Pytest session will cause the snapshotting system to have to rebase itself, which can be costly.
 For example, if you define a session scoped fixture that deploys a contract and makes transactions, the state changes from those transactions remain in subsequent tests, whether those tests use that fixture or not.
 However, if a new fixture of a session scope comes into play after module, package, or class scoped snapshots have already been taken, those lower-scoped fixtures are now invalid and have to re-run after the session fixture to ensure the session fixture remains in the session-snapshot.
@@ -283,6 +283,18 @@ from ape_tokens import tokens
 @ape.fixture(scope="session", chain_isolation=False, params=("WETH", "DAI", "BAT"))
 def token_addresses(request):
     return tokens[request].address
+```
+
+You can also disable isolation for individual scopes using Ape's config.
+For example, the below config will disable isolation across all high-level scopes but maintain isolation for the function-scope.
+This is useful if you want your individual tests to be isolated but not any session/module scoped fixtures.
+
+```toml
+[tool.ape.test.isolation]
+enable_session = false
+enable_package = false
+enable_module = false
+enable_class = false
 ```
 
 ## Ape testing commands
