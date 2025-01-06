@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 
 from ape import __all__
+from ape.utils.testing import DEFAULT_TEST_CHAIN_ID
 from tests.conftest import ApeSubprocessRunner
 from tests.integration.cli.utils import skip_projects, skip_projects_except
 
@@ -320,5 +321,5 @@ def test_console_code(integ_project, mocker, console_runner):
     result = console_runner.invoke(
         "--project", f"{integ_project.path}", "--code", "chain\nx = 3\nx + 1"
     )
-    expected = "Out[1]: <ChainManager (id=1337)>\nOut[3]: 4\n"
+    expected = f"Out[1]: <ChainManager (id={DEFAULT_TEST_CHAIN_ID})>\nOut[3]: 4\n"
     assert result.output == expected
