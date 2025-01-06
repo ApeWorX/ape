@@ -425,9 +425,7 @@ class ContractCache(BaseManager):
         contract_type = self.get(address)
         if not contract_type:
             # Create error message from custom exception cls.
-            err = ContractNotFoundError(
-                address, self.provider.network.explorer is not None, self.provider.network_choice
-            )
+            err = ContractNotFoundError(address, self.provider)
             # Must raise KeyError.
             raise KeyError(str(err))
 
@@ -692,11 +690,7 @@ class ContractCache(BaseManager):
                 )
 
         if not contract_type:
-            raise ContractNotFoundError(
-                contract_address,
-                self.provider.network.explorer is not None,
-                self.provider.network_choice,
-            )
+            raise ContractNotFoundError(contract_address, self.provider)
 
         if not txn_hash:
             # Check for txn_hash in deployments.
