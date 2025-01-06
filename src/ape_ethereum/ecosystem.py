@@ -971,7 +971,6 @@ class Ethereum(EcosystemAPI):
         def get_abi(_topic: HexStr) -> Optional[LogInputABICollection]:
             return abi_inputs[_topic] if _topic in abi_inputs else None
 
-        breakpoint()
         for log in logs:
             if log.get("anonymous"):
                 raise NotImplementedError(

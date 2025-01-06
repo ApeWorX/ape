@@ -147,7 +147,7 @@ class IsolationConfig(PluginConfig):
     """
 
     def get_isolation(self, scope: "Scope") -> bool:
-        return getattr(self, f"enable_{scope.value}")
+        return getattr(self, f"enable_{scope.name.lower()}")
 
 
 class ApeTestConfig(PluginConfig):
