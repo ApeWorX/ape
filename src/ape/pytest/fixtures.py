@@ -213,13 +213,13 @@ class FixtureManager(ManagerAccessMixin):
         invalids = defaultdict(list)
         for next_snapshot in self.isolation_manager.next_snapshots(scope):
             if next_snapshot.identifier is None:
-                # Thankfully, we haven't reached this scope yet.
-                # In this case, things are running in a performant order.
+                # Thankfully, we haven't reached this scope yet (or it is disabled).
+                # In this case, things are running in a correct/performant order.
                 continue
 
             if scope_to_revert is None:
                 # Revert to the closest scope to use. For example, a new
-                # session comes in but we have already calculated a module
+                # session comes in, but we have already calculated a module
                 # and a class, revert to pre-module and invalidate the module
                 # and class fixtures.
                 scope_to_revert = next_snapshot.scope
