@@ -98,6 +98,18 @@ class TestConfigWrapper:
         wrapper = ConfigWrapper(pytest_cfg)
         assert wrapper.verbosity is True
 
+    @pytest.mark.parametrize("flag", (True, None))
+    def test_isolation(self, mocker, flag):
+        pytest_cfg = mocker.MagicMock()
+
+        def get_opt(name: str):
+            if name == "disable_isolation":
+                return flag
+
+        pytest_cfg.getoption.side_effect = get_opt
+        wrapper = ConfigWrapper(pytest_cfg)
+        assert not wrapper.isolation if flag else wrapper.isolation
+
 
 def test_connect_to_mainnet_by_default(mocker):
     """
