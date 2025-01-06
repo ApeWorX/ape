@@ -238,10 +238,10 @@ If you need to make changes to your contract, you must re-start your console ses
 <h2>Namespace Extras<a class="headerlink" href="#namespace-extras" title="Link to this heading"></a></h2>
 <p>You can also create scripts to be included in the console namespace by adding a file (<code class="docutils literal notranslate"><span class="pre">ape_console_extras.py</span></code>) to your root project directory. All non-internal symbols from this file will be included in the console namespace. Internal symbols are prefixed by an underscore (<code class="docutils literal notranslate"><span class="pre">_</span></code>).</p>
 <p>An example file might look something like this:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">networks</span>
-</span><span data-line="2"><span class="kn">from</span> <span class="nn">eth_utils</span> <span class="kn">import</span> <span class="n">encode_hex</span><span class="p">,</span> <span class="n">decode_hex</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">networks</span>
+</span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">eth_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">encode_hex</span><span class="p">,</span> <span class="n">decode_hex</span>
 </span><span data-line="3">
-</span><span data-line="4"><span class="k">def</span> <span class="nf">latest</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
+</span><span data-line="4"><span class="k">def</span><span class="w"> </span><span class="nf">latest</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
 </span><span data-line="5">    <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">networks</span><span class="o">.</span><span class="n">active_provider</span><span class="o">.</span><span class="n">get_block</span><span class="p">(</span><span class="s2">&quot;latest&quot;</span><span class="p">),</span> <span class="n">key</span><span class="p">)</span>
 </span></pre></div>
 </div>
@@ -256,7 +256,7 @@ If you need to make changes to your contract, you must re-start your console ses
 <section id="init-function">
 <h3>Init Function<a class="headerlink" href="#init-function" title="Link to this heading"></a></h3>
 <p>If you include a function named <code class="docutils literal notranslate"><span class="pre">ape_init_extras</span></code>, it will be executed with the symbols from the existing namespace being provided as keyword arguments. This allows you to alter the scripts namespace using locals already included in the Ape namespace. If you return a <code class="docutils literal notranslate"><span class="pre">dict</span></code>, these values will be added to the console namespace. For example, you could set up an initialized Web3.py object by using one from an existing Ape Provider.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">def</span> <span class="nf">ape_init_extras</span><span class="p">(</span><span class="n">chain</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">def</span><span class="w"> </span><span class="nf">ape_init_extras</span><span class="p">(</span><span class="n">chain</span><span class="p">):</span>
 </span><span data-line="2">    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;web3&quot;</span><span class="p">:</span> <span class="n">chain</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">web3</span><span class="p">}</span>
 </span></pre></div>
 </div>

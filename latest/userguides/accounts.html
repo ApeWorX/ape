@@ -197,7 +197,7 @@ Live network accounts are for interacting with live blockchains and should be se
 <section id="use-test-accounts-in-tests">
 <h3>Use test accounts in tests<a class="headerlink" href="#use-test-accounts-in-tests" title="Link to this heading"></a></h3>
 <p>Pre-funded test accounts are accessible via the <a class="reference external" href="./testing.html#accounts-fixture">accounts fixture</a>.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">def</span> <span class="nf">test_my_contract_method</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">def</span><span class="w"> </span><span class="nf">test_my_contract_method</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
 </span><span data-line="2">    <span class="n">sender</span> <span class="o">=</span> <span class="n">accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 </span><span data-line="3">    <span class="o">...</span>
 </span></pre></div>
@@ -206,7 +206,7 @@ Live network accounts are for interacting with live blockchains and should be se
 <section id="use-test-accounts-outside-of-tests">
 <h3>Use test accounts outside of tests<a class="headerlink" href="#use-test-accounts-outside-of-tests" title="Link to this heading"></a></h3>
 <p>To access the same prefunded accounts in your scripts or console, use the root <code class="docutils literal notranslate"><span class="pre">accounts</span></code> object and the <a class="reference external" href="../methoddocs/managers.html#ape.managers.accounts.AccountManager.test_accounts">test_accounts</a> property:</p>
-<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">accounts</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">sender</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">test_accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 </span></pre></div>
@@ -226,7 +226,7 @@ Live network accounts are for interacting with live blockchains and should be se
 <section id="creating-new-test-accounts">
 <h3>Creating new test accounts<a class="headerlink" href="#creating-new-test-accounts" title="Link to this heading"></a></h3>
 <p>You can create a new test account by doing the following:</p>
-<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">accounts</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">test_accounts</span><span class="o">.</span><span class="n">generate_test_account</span><span class="p">()</span>
 </span></pre></div>
@@ -301,7 +301,7 @@ If you want to use a custom mnemonic phrase word length, use the <code class="do
 <p>If you do not use the <code class="docutils literal notranslate"><span class="pre">--word-count</span></code> option, Ape will use the default word count of 12.
 You can use all of these together or separately to control the way Ape creates and displays your account information.</p>
 <p>This same functionality is also scriptable with the same inputs as the <code class="docutils literal notranslate"><span class="pre">generate</span></code> command:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape_accounts</span> <span class="kn">import</span> <span class="n">generate_account</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape_accounts</span><span class="w"> </span><span class="kn">import</span> <span class="n">generate_account</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="n">account</span><span class="p">,</span> <span class="n">mnemonic</span> <span class="o">=</span> <span class="n">generate_account</span><span class="p">(</span><span class="s2">&quot;my-account&quot;</span><span class="p">,</span> <span class="s2">&quot;mySecureP@ssphrase&quot;</span><span class="p">)</span>
 </span><span data-line="4">
@@ -332,7 +332,7 @@ In addition, you can also use a custom HDPath by using the <code class="docutils
 <p>If you use the <code class="docutils literal notranslate"><span class="pre">--hd-path</span></code> option, you will need to pass the <a class="reference external" href="https://help.myetherwallet.com/en/articles/5867305-hd-wallets-and-derivation-paths">HDPath</a> you’d like to use as an argument in the command.
 If you do not use the <code class="docutils literal notranslate"><span class="pre">--hd-path</span></code> option, Ape will use the default HDPath of (Ethereum network, first account).</p>
 <p>You can import an account programmatically using a seed phrase <a class="reference external" href="../methoddocs/ape_accounts.html#ape_accounts.import_account_from_mnemonic">using <code class="docutils literal notranslate"><span class="pre">import_account_from_mnemonic()</span></code></a>:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape_accounts</span> <span class="kn">import</span> <span class="n">import_account_from_mnemonic</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape_accounts</span><span class="w"> </span><span class="kn">import</span> <span class="n">import_account_from_mnemonic</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="n">alias</span> <span class="o">=</span> <span class="s2">&quot;my-account&quot;</span>
 </span><span data-line="4"><span class="n">passphrase</span> <span class="o">=</span> <span class="s2">&quot;my$ecurePassphrase&quot;</span>
@@ -344,8 +344,8 @@ If you do not use the <code class="docutils literal notranslate"><span class="pr
 </span></pre></div>
 </div>
 <p>Or using a raw private key <a class="reference external" href="../methoddocs/ape_accounts.html#ape_accounts.import_account_from_private_key">using <code class="docutils literal notranslate"><span class="pre">import_account_from_private_key()</span></code></a>:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span> <span class="nn">os</span>
-</span><span data-line="2"><span class="kn">from</span> <span class="nn">ape_accounts</span> <span class="kn">import</span> <span class="n">import_account_from_private_key</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+</span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">ape_accounts</span><span class="w"> </span><span class="kn">import</span> <span class="n">import_account_from_private_key</span>
 </span><span data-line="3">
 </span><span data-line="4"><span class="n">alias</span> <span class="o">=</span> <span class="s2">&quot;my-account&quot;</span>
 </span><span data-line="5"><span class="n">passphrase</span> <span class="o">=</span> <span class="s2">&quot;my SecurePassphrase&quot;</span>
@@ -367,7 +367,7 @@ If you do not use the <code class="docutils literal notranslate"><span class="pr
 You can then use that private key with <a class="reference external" href="../commands/accounts.html#accounts-import">import</a>.
 You can alternatively load the private key into <a class="reference external" href="https://metamask.zendesk.com/hc/en-us/articles/360015489331-How-to-import-an-account#h_01G01W07NV7Q94M7P1EBD5BYM4">Metamask wallet</a>.
 Then, in your scripts, you can <a class="reference external" href="../methoddocs/managers.html#ape.managers.accounts.AccountManager.load">load</a> an account:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">accounts</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;&lt;ALIAS&gt;&quot;</span><span class="p">)</span>
 </span></pre></div>
@@ -396,8 +396,8 @@ Then, in your scripts, you can <a class="reference external" href="../methoddocs
 <h2>Signing Messages<a class="headerlink" href="#signing-messages" title="Link to this heading"></a></h2>
 <p>You can sign messages with your accounts in Ape.
 To do this, use the <a class="reference external" href="../methoddocs/api.html#ape.api.accounts.AccountAPI.sign_message">sign_message</a> API.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span>
-</span><span data-line="2"><span class="kn">from</span> <span class="nn">eth_account.messages</span> <span class="kn">import</span> <span class="n">encode_defunct</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">accounts</span>
+</span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">eth_account.messages</span><span class="w"> </span><span class="kn">import</span> <span class="n">encode_defunct</span>
 </span><span data-line="3">
 </span><span data-line="4"><span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;&lt;ALIAS&gt;&quot;</span><span class="p">)</span>
 </span><span data-line="5"><span class="n">message</span> <span class="o">=</span> <span class="n">encode_defunct</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s2">&quot;Hello Apes!&quot;</span><span class="p">)</span>
@@ -411,7 +411,7 @@ To do this, use the <a class="reference external" href="../methoddocs/api.html#a
 <p>Account plugins decide what data-types to support.
 Most Ethereum account plugins, such as <code class="docutils literal notranslate"><span class="pre">ape-account</span></code>, are able to sign messages like the example above.
 However, you can also provide other types, such as a <code class="docutils literal notranslate"><span class="pre">str</span></code> directly:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">accounts</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;&lt;ALIAS&gt;&quot;</span><span class="p">)</span>
 </span><span data-line="4"><span class="n">signature</span> <span class="o">=</span> <span class="n">account</span><span class="o">.</span><span class="n">sign_message</span><span class="p">(</span><span class="s2">&quot;Hello Apes!&quot;</span><span class="p">)</span>
@@ -421,14 +421,14 @@ However, you can also provide other types, such as a <code class="docutils liter
 <h3>EIP-712<a class="headerlink" href="#eip-712" title="Link to this heading"></a></h3>
 <p>Some account plugins are able to sign EIP-712 structured message types by utilizing the <code class="docutils literal notranslate"><span class="pre">eip712</span></code> package.
 Here is an example with custom EIP-712 classes:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span>
-</span><span data-line="2"><span class="kn">from</span> <span class="nn">eip712.messages</span> <span class="kn">import</span> <span class="n">EIP712Message</span><span class="p">,</span> <span class="n">EIP712Type</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">accounts</span>
+</span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">eip712.messages</span><span class="w"> </span><span class="kn">import</span> <span class="n">EIP712Message</span><span class="p">,</span> <span class="n">EIP712Type</span>
 </span><span data-line="3">
-</span><span data-line="4"><span class="k">class</span> <span class="nc">Person</span><span class="p">(</span><span class="n">EIP712Type</span><span class="p">):</span>
+</span><span data-line="4"><span class="k">class</span><span class="w"> </span><span class="nc">Person</span><span class="p">(</span><span class="n">EIP712Type</span><span class="p">):</span>
 </span><span data-line="5">    <span class="n">name</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span>
 </span><span data-line="6">    <span class="n">wallet</span><span class="p">:</span> <span class="s2">&quot;address&quot;</span>
 </span><span data-line="7">
-</span><span data-line="8"><span class="k">class</span> <span class="nc">Mail</span><span class="p">(</span><span class="n">EIP712Message</span><span class="p">):</span>
+</span><span data-line="8"><span class="k">class</span><span class="w"> </span><span class="nc">Mail</span><span class="p">(</span><span class="n">EIP712Message</span><span class="p">):</span>
 </span><span data-line="9">    <span class="n">_chainId_</span><span class="p">:</span> <span class="s2">&quot;uint256&quot;</span> <span class="o">=</span> <span class="mi">1</span>
 </span><span data-line="10">    <span class="n">_name_</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span> <span class="o">=</span> <span class="s2">&quot;Ether Mail&quot;</span>
 </span><span data-line="11">    <span class="n">_verifyingContract_</span><span class="p">:</span> <span class="s2">&quot;address&quot;</span> <span class="o">=</span> <span class="s2">&quot;0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC&quot;</span>
@@ -449,9 +449,9 @@ Here is an example with custom EIP-712 classes:</p>
 <section id="verifying-signature">
 <h3>Verifying Signature<a class="headerlink" href="#verifying-signature" title="Link to this heading"></a></h3>
 <p>Verify the signatures on your signed messages by using the <a class="reference external" href="../methoddocs/types.html#ape.types.signatures.recover_signer">recover_signer</a> function or the <a class="reference external" href="../methoddocs/api.html#ape.api.accounts.AccountAPI.check_signature">check_signature</a> function:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span>
-</span><span data-line="2"><span class="kn">from</span> <span class="nn">ape.types.signatures</span> <span class="kn">import</span> <span class="n">recover_signer</span>
-</span><span data-line="3"><span class="kn">from</span> <span class="nn">eth_account.messages</span> <span class="kn">import</span> <span class="n">encode_defunct</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">accounts</span>
+</span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.types.signatures</span><span class="w"> </span><span class="kn">import</span> <span class="n">recover_signer</span>
+</span><span data-line="3"><span class="kn">from</span><span class="w"> </span><span class="nn">eth_account.messages</span><span class="w"> </span><span class="kn">import</span> <span class="n">encode_defunct</span>
 </span><span data-line="4">
 </span><span data-line="5"><span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;&lt;ALIAS&gt;&quot;</span><span class="p">)</span>
 </span><span data-line="6"><span class="n">message</span> <span class="o">=</span> <span class="n">encode_defunct</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s2">&quot;Hello Apes!&quot;</span><span class="p">)</span>
@@ -476,8 +476,8 @@ To do this, use a special environment variable for the account’s passphrase:</
 </div>
 <p>Where <code class="docutils literal notranslate"><span class="pre">&lt;alias&gt;</span></code> is the name of the account you want to use.
 Now, you can use your account to make any transactions without subsequently providing your passphrase.</p>
-<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span>
-</span><span data-line="2"><span class="kn">from</span> <span class="nn">eth_account.messages</span> <span class="kn">import</span> <span class="n">encode_defunct</span>
+<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">accounts</span>
+</span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">eth_account.messages</span><span class="w"> </span><span class="kn">import</span> <span class="n">encode_defunct</span>
 </span><span data-line="3">
 </span><span data-line="4"><span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;&lt;ALIAS&gt;&quot;</span><span class="p">)</span>
 </span><span data-line="5"><span class="n">account</span><span class="o">.</span><span class="n">set_autosign</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>

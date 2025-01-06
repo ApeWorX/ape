@@ -502,7 +502,7 @@ All containers must subclass <a class="reference internal" href="api.html#ape.ap
 and are treated as singletons.</p>
 <p>Import the accounts manager singleton from the root <code class="docutils literal notranslate"><span class="pre">ape</span></code> namespace.</p>
 <p>Usage example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span>  <span class="c1"># &quot;accounts&quot; is the AccountManager singleton</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">accounts</span>  <span class="c1"># &quot;accounts&quot; is the AccountManager singleton</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="n">my_accounts</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;dev&quot;</span><span class="p">)</span>
 </span></pre></div>
@@ -604,7 +604,7 @@ are also the subject of a fixture available in the <code class="docutils literal
 <code class="docutils literal notranslate"><span class="pre">accounts</span></code>. Configure these accounts, such as the mnemonic and / or
 number-of-accounts using the <code class="docutils literal notranslate"><span class="pre">test</span></code> section of the <cite>ape-config.yaml</cite> file.</p>
 <p>Usage example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">def</span> <span class="nf">test_my_contract</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">def</span><span class="w"> </span><span class="nf">test_my_contract</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
 </span><span data-line="2">   <span class="c1"># The &quot;accounts&quot; fixture uses the AccountsManager.test_accounts()</span>
 </span><span data-line="3">   <span class="n">sender</span> <span class="o">=</span> <span class="n">accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 </span><span data-line="4">   <span class="n">receiver</span> <span class="o">=</span> <span class="n">accounts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
@@ -694,7 +694,7 @@ Each compiler plugin typically contains a single <a class="reference internal" h
 <p><strong>NOTE</strong>: Typically, users compile their projects using the CLI via <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">compile</span></code>,
 which uses the <a class="reference internal" href="api.html#ape.api.compiler.CompilerAPI" title="ape.api.compiler.CompilerAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">CompilerAPI</span></code></a> under-the-hood.</p>
 <p>Usage example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">compilers</span>  <span class="c1"># &quot;compilers&quot; is the CompilerManager singleton</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">compilers</span>  <span class="c1"># &quot;compilers&quot; is the CompilerManager singleton</span>
 </span></pre></div>
 </div>
 <dl class="py method">
@@ -1371,7 +1371,7 @@ Useful for testing.</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.managers.chain.</span></span><span class="sig-name descname"><span class="pre">BlockContainer</span></span><a class="headerlink" href="#ape.managers.chain.BlockContainer" title="Link to this definition"></a></dt>
 <dd><p>A list of blocks on the chain.</p>
 <p>Usages example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">chain</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">chain</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="n">latest_block</span> <span class="o">=</span> <span class="n">chain</span><span class="o">.</span><span class="n">blocks</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 </span></pre></div>
@@ -1436,7 +1436,7 @@ block numbers.</p>
 <p><strong>NOTE</strong>: This is a daemon method; it does not terminate unless an exception occurs
 or a <code class="docutils literal notranslate"><span class="pre">stop_block</span></code> is given.</p>
 <p>Usage example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">chain</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">chain</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="k">for</span> <span class="n">new_block</span> <span class="ow">in</span> <span class="n">chain</span><span class="o">.</span><span class="n">blocks</span><span class="o">.</span><span class="n">poll_blocks</span><span class="p">():</span>
 </span><span data-line="4">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;New block found: number=</span><span class="si">{</span><span class="n">new_block</span><span class="o">.</span><span class="n">number</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -1540,7 +1540,7 @@ engine selection algorithm.</p></li>
 Also handy for querying data about the chain and managing local caches.
 Access the chain manager singleton from the root <code class="docutils literal notranslate"><span class="pre">ape</span></code> namespace.</p>
 <p>Usage example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">chain</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">chain</span>
 </span></pre></div>
 </div>
 <dl class="py method">
@@ -1649,7 +1649,7 @@ Defaults to None.</p></li>
 <dd><p>The current epoch time of the chain, as an <code class="docutils literal notranslate"><span class="pre">int</span></code>.
 You can also set the timestamp for development purposes.</p>
 <p>Usage example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">chain</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">chain</span>
 </span><span data-line="2"><span class="n">chain</span><span class="o">.</span><span class="n">pending_timestamp</span> <span class="o">+=</span> <span class="mi">3600</span>
 </span></pre></div>
 </div>
@@ -1771,8 +1771,8 @@ cached to disk will not persist.</p>
 Implementations of this API must throw a <a class="reference internal" href="exceptions.html#ape.exceptions.ConversionError" title="ape.exceptions.ConversionError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConversionError</span></code></a>
 when the item fails to convert properly.</p>
 <p>Usage example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">convert</span>
-</span><span data-line="2"><span class="kn">from</span> <span class="nn">ape.types</span> <span class="kn">import</span> <span class="n">AddressType</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">convert</span>
+</span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">AddressType</span>
 </span><span data-line="3">
 </span><span data-line="4"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;1 gwei&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
 </span><span data-line="5"><span class="c1"># 1000000000</span>
@@ -1863,8 +1863,8 @@ to a :class`~ape.types.address.AddressType`.</p>
 Implementations of this API must throw a <a class="reference internal" href="exceptions.html#ape.exceptions.ConversionError" title="ape.exceptions.ConversionError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConversionError</span></code></a>
 when the item fails to convert properly.</p>
 <p>Usage example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">convert</span>
-</span><span data-line="2"><span class="kn">from</span> <span class="nn">ape.types</span> <span class="kn">import</span> <span class="n">AddressType</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">convert</span>
+</span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">AddressType</span>
 </span><span data-line="3">
 </span><span data-line="4"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;1 gwei&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
 </span><span data-line="5"><span class="c1"># 1000000000</span>
@@ -1909,7 +1909,7 @@ when the item fails to convert properly.</p>
 but rather its <code class="docutils literal notranslate"><span class="pre">convert()</span></code> method, which is accessible from
 the root <code class="docutils literal notranslate"><span class="pre">ape</span></code> namespace.</p>
 <p>Usage example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">convert</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">convert</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="n">amount</span> <span class="o">=</span> <span class="n">convert</span><span class="p">(</span><span class="s2">&quot;1 gwei&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
 </span></pre></div>
@@ -2054,8 +2054,8 @@ NOTE: This utility converter ensures that all bytes args can accept hex too</p>
 Implementations of this API must throw a <a class="reference internal" href="exceptions.html#ape.exceptions.ConversionError" title="ape.exceptions.ConversionError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConversionError</span></code></a>
 when the item fails to convert properly.</p>
 <p>Usage example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">convert</span>
-</span><span data-line="2"><span class="kn">from</span> <span class="nn">ape.types</span> <span class="kn">import</span> <span class="n">AddressType</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">convert</span>
+</span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">AddressType</span>
 </span><span data-line="3">
 </span><span data-line="4"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;1 gwei&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
 </span><span data-line="5"><span class="c1"># 1000000000</span>
@@ -2103,8 +2103,8 @@ when the item fails to convert properly.</p>
 Implementations of this API must throw a <a class="reference internal" href="exceptions.html#ape.exceptions.ConversionError" title="ape.exceptions.ConversionError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConversionError</span></code></a>
 when the item fails to convert properly.</p>
 <p>Usage example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">convert</span>
-</span><span data-line="2"><span class="kn">from</span> <span class="nn">ape.types</span> <span class="kn">import</span> <span class="n">AddressType</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">convert</span>
+</span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">AddressType</span>
 </span><span data-line="3">
 </span><span data-line="4"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;1 gwei&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
 </span><span data-line="5"><span class="c1"># 1000000000</span>
@@ -2152,8 +2152,8 @@ when the item fails to convert properly.</p>
 Implementations of this API must throw a <a class="reference internal" href="exceptions.html#ape.exceptions.ConversionError" title="ape.exceptions.ConversionError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConversionError</span></code></a>
 when the item fails to convert properly.</p>
 <p>Usage example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">convert</span>
-</span><span data-line="2"><span class="kn">from</span> <span class="nn">ape.types</span> <span class="kn">import</span> <span class="n">AddressType</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">convert</span>
+</span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">AddressType</span>
 </span><span data-line="3">
 </span><span data-line="4"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;1 gwei&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
 </span><span data-line="5"><span class="c1"># 1000000000</span>
@@ -2201,8 +2201,8 @@ when the item fails to convert properly.</p>
 Implementations of this API must throw a <a class="reference internal" href="exceptions.html#ape.exceptions.ConversionError" title="ape.exceptions.ConversionError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConversionError</span></code></a>
 when the item fails to convert properly.</p>
 <p>Usage example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">convert</span>
-</span><span data-line="2"><span class="kn">from</span> <span class="nn">ape.types</span> <span class="kn">import</span> <span class="n">AddressType</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">convert</span>
+</span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">AddressType</span>
 </span><span data-line="3">
 </span><span data-line="4"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;1 gwei&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
 </span><span data-line="5"><span class="c1"># 1000000000</span>
@@ -2249,8 +2249,8 @@ when the item fails to convert properly.</p>
 Implementations of this API must throw a <a class="reference internal" href="exceptions.html#ape.exceptions.ConversionError" title="ape.exceptions.ConversionError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConversionError</span></code></a>
 when the item fails to convert properly.</p>
 <p>Usage example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">convert</span>
-</span><span data-line="2"><span class="kn">from</span> <span class="nn">ape.types</span> <span class="kn">import</span> <span class="n">AddressType</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">convert</span>
+</span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">AddressType</span>
 </span><span data-line="3">
 </span><span data-line="4"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;1 gwei&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
 </span><span data-line="5"><span class="c1"># 1000000000</span>
@@ -2299,8 +2299,8 @@ No timezone required, but should be formatted to UTC.</p>
 Implementations of this API must throw a <a class="reference internal" href="exceptions.html#ape.exceptions.ConversionError" title="ape.exceptions.ConversionError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConversionError</span></code></a>
 when the item fails to convert properly.</p>
 <p>Usage example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">convert</span>
-</span><span data-line="2"><span class="kn">from</span> <span class="nn">ape.types</span> <span class="kn">import</span> <span class="n">AddressType</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">convert</span>
+</span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">AddressType</span>
 </span><span data-line="3">
 </span><span data-line="4"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;1 gwei&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
 </span><span data-line="5"><span class="c1"># 1000000000</span>
@@ -2347,7 +2347,7 @@ when the item fails to convert properly.</p>
 Typically, you set the provider via the <code class="docutils literal notranslate"><span class="pre">--network</span></code> command line option.
 However, use this singleton for more granular access to networks.</p>
 <p>Usage example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">networks</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">networks</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="c1"># &quot;networks&quot; is the NetworkManager singleton</span>
 </span><span data-line="4"><span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">ethereum</span><span class="o">.</span><span class="n">mainnet</span><span class="o">.</span><span class="n">use_provider</span><span class="p">(</span><span class="s2">&quot;node&quot;</span><span class="p">):</span>
@@ -3066,7 +3066,7 @@ to track as a deployment of the project.</p></li>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.managers.project.</span></span><span class="sig-name descname"><span class="pre">LocalProject</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.project.LocalProject" title="Link to this definition"></a></dt>
 <dd><p>Manage project(s).</p>
 <p>Usage example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">project</span><span class="p">,</span> <span class="n">Project</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">project</span><span class="p">,</span> <span class="n">Project</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="c1"># Interact with local project contracts.</span>
 </span><span data-line="4"><span class="n">project</span><span class="o">.</span><span class="n">MyToken</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">sender</span><span class="o">=...</span><span class="p">)</span>

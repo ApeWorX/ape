@@ -1853,11 +1853,11 @@ Supports both pyproject.toml and ape-config.[.yml|.yaml|.json] files.</p>
 Use this to limit the values of a config item, such as colors <code class="docutils literal notranslate"><span class="pre">&quot;RED&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;BLUE&quot;</span></code>,
 <code class="docutils literal notranslate"><span class="pre">&quot;GREEN&quot;</span></code>, rather than any arbitrary <code class="docutils literal notranslate"><span class="pre">str</span></code>.</p>
 <p>Usage example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">class</span> <span class="nc">MyEnum</span><span class="p">(</span><span class="n">ConfigEnum</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">class</span><span class="w"> </span><span class="nc">MyEnum</span><span class="p">(</span><span class="n">ConfigEnum</span><span class="p">):</span>
 </span><span data-line="2">    <span class="n">FOO</span> <span class="o">=</span> <span class="s2">&quot;FOO&quot;</span>
 </span><span data-line="3">    <span class="n">BAR</span> <span class="o">=</span> <span class="s2">&quot;BAR&quot;</span>
 </span><span data-line="4">
-</span><span data-line="5"><span class="k">class</span> <span class="nc">MyConfig</span><span class="p">(</span><span class="n">PluginConfig</span><span class="p">):</span>
+</span><span data-line="5"><span class="k">class</span><span class="w"> </span><span class="nc">MyConfig</span><span class="p">(</span><span class="n">PluginConfig</span><span class="p">):</span>
 </span><span data-line="6">    <span class="n">my_enum</span><span class="p">:</span> <span class="n">MyEnum</span>
 </span><span data-line="7">
 </span><span data-line="8"><span class="n">model</span> <span class="o">=</span> <span class="n">MyConfig</span><span class="p">(</span><span class="n">my_enum</span><span class="o">=</span><span class="s2">&quot;FOO&quot;</span><span class="p">)</span>
@@ -2025,8 +2025,8 @@ This replaces <cite>Model.__fields__</cite> from Pydantic V1.</p>
 Implementations of this API must throw a <a class="reference internal" href="exceptions.html#ape.exceptions.ConversionError" title="ape.exceptions.ConversionError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConversionError</span></code></a>
 when the item fails to convert properly.</p>
 <p>Usage example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">convert</span>
-</span><span data-line="2"><span class="kn">from</span> <span class="nn">ape.types</span> <span class="kn">import</span> <span class="n">AddressType</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">convert</span>
+</span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">AddressType</span>
 </span><span data-line="3">
 </span><span data-line="4"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;1 gwei&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
 </span><span data-line="5"><span class="c1"># 1000000000</span>
@@ -2547,11 +2547,11 @@ and you have not yet deployed the first contract yet.</p>
 <dd><p>Get a contract method selector, typically via hashing such as <code class="docutils literal notranslate"><span class="pre">keccak</span></code>.
 Defaults to using <code class="docutils literal notranslate"><span class="pre">keccak</span></code> but can be overridden in different ecosystems.</p>
 <p>Override example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape.api</span> <span class="kn">import</span> <span class="n">EcosystemAPI</span>
-</span><span data-line="2"><span class="kn">from</span> <span class="nn">eth_pydantic_types</span> <span class="kn">import</span> <span class="n">HexBytes</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.api</span><span class="w"> </span><span class="kn">import</span> <span class="n">EcosystemAPI</span>
+</span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">eth_pydantic_types</span><span class="w"> </span><span class="kn">import</span> <span class="n">HexBytes</span>
 </span><span data-line="3">
-</span><span data-line="4"><span class="k">class</span> <span class="nc">MyEcosystem</span><span class="p">(</span><span class="n">EcosystemAPI</span><span class="p">):</span>
-</span><span data-line="5">    <span class="k">def</span> <span class="nf">get_method_selector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">abi</span><span class="p">:</span> <span class="n">MethodABI</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">HexBytes</span><span class="p">:</span>
+</span><span data-line="4"><span class="k">class</span><span class="w"> </span><span class="nc">MyEcosystem</span><span class="p">(</span><span class="n">EcosystemAPI</span><span class="p">):</span>
+</span><span data-line="5">    <span class="k">def</span><span class="w"> </span><span class="nf">get_method_selector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">abi</span><span class="p">:</span> <span class="n">MethodABI</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">HexBytes</span><span class="p">:</span>
 </span><span data-line="6">        <span class="k">return</span> <span class="n">HexBytes</span><span class="p">(</span><span class="n">abi</span><span class="o">.</span><span class="n">selector</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span>  <span class="c1"># Simple bytes selector</span>
 </span></pre></div>
 </div>
@@ -2996,7 +2996,7 @@ method <a class="reference internal" href="#ape.api.providers.ProviderAPI.connec
 method <a class="reference internal" href="#ape.api.providers.ProviderAPI.disconnect" title="ape.api.providers.ProviderAPI.disconnect"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ape.api.providers.ProviderAPI.disconnect()</span></code></a>.</p>
 <p><strong>NOTE</strong>: If multiple providers exist, uses whatever was “first” registered.</p>
 <p>Usage example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">networks</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">networks</span>
 </span><span data-line="2"><span class="n">mainnet</span> <span class="o">=</span> <span class="n">networks</span><span class="o">.</span><span class="n">ethereum</span><span class="o">.</span><span class="n">mainnet</span>  <span class="c1"># An instance of NetworkAPI</span>
 </span><span data-line="3"><span class="k">with</span> <span class="n">mainnet</span><span class="o">.</span><span class="n">use_default_provider</span><span class="p">():</span>
 </span><span data-line="4">    <span class="o">...</span>
@@ -3024,7 +3024,7 @@ same network, such as in a multi-chain testing scenario.</p></li>
 method <a class="reference internal" href="#ape.api.providers.ProviderAPI.connect" title="ape.api.providers.ProviderAPI.connect"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ape.api.providers.ProviderAPI.connect()</span></code></a> and when exiting, it calls
 method <a class="reference internal" href="#ape.api.providers.ProviderAPI.disconnect" title="ape.api.providers.ProviderAPI.disconnect"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ape.api.providers.ProviderAPI.disconnect()</span></code></a>.</p>
 <p>Usage example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">networks</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">networks</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="n">mainnet</span> <span class="o">=</span> <span class="n">networks</span><span class="o">.</span><span class="n">ethereum</span><span class="o">.</span><span class="n">mainnet</span>  <span class="c1"># An instance of NetworkAPI</span>
 </span><span data-line="4"><span class="k">with</span> <span class="n">mainnet</span><span class="o">.</span><span class="n">use_provider</span><span class="p">(</span><span class="s2">&quot;infura&quot;</span><span class="p">):</span>
@@ -3081,7 +3081,7 @@ the very end of the Python session.</p>
 <p>The method <a class="reference internal" href="#ape.api.networks.NetworkAPI.use_provider" title="ape.api.networks.NetworkAPI.use_provider"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ape.api.networks.NetworkAPI.use_provider()</span></code></a> returns
 an instance of this context manager.</p>
 <p>Usage example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">networks</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">networks</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="n">mainnet</span> <span class="o">=</span> <span class="n">networks</span><span class="o">.</span><span class="n">ethereum</span><span class="o">.</span><span class="n">mainnet</span>  <span class="c1"># An instance of NetworkAPI</span>
 </span><span data-line="4"><span class="k">with</span> <span class="n">mainnet</span><span class="o">.</span><span class="n">use_provider</span><span class="p">(</span><span class="s2">&quot;infura&quot;</span><span class="p">):</span>

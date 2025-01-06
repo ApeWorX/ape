@@ -205,7 +205,7 @@ In fact, <code class="docutils literal notranslate"><span class="pre">ape-test</
 <p>Tests must be located in a project’s <code class="docutils literal notranslate"><span class="pre">tests/</span></code> directory. Each <strong>test file</strong> must start with <code class="docutils literal notranslate"><span class="pre">test_</span></code> and have the <code class="docutils literal notranslate"><span class="pre">.py</span></code> extension, such as <code class="docutils literal notranslate"><span class="pre">test_my_contract.py</span></code>.
 Each <strong>test method</strong> within the file must also start with <code class="docutils literal notranslate"><span class="pre">test_</span></code>.
 The following is an example test:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">def</span> <span class="nf">test_add</span><span class="p">():</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">def</span><span class="w"> </span><span class="nf">test_add</span><span class="p">():</span>
 </span><span data-line="2">    <span class="k">assert</span> <span class="mi">1</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">==</span> <span class="mi">2</span>
 </span></pre></div>
 </div>
@@ -232,20 +232,20 @@ If the sender of the transaction is not the owner, the transaction will fail to 
 We use <code class="docutils literal notranslate"><span class="pre">assert</span></code> statements in Ape (and <code class="docutils literal notranslate"><span class="pre">pytest</span></code>) to check that our expectations are correct.
 A test passes if all the <code class="docutils literal notranslate"><span class="pre">assert</span></code> statements are <code class="docutils literal notranslate"><span class="pre">True</span></code> and it fails if any are <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
 <p>This is an example of how that test may look:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span> <span class="nn">ape</span>
-</span><span data-line="2"><span class="kn">import</span> <span class="nn">pytest</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">ape</span>
+</span><span data-line="2"><span class="kn">import</span><span class="w"> </span><span class="nn">pytest</span>
 </span><span data-line="3">
 </span><span data-line="4"><span class="c1"># SETUP PHASE</span>
 </span><span data-line="5"><span class="c1"># NOTE: More on fixtures is discussed in later sections of this guide!</span>
 </span><span data-line="6"><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span data-line="7"><span class="k">def</span> <span class="nf">owner</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
+</span><span data-line="7"><span class="k">def</span><span class="w"> </span><span class="nf">owner</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
 </span><span data-line="8">    <span class="k">return</span> <span class="n">accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 </span><span data-line="9">
 </span><span data-line="10"><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span data-line="11"><span class="k">def</span> <span class="nf">my_contract</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="n">project</span><span class="p">):</span>
+</span><span data-line="11"><span class="k">def</span><span class="w"> </span><span class="nf">my_contract</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="n">project</span><span class="p">):</span>
 </span><span data-line="12">    <span class="k">return</span> <span class="n">owner</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="p">)</span>
 </span><span data-line="13">
-</span><span data-line="14"><span class="k">def</span> <span class="nf">test_authorization</span><span class="p">(</span><span class="n">my_contract</span><span class="p">,</span> <span class="n">owner</span><span class="p">,</span> <span class="n">not_owner</span><span class="p">):</span>
+</span><span data-line="14"><span class="k">def</span><span class="w"> </span><span class="nf">test_authorization</span><span class="p">(</span><span class="n">my_contract</span><span class="p">,</span> <span class="n">owner</span><span class="p">,</span> <span class="n">not_owner</span><span class="p">):</span>
 </span><span data-line="15">    <span class="c1"># INVOCATION PHASE</span>
 </span><span data-line="16">    <span class="n">my_contract</span><span class="o">.</span><span class="n">set_owner</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">owner</span><span class="p">)</span>
 </span><span data-line="17">    <span class="k">assert</span> <span class="n">owner</span> <span class="o">==</span> <span class="n">my_contract</span><span class="o">.</span><span class="n">owner</span><span class="p">()</span>
@@ -269,25 +269,25 @@ The following guide explains each fixture that comes with Ape.</p>
 <p>You have access to test accounts.
 These accounts are automatically funded, and you can use them to transact in your tests.
 Access each <a class="reference external" href="../methoddocs/api.html?highlight=testaccount#ape.api.accounts.TestAccountAPI">test account</a> by index from the <code class="docutils literal notranslate"><span class="pre">accounts</span></code> fixture:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">def</span> <span class="nf">test_my_method</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">def</span><span class="w"> </span><span class="nf">test_my_method</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
 </span><span data-line="2">    <span class="n">owner</span> <span class="o">=</span> <span class="n">accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 </span><span data-line="3">    <span class="n">receiver</span> <span class="o">=</span> <span class="n">accounts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 </span></pre></div>
 </div>
 <p>For code readability and sustainability, create your own fixtures using the <code class="docutils literal notranslate"><span class="pre">accounts</span></code> fixture:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span> <span class="nn">pytest</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">pytest</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span data-line="4"><span class="k">def</span> <span class="nf">owner</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
+</span><span data-line="4"><span class="k">def</span><span class="w"> </span><span class="nf">owner</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
 </span><span data-line="5">    <span class="k">return</span> <span class="n">accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 </span><span data-line="6">
 </span><span data-line="7">
 </span><span data-line="8"><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span data-line="9"><span class="k">def</span> <span class="nf">receiver</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
+</span><span data-line="9"><span class="k">def</span><span class="w"> </span><span class="nf">receiver</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
 </span><span data-line="10">    <span class="k">return</span> <span class="n">accounts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 </span><span data-line="11">
 </span><span data-line="12">
-</span><span data-line="13"><span class="k">def</span> <span class="nf">test_my_method</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="n">receiver</span><span class="p">):</span>
+</span><span data-line="13"><span class="k">def</span><span class="w"> </span><span class="nf">test_my_method</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="n">receiver</span><span class="p">):</span>
 </span><span data-line="14">    <span class="o">...</span>
 </span></pre></div>
 </div>
@@ -307,18 +307,18 @@ Access each <a class="reference external" href="../methoddocs/api.html?highlight
 </div>
 <p>If you are using a provider that supports impersonating accounts, such as <a class="reference external" href="https://github.com/ApeWorX/ape-foundry">Foundry</a>, use the address as the key in the test-accounts manager:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span data-line="2"><span class="k">def</span> <span class="nf">vitalik</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
+</span><span data-line="2"><span class="k">def</span><span class="w"> </span><span class="nf">vitalik</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
 </span><span data-line="3">    <span class="k">return</span> <span class="n">accounts</span><span class="p">[</span><span class="s2">&quot;0xab5801a7d398351b8be11c439e05c5b3259aec9b&quot;</span><span class="p">]</span>
 </span></pre></div>
 </div>
 <p>You can also call <code class="docutils literal notranslate"><span class="pre">accounts.impersonate_account()</span></code> for improved readability and performance.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span data-line="2"><span class="k">def</span> <span class="nf">vitalik</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
+</span><span data-line="2"><span class="k">def</span><span class="w"> </span><span class="nf">vitalik</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
 </span><span data-line="3">    <span class="k">return</span> <span class="n">accounts</span><span class="o">.</span><span class="n">impersonate_account</span><span class="p">(</span><span class="s2">&quot;0xab5801a7d398351b8be11c439e05c5b3259aec9b&quot;</span><span class="p">)</span>
 </span></pre></div>
 </div>
 <p>Using a fork-provider such as <a class="reference external" href="https://github.com/ApeWorX/ape-hardhat">Hardhat</a>, when using a contract instance as the sender in a transaction, it will be automatically impersonated:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">def</span> <span class="nf">test_my_method</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="n">accounts</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">def</span><span class="w"> </span><span class="nf">test_my_method</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="n">accounts</span><span class="p">):</span>
 </span><span data-line="2">    <span class="n">contract</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </span><span data-line="3">    <span class="n">other_contract</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">OtherContract</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </span><span data-line="4">    <span class="n">contract</span><span class="o">.</span><span class="n">my_method</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">other_contract</span><span class="p">)</span>
@@ -330,7 +330,7 @@ Access each <a class="reference external" href="../methoddocs/api.html?highlight
 <h3>chain fixture<a class="headerlink" href="#chain-fixture" title="Link to this heading"></a></h3>
 <p>Use the chain fixture to access the connected provider or adjust blockchain settings.</p>
 <p>For example, increase the pending timestamp:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">def</span> <span class="nf">test_in_future</span><span class="p">(</span><span class="n">chain</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">def</span><span class="w"> </span><span class="nf">test_in_future</span><span class="p">(</span><span class="n">chain</span><span class="p">):</span>
 </span><span data-line="2">    <span class="n">chain</span><span class="o">.</span><span class="n">pending_timestamp</span> <span class="o">+=</span> <span class="mi">86000</span>
 </span><span data-line="3">    <span class="k">assert</span> <span class="s2">&quot;Something&quot;</span>
 </span><span data-line="4">    <span class="n">chain</span><span class="o">.</span><span class="n">pending_timestamp</span> <span class="o">+=</span> <span class="mi">86000</span>
@@ -342,7 +342,7 @@ Access each <a class="reference external" href="../methoddocs/api.html?highlight
 <section id="networks-fixture">
 <h3>networks fixture<a class="headerlink" href="#networks-fixture" title="Link to this heading"></a></h3>
 <p>Use the <code class="docutils literal notranslate"><span class="pre">networks</span></code> fixture to change the active provider in tests.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">def</span> <span class="nf">test_multi_chain</span><span class="p">(</span><span class="n">networks</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">def</span><span class="w"> </span><span class="nf">test_multi_chain</span><span class="p">(</span><span class="n">networks</span><span class="p">):</span>
 </span><span data-line="2">    <span class="k">assert</span> <span class="s2">&quot;Something&quot;</span>  <span class="c1"># Make assertion in root network</span>
 </span><span data-line="3">
 </span><span data-line="4">    <span class="c1"># NOTE: Assume have ecosystem named &quot;foo&quot; with network &quot;local&quot; and provider &quot;bar&quot;</span>
@@ -355,14 +355,14 @@ Access each <a class="reference external" href="../methoddocs/api.html?highlight
 <section id="project-fixture">
 <h3>project fixture<a class="headerlink" href="#project-fixture" title="Link to this heading"></a></h3>
 <p>You also have access to the <code class="docutils literal notranslate"><span class="pre">project</span></code> you are testing. You will need this to deploy your contracts in your tests.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span> <span class="nn">pytest</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">pytest</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span data-line="4"><span class="k">def</span> <span class="nf">owner</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
+</span><span data-line="4"><span class="k">def</span><span class="w"> </span><span class="nf">owner</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
 </span><span data-line="5">    <span class="k">return</span> <span class="n">accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 </span><span data-line="6">
 </span><span data-line="7"><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span data-line="8"><span class="k">def</span> <span class="nf">my_contract</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="n">owner</span><span class="p">):</span>
+</span><span data-line="8"><span class="k">def</span><span class="w"> </span><span class="nf">my_contract</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="n">owner</span><span class="p">):</span>
 </span><span data-line="9">    <span class="c1">#           ^ use the &#39;project&#39; fixture from the &#39;ape-test&#39; plugin</span>
 </span><span data-line="10">    <span class="k">return</span> <span class="n">owner</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="p">)</span>
 </span></pre></div>
@@ -373,7 +373,7 @@ Access each <a class="reference external" href="../methoddocs/api.html?highlight
 <h3>Contract fixture<a class="headerlink" href="#contract-fixture" title="Link to this heading"></a></h3>
 <p>Use the <code class="docutils literal notranslate"><span class="pre">Contract</span></code> fixture to create contract instances:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span data-line="2"><span class="k">def</span> <span class="nf">my_contract</span><span class="p">(</span><span class="n">Contract</span><span class="p">):</span>
+</span><span data-line="2"><span class="k">def</span><span class="w"> </span><span class="nf">my_contract</span><span class="p">(</span><span class="n">Contract</span><span class="p">):</span>
 </span><span data-line="3">    <span class="k">return</span> <span class="n">Contract</span><span class="p">(</span><span class="o">&lt;</span><span class="n">address</span><span class="o">&gt;</span><span class="p">)</span>
 </span></pre></div>
 </div>
@@ -394,23 +394,23 @@ However, if a new fixture of a session scope comes into play after module, packa
 <p>In the following example, the <code class="docutils literal notranslate"><span class="pre">my_contract</span></code> fixture gets deployed upon its first usage, which happens in the test <code class="docutils literal notranslate"><span class="pre">test_my_contract_0()</span></code>.
 During the test <code class="docutils literal notranslate"><span class="pre">test_something_else()</span></code>, it may not have been deployed yet, as it was not requested, and it is defined before the other tests.
 Then, during <code class="docutils literal notranslate"><span class="pre">test_my_contract_1()</span></code>, instead of deploying again, it uses the cached result from the session-scoped fixture and the chain still has it in its state because the fixture is session-scoped and runs before the test-isolation.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span> <span class="nn">pytest</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">pytest</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">)</span>
-</span><span data-line="4"><span class="k">def</span> <span class="nf">my_contract</span><span class="p">(</span><span class="n">accounts</span><span class="p">,</span> <span class="n">project</span><span class="p">):</span>
+</span><span data-line="4"><span class="k">def</span><span class="w"> </span><span class="nf">my_contract</span><span class="p">(</span><span class="n">accounts</span><span class="p">,</span> <span class="n">project</span><span class="p">):</span>
 </span><span data-line="5">    <span class="n">owner</span> <span class="o">=</span> <span class="n">accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 </span><span data-line="6">    <span class="n">contract</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">owner</span><span class="p">)</span>
 </span><span data-line="7">    <span class="c1"># Can also do stateful transactions in a session-scoped fixture.</span>
 </span><span data-line="8">    <span class="n">contract</span><span class="o">.</span><span class="n">initialize</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">owner</span><span class="p">)</span>
 </span><span data-line="9">    <span class="k">return</span> <span class="n">contract</span>
 </span><span data-line="10">
-</span><span data-line="11"><span class="k">def</span> <span class="nf">test_something_else</span><span class="p">():</span>
+</span><span data-line="11"><span class="k">def</span><span class="w"> </span><span class="nf">test_something_else</span><span class="p">():</span>
 </span><span data-line="12">    <span class="o">...</span>
 </span><span data-line="13">
-</span><span data-line="14"><span class="k">def</span> <span class="nf">test_my_contract_0</span><span class="p">(</span><span class="n">my_contract</span><span class="p">):</span>
+</span><span data-line="14"><span class="k">def</span><span class="w"> </span><span class="nf">test_my_contract_0</span><span class="p">(</span><span class="n">my_contract</span><span class="p">):</span>
 </span><span data-line="15">    <span class="n">my_contract</span><span class="o">.</span><span class="n">myMethod</span><span class="p">()</span>
 </span><span data-line="16">
-</span><span data-line="17"><span class="k">def</span> <span class="nf">test_my_contract_1</span><span class="p">(</span><span class="n">my_contract</span><span class="p">):</span>
+</span><span data-line="17"><span class="k">def</span><span class="w"> </span><span class="nf">test_my_contract_1</span><span class="p">(</span><span class="n">my_contract</span><span class="p">):</span>
 </span><span data-line="18">    <span class="n">my_contract</span><span class="o">.</span><span class="n">myMethod</span><span class="p">()</span>
 </span></pre></div>
 </div>
@@ -429,11 +429,11 @@ If a session scoped fixture comes into play after package, module, or class scop
 If you are using higher-scoped fixtures for parametrized fixtures with lower-scoped fixtures, each itertion of the parametried fixture invalidates the lower-level fixtures each time, rendering everything to behave as function scoped until the end of the parametrized fixtures first run-through.</p>
 </div>
 <p>If you are using chain-isolation and have a higher-scoped fixture that you know is for-sure not chain-altering, you can use <code class="docutils literal notranslate"><span class="pre">ape.fixture</span></code> and the <code class="docutils literal notranslate"><span class="pre">chain_isolation</span></code> flag, and it may improve performance:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span> <span class="nn">ape</span>
-</span><span data-line="2"><span class="kn">from</span> <span class="nn">ape_tokens</span> <span class="kn">import</span> <span class="n">tokens</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">ape</span>
+</span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">ape_tokens</span><span class="w"> </span><span class="kn">import</span> <span class="n">tokens</span>
 </span><span data-line="3">
 </span><span data-line="4"><span class="nd">@ape</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">,</span> <span class="n">chain_isolation</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;WETH&quot;</span><span class="p">,</span> <span class="s2">&quot;DAI&quot;</span><span class="p">,</span> <span class="s2">&quot;BAT&quot;</span><span class="p">))</span>
-</span><span data-line="5"><span class="k">def</span> <span class="nf">token_addresses</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+</span><span data-line="5"><span class="k">def</span><span class="w"> </span><span class="nf">token_addresses</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
 </span><span data-line="6">    <span class="k">return</span> <span class="n">tokens</span><span class="p">[</span><span class="n">request</span><span class="p">]</span><span class="o">.</span><span class="n">address</span>
 </span></pre></div>
 </div>
@@ -468,20 +468,20 @@ If you have Ethereum node software installed, you can use the <code class="docut
 <h3>Mining<a class="headerlink" href="#mining" title="Link to this heading"></a></h3>
 <p>Test providers allow you to control mining.
 For example, mine an empty block using the <a class="reference external" href="../methoddocs/api.html#ape.api.providers.TestProviderAPI.mine">mine</a> method:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">chain</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">chain</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="n">chain</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">mine</span><span class="p">()</span>
 </span></pre></div>
 </div>
 <p>You can also pass it a number of blocks to mine:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">chain</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">chain</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="n">chain</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">mine</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
 </span></pre></div>
 </div>
 <p>By default, testing providers automatically mine after sending transactions.
 However, you can disable this feature by setting the property.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">chain</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">chain</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="n">chain</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">auto_mine</span> <span class="o">=</span> <span class="kc">False</span>
 </span><span data-line="4"><span class="c1"># You can also re-enable</span>
@@ -501,7 +501,7 @@ However, you can disable this feature by setting the property.</p>
 </span></pre></div>
 </div>
 <p>Here is an example of a test function from a sample <a class="reference external" href="https://github.com/ApeAcademy/ERC721">NFT project</a></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">def</span> <span class="nf">test_account_balance</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="n">owner</span><span class="p">,</span> <span class="n">receiver</span><span class="p">,</span> <span class="n">nft</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">def</span><span class="w"> </span><span class="nf">test_account_balance</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="n">owner</span><span class="p">,</span> <span class="n">receiver</span><span class="p">,</span> <span class="n">nft</span><span class="p">):</span>
 </span><span data-line="2">    <span class="n">quantity</span> <span class="o">=</span> <span class="mi">1</span>
 </span><span data-line="3">    <span class="n">nft</span><span class="o">.</span><span class="n">mint</span><span class="p">(</span><span class="n">receiver</span><span class="p">,</span> <span class="n">quantity</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;0&quot;</span><span class="p">],</span> <span class="n">value</span><span class="o">=</span><span class="n">nft</span><span class="o">.</span><span class="n">PRICE</span><span class="p">()</span> <span class="o">*</span> <span class="n">quantity</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">owner</span><span class="p">)</span>
 </span><span data-line="4">    <span class="n">actual</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">balanceOf</span><span class="p">(</span><span class="n">receiver</span><span class="p">)</span>
@@ -515,9 +515,9 @@ However, you can disable this feature by setting the property.</p>
 <p>Similar to <code class="docutils literal notranslate"><span class="pre">pytest.raises()</span></code>, you can use <code class="docutils literal notranslate"><span class="pre">ape.reverts()</span></code> to assert that contract transactions fail and revert.
 To learn more about reverts in Ape, see the <a class="reference external" href="./reverts.html">reverts guide</a>.</p>
 <p>From our earlier example we can see this in action:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span> <span class="nn">ape</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">ape</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="k">def</span> <span class="nf">test_authorization</span><span class="p">(</span><span class="n">my_contract</span><span class="p">,</span> <span class="n">owner</span><span class="p">,</span> <span class="n">not_owner</span><span class="p">):</span>
+</span><span data-line="3"><span class="k">def</span><span class="w"> </span><span class="nf">test_authorization</span><span class="p">(</span><span class="n">my_contract</span><span class="p">,</span> <span class="n">owner</span><span class="p">,</span> <span class="n">not_owner</span><span class="p">):</span>
 </span><span data-line="4">    <span class="n">my_contract</span><span class="o">.</span><span class="n">set_owner</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">owner</span><span class="p">)</span>
 </span><span data-line="5">    <span class="k">assert</span> <span class="n">owner</span> <span class="o">==</span> <span class="n">my_contract</span><span class="o">.</span><span class="n">owner</span><span class="p">()</span>
 </span><span data-line="6">
@@ -531,8 +531,8 @@ To learn more about reverts in Ape, see the <a class="reference external" href="
 <p>This is the expected revert reason given when the transaction fails.
 If the message in the <code class="docutils literal notranslate"><span class="pre">ContractLogicError</span></code> raised by the transaction failure is empty or does not match the <code class="docutils literal notranslate"><span class="pre">expected_message</span></code>, then <code class="docutils literal notranslate"><span class="pre">ape.reverts()</span></code> will raise an <code class="docutils literal notranslate"><span class="pre">AssertionError</span></code>.</p>
 <p>You may also supply an <code class="docutils literal notranslate"><span class="pre">re.Pattern</span></code> object to assert on a message pattern, rather than on an exact match.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span> <span class="nn">ape</span>
-</span><span data-line="2"><span class="kn">import</span> <span class="nn">re</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">ape</span>
+</span><span data-line="2"><span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
 </span><span data-line="3">
 </span><span data-line="4"><span class="c1"># Matches</span>
 </span><span data-line="5"><span class="c1"># &quot;foo&quot; or &quot;bar&quot;</span>
@@ -553,15 +553,15 @@ These can be helpful in optimizing for gas usage and keeping revert reason strin
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="c1"># @version 0.3.7</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="nd">@external</span>
-</span><span data-line="4"><span class="k">def</span> <span class="nf">check_value</span><span class="p">(</span><span class="n">_value</span><span class="p">:</span> <span class="n">uint256</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+</span><span data-line="4"><span class="k">def</span><span class="w"> </span><span class="nf">check_value</span><span class="p">(</span><span class="n">_value</span><span class="p">:</span> <span class="n">uint256</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 </span><span data-line="5">    <span class="k">assert</span> <span class="n">_value</span> <span class="o">!=</span> <span class="mi">0</span>  <span class="c1"># dev: invalid value</span>
 </span><span data-line="6">    <span class="k">return</span> <span class="kc">True</span>
 </span></pre></div>
 </div>
 <p>We can explicitly cause a transaction revert and check the failed line by supplying an expected <code class="docutils literal notranslate"><span class="pre">dev_message</span></code>:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span> <span class="nn">ape</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">ape</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="k">def</span> <span class="nf">test_authorization</span><span class="p">(</span><span class="n">my_contract</span><span class="p">,</span> <span class="n">owner</span><span class="p">):</span>
+</span><span data-line="3"><span class="k">def</span><span class="w"> </span><span class="nf">test_authorization</span><span class="p">(</span><span class="n">my_contract</span><span class="p">,</span> <span class="n">owner</span><span class="p">):</span>
 </span><span data-line="4">    <span class="k">with</span> <span class="n">ape</span><span class="o">.</span><span class="n">reverts</span><span class="p">(</span><span class="n">dev_message</span><span class="o">=</span><span class="s2">&quot;dev: invalid value&quot;</span><span class="p">):</span>
 </span><span data-line="5">        <span class="n">my_contract</span><span class="o">.</span><span class="n">check_value</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">owner</span><span class="p">)</span>
 </span></pre></div>
@@ -575,8 +575,8 @@ These can be helpful in optimizing for gas usage and keeping revert reason strin
 </ul>
 <p>Because <code class="docutils literal notranslate"><span class="pre">dev_message</span></code> relies on transaction tracing to function, you must use a provider like <a class="reference external" href="https://github.com/ApeWorX/ape-hardhat">ape-hardhat</a> when testing with <code class="docutils literal notranslate"><span class="pre">dev_message</span></code>.</p>
 <p>You may also supply an <code class="docutils literal notranslate"><span class="pre">re.Pattern</span></code> object to assert on a dev message pattern, rather than on an exact match.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span> <span class="nn">ape</span>
-</span><span data-line="2"><span class="kn">import</span> <span class="nn">re</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">ape</span>
+</span><span data-line="2"><span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
 </span><span data-line="3">
 </span><span data-line="4"><span class="c1"># Matches &quot;dev: foo&quot; or &quot;dev: bar&quot;</span>
 </span><span data-line="5"><span class="k">with</span> <span class="n">ape</span><span class="o">.</span><span class="n">reverts</span><span class="p">(</span><span class="n">dev_message</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^dev: (foo|bar)$&quot;</span><span class="p">)):</span>
@@ -594,7 +594,7 @@ These can be helpful in optimizing for gas usage and keeping revert reason strin
 <h4>Inlining<a class="headerlink" href="#inlining" title="Link to this heading"></a></h4>
 <p>Due to function inlining, the position of the <code class="docutils literal notranslate"><span class="pre">#</span> <span class="pre">dev:</span> <span class="pre">...</span></code> message may sometimes be one line higher than expected:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nd">@external</span>
-</span><span data-line="2"><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">_x</span><span class="p">:</span> <span class="n">decimal</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">decimal</span><span class="p">:</span>  <span class="c1"># dev: correct location</span>
+</span><span data-line="2"><span class="k">def</span><span class="w"> </span><span class="nf">foo</span><span class="p">(</span><span class="n">_x</span><span class="p">:</span> <span class="n">decimal</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">decimal</span><span class="p">:</span>  <span class="c1"># dev: correct location</span>
 </span><span data-line="3">    <span class="k">return</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">_x</span><span class="p">)</span>  <span class="c1"># dev: incorrect location</span>
 </span></pre></div>
 </div>
@@ -605,12 +605,12 @@ These can be helpful in optimizing for gas usage and keeping revert reason strin
 <p>Similarly, if you require dev assertions for non-reentrant functions you must be sure to leave the comment on the function that should not have reentry:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nd">@internal</span>
 </span><span data-line="2"><span class="nd">@nonreentrant</span><span class="p">(</span><span class="s1">&#39;lock&#39;</span><span class="p">)</span>
-</span><span data-line="3"><span class="k">def</span> <span class="nf">_foo_internal</span><span class="p">():</span>  <span class="c1"># dev: correct location</span>
+</span><span data-line="3"><span class="k">def</span><span class="w"> </span><span class="nf">_foo_internal</span><span class="p">():</span>  <span class="c1"># dev: correct location</span>
 </span><span data-line="4">    <span class="k">pass</span>
 </span><span data-line="5">
 </span><span data-line="6"><span class="nd">@external</span>
 </span><span data-line="7"><span class="nd">@nonreentrant</span><span class="p">(</span><span class="s1">&#39;lock&#39;</span><span class="p">)</span>
-</span><span data-line="8"><span class="k">def</span> <span class="nf">foo</span><span class="p">():</span>
+</span><span data-line="8"><span class="k">def</span><span class="w"> </span><span class="nf">foo</span><span class="p">():</span>
 </span><span data-line="9">    <span class="bp">self</span><span class="o">.</span><span class="n">_foo_internal</span><span class="p">()</span>  <span class="c1"># dev: incorrect location</span>
 </span></pre></div>
 </div>
@@ -623,39 +623,39 @@ These can be helpful in optimizing for gas usage and keeping revert reason strin
 <p>For example, assume a custom exception in a Solidity contract (variable <code class="docutils literal notranslate"><span class="pre">contract</span></code>) is called <code class="docutils literal notranslate"><span class="pre">Unauthorized</span></code>.
 It can be accessed via <code class="docutils literal notranslate"><span class="pre">contract.Unauthorized</span></code>.
 We can ensure unauthorized withdraws are disallowed by writing the following test:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span> <span class="nn">ape</span>
-</span><span data-line="2"><span class="kn">import</span> <span class="nn">pytest</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">ape</span>
+</span><span data-line="2"><span class="kn">import</span><span class="w"> </span><span class="nn">pytest</span>
 </span><span data-line="3">
 </span><span data-line="4"><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span data-line="5"><span class="k">def</span> <span class="nf">owner</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
+</span><span data-line="5"><span class="k">def</span><span class="w"> </span><span class="nf">owner</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
 </span><span data-line="6">    <span class="k">return</span> <span class="n">accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 </span><span data-line="7">
 </span><span data-line="8"><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span data-line="9"><span class="k">def</span> <span class="nf">hacker</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
+</span><span data-line="9"><span class="k">def</span><span class="w"> </span><span class="nf">hacker</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
 </span><span data-line="10">    <span class="k">return</span> <span class="n">accounts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 </span><span data-line="11">
 </span><span data-line="12"><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span data-line="13"><span class="k">def</span> <span class="nf">contract</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="n">project</span><span class="p">):</span>
+</span><span data-line="13"><span class="k">def</span><span class="w"> </span><span class="nf">contract</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="n">project</span><span class="p">):</span>
 </span><span data-line="14">    <span class="k">return</span> <span class="n">owner</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="p">)</span>
 </span><span data-line="15">
-</span><span data-line="16"><span class="k">def</span> <span class="nf">test_unauthorized_withdraw</span><span class="p">(</span><span class="n">contract</span><span class="p">,</span> <span class="n">hacker</span><span class="p">):</span>
+</span><span data-line="16"><span class="k">def</span><span class="w"> </span><span class="nf">test_unauthorized_withdraw</span><span class="p">(</span><span class="n">contract</span><span class="p">,</span> <span class="n">hacker</span><span class="p">):</span>
 </span><span data-line="17">    <span class="k">with</span> <span class="n">ape</span><span class="o">.</span><span class="n">reverts</span><span class="p">(</span><span class="n">contract</span><span class="o">.</span><span class="n">Unauthorized</span><span class="p">,</span> <span class="n">unauth_address</span><span class="o">=</span><span class="n">hacker</span><span class="o">.</span><span class="n">address</span><span class="p">):</span>
 </span><span data-line="18">        <span class="n">contract</span><span class="o">.</span><span class="n">withdraw</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">hacker</span><span class="p">)</span>
 </span></pre></div>
 </div>
 <p>You can also use custom error types from the contract container (from <code class="docutils literal notranslate"><span class="pre">ape.project</span></code> or the <code class="docutils literal notranslate"><span class="pre">project</span></code> fixture):</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span> <span class="nn">ape</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">ape</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="k">def</span> <span class="nf">test_unauthorized</span><span class="p">(</span><span class="n">contract</span><span class="p">,</span> <span class="n">hacker</span><span class="p">,</span> <span class="n">project</span><span class="p">):</span>
+</span><span data-line="3"><span class="k">def</span><span class="w"> </span><span class="nf">test_unauthorized</span><span class="p">(</span><span class="n">contract</span><span class="p">,</span> <span class="n">hacker</span><span class="p">,</span> <span class="n">project</span><span class="p">):</span>
 </span><span data-line="4">    <span class="k">with</span> <span class="n">ape</span><span class="o">.</span><span class="n">reverts</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="o">.</span><span class="n">Unauthorized</span><span class="p">,</span> <span class="n">unauth_address</span><span class="o">=</span><span class="n">hacker</span><span class="o">.</span><span class="n">address</span><span class="p">):</span>
 </span><span data-line="5">        <span class="n">contract</span><span class="o">.</span><span class="n">withdraw</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">hacker</span><span class="p">)</span>
 </span></pre></div>
 </div>
 <p>You may need to use the container approach for asserting on custom errors that occur during failing <code class="docutils literal notranslate"><span class="pre">deploy</span></code> transactions because you won’t have access to the contract instance yet.
 Here is an example of what that may look like:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span> <span class="nn">ape</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">ape</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="k">def</span> <span class="nf">test_error_on_deploy</span><span class="p">(</span><span class="n">account</span><span class="p">,</span> <span class="n">project</span><span class="p">):</span>
+</span><span data-line="3"><span class="k">def</span><span class="w"> </span><span class="nf">test_error_on_deploy</span><span class="p">(</span><span class="n">account</span><span class="p">,</span> <span class="n">project</span><span class="p">):</span>
 </span><span data-line="4">    <span class="k">with</span> <span class="n">ape</span><span class="o">.</span><span class="n">reverts</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">Token</span><span class="o">.</span><span class="n">MyCustomError</span><span class="p">):</span>
 </span><span data-line="5">        <span class="n">ape</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">HasError</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">account</span><span class="p">)</span>
 </span></pre></div>
@@ -665,9 +665,9 @@ Here is an example of what that may look like:</p>
 <p class="admonition-title">Note</p>
 <p>The address will only exist for transactions that were published (e.g. not for failures during estimating gas), and this may only work on certain providers.</p>
 </div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span> <span class="nn">ape</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">ape</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="k">def</span> <span class="nf">test_error_on_deploy</span><span class="p">(</span><span class="n">account</span><span class="p">):</span>
+</span><span data-line="3"><span class="k">def</span><span class="w"> </span><span class="nf">test_error_on_deploy</span><span class="p">(</span><span class="n">account</span><span class="p">):</span>
 </span><span data-line="4">    <span class="c1"># NOTE: We are using `as rev` here to capture the revert info</span>
 </span><span data-line="5">    <span class="c1"># so we can attempt to lookup the contract later.</span>
 </span><span data-line="6">    <span class="k">with</span> <span class="n">ape</span><span class="o">.</span><span class="n">reverts</span><span class="p">()</span> <span class="k">as</span> <span class="n">rev</span><span class="p">:</span>
@@ -687,20 +687,20 @@ Here is an example of what that may look like:</p>
 <h2>Multi-chain Testing<a class="headerlink" href="#multi-chain-testing" title="Link to this heading"></a></h2>
 <p>The Ape framework supports connecting to alternative networks / providers in tests.</p>
 <p>To run an entire test using a specific network / provider combination, use the <code class="docutils literal notranslate"><span class="pre">use_network</span></code> pytest marker:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span> <span class="nn">pytest</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">pytest</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">use_network</span><span class="p">(</span><span class="s2">&quot;fantom:local:test&quot;</span><span class="p">)</span>
-</span><span data-line="4"><span class="k">def</span> <span class="nf">test_my_fantom_test</span><span class="p">(</span><span class="n">chain</span><span class="p">):</span>
+</span><span data-line="4"><span class="k">def</span><span class="w"> </span><span class="nf">test_my_fantom_test</span><span class="p">(</span><span class="n">chain</span><span class="p">):</span>
 </span><span data-line="5">    <span class="k">assert</span> <span class="n">chain</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">ecosystem</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;fantom&quot;</span>
 </span><span data-line="6">
 </span><span data-line="7"><span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">use_network</span><span class="p">(</span><span class="s2">&quot;ethereum:local:test&quot;</span><span class="p">)</span>
-</span><span data-line="8"><span class="k">def</span> <span class="nf">test_my_ethereum_test</span><span class="p">(</span><span class="n">chain</span><span class="p">):</span>
+</span><span data-line="8"><span class="k">def</span><span class="w"> </span><span class="nf">test_my_ethereum_test</span><span class="p">(</span><span class="n">chain</span><span class="p">):</span>
 </span><span data-line="9">    <span class="k">assert</span> <span class="n">chain</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">ecosystem</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;ethereum&quot;</span>
 </span></pre></div>
 </div>
 <p>To switch networks mid-test, use the <code class="docutils literal notranslate"><span class="pre">networks</span></code> context-manager:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="c1"># Switch to Fantom mid test</span>
-</span><span data-line="2"><span class="k">def</span> <span class="nf">test_my_multichain_test</span><span class="p">(</span><span class="n">networks</span><span class="p">):</span>
+</span><span data-line="2"><span class="k">def</span><span class="w"> </span><span class="nf">test_my_multichain_test</span><span class="p">(</span><span class="n">networks</span><span class="p">):</span>
 </span><span data-line="3">    <span class="c1"># The test starts in 1 ecosystem but switches to another</span>
 </span><span data-line="4">    <span class="k">assert</span> <span class="n">networks</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">ecosystem</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;ethereum&quot;</span>
 </span><span data-line="5">
@@ -714,14 +714,14 @@ Here is an example of what that may look like:</p>
 </div>
 <p>You can also set the network context in a pytest fixture.
 This is useful if certain fixtures must run in certain networks.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span> <span class="nn">pytest</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">pytest</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span data-line="4"><span class="k">def</span> <span class="nf">stark_contract</span><span class="p">(</span><span class="n">networks</span><span class="p">,</span> <span class="n">project</span><span class="p">):</span>
+</span><span data-line="4"><span class="k">def</span><span class="w"> </span><span class="nf">stark_contract</span><span class="p">(</span><span class="n">networks</span><span class="p">,</span> <span class="n">project</span><span class="p">):</span>
 </span><span data-line="5">    <span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">parse_network_choice</span><span class="p">(</span><span class="s2">&quot;starknet:local&quot;</span><span class="p">):</span>
 </span><span data-line="6">        <span class="k">yield</span> <span class="n">project</span><span class="o">.</span><span class="n">MyStarknetContract</span><span class="o">.</span><span class="n">deploy</span><span class="p">()</span>
 </span><span data-line="7">
-</span><span data-line="8"><span class="k">def</span> <span class="nf">test_starknet_thing</span><span class="p">(</span><span class="n">stark_contract</span><span class="p">,</span> <span class="n">stark_account</span><span class="p">):</span>
+</span><span data-line="8"><span class="k">def</span><span class="w"> </span><span class="nf">test_starknet_thing</span><span class="p">(</span><span class="n">stark_contract</span><span class="p">,</span> <span class="n">stark_account</span><span class="p">):</span>
 </span><span data-line="9">    <span class="c1"># Uses the starknet connection via the stark_contract fixture</span>
 </span><span data-line="10">    <span class="n">receipt</span> <span class="o">=</span> <span class="n">stark_contract</span><span class="o">.</span><span class="n">my_method</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">stark_account</span><span class="p">)</span>
 </span><span data-line="11">    <span class="k">assert</span> <span class="ow">not</span> <span class="n">receipt</span><span class="o">.</span><span class="n">failed</span>

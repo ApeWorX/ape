@@ -180,7 +180,7 @@ This compiler is useful for the following:</p>
 <ol class="arabic simple">
 <li><p><strong>Interfaces</strong>: If you know the address of an existing contract, you can include its ABI in your project and create a contract wrapper around it:</p></li>
 </ol>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">project</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">project</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="c1"># Comes from a file named `MyInterface.json` in the contracts/ folder.</span>
 </span><span data-line="4"><span class="n">my_interface</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">MyInterface</span>
@@ -255,8 +255,8 @@ This is not limited to compiler settings; you can include other settings, such a
 </span></pre></div>
 </div>
 <p>Finally, you can also configure settings in Python code:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-</span><span data-line="2"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">compilers</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+</span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">compilers</span>
 </span><span data-line="3">
 </span><span data-line="4"><span class="n">settings</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;vyper&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="s2">&quot;0.3.7&quot;</span><span class="p">},</span> <span class="s2">&quot;solidity&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="s2">&quot;0.8.0&quot;</span><span class="p">}}</span>
 </span><span data-line="5"><span class="n">compilers</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
@@ -275,7 +275,7 @@ This is not limited to compiler settings; you can include other settings, such a
 <section id="compile-source-code">
 <h2>Compile Source Code<a class="headerlink" href="#compile-source-code" title="Link to this heading"></a></h2>
 <p>Instead of compiling project source files, you can compile code (str) directly:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">compilers</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">compilers</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="n">CODE</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
 </span><span data-line="4"><span class="s2">   ... source code here</span>

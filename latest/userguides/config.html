@@ -297,7 +297,7 @@ To learn more about dependencies, see <a class="reference external" href="./depe
 </span></pre></div>
 </div>
 <p>When connected to Ethereum mainnet, reference the deployment by doing:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">project</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">project</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="n">contract</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="o">.</span><span class="n">deployments</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 </span></pre></div>
@@ -460,7 +460,7 @@ Simple validation, however, will occur, such as if it the value <code class="doc
 </span></pre></div>
 </div>
 <p>Then, to access it (or any setting for that matter):</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">project</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">project</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="n">my_str</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">my_project_key</span><span class="o">.</span><span class="n">my_string</span>  <span class="c1">#  &quot;my_value&quot;</span>
 </span><span data-line="4"><span class="n">my_int</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">my_project_key</span><span class="o">.</span><span class="n">my_int</span>  <span class="c1">#  123</span>

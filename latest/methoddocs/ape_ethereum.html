@@ -1883,10 +1883,10 @@ of getting confirmed.</p>
 <dd><p>Create the multicall module contract on-chain, so we can use it.
 Must use a provider that supports <code class="docutils literal notranslate"><span class="pre">debug_setCode</span></code>.</p>
 <p>Usage example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape_ethereum</span> <span class="kn">import</span> <span class="n">multicall</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape_ethereum</span><span class="w"> </span><span class="kn">import</span> <span class="n">multicall</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">)</span>
-</span><span data-line="4"><span class="k">def</span> <span class="nf">use_multicall</span><span class="p">():</span>
+</span><span data-line="4"><span class="k">def</span><span class="w"> </span><span class="nf">use_multicall</span><span class="p">():</span>
 </span><span data-line="5">    <span class="c1"># NOTE: use this fixture any test where you want to use a multicall</span>
 </span><span data-line="6">    <span class="k">return</span> <span class="n">multicall</span><span class="o">.</span><span class="n">BaseMulticall</span><span class="o">.</span><span class="n">inject</span><span class="p">()</span>
 </span></pre></div>
@@ -1901,7 +1901,7 @@ Must use a provider that supports <code class="docutils literal notranslate"><sp
 <dd><p>Bases: <a class="reference internal" href="#ape_ethereum.multicall.BaseMulticall" title="ape_ethereum.multicall.handlers.BaseMulticall"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseMulticall</span></code></a></p>
 <p>Create a sequence of calls to execute at once using <code class="docutils literal notranslate"><span class="pre">eth_call</span></code> via the Multicall3 contract.</p>
 <p>Usage example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape_ethereum</span> <span class="kn">import</span> <span class="n">multicall</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape_ethereum</span><span class="w"> </span><span class="kn">import</span> <span class="n">multicall</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="n">call</span> <span class="o">=</span> <span class="n">multicall</span><span class="o">.</span><span class="n">Call</span><span class="p">()</span>
 </span><span data-line="4"><span class="n">call</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">contract</span><span class="o">.</span><span class="n">myMethod</span><span class="p">,</span> <span class="o">*</span><span class="n">call_args</span><span class="p">)</span>
@@ -1994,7 +1994,7 @@ is called.</p>
 <p>Create a sequence of calls to execute at once using <code class="docutils literal notranslate"><span class="pre">eth_sendTransaction</span></code>
 via the Multicall3 contract.</p>
 <p>Usage example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape_ethereum.multicall</span> <span class="kn">import</span> <span class="n">Transaction</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape_ethereum.multicall</span><span class="w"> </span><span class="kn">import</span> <span class="n">Transaction</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="n">txn</span> <span class="o">=</span> <span class="n">Transaction</span><span class="p">()</span>
 </span><span data-line="4"><span class="n">txn</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">contract</span><span class="o">.</span><span class="n">myMethod</span><span class="p">,</span> <span class="o">*</span><span class="n">call_args</span><span class="p">)</span>

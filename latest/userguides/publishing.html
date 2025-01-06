@@ -176,7 +176,7 @@ Once your project has successfully compiled, you will have the start of your <co
 <h2>Tracking Deployments<a class="headerlink" href="#tracking-deployments" title="Link to this heading"></a></h2>
 <p>If your project contains deployments that you wish to include in its package manifest, use the <a class="reference external" href="../methoddocs/managers.html#ape.managers.project.manager.DeploymentManager.track">project.deployments.track</a> method.
 Example:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">project</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">project</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;mainnet-account&quot;</span><span class="p">)</span>
 </span><span data-line="4">
@@ -186,7 +186,7 @@ Example:</p>
 </span></pre></div>
 </div>
 <p>If the contract is already deployed, you can use <a class="reference external" href="../methoddocs/ape.html#ape.Contract">Contract</a> to get a contract instance:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">Contract</span><span class="p">,</span> <span class="n">project</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">Contract</span><span class="p">,</span> <span class="n">project</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="n">contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span><span class="s2">&quot;0x12c17f958d2ee523a2206206994597c13d831e34&quot;</span><span class="p">)</span>
 </span><span data-line="4"><span class="n">project</span><span class="o">.</span><span class="n">deployments</span><span class="o">.</span><span class="n">track</span><span class="p">(</span><span class="n">contract</span><span class="p">)</span>
@@ -197,13 +197,13 @@ Example:</p>
 <section id="publishing-to-explorer">
 <h2>Publishing to Explorer<a class="headerlink" href="#publishing-to-explorer" title="Link to this heading"></a></h2>
 <p>If you want to publish your contracts to an explorer, you can use the <a class="reference external" href="../methoddocs/api.html#ape.explorers.ExplorerAPI.publish_contract">publish_contract</a> on the <code class="docutils literal notranslate"><span class="pre">ExplorerAPI</span></code>.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">networks</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">networks</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="n">networks</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">explorer</span><span class="o">.</span><span class="n">publish_contract</span><span class="p">(</span><span class="s2">&quot;0x123...&quot;</span><span class="p">)</span>
 </span></pre></div>
 </div>
 <p>If you want to automatically publish the source code upon deployment, you can use the <code class="docutils literal notranslate"><span class="pre">publish=</span></code> kwarg on the <code class="docutils literal notranslate"><span class="pre">deploy</span></code> methods:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">project</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">project</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;&lt;ALIAS&gt;&quot;</span><span class="p">)</span>
 </span><span data-line="4"><span class="n">account</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="p">,</span> <span class="n">publish</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>

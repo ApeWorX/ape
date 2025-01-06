@@ -193,7 +193,7 @@ Calling it may look like:</p>
 </span></pre></div>
 </div>
 <p>One way to handle exceptions is to simply use <code class="docutils literal notranslate"><span class="pre">try:</span></code> / <code class="docutils literal notranslate"><span class="pre">except:</span></code> blocks:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape.exceptions</span> <span class="kn">import</span> <span class="n">ContractLogicError</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">ContractLogicError</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="k">try</span><span class="p">:</span>
 </span><span data-line="4">    <span class="n">receipt</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">setNumber</span><span class="p">(</span><span class="mi">123</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">not_owner</span><span class="p">)</span>
@@ -258,8 +258,8 @@ For example, if you have a contract like:</p>
 <p>Besides user-defined <code class="docutils literal notranslate"><span class="pre">ContractLogicError</span></code>s, there are also builtin-errors from compilers, such as bounds-checking of arrays or paying a non-payable method, etc.
 These are also <code class="docutils literal notranslate"><span class="pre">ContractLogicError</span></code> sub-classes.
 Sometimes, compiler plugins such as <code class="docutils literal notranslate"><span class="pre">ape-vyper</span></code> or <code class="docutils literal notranslate"><span class="pre">ape-solidity</span></code> export these error classes for you to use.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">Contract</span>
-</span><span data-line="2"><span class="kn">from</span> <span class="nn">ape_vyper.exceptions</span> <span class="kn">import</span> <span class="n">FallbackNotDefinedError</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">Contract</span>
+</span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">ape_vyper.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">FallbackNotDefinedError</span>
 </span><span data-line="3">
 </span><span data-line="4"><span class="n">my_contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span><span class="s2">&quot;0x...&quot;</span><span class="p">)</span>
 </span><span data-line="5"><span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;test-account&quot;</span><span class="p">)</span>

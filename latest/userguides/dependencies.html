@@ -338,7 +338,7 @@ For local dependencies, you give it a path to the local dependency.
 </span></pre></div>
 </div>
 <p>You can also use Python to install dependencies, using <code class="docutils literal notranslate"><span class="pre">**kwargs</span></code> as the same fields you put in your <code class="docutils literal notranslate"><span class="pre">dependencies:</span></code> config:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">project</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">project</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="n">project</span><span class="o">.</span><span class="n">dependencies</span><span class="o">.</span><span class="n">install</span><span class="p">(</span>
 </span><span data-line="4">   <span class="n">github</span><span class="o">=</span><span class="s2">&quot;OpenZeppelin/openzeppelin-contracts&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;openzeppelin&quot;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s2">&quot;4.4.2&quot;</span>
@@ -471,7 +471,7 @@ You can map to your local install of <code class="docutils literal notranslate">
 <h3>Compiling Dependencies<a class="headerlink" href="#compiling-dependencies" title="Link to this heading"></a></h3>
 <p>Sometimes, you may need to access types (such as contract types) from dependencies.
 You can achieve this using the project manager:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">project</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">project</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="c1"># NOTE: This will compile the dependency</span>
 </span><span data-line="4"><span class="n">dependency_project</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">dependencies</span><span class="p">[</span><span class="s2">&quot;my_dependency&quot;</span><span class="p">][</span><span class="s2">&quot;1.0.0&quot;</span><span class="p">]</span>

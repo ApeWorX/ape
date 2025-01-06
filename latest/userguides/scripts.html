@@ -171,10 +171,10 @@ The <code class="docutils literal notranslate"><span class="pre">ape</span> <spa
 Follow <a class="reference external" href="./projects.html">this guide</a> to learn more about the Ape project structure.
 If your scripts take advantage of utilities from our <a class="reference external" href="../methoddocs/cli.html#ape-cli"><code class="docutils literal notranslate"><span class="pre">ape.cli</span></code></a> submodule, you can build a <a class="reference external" href="https://click.palletsprojects.com/">Click</a> command line interface by defining a <code class="docutils literal notranslate"><span class="pre">click.Command</span></code> or <code class="docutils literal notranslate"><span class="pre">click.Group</span></code> object called <code class="docutils literal notranslate"><span class="pre">cli</span></code> in your file:
 Follow <a class="reference external" href="./clis.html">this guide</a> to learn more about what you can do with the utilities found in <code class="docutils literal notranslate"><span class="pre">ape.cli</span></code>.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span> <span class="nn">click</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">click</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
-</span><span data-line="4"><span class="k">def</span> <span class="nf">cli</span><span class="p">():</span>
+</span><span data-line="4"><span class="k">def</span><span class="w"> </span><span class="nf">cli</span><span class="p">():</span>
 </span><span data-line="5">    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Hello world!&quot;</span><span class="p">)</span>
 </span></pre></div>
 </div>
@@ -193,21 +193,21 @@ For example, assuming we have script <code class="docutils literal notranslate">
 <p>By default, <code class="docutils literal notranslate"><span class="pre">cli</span></code> scripts do not have <a class="reference external" href="../methoddocs/cli.html?highlight=options#ape.cli.options.network_option"><code class="docutils literal notranslate"><span class="pre">ape.cli.network_option</span></code></a> installed, giving you more flexibility in how you define your scripts.</p>
 </div>
 <p>However, you can add the <code class="docutils literal notranslate"><span class="pre">network_option</span></code> or <code class="docutils literal notranslate"><span class="pre">ConnectedProviderCommand</span></code> to your scripts by importing them from the <code class="docutils literal notranslate"><span class="pre">ape.cli</span></code> namespace:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span> <span class="nn">click</span>
-</span><span data-line="2"><span class="kn">from</span> <span class="nn">ape.cli</span> <span class="kn">import</span> <span class="n">ConnectedProviderCommand</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">click</span>
+</span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.cli</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConnectedProviderCommand</span>
 </span><span data-line="3">
 </span><span data-line="4">
 </span><span data-line="5"><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="bp">cls</span><span class="o">=</span><span class="n">ConnectedProviderCommand</span><span class="p">)</span>
-</span><span data-line="6"><span class="k">def</span> <span class="nf">cli</span><span class="p">(</span><span class="n">ecosystem</span><span class="p">,</span> <span class="n">network</span><span class="p">):</span>
+</span><span data-line="6"><span class="k">def</span><span class="w"> </span><span class="nf">cli</span><span class="p">(</span><span class="n">ecosystem</span><span class="p">,</span> <span class="n">network</span><span class="p">):</span>
 </span><span data-line="7">    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;You selected a provider on ecosystem &#39;</span><span class="si">{</span><span class="n">ecosystem</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; and </span><span class="si">{</span><span class="n">network</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
 </span><span data-line="8">
 </span><span data-line="9"><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="bp">cls</span><span class="o">=</span><span class="n">ConnectedProviderCommand</span><span class="p">)</span>
-</span><span data-line="10"><span class="k">def</span> <span class="nf">cli</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">provider</span><span class="p">):</span>
+</span><span data-line="10"><span class="k">def</span><span class="w"> </span><span class="nf">cli</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">provider</span><span class="p">):</span>
 </span><span data-line="11">    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;You are connected to network &#39;</span><span class="si">{</span><span class="n">network</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;.&quot;</span><span class="p">)</span>
 </span><span data-line="12">    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">provider</span><span class="o">.</span><span class="n">chain_id</span><span class="p">)</span>
 </span><span data-line="13">
 </span><span data-line="14"><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="bp">cls</span><span class="o">=</span><span class="n">ConnectedProviderCommand</span><span class="p">)</span>
-</span><span data-line="15"><span class="k">def</span> <span class="nf">cli_2</span><span class="p">():</span>
+</span><span data-line="15"><span class="k">def</span><span class="w"> </span><span class="nf">cli_2</span><span class="p">():</span>
 </span><span data-line="16">    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Using any network-based argument is completely optional.&quot;</span><span class="p">)</span>
 </span></pre></div>
 </div>
@@ -221,12 +221,12 @@ Try changing the network using the <code class="docutils literal notranslate"><s
 <p>Because CLI-based scripts do not automatically connect to the provider before executing, they are ideal for multi-chain use-cases because they allow you to delay and manage the connection(s).
 To learn more about how to control the network-context in Ape Pythonically, see <a class="reference external" href="https://docs.apeworx.io/ape/stable/userguides/networks.html#provider-context-manager">this guide</a>.</p>
 <p>Here is an example of a multi-chain script:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span> <span class="nn">click</span>
-</span><span data-line="2"><span class="kn">from</span> <span class="nn">ape.cli</span> <span class="kn">import</span> <span class="n">ape_cli_context</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">click</span>
+</span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.cli</span><span class="w"> </span><span class="kn">import</span> <span class="n">ape_cli_context</span>
 </span><span data-line="3">
 </span><span data-line="4"><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
 </span><span data-line="5"><span class="nd">@ape_cli_context</span><span class="p">()</span>
-</span><span data-line="6"><span class="k">def</span> <span class="nf">cli</span><span class="p">(</span><span class="n">cli_ctx</span><span class="p">):</span>
+</span><span data-line="6"><span class="k">def</span><span class="w"> </span><span class="nf">cli</span><span class="p">(</span><span class="n">cli_ctx</span><span class="p">):</span>
 </span><span data-line="7">    <span class="c1"># There is no connection yet at this point.</span>
 </span><span data-line="8">    <span class="n">testnets</span> <span class="o">=</span> <span class="p">{</span>
 </span><span data-line="9">        <span class="s2">&quot;ethereum&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;sepolia&quot;</span><span class="p">],</span>
@@ -258,7 +258,7 @@ To learn more about how to control the network-context in Ape Pythonically, see 
 <h2>Main Method Scripts<a class="headerlink" href="#main-method-scripts" title="Link to this heading"></a></h2>
 <p>You can also use the main-method approach when defining scripts.
 To do this, define a method named <code class="docutils literal notranslate"><span class="pre">main()</span></code> in your script:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
 </span><span data-line="2">    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Hello world!&quot;</span><span class="p">)</span>
 </span></pre></div>
 </div>
@@ -269,10 +269,10 @@ Therefore, they are not ideal for multi-chain scripts.
 <code class="docutils literal notranslate"><span class="pre">main</span></code>-method scripts work best for quick, single-network, connection-based workflows.</p>
 </div>
 <p>To demonstrate, use the following script:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">networks</span>
-</span><span data-line="2"><span class="kn">import</span> <span class="nn">click</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">networks</span>
+</span><span data-line="2"><span class="kn">import</span><span class="w"> </span><span class="nn">click</span>
 </span><span data-line="3">
-</span><span data-line="4"><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+</span><span data-line="4"><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
 </span><span data-line="5">    <span class="n">ecosystem_name</span> <span class="o">=</span> <span class="n">networks</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">ecosystem</span><span class="o">.</span><span class="n">name</span>
 </span><span data-line="6">    <span class="n">network_name</span> <span class="o">=</span> <span class="n">networks</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">name</span>
 </span><span data-line="7">    <span class="n">provider_name</span> <span class="o">=</span> <span class="n">networks</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">name</span>

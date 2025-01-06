@@ -236,7 +236,7 @@ data-aria-dark="Switch to auto color mode">
 included in ape’s plugin ecosystem.</p>
 <p>Usage example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nd">@plugins</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">plugins</span><span class="o">.</span><span class="n">AccountPlugin</span><span class="p">)</span>  <span class="c1"># &#39;register()&#39; example</span>
-</span><span data-line="2"><span class="k">def</span> <span class="nf">account_types</span><span class="p">():</span>
+</span><span data-line="2"><span class="k">def</span><span class="w"> </span><span class="nf">account_types</span><span class="p">():</span>
 </span><span data-line="3">    <span class="k">return</span> <span class="n">AccountContainer</span><span class="p">,</span> <span class="n">KeyfileAccount</span>
 </span></pre></div>
 </div>
@@ -289,7 +289,7 @@ an <a class="reference internal" href="api.html#ape.api.accounts.AccountContaine
 Each account-base plugin defines and returns their own types here.</p>
 <p>Usage example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nd">@plugins</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">plugins</span><span class="o">.</span><span class="n">AccountPlugin</span><span class="p">)</span>
-</span><span data-line="2"><span class="k">def</span> <span class="nf">account_types</span><span class="p">():</span>
+</span><span data-line="2"><span class="k">def</span><span class="w"> </span><span class="nf">account_types</span><span class="p">():</span>
 </span><span data-line="3">    <span class="k">return</span> <span class="n">AccountContainer</span><span class="p">,</span> <span class="n">KeyfileAccount</span>
 </span></pre></div>
 </div>
@@ -320,7 +320,7 @@ or the <a class="reference external" href="https://github.com/ApeWorX/ape-vyper"
 and the compiler class that can be used to compile them.</p>
 <p>Usage example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nd">@plugins</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">plugins</span><span class="o">.</span><span class="n">CompilerPlugin</span><span class="p">)</span>
-</span><span data-line="2"><span class="k">def</span> <span class="nf">register_compiler</span><span class="p">():</span>
+</span><span data-line="2"><span class="k">def</span><span class="w"> </span><span class="nf">register_compiler</span><span class="p">():</span>
 </span><span data-line="3">    <span class="k">return</span> <span class="p">(</span><span class="s2">&quot;.json&quot;</span><span class="p">,),</span> <span class="n">InterfaceCompiler</span>
 </span></pre></div>
 </div>
@@ -353,7 +353,7 @@ used to deconstruct the user config options for this plugins.</p>
 are empty.</p>
 <p>Usage example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nd">@plugins</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">plugins</span><span class="o">.</span><span class="n">Config</span><span class="p">)</span>
-</span><span data-line="2"><span class="k">def</span> <span class="nf">config_class</span><span class="p">():</span>
+</span><span data-line="2"><span class="k">def</span><span class="w"> </span><span class="nf">config_class</span><span class="p">():</span>
 </span><span data-line="3">    <span class="k">return</span> <span class="n">MyPluginConfig</span>
 </span></pre></div>
 </div>
@@ -382,7 +382,7 @@ plugin is an example of a conversion-plugin.</p>
 <code class="docutils literal notranslate"><span class="pre">ConverterAPI</span></code> subclass.</p>
 <p>Usage example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nd">@plugins</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">plugins</span><span class="o">.</span><span class="n">ConversionPlugin</span><span class="p">)</span>
-</span><span data-line="2"><span class="k">def</span> <span class="nf">converters</span><span class="p">():</span>
+</span><span data-line="2"><span class="k">def</span><span class="w"> </span><span class="nf">converters</span><span class="p">():</span>
 </span><span data-line="3">    <span class="k">yield</span> <span class="nb">int</span><span class="p">,</span> <span class="n">MweiConversions</span>
 </span></pre></div>
 </div>
@@ -412,7 +412,7 @@ what is required to implement an ecosystem plugin.</p>
 subclasses.</p>
 <p>Usage example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nd">@plugins</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">plugins</span><span class="o">.</span><span class="n">EcosystemPlugin</span><span class="p">)</span>
-</span><span data-line="2"><span class="k">def</span> <span class="nf">ecosystems</span><span class="p">():</span>
+</span><span data-line="2"><span class="k">def</span><span class="w"> </span><span class="nf">ecosystems</span><span class="p">():</span>
 </span><span data-line="3">    <span class="k">yield</span> <span class="n">Ethereum</span>
 </span></pre></div>
 </div>
@@ -442,7 +442,7 @@ subclasses.</p>
 </ul>
 <p>Usage example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nd">@plugins</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">plugins</span><span class="o">.</span><span class="n">ExplorerPlugin</span><span class="p">)</span>
-</span><span data-line="2"><span class="k">def</span> <span class="nf">explorers</span><span class="p">():</span>
+</span><span data-line="2"><span class="k">def</span><span class="w"> </span><span class="nf">explorers</span><span class="p">():</span>
 </span><span data-line="3">    <span class="k">yield</span> <span class="s2">&quot;ethereum&quot;</span><span class="p">,</span> <span class="s2">&quot;mainnet&quot;</span><span class="p">,</span> <span class="n">MyBlockExplorer</span>
 </span></pre></div>
 </div>
@@ -473,7 +473,7 @@ networks.</p>
 </ul>
 <p>Usage example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nd">@plugins</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">plugins</span><span class="o">.</span><span class="n">NetworkPlugin</span><span class="p">)</span>
-</span><span data-line="2"><span class="k">def</span> <span class="nf">networks</span><span class="p">():</span>
+</span><span data-line="2"><span class="k">def</span><span class="w"> </span><span class="nf">networks</span><span class="p">():</span>
 </span><span data-line="3">    <span class="k">yield</span> <span class="s2">&quot;ethereum&quot;</span><span class="p">,</span> <span class="s2">&quot;ShibaChain&quot;</span><span class="p">,</span> <span class="n">ShibaNetwork</span>
 </span></pre></div>
 </div>
@@ -505,7 +505,7 @@ include <a class="reference external" href="https://github.com/ApeWorX/ape-infur
 </ul>
 <p>Usage example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nd">@plugins</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">plugins</span><span class="o">.</span><span class="n">ProviderPlugin</span><span class="p">)</span>
-</span><span data-line="2"><span class="k">def</span> <span class="nf">providers</span><span class="p">():</span>
+</span><span data-line="2"><span class="k">def</span><span class="w"> </span><span class="nf">providers</span><span class="p">():</span>
 </span><span data-line="3">    <span class="k">yield</span> <span class="s2">&quot;ethereum&quot;</span><span class="p">,</span> <span class="s2">&quot;local&quot;</span><span class="p">,</span> <span class="n">MyProvider</span>
 </span></pre></div>
 </div>
@@ -580,7 +580,7 @@ via <code class="docutils literal notranslate"><span class="pre">.gitmodules</sp
 <dd><p>A hook that returns an iterator of types of a <code class="docutils literal notranslate"><span class="pre">QueryAPI</span></code> subclasses</p>
 <p>Usage example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nd">@plugins</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">plugins</span><span class="o">.</span><span class="n">QueryPlugin</span><span class="p">)</span>
-</span><span data-line="2"><span class="k">def</span> <span class="nf">query_engines</span><span class="p">():</span>
+</span><span data-line="2"><span class="k">def</span><span class="w"> </span><span class="nf">query_engines</span><span class="p">():</span>
 </span><span data-line="3">    <span class="k">yield</span> <span class="n">PostgresEngine</span>
 </span></pre></div>
 </div>

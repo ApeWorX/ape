@@ -190,7 +190,7 @@ You can see this by typing <code class="docutils literal notranslate"><span clas
 <section id="other-projects">
 <h2>Other Projects<a class="headerlink" href="#other-projects" title="Link to this heading"></a></h2>
 <p>You can reference other local projects on your computer by using the <code class="docutils literal notranslate"><span class="pre">Project</span></code> factory class (notice the capital <code class="docutils literal notranslate"><span class="pre">P</span></code>):</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">Project</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">Project</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="n">my_other_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="s2">&quot;../path/to/my/other/project&quot;</span><span class="p">)</span>
 </span><span data-line="4"><span class="n">_</span> <span class="o">=</span> <span class="n">my_other_project</span><span class="o">.</span><span class="n">MyContract</span>  <span class="c1"># Do anything you can do to the root-level project.</span>
@@ -203,7 +203,7 @@ You can see this by typing <code class="docutils literal notranslate"><span clas
 When working with local projects, the manifests get placed in the <code class="docutils literal notranslate"><span class="pre">&lt;project-path&gt;/.build/__local__.json</span></code>.
 However, you may obtain a manifest from a different location.
 If that is the case, you can create a project directly from the manifest itself:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">Project</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">Project</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="c1"># Pass in a manifest (object or dictionary), or a path to a manifest&#39;s JSON file.</span>
 </span><span data-line="4"><span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="o">.</span><span class="n">from_manifest</span><span class="p">(</span><span class="s2">&quot;path/to/manifest.json&quot;</span><span class="p">)</span>
@@ -214,7 +214,7 @@ If that is the case, you can create a project directly from the manifest itself:
 <section id="installed-python-projects">
 <h2>Installed Python Projects<a class="headerlink" href="#installed-python-projects" title="Link to this heading"></a></h2>
 <p>If you have installed a project using <code class="docutils literal notranslate"><span class="pre">pip</span></code> or alike and you wish to reference its project, use the <code class="docutils literal notranslate"><span class="pre">Project.from_python_library()</span></code> class method.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">Project</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">Project</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="n">snekmate</span> <span class="o">=</span> <span class="n">Project</span><span class="o">.</span><span class="n">from_python_library</span><span class="p">(</span><span class="s2">&quot;snekmate&quot;</span><span class="p">,</span> <span class="n">config_override</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;contracts_folder&quot;</span><span class="p">:</span> <span class="s2">&quot;.&quot;</span><span class="p">})</span>
 </span></pre></div>
@@ -227,7 +227,7 @@ There is an extensive guide you can read on this <a class="reference external" h
 But it is important to note that the dependency system largely is dependent on the project system.
 Dependencies are just projects after all; projects containing source files you both use in your projects or compile independently.</p>
 <p>For example, access a dependency project and treat it like any other project this way:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">project</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">project</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="n">dependency</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">dependencies</span><span class="o">.</span><span class="n">get_dependency</span><span class="p">(</span><span class="s2">&quot;my-dependency&quot;</span><span class="p">,</span> <span class="s2">&quot;1.0.0&quot;</span><span class="p">)</span>
 </span><span data-line="4"><span class="n">contract_type</span> <span class="o">=</span> <span class="n">dependency</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">ContractFromDependency</span>

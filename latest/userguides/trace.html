@@ -179,7 +179,7 @@ Using traces, Ape is able to offer features like:</p>
 <p>This code runs assuming you are connected to <code class="docutils literal notranslate"><span class="pre">ethereum:mainnet</span></code> using a provider with tracing RPCs.</p>
 </div>
 <p>To learn more about networks in Ape, see the <a class="reference external" href="./networks.html">networks guide</a>.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">chain</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">chain</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="n">tx</span> <span class="o">=</span> <span class="n">chain</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">get_receipt</span><span class="p">(</span><span class="s1">&#39;0xb7d7f1d5ce7743e821d3026647df486f517946ef1342a1ae93c96e4a8016eab7&#39;</span><span class="p">)</span>
 </span><span data-line="4">
@@ -215,7 +215,7 @@ Using traces, Ape is able to offer features like:</p>
 </div>
 <p>Similarly, you can use the provider directly to get a trace.
 This is useful if you want to interact with the trace or change some parameters for creating the trace.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">chain</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">chain</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="c1"># Change the `debug_traceTransaction` parameter dictionary</span>
 </span><span data-line="4"><span class="n">trace</span> <span class="o">=</span> <span class="n">chain</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">get_transaction_trace</span><span class="p">(</span>
@@ -247,7 +247,7 @@ Learn more about testing in Ape in the <a class="reference external" href="./tes
 <section id="gas-reports">
 <h2>Gas Reports<a class="headerlink" href="#gas-reports" title="Link to this heading"></a></h2>
 <p>To view the gas report of a transaction receipt, use the <a class="reference external" href="../methoddocs/api.html?highlight=receiptapi#ape.api.transactions.ReceiptAPI.show_gas_report">ReceiptAPI.show_gas_report()</a> method:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">networks</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">networks</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="n">txn_hash</span> <span class="o">=</span> <span class="s2">&quot;0x053cba5c12172654d894f66d5670bab6215517a94189a9ffc09bc40a589ec04d&quot;</span>
 </span><span data-line="4"><span class="n">receipt</span> <span class="o">=</span> <span class="n">networks</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">get_receipt</span><span class="p">(</span><span class="n">txn_hash</span><span class="p">)</span>

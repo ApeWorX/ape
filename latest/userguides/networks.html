@@ -651,7 +651,7 @@ To use a different network, such as <code class="docutils literal notranslate"><
 <p>Once you are connected to a network, you now have access to a <code class="docutils literal notranslate"><span class="pre">.provider</span></code>.
 The provider class is what higher level Manager classes in Ape use to interface with the blockchain.
 You can call methods directly from the provider, like this:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">chain</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">chain</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="n">block</span> <span class="o">=</span> <span class="n">chain</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">get_block</span><span class="p">(</span><span class="s2">&quot;latest&quot;</span><span class="p">)</span>
 </span></pre></div>
@@ -663,9 +663,9 @@ You can call methods directly from the provider, like this:</p>
 When entering a network for the first time, it will connect to that network.
 <strong>You do not need to call <code class="docutils literal notranslate"><span class="pre">.connect()</span></code> or <code class="docutils literal notranslate"><span class="pre">.disconnect()</span></code> manually</strong>.</p>
 <p>For example, if you are using a script with a default network connection, you can change connection in the middle of the script by using the provider context manager:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">chain</span><span class="p">,</span> <span class="n">networks</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">chain</span><span class="p">,</span> <span class="n">networks</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+</span><span data-line="3"><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
 </span><span data-line="4">    <span class="n">start_provider</span> <span class="o">=</span> <span class="n">chain</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">name</span>
 </span><span data-line="5">    <span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">ethereum</span><span class="o">.</span><span class="n">mainnet</span><span class="o">.</span><span class="n">use_provider</span><span class="p">(</span><span class="s2">&quot;node&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">provider</span><span class="p">:</span>
 </span><span data-line="6">        <span class="c1"># We are using a different provider than the one we started with.</span>
@@ -673,11 +673,11 @@ When entering a network for the first time, it will connect to that network.
 </span></pre></div>
 </div>
 <p>Jump between networks to simulate multi-chain behavior.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span> <span class="nn">click</span>
-</span><span data-line="2"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">networks</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">click</span>
+</span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">networks</span>
 </span><span data-line="3">
 </span><span data-line="4"><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
-</span><span data-line="5"><span class="k">def</span> <span class="nf">cli</span><span class="p">():</span>
+</span><span data-line="5"><span class="k">def</span><span class="w"> </span><span class="nf">cli</span><span class="p">():</span>
 </span><span data-line="6">    <span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">polygon</span><span class="o">.</span><span class="n">mainnet</span><span class="o">.</span><span class="n">use_provider</span><span class="p">(</span><span class="s2">&quot;node&quot;</span><span class="p">):</span>
 </span><span data-line="7">        <span class="o">...</span>
 </span><span data-line="8">    <span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">ethereum</span><span class="o">.</span><span class="n">mainnet</span><span class="o">.</span><span class="n">use_provider</span><span class="p">(</span><span class="s2">&quot;node&quot;</span><span class="p">):</span>
@@ -693,7 +693,7 @@ This will use whatever provider is set as default for your ecosystem / network c
 </span><span data-line="3"><span class="w">    </span><span class="nt">default_provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">alchemy</span>
 </span></pre></div>
 </div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span> <span class="nn">ape</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">ape</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="c1"># Use the provider configured as the default for the arbitrum::mainnet network.</span>
 </span><span data-line="4"><span class="c1"># In this case, it will use the &quot;alchemy&quot; provider.</span>
@@ -702,7 +702,7 @@ This will use whatever provider is set as default for your ecosystem / network c
 </span></pre></div>
 </div>
 <p>You can also use the <a class="reference external" href="../methoddocs/managers.html#ape.managers.networks.NetworkManager.parse_network_choice">parse_network_choice()</a> method when working with network choice strings:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">networks</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">networks</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="c1"># Same as doing `networks.ethereum.local.use_provider(&quot;test&quot;)`.</span>
 </span><span data-line="4"><span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">parse_network_choice</span><span class="p">(</span><span class="s2">&quot;ethereum:local:test&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">provider</span><span class="p">:</span>
@@ -712,7 +712,7 @@ This will use whatever provider is set as default for your ecosystem / network c
 <p><strong>A note about disconnect</strong>: Providers do not disconnect until the very end of your Python session.
 This is so you can easily switch network contexts in a bridge or multi-chain environment, which happens in fixtures and other sessions out of Ape’s control.
 However, sometimes you may definitely want your temporary network session to end before continuing, in which case you can use the <code class="docutils literal notranslate"><span class="pre">disconnect_after=True</span></code> kwarg:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">networks</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">networks</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">parse_network_choice</span><span class="p">(</span><span class="s2">&quot;ethereum:local:foundry&quot;</span><span class="p">,</span> <span class="n">disconnect_after</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">provider</span><span class="p">:</span>
 </span><span data-line="4">    <span class="nb">print</span><span class="p">(</span><span class="n">provider</span><span class="p">)</span>
@@ -723,9 +723,9 @@ However, sometimes you may definitely want your temporary network session to end
 <p>Using the <code class="docutils literal notranslate"><span class="pre">networks.fork()</span></code> method, you can achieve similar effects to using a forked network with <code class="docutils literal notranslate"><span class="pre">disconnect_after=True</span></code>.
 For example, let’s say we are running the following script on the network <code class="docutils literal notranslate"><span class="pre">ethereum:mainnet</span></code>.
 We can switch to a forked network by doing this:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape</span> <span class="kn">import</span> <span class="n">networks</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">networks</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+</span><span data-line="3"><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
 </span><span data-line="4">    <span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">fork</span><span class="p">(</span><span class="n">provider_name</span><span class="o">=</span><span class="s2">&quot;foundry&quot;</span><span class="p">):</span>
 </span><span data-line="5">        <span class="o">...</span>
 </span><span data-line="6">        <span class="c1"># Do stuff on a local, forked version of mainnet</span>

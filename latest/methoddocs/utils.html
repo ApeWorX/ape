@@ -1018,11 +1018,11 @@ faster in that case.</p>
 <dt class="sig sig-object py" id="ape.utils.os.path_match">
 <span class="sig-prename descclassname"><span class="pre">ape.utils.os.</span></span><span class="sig-name descname"><span class="pre">path_match</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">exclusions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#ape.utils.os.path_match" title="Link to this definition"></a></dt>
 <dd><p>A better glob-matching function. For example:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 </span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">p</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;test/to/.build/me/2/file.json&quot;</span><span class="p">)</span>
 </span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;**/.build/**&quot;</span><span class="p">)</span>
 </span><span data-line="4"><span class="go">False</span>
-</span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">ape.utils.os</span> <span class="kn">import</span> <span class="n">path_match</span>
+</span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">ape.utils.os</span><span class="w"> </span><span class="kn">import</span> <span class="n">path_match</span>
 </span><span data-line="6"><span class="gp">&gt;&gt;&gt; </span><span class="n">path_match</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="s2">&quot;**/.build/**&quot;</span><span class="p">)</span>
 </span><span data-line="7"><span class="go">True</span>
 </span></pre></div>
@@ -1104,12 +1104,12 @@ rather than overrides.</p>
 <dd><p>A decorator that instead of raising <a class="reference internal" href="exceptions.html#ape.exceptions.ProviderNotConnectedError" title="ape.exceptions.ProviderNotConnectedError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProviderNotConnectedError</span></code></a>
 warns and returns <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
 <p>Usage example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
-</span><span data-line="2"><span class="kn">from</span> <span class="nn">ape.types</span> <span class="kn">import</span> <span class="n">SnapshotID</span>
-</span><span data-line="3"><span class="kn">from</span> <span class="nn">ape.utils</span> <span class="kn">import</span> <span class="n">return_none_when_disconnected</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
+</span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">SnapshotID</span>
+</span><span data-line="3"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">return_none_when_disconnected</span>
 </span><span data-line="4">
 </span><span data-line="5"><span class="nd">@allow_disconnected</span>
-</span><span data-line="6"><span class="k">def</span> <span class="nf">try_snapshot</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">SnapshotID</span><span class="p">]:</span>
+</span><span data-line="6"><span class="k">def</span><span class="w"> </span><span class="nf">try_snapshot</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">SnapshotID</span><span class="p">]:</span>
 </span><span data-line="7">    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">chain</span><span class="o">.</span><span class="n">snapshot</span><span class="p">()</span>
 </span></pre></div>
 </div>

@@ -224,9 +224,9 @@ To do this, use the <code class="docutils literal notranslate"><span class="pre"
 <section id="python-logging">
 <h2>Python Logging<a class="headerlink" href="#python-logging" title="Link to this heading"></a></h2>
 <p>You can also import and use the logger in your own Python scripts or commands:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span> <span class="nn">ape.logging</span> <span class="kn">import</span> <span class="n">logger</span><span class="p">,</span> <span class="n">LogLevel</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.logging</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span><span class="p">,</span> <span class="n">LogLevel</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+</span><span data-line="3"><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
 </span><span data-line="4">    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;You have entered `main()`.&quot;</span><span class="p">)</span>
 </span><span data-line="5">    <span class="n">logger</span><span class="o">.</span><span class="n">set_level</span><span class="p">(</span><span class="n">LogLevel</span><span class="o">.</span><span class="n">WARNING</span><span class="p">)</span>
 </span></pre></div>
