@@ -604,16 +604,11 @@ class IsolationManager(ManagerAccessMixin):
         else:
             yield
 
-        # NOTE: self._supported may have gotten set to False
-        #   someplace else _after_ snapshotting succeeded.
-        if not self.supported:
-            return
-
         self.restore(scope)
 
     def set_snapshot(self, scope: Scope):
         # Also can be used to re-set snapshot.
-        if not self.supported:
+        if not self.supported or not self.config_wrapper.get_isolation(scope):
             return
 
         try:
@@ -640,6 +635,11 @@ class IsolationManager(ManagerAccessMixin):
 
     @allow_disconnected
     def restore(self, scope: Scope):
+        # NOTE: self._supported may have gotten set to False
+        #   someplace else _after_ snapshotting succeeded.
+        if not self.supported or not self.config_wrapper.get_isolation(scope):
+            return
+
         snapshot_id = self.snapshots.get_snapshot_id(scope)
         if snapshot_id is None:
             return
