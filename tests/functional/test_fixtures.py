@@ -110,18 +110,15 @@ def test_isolation_snapshot_id_types(snapshot_id, fixtures):
     assert isolation_manager.restore_called_with == [Scope.FUNCTION]
 
 
-def test_isolation_when_snapshot_fails_avoids_restore(fixtures):
+def test_isolation_when_snapshot_fails_avoids_restore(mocker, fixtures):
     class IsolationManagerFailingAtSnapshotting(IsolationManager):
         take_called = False
-        restore_called = False
 
         def take_snapshot(self) -> Optional["SnapshotID"]:
             self.take_called = True
             raise NotImplementedError()
 
-        def restore(self, scope: Scope):
-            self.restore_called = True
-
+    restore_spy = mocker.spy(IsolationManagerFailingAtSnapshotting, "restore_snapshot")
     isolation_manager = IsolationManagerFailingAtSnapshotting(
         fixtures.isolation_manager.config_wrapper,
         fixtures.isolation_manager.receipt_capture,
@@ -129,10 +126,10 @@ def test_isolation_when_snapshot_fails_avoids_restore(fixtures):
     isolation_context = isolation_manager.isolation(Scope.FUNCTION)
     next(isolation_context)  # Enter.
     assert isolation_manager.take_called
-    assert not isolation_manager.restore_called
+    assert not restore_spy.call_count
     next(isolation_context, None)  # Exit.
     # It doesn't even try!
-    assert not isolation_manager.restore_called
+    assert not restore_spy.call_count
 
 
 def test_isolation_restore_fails_avoids_snapshot_next_time(fixtures):

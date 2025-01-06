@@ -640,6 +640,10 @@ class IsolationManager(ManagerAccessMixin):
         if not self.supported or not self.config_wrapper.get_isolation(scope):
             return
 
+        self.restore_snapshot(scope)
+
+    @allow_disconnected
+    def restore_snapshot(self, scope: Scope):
         snapshot_id = self.snapshots.get_snapshot_id(scope)
         if snapshot_id is None:
             return
