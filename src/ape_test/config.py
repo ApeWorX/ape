@@ -1,4 +1,4 @@
-from typing import NewType, Optional, Union
+from typing import TYPE_CHECKING, NewType, Optional, Union
 
 from pydantic import NonNegativeInt, field_validator
 
@@ -11,6 +11,9 @@ from ape.utils.testing import (
     DEFAULT_TEST_HD_PATH,
     DEFAULT_TEST_MNEMONIC,
 )
+
+if TYPE_CHECKING:
+    from ape.pytest.utils import Scope
 
 
 class EthTesterProviderConfig(PluginConfig):
@@ -117,6 +120,36 @@ class CoverageConfig(PluginConfig):
     """
 
 
+class IsolationConfig(PluginConfig):
+    enable_session: bool = True
+    """
+    Set to ``False`` to disable session isolation.
+    """
+
+    enable_package: bool = True
+    """
+    Set to ``False`` to disable package isolation.
+    """
+
+    enable_module: bool = True
+    """
+    Set to ``False`` to disable module isolation.
+    """
+
+    enable_class: bool = True
+    """
+    Set to ``False`` to disable class isolation.
+    """
+
+    enable_function: bool = True
+    """
+    Set to ``False`` to disable function isolation.
+    """
+
+    def get_isolation(self, scope: "Scope") -> bool:
+        return getattr(self, f"enable_{scope.value}")
+
+
 class ApeTestConfig(PluginConfig):
     balance: int = DEFAULT_TEST_ACCOUNT_BALANCE
     """
@@ -170,6 +203,12 @@ class ApeTestConfig(PluginConfig):
     useful for debugging the framework itself.
     """
 
+    isolation: Union[bool, IsolationConfig] = True
+    """
+    Configure which scope-specific isolation to enable. Set to
+    ``False`` to disable all and ``True`` (default) to disable all.
+    """
+
     @field_validator("balance", mode="before")
     @classmethod
     def validate_balance(cls, value):
@@ -177,4 +216,11 @@ class ApeTestConfig(PluginConfig):
             value
             if isinstance(value, int)
             else ManagerAccessMixin.conversion_manager.convert(value, int)
+        )
+
+    def get_isolation(self, scope: "Scope") -> bool:
+        return (
+            self.isolation
+            if isinstance(self.isolation, bool)
+            else self.isolation.get_isolation(scope)
         )

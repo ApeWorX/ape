@@ -54,6 +54,7 @@ class ConfigWrapper(ManagerAccessMixin):
 
     @cached_property
     def isolation(self) -> bool:
+        breakpoint()
         return not self.pytest_config.getoption("disable_isolation")
 
     @cached_property
