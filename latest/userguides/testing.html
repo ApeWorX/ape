@@ -387,7 +387,7 @@ This means, at the start of each test, a snapshot is taken.
 After each test completes, the chain reverts to that snapshot from the beginning of the test.</p>
 <p>By default, every <code class="docutils literal notranslate"><span class="pre">pytest</span></code> fixture is <code class="docutils literal notranslate"><span class="pre">function</span></code> scoped, meaning it will be replayed each time it is requested (no result-caching).
 For example, if you deploy a contract in a function-scoped fixture, it will be re-deployed each time the fixture gets used in your tests.
-To only deploy once, you can use different scopes, such as <code class="docutils literal notranslate"><span class="pre">&quot;session&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;package&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;module&quot;</span></code>, or <code class="docutils literal notranslate"><span class="pre">&quot;class&quot;</span></code>, and you <strong>must</strong> use these fixtures right away, either via <code class="docutils literal notranslate"><span class="pre">autouse=True</span></code> or using them in the first collected tests.
+To only deploy once, you can use different scopes, such as <code class="docutils literal notranslate"><span class="pre">&quot;session&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;package&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;module&quot;</span></code>, or <code class="docutils literal notranslate"><span class="pre">&quot;class&quot;</span></code>, and you <strong>should</strong> use these fixtures right away, either via <code class="docutils literal notranslate"><span class="pre">autouse=True</span></code> or using them in the first collected tests.
 Otherwise, higher-scoped fixtures that arrive late in a Pytest session will cause the snapshotting system to have to rebase itself, which can be costly.
 For example, if you define a session scoped fixture that deploys a contract and makes transactions, the state changes from those transactions remain in subsequent tests, whether those tests use that fixture or not.
 However, if a new fixture of a session scope comes into play after module, package, or class scoped snapshots have already been taken, those lower-scoped fixtures are now invalid and have to re-run after the session fixture to ensure the session fixture remains in the session-snapshot.</p>
@@ -435,6 +435,16 @@ If you are using higher-scoped fixtures for parametrized fixtures with lower-sco
 </span><span data-line="4"><span class="nd">@ape</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">,</span> <span class="n">chain_isolation</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;WETH&quot;</span><span class="p">,</span> <span class="s2">&quot;DAI&quot;</span><span class="p">,</span> <span class="s2">&quot;BAT&quot;</span><span class="p">))</span>
 </span><span data-line="5"><span class="k">def</span><span class="w"> </span><span class="nf">token_addresses</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
 </span><span data-line="6">    <span class="k">return</span> <span class="n">tokens</span><span class="p">[</span><span class="n">request</span><span class="p">]</span><span class="o">.</span><span class="n">address</span>
+</span></pre></div>
+</div>
+<p>You can also disable isolation for individual scopes using Ape’s config.
+For example, the below config will disable isolation across all high-level scopes but maintain isolation for the function-scope.
+This is useful if you want your individual tests to be isolated but not any session/module scoped fixtures.</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[tool.ape.test.isolation]</span>
+</span><span data-line="2"><span class="n">enable_session</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span>
+</span><span data-line="3"><span class="n">enable_package</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span>
+</span><span data-line="4"><span class="n">enable_module</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span>
+</span><span data-line="5"><span class="n">enable_class</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span>
 </span></pre></div>
 </div>
 </section>
