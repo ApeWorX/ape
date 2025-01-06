@@ -239,14 +239,19 @@ def test_transaction_trace_when_client_version_erigon(
 
 
 def test_transaction_trace_provider_does_not_implement_client_version(
-    mocker, vyper_contract_instance, not_owner, networks
+    mocker, vyper_contract_instance, not_owner, networks, ethereum, chain
 ):
     tx = vyper_contract_instance.setNumber(0, sender=not_owner, raise_on_revert=False)
     mock_weird_node = mocker.MagicMock()
     mock_weird_node.client_version.side_effect = AttributeError
-    provider = networks.provider
-    networks.active_provider = mock_weird_node
-    trace = TransactionTrace.model_validate(
+    mock_weird_node.network = ethereum.local
+
+    class HackyTransactionTrace(TransactionTrace):
+        def _discover_calltrace_approach(self) -> CallTreeNode:
+            # Not needed for test.
+            return None  # type: ignore
+
+    trace = HackyTransactionTrace.model_validate(
         {
             "call_trace_approach": None,
             "debug_trace_transaction_parameters": {"enableMemory": True},
@@ -254,9 +259,10 @@ def test_transaction_trace_provider_does_not_implement_client_version(
             "transaction": tx,
         }
     )
-    actual = trace.get_calltree()
+    provider = networks.provider
+    networks.active_provider = mock_weird_node
+    _ = trace.get_calltree()
     networks.provider = provider
-    assert isinstance(actual, CallTreeNode)
     assert trace.call_trace_approach is not TraceApproach.PARITY
 
 

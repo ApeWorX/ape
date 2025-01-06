@@ -538,8 +538,7 @@ class TransactionTrace(Trace):
             self._set_approach(approach)
             return call
 
-        # Not sure this would happen, as the basic-approach should
-        # always work.
+        # Not sure this happens, as the basic-approach should always work.
         reason_str = ", ".join(f"{k}={v}" for k, v in reason_map.items())
         raise ProviderError(f"Unable to create CallTreeNode. Reason(s): {reason_str}")
 
