@@ -505,7 +505,7 @@ class TransactionTrace(Trace):
         elif self.call_trace_approach is TraceApproach.GETH_STRUCT_LOG_PARSE:
             return self._debug_trace_transaction_struct_logs_to_call()
 
-        elif "erigon" in self.provider.client_version.lower():
+        elif "erigon" in getattr(self.provider, "client_version", "").lower():
             # Based on the client version, we know parity works.
             call = self._trace_transaction()
             self._set_approach(TraceApproach.PARITY)
