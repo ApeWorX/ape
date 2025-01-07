@@ -302,7 +302,7 @@ def test_printing_debug_logs_compat(geth_provider, geth_account, vyper_printing)
 @geth_process_test
 def test_call_trace_supports_debug_trace_call(geth_contract, geth_account):
     tx = {
-        "chainId": "0x539",
+        "chainId": "0x7a69",
         "to": "0x77c7E3905c21177Be97956c6620567596492C497",
         "value": "0x0",
         "data": "0x23fd0e40",

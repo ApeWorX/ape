@@ -26,8 +26,9 @@ from ape.exceptions import (
     TransactionNotFoundError,
     VirtualMachineError,
 )
-from ape.utils import to_int
+from ape.utils.misc import to_int
 from ape.utils.os import create_tempdir
+from ape.utils.testing import DEFAULT_TEST_CHAIN_ID
 from ape_ethereum.ecosystem import Block
 from ape_ethereum.provider import DEFAULT_SETTINGS, EthereumNodeProvider, Web3Provider
 from ape_ethereum.trace import TraceApproach
@@ -56,7 +57,7 @@ def process_factory_patch(mocker):
 def tx_for_call(geth_contract):
     return DynamicFeeTransaction.model_validate(
         {
-            "chainId": 1337,
+            "chainId": DEFAULT_TEST_CHAIN_ID,
             "to": geth_contract.address,
             "gas": 4716984,
             "value": 0,
@@ -172,7 +173,7 @@ def test_uri_missing(mock_sepolia):
 @geth_process_test
 def test_repr_connected(geth_provider):
     actual = repr(geth_provider)
-    expected = f"<Node ({geth_provider.client_version}) chain_id=1337>"
+    expected = f"<Node ({geth_provider.client_version}) chain_id={DEFAULT_TEST_CHAIN_ID}>"
     assert actual == expected
 
 
@@ -184,7 +185,7 @@ def test_repr_on_local_network_and_disconnected(networks):
         node._web3 = None
 
     actual = repr(node)
-    expected = "<Node chain_id=1337>"
+    expected = f"<Node chain_id={DEFAULT_TEST_CHAIN_ID}>"
     assert actual == expected
 
     if w3:
@@ -210,7 +211,7 @@ def test_get_logs(geth_contract, geth_account):
 
 @geth_process_test
 def test_chain_id_when_connected(geth_provider):
-    assert geth_provider.chain_id == 1337
+    assert geth_provider.chain_id == DEFAULT_TEST_CHAIN_ID
 
 
 @geth_process_test
@@ -233,7 +234,7 @@ def test_chain_id_live_network_connected_uses_web3_chain_id(mocker, geth_provide
         geth_provider.network = orig_network
 
     # Still use the connected chain ID instead network's
-    assert actual == 1337
+    assert actual == DEFAULT_TEST_CHAIN_ID
 
 
 @geth_process_test
