@@ -105,6 +105,28 @@ def test_chain_id_is_cached(eth_tester_provider):
     eth_tester_provider._web3 = web3  # Undo
 
 
+def test_chain_id_from_ethereum_base_provider_is_cached(mock_web3, ethereum):
+    """
+    Simulated chain ID from a plugin (using base-ethereum class) to ensure is
+    also cached.
+    """
+    mock_web3.eth.chain_id = 11155111  # Sepolia
+
+    class PluginProvider(Web3Provider):
+        def connect(self):
+            return
+
+        def disconnect(self):
+            return
+
+    provider = PluginProvider(name="sim", network=ethereum.sepolia)
+    provider._web3 = mock_web3
+    assert provider.chain_id == 11155111
+    # Unset to web3 to prove it does not check it again (else it would fail).
+    provider._web3 = None
+    assert provider.chain_id == 11155111
+
+
 def test_chain_id_when_disconnected(eth_tester_provider):
     eth_tester_provider.disconnect()
     try:

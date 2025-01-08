@@ -572,8 +572,8 @@ class Web3Provider(ProviderAPI, ABC):
     @cached_property
     def chain_id(self) -> int:
         default_chain_id = None
-        if self.network.name != "custom" and not self.network.is_dev:
-            # If using a live network, the chain ID is hardcoded.
+        if self.network.name not in ("adhoc", "custom") and not self.network.is_dev:
+            # If using a live plugin-based network, the chain ID is hardcoded.
             default_chain_id = self.network.chain_id
 
         try:
