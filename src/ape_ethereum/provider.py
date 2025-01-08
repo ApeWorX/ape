@@ -586,6 +586,15 @@ class Web3Provider(ProviderAPI, ABC):
 
             raise  # Original error
 
+        except ValueError as err:
+            # Possible syncing error.
+            raise ProviderError(
+                err.args[0].get("message")
+                if all((hasattr(err, "args"), err.args, isinstance(err.args[0], dict)))
+                else "Error getting chain id."
+            )
+
+
         if default_chain_id is not None:
             return default_chain_id
 
@@ -1603,15 +1612,7 @@ class EthereumNodeProvider(Web3Provider, ABC):
         if not self.network.is_dev:
             self.web3.eth.set_gas_price_strategy(rpc_gas_price_strategy)
 
-        # Check for chain errors, including syncing
-        try:
-            chain_id = self.web3.eth.chain_id
-        except ValueError as err:
-            raise ProviderError(
-                err.args[0].get("message")
-                if all((hasattr(err, "args"), err.args, isinstance(err.args[0], dict)))
-                else "Error getting chain id."
-            )
+        chain_id = self.chain_id
 
         # NOTE: We have to check both earliest and latest
         #   because if the chain was _ever_ PoA, we need
