@@ -578,7 +578,7 @@ class Web3Provider(ProviderAPI, ABC):
 
         try:
             if hasattr(self.web3, "eth"):
-                return self.make_request("eth_chainId", [])
+                return self._get_chain_id()
 
         except ProviderNotConnectedError:
             if default_chain_id is not None:
@@ -613,6 +613,13 @@ class Web3Provider(ProviderAPI, ABC):
             raise APINotImplementedError(
                 "eth_maxPriorityFeePerGas not supported in this RPC. Please specify manually."
             ) from err
+
+    def _get_chain_id(self) -> int:
+        result = self.make_request("eth_chainId", [])
+        if isinstance(result, int):
+            return result
+
+        return int(result, 16)
 
     def get_block(self, block_id: "BlockID") -> BlockAPI:
         if isinstance(block_id, str) and block_id.isnumeric():
