@@ -702,7 +702,7 @@ def test_connect_uses_cached_chain_id(mocker, mock_web3, ethereum, eth_tester_pr
         def make_request(self, rpc, args):
             if rpc == "eth_chainId":
                 self.call_count += 1
-                return {"result": 11155111}  # Sepolia
+                return {"result": "0xaa36a7"}  # Sepolia
 
             return eth_tester_provider.make_request(rpc, args)
 
