@@ -578,7 +578,7 @@ class Web3Provider(ProviderAPI, ABC):
 
         try:
             if hasattr(self.web3, "eth"):
-                return self.web3.eth.chain_id
+                return self.make_request("eth_chainId", [])
 
         except ProviderNotConnectedError:
             if default_chain_id is not None:
@@ -591,9 +591,8 @@ class Web3Provider(ProviderAPI, ABC):
             raise ProviderError(
                 err.args[0].get("message")
                 if all((hasattr(err, "args"), err.args, isinstance(err.args[0], dict)))
-                else "Error getting chain id."
+                else "Error getting chain ID."
             )
-
 
         if default_chain_id is not None:
             return default_chain_id
