@@ -170,33 +170,6 @@ contract = project.MyContract.deployments[0]
 Ape does not add or edit deployments in your `ape-config.yaml` file.
 ```
 
-## Node
-
-When using the `node` provider, you can customize its settings.
-For example, to change the URI for an Ethereum network, do:
-
-```toml
-[tool.ape.node.ethereum.mainnet]
-uri = "http://localhost:5030"
-```
-
-Or the equivalent YAML:
-
-```yaml
-node:
-  ethereum:
-    mainnet:
-      uri: http://localhost:5030
-```
-
-Now, the `ape-node` core plugin will use the URL `http://localhost:5030` to connect and make requests.
-
-```{warning}
-Instead of using `ape-node` to connect to an Infura or Alchemy node, use the [ape-infura](https://github.com/ApeWorX/ape-infura) or [ape-alchemy](https://github.com/ApeWorX/ape-alchemy) provider plugins instead, which have their own way of managing API keys via environment variables.
-```
-
-For more information on networking as a whole, see [this guide](./networks.html).
-
 ## Networks
 
 Set default network and network providers:
@@ -245,6 +218,33 @@ ethereum:
 ```
 
 For the local network configuration, the default is `"max"`. Otherwise, it is `"auto"`.
+
+## Node
+
+When using the `node` provider, you can customize its settings.
+For example, to change the URI for an Ethereum network, do:
+
+```toml
+[tool.ape.node.ethereum.mainnet]
+uri = "http://localhost:5030"
+```
+
+Or the equivalent YAML:
+
+```yaml
+node:
+  ethereum:
+    mainnet:
+      uri: http://localhost:5030
+```
+
+Now, the `ape-node` core plugin will use the URL `http://localhost:5030` to connect and make requests.
+
+```{warning}
+Instead of using `ape-node` to connect to an Infura or Alchemy node, use the [ape-infura](https://github.com/ApeWorX/ape-infura) or [ape-alchemy](https://github.com/ApeWorX/ape-alchemy) provider plugins instead, which have their own way of managing API keys via environment variables.
+```
+
+For more information on networking as a whole, see [this guide](./networks.html).
 
 ## Plugins
 
