@@ -170,6 +170,28 @@ contract = project.MyContract.deployments[0]
 Ape does not add or edit deployments in your `ape-config.yaml` file.
 ```
 
+## Name
+
+Configure the name of the project:
+
+```toml
+[tool.ape]
+name = "ape-project"
+```
+
+If the name is not specified in `tool.ape` but is in `project`, Ape will use that as the project name:
+
+```toml
+[project]
+name = "ape-project"
+```
+
+To configure this name using an `ape-config.yaml` file, do:
+
+```yaml
+name: ape-project
+```
+
 ## Networks
 
 Set default network and network providers:
