@@ -616,10 +616,7 @@ class Web3Provider(ProviderAPI, ABC):
 
     def _get_chain_id(self) -> int:
         result = self.make_request("eth_chainId", [])
-        if isinstance(result, int):
-            return result
-
-        return int(result, 16)
+        return result if isinstance(result, int) else int(result, 16)
 
     def get_block(self, block_id: "BlockID") -> BlockAPI:
         if isinstance(block_id, str) and block_id.isnumeric():
