@@ -572,19 +572,27 @@ class Web3Provider(ProviderAPI, ABC):
     @cached_property
     def chain_id(self) -> int:
         default_chain_id = None
-        if self.network.name != "custom" and not self.network.is_dev:
-            # If using a live network, the chain ID is hardcoded.
+        if self.network.name not in ("adhoc", "custom") and not self.network.is_dev:
+            # If using a live plugin-based network, the chain ID is hardcoded.
             default_chain_id = self.network.chain_id
 
         try:
             if hasattr(self.web3, "eth"):
-                return self.web3.eth.chain_id
+                return self._get_chain_id()
 
         except ProviderNotConnectedError:
             if default_chain_id is not None:
                 return default_chain_id
 
             raise  # Original error
+
+        except ValueError as err:
+            # Possible syncing error.
+            raise ProviderError(
+                err.args[0].get("message")
+                if all((hasattr(err, "args"), err.args, isinstance(err.args[0], dict)))
+                else "Error getting chain ID."
+            )
 
         if default_chain_id is not None:
             return default_chain_id
@@ -605,6 +613,10 @@ class Web3Provider(ProviderAPI, ABC):
             raise APINotImplementedError(
                 "eth_maxPriorityFeePerGas not supported in this RPC. Please specify manually."
             ) from err
+
+    def _get_chain_id(self) -> int:
+        result = self.make_request("eth_chainId", [])
+        return result if isinstance(result, int) else int(result, 16)
 
     def get_block(self, block_id: "BlockID") -> BlockAPI:
         if isinstance(block_id, str) and block_id.isnumeric():
@@ -1603,15 +1615,7 @@ class EthereumNodeProvider(Web3Provider, ABC):
         if not self.network.is_dev:
             self.web3.eth.set_gas_price_strategy(rpc_gas_price_strategy)
 
-        # Check for chain errors, including syncing
-        try:
-            chain_id = self.web3.eth.chain_id
-        except ValueError as err:
-            raise ProviderError(
-                err.args[0].get("message")
-                if all((hasattr(err, "args"), err.args, isinstance(err.args[0], dict)))
-                else "Error getting chain id."
-            )
+        chain_id = self.chain_id
 
         # NOTE: We have to check both earliest and latest
         #   because if the chain was _ever_ PoA, we need
