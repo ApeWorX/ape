@@ -153,7 +153,6 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         A :class:`~ape.api.networks.NetworkAPI` for custom networks where the
         network is either not known, unspecified, or does not have an Ape plugin.
         """
-
         ethereum_class = None
         for plugin_name, ecosystem_class in self.plugin_manager.ecosystems:
             if plugin_name == "ethereum":
@@ -1130,6 +1129,13 @@ class NetworkAPI(BaseInterfaceModel):
         """
         return self.name == "custom" and not self._is_custom
 
+    @property
+    def is_custom(self) -> bool:
+        """
+        True when this network is a configured custom network.
+        """
+        return self._is_custom
+
     @cached_property
     def providers(self):  # -> dict[str, Partial[ProviderAPI]]
         """
@@ -1161,6 +1167,8 @@ class NetworkAPI(BaseInterfaceModel):
                         (self.is_fork and "Fork" in provider_class.__name__)
                         or (not self.is_fork and "Fork" not in provider_class.__name__)
                     )
+                    and provider_class.__name__
+                    == "Node"  # Ensure uses Node class instead of GethDev
                 )
             ):
                 # NOTE: Lazily load provider config

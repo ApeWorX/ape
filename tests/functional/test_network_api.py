@@ -237,6 +237,11 @@ def test_providers_custom_network(project, custom_networks_config_dict, ethereum
         network = ethereum.apenet
         actual = network.providers
         assert "node" in actual
+        node = actual["node"]
+        # NOTE: There was a bug where sometimes it would use the GethDev class
+        #   and sometimes it would use the Node class. Node is what we want.
+        assert "Node" in repr(node.func)
+        assert "GethDev" not in repr(node.func)
 
 
 def test_providers_custom_non_fork_network_does_not_use_fork_provider(
