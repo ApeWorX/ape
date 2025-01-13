@@ -170,32 +170,27 @@ contract = project.MyContract.deployments[0]
 Ape does not add or edit deployments in your `ape-config.yaml` file.
 ```
 
-## Node
+## Name
 
-When using the `node` provider, you can customize its settings.
-For example, to change the URI for an Ethereum network, do:
+Configure the name of the project:
 
 ```toml
-[tool.ape.node.ethereum.mainnet]
-uri = "http://localhost:5030"
+[tool.ape]
+name = "ape-project"
 ```
 
-Or the equivalent YAML:
+If the name is not specified in `tool.ape` but is in `project`, Ape will use that as the project name:
+
+```toml
+[project]
+name = "ape-project"
+```
+
+To configure this name using an `ape-config.yaml` file, do:
 
 ```yaml
-node:
-  ethereum:
-    mainnet:
-      uri: http://localhost:5030
+name: ape-project
 ```
-
-Now, the `ape-node` core plugin will use the URL `http://localhost:5030` to connect and make requests.
-
-```{warning}
-Instead of using `ape-node` to connect to an Infura or Alchemy node, use the [ape-infura](https://github.com/ApeWorX/ape-infura) or [ape-alchemy](https://github.com/ApeWorX/ape-alchemy) provider plugins instead, which have their own way of managing API keys via environment variables.
-```
-
-For more information on networking as a whole, see [this guide](./networks.html).
 
 ## Networks
 
@@ -245,6 +240,33 @@ ethereum:
 ```
 
 For the local network configuration, the default is `"max"`. Otherwise, it is `"auto"`.
+
+## Node
+
+When using the `node` provider, you can customize its settings.
+For example, to change the URI for an Ethereum network, do:
+
+```toml
+[tool.ape.node.ethereum.mainnet]
+uri = "http://localhost:5030"
+```
+
+Or the equivalent YAML:
+
+```yaml
+node:
+  ethereum:
+    mainnet:
+      uri: http://localhost:5030
+```
+
+Now, the `ape-node` core plugin will use the URL `http://localhost:5030` to connect and make requests.
+
+```{warning}
+Instead of using `ape-node` to connect to an Infura or Alchemy node, use the [ape-infura](https://github.com/ApeWorX/ape-infura) or [ape-alchemy](https://github.com/ApeWorX/ape-alchemy) provider plugins instead, which have their own way of managing API keys via environment variables.
+```
+
+For more information on networking as a whole, see [this guide](./networks.html).
 
 ## Plugins
 

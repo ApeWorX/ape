@@ -132,8 +132,9 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#default-ecosystem">Default Ecosystem</a></li>
 <li><a class="reference internal" href="#dependencies">Dependencies</a></li>
 <li><a class="reference internal" href="#deployments">Deployments</a></li>
-<li><a class="reference internal" href="#node">Node</a></li>
+<li><a class="reference internal" href="#name">Name</a></li>
 <li><a class="reference internal" href="#networks">Networks</a></li>
+<li><a class="reference internal" href="#node">Node</a></li>
 <li><a class="reference internal" href="#plugins">Plugins</a></li>
 <li><a class="reference internal" href="#request-headers">Request Headers</a></li>
 <li><a class="reference internal" href="#testing">Testing</a></li>
@@ -307,27 +308,22 @@ To learn more about dependencies, see <a class="reference external" href="./depe
 <p>Ape does not add or edit deployments in your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file.</p>
 </div>
 </section>
-<section id="node">
-<h2>Node<a class="headerlink" href="#node" title="Link to this heading"></a></h2>
-<p>When using the <code class="docutils literal notranslate"><span class="pre">node</span></code> provider, you can customize its settings.
-For example, to change the URI for an Ethereum network, do:</p>
-<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[tool.ape.node.ethereum.mainnet]</span>
-</span><span data-line="2"><span class="n">uri</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;http://localhost:5030&quot;</span>
+<section id="name">
+<h2>Name<a class="headerlink" href="#name" title="Link to this heading"></a></h2>
+<p>Configure the name of the project:</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[tool.ape]</span>
+</span><span data-line="2"><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;ape-project&quot;</span>
 </span></pre></div>
 </div>
-<p>Or the equivalent YAML:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">node</span><span class="p">:</span>
-</span><span data-line="2"><span class="w">  </span><span class="nt">ethereum</span><span class="p">:</span>
-</span><span data-line="3"><span class="w">    </span><span class="nt">mainnet</span><span class="p">:</span>
-</span><span data-line="4"><span class="w">      </span><span class="nt">uri</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://localhost:5030</span>
+<p>If the name is not specified in <code class="docutils literal notranslate"><span class="pre">tool.ape</span></code> but is in <code class="docutils literal notranslate"><span class="pre">project</span></code>, Ape will use that as the project name:</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[project]</span>
+</span><span data-line="2"><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;ape-project&quot;</span>
 </span></pre></div>
 </div>
-<p>Now, the <code class="docutils literal notranslate"><span class="pre">ape-node</span></code> core plugin will use the URL <code class="docutils literal notranslate"><span class="pre">http://localhost:5030</span></code> to connect and make requests.</p>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>Instead of using <code class="docutils literal notranslate"><span class="pre">ape-node</span></code> to connect to an Infura or Alchemy node, use the <a class="reference external" href="https://github.com/ApeWorX/ape-infura">ape-infura</a> or <a class="reference external" href="https://github.com/ApeWorX/ape-alchemy">ape-alchemy</a> provider plugins instead, which have their own way of managing API keys via environment variables.</p>
+<p>To configure this name using an <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file, do:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ape-project</span>
+</span></pre></div>
 </div>
-<p>For more information on networking as a whole, see <a class="reference external" href="./networks.html">this guide</a>.</p>
 </section>
 <section id="networks">
 <h2>Networks<a class="headerlink" href="#networks" title="Link to this heading"></a></h2>
@@ -369,6 +365,28 @@ For example, to change the URI for an Ethereum network, do:</p>
 </span></pre></div>
 </div>
 <p>For the local network configuration, the default is <code class="docutils literal notranslate"><span class="pre">&quot;max&quot;</span></code>. Otherwise, it is <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code>.</p>
+</section>
+<section id="node">
+<h2>Node<a class="headerlink" href="#node" title="Link to this heading"></a></h2>
+<p>When using the <code class="docutils literal notranslate"><span class="pre">node</span></code> provider, you can customize its settings.
+For example, to change the URI for an Ethereum network, do:</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[tool.ape.node.ethereum.mainnet]</span>
+</span><span data-line="2"><span class="n">uri</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;http://localhost:5030&quot;</span>
+</span></pre></div>
+</div>
+<p>Or the equivalent YAML:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">node</span><span class="p">:</span>
+</span><span data-line="2"><span class="w">  </span><span class="nt">ethereum</span><span class="p">:</span>
+</span><span data-line="3"><span class="w">    </span><span class="nt">mainnet</span><span class="p">:</span>
+</span><span data-line="4"><span class="w">      </span><span class="nt">uri</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://localhost:5030</span>
+</span></pre></div>
+</div>
+<p>Now, the <code class="docutils literal notranslate"><span class="pre">ape-node</span></code> core plugin will use the URL <code class="docutils literal notranslate"><span class="pre">http://localhost:5030</span></code> to connect and make requests.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Instead of using <code class="docutils literal notranslate"><span class="pre">ape-node</span></code> to connect to an Infura or Alchemy node, use the <a class="reference external" href="https://github.com/ApeWorX/ape-infura">ape-infura</a> or <a class="reference external" href="https://github.com/ApeWorX/ape-alchemy">ape-alchemy</a> provider plugins instead, which have their own way of managing API keys via environment variables.</p>
+</div>
+<p>For more information on networking as a whole, see <a class="reference external" href="./networks.html">this guide</a>.</p>
 </section>
 <section id="plugins">
 <h2>Plugins<a class="headerlink" href="#plugins" title="Link to this heading"></a></h2>
