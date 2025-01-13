@@ -145,6 +145,11 @@ def test_chain_id_when_disconnected(eth_tester_provider):
         eth_tester_provider.connect()
 
 
+def test_chain_id_adhoc(networks):
+    with networks.parse_network_choice("https://www.shibrpc.com") as bor:
+        assert bor.chain_id == 109
+
+
 def test_get_receipt_not_exists_with_timeout(eth_tester_provider):
     unknown_txn = "0x053cba5c12172654d894f66d5670bab6215517a94189a9ffc09bc40a589ec04d"
     expected = (
