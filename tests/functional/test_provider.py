@@ -105,6 +105,35 @@ def test_chain_id_is_cached(eth_tester_provider):
     eth_tester_provider._web3 = web3  # Undo
 
 
+def test_chain_id_from_ethereum_base_provider_is_cached(mock_web3, ethereum, eth_tester_provider):
+    """
+    Simulated chain ID from a plugin (using base-ethereum class) to ensure is
+    also cached.
+    """
+
+    def make_request(rpc, arguments):
+        if rpc == "eth_chainId":
+            return {"result": 11155111}  # Sepolia
+
+        return eth_tester_provider.make_request(rpc, arguments)
+
+    mock_web3.provider.make_request.side_effect = make_request
+
+    class PluginProvider(Web3Provider):
+        def connect(self):
+            return
+
+        def disconnect(self):
+            return
+
+    provider = PluginProvider(name="sim", network=ethereum.sepolia)
+    provider._web3 = mock_web3
+    assert provider.chain_id == 11155111
+    # Unset to web3 to prove it does not check it again (else it would fail).
+    provider._web3 = None
+    assert provider.chain_id == 11155111
+
+
 def test_chain_id_when_disconnected(eth_tester_provider):
     eth_tester_provider.disconnect()
     try:
@@ -658,3 +687,32 @@ def test_update_settings_invalidates_snapshots(eth_tester_provider, chain):
     assert snapshot in chain._snapshots[eth_tester_provider.chain_id]
     eth_tester_provider.update_settings({})
     assert snapshot not in chain._snapshots[eth_tester_provider.chain_id]
+
+
+def test_connect_uses_cached_chain_id(mocker, mock_web3, ethereum, eth_tester_provider):
+    class PluginProvider(EthereumNodeProvider):
+        pass
+
+    web3_factory_patch = mocker.patch("ape_ethereum.provider._create_web3")
+    web3_factory_patch.return_value = mock_web3
+
+    class ChainIDTracker:
+        call_count = 0
+
+        def make_request(self, rpc, args):
+            if rpc == "eth_chainId":
+                self.call_count += 1
+                return {"result": "0xaa36a7"}  # Sepolia
+
+            return eth_tester_provider.make_request(rpc, args)
+
+    chain_id_tracker = ChainIDTracker()
+    mock_web3.provider.make_request.side_effect = chain_id_tracker.make_request
+
+    provider = PluginProvider(name="node", network=ethereum.sepolia)
+    provider.connect()
+    assert chain_id_tracker.call_count == 1
+    provider.disconnect()
+    provider.connect()
+    # It is still cached from the previous connection.
+    assert chain_id_tracker.call_count == 1

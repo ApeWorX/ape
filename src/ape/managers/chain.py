@@ -757,7 +757,6 @@ class ChainManager(BaseManager):
         The blockchain ID.
         See `ChainList <https://chainlist.org/>`__ for a comprehensive list of IDs.
         """
-
         network_name = self.provider.network.name
         if network_name not in self._chain_id_map:
             self._chain_id_map[network_name] = self.provider.chain_id

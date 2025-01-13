@@ -1005,7 +1005,6 @@ class NetworkAPI(BaseInterfaceModel):
         **NOTE**: Unless overridden, returns same as
         :py:attr:`ape.api.providers.ProviderAPI.chain_id`.
         """
-
         return self.provider.chain_id
 
     @property
