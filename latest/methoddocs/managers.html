@@ -828,7 +828,7 @@ Delegates to the matching <code class="xref py py-class docutils literal notrans
 <span class="sig-name descname"><span class="pre">get_custom_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">err</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="exceptions.html#ape.exceptions.ContractLogicError" title="ape.exceptions.ContractLogicError"><span class="pre">ContractLogicError</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="exceptions.html#ape.exceptions.CustomError" title="ape.exceptions.CustomError"><span class="pre">CustomError</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#ape.managers.compilers.CompilerManager.get_custom_error" title="Link to this definition"></a></dt>
 <dd><p>Get a custom error for the given contract logic error using the contract-type
 found from address-data in the error. Returns <code class="docutils literal notranslate"><span class="pre">None</span></code> if the given error is
-not a custom-error or it is not able to find the associated contract type or
+not a custom-error, or it is not able to find the associated contract type or
 address.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
