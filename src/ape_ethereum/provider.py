@@ -572,8 +572,9 @@ class Web3Provider(ProviderAPI, ABC):
     @cached_property
     def chain_id(self) -> int:
         default_chain_id = None
-        if self.network.name not in ("adhoc", "custom") and not self.network.is_dev:
-            # If using a live plugin-based network, the chain ID is hardcoded.
+
+        if self.network.is_custom or not self.network.is_dev:
+            # If using a live network, the chain ID is hardcoded.
             default_chain_id = self.network.chain_id
 
         try:
@@ -1631,7 +1632,7 @@ class EthereumNodeProvider(Web3Provider, ABC):
 
             except Exception:
                 # Some chains are "light" and we may not be able to detect
-                # if it need PoA middleware.
+                # if it needs PoA middleware.
                 continue
 
             else:
