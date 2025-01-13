@@ -1,0 +1,2 @@
+[2m2025-01-07T12:32:18.943779Z[0m [31mERROR[0m [2mfoundry_compilers_artifacts_solc::sources[0m[2m:[0m [3merror[0m[2m=[0m"/home/thedance/workspace/lssvm2/lib/openzeppelin-contracts/contracts/token/ERC721/IERC721.sol": No such file or directory (os error 2)
+[2m2025-01-07T12:32:18.953058Z[0m [31mERROR[0m [2mfoundry_compilers_artifacts_solc::sources[0m[2m:[0m [3merror[0m[2m=[0m"/home/thedance/workspace/lssvm2/lib/solmate/src/tokens/ERC20.sol": No such file or directory (os error 2)

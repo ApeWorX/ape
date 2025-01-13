@@ -1,0 +1,91 @@
+{
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_mainModule",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "_salt",
+          "type": "bytes32"
+        }
+      ],
+      "name": "DeployFailed",
+      "type": "error"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "addr",
+          "type": "address"
+        }
+      ],
+      "name": "Target",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_mainModule",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "_salt",
+          "type": "bytes32"
+        }
+      ],
+      "name": "deploy",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "_contract",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "payable",
+      "type": "function"
+    }
+  ],
+  "contractName": "Factory",
+  "deploymentBytecode": {
+    "bytecode": "0x608060405234801561001057600080fd5b506101ee806100206000396000f3fe60806040526004361061001e5760003560e01c806332c02a1414610023575b600080fd5b610036610031366004610126565b610052565b6040516001600160a01b03909116815260200160405180910390f35b60008060405180606001604052806028815260200161019160289139846001600160a01b031660405160200161008992919061015e565b60405160208183030381529060405290508281516020830134f56040516001600160a01b03821681529092507ff3a1fccdf4778ea6c44fd680f7bdbf5d53a02733614e6e82354bfcb238eb611a9060200160405180910390a16001600160a01b03821661011f57604051638caac80560e01b81526001600160a01b03851660048201526024810184905260440160405180910390fd5b5092915050565b6000806040838503121561013957600080fd5b82356001600160a01b038116811461015057600080fd5b946020939093013593505050565b6000835160005b8181101561017f5760208187018101518583015201610165565b50919091019182525060200191905056fe603a600e3d39601a805130553df3363d3d373d3d3d363d30545af43d82803e903d91601857fd5bf3a264697066735822122090d0695a8157fb7127653f68740c9d4e6a4521102eaae59315987f42d91b11ac64736f6c63430008120033"
+  },
+  "devdoc": {
+    "kind": "dev",
+    "methods": {
+      "deploy(address,bytes32)": {
+        "details": "It is recommended to not have more than 200 signers as opcode repricing      could make transactions impossible to execute as all the signers must be      passed for each transaction.",
+        "params": {
+          "_mainModule": "Address of the main module to be used by the wallet",
+          "_salt": "Salt used to generate the wallet, which is the imageHash       of the wallet's configuration."
+        }
+      }
+    },
+    "version": 1
+  },
+  "methodIdentifiers": {
+    "deploy(address,bytes32)": "0x32c02a14"
+  },
+  "runtimeBytecode": {
+    "bytecode": "0x60806040526004361061001e5760003560e01c806332c02a1414610023575b600080fd5b610036610031366004610126565b610052565b6040516001600160a01b03909116815260200160405180910390f35b60008060405180606001604052806028815260200161019160289139846001600160a01b031660405160200161008992919061015e565b60405160208183030381529060405290508281516020830134f56040516001600160a01b03821681529092507ff3a1fccdf4778ea6c44fd680f7bdbf5d53a02733614e6e82354bfcb238eb611a9060200160405180910390a16001600160a01b03821661011f57604051638caac80560e01b81526001600160a01b03851660048201526024810184905260440160405180910390fd5b5092915050565b6000806040838503121561013957600080fd5b82356001600160a01b038116811461015057600080fd5b946020939093013593505050565b6000835160005b8181101561017f5760208187018101518583015201610165565b50919091019182525060200191905056fe603a600e3d39601a805130553df3363d3d373d3d3d363d30545af43d82803e903d91601857fd5bf3a264697066735822122090d0695a8157fb7127653f68740c9d4e6a4521102eaae59315987f42d91b11ac64736f6c63430008120033"
+  },
+  "sourceId": "Sequence.sol",
+  "sourcemap": "3045:955:0:-:0;;;;;;;;;;;;;;;;;;;",
+  "userdoc": {
+    "kind": "user",
+    "methods": {
+      "deploy(address,bytes32)": {
+        "notice": "Will deploy a new wallet instance"
+      }
+    },
+    "version": 1
+  }
+}
