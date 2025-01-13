@@ -218,7 +218,14 @@ def load_config(path: Path, expand_envars=True, must_exist=False) -> dict:
             contents = expand_environment_variables(contents)
 
         if path.name == "pyproject.toml":
-            config = tomllib.loads(contents).get("tool", {}).get("ape", {})
+            pyproject_toml = tomllib.loads(contents)
+            config = pyproject_toml.get("tool", {}).get("ape", {})
+
+            # Utilize [project] for some settings.
+            if project_settings := pyproject_toml.get("project"):
+                if "name" not in config and "name" in project_settings:
+                    config["name"] = project_settings["name"]
+
         elif path.suffix in (".json",):
             config = json.loads(contents)
         elif path.suffix in (".yml", ".yaml"):

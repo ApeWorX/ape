@@ -196,6 +196,16 @@ def test_validate_file_shows_linenos_handles_lists():
         assert "-->4" in str(err.value)
 
 
+def test_validate_file_uses_project_name():
+    name = "apexampledapp"
+    with create_tempdir() as temp_dir:
+        file = temp_dir / "pyproject.toml"
+        content = f'[project]\nname = "{name}"\n'
+        file.write_text(content)
+        cfg = ApeConfig.validate_file(file)
+        assert cfg.name == name
+
+
 def test_deployments(networks_connected_to_tester, owner, vyper_contract_container, project):
     _ = networks_connected_to_tester  # Connection needs to lookup config.
 
