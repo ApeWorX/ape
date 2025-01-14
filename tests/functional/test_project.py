@@ -1068,3 +1068,15 @@ def test_chdir(project):
     # Undo.
     project.chdir(original_path)
     assert project.path == original_path
+
+
+def test_within_project_path():
+    start_cwd = Path.cwd()
+    with create_tempdir() as new_path:
+        project = Project(new_path)
+        assert Path.cwd() != new_path
+
+        with project.within_project_path():
+            assert Path.cwd() == project.path
+
+    assert Path.cwd() == start_cwd
