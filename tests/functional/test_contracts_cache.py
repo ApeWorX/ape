@@ -120,6 +120,28 @@ def test_instance_at_use_abi(chain, solidity_fallback_contract, owner):
     assert instance2.contract_type.abi == instance.contract_type.abi
 
 
+def test_instance_at_skip_proxy_check(mocker, chain, vyper_contract_instance, owner):
+    address = vyper_contract_instance.address
+    container = _make_minimal_proxy(address=address.lower())
+    proxy = container.deploy(sender=owner)
+    proxy_info = chain.contracts.proxy_infos[proxy.address]
+
+    del chain.contracts[proxy.address]
+
+    proxy_detection_spy = mocker.spy(chain.contracts.proxy_infos, "get_type")
+
+    with pytest.raises(ContractNotFoundError):
+        # This just fails because we deleted it from the cache so Ape no
+        # longer knows what the contract type is. That is fine for this test!
+        chain.contracts.instance_at(proxy.address, proxy_info=proxy_info)
+
+    # The real test: we check the spy to ensure we never attempted to look-up
+    # the proxy info for the given address to `instance_at()`.
+    for call in proxy_detection_spy.call_args_list:
+        for arg in call[0]:
+            assert proxy.address != arg
+
+
 def test_cache_deployment_live_network(
     chain,
     vyper_contract_instance,
