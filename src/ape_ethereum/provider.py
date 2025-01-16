@@ -757,7 +757,7 @@ class Web3Provider(ProviderAPI, ABC):
 
         arguments[0] = txn_dict
         try:
-            result = self.make_request("eth_call", arguments)
+            result = self.stream_request("eth_call", arguments)
         except Exception as err:
             contract_address = arguments[0].get("to")
             _lazy_call_trace = _LazyCallTrace(arguments)
