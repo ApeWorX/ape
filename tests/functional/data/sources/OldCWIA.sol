@@ -769,8 +769,8 @@ contract Template is ClonesWithImmutableArgs, ClonesWithCallData {
         emit Cloned(address(clonedGreeter));
     }
 
-    function clone2(bytes calldata data) external returns (Template clonedGreeter) {
-        clonedGreeter = Template(ClonesWithCallData.cloneWithCallDataProvision(address(this), data));
+    function clone2(address implementation, bytes calldata data) external returns (Template clonedGreeter) {
+        clonedGreeter = Template(ClonesWithCallData.cloneWithCallDataProvision(implementation, data));
         emit Cloned(address(clonedGreeter));
     }
  }
