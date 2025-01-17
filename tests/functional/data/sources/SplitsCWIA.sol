@@ -452,4 +452,3 @@ contract SplitsCloneFactory {
         return address(implementation).predictDeterministicAddress(salt, data);
     }
 }
-

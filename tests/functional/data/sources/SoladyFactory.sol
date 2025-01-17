@@ -2873,5 +2873,4 @@ contract SoladyFactory {
         split = LibClone.clone(0, _implementation, abi.encodePacked(bytes32(0xce700223c0d4cea4583409accfc45adac4a093b3519998a9cbbe1504dadba6f7)));
         emit Target(split);
     }
-
 }

@@ -91,7 +91,6 @@ def test_OldCWIA(get_contract_type, owner, ethereum, target):
     clones_proxy = contract_instance.clone1(0, sender=owner)
     proxy_address = to_checksum_address("0x" + (clones_proxy.logs[0]["data"].hex())[-40:])
     actual = ethereum.get_proxy_info(proxy_address)
-    actual = ethereum.get_proxy_info(contract_instance.address)
     assert actual is not None
     assert actual.type == ProxyType.Standard
     assert actual.target == target
@@ -106,4 +105,23 @@ def test_Vyper(get_contract_type, owner, ethereum, target):
     actual = ethereum.get_proxy_info(proxy_address)
     assert actual is not None
     assert actual.type == ProxyType.Vyper
+    assert actual.target == target
+
+
+def test_SudoswapCWIA(get_contract_type, owner, ethereum, target):
+    _type = get_contract_type("SudoswapCWIA")
+    contract = ContractContainer(_type)
+    contract_instance = owner.deploy(contract)
+    clones_proxy = contract_instance.deploycloneERC721ETHPair(target, 0, 0, 0, 0, 0, sender=owner)
+    proxy_address = to_checksum_address("0x" + (clones_proxy.logs[0]["data"].hex())[-40:])
+    actual = ethereum.get_proxy_info(proxy_address)
+    assert actual is not None
+    assert actual.type == ProxyType.SudoswapCWIA
+    assert actual.target == target
+
+    clones_proxy = contract_instance.deploycloneERC1155ETHPair(target, 0, 0, 0, 0, 0, sender=owner)
+    proxy_address = to_checksum_address("0x" + (clones_proxy.logs[0]["data"].hex())[-40:])
+    actual = ethereum.get_proxy_info(proxy_address)
+    assert actual is not None
+    assert actual.type == ProxyType.SudoswapCWIA
     assert actual.target == target

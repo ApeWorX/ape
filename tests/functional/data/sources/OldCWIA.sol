@@ -774,4 +774,4 @@ contract Template is ClonesWithImmutableArgs, ClonesWithCallData {
         emit Cloned(address(clonedGreeter));
     }
  }
-
+ 
