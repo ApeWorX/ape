@@ -89,11 +89,8 @@ def test_OldCWIA(get_contract_type, owner, ethereum, target):
     contract = ContractContainer(_type)
     contract_instance = owner.deploy(contract)
     clones_proxy = contract_instance.clone2(target, 0, sender=owner)
-    print(clones_proxy, "clones_proxy          ")
     proxy_address = to_checksum_address("0x" + (clones_proxy.logs[0]["data"].hex())[-40:])
-    print("proxy address", proxy_address)
     actual = ethereum.get_proxy_info(proxy_address)
-    print("actual", actual)
     assert actual is not None
     assert actual.type == ProxyType.OldCWIA
     assert actual.target == target
