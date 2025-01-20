@@ -303,7 +303,7 @@ class ContractLogicError(VirtualMachineError):
         source_traceback: _SOURCE_TRACEBACK_ARG = None,
         base_err: Optional[Exception] = None,
         project: Optional["ProjectManager"] = None,
-        set_ape_traceback: bool = True,  # Overriden default.
+        set_ape_traceback: bool = True,  # Overridden default.
     ):
         self.txn = txn
         self.contract_address = contract_address
