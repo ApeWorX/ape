@@ -16,7 +16,7 @@ from ape.logging import logger
 from ape.managers.project import _version_to_options
 from ape.utils._github import _GithubClient, github_client
 from ape.utils.basemodel import ManagerAccessMixin
-from ape.utils.os import clean_path, extract_archive, get_package_path, in_tempdir, _remove_readonly
+from ape.utils.os import _remove_readonly, clean_path, extract_archive, get_package_path, in_tempdir
 
 
 def _fetch_local(src: Path, destination: Path, config_override: Optional[dict] = None):
