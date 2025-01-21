@@ -206,7 +206,8 @@ class GithubDependency(DependencyAPI):
         if ref := self.ref:
             # NOTE: destination path should not exist at this point,
             #   so delete it in case it's left over from a failure.
-            shutil.rmtree(destination, onerror=_remove_readonly)
+            if destination.is_dir():
+                shutil.rmtree(destination, onerror=_remove_readonly)
 
             # Fetch using git-clone approach (by git-reference).
             self._fetch_ref(ref, destination)
@@ -225,7 +226,8 @@ class GithubDependency(DependencyAPI):
                 # NOTE: When using ref-from-a-version, ensure
                 #   it didn't create the destination along the way;
                 #   else, the ref is cloned in the wrong spot.
-                shutil.rmtree(destination, onerror=_remove_readonly)
+                if destination.is_dir():
+                    shutil.rmtree(destination, onerror=_remove_readonly)
                 try:
                     self._fetch_ref(version, destination)
                 except Exception:
