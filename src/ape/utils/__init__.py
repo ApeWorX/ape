@@ -72,6 +72,7 @@ def __getattr__(name: str):
         "get_relative_path",
         "in_tempdir",
         "path_match",
+        "remove_readonly",
         "run_in_tempdir",
         "use_temp_sys_path",
     ):
@@ -171,6 +172,7 @@ __all__ = [
     "parse_gas_table",
     "path_match",
     "raises_not_implemented",
+    "remove_readonly",
     "returns_array",
     "request_with_retry",
     "RPCHeaders",
