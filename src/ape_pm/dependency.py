@@ -16,7 +16,7 @@ from ape.logging import logger
 from ape.managers.project import _version_to_options
 from ape.utils._github import _GithubClient, github_client
 from ape.utils.basemodel import ManagerAccessMixin
-from ape.utils.os import clean_path, extract_archive, get_package_path, in_tempdir, remove_readonly
+from ape.utils.os import clean_path, extract_archive, get_package_path, in_tempdir, _remove_readonly
 
 
 def _fetch_local(src: Path, destination: Path, config_override: Optional[dict] = None):
@@ -206,7 +206,7 @@ class GithubDependency(DependencyAPI):
         if ref := self.ref:
             # NOTE: destination path should not exist at this point,
             #   so delete it in case it's left over from a failure.
-            shutil.rmtree(destination, onerror=remove_readonly)
+            shutil.rmtree(destination, onerror=_remove_readonly)
 
             # Fetch using git-clone approach (by git-reference).
             self._fetch_ref(ref, destination)
@@ -225,7 +225,7 @@ class GithubDependency(DependencyAPI):
                 # NOTE: When using ref-from-a-version, ensure
                 #   it didn't create the destination along the way;
                 #   else, the ref is cloned in the wrong spot.
-                shutil.rmtree(destination, onerror=remove_readonly)
+                shutil.rmtree(destination, onerror=_remove_readonly)
                 try:
                     self._fetch_ref(version, destination)
                 except Exception:

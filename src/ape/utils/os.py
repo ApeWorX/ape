@@ -373,7 +373,7 @@ def extract_archive(archive_file: Path, destination: Optional[Path] = None):
         raise ValueError(f"Unsupported zip format: '{archive_file.suffix}'.")
 
 
-def remove_readonly(func, path, excinfo):
+def _remove_readonly(func, path, excinfo):
     """
     Error handler for shutil.rmtree that handles removing read-only files.
     """
