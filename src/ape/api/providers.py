@@ -385,6 +385,17 @@ class ProviderAPI(BaseInterfaceModel):
             An iterator of items.
         """
 
+    @raises_not_implemented
+    def batch_requests(self, requests: list[dict]) -> Any:
+        """
+        Send batched requests (multiple requests at once) to the RPC provider.
+
+        Args:
+            requests (list[dict]): The requests to send.
+
+        Returns: The results of each request.
+        """
+
     # TODO: In 0.9, delete this method.
     def get_storage_at(self, *args, **kwargs) -> "HexBytes":
         warnings.warn(

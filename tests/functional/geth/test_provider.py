@@ -656,6 +656,25 @@ def test_make_request_not_exists(geth_provider):
 
 
 @geth_process_test
+def test_batch_requests(geth_account, geth_contract, geth_provider):
+    call = geth_contract.myNumber.as_transaction().model_dump()
+    results = geth_provider.batch_requests(
+        [
+            {
+                "method": "eth_call",
+                "params": [{"data": call["data"], "to": geth_contract.address}],
+            },
+            {
+                "method": "eth_getBalance",
+                "params": [geth_account.address, "latest"],
+            },
+        ]
+    )
+    for result in results:
+        assert result.startswith("0x")
+
+
+@geth_process_test
 @pytest.mark.parametrize(
     "message",
     (

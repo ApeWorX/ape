@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Optional, Union, cast
 
 import ijson  # type: ignore
-import requests
+import requests as requests_lib
 from eth_pydantic_types import HexBytes
 from eth_typing import BlockNumber, HexStr
 from eth_utils import add_0x_prefix, is_hex, to_hex
@@ -1333,7 +1333,7 @@ class Web3Provider(ProviderAPI, ABC):
     def _make_request(self, rpc: str, parameters: Optional[Iterable] = None) -> Any:
         parameters = parameters or []
         try:
-            result = self.web3.provider.make_request(RPCEndpoint(rpc), parameters)
+            response = self.web3.provider.make_request(RPCEndpoint(rpc), parameters)
         except HTTPError as err:
             if "method not allowed" in str(err).lower():
                 raise APINotImplementedError(
@@ -1345,28 +1345,36 @@ class Web3Provider(ProviderAPI, ABC):
 
             raise ProviderError(str(err)) from err
 
-        if "error" in result:
-            error = result["error"]
+        return self._get_result_from_rpc_response(rpc, response)
+
+    def _get_result_from_rpc_response(
+        self, rpc: str, response: dict, raise_on_failure: bool = True
+    ) -> Any:
+        if "error" in response:
+            error = response["error"]
             message = (
                 error["message"] if isinstance(error, dict) and "message" in error else str(error)
             )
+            if raise_on_failure:
+                if (
+                    "does not exist/is not available" in str(message)
+                    or re.match(r"[m|M]ethod .*?not found", message)
+                    or message.startswith("Unknown RPC Endpoint")
+                    or "RPC Endpoint has not been implemented" in message
+                ):
+                    raise APINotImplementedError(
+                        f"RPC method '{rpc}' is not implemented by this node instance."
+                    )
 
-            if (
-                "does not exist/is not available" in str(message)
-                or re.match(r"[m|M]ethod .*?not found", message)
-                or message.startswith("Unknown RPC Endpoint")
-                or "RPC Endpoint has not been implemented" in message
-            ):
-                raise APINotImplementedError(
-                    f"RPC method '{rpc}' is not implemented by this node instance."
-                )
+                raise ProviderError(message)
 
-            raise ProviderError(message)
+            else:
+                return message
 
-        elif "result" in result:
-            return result.get("result", {})
+        elif "result" in response:
+            return response.get("result", {})
 
-        return result
+        return response
 
     def stream_request(self, method: str, params: Iterable, iter_path: str = "result.item"):
         if not (uri := self.http_uri):
@@ -1375,13 +1383,34 @@ class Web3Provider(ProviderAPI, ABC):
         payload = {"jsonrpc": "2.0", "id": 1, "method": method, "params": params}
         results = ijson.sendable_list()
         coroutine = ijson.items_coro(results, iter_path)
-        resp = requests.post(uri, json=payload, stream=True)
+        resp = requests_lib.post(uri, json=payload, stream=True)
         resp.raise_for_status()
 
         for chunk in resp.iter_content(chunk_size=2**17):
             coroutine.send(chunk)
             yield from results
             del results[:]
+
+    def batch_requests(self, requests: list[dict]) -> Any:
+        if not (uri := self.http_uri):
+            raise ProviderError("This provider has no HTTP URI and is unable to batch requests.")
+
+        for idx, request in enumerate(requests):
+            if "jsonrpc" not in request:
+                request["jsonrpc"] = "2.0"
+            if "id" not in request:
+                request["id"] = idx + 1
+
+        response = requests_lib.post(uri, json=requests)
+        try:
+            response.raise_for_status()
+        except HTTPError as err:
+            raise ProviderError(str(err)) from err
+
+        return [
+            self._get_result_from_rpc_response(uri, r, raise_on_failure=False)
+            for r in response.json()
+        ]
 
     def create_access_list(
         self, transaction: TransactionAPI, block_id: Optional["BlockID"] = None
