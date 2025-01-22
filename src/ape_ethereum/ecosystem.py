@@ -951,8 +951,8 @@ class Ethereum(EcosystemAPI):
         if all(field in tx_data for field in ("v", "r", "s")):
             tx_data["signature"] = TransactionSignature(
                 v=tx_data["v"],
-                r=bytes(tx_data["r"]),
-                s=bytes(tx_data["s"]),
+                r=tx_data["r"],
+                s=tx_data["s"],
             )
 
         if "gas" not in tx_data:

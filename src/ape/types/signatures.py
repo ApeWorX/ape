@@ -1,10 +1,11 @@
 from collections.abc import Iterator
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING, Any, Optional, Union
 
 from eth_account import Account
 from eth_account.messages import SignableMessage
 from eth_pydantic_types import HexBytes
-from eth_utils import to_bytes, to_hex
+from eth_utils import to_bytes, to_hex, to_int
+from pydantic import field_validator
 from pydantic.dataclasses import dataclass
 
 from ape.utils.misc import as_our_module, log_instead_of_fail
@@ -83,6 +84,29 @@ class _Signature:
     """
     The signature proof point (``s``) in an ECDSA signature.
     """
+
+    @field_validator("v", mode="before")
+    @classmethod
+    def convert_to_int(cls, v: Any) -> int:
+        if isinstance(v, int):
+            return v
+
+        elif isinstance(v, str):
+            try:
+                return to_int(text=v)
+            except ValueError:
+                # String is hexstr
+                return to_int(hexstr=v)
+
+        return to_int(v)
+
+    @field_validator("r, s", mode="before")
+    @classmethod
+    def convert_to_bytes(cls, v: Any) -> bytes:
+        if isinstance(v, bytes):
+            return v
+
+        return to_bytes(v)
 
     def __iter__(self) -> Iterator[Union[int, bytes]]:
         # NOTE: Allows tuple destructuring
