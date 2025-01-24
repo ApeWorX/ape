@@ -12,9 +12,7 @@ jobs:
         steps:
         - uses: actions/checkout@v4
           with:
-              fetch-depth:
-              ref: ${{ github.event.pull_request.head.ref }}  # Checkout the branch of the PR.
-              repository: ${{ github.event.pull_request.head.repo.full_name }}  # Handles forks.
+              fetch-depth: 0
 
         - name: Setup Python
           uses: actions/setup-python@v5
@@ -26,5 +24,11 @@ jobs:
             python -m pip install --upgrade pip
             pip install -r cz-requirement.txt
 
+        - name: Get base and head commits
+          id: commits
+          run: |
+            echo "BASE_SHA=$(git merge-base origin/${{ github.event.pull_request.base.ref }} HEAD)" >> $GITHUB_ENV
+            echo "HEAD_SHA=$(git rev-parse HEAD)" >> $GITHUB_ENV
+
         - name: Check commit history
-          run: cz check --rev-range $(git rev-list --all --reverse | head -1)..HEAD
+          run: cz check --rev-range $BASE_SHA..$HEAD_SHA
