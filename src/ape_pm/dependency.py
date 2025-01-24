@@ -207,7 +207,7 @@ class GithubDependency(DependencyAPI):
             # NOTE: destination path should not exist at this point,
             #   so delete it in case it's left over from a failure.
             if destination.is_dir():
-                shutil.rmtree(destination, onerror=_remove_readonly)
+                shutil.rmtree(destination)
 
             # Fetch using git-clone approach (by git-reference).
             self._fetch_ref(ref, destination)
