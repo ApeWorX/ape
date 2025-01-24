@@ -12,7 +12,9 @@ jobs:
         steps:
         - uses: actions/checkout@v4
           with:
-              fetch-depth: 0
+              fetch-depth:
+              ref: ${{ github.event.pull_request.head.ref }}  # Checkout the branch of the PR.
+              repository: ${{ github.event.pull_request.head.repo.full_name }}  # Handles forks.
 
         - name: Setup Python
           uses: actions/setup-python@v5
