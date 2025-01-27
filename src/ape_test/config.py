@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING, NewType, Optional, Union
 
 from pydantic import NonNegativeInt, field_validator
+from pydantic_settings import SettingsConfigDict
 
 from ape.api.config import PluginConfig
 from ape.utils.basemodel import ManagerAccessMixin
@@ -19,11 +20,13 @@ if TYPE_CHECKING:
 class EthTesterProviderConfig(PluginConfig):
     chain_id: int = DEFAULT_TEST_CHAIN_ID
     auto_mine: bool = True
+    model_config = SettingsConfigDict(extra="allow", env_prefix="APE_TEST_")
 
 
 class GasExclusion(PluginConfig):
     contract_name: str = "*"  # If only given method, searches across all contracts.
     method_name: Optional[str] = None  # By default, match all methods in a contract
+    model_config = SettingsConfigDict(extra="allow", env_prefix="APE_TEST_")
 
 
 CoverageExclusion = NewType("CoverageExclusion", GasExclusion)
@@ -47,6 +50,8 @@ class GasConfig(PluginConfig):
     """
     Report-types to use. Currently, only supports `terminal`.
     """
+
+    model_config = SettingsConfigDict(extra="allow", env_prefix="APE_TEST_")
 
     @field_validator("reports", mode="before")
     @classmethod
@@ -89,6 +94,8 @@ class CoverageReportsConfig(PluginConfig):
     Set to ``True`` to generate HTML coverage reports.
     """
 
+    model_config = SettingsConfigDict(extra="allow", env_prefix="APE_TEST_")
+
     @property
     def has_any(self) -> bool:
         return any(x not in ({}, None, False) for x in (self.html, self.terminal, self.xml))
@@ -119,6 +126,8 @@ class CoverageConfig(PluginConfig):
     use ``prefix_*`` to skip all items with a certain prefix.
     """
 
+    model_config = SettingsConfigDict(extra="allow", env_prefix="APE_TEST_")
+
 
 class IsolationConfig(PluginConfig):
     enable_session: bool = True
@@ -145,6 +154,8 @@ class IsolationConfig(PluginConfig):
     """
     Set to ``False`` to disable function isolation.
     """
+
+    model_config = SettingsConfigDict(extra="allow", env_prefix="APE_TEST_")
 
     def get_isolation(self, scope: "Scope") -> bool:
         return getattr(self, f"enable_{scope.name.lower()}")
@@ -208,6 +219,8 @@ class ApeTestConfig(PluginConfig):
     Configure which scope-specific isolation to enable. Set to
     ``False`` to disable all and ``True`` (default) to disable all.
     """
+
+    model_config = SettingsConfigDict(extra="allow", env_prefix="APE_TEST_")
 
     @field_validator("balance", mode="before")
     @classmethod

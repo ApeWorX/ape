@@ -66,7 +66,7 @@ class PluginConfig(BaseSettings):
     a config API must register a subclass of this class.
     """
 
-    model_config = SettingsConfigDict(extra="allow")
+    model_config = SettingsConfigDict(extra="allow", env_prefix="APE_")
 
     @classmethod
     def from_overrides(
@@ -285,7 +285,7 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
 
     def __init__(self, *args, **kwargs):
         project_path = kwargs.get("project")
-        super(BaseSettings, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         # NOTE: Cannot reference `self` at all until after super init.
         self._project_path = project_path
 
@@ -350,7 +350,7 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
     """
 
     # NOTE: Plugin configs are technically "extras".
-    model_config = SettingsConfigDict(extra="allow")
+    model_config = SettingsConfigDict(extra="allow", env_prefix="APE_")
 
     @model_validator(mode="before")
     @classmethod

@@ -37,6 +37,55 @@ plugin:
 
 This helps keep your secrets out of Ape!
 
+If a configuration is left unset (i.e., not included in the
+`ape-config.(yaml|json|toml)` file, Ape will optionally inspect the
+environment variables as a fallback, following the pattern
+"<PREFIX>_SETTING", where different types of configurations have
+different prefixes.
+
+For example, the following config:
+
+```yaml
+contracts_folder: src/qwe
+test:
+  number_of_accounts: 3
+  show_internal: True
+compile:
+  exclude:
+    - "one"
+    - "two"
+    - "three"
+  include_dependencies: true
+```
+
+could be entirely defined with environment variables as follows:
+
+```shell
+APE_CONTRACTS_FOLDER=src/contracts
+APE_TEST_NUMBER_OF_ACCOUNTS=3
+APE_TEST_SHOW_INTERNAL=true
+APE_COMPILE_EXCLUDE='["one", "two", "three"]'
+APE_COMPILE_INCLUDE_DEPENDENCIES=true
+```
+
+Here is the complete list of supported prefixes:
+
+| Module       | Prefix       |
+| ------------ | ------------ |
+| ape          | APE          |
+| ape_cache    | APE_CACHE    |
+| ape_compile  | APE_COMPILE  |
+| ape_console  | APE_CONSOLE  |
+| ape_ethereum | APE_ETHEREUM |
+| ape_networks | APE_NETWORKS |
+| ape_node     | APE_NODE     |
+| ape_test     | APE_TEST     |
+
+As this is an experimental feature, changes are likely to be
+introduced in the future.  Please rely primarily on file-based
+configuration and use environment variables only if absolutely
+necessary.
+
 ## Base Path
 
 Change the base path if it is different than your project root.
