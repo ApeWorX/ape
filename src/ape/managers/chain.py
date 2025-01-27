@@ -969,11 +969,15 @@ class ChainManager(BaseManager):
 
     def get_code(self, address: "AddressType") -> "ContractCode":
         network = self.provider.network
-        if not network.is_local:
-            self._code.setdefault(network.ecosystem.name, {})
-            self._code[network.ecosystem.name].setdefault(network.name, {})
-            if address in self._code[network.ecosystem.name][network.name]:
-                return self._code[network.ecosystem.name][network.name][address]
+        if network.is_dev:
+            # Avoid caching when dev, as you can manipulate the chain more
+            # (and there is isolation).
+            return self.provider.get_code(address)
+
+        self._code.setdefault(network.ecosystem.name, {})
+        self._code[network.ecosystem.name].setdefault(network.name, {})
+        if address in self._code[network.ecosystem.name][network.name]:
+            return self._code[network.ecosystem.name][network.name][address]
 
         # Get from RPC for the first time.
         code = self.provider.get_code(address)
