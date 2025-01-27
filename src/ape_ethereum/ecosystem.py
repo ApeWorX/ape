@@ -1150,12 +1150,13 @@ class Ethereum(EcosystemAPI):
             except KeyError:
                 name = call["method_id"]
             else:
-                assert isinstance(method_abi, MethodABI)  # For mypy
-
-                # Check if method name duplicated. If that is the case, use selector.
-                times = len([x for x in contract_type.methods if x.name == method_abi.name])
-                name = (method_abi.name if times == 1 else method_abi.selector) or call["method_id"]
-                call = self._enrich_calldata(call, method_abi, **kwargs)
+                if isinstance(method_abi, MethodABI):
+                    # Check if method name duplicated. If that is the case, use selector.
+                    times = len([x for x in contract_type.methods if x.name == method_abi.name])
+                    name = (method_abi.name if times == 1 else method_abi.selector) or call["method_id"]
+                    call = self._enrich_calldata(call, method_abi, **kwargs)
+                else:
+                    name = call.get("method_id") or "0x"
         else:
             name = call.get("method_id") or "0x"
 
