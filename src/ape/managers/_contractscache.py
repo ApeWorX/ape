@@ -4,7 +4,7 @@ from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
 from functools import cached_property
 from pathlib import Path
-from typing import TYPE_CHECKING, Generic, Literal, Optional, TypeVar, Union
+from typing import TYPE_CHECKING, Generic, Optional, TypeVar, Union
 
 from ethpm_types import ABI, ContractType
 from pydantic import BaseModel
@@ -273,7 +273,8 @@ class ContractCache(BaseManager):
     def cache_deployment(
         self,
         contract_instance: ContractInstance,
-        proxy_info: Optional[Union[ProxyInfoAPI, Literal["skip"]]] = None,
+        proxy_info: Optional[ProxyInfoAPI] = None,
+        detect_proxy: bool = True,
     ):
         """
         Cache the given contract instance's type and deployment information.
@@ -281,9 +282,10 @@ class ContractCache(BaseManager):
         Args:
             contract_instance (:class:`~ape.contracts.base.ContractInstance`): The contract
               to cache.
-            proxy_info (Optional[Union[ProxyInfoAPI, Literal["skip"]]]): Either pass in the proxy
-              info, if it is known, to avoid the potentially expensive look-up, or pass the
-              keyword "skip" to skip detecting proxies for this contract.
+            proxy_info (Optional[ProxyInfoAPI]): Pass in the proxy info, if it is known, to
+              avoid the potentially expensive look-up.
+            detect_proxy (bool): Set to ``False`` to avoid detecting if the contract is a
+              proxy.
         """
         address = contract_instance.address
         contract_type = contract_instance.contract_type  # may be a proxy
@@ -292,7 +294,11 @@ class ContractCache(BaseManager):
         # in case it is needed somewhere. It may get overridden.
         self.contract_types.memory[address] = contract_type
 
-        if proxy_info is None:
+        if proxy_info:
+            # Was given proxy info.
+            self._cache_proxy_contract(address, proxy_info, contract_type, contract_instance)
+
+        elif detect_proxy:
             # Proxy info was not provided. Use the connected ecosystem to figure it out.
             if proxy_info := self.provider.network.ecosystem.get_proxy_info(address):
                 # The user is caching a deployment of a proxy with the target already set.
@@ -302,13 +308,9 @@ class ContractCache(BaseManager):
                 # Cache as normal.
                 self.contract_types[address] = contract_type
 
-        elif proxy_info == "skip":
-            # Cache as normal.
-            self.contract_types[address] = contract_type
-
         else:
-            # Was given proxy info.
-            self._cache_proxy_contract(address, proxy_info, contract_type, contract_instance)
+            # Cache as normal; do not do expensive proxy detection.
+            self.contract_types[address] = contract_type
 
         # Cache the deployment now.
         txn_hash = contract_instance.txn_hash
@@ -517,7 +519,8 @@ class ContractCache(BaseManager):
         address: AddressType,
         default: Optional[ContractType] = None,
         fetch_from_explorer: bool = True,
-        proxy_info: Optional[Union[ProxyInfoAPI, Literal["skip"]]] = None,
+        proxy_info: Optional[ProxyInfoAPI] = None,
+        detect_proxy: bool = True,
     ) -> Optional[ContractType]:
         """
         Get a contract type by address.
@@ -532,9 +535,9 @@ class ContractCache(BaseManager):
             fetch_from_explorer (bool): Set to ``False`` to avoid fetching from an
               explorer. Defaults to ``True``. Only fetches if it needs to (uses disk
               & memory caching otherwise).
-            proxy_info (Optional[Union[ProxyInfoAPI, Literal["skip"]]]): Either pass in the proxy
-              info, if it is known, to avoid the potentially expensive look-up, or pass the
-              keyword "skip" to skip detecting proxies for this contract.
+            proxy_info (Optional[ProxyInfoAPI]): Pass in the proxy info, if it is known,
+              to avoid the potentially expensive look-up.
+            detect_proxy (bool): Set to ``False`` to avoid detecting if it is a proxy.
 
         Returns:
             Optional[ContractType]: The contract type if it was able to get one,
@@ -560,32 +563,29 @@ class ContractCache(BaseManager):
 
         else:
             # Contract is not cached yet. Check broader sources, such as an explorer.
-            if proxy_info != "skip":
-                if not proxy_info:
-                    # Proxy info not provided. Attempt to detect.
-                    if not (proxy_info := self.proxy_infos[address_key]):
-                        if proxy_info := self.provider.network.ecosystem.get_proxy_info(
-                            address_key
-                        ):
-                            self.proxy_infos[address_key] = proxy_info
+            if not proxy_info and detect_proxy:
+                # Proxy info not provided. Attempt to detect.
+                if not (proxy_info := self.proxy_infos[address_key]):
+                    if proxy_info := self.provider.network.ecosystem.get_proxy_info(address_key):
+                        self.proxy_infos[address_key] = proxy_info
 
-                if proxy_info:
-                    # Contract is a proxy (either was detected or provided).
-                    implementation_contract_type = self.get(proxy_info.target, default=default)
-                    proxy_contract_type = (
-                        self._get_contract_type_from_explorer(address_key)
-                        if fetch_from_explorer
-                        else None
+            if proxy_info:
+                # Contract is a proxy (either was detected or provided).
+                implementation_contract_type = self.get(proxy_info.target, default=default)
+                proxy_contract_type = (
+                    self._get_contract_type_from_explorer(address_key)
+                    if fetch_from_explorer
+                    else None
+                )
+                if proxy_contract_type:
+                    contract_type_to_cache = _get_combined_contract_type(
+                        proxy_contract_type, proxy_info, implementation_contract_type
                     )
-                    if proxy_contract_type:
-                        contract_type_to_cache = _get_combined_contract_type(
-                            proxy_contract_type, proxy_info, implementation_contract_type
-                        )
-                    else:
-                        contract_type_to_cache = implementation_contract_type
+                else:
+                    contract_type_to_cache = implementation_contract_type
 
-                    self.contract_types[address_key] = contract_type_to_cache
-                    return contract_type_to_cache
+                self.contract_types[address_key] = contract_type_to_cache
+                return contract_type_to_cache
 
             if not self.provider.get_code(address_key):
                 if default:
@@ -627,7 +627,8 @@ class ContractCache(BaseManager):
         txn_hash: Optional[Union[str, "HexBytes"]] = None,
         abi: Optional[Union[list[ABI], dict, str, Path]] = None,
         fetch_from_explorer: bool = True,
-        proxy_info: Optional[Union[ProxyInfoAPI, Literal["skip"]]] = None,
+        proxy_info: Optional[ProxyInfoAPI] = None,
+        detect_proxy: bool = True,
     ) -> ContractInstance:
         """
         Get a contract at the given address. If the contract type of the contract is known,
@@ -652,9 +653,9 @@ class ContractCache(BaseManager):
             fetch_from_explorer (bool): Set to ``False`` to avoid fetching from the explorer.
               Defaults to ``True``. Won't fetch unless it needs to (uses disk & memory caching
               first).
-            proxy_info (Optional[Union[ProxyInfoAPI, Literal["skip"]]]): Either pass in the proxy
-              info, if it is known, to avoid the potentially expensive look-up, or pass the
-              keyword "skip" to skip detecting proxies for this contract.
+            proxy_info (Optional[ProxyInfoAPI]): Pass in the proxy info, if it is known, to avoid
+              the potentially expensive look-up.
+            detect_proxy (bool): Set to ``False`` to avoid detecting if the contract is a proxy.
 
         Returns:
             :class:`~ape.contracts.base.ContractInstance`
@@ -681,6 +682,7 @@ class ContractCache(BaseManager):
                 default=contract_type,
                 fetch_from_explorer=fetch_from_explorer,
                 proxy_info=proxy_info,
+                detect_proxy=detect_proxy,
             )
         except Exception as err:
             if contract_type or abi:
