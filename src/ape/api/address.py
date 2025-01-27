@@ -20,7 +20,6 @@ class BaseAddress(BaseInterface):
     """
     A base address API class. All account-types subclass this type.
     """
-    _code: dict[str, dict[str, "ContractCode"]] = {}
 
     @property
     def _base_dir_values(self) -> list[str]:
