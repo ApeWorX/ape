@@ -37,11 +37,9 @@ plugin:
 
 This helps keep your secrets out of Ape!
 
-If a configuration is left unset (i.e., not included in the
-`ape-config.(yaml|json|toml)` file, Ape will optionally inspect the
-environment variables as a fallback, following the pattern
-"<PREFIX>_SETTING", where different types of configurations have
-different prefixes.
+Similarly, any config key-name can also be set with the same named environment variable (with a prefix).
+
+If a configuration is left unset (i.e., not included in the `ape-config.(yaml|json|toml)` file, Ape will inspect the environment variables as a fallback, following the pattern `APE_<PLUGIN?>_SETTING`, where different plugins define different prefixes.
 
 For example, the following config:
 
@@ -68,27 +66,29 @@ APE_COMPILE_EXCLUDE='["one", "two", "three"]'
 APE_COMPILE_INCLUDE_DEPENDENCIES=true
 ```
 
-Here is the complete list of supported prefixes:
+Notice the `ape-compile` and `ape-test` plugin include their plugin name `APE_COMPILE` and `APE_TEST` respectively where `contracts_folder` only has the prefix `APE_` since it is not part of a plugin.
 
-| Module       | Prefix       |
-| ------------ | ------------ |
-| ape          | APE          |
-| ape_cache    | APE_CACHE    |
-| ape_compile  | APE_COMPILE  |
-| ape_console  | APE_CONSOLE  |
-| ape_ethereum | APE_ETHEREUM |
-| ape_networks | APE_NETWORKS |
-| ape_node     | APE_NODE     |
-| ape_test     | APE_TEST     |
+Here is the complete list of supported prefixes that come with Ape out-of-the-box:
 
-As this is an experimental feature, changes are likely to be
-introduced in the future.  Please rely primarily on file-based
-configuration and use environment variables only if absolutely
-necessary.
+| Module/Plugin | Prefix       |
+|---------------| ------------ |
+| ape           | APE          |
+| ape_cache     | APE_CACHE    |
+| ape_compile   | APE_COMPILE  |
+| ape_console   | APE_CONSOLE  |
+| ape_ethereum  | APE_ETHEREUM |
+| ape_networks  | APE_NETWORKS |
+| ape_node      | APE_NODE     |
+| ape_test      | APE_TEST     |
+
+Each plugin outside the core package may define its own prefix, but the standard is `APE_PLUGINNAME_`.
+
+Using environment variables assists in keeping secrets out of your config files.
+However, the primary config should be file-driven and environment variables should only be used when necessary.
 
 ## Base Path
 
-Change the base path if it is different than your project root.
+Change the base path if it is different from your project root.
 For example, imagine a project structure like:
 
 ```
