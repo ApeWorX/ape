@@ -1,6 +1,7 @@
 import json
 import os
 import re
+import stat
 import sys
 import tarfile
 import zipfile
@@ -370,6 +371,14 @@ def extract_archive(archive_file: Path, destination: Optional[Path] = None):
 
     else:
         raise ValueError(f"Unsupported zip format: '{archive_file.suffix}'.")
+
+
+def _remove_readonly(func, path, excinfo):
+    """
+    Error handler for shutil.rmtree that handles removing read-only files.
+    """
+    os.chmod(path, stat.S_IWRITE)
+    func(path)
 
 
 class CacheDirectory:
