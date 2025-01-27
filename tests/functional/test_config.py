@@ -134,6 +134,12 @@ def test_model_validate_path_contracts_folder():
     assert cfg.contracts_folder == str(path)
 
 
+def test_model_validate_handles_environment_variables():
+    os.environ["APE_API_CONTRACTS_FOLDER"] = "contracts-env-var-test"
+    cfg = ApeConfig()
+    assert cfg.contracts_folder == "contracts-env-var-test"
+
+
 @pytest.mark.parametrize(
     "file", ("ape-config.yml", "ape-config.yaml", "ape-config.json", "pyproject.toml")
 )
@@ -157,7 +163,7 @@ def test_validate_file(file):
     assert "Excl*.json" in actual.compile.exclude
 
 
-def test_validate_file_expands_env_vars():
+def test_validate_file_expands_environment_variables():
     secret = "mycontractssecretfolder"
     env_var_name = "APE_TEST_CONFIG_SECRET_CONTRACTS_FOLDER"
     os.environ[env_var_name] = secret
