@@ -458,7 +458,7 @@ class Ethereum(EcosystemAPI):
         )
 
     def get_proxy_info(self, address: AddressType) -> Optional[ProxyInfo]:
-        contract_code = self.provider.get_code(address)
+        contract_code = self.chain_manager.get_code(address)
         if isinstance(contract_code, bytes):
             contract_code = to_hex(contract_code)
 

@@ -20,6 +20,7 @@ class BaseAddress(BaseInterface):
     """
     A base address API class. All account-types subclass this type.
     """
+    _code: dict[str, dict[str, "ContractCode"]] = {}
 
     @property
     def _base_dir_values(self) -> list[str]:
@@ -150,9 +151,7 @@ class BaseAddress(BaseInterface):
         """
         The raw bytes of the smart-contract code at the address.
         """
-
-        # TODO: Explore caching this (based on `self.provider.network` and examining code)
-        return self.provider.get_code(self.address)
+        return self.chain_manager.get_code(self.address)
 
     @property
     def codesize(self) -> int:
