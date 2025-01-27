@@ -38,7 +38,7 @@ if TYPE_CHECKING:
     from rich.console import Console as RichConsole
 
     from ape.types.trace import GasReport, SourceTraceback
-    from ape.types.vm import SnapshotID, ContractCode
+    from ape.types.vm import ContractCode, SnapshotID
 
 
 class BlockContainer(BaseManager):
