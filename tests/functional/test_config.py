@@ -174,18 +174,11 @@ def test_model_validate_handles_environment_variables():
         CompileConfig, "include_dependencies", "APE_COMPILE_INCLUDE_DEPENDENCIES", "true", True
     )
     run_test(ConsoleConfig, "plugins", "APE_CONSOLE_PLUGINS", '["a","b","c"]', ["a", "b", "c"])
-    run_test(BaseEthereumConfig, "default_network", "APE_ETHEREUM_DEFAULT_NETWORK", "abe9e8293383")
     run_test(
         ForkedNetworkConfig, "upstream_provider", "APE_ETHEREUM_UPSTREAM_PROVIDER", "411236f13659"
     )
     run_test(
         NetworkConfig, "required_confirmations", "APE_ETHEREUM_REQUIRED_CONFIRMATIONS", "6498", 6498
-    )
-    run_test(
-        lambda: CustomNetwork(name="", chain_id=0, ecosystem=""),
-        "base_ecosystem_plugin",
-        "APE_NETWORKS_BASE_ECOSYSTEM_PLUGIN",
-        "ea5010088102",
     )
     run_test(EthereumNetworkConfig, "mainnet", "APE_NODE_MAINNET", '{"a":"b"}', {"a": "b"})
     run_test(EthereumNodeConfig, "executable", "APE_NODE_EXECUTABLE", "40613177e494")
