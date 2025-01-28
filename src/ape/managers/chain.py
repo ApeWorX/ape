@@ -37,8 +37,7 @@ from ape.utils.misc import ZERO_ADDRESS, is_evm_precompile, is_zero_hex, log_ins
 if TYPE_CHECKING:
     from rich.console import Console as RichConsole
 
-    from ape.types.trace import GasReport, SourceTraceback
-    from ape.types.vm import ContractCode, SnapshotID
+    from ape.types import BlockID, ContractCode, GasReport, SnapshotID, SourceTraceback
 
 
 class BlockContainer(BaseManager):
@@ -716,7 +715,7 @@ class ChainManager(BaseManager):
     _block_container_map: dict[int, BlockContainer] = {}
     _transaction_history_map: dict[int, TransactionHistory] = {}
     _reports: ReportManager = ReportManager()
-    _code: dict[str, dict[str, dict["AddressType", "ContractCode"]]] = {}
+    _code: dict[str, dict[str, dict[AddressType, "ContractCode"]]] = {}
 
     @cached_property
     def contracts(self) -> ContractCache:
@@ -967,12 +966,14 @@ class ChainManager(BaseManager):
 
         return receipt
 
-    def get_code(self, address: "AddressType") -> "ContractCode":
+    def get_code(
+        self, address: AddressType, block_id: Optional["BlockID"] = None
+    ) -> "ContractCode":
         network = self.provider.network
         if network.is_dev:
             # Avoid caching when dev, as you can manipulate the chain more
             # (and there is isolation).
-            return self.provider.get_code(address)
+            return self.provider.get_code(address, block_id=block_id)
 
         self._code.setdefault(network.ecosystem.name, {})
         self._code[network.ecosystem.name].setdefault(network.name, {})
