@@ -1,4 +1,5 @@
 from eth_pydantic_types import HexBytes
+from eth_utils import to_checksum_address
 
 from ape.contracts import ContractContainer
 from ape_ethereum.proxies import ProxyType
@@ -111,4 +112,24 @@ def test_delegate(get_contract_type, geth_contract, owner, ethereum):
 
     assert actual is not None
     assert actual.type == ProxyType.Delegate
+    assert actual.target == target
+
+
+@geth_process_test
+def test_sequence(get_contract_type, geth_contract, owner, ethereum):
+    _type = get_contract_type("SequenceFactory")
+    contract = ContractContainer(_type)
+
+    target = geth_contract.address
+
+    factory = owner.deploy(contract)
+
+    clones_proxy = factory.deploy(target, 0, sender=owner)
+
+    proxy_address = to_checksum_address("0x" + (clones_proxy.logs[0]["data"].hex())[-40:])
+
+    actual = ethereum.get_proxy_info(proxy_address)
+
+    assert actual is not None
+    assert actual.type == ProxyType.Sequence
     assert actual.target == target
