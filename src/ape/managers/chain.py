@@ -970,9 +970,13 @@ class ChainManager(BaseManager):
         self, address: AddressType, block_id: Optional["BlockID"] = None
     ) -> "ContractCode":
         network = self.provider.network
-        if network.is_dev:
-            # Avoid caching when dev, as you can manipulate the chain more
-            # (and there is isolation).
+
+        # Two reasons to avoid caching:
+        #   1. dev networks - chain isolation makes this mess up
+        #   2. specifying block_id= kwarg - likely checking if code
+        #      exists at the time and shouldn't use cache.
+        skip_cache = network.is_dev or block_id is not None
+        if skip_cache:
             return self.provider.get_code(address, block_id=block_id)
 
         self._code.setdefault(network.ecosystem.name, {})
@@ -980,7 +984,7 @@ class ChainManager(BaseManager):
         if address in self._code[network.ecosystem.name][network.name]:
             return self._code[network.ecosystem.name][network.name][address]
 
-        # Get from RPC for the first time.
+        # Get from RPC for the first time AND use cache.
         code = self.provider.get_code(address)
         self._code[network.ecosystem.name][network.name][address] = code
         return code
