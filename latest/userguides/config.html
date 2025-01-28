@@ -200,9 +200,72 @@ Simply include environment variables (with the <code class="docutils literal not
 </span></pre></div>
 </div>
 <p>This helps keep your secrets out of Ape!</p>
+<p>Similarly, any config key-name can also be set with the same named environment variable (with a prefix).</p>
+<p>If a configuration is left unset (i.e., not included in the <code class="docutils literal notranslate"><span class="pre">ape-config.(yaml|json|toml)</span></code> file, Ape will inspect the environment variables as a fallback, following the pattern <code class="docutils literal notranslate"><span class="pre">APE_&lt;PLUGIN?&gt;_SETTING</span></code>, where different plugins define different prefixes.</p>
+<p>For example, the following config:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">contracts_folder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">src/qwe</span>
+</span><span data-line="2"><span class="nt">test</span><span class="p">:</span>
+</span><span data-line="3"><span class="w">  </span><span class="nt">number_of_accounts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
+</span><span data-line="4"><span class="w">  </span><span class="nt">show_internal</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">True</span>
+</span><span data-line="5"><span class="nt">compile</span><span class="p">:</span>
+</span><span data-line="6"><span class="w">  </span><span class="nt">exclude</span><span class="p">:</span>
+</span><span data-line="7"><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;one&quot;</span>
+</span><span data-line="8"><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;two&quot;</span>
+</span><span data-line="9"><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;three&quot;</span>
+</span><span data-line="10"><span class="w">  </span><span class="nt">include_dependencies</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span></pre></div>
+</div>
+<p>could be entirely defined with environment variables as follows:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nv">APE_CONTRACTS_FOLDER</span><span class="o">=</span>src/contracts
+</span><span data-line="2"><span class="nv">APE_TEST_NUMBER_OF_ACCOUNTS</span><span class="o">=</span><span class="m">3</span>
+</span><span data-line="3"><span class="nv">APE_TEST_SHOW_INTERNAL</span><span class="o">=</span><span class="nb">true</span>
+</span><span data-line="4"><span class="nv">APE_COMPILE_EXCLUDE</span><span class="o">=</span><span class="s1">&#39;[&quot;one&quot;, &quot;two&quot;, &quot;three&quot;]&#39;</span>
+</span><span data-line="5"><span class="nv">APE_COMPILE_INCLUDE_DEPENDENCIES</span><span class="o">=</span><span class="nb">true</span>
+</span></pre></div>
+</div>
+<p>Notice the <code class="docutils literal notranslate"><span class="pre">ape-compile</span></code> and <code class="docutils literal notranslate"><span class="pre">ape-test</span></code> plugin include their plugin name <code class="docutils literal notranslate"><span class="pre">APE_COMPILE</span></code> and <code class="docutils literal notranslate"><span class="pre">APE_TEST</span></code> respectively where <code class="docutils literal notranslate"><span class="pre">contracts_folder</span></code> only has the prefix <code class="docutils literal notranslate"><span class="pre">APE_</span></code> since it is not part of a plugin.</p>
+<p>Here is the complete list of supported prefixes that come with Ape out-of-the-box:</p>
+<div class="table-wrapper colwidths-auto docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Module/Plugin</p></th>
+<th class="head"><p>Prefix</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>ape</p></td>
+<td><p>APE</p></td>
+</tr>
+<tr class="row-odd"><td><p>ape_cache</p></td>
+<td><p>APE_CACHE</p></td>
+</tr>
+<tr class="row-even"><td><p>ape_compile</p></td>
+<td><p>APE_COMPILE</p></td>
+</tr>
+<tr class="row-odd"><td><p>ape_console</p></td>
+<td><p>APE_CONSOLE</p></td>
+</tr>
+<tr class="row-even"><td><p>ape_ethereum</p></td>
+<td><p>APE_ETHEREUM</p></td>
+</tr>
+<tr class="row-odd"><td><p>ape_networks</p></td>
+<td><p>APE_NETWORKS</p></td>
+</tr>
+<tr class="row-even"><td><p>ape_node</p></td>
+<td><p>APE_NODE</p></td>
+</tr>
+<tr class="row-odd"><td><p>ape_test</p></td>
+<td><p>APE_TEST</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Each plugin outside the core package may define its own prefix, but the standard is <code class="docutils literal notranslate"><span class="pre">APE_PLUGINNAME_</span></code>.</p>
+<p>Using environment variables assists in keeping secrets out of your config files.
+However, the primary config should be file-driven and environment variables should only be used when necessary.</p>
 <section id="base-path">
 <h2>Base Path<a class="headerlink" href="#base-path" title="Link to this heading"></a></h2>
-<p>Change the base path if it is different than your project root.
+<p>Change the base path if it is different from your project root.
 For example, imagine a project structure like:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1">project
 </span><span data-line="2">└── src/
