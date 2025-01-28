@@ -15,7 +15,6 @@ from ape_cache.config import CacheConfig
 from ape_compile.config import Config as CompileConfig
 from ape_console.config import ConsoleConfig
 from ape_ethereum.ecosystem import (
-    BaseEthereumConfig,
     EthereumConfig,
     ForkedNetworkConfig,
     NetworkConfig,
