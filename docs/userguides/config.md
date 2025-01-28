@@ -71,7 +71,7 @@ Notice the `ape-compile` and `ape-test` plugin include their plugin name `APE_CO
 Here is the complete list of supported prefixes that come with Ape out-of-the-box:
 
 | Module/Plugin | Prefix       |
-|---------------| ------------ |
+| ------------- | ------------ |
 | ape           | APE          |
 | ape_cache     | APE_CACHE    |
 | ape_compile   | APE_COMPILE  |
