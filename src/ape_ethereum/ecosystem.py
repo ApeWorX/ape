@@ -157,6 +157,8 @@ class NetworkConfig(PluginConfig):
     request_headers: dict = {}
     """Optionally config extra request headers whenever using this network."""
 
+    model_config = SettingsConfigDict(extra="allow", env_prefix="APE_ETHEREUM_")
+
     @field_validator("gas_limit", mode="before")
     @classmethod
     def validate_gas_limit(cls, value):
@@ -233,7 +235,7 @@ class BaseEthereumConfig(PluginConfig):
     # NOTE: This gets appended to Ape's root User-Agent string.
     request_headers: dict = {}
 
-    model_config = SettingsConfigDict(extra="allow")
+    model_config = SettingsConfigDict(extra="allow", env_prefix="APE_ETHEREUM_")
 
     @model_validator(mode="before")
     @classmethod
@@ -458,7 +460,7 @@ class Ethereum(EcosystemAPI):
         )
 
     def get_proxy_info(self, address: AddressType) -> Optional[ProxyInfo]:
-        contract_code = self.provider.get_code(address)
+        contract_code = self.chain_manager.get_code(address)
         if isinstance(contract_code, bytes):
             contract_code = to_hex(contract_code)
 
@@ -1150,12 +1152,15 @@ class Ethereum(EcosystemAPI):
             except KeyError:
                 name = call["method_id"]
             else:
-                assert isinstance(method_abi, MethodABI)  # For mypy
-
-                # Check if method name duplicated. If that is the case, use selector.
-                times = len([x for x in contract_type.methods if x.name == method_abi.name])
-                name = (method_abi.name if times == 1 else method_abi.selector) or call["method_id"]
-                call = self._enrich_calldata(call, method_abi, **kwargs)
+                if isinstance(method_abi, MethodABI):
+                    # Check if method name duplicated. If that is the case, use selector.
+                    times = len([x for x in contract_type.methods if x.name == method_abi.name])
+                    name = (method_abi.name if times == 1 else method_abi.selector) or call[
+                        "method_id"
+                    ]
+                    call = self._enrich_calldata(call, method_abi, **kwargs)
+                else:
+                    name = call.get("method_id") or "0x"
         else:
             name = call.get("method_id") or "0x"
 

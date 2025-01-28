@@ -3,6 +3,7 @@ from re import Pattern
 from typing import Union
 
 from pydantic import field_serializer, field_validator
+from pydantic_settings import SettingsConfigDict
 
 from ape.api.config import ConfigEnum, PluginConfig
 from ape.utils.misc import SOURCE_EXCLUDE_PATTERNS
@@ -52,6 +53,8 @@ class Config(PluginConfig):
     """
     Extra selections to output. Outputs to ``.build/{key.lower()}``.
     """
+
+    model_config = SettingsConfigDict(extra="allow", env_prefix="APE_COMPILE_")
 
     @field_validator("exclude", mode="before")
     @classmethod

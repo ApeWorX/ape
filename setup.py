@@ -49,8 +49,7 @@ extras_require = {
         "twine==3.8.0",  # Package upload tool
     ],
     "dev": [
-        # commitizen: Manage commits and publishing releases
-        (_HERE / "cz-requirement.txt").read_text().strip(),
+        "commitizen>=2.40,<2.41",  # Semantic commit linting
         "pre-commit",  # Ensure that linters are run prior to committing
         "pytest-watch",  # `ptw` test watcher/runner
         "ipdb",  # Debugger (Must use `export PYTHONBREAKPOINT=ipdb.set_trace`)

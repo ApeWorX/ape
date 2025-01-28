@@ -1,4 +1,5 @@
 import json
+import os
 import shutil
 from pathlib import Path
 
@@ -610,6 +611,24 @@ class TestGitHubDependency:
         mock_client.clone_repo.assert_called_once_with(
             "ApeWorX", "ApeNotAThing", path, branch="3.0.0"
         )
+
+    def test_fetch_existing_destination_with_read_only_files(self, mock_client):
+        """
+        Show it handles when the destination contains read-only files already
+        """
+        dependency = GithubDependency(github="ApeWorX/ApeNotAThing", ref="3.0.0", name="apetestdep")
+        dependency._github_client = mock_client
+
+        with create_tempdir() as path:
+            readonly_file = path / "readme.txt"
+            readonly_file.write_text("readme!")
+
+            # NOTE: This only makes a difference on Windows. If using a UNIX system,
+            #   rmtree still deletes readonly files regardless. Windows is more restrictive.
+            os.chmod(readonly_file, 0o444)  # Read-only permissions
+
+            dependency.fetch(path)
+            assert not readonly_file.is_file()
 
 
 class TestPythonDependency:
