@@ -1,7 +1,7 @@
 import os
 import re
 from pathlib import Path
-from typing import Any, Callable, TYPE_CHECKING, Optional, Type, Union
+from typing import TYPE_CHECKING, Any, Callable, Optional, Union
 
 import pytest
 from pydantic import ValidationError
@@ -10,14 +10,27 @@ from pydantic_settings import SettingsConfigDict
 from ape.api.config import ApeConfig, ConfigEnum, PluginConfig
 from ape.exceptions import ConfigError
 from ape.managers.config import CONFIG_FILE_NAME, merge_configs
-from ape_console.config import ConsoleConfig
+from ape.utils.os import create_tempdir
 from ape_cache.config import CacheConfig
 from ape_compile.config import Config as CompileConfig
-from ape.utils.os import create_tempdir
-from ape_ethereum.ecosystem import BaseEthereumConfig, EthereumConfig, NetworkConfig, ForkedNetworkConfig
-from ape_node.provider import EthereumNetworkConfig, EthereumNodeConfig
+from ape_console.config import ConsoleConfig
+from ape_ethereum.ecosystem import (
+    BaseEthereumConfig,
+    EthereumConfig,
+    ForkedNetworkConfig,
+    NetworkConfig,
+)
 from ape_networks.config import CustomNetwork
-from ape_test.config import ApeTestConfig, CoverageConfig, CoverageReportsConfig, EthTesterProviderConfig, GasConfig, GasExclusion, IsolationConfig
+from ape_node.provider import EthereumNetworkConfig, EthereumNodeConfig
+from ape_test.config import (
+    ApeTestConfig,
+    CoverageConfig,
+    CoverageReportsConfig,
+    EthTesterProviderConfig,
+    GasConfig,
+    GasExclusion,
+    IsolationConfig,
+)
 from tests.functional.conftest import PROJECT_WITH_LONG_CONTRACTS_FOLDER
 
 if TYPE_CHECKING:
@@ -135,9 +148,91 @@ def test_model_validate_path_contracts_folder():
 
 
 def test_model_validate_handles_environment_variables():
-    os.environ["APE_API_CONTRACTS_FOLDER"] = "contracts-env-var-test"
-    cfg = ApeConfig()
-    assert cfg.contracts_folder == "contracts-env-var-test"
+    def run_test(cls: Callable, attr: str, name: str, value: str, expected: Any = None):
+        expected = expected if expected is not None else value
+        before: str | None = os.environ.get(name)
+        os.environ[name] = value
+        try:
+            instance = cls()
+            assert hasattr(instance, attr)
+            assert getattr(instance, attr) == expected
+        finally:
+            if before is not None:
+                os.environ[name] = before
+
+    # Test different config classes.
+    run_test(ApeConfig, "contracts_folder", "APE_CONTRACTS_FOLDER", "3465220869b2")
+    run_test(
+        ApeConfig,
+        "dependencies",
+        "APE_DEPENDENCIES",
+        '[{"a":1},{"b":2},{"c":3}]',
+        [{"a": 1}, {"b": 2}, {"c": 3}],
+    )
+    run_test(CacheConfig, "size", "APE_CACHE_SIZE", "8627", 8627)
+    run_test(
+        CompileConfig, "include_dependencies", "APE_COMPILE_INCLUDE_DEPENDENCIES", "true", True
+    )
+    run_test(ConsoleConfig, "plugins", "APE_CONSOLE_PLUGINS", '["a","b","c"]', ["a", "b", "c"])
+    run_test(BaseEthereumConfig, "default_network", "APE_ETHEREUM_DEFAULT_NETWORK", "abe9e8293383")
+    run_test(
+        ForkedNetworkConfig, "upstream_provider", "APE_ETHEREUM_UPSTREAM_PROVIDER", "411236f13659"
+    )
+    run_test(
+        NetworkConfig, "required_confirmations", "APE_ETHEREUM_REQUIRED_CONFIRMATIONS", "6498", 6498
+    )
+    run_test(
+        lambda: CustomNetwork(name="", chain_id=0, ecosystem=""),
+        "base_ecosystem_plugin",
+        "APE_NETWORKS_BASE_ECOSYSTEM_PLUGIN",
+        "ea5010088102",
+    )
+    run_test(EthereumNetworkConfig, "mainnet", "APE_NODE_MAINNET", '{"a":"b"}', {"a": "b"})
+    run_test(EthereumNodeConfig, "executable", "APE_NODE_EXECUTABLE", "40613177e494")
+    run_test(ApeTestConfig, "balance", "APE_TEST_BALANCE", "4798", 4798)
+    run_test(CoverageConfig, "track", "APE_TEST_TRACK", "true", True)
+    run_test(CoverageReportsConfig, "terminal", "APE_TEST_TERMINAL", "false", False)
+    run_test(EthTesterProviderConfig, "chain_id", "APE_TEST_CHAIN_ID", "7925", 7925)
+    run_test(GasConfig, "reports", "APE_TEST_REPORTS", '["terminal"]', ["terminal"])
+    run_test(GasExclusion, "method_name", "APE_TEST_METHOD_NAME", "32aa54e3c5d2")
+    run_test(IsolationConfig, "enable_session", "APE_TEST_ENABLE_SESSION", "false", False)
+
+    # Assert that union types are handled.
+    run_test(NetworkConfig, "gas_limit", "APE_ETHEREUM_GAS_LIMIT", "0", 0)
+    run_test(NetworkConfig, "gas_limit", "APE_ETHEREUM_GAS_LIMIT", "0x100", 0x100)
+    run_test(NetworkConfig, "gas_limit", "APE_ETHEREUM_GAS_LIMIT", "auto")
+    run_test(NetworkConfig, "gas_limit", "APE_ETHEREUM_GAS_LIMIT", "max")
+    with pytest.raises(ValidationError, match=r"Value error, Invalid gas limit"):
+        run_test(NetworkConfig, "gas_limit", "APE_ETHEREUM_GAS_LIMIT", "something")
+
+    # Assert that various bool variants are parsed correctly.
+    run_test(NetworkConfig, "is_mainnet", "APE_ETHEREUM_IS_MAINNET", "0", False)
+    run_test(NetworkConfig, "is_mainnet", "APE_ETHEREUM_IS_MAINNET", "False", False)
+    run_test(NetworkConfig, "is_mainnet", "APE_ETHEREUM_IS_MAINNET", "fALSE", False)
+    run_test(NetworkConfig, "is_mainnet", "APE_ETHEREUM_IS_MAINNET", "FALSE", False)
+    run_test(NetworkConfig, "is_mainnet", "APE_ETHEREUM_IS_MAINNET", "1", True)
+    run_test(NetworkConfig, "is_mainnet", "APE_ETHEREUM_IS_MAINNET", "True", True)
+    run_test(NetworkConfig, "is_mainnet", "APE_ETHEREUM_IS_MAINNET", "tRUE", True)
+    run_test(NetworkConfig, "is_mainnet", "APE_ETHEREUM_IS_MAINNET", "TRUE", True)
+
+    # We expect a failure when there's a type mismatch.
+    with pytest.raises(
+        ValidationError,
+        match=r"Input should be a valid boolean, unable to interpret input",
+    ):
+        run_test(NetworkConfig, "is_mainnet", "APE_ETHEREUM_IS_MAINNET", "not a boolean", False)
+
+    with pytest.raises(
+        ValidationError,
+        match=r"Input should be a valid integer, unable to parse string as an integer",
+    ):
+        run_test(
+            NetworkConfig,
+            "required_confirmations",
+            "APE_ETHEREUM_REQUIRED_CONFIRMATIONS",
+            "not a number",
+            42,
+        )
 
 
 @pytest.mark.parametrize(
@@ -629,69 +724,3 @@ def test_project_level_settings(project):
         assert project.config.my_string == "my_string"
         assert project.config.my_int == 123
         assert project.config.my_bool is True
-
-
-def test_model_validate_handles_environment_variables():
-    def f(cls: Callable, attr: str, name: str, value: str, expected: Any = None):
-        expected = expected if expected is not None else value
-        before: str | None = os.environ.get(name)
-        os.environ[name] = value
-        try:
-            instance = cls()
-            assert hasattr(instance, attr)
-            assert getattr(instance, attr) == expected
-        finally:
-            if before is not None:
-                os.environ[name] = before
-
-    # Test different config classes.
-    f(ApeConfig, "contracts_folder", "APE_CONTRACTS_FOLDER", "3465220869b2")
-    f(ApeConfig, "dependencies", "APE_DEPENDENCIES", '[{"a":1},{"b":2},{"c":3}]', [{"a": 1}, {"b": 2}, {"c": 3}])
-    f(CacheConfig, "size", "APE_CACHE_SIZE", "8627", 8627)
-    f(CompileConfig, "include_dependencies", "APE_COMPILE_INCLUDE_DEPENDENCIES", "true", True)
-    f(ConsoleConfig, "plugins", "APE_CONSOLE_PLUGINS", '["a","b","c"]', ["a", "b", "c"])
-    f(BaseEthereumConfig, "default_network", "APE_ETHEREUM_DEFAULT_NETWORK", "abe9e8293383")
-    f(ForkedNetworkConfig, "upstream_provider", "APE_ETHEREUM_UPSTREAM_PROVIDER", "411236f13659")
-    f(NetworkConfig, "required_confirmations", "APE_ETHEREUM_REQUIRED_CONFIRMATIONS", "6498", 6498)
-    f(lambda: CustomNetwork(name="", chain_id=0, ecosystem=""),
-      "base_ecosystem_plugin", "APE_NETWORKS_BASE_ECOSYSTEM_PLUGIN", "ea5010088102")
-    f(EthereumNetworkConfig, "mainnet", "APE_NODE_MAINNET", '{"a":"b"}', {"a":"b"})
-    f(EthereumNodeConfig, "executable", "APE_NODE_EXECUTABLE", "40613177e494")
-    f(ApeTestConfig, "balance", "APE_TEST_BALANCE", "4798", 4798)
-    f(CoverageConfig, "track", "APE_TEST_TRACK", "true", True)
-    f(CoverageReportsConfig, "terminal", "APE_TEST_TERMINAL", "false", False)
-    f(EthTesterProviderConfig, "chain_id", "APE_TEST_CHAIN_ID", "7925", 7925)
-    f(GasConfig, "reports", "APE_TEST_REPORTS", '["terminal"]', ["terminal"])
-    f(GasExclusion, "method_name", "APE_TEST_METHOD_NAME", "32aa54e3c5d2")
-    f(IsolationConfig, "enable_session", "APE_TEST_ENABLE_SESSION", "false", False)
-
-    # Assert that union types are handled.
-    f(NetworkConfig, "gas_limit", "APE_ETHEREUM_GAS_LIMIT", "0", 0)
-    f(NetworkConfig, "gas_limit", "APE_ETHEREUM_GAS_LIMIT", "0x100", 0x100)
-    f(NetworkConfig, "gas_limit", "APE_ETHEREUM_GAS_LIMIT", "auto")
-    f(NetworkConfig, "gas_limit", "APE_ETHEREUM_GAS_LIMIT", "max")
-    with pytest.raises(ValidationError, match=r"Value error, Invalid gas limit"):
-        f(NetworkConfig, "gas_limit", "APE_ETHEREUM_GAS_LIMIT", "something")
-
-    # Assert that various bool variants are parsed correctly.
-    f(NetworkConfig, "is_mainnet", "APE_ETHEREUM_IS_MAINNET", "0", False)
-    f(NetworkConfig, "is_mainnet", "APE_ETHEREUM_IS_MAINNET", "False", False)
-    f(NetworkConfig, "is_mainnet", "APE_ETHEREUM_IS_MAINNET", "fALSE", False)
-    f(NetworkConfig, "is_mainnet", "APE_ETHEREUM_IS_MAINNET", "FALSE", False)
-    f(NetworkConfig, "is_mainnet", "APE_ETHEREUM_IS_MAINNET", "1", True)
-    f(NetworkConfig, "is_mainnet", "APE_ETHEREUM_IS_MAINNET", "True", True)
-    f(NetworkConfig, "is_mainnet", "APE_ETHEREUM_IS_MAINNET", "tRUE", True)
-    f(NetworkConfig, "is_mainnet", "APE_ETHEREUM_IS_MAINNET", "TRUE", True)
-
-    # We expect a failure when there's a type mismatch.
-    with pytest.raises(
-            ValidationError,
-            match=r"Input should be a valid boolean, unable to interpret input",
-    ):
-        f(NetworkConfig, "is_mainnet", "APE_ETHEREUM_IS_MAINNET", "not a boolean", False)
-
-    with pytest.raises(
-            ValidationError,
-            match=r"Input should be a valid integer, unable to parse string as an integer",
-    ):
-        f(NetworkConfig, "required_confirmations", "APE_ETHEREUM_REQUIRED_CONFIRMATIONS", "not a number", 42)
