@@ -144,6 +144,8 @@ def test_model_validate_handles_environment_variables():
         finally:
             if before is not None:
                 os.environ[name] = before
+            else:
+                os.environ.pop(name, None)
 
     # Test different config classes.
     run_test(ApeConfig, "contracts_folder", "APE_CONTRACTS_FOLDER", "3465220869b2")
