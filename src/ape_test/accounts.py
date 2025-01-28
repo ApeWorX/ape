@@ -82,7 +82,12 @@ class TestAccountContainer(TestAccountContainerAPI):
         account = self.init_test_account(
             new_index, generated_account.address, generated_account.private_key
         )
-        self.generated_accounts.append(account)
+
+        # Only cache if being created outside the expected number of accounts.
+        # Else, ends up cached twice and caused logic problems elsewhere.
+        if new_index >= self.number_of_accounts:
+            self.generated_accounts.append(account)
+
         return account
 
     @classmethod

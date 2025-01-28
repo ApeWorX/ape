@@ -34,6 +34,7 @@ norecursedirs = "projects"
 #    And 'pytest_ethereum' is not used and causes issues in some environments.
 addopts = """
 -p no:pytest_ethereum
+-p no:boa_test
 """
 
 python_files = "test_*.py"
