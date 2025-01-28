@@ -150,9 +150,8 @@ class BaseAddress(BaseInterface):
         """
         The raw bytes of the smart-contract code at the address.
         """
-
-        # TODO: Explore caching this (based on `self.provider.network` and examining code)
-        return self.provider.get_code(self.address)
+        # NOTE: Chain manager handles code caching.
+        return self.chain_manager.get_code(self.address)
 
     @property
     def codesize(self) -> int:

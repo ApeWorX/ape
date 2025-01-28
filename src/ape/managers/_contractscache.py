@@ -587,12 +587,6 @@ class ContractCache(BaseManager):
                 self.contract_types[address_key] = contract_type_to_cache
                 return contract_type_to_cache
 
-            if not self.provider.get_code(address_key):
-                if default:
-                    self.contract_types[address_key] = default
-
-                return default
-
             # Also gets cached to disk for faster lookup next time.
             if fetch_from_explorer:
                 contract_type = self._get_contract_type_from_explorer(address_key)
