@@ -157,6 +157,8 @@ class NetworkConfig(PluginConfig):
     request_headers: dict = {}
     """Optionally config extra request headers whenever using this network."""
 
+    model_config = SettingsConfigDict(extra="allow", env_prefix="APE_ETHEREUM_")
+
     @field_validator("gas_limit", mode="before")
     @classmethod
     def validate_gas_limit(cls, value):
@@ -233,7 +235,7 @@ class BaseEthereumConfig(PluginConfig):
     # NOTE: This gets appended to Ape's root User-Agent string.
     request_headers: dict = {}
 
-    model_config = SettingsConfigDict(extra="allow")
+    model_config = SettingsConfigDict(extra="allow", env_prefix="APE_ETHEREUM_")
 
     @model_validator(mode="before")
     @classmethod

@@ -1,5 +1,7 @@
 from typing import Optional
 
+from pydantic_settings import SettingsConfigDict
+
 from ape.api.config import PluginConfig
 
 
@@ -26,6 +28,8 @@ class CustomNetwork(PluginConfig):
     request_header: dict = {}
     """The HTTP request header."""
 
+    model_config = SettingsConfigDict(extra="allow", env_prefix="APE_NETWORKS_")
+
     @property
     def is_fork(self) -> bool:
         """
@@ -36,3 +40,4 @@ class CustomNetwork(PluginConfig):
 
 class NetworksConfig(PluginConfig):
     custom: list[CustomNetwork] = []
+    model_config = SettingsConfigDict(extra="allow", env_prefix="APE_NETWORKS_")
