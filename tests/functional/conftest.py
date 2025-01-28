@@ -639,6 +639,7 @@ def make_mock_compiler(mocker):
         mock.tracked_settings = []
         mock.ast = None
         mock.pcmap = None
+        mock.abi = []
 
         def mock_compile(paths, project=None, settings=None):
             settings = settings or {}
