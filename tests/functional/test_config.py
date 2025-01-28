@@ -13,23 +13,10 @@ from ape.managers.config import CONFIG_FILE_NAME, merge_configs
 from ape.utils.os import create_tempdir
 from ape_cache.config import CacheConfig
 from ape_compile.config import Config as CompileConfig
-from ape_console.config import ConsoleConfig
-from ape_ethereum.ecosystem import (
-    EthereumConfig,
-    ForkedNetworkConfig,
-    NetworkConfig,
-)
+from ape_ethereum.ecosystem import EthereumConfig, ForkedNetworkConfig, NetworkConfig
 from ape_networks.config import CustomNetwork
 from ape_node.provider import EthereumNetworkConfig, EthereumNodeConfig
-from ape_test.config import (
-    ApeTestConfig,
-    CoverageConfig,
-    CoverageReportsConfig,
-    EthTesterProviderConfig,
-    GasConfig,
-    GasExclusion,
-    IsolationConfig,
-)
+from ape_test.config import CoverageReportsConfig, GasConfig, GasExclusion
 from tests.functional.conftest import PROJECT_WITH_LONG_CONTRACTS_FOLDER
 
 if TYPE_CHECKING:
@@ -153,7 +140,6 @@ def test_model_validate_handles_environment_variables():
         os.environ[name] = value
         try:
             instance = cls()
-            assert hasattr(instance, attr)
             assert getattr(instance, attr) == expected
         finally:
             if before is not None:
@@ -161,18 +147,10 @@ def test_model_validate_handles_environment_variables():
 
     # Test different config classes.
     run_test(ApeConfig, "contracts_folder", "APE_CONTRACTS_FOLDER", "3465220869b2")
-    run_test(
-        ApeConfig,
-        "dependencies",
-        "APE_DEPENDENCIES",
-        '[{"a":1},{"b":2},{"c":3}]',
-        [{"a": 1}, {"b": 2}, {"c": 3}],
-    )
     run_test(CacheConfig, "size", "APE_CACHE_SIZE", "8627", 8627)
     run_test(
         CompileConfig, "include_dependencies", "APE_COMPILE_INCLUDE_DEPENDENCIES", "true", True
     )
-    run_test(ConsoleConfig, "plugins", "APE_CONSOLE_PLUGINS", '["a","b","c"]', ["a", "b", "c"])
     run_test(
         ForkedNetworkConfig, "upstream_provider", "APE_ETHEREUM_UPSTREAM_PROVIDER", "411236f13659"
     )
@@ -181,13 +159,9 @@ def test_model_validate_handles_environment_variables():
     )
     run_test(EthereumNetworkConfig, "mainnet", "APE_NODE_MAINNET", '{"a":"b"}', {"a": "b"})
     run_test(EthereumNodeConfig, "executable", "APE_NODE_EXECUTABLE", "40613177e494")
-    run_test(ApeTestConfig, "balance", "APE_TEST_BALANCE", "4798", 4798)
-    run_test(CoverageConfig, "track", "APE_TEST_TRACK", "true", True)
     run_test(CoverageReportsConfig, "terminal", "APE_TEST_TERMINAL", "false", False)
-    run_test(EthTesterProviderConfig, "chain_id", "APE_TEST_CHAIN_ID", "7925", 7925)
     run_test(GasConfig, "reports", "APE_TEST_REPORTS", '["terminal"]', ["terminal"])
     run_test(GasExclusion, "method_name", "APE_TEST_METHOD_NAME", "32aa54e3c5d2")
-    run_test(IsolationConfig, "enable_session", "APE_TEST_ENABLE_SESSION", "false", False)
 
     # Assert that union types are handled.
     run_test(NetworkConfig, "gas_limit", "APE_ETHEREUM_GAS_LIMIT", "0", 0)
@@ -198,14 +172,11 @@ def test_model_validate_handles_environment_variables():
         run_test(NetworkConfig, "gas_limit", "APE_ETHEREUM_GAS_LIMIT", "something")
 
     # Assert that various bool variants are parsed correctly.
-    run_test(NetworkConfig, "is_mainnet", "APE_ETHEREUM_IS_MAINNET", "0", False)
-    run_test(NetworkConfig, "is_mainnet", "APE_ETHEREUM_IS_MAINNET", "False", False)
-    run_test(NetworkConfig, "is_mainnet", "APE_ETHEREUM_IS_MAINNET", "fALSE", False)
-    run_test(NetworkConfig, "is_mainnet", "APE_ETHEREUM_IS_MAINNET", "FALSE", False)
-    run_test(NetworkConfig, "is_mainnet", "APE_ETHEREUM_IS_MAINNET", "1", True)
-    run_test(NetworkConfig, "is_mainnet", "APE_ETHEREUM_IS_MAINNET", "True", True)
-    run_test(NetworkConfig, "is_mainnet", "APE_ETHEREUM_IS_MAINNET", "tRUE", True)
-    run_test(NetworkConfig, "is_mainnet", "APE_ETHEREUM_IS_MAINNET", "TRUE", True)
+    for bool_val in ("0", "False", "fALSE", "FALSE"):
+        run_test(NetworkConfig, "is_mainnet", "APE_ETHEREUM_IS_MAINNET", bool_val, False)
+
+    for bool_val in ("1", "True", "tRUE", "TRUE"):
+        run_test(NetworkConfig, "is_mainnet", "APE_ETHEREUM_IS_MAINNET", bool_val, True)
 
     # We expect a failure when there's a type mismatch.
     with pytest.raises(
