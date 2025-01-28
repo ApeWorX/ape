@@ -150,6 +150,7 @@ class BaseAddress(BaseInterface):
         """
         The raw bytes of the smart-contract code at the address.
         """
+        # NOTE: Chain manager handles code caching.
         return self.chain_manager.get_code(self.address)
 
     @property
