@@ -39,7 +39,7 @@ def test_get_proxy_from_explorer(
         raise ValueError("Fake explorer only knows about proxy and target contracts.")
 
     with create_mock_sepolia() as network:
-        # Setup our network to use our fake explorer.
+        # Set up our network to use our fake explorer.
         mock_explorer.get_contract_type.side_effect = get_contract_type
         network.__dict__["explorer"] = mock_explorer
 

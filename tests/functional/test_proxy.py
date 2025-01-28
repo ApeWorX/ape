@@ -6,6 +6,9 @@ NOTE: Most proxy tests are in `geth/test_proxy.py`.
 
 
 def test_minimal_proxy(ethereum, minimal_proxy, chain):
+    chain.provider.network.__dict__["explorer"] = (
+        None  # Ensure no explorer, messes up test.
+    )
     actual = ethereum.get_proxy_info(minimal_proxy.address)
     assert actual is not None
     assert actual.type == ProxyType.Minimal
