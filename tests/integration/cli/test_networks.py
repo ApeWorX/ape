@@ -201,6 +201,26 @@ def test_run_custom_network(ape_cli, runner):
     assert expected in result.output
 
 
+@run_once
+def test_run_custom_args(ape_cli, runner):
+    cmd = (
+        "networks",
+        "run",
+        "--network",
+        "ethereum:local:test",
+        "--block-time",
+        "10",
+        "--base-fee-multiplier",
+        "1.2",
+        "--transaction-timeout",
+        "60",
+    )
+    result = runner.invoke(ape_cli, cmd)
+    expected = "`ape networks run` requires a provider that manages a process, not 'test'"
+    assert result.exit_code != 0
+    assert expected in result.output
+
+
 @geth_process_test
 @skip_projects_except("geth")
 def test_run_already_running(networks_runner, integ_project, geth_provider):
