@@ -499,7 +499,7 @@ To use a different network, such as `hardhat` or Anvil nodes, use the `--network
 ape networks run --network ethereum:local:foundry
 ```
 
-To configure the network process, use `--block_time`, `--base-fee-multiplier`, and `--transaction-timeout` flags.
+To configure the network process, use `--block_time` flag.
 
 ## Provider Interaction
 

@@ -113,14 +113,7 @@ def _list(cli_ctx, output_format, ecosystem_filter, network_filter, provider_fil
 @ape_cli_context()
 @network_option(default="ethereum:local:node")
 @click.option("--block-time", default=None, type=int, help="Block time in seconds")
-@click.option("--base-fee-multiplier", default=None, type=float, help="Base fee multiplier")
-@click.option(
-    "--transaction-timeout",
-    default=None,
-    type=int,
-    help="Transaction acceptance timeout in seconds",
-)
-def run(cli_ctx, provider, block_time, base_fee_multiplier, transaction_timeout):
+def run(cli_ctx, provider, block_time):
     """
     Start a subprocess node as if running independently
     and stream stdout and stderr.
@@ -139,14 +132,7 @@ def run(cli_ctx, provider, block_time, base_fee_multiplier, transaction_timeout)
     # Set block time if provided
     if block_time is not None:
         provider.network.block_time = block_time
-
-    # Set transaction acceptance timeout if provided
-    if transaction_timeout is not None:
-        provider.network.transaction_acceptance_timeout = transaction_timeout
-
-    # Set base fee multiplier if provided
-    if base_fee_multiplier is not None:
-        provider.network.base_fee_multiplier = base_fee_multiplier
+        provider.provider_settings.update({"block_time": block_time})
 
     # Start showing process logs.
     original_level = cli_ctx.logger.level

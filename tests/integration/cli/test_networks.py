@@ -202,7 +202,7 @@ def test_run_custom_network(ape_cli, runner):
 
 
 @run_once
-def test_run_custom_args(ape_cli, runner):
+def test_run_block_time(ape_cli, runner):
     cmd = (
         "networks",
         "run",
@@ -210,10 +210,6 @@ def test_run_custom_args(ape_cli, runner):
         "ethereum:local:test",
         "--block-time",
         "10",
-        "--base-fee-multiplier",
-        "1.2",
-        "--transaction-timeout",
-        "60",
     )
     result = runner.invoke(ape_cli, cmd)
     expected = "`ape networks run` requires a provider that manages a process, not 'test'"
