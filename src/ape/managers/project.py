@@ -2590,6 +2590,7 @@ class LocalProject(Project):
 
         Args:
             path (Path): The path of the new project.
+              If not given, defaults to the project's path.
         """
         path = path or self.path
         os.chdir(path)
@@ -2612,7 +2613,7 @@ class LocalProject(Project):
     def within_project_path(self):
         """
         A context-manager for changing the current working directory to the
-        project's ``.path``. Then, switch back to whatever the current
+        project's ``.path``. Then, switching back to whatever the current
         directory was before calling this method.
         """
         with within_directory(self.path):
