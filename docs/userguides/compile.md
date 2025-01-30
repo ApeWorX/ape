@@ -162,3 +162,13 @@ Then, after compiling, you should notice minified ABI json files in your `.build
 This is useful if hosting these files on a web-server.
 
 To see the full list of supported output-extra, see [the OutputExtras enum documentation](../methoddocs/ape_compile.html#ape_compile.config.OutputExtras).
+
+## Show Output
+
+To also display the contract type in the CLI terminal, use the `--show-output` flag when compiling:
+
+```shell
+ape compile --show-output
+```
+
+Now, your ABIs and bytecode (and all other artifacts) will appear stdout as well as Ape's disk cache.
