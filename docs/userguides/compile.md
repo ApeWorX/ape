@@ -165,7 +165,7 @@ To see the full list of supported output-extra, see [the OutputExtras enum docum
 
 ## Show Output
 
-To also display the contract type in the CLI terminal, use the `--show-output` flag when compiling:
+To also display the contract type(s) in the CLI terminal, use the `--show-output` flag when compiling:
 
 ```shell
 ape compile --show-output
