@@ -181,6 +181,7 @@ def test_isolate_in_tempdir_does_not_alter_sources(project):
     # First, create a bad source.
     with project.temp_config(contracts_folder="build"):
         new_src = project.contracts_folder / "newsource.json"
+        new_src.parent.mkdir(exist_ok=True, parents=True)
         new_src.write_text("this is not json, oops")
         project.sources.refresh()  # Only need to be called when run with other tests.
 

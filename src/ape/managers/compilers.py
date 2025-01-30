@@ -300,7 +300,7 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
         """
         Get a custom error for the given contract logic error using the contract-type
         found from address-data in the error. Returns ``None`` if the given error is
-        not a custom-error or it is not able to find the associated contract type or
+        not a custom-error, or it is not able to find the associated contract type or
         address.
 
         Args:

@@ -240,7 +240,14 @@ def test_connect_to_chain_that_started_poa(mock_web3, web3_factory, ethereum):
     to fetch blocks during the PoA portion of the chain.
     """
     mock_web3.eth.get_block.side_effect = ExtraDataLengthError
-    mock_web3.eth.chain_id = ethereum.sepolia.chain_id
+
+    def make_request(rpc, arguments):
+        if rpc == "eth_chainId":
+            return {"result": ethereum.sepolia.chain_id}
+
+        return None
+
+    mock_web3.provider.make_request.side_effect = make_request
     web3_factory.return_value = mock_web3
     provider = ethereum.sepolia.get_provider("node")
     provider.provider_settings = {"uri": "http://node.example.com"}  # fake

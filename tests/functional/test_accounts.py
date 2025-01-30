@@ -412,12 +412,19 @@ def test_send_transaction_sets_defaults(sender, receiver):
     assert receipt.required_confirmations == 0
 
 
+def test_account_index_access(accounts):
+    account = accounts[0]
+    assert account.index == 0
+    last_account = accounts[-1]
+    assert last_account.index == len(accounts) - 1
+
+
 def test_accounts_splice_access(accounts):
-    a, b = accounts[:2]
-    assert a == accounts[0]
-    assert b == accounts[1]
-    c = accounts[-1]
-    assert c == accounts[len(accounts) - 1]
+    alice, bob = accounts[:2]
+    assert alice == accounts[0]
+    assert bob == accounts[1]
+    cat = accounts[-1]
+    assert cat == accounts[len(accounts) - 1]
     expected = (len(accounts) // 2) if len(accounts) % 2 == 0 else (len(accounts) // 2 + 1)
     assert len(accounts[::2]) == expected
 
@@ -612,9 +619,9 @@ def test_custom_num_of_test_accounts_config(accounts, project):
         assert len(accounts) == custom_number_of_test_accounts
 
 
-def test_test_accounts_repr(accounts):
+def test_test_accounts_repr(accounts, config):
     actual = repr(accounts)
-    assert all(a.address in actual for a in accounts)
+    assert config.get_config("test").hd_path in actual
 
 
 def test_account_comparison_to_non_account(core_account):
@@ -629,10 +636,19 @@ def test_create_account(accounts):
     assert isinstance(created_account, TestAccount)
     assert created_account.index == length_at_start
 
+    length_at_start = len(accounts)
     second_created_account = accounts.generate_test_account()
+    assert len(accounts) == length_at_start + 1
 
     assert created_account.address != second_created_account.address
     assert second_created_account.index == created_account.index + 1
+
+    # Last index should now refer to the last-created account.
+    last_idx_acct = accounts[-1]
+    assert last_idx_acct.index == second_created_account.index
+    assert last_idx_acct.address == second_created_account.address
+    assert last_idx_acct.address != accounts[0].address
+    assert last_idx_acct.address != created_account.address
 
 
 def test_dir(core_account):
@@ -951,3 +967,14 @@ def test_get_deployment_address(owner, vyper_contract_container):
     assert instance_1.address == deployment_address_1
     instance_2 = owner.deploy(vyper_contract_container, 490)
     assert instance_2.address == deployment_address_2
+
+
+def test_repr(account_manager):
+    """
+    NOTE: __repr__ should be simple and fast!
+      Previously, we showed the repr of all the accounts.
+      That was a bad idea, as that can be very unnecessarily slow.
+      Hence, this test exists to ensure care is taken.
+    """
+    actual = repr(account_manager)
+    assert actual == "<AccountManager>"

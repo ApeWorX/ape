@@ -557,7 +557,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
             default_network = self.default_ecosystem.default_network
             return default_network.get_provider(provider_settings=provider_settings)
 
-        elif _is_custom_network(network_choice):
+        elif _is_adhoc_url(network_choice):
             # Custom network w/o ecosystem & network spec.
             return self.create_custom_provider(network_choice)
 
@@ -568,7 +568,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
             provider_value = ":".join(selections[2:])
             selections[2] = provider_value
             selections = selections[:3]
-            if _is_custom_network(provider_value):
+            if _is_adhoc_url(provider_value):
                 selections[1] = selections[1] or "custom"
 
         if selections == network_choice or len(selections) == 1:
@@ -754,7 +754,7 @@ def _validate_filter(arg: Optional[Union[list[str], str]], options: set[str]):
     return filters
 
 
-def _is_custom_network(value: str) -> bool:
+def _is_adhoc_url(value: str) -> bool:
     return (
         value.startswith("http://")
         or value.startswith("https://")

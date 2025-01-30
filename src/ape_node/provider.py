@@ -297,7 +297,7 @@ class EthereumNetworkConfig(PluginConfig):
     # Make sure to run via `geth --dev` (or similar)
     local: dict = {**DEFAULT_SETTINGS.copy(), "chain_id": DEFAULT_TEST_CHAIN_ID}
 
-    model_config = SettingsConfigDict(extra="allow")
+    model_config = SettingsConfigDict(extra="allow", env_prefix="APE_NODE_")
 
     @field_validator("local", mode="before")
     @classmethod
@@ -357,7 +357,7 @@ class EthereumNodeConfig(PluginConfig):
     Optionally specify request headers to use whenever using this provider.
     """
 
-    model_config = SettingsConfigDict(extra="allow")
+    model_config = SettingsConfigDict(extra="allow", env_prefix="APE_NODE_")
 
     @field_validator("call_trace_approach", mode="before")
     @classmethod

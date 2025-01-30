@@ -14,6 +14,7 @@ from ape.api.accounts import TestAccountAPI, TestAccountContainerAPI
 from ape.exceptions import ProviderNotConnectedError, SignatureError
 from ape.types.signatures import MessageSignature, TransactionSignature
 from ape.utils._web3_compat import sign_hash
+from ape.utils.misc import log_instead_of_fail
 from ape.utils.testing import (
     DEFAULT_NUMBER_OF_TEST_ACCOUNTS,
     DEFAULT_TEST_HD_PATH,
@@ -81,7 +82,12 @@ class TestAccountContainer(TestAccountContainerAPI):
         account = self.init_test_account(
             new_index, generated_account.address, generated_account.private_key
         )
-        self.generated_accounts.append(account)
+
+        # Only cache if being created outside the expected number of accounts.
+        # Else, ends up cached twice and caused logic problems elsewhere.
+        if new_index >= self.number_of_accounts:
+            self.generated_accounts.append(account)
+
         return account
 
     @classmethod
@@ -112,6 +118,10 @@ class TestAccount(TestAccountAPI):
     @property
     def address(self) -> "AddressType":
         return self.network_manager.ethereum.decode_address(self.address_str)
+
+    @log_instead_of_fail(default="<TestAccount>")
+    def __repr__(self) -> str:
+        return f"<{self.__class__.__name__}_{self.index} {self.address_str}>"
 
     def sign_message(self, msg: Any, **signer_options) -> Optional[MessageSignature]:
         # Convert str and int to SignableMessage if needed

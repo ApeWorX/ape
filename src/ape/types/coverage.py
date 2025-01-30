@@ -1040,7 +1040,7 @@ class _HTMLPrettfier(HTMLParser):
         This is a custom method not part of the HTMLParser spec
         that ingests a coverage HTML str, handles the formatting, returns it,
         and resets this formatter's instance, so that the operation
-        is more functionable.
+        is more functional.
         """
         self.feed(html_str)
         result = self.prettified_html

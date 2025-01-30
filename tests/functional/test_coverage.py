@@ -255,7 +255,7 @@ class TestCoverageTracker:
 
             try:
                 # Hack in our mock compiler.
-                _ = compilers.registered_compilers  # Ensure cache is exists.
+                _ = compilers.registered_compilers  # Ensure cache exists.
                 compilers.__dict__["registered_compilers"][mock_compiler.ext] = mock_compiler
 
                 # Ensure our coverage tracker is using our new tmp project w/ the new src

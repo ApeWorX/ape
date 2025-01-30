@@ -37,8 +37,7 @@ from ape.utils.misc import ZERO_ADDRESS, is_evm_precompile, is_zero_hex, log_ins
 if TYPE_CHECKING:
     from rich.console import Console as RichConsole
 
-    from ape.types.trace import GasReport, SourceTraceback
-    from ape.types.vm import SnapshotID
+    from ape.types import BlockID, ContractCode, GasReport, SnapshotID, SourceTraceback
 
 
 class BlockContainer(BaseManager):
@@ -703,7 +702,7 @@ class ReportManager(BaseManager):
 class ChainManager(BaseManager):
     """
     A class for managing the state of the active blockchain.
-    Also handy for querying data about the chain and managing local caches.
+    Also, handy for querying data about the chain and managing local caches.
     Access the chain manager singleton from the root ``ape`` namespace.
 
     Usage example::
@@ -716,6 +715,7 @@ class ChainManager(BaseManager):
     _block_container_map: dict[int, BlockContainer] = {}
     _transaction_history_map: dict[int, TransactionHistory] = {}
     _reports: ReportManager = ReportManager()
+    _code: dict[str, dict[str, dict[AddressType, "ContractCode"]]] = {}
 
     @cached_property
     def contracts(self) -> ContractCache:
@@ -757,7 +757,6 @@ class ChainManager(BaseManager):
         The blockchain ID.
         See `ChainList <https://chainlist.org/>`__ for a comprehensive list of IDs.
         """
-
         network_name = self.provider.network.name
         if network_name not in self._chain_id_map:
             self._chain_id_map[network_name] = self.provider.chain_id
@@ -966,3 +965,26 @@ class ChainManager(BaseManager):
             raise TransactionNotFoundError(transaction_hash=transaction_hash)
 
         return receipt
+
+    def get_code(
+        self, address: AddressType, block_id: Optional["BlockID"] = None
+    ) -> "ContractCode":
+        network = self.provider.network
+
+        # Two reasons to avoid caching:
+        #   1. dev networks - chain isolation makes this mess up
+        #   2. specifying block_id= kwarg - likely checking if code
+        #      exists at the time and shouldn't use cache.
+        skip_cache = network.is_dev or block_id is not None
+        if skip_cache:
+            return self.provider.get_code(address, block_id=block_id)
+
+        self._code.setdefault(network.ecosystem.name, {})
+        self._code[network.ecosystem.name].setdefault(network.name, {})
+        if address in self._code[network.ecosystem.name][network.name]:
+            return self._code[network.ecosystem.name][network.name][address]
+
+        # Get from RPC for the first time AND use cache.
+        code = self.provider.get_code(address)
+        self._code[network.ecosystem.name][network.name][address] = code
+        return code
