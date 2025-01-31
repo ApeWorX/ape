@@ -40,6 +40,7 @@ from ape.utils.os import (
     get_relative_path,
     in_tempdir,
     path_match,
+    within_directory,
 )
 
 
@@ -2583,28 +2584,23 @@ class LocalProject(Project):
         self.sources._path_cache = None
         self._clear_cached_config()
 
-    def chdir(self, path: Path):
+    def chdir(self, path: Optional[Path] = None):
         """
         Change the local project to the new path.
 
         Args:
             path (Path): The path of the new project.
+              If not given, defaults to the project's path.
         """
-        if self.path == path:
-            return  # Already there!
-
+        path = path or self.path
         os.chdir(path)
+        if self.path == path:
+            return  # Already setup.
 
-        # Clear cached properties.
-        for prop in (
-            "path",
-            "_deduced_contracts_folder",
-            "project_api",
-            "contracts",
-            "interfaces_folder",
-            "sources",
-        ):
-            self.__dict__.pop(prop, None)
+        # New path: clear cached properties.
+        for attr in list(self.__dict__.keys()):
+            if isinstance(getattr(type(self), attr, None), cached_property):
+                del self.__dict__[attr]
 
         # Re-initialize
         self._session_source_change_check = set()
@@ -2612,6 +2608,16 @@ class LocalProject(Project):
         self._base_path = Path(path).resolve()
         self.manifest_path = self._base_path / ".build" / "__local__.json"
         self._manifest = self.load_manifest()
+
+    @contextmanager
+    def within_project_path(self):
+        """
+        A context-manager for changing the current working directory to the
+        project's ``.path``. Then, switching back to whatever the current
+        directory was before calling this method.
+        """
+        with within_directory(self.path):
+            yield
 
     def reload_config(self):
         """

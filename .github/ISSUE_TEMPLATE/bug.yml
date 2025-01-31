@@ -34,7 +34,7 @@ body:
         - Linux
     validations:
       required: true
-  - type: markdown
+  - type: textarea
     attributes:
       value: |
         ### ape-config.yaml file

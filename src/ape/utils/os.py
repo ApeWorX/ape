@@ -445,3 +445,21 @@ class CacheDirectory:
     def delete_data(self, key: str):
         file = self.get_file(key)
         file.unlink(missing_ok=True)
+
+
+@contextmanager
+def within_directory(directory: Path):
+    """
+    A context-manager for changing the cwd to the given path.
+
+    Args:
+        directory (Path): The directory to change.
+    """
+    here = Path.cwd()
+    if directory != here:
+        os.chdir(directory)
+    try:
+        yield
+    finally:
+        if Path.cwd() != here:
+            os.chdir(here)
