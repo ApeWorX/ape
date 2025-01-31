@@ -498,7 +498,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         self.evm_backend.add_account(private_key)
 
     def _get_last_base_fee(self) -> int:
-        base_fee = self._get_latest_block_rpc().get("base_fee_per_gas", None)
+        base_fee = self.evm_backend.get_block_by_number("pending").get("base_fee_per_gas", None)
         if base_fee is not None:
             return base_fee
 
