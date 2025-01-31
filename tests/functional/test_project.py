@@ -674,14 +674,17 @@ class TestProject:
     def test_init(self, with_dependencies_project_path):
         # Purpose not using `project_with_contracts` fixture.
         project = Project(with_dependencies_project_path)
-        assert project.path == with_dependencies_project_path
-        project.manifest_path.unlink(missing_ok=True)
 
-        #  Re-init to show it doesn't create the manifest file.
-        project = Project(with_dependencies_project_path)
+        # NOTE: Using tempdir to avoid clashing with other tests during x-dist.
+        with project.isolate_in_tempdir() as temp_project:
+            assert project.path == with_dependencies_project_path
+            project.manifest_path.unlink(missing_ok=True)
 
-        # Manifest should have been created by default.
-        assert not project.manifest_path.is_file()
+            #  Re-init to show it doesn't create the manifest file.
+            project = Project(temp_project.path)
+
+            # Manifest should not have been created by default
+            assert not project.manifest_path.is_file()
 
     def test_init_invalid_config(self):
         here = os.curdir
@@ -1065,3 +1068,15 @@ def test_chdir(project):
     # Undo.
     project.chdir(original_path)
     assert project.path == original_path
+
+
+def test_within_project_path():
+    start_cwd = Path.cwd()
+    with create_tempdir() as new_path:
+        project = Project(new_path)
+        assert Path.cwd() != new_path
+
+        with project.within_project_path():
+            assert Path.cwd() == project.path
+
+    assert Path.cwd() == start_cwd
