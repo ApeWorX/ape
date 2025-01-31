@@ -258,8 +258,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
             if txn.value < 0:
                 raise AccountsError("Value cannot be negative.")
 
-        sign = kwargs.pop("sign", True)
-        return self.call(txn, private=private, sign=sign, **kwargs)
+        return self.call(txn, private=private, **kwargs)
 
     def deploy(
         self, contract: "ContractContainer", *args, publish: bool = False, **kwargs
