@@ -110,6 +110,7 @@ class GethDevProcess(BaseGethProcess):
         auto_disconnect: bool = True,
         extra_funded_accounts: Optional[list[str]] = None,
         hd_path: Optional[str] = DEFAULT_TEST_HD_PATH,
+        block_time: Optional[int] = None,
     ):
         executable = executable or "geth"
         if not shutil.which(executable):
@@ -141,6 +142,8 @@ class GethDevProcess(BaseGethProcess):
             kwargs_ctor["ws_enabled"] = False
             kwargs_ctor["ws_addr"] = None
             kwargs_ctor["ws_port"] = None
+        if block_time is not None:
+            kwargs_ctor["dev_period"] = block_time
 
         geth_kwargs = construct_test_chain_kwargs(**kwargs_ctor)
 
@@ -166,9 +169,13 @@ class GethDevProcess(BaseGethProcess):
         number_of_accounts = kwargs.get("number_of_accounts", DEFAULT_NUMBER_OF_TEST_ACCOUNTS)
         balance = kwargs.get("initial_balance", DEFAULT_TEST_ACCOUNT_BALANCE)
         extra_accounts = [a.lower() for a in kwargs.get("extra_funded_accounts", [])]
+        block_time = kwargs.get("block_time", None)
+        if isinstance(block_time, int):
+            block_time = f"{block_time}"
 
         process_kwargs = {
             "auto_disconnect": kwargs.get("auto_disconnect", True),
+            "block_time": block_time,
             "executable": kwargs.get("executable"),
             "extra_funded_accounts": extra_accounts,
             "hd_path": kwargs.get("hd_path", DEFAULT_TEST_HD_PATH),
@@ -295,7 +302,7 @@ class EthereumNetworkConfig(PluginConfig):
     holesky: dict = {}
     sepolia: dict = {}
     # Make sure to run via `geth --dev` (or similar)
-    local: dict = {**DEFAULT_SETTINGS.copy(), "chain_id": DEFAULT_TEST_CHAIN_ID}
+    local: dict = {**DEFAULT_SETTINGS.copy(), "chain_id": DEFAULT_TEST_CHAIN_ID, "block_time": 0}
 
     model_config = SettingsConfigDict(extra="allow", env_prefix="APE_NODE_")
 
@@ -470,7 +477,9 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
         test_config["extra_funded_accounts"] = extra_accounts
         test_config["initial_balance"] = self.test_config.balance
         uri = self.ws_uri or self.uri
-        return GethDevProcess.from_uri(uri, self.data_dir, **test_config)
+        return GethDevProcess.from_uri(
+            uri, self.data_dir, block_time=self.settings.block_time, **test_config
+        )
 
     def disconnect(self):
         # Must disconnect process first.
