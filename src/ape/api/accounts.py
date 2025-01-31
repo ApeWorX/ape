@@ -124,6 +124,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         txn: TransactionAPI,
         send_everything: bool = False,
         private: bool = False,
+        sign: bool = True,
         **signer_options,
     ) -> ReceiptAPI:
         """
@@ -144,6 +145,8 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
             private (bool): ``True`` will use the
               :meth:`~ape.api.providers.ProviderAPI.send_private_transaction` method.
             **signer_options: Additional kwargs given to the signer to modify the signing operation.
+            sign (bool): ``False`` to not sign the transaction (useful for providers like Titanoboa
+              which still use a sender but don't need to sign).
 
         Returns:
             :class:`~ape.api.transactions.ReceiptAPI`
@@ -177,17 +180,21 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
             else:
                 txn.value = amount_to_send
 
-        signed_txn = self.sign_transaction(txn, **signer_options)
-        if not signed_txn:
-            raise SignatureError("The transaction was not signed.")
+        if sign:
+            prepared_txn = self.sign_transaction(txn, **signer_options)
+            if not prepared_txn:
+                raise SignatureError("The transaction was not signed.")
 
-        if not txn.sender:
-            txn.sender = self.address
+        else:
+            prepared_txn = txn
+
+        if not prepared_txn.sender:
+            prepared_txn.sender = self.address
 
         return (
-            self.provider.send_private_transaction(signed_txn)
+            self.provider.send_private_transaction(prepared_txn)
             if private
-            else self.provider.send_transaction(signed_txn)
+            else self.provider.send_transaction(prepared_txn)
         )
 
     def transfer(
@@ -683,7 +690,12 @@ class ImpersonatedAccount(AccountAPI):
         return txn
 
     def call(
-        self, txn: TransactionAPI, send_everything: bool = False, private: bool = False, **kwargs
+        self,
+        txn: TransactionAPI,
+        send_everything: bool = False,
+        private: bool = False,
+        sign: bool = True,
+        **kwargs,
     ) -> ReceiptAPI:
         txn = self.prepare_transaction(txn)
         txn.sender = txn.sender or self.raw_address

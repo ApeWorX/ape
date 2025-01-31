@@ -978,3 +978,15 @@ def test_repr(account_manager):
     """
     actual = repr(account_manager)
     assert actual == "<AccountManager>"
+
+
+def test_call(owner, vyper_contract_instance):
+    tx = vyper_contract_instance.setNumber.as_transaction(5991)
+    receipt = owner.call(tx)
+    assert not receipt.failed
+
+
+def test_call_sign_false(owner, vyper_contract_instance):
+    tx = vyper_contract_instance.setNumber.as_transaction(5991)
+    with pytest.raises(SignatureError):
+        owner.call(tx, sign=False)
