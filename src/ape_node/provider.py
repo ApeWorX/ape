@@ -399,6 +399,10 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
         return self.settings.ethereum.local.get("chain_id", DEFAULT_TEST_CHAIN_ID)
 
     @property
+    def block_time(self) -> Optional[int]:
+        return self.settings.ethereum.local.get("block_time")
+
+    @property
     def data_dir(self) -> Path:
         # Overridden from base class for placing debug logs in ape data folder.
         return self.settings.data_dir or self.config_manager.DATA_FOLDER / self.name
@@ -478,7 +482,7 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
         test_config["initial_balance"] = self.test_config.balance
         uri = self.ws_uri or self.uri
         return GethDevProcess.from_uri(
-            uri, self.data_dir, block_time=self.settings.block_time, **test_config
+            uri, self.data_dir, block_time=self.block_time, **test_config
         )
 
     def disconnect(self):
