@@ -996,10 +996,6 @@ class NetworkAPI(BaseInterfaceModel):
         """
         return self.config.get("base_fee_multiplier", 1.0)
 
-    @base_fee_multiplier.setter
-    def base_fee_multiplier(self, value: float):
-        self.config["base_fee_multiplier"] = value
-
     @property
     def chain_id(self) -> int:
         """
@@ -1044,10 +1040,6 @@ class NetworkAPI(BaseInterfaceModel):
         """
         return self.config.get("block_time", 0)
 
-    @block_time.setter
-    def block_time(self, value: int):
-        self.config["block_time"] = value
-
     @property
     def transaction_acceptance_timeout(self) -> int:
         """
@@ -1058,10 +1050,6 @@ class NetworkAPI(BaseInterfaceModel):
         return self.config.get(
             "transaction_acceptance_timeout", DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT
         )
-
-    @transaction_acceptance_timeout.setter
-    def transaction_acceptance_timeout(self, value: int):
-        self.config["transaction_acceptance_timeout"] = value
 
     @cached_property
     def explorer(self) -> Optional["ExplorerAPI"]:

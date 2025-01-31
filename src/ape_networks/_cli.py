@@ -131,7 +131,6 @@ def run(cli_ctx, provider, block_time):
 
     # Set block time if provided
     if block_time is not None:
-        provider.network.block_time = block_time
         provider.provider_settings.update({"block_time": block_time})
 
     # Start showing process logs.
