@@ -112,7 +112,8 @@ def _list(cli_ctx, output_format, ecosystem_filter, network_filter, provider_fil
 @cli.command(short_help="Start a node process")
 @ape_cli_context()
 @network_option(default="ethereum:local:node")
-def run(cli_ctx, provider):
+@click.option("--block-time", default=None, type=int, help="Block time in seconds")
+def run(cli_ctx, provider, block_time):
     """
     Start a subprocess node as if running independently
     and stream stdout and stderr.
@@ -128,6 +129,10 @@ def run(cli_ctx, provider):
     elif provider.is_connected:
         cli_ctx.abort("Process already running.")
 
+    # Set block time if provided
+    if block_time is not None:
+        provider.provider_settings.update({"block_time": block_time})
+
     # Start showing process logs.
     original_level = cli_ctx.logger.level
     original_format = cli_ctx.logger.fmt
@@ -135,6 +140,7 @@ def run(cli_ctx, provider):
 
     # Change format to exclude log level (since it is always just DEBUG)
     cli_ctx.logger.format(fmt="%(message)s")
+
     try:
         _run(cli_ctx, provider)
     finally:
@@ -143,6 +149,7 @@ def run(cli_ctx, provider):
 
 
 def _run(cli_ctx, provider: "SubprocessProvider"):
+
     provider.connect()
     if process := provider.process:
         try:

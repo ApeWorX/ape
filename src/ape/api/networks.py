@@ -1038,7 +1038,6 @@ class NetworkAPI(BaseInterfaceModel):
               mainnet:
                 block_time: 15
         """
-
         return self.config.get("block_time", 0)
 
     @property
