@@ -17,6 +17,7 @@ from ape.exceptions import (
     ContractLogicError,
     CustomError,
     MethodNonPayableError,
+    SignatureError,
 )
 from ape.types.address import AddressType
 from ape_ethereum.transactions import TransactionStatusEnum, TransactionType
@@ -72,6 +73,11 @@ def test_eq(vyper_contract_instance, chain):
 def test_contract_transactions(owner, contract_instance):
     contract_instance.setNumber(2, sender=owner)
     assert contract_instance.myNumber() == 2
+
+
+def test_contract_transaction_when_sign_false(owner, contract_instance):
+    with pytest.raises(SignatureError):
+        contract_instance.setNumber(2, sender=owner, sign=False)
 
 
 def test_wrong_number_of_arguments(owner, contract_instance):

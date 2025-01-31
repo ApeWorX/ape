@@ -261,6 +261,11 @@ def test_transfer_mixed_up_sender_and_value(sender, receiver):
         sender.transfer("123 wei", receiver)
 
 
+def test_transfer_sign_is_false(sender, receiver):
+    with pytest.raises(SignatureError):
+        sender.transfer(receiver, "1 gwei", sign=False)
+
+
 def test_deploy(owner, contract_container, clean_contract_caches):
     contract = owner.deploy(contract_container, 0)
     assert contract.address
@@ -978,3 +983,15 @@ def test_repr(account_manager):
     """
     actual = repr(account_manager)
     assert actual == "<AccountManager>"
+
+
+def test_call(owner, vyper_contract_instance):
+    tx = vyper_contract_instance.setNumber.as_transaction(5991)
+    receipt = owner.call(tx)
+    assert not receipt.failed
+
+
+def test_call_sign_false(owner, vyper_contract_instance):
+    tx = vyper_contract_instance.setNumber.as_transaction(5991)
+    with pytest.raises(SignatureError):
+        owner.call(tx, sign=False)
