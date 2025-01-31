@@ -90,7 +90,8 @@ class ContractConstructor(ManagerAccessMixin):
 
         if "sender" in kwargs and hasattr(kwargs["sender"], "call"):
             sender = kwargs["sender"]
-            return sender.call(txn, **kwargs)
+            sign = kwargs.pop("sign", True)
+            return sender.call(txn, sign=sign, **kwargs)
         elif "sender" not in kwargs and self.account_manager.default_sender is not None:
             return self.account_manager.default_sender.call(txn, **kwargs)
 

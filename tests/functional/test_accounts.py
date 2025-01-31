@@ -261,6 +261,11 @@ def test_transfer_mixed_up_sender_and_value(sender, receiver):
         sender.transfer("123 wei", receiver)
 
 
+def test_transfer_sign_is_false(sender, receiver):
+    with pytest.raises(SignatureError):
+        sender.transfer(receiver, "1 gwei", sign=False)
+
+
 def test_deploy(owner, contract_container, clean_contract_caches):
     contract = owner.deploy(contract_container, 0)
     assert contract.address
