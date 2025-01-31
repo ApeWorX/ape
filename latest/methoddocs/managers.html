@@ -410,6 +410,7 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#ape.managers.project.LocalProject.sources"><code class="docutils literal notranslate">sources</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.project.LocalProject.unpack"><code class="docutils literal notranslate">unpack()</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.project.LocalProject.update_manifest"><code class="docutils literal notranslate">update_manifest()</span></code></a></li>
+<li><a class="reference internal" href="#ape.managers.project.LocalProject.within_project_path"><code class="docutils literal notranslate">within_project_path()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#ape.managers.project.PackagesCache"><code class="docutils literal notranslate"><span class="pre">PackagesCache</span></code></a><ul>
@@ -3103,11 +3104,12 @@ to track as a deployment of the project.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.managers.project.LocalProject.chdir">
-<span class="sig-name descname"><span class="pre">chdir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.project.LocalProject.chdir" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">chdir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.project.LocalProject.chdir" title="Link to this definition"></a></dt>
 <dd><p>Change the local project to the new path.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>path</strong> (<a class="reference internal" href="cli.html#ape.cli.paramtype.Path" title="ape.cli.paramtype.Path"><em>Path</em></a>) – The path of the new project.</p>
+<dd class="field-odd"><p><strong>path</strong> (<a class="reference internal" href="cli.html#ape.cli.paramtype.Path" title="ape.cli.paramtype.Path"><em>Path</em></a>) – The path of the new project.
+If not given, defaults to the project’s path.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -3246,6 +3248,14 @@ to a local one.</p>
 <dd class="field-odd"><p><strong>**kwargs</strong> – Top-level manifest attributes.</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.project.LocalProject.within_project_path">
+<span class="sig-name descname"><span class="pre">within_project_path</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.project.LocalProject.within_project_path" title="Link to this definition"></a></dt>
+<dd><p>A context-manager for changing the current working directory to the
+project’s <code class="docutils literal notranslate"><span class="pre">.path</span></code>. Then, switching back to whatever the current
+directory was before calling this method.</p>
 </dd></dl>
 
 </dd></dl>
