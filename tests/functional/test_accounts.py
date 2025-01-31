@@ -170,7 +170,7 @@ def test_transfer_without_value_send_everything_true_with_low_gas(sender, receiv
 
     # Clear balance of sender.
     # Use small gas so for sure runs out of money.
-    receipt = sender.transfer(receiver, send_everything=True, gas=21000)
+    receipt = sender.transfer(receiver, send_everything=True, gas=22000)
 
     value_given = receipt.value
     total_spent = value_given + receipt.total_fees_paid

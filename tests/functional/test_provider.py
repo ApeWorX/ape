@@ -534,7 +534,7 @@ def test_make_request_rate_limiting(mocker, ethereum, mock_web3):
 
 def test_base_fee(eth_tester_provider):
     actual = eth_tester_provider.base_fee
-    assert actual > 0
+    assert actual >= eth_tester_provider.get_block("pending").base_fee
 
     # NOTE: Mostly doing this to ensure we are calling the fee history
     #   RPC correctly. There was a bug where we were not.
