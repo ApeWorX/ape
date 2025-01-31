@@ -144,9 +144,9 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
               Defaults to ``False``.
             private (bool): ``True`` will use the
               :meth:`~ape.api.providers.ProviderAPI.send_private_transaction` method.
-            **signer_options: Additional kwargs given to the signer to modify the signing operation.
             sign (bool): ``False`` to not sign the transaction (useful for providers like Titanoboa
               which still use a sender but don't need to sign).
+            **signer_options: Additional kwargs given to the signer to modify the signing operation.
 
         Returns:
             :class:`~ape.api.transactions.ReceiptAPI`
