@@ -27,6 +27,7 @@ from ape.exceptions import (
 )
 from ape.utils import to_int
 from ape.utils._web3_compat import ExtraDataToPOAMiddleware
+from ape.utils.os import create_tempdir
 from ape_ethereum.ecosystem import Block
 from ape_ethereum.provider import DEFAULT_SETTINGS, EthereumNodeProvider, Web3Provider
 from ape_ethereum.trace import TraceApproach
@@ -947,3 +948,25 @@ def test_geth_dev_block_period(data_folder):
         initialize_chain=False,
     )
     assert geth_dev.geth_kwargs["dev_period"] == "1"
+
+
+def test_geth_dev_disconnect_does_not_delete_unrelated_files_in_given_data_dir():
+    """
+    One time, I used a data-dir containing other files I didn't want to lose. GethDevProcess
+    deleted the entire folder during `.disconnect()`, and it was tragic. Ensure this does
+    not happen to anyone else.
+    """
+    with create_tempdir() as temp_dir:
+        file = temp_dir / "dont_delete_me_plz.txt"
+        file.write_text("Please don't delete me.")
+
+        geth_dev = GethDevProcess.from_uri(
+            "path/to/geth.ipc",
+            temp_dir,
+            block_time=1,
+            generate_accounts=False,
+            initialize_chain=False,
+        )
+        geth_dev.disconnect()
+        assert file.is_file()
+        assert not (temp_dir / "genesis.json").is_file()
