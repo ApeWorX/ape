@@ -713,7 +713,7 @@ def test_make_request_not_exists_different_messages(message, mock_web3, geth_pro
 def test_geth_bin_not_found():
     bin_name = "__NOT_A_REAL_EXECUTABLE_HOPEFULLY__"
     with pytest.raises(NodeSoftwareNotInstalledError):
-        _ = GethDevProcess(Path.cwd(), executable=bin_name)
+        _ = GethDevProcess(Path.cwd() / "notexists", executable=bin_name)
 
 
 @geth_process_test
@@ -935,3 +935,15 @@ def test_geth_dev_from_uri_ipc(data_folder):
     assert kwargs.get("ws_api") is None
     assert kwargs.get("ws_addr") is None
     assert kwargs.get("rpc_addr") is None
+
+
+@geth_process_test
+def test_geth_dev_block_period(data_folder):
+    geth_dev = GethDevProcess.from_uri(
+        "path/to/geth.ipc",
+        data_folder,
+        block_time=1,
+        generate_accounts=False,
+        initialize_chain=False,
+    )
+    assert geth_dev.geth_kwargs["dev_period"] == "1"
