@@ -38,6 +38,15 @@ ape my_cmd -v ERROR
 
 *NOTE*: You can put the verbosity flag anywhere in your CLI command for _most_ commands.
 
+To disable logging completely, you can use keyword "DISABLE" or "NONE" as the `--verbosity` value:
+
+```shell
+ape my_cmd -v NONE
+```
+
+Now, Ape won't log at all.
+**This can be useful if you need the output of the CLI for something else.**
+
 ## Python Logging
 
 You can also import and use the logger in your own Python scripts or commands:
@@ -48,4 +57,27 @@ from ape.logging import logger, LogLevel
 def main():
     logger.info("You have entered `main()`.")
     logger.set_level(LogLevel.WARNING)
+```
+
+You can also use the `.at_level()` context-manager to temporarily change the log-level:
+
+```python
+from ape.logging import logger, LogLevel
+
+def main():
+    with logger.at_level(LogLevel.WARNING):
+        # An operation where you want to ensure WARN-level logs appear.
+        pass
+```
+
+You can also disable the logger in Python:
+
+```python
+from ape.logging import logger, LogLevel
+
+def main():
+    logger.disable()  # Turns off logging entirely.
+    with logger.disabled():
+        # Turns off logging in a context - useful for capturing stdout.
+        pass
 ```

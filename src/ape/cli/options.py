@@ -110,6 +110,8 @@ def _create_verbosity_kwargs(
             value = value.upper()
             if value.startswith("LOGLEVEL."):
                 value = value.split(".")[-1].strip()
+            elif value in ("DISABLE", "NONE"):
+                value = ape_logger.DISABLE_LEVEL
 
         if callback is not None:
             value = callback(ctx, param, value)
