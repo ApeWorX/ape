@@ -22,7 +22,7 @@ repos:
         additional_dependencies: [flake8-breakpoint, flake8-print, flake8-pydantic, flake8-type-checking]
 
 -   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.13.0
+    rev: v1.14.1
     hooks:
     -   id: mypy
         additional_dependencies: [
