@@ -1,6 +1,7 @@
 import re
+from abc import ABC
 from pathlib import Path
-from typing import cast
+from typing import Optional, cast
 
 import pytest
 from eth_pydantic_types import HashBytes32
@@ -12,6 +13,7 @@ from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.exceptions import ExtraDataLengthError
 from web3.providers import HTTPProvider
 
+from ape.api import NetworkAPI
 from ape.exceptions import (
     APINotImplementedError,
     BlockNotFoundError,
@@ -26,7 +28,7 @@ from ape.exceptions import (
 from ape.utils import to_int
 from ape.utils._web3_compat import ExtraDataToPOAMiddleware
 from ape_ethereum.ecosystem import Block
-from ape_ethereum.provider import DEFAULT_SETTINGS, EthereumNodeProvider
+from ape_ethereum.provider import DEFAULT_SETTINGS, EthereumNodeProvider, Web3Provider
 from ape_ethereum.trace import TraceApproach
 from ape_ethereum.transactions import (
     AccessList,
@@ -141,6 +143,29 @@ def test_uri_invalid(geth_provider, project, ethereum):
 
     finally:
         geth_provider.provider_settings = settings
+
+
+def test_uri_missing(mock_sepolia):
+    class MyProvider(Web3Provider, ABC):
+        network: NetworkAPI = mock_sepolia
+        name: str = "devnode"
+        _connected_uri = None
+        _configured_rpc = None
+
+        @property
+        def _default_http_uri(self) -> Optional[str]:
+            # Doing this to get the error to occur.
+            return None
+
+        def connect(self):
+            pass
+
+        def disconnect(self):
+            pass
+
+    provider = MyProvider()
+    with pytest.raises(ProviderError, match="Missing URI for network 'sepolia' on 'ethereum'."):
+        _ = provider.uri
 
 
 @geth_process_test
