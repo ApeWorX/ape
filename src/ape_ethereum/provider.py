@@ -336,7 +336,9 @@ class Web3Provider(ProviderAPI, ABC):
         # NOTE: Don't use default IPC path here. IPC must be
         #   configured if it is the only RPC.
 
-        raise ProviderError("Missing URI.")
+        raise ProviderError(
+            f"Missing URI for network '{self.network.name}' on '{self.network.ecosystem.name}'."
+        )
 
     @property
     def network_choice(self) -> str:

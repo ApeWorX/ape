@@ -23,7 +23,7 @@ extras_require = {
     ],
     "lint": [
         "black>=24.10.0,<25",  # Auto-formatter and linter
-        "mypy>=1.13.0,<2",  # Static type analyzer
+        "mypy>=1.14.1,<1.15.0",  # Static type analyzer
         "types-PyYAML",  # Needed due to mypy typeshed
         "types-requests",  # Needed due to mypy typeshed
         "types-setuptools",  # Needed due to mypy typeshed
