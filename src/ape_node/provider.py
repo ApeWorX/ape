@@ -293,7 +293,12 @@ class GethDevProcess(BaseGethProcess):
 
     def _clean(self):
         if self._data_dir.is_dir():
-            shutil.rmtree(self._data_dir, ignore_errors=True)
+            # In case data-dir is being used for something else,
+            # only delete geth-dev node related stuff.
+            (self._data_dir / "genesis.json").unlink(missing_ok=True)
+            shutil.rmtree((self._data_dir / "geth").as_posix(), ignore_errors=True)
+            shutil.rmtree((self._data_dir / "keystore").as_posix(), ignore_errors=True)
+            shutil.rmtree((self._data_dir / "subprocess_output").as_posix(), ignore_errors=True)
 
         # dir must exist when initializing chain.
         self._data_dir.mkdir(parents=True, exist_ok=True)
