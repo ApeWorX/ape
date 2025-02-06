@@ -220,6 +220,12 @@ To do this, use the <code class="docutils literal notranslate"><span class="pre"
 </span></pre></div>
 </div>
 <p><em>NOTE</em>: You can put the verbosity flag anywhere in your CLI command for <em>most</em> commands.</p>
+<p>To disable logging completely, you can use keyword “DISABLE” or “NONE” as the <code class="docutils literal notranslate"><span class="pre">--verbosity</span></code> value:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>my_cmd<span class="w"> </span>-v<span class="w"> </span>NONE
+</span></pre></div>
+</div>
+<p>Now, Ape won’t log at all.
+<strong>This can be useful if you need the output of the CLI for something else.</strong></p>
 </section>
 <section id="python-logging">
 <h2>Python Logging<a class="headerlink" href="#python-logging" title="Link to this heading"></a></h2>
@@ -229,6 +235,25 @@ To do this, use the <code class="docutils literal notranslate"><span class="pre"
 </span><span data-line="3"><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
 </span><span data-line="4">    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;You have entered `main()`.&quot;</span><span class="p">)</span>
 </span><span data-line="5">    <span class="n">logger</span><span class="o">.</span><span class="n">set_level</span><span class="p">(</span><span class="n">LogLevel</span><span class="o">.</span><span class="n">WARNING</span><span class="p">)</span>
+</span></pre></div>
+</div>
+<p>You can also use the <code class="docutils literal notranslate"><span class="pre">.at_level()</span></code> context-manager to temporarily change the log-level:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.logging</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span><span class="p">,</span> <span class="n">LogLevel</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+</span><span data-line="4">    <span class="k">with</span> <span class="n">logger</span><span class="o">.</span><span class="n">at_level</span><span class="p">(</span><span class="n">LogLevel</span><span class="o">.</span><span class="n">WARNING</span><span class="p">):</span>
+</span><span data-line="5">        <span class="c1"># An operation where you want to ensure WARN-level logs appear.</span>
+</span><span data-line="6">        <span class="k">pass</span>
+</span></pre></div>
+</div>
+<p>You can also disable the logger in Python:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.logging</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span><span class="p">,</span> <span class="n">LogLevel</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+</span><span data-line="4">    <span class="n">logger</span><span class="o">.</span><span class="n">disable</span><span class="p">()</span>  <span class="c1"># Turns off logging entirely.</span>
+</span><span data-line="5">    <span class="k">with</span> <span class="n">logger</span><span class="o">.</span><span class="n">disabled</span><span class="p">():</span>
+</span><span data-line="6">        <span class="c1"># Turns off logging in a context - useful for capturing stdout.</span>
+</span><span data-line="7">        <span class="k">pass</span>
 </span></pre></div>
 </div>
 </section>
