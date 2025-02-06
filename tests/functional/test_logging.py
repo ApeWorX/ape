@@ -3,7 +3,7 @@ import pytest
 from click.testing import CliRunner
 
 from ape.cli import ape_cli_context
-from ape.logging import LogLevel, logger, sanitize_url
+from ape.logging import LogLevel, logger, sanitize_url, silenced
 
 
 @pytest.fixture
@@ -147,3 +147,14 @@ def test_disabled(ape_caplog):
     # Show it is back.
     logger.error(message)
     assert message in ape_caplog.head
+
+
+def test_silenced(ape_caplog):
+    @silenced
+    def method_to_silence(x: int, y: str):
+        logger.error(f"{x} {y}")
+
+    magic = [156236, "Asd#g"]
+    unexpected = f"{magic[0]} {magic[1]}"
+    method_to_silence(*magic)
+    assert unexpected not in ape_caplog.head

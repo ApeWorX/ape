@@ -379,4 +379,19 @@ def get_rich_console(file: Optional[IO[str]] = None, **kwargs) -> "RichConsole":
     return _factory.get_console(file, **kwargs)
 
 
-__all__ = ["DEFAULT_LOG_LEVEL", "logger", "LogLevel", "ApeLogger", "get_rich_console"]
+def silenced(func: Callable):
+    """
+    A decorator for ensuring a function does not output any logs.
+
+    Args:
+        func (Callable): The function to call silently.
+    """
+
+    def wrapper(*args, **kwargs):
+        with logger.disabled():
+            return func(*args, **kwargs)
+
+    return wrapper
+
+
+__all__ = ["DEFAULT_LOG_LEVEL", "logger", "LogLevel", "ApeLogger", "get_rich_console", "silenced"]
