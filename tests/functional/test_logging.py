@@ -136,3 +136,14 @@ def test_sanitize_url(url):
     actual = sanitize_url(url)
     expected = "https://example.com/[hidden]"
     assert actual == expected
+
+
+def test_disabled(ape_caplog):
+    message = "Can you hear me now?"
+    with logger.disabled():
+        logger.error(message)
+        assert message not in ape_caplog.head
+
+    # Show it is back.
+    logger.error(message)
+    assert message in ape_caplog.head

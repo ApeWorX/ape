@@ -122,6 +122,7 @@ class ClickHandler(logging.Handler):
 class ApeLogger:
     _mentioned_verbosity_option = False
     _extra_loggers: dict[str, logging.Logger] = {}
+    DISABLE_LEVEL: int = 100_000
 
     def __init__(
         self,
@@ -216,11 +217,18 @@ class ApeLogger:
         Returns:
             Iterator
         """
-
         initial_level = self.level
         self.set_level(level)
         yield
         self.set_level(initial_level)
+
+    def disable(self):
+        self.set_level(self.DISABLE_LEVEL)
+
+    @contextmanager
+    def disabled(self):
+        with self.at_level(self.DISABLE_LEVEL):
+            yield
 
     def log_error(self, err: Exception):
         """
