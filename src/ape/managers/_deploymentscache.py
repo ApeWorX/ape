@@ -83,6 +83,9 @@ class DeploymentDiskCache(BaseManager):
     def __delitem__(self, contract_name: str):
         self.remove_deployments(contract_name)
 
+    def __contains__(self, contract_name: str):
+        return bool(self.get_deployments(contract_name))
+
     def get_deployments(
         self,
         contract_name: str,
@@ -172,7 +175,7 @@ class DeploymentDiskCache(BaseManager):
         self._all_deployments.ecosystems[ecosystem_name][network_name][contract_name] = deployments
 
         # For live networks, cache the deployments to a file as well.
-        if self._is_live_network:
+        if self._is_live_network and ecosystem_name in self._deployments:
             self._deployments[ecosystem_name].model_dump_file()
 
     def remove_deployments(self, contract_name: str):
