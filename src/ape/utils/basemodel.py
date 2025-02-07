@@ -640,6 +640,7 @@ class DiskCacheableModel(BaseModel):
         path = self._get_path(path=path)
         json_str = self.model_dump_json(**kwargs)
         path.unlink(missing_ok=True)
+        path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(json_str)
 
     @classmethod
