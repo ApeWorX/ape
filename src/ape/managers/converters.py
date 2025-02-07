@@ -394,6 +394,18 @@ class ConversionManager(BaseManager):
 
         raise ConversionError(f"No conversion registered to handle '{value}'.")
 
+    def get_converters_by_type(self, converter_type: type) -> list[ConverterAPI]:
+        """
+        Get all the converters for the given type.
+
+        Args:
+            converter_type (type): The type to get converters for.
+
+        Returns:
+            list[ConverterAPI]: All registered converters for the given type.
+        """
+        return self._converters.get(converter_type, [])
+
     def get_converter(self, name: str) -> ConverterAPI:
         """
         Get a converter plugin by name.
