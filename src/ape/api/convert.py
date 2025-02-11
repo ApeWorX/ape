@@ -45,3 +45,14 @@ class ConverterAPI(BaseInterfaceModel, Generic[ConvertedType]):
             # '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'
 
         """
+
+    @property
+    def name(self) -> str:
+        """
+        The calculated name of the converter class.
+        Typically, it is the lowered prefix of the class without
+        the "Converter" or "Conversions" suffix.
+        """
+        class_name = self.__class__.__name__
+        name = class_name.replace("Converter", "").replace("Conversions", "")
+        return name.lower()
