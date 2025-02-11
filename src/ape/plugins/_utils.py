@@ -220,7 +220,10 @@ class PluginMetadataList(BaseModel):
 
     @classmethod
     def from_package_names(
-        cls, packages: Iterable[str], include_available: bool = True
+        cls,
+        packages: Iterable[str],
+        include_available: bool = True,
+        trusted_list: Optional[list] = None,
     ) -> "PluginMetadataList":
         PluginMetadataList.model_rebuild()
         core = PluginGroup(plugin_type=PluginType.CORE)
@@ -238,7 +241,7 @@ class PluginMetadataList(BaseModel):
 
             # perf: only check these once.
             is_installed = plugin.is_installed
-            is_trusted = plugin.check_trusted(use_web=False)
+            is_trusted = plugin.check_trusted(use_web=False, trusted_list=trusted_list)
             is_available = include_available and plugin.is_available
 
             if include_available and is_available and not is_installed:
@@ -470,13 +473,14 @@ class PluginMetadata(BaseInterfaceModel):
 
         return any(n == self.package_name for n in get_plugin_dists())
 
-    def check_trusted(self, use_web: bool = True) -> bool:
+    def check_trusted(self, use_web: bool = True, trusted_list: Optional[list] = None) -> bool:
         if use_web:
             return self.is_available
 
         # Sometimes (such as for --help commands), it is better
         # to not check GitHub to see if the plugin is trusted.
-        return self.name in TRUSTED_PLUGINS
+        trusted_list = trusted_list or TRUSTED_PLUGINS
+        return self.name in trusted_list
 
     def _prepare_install(
         self, upgrade: bool = False, skip_confirmation: bool = False

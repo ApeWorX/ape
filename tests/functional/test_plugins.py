@@ -88,7 +88,7 @@ def plugin_metadata(package_names, plugin_test_env) -> PluginMetadataList:
     names.add(f"ape-installed==0.{ape_version.minor}.0")
     names.remove("ape-thirdparty")
     names.add(f"ape-thirdparty==0.{ape_version.minor}.0")
-    return PluginMetadataList.from_package_names(names)
+    return PluginMetadataList.from_package_names(names, trusted_list=("installed",))
 
 
 class TestPluginMetadataList:
