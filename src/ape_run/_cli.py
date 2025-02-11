@@ -124,17 +124,18 @@ class ScriptCommand(click.MultiCommand):
 
             self._namespace[filepath.stem] = cli_ns
             cli_obj = cli_ns["cli"]
-            if isinstance(cli_obj, click.Command):
-                params = [getattr(x, "name", None) for x in cli_obj.params]
-                if "verbosity" not in params:
-                    option_kwargs = _create_verbosity_kwargs()
-                    option = click.Option(_VERBOSITY_VALUES, **option_kwargs)
-                    cli_obj.params.append(option)
+            if not isinstance(cli_obj, click.Command):
+                logger.warning("Found `cli()` method but it is not a click command.")
+                return None
 
-                cli_obj.name = filepath.stem if cli_obj.name in ("cli", "", None) else cli_obj.name
-                return cli_obj
+            params = [getattr(x, "name", None) for x in cli_obj.params]
+            if "verbosity" not in params:
+                option_kwargs = _create_verbosity_kwargs()
+                option = click.Option(_VERBOSITY_VALUES, **option_kwargs)
+                cli_obj.params.append(option)
 
-            return click.Command(name=cli_obj.__name__, callback=cli_obj)
+            cli_obj.name = filepath.stem if cli_obj.name in ("cli", "", None) else cli_obj.name
+            return cli_obj
 
         elif "main" in code.co_names:
             logger.debug(f"Found 'main' method in script: {relative_filepath}")

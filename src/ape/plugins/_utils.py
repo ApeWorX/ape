@@ -223,7 +223,7 @@ class PluginMetadataList(BaseModel):
         cls,
         packages: Iterable[str],
         include_available: bool = True,
-        trusted_list: Optional[list] = None,
+        trusted_list: Optional[Iterable] = None,
     ) -> "PluginMetadataList":
         PluginMetadataList.model_rebuild()
         core = PluginGroup(plugin_type=PluginType.CORE)
@@ -473,7 +473,7 @@ class PluginMetadata(BaseInterfaceModel):
 
         return any(n == self.package_name for n in get_plugin_dists())
 
-    def check_trusted(self, use_web: bool = True, trusted_list: Optional[list] = None) -> bool:
+    def check_trusted(self, use_web: bool = True, trusted_list: Optional[Iterable] = None) -> bool:
         if use_web:
             return self.is_available
 
