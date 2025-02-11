@@ -471,3 +471,17 @@ def test_model_dump_json():
         '"MyEvent","log_index":0,'
         '"transaction_hash":"0x00000000000000000000000004d21f074916369e"}'
     )
+
+
+def test_transaction_hash():
+    event_arguments = {"key": 123, "validators": [HexBytes(123)]}
+    txn_hash = "a3430927834bd23"
+    event = ContractLog(
+        block_number=123,
+        block_hash="block-hash",
+        event_arguments=event_arguments,
+        event_name="MyEvent",
+        log_index=0,
+        transaction_hash=txn_hash,
+    )
+    assert event.transaction_hash == f"0x{txn_hash}"

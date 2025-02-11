@@ -6,7 +6,7 @@ from eth_abi.abi import encode
 from eth_abi.packed import encode_packed
 from eth_pydantic_types import HexBytes
 from eth_typing import Hash32, HexStr
-from eth_utils import encode_hex, keccak, to_hex
+from eth_utils import encode_hex, is_hex, keccak, to_hex
 from ethpm_types.abi import EventABI
 from pydantic import BaseModel, field_serializer, field_validator, model_validator
 from web3.types import FilterParams
@@ -192,6 +192,18 @@ class ContractLog(ExtraAttributesMixin, BaseContractLog):
     The index of the transaction's position when the log was created.
     Is `None` when from the pending block.
     """
+
+    @field_validator("transaction_hash", mode="before")
+    @classmethod
+    def _validate_transaction_hash(cls, transaction_hash):
+        if (
+            isinstance(transaction_hash, str)
+            and is_hex(transaction_hash)
+            and not transaction_hash.startswith("0x")
+        ):
+            return f"0x{transaction_hash}"
+
+        return transaction_hash
 
     @field_serializer("transaction_hash", "block_hash")
     def _serialize_hashes(self, value, info):
