@@ -71,11 +71,14 @@ class TestAccountManager(list, ManagerAccessMixin):
         """
         The seed phrase for generated test accounts.
         **WARNING**: Changing the test-mnemonic mid-session
-           re-starts the provider.
+           re-starts the provider (if connected to one).
         """
         self.config_manager.test.mnemonic = value
         self.containers["test"].mnemonic = value
-        self.provider.update_settings({"mnemonic": value})
+
+        if provider := self.network_manager.active_provider:
+            provider.update_settings({"mnemonic": value})
+
         self._accounts_by_index = {}
 
     @property
