@@ -6,7 +6,7 @@ from typing import Optional, Union
 
 from eth_utils import is_hex
 
-from ape.api.accounts import (
+from ape.api import (
     AccountAPI,
     AccountContainerAPI,
     ImpersonatedAccount,
@@ -52,6 +52,35 @@ class TestAccountManager(list, ManagerAccessMixin):
             plugin_name: container_type(name=plugin_name, account_type=account_type)
             for plugin_name, (container_type, account_type) in account_types
         }
+
+    @property
+    def mnemonic(self) -> str:
+        """
+        The seed phrase for generated test accounts.
+        """
+        return self.config_manager.get_config("test").mnemonic
+
+    @mnemonic.setter
+    def mnemonic(self, value: str):
+        """
+        The seed phrase for generated test accounts.
+        **WARNING**: Changing the test-mnemonic mid-session
+           re-starts the provider (if connected to one).
+        """
+        self.config_manager.test.mnemonic = value
+        self.containers["test"].mnemonic = value
+
+        if provider := self.network_manager.active_provider:
+            provider.update_settings({"mnemonic": value})
+
+        self._accounts_by_index = {}
+
+    @property
+    def number_of_accounts(self) -> int:
+        """
+        The number of test accounts to generate and fund by default.
+        """
+        return self.config_manager.test.number_of_accounts
 
     @property
     def hd_path(self) -> str:

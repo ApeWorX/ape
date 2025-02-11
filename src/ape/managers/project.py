@@ -1952,7 +1952,7 @@ class Project(ProjectManager):
         Change a project's config.
 
         Args:
-            **overrides: Config key-value pairs. Completely overridesfe
+            **overrides: Config key-value pairs. Completely overrides
               existing.
         """
 

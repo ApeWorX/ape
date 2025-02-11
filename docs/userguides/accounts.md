@@ -46,6 +46,16 @@ test:
   number_of_accounts: 5
 ```
 
+You can also change settings at run-time, such as the mnemonic:
+
+```python
+from ape import accounts
+
+accounts.test_accounts.mnemonic = "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat"
+print(accounts.test_accounts[0])
+# 0x627306090abaB3A6e1400e9345bC60c78a8BEf57
+```
+
 ```{warning}
 NEVER put a seed phrase with real funds here.
 ```
