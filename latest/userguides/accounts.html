@@ -217,6 +217,14 @@ Live network accounts are for interacting with live blockchains and should be se
 </span><span data-line="3"><span class="w">  </span><span class="nt">number_of_accounts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
 </span></pre></div>
 </div>
+<p>You can also change settings at run-time, such as the mnemonic:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">accounts</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="n">accounts</span><span class="o">.</span><span class="n">test_accounts</span><span class="o">.</span><span class="n">mnemonic</span> <span class="o">=</span> <span class="s2">&quot;candy maple cake sugar pudding cream honey rich smooth crumble sweet treat&quot;</span>
+</span><span data-line="4"><span class="nb">print</span><span class="p">(</span><span class="n">accounts</span><span class="o">.</span><span class="n">test_accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</span><span data-line="5"><span class="c1"># 0x627306090abaB3A6e1400e9345bC60c78a8BEf57</span>
+</span></pre></div>
+</div>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>NEVER put a seed phrase with real funds here.</p>

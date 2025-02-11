@@ -147,6 +147,8 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#ape.managers.accounts.TestAccountManager.__repr__"><code class="docutils literal notranslate">__repr__()</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.accounts.TestAccountManager.hd_path"><code class="docutils literal notranslate">hd_path</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.accounts.TestAccountManager.impersonate_account"><code class="docutils literal notranslate">impersonate_account()</span></code></a></li>
+<li><a class="reference internal" href="#ape.managers.accounts.TestAccountManager.mnemonic"><code class="docutils literal notranslate">mnemonic</span></code></a></li>
+<li><a class="reference internal" href="#ape.managers.accounts.TestAccountManager.number_of_accounts"><code class="docutils literal notranslate">number_of_accounts</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.accounts.TestAccountManager.stop_impersonating"><code class="docutils literal notranslate">stop_impersonating()</span></code></a></li>
 </ul>
 </li>
@@ -678,6 +680,18 @@ number-of-accounts using the <code class="docutils literal notranslate"><span cl
 <dd class="field-odd"><p><strong>address</strong> (<em>AddressType</em>) – The address to impersonate.</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.managers.accounts.TestAccountManager.mnemonic">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mnemonic</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape.managers.accounts.TestAccountManager.mnemonic" title="Link to this definition"></a></dt>
+<dd><p>The seed phrase for generated test accounts.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.managers.accounts.TestAccountManager.number_of_accounts">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">number_of_accounts</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ape.managers.accounts.TestAccountManager.number_of_accounts" title="Link to this definition"></a></dt>
+<dd><p>The number of test accounts to generate and fund by default.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -3387,7 +3401,7 @@ its project.</p>
 <dd><p>Change a project’s config.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>**overrides</strong> – Config key-value pairs. Completely overridesfe
+<dd class="field-odd"><p><strong>**overrides</strong> – Config key-value pairs. Completely overrides
 existing.</p>
 </dd>
 </dl>
