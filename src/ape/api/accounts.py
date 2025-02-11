@@ -29,6 +29,11 @@ from ape.types.address import AddressType
 from ape.types.signatures import MessageSignature, SignableMessage
 from ape.utils.basemodel import BaseInterfaceModel
 from ape.utils.misc import raises_not_implemented
+from ape.utils.testing import (
+    DEFAULT_NUMBER_OF_TEST_ACCOUNTS,
+    DEFAULT_TEST_HD_PATH,
+    DEFAULT_TEST_MNEMONIC,
+)
 
 if TYPE_CHECKING:
     from eth_pydantic_types import HexBytes
@@ -625,6 +630,30 @@ class TestAccountContainerAPI(AccountContainerAPI):
     :class:`~ape.utils.GeneratedDevAccounts`) should implement this API instead of
     ``AccountContainerAPI`` directly. Then, they show up in the ``accounts`` test fixture.
     """
+
+    @property
+    def mnemonic(self) -> str:
+        return self.config_manager.test.get("mnemonic", DEFAULT_TEST_MNEMONIC)
+
+    @mnemonic.setter
+    def mnemonic(self, value: str):
+        self.config_manager.test.mnemonic = value
+
+    @property
+    def number_of_accounts(self) -> int:
+        return self.config_manager.test.get("number_of_accounts", DEFAULT_NUMBER_OF_TEST_ACCOUNTS)
+
+    @number_of_accounts.setter
+    def number_of_accounts(self, value: int):
+        self.config_manager.test.number_of_accounts = value
+
+    @property
+    def hd_path(self) -> str:
+        return self.config_manager.test.get("hd_path", DEFAULT_TEST_HD_PATH)
+
+    @hd_path.setter
+    def hd_path(self, value: str):
+        self.config_manager.test.hd_path = value
 
     @cached_property
     def data_folder(self) -> Path:

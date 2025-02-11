@@ -20,6 +20,7 @@ from ape.exceptions import (
 )
 from ape.types.gas import AutoGasLimit
 from ape.types.signatures import recover_signer
+from ape.utils.testing import DEFAULT_TEST_MNEMONIC
 from ape_accounts.accounts import (
     KeyfileAccount,
     generate_account,
@@ -696,18 +697,34 @@ def test_using_different_hd_path(accounts, project, eth_tester_provider):
     assert old_address != new_address
 
 
-def test_using_random_mnemonic(accounts, project, eth_tester_provider):
-    mnemonic = "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat"
-    test_config = {"test": {"mnemonic": mnemonic}}
+def test_mnemonic(accounts):
+    actual = accounts.mnemonic
+    expected = DEFAULT_TEST_MNEMONIC
+    assert actual == expected
 
-    old_address = accounts[0].address
-    original_settings = eth_tester_provider.settings.model_dump(by_alias=True)
-    with project.temp_config(**test_config):
-        eth_tester_provider.update_settings(test_config["test"])
-        new_address = accounts[0].address
 
-    eth_tester_provider.update_settings(original_settings)
-    assert old_address != new_address
+def test_mnemonic_setter(accounts):
+    original_mnemonic = accounts.mnemonic
+    new_mnemonic = "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat"
+    original_address = accounts[0].address
+
+    # Change.
+    accounts.mnemonic = new_mnemonic
+    new_address = accounts[0].address
+
+    # Put back.
+    accounts.mnemonic = original_mnemonic
+
+    # Assert.
+    assert new_address != original_address
+
+
+def test_from_mnemonic(accounts, eth_tester_provider):
+    address = accounts[0].address
+    seed = "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat"
+    new_accounts = accounts.from_mnemonic(seed)
+    new_address = new_accounts[0].address
+    assert address != new_address
 
 
 def test_iter_test_accounts(accounts):
