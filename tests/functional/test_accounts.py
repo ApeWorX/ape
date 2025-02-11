@@ -719,14 +719,6 @@ def test_mnemonic_setter(accounts):
     assert new_address != original_address
 
 
-def test_from_mnemonic(accounts, eth_tester_provider):
-    address = accounts[0].address
-    seed = "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat"
-    new_accounts = accounts.from_mnemonic(seed)
-    new_address = new_accounts[0].address
-    assert address != new_address
-
-
 def test_iter_test_accounts(accounts):
     accounts.reset()
     accounts = list(iter(accounts))

@@ -39,12 +39,6 @@ class TestAccountManager(list, ManagerAccessMixin):
     _impersonated_accounts: dict[AddressType, ImpersonatedAccount] = {}
     _accounts_by_index: dict[int, AccountAPI] = {}
 
-    @classmethod
-    def from_mnemonic(cls, mnemonic: str) -> "TestAccountManager":
-        accounts = cls()
-        accounts.mnemonic = mnemonic
-        return accounts
-
     @log_instead_of_fail(default="<TestAccountManager>")
     def __repr__(self) -> str:
         return f"<apetest-wallet {self.hd_path}>"
