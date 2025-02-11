@@ -267,6 +267,8 @@ data-aria-dark="Switch to auto color mode">
 </li>
 <li><a class="reference internal" href="#ape.managers.converters.ConversionManager"><code class="docutils literal notranslate"><span class="pre">ConversionManager</span></code></a><ul>
 <li><a class="reference internal" href="#ape.managers.converters.ConversionManager.convert"><code class="docutils literal notranslate">convert()</span></code></a></li>
+<li><a class="reference internal" href="#ape.managers.converters.ConversionManager.get_converter"><code class="docutils literal notranslate">get_converter()</span></code></a></li>
+<li><a class="reference internal" href="#ape.managers.converters.ConversionManager.get_converters_by_type"><code class="docutils literal notranslate">get_converters_by_type()</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.converters.ConversionManager.is_type"><code class="docutils literal notranslate">is_type()</span></code></a></li>
 </ul>
 </li>
@@ -1956,6 +1958,40 @@ all <a class="reference internal" href="api.html#ape.api.convert.ConverterAPI" t
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>any</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.converters.ConversionManager.get_converter">
+<span class="sig-name descname"><span class="pre">get_converter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="api.html#ape.api.convert.ConverterAPI" title="ape.api.convert.ConverterAPI"><span class="pre">ConverterAPI</span></a></span></span><a class="headerlink" href="#ape.managers.converters.ConversionManager.get_converter" title="Link to this definition"></a></dt>
+<dd><p>Get a converter plugin by name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>name</strong> (<em>str</em>) – The name of the converter.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The converter.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ConverterAPI</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.converters.ConversionManager.get_converters_by_type">
+<span class="sig-name descname"><span class="pre">get_converters_by_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">converter_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">type</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.convert.ConverterAPI" title="ape.api.convert.ConverterAPI"><span class="pre">ConverterAPI</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.managers.converters.ConversionManager.get_converters_by_type" title="Link to this definition"></a></dt>
+<dd><p>Get all the converters for the given type.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>converter_type</strong> (<em>type</em>) – The type to get converters for.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>All registered converters for the given type.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[<a class="reference internal" href="api.html#ape.api.convert.ConverterAPI" title="ape.api.convert.ConverterAPI">ConverterAPI</a>]</p>
 </dd>
 </dl>
 </dd></dl>
