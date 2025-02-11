@@ -22,6 +22,9 @@ class ListResult:
     def __init__(self, lines: list[str]):
         self._lines = lines
 
+    def __str__(self) -> str:
+        return "\n".join(self._lines)
+
     @classmethod
     def parse_output(cls, output: str) -> "ListResult":
         lines = [x.strip() for x in output.split("\n") if x.strip()]
@@ -89,22 +92,17 @@ def installed_plugin(ape_plugins_runner):
     plugin_installed = TEST_PLUGIN_NAME in ape_plugins_runner.invoke_list().installed_plugins
     did_install = False
     if not plugin_installed:
-        install_result = ape_plugins_runner.invoke(
-            (
-                "install",
-                TEST_PLUGIN_NAME,
-            )
-        )
+        install_result = ape_plugins_runner.invoke("install", TEST_PLUGIN_NAME)
         list_result = ape_plugins_runner.invoke_list()
         plugins_list_output = list_result.installed_plugins
         did_install = TEST_PLUGIN_NAME in plugins_list_output
         msg = f"Failed to install plugin necessary for tests: {install_result.output}"
         assert did_install, msg
 
-    yield
+    yield TEST_PLUGIN_NAME
 
     if did_install:
-        ape_plugins_runner.invoke(("uninstall", TEST_PLUGIN_NAME))
+        ape_plugins_runner.invoke("uninstall", TEST_PLUGIN_NAME)
 
 
 @github_xfail()
@@ -132,24 +130,36 @@ def test_list_does_not_repeat(ape_plugins_runner, installed_plugin):
     assert "ethereum" not in result.available_plugins
 
 
+@github_xfail()
+def test_list_prefixed_format(ape_plugins_runner, installed_plugin):
+    result = ape_plugins_runner.invoke_list(("--format", "prefixed"))
+    assert f"ape-{installed_plugin}" in result.installed_plugins
+
+
+@github_xfail()
+def test_list_freeze_format(ape_plugins_runner, installed_plugin):
+    result = ape_plugins_runner.invoke_list(("--format", "freeze"))
+    assert f"ape-{installed_plugin}==" in f"{result}"
+
+
 @pytest.mark.pip
 @run_once
 def test_install_upgrade(ape_plugins_runner, installed_plugin):
-    result = ape_plugins_runner.invoke(("install", TEST_PLUGIN_NAME, "--upgrade"))
+    result = ape_plugins_runner.invoke("install", TEST_PLUGIN_NAME, "--upgrade")
     assert result.exit_code == 0
 
 
 @pytest.mark.pip
 @run_once
 def test_install_upgrade_failure(ape_plugins_runner):
-    result = ape_plugins_runner.invoke(("install", "NOT_EXISTS", "--upgrade"))
+    result = ape_plugins_runner.invoke("install", "NOT_EXISTS", "--upgrade")
     assert result.exit_code == 1
 
 
 @pytest.mark.pip
 @run_once
 def test_install_multiple_in_one_str(ape_plugins_runner):
-    result = ape_plugins_runner.invoke(("install", f"{TEST_PLUGIN_NAME} {TEST_PLUGIN_NAME_2}"))
+    result = ape_plugins_runner.invoke("install", f"{TEST_PLUGIN_NAME} {TEST_PLUGIN_NAME_2}")
     assert result.exit_code == 0
 
 

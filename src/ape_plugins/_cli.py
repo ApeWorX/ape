@@ -111,12 +111,21 @@ def _display_all_callback(ctx, param, value):
     callback=_display_all_callback,
     help="Display all plugins installed and available (including Core)",
 )
-def _list(cli_ctx, to_display):
+@click.option(
+    "--format",
+    "output_format",
+    type=click.Choice(["default", "prefixed", "freeze"]),
+    default="default",
+)
+@click.option("--exclude-version", is_flag=True, help="Do not include plugin versions in output")
+def _list(cli_ctx, to_display, output_format, exclude_version):
     from ape.plugins._utils import PluginMetadataList, PluginType
 
     include_available = PluginType.AVAILABLE in to_display
     metadata = PluginMetadataList.load(cli_ctx.plugin_manager, include_available=include_available)
-    if output := metadata.to_str(include=to_display):
+    if output := metadata.to_str(
+        include=to_display, include_version=not exclude_version, output_format=output_format
+    ):
         click.echo(output)
         if not metadata.installed and not metadata.third_party:
             click.echo("No plugins installed (besides core plugins).")
