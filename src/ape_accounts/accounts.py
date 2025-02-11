@@ -319,7 +319,7 @@ def generate_account(
     Args:
         alias (str): The alias name of the account.
         passphrase (str): Passphrase used to encrypt the account storage file.
-        hd_path (str): The hierarchal deterministic path to use when generating the account.
+        hd_path (str): The hierarchical deterministic path to use when generating the account.
             Defaults to `m/44'/60'/0'/0/0`.
         word_count (int): The amount of words to use in the generated mnemonic.
 
@@ -347,7 +347,7 @@ def import_account_from_mnemonic(
         alias (str): The alias name of the account.
         passphrase (str): Passphrase used to encrypt the account storage file.
         mnemonic (str): List of space-separated words representing the mnemonic seed phrase.
-        hd_path (str): The hierarchal deterministic path to use when generating the account.
+        hd_path (str): The hierarchical deterministic path to use when generating the account.
             Defaults to `m/44'/60'/0'/0/0`.
 
     Returns:
