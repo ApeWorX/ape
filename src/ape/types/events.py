@@ -11,8 +11,10 @@ from ethpm_types.abi import EventABI
 from pydantic import BaseModel, field_serializer, field_validator, model_validator
 from web3.types import FilterParams
 
+from ape.exceptions import ContractNotFoundError
 from ape.types.address import AddressType
 from ape.types.basic import HexInt
+from ape.utils.abi import LogInputABICollection
 from ape.utils.basemodel import BaseInterfaceModel, ExtraAttributesMixin, ExtraModelAttributes
 from ape.utils.misc import ZERO_ADDRESS, log_instead_of_fail
 
@@ -175,6 +177,14 @@ class ContractLog(ExtraAttributesMixin, BaseContractLog):
     An instance of a log from a contract.
     """
 
+    def __init__(self, *args, **kwargs):
+        abi = kwargs.pop("_abi", None)
+        super().__init__(*args, **kwargs)
+        if isinstance(abi, LogInputABICollection):
+            abi = abi.abi
+
+        self._abi = abi
+
     transaction_hash: Any
     """The hash of the transaction containing this log."""
 
@@ -215,6 +225,36 @@ class ContractLog(ExtraAttributesMixin, BaseContractLog):
     @cached_property
     def block(self) -> "BlockAPI":
         return self.chain_manager.blocks[self.block_number]
+
+    @property
+    def abi(self) -> EventABI:
+        """
+        An ABI describing the event.
+        """
+        if abi := self._abi:
+            return abi
+
+        try:
+            contract = self.chain_manager.contracts[self.contract_address]
+        except (ContractNotFoundError, KeyError):
+            pass
+
+        else:
+            for event_abi in contract.events:
+                if event_abi.name == self.event_name and len(event_abi.inputs) == len(
+                    self.event_arguments
+                ):
+                    abi = event_abi
+
+        if abi is None:
+            # Last case scenario, try to calculate it.
+            # NOTE: This is a rare edge case that shouldn't really happen,
+            #   so this is a lower priorty.
+            # TODO: Handle inputs here.
+            abi = EventABI(name=self.event_name)
+
+        self._abi = abi
+        return abi
 
     @property
     def timestamp(self) -> int:

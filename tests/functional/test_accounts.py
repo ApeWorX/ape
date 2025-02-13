@@ -119,7 +119,7 @@ def test_sign_message_with_prompts(runner, keyfile_account, message):
 
 def test_sign_raw_hash(runner, keyfile_account):
     # NOTE: `message` is a 32 byte raw hash, which is treated specially
-    message = b"\xAB" * 32
+    message = b"\xab" * 32
 
     # "y\na\ny": yes sign raw hash, password, yes keep unlocked
     with runner.isolation(input=f"y\n{PASSPHRASE}\ny"):

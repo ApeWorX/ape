@@ -24,7 +24,7 @@ _DEFAULT_SENDERS: list[AccountAPI] = []
 
 @contextlib.contextmanager
 def _use_sender(
-    account: Union[AccountAPI, TestAccountAPI]
+    account: Union[AccountAPI, TestAccountAPI],
 ) -> "Generator[AccountAPI, TestAccountAPI, None]":
     try:
         _DEFAULT_SENDERS.append(account)

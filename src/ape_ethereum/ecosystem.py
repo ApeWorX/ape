@@ -1027,6 +1027,7 @@ class Ethereum(EcosystemAPI):
                     converted_arguments[key] = value
 
             yield ContractLog(
+                _abi=abi,
                 block_hash=log.get("blockHash") or log.get("block_hash") or "",
                 block_number=log.get("blockNumber") or log.get("block_number") or 0,
                 contract_address=self.decode_address(log["address"]),

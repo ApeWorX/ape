@@ -12,8 +12,8 @@ class QueryPlugin(PluginType):
     A plugin for querying chains.
     """
 
-    @hookspec  # type: ignore[empty-body]
-    def query_engines(self) -> Iterator[type["QueryAPI"]]:
+    @hookspec
+    def query_engines(self) -> Iterator[type["QueryAPI"]]:  # type: ignore[empty-body]
         """
         A hook that returns an iterator of types of a ``QueryAPI`` subclasses
 
