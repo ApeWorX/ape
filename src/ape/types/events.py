@@ -230,13 +230,14 @@ class ContractLog(ExtraAttributesMixin, BaseContractLog):
         return abi
 
     @cached_property
-    def topics(self) -> list[Optional[HexStr]]:
+    def topics(self) -> list[HexStr]:
         """
         The encoded hex-str topics values.
         """
         topic_inputs = [ipt.name or "" for ipt in self.abi.inputs if ipt.indexed]
         values = {k: v for k, v in self.event_arguments.items() if k in topic_inputs}
-        return encode_topics(self.abi, values)
+        # The type-ignore is because there should be no None values when allow_wildcards=False
+        return encode_topics(self.abi, values, allow_wildcards=False)  # type: ignore
 
     @property
     def timestamp(self) -> int:

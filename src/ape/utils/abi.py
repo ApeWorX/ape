@@ -550,7 +550,9 @@ def _enrich_natspec(natspec: str) -> str:
 
 
 def encode_topics(
-    event: EventABI, topics: Optional[dict[str, str]] = None
+    event: EventABI,
+    topics: Optional[dict[str, str]] = None,
+    allow_wildcards: bool = True,
 ) -> list[Optional["HexStr"]]:
     """
     Encode the given topics.
@@ -570,8 +572,10 @@ def encode_topics(
         if topic.name in topics:
             encoded_value = encode_topic_value(topic.type, topics[topic.name])
             topic_filter.append(encoded_value)
-        else:
+        elif allow_wildcards:
             topic_filter.append(None)
+        else:
+            raise ValueError(f"'{topic.name}' is not a topic.")
 
     topic_names = [i.name for i in abi_inputs.topic_abi_types if i.name]
     invalid_topics = set(topics) - set(topic_names)
@@ -581,9 +585,10 @@ def encode_topics(
             f"but you provided {', '.join(invalid_topics)}"
         )
 
-    # remove trailing wildcards since they have no effect
-    while topic_filter[-1] is None:
-        topic_filter.pop()
+    if allow_wildcards:
+        # Remove trailing wildcards since they have no effect
+        while topic_filter[-1] is None:
+            topic_filter.pop()
 
     return topic_filter
 
