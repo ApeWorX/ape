@@ -242,6 +242,11 @@ def test_get_contract_logs_single_log(chain, contract_instance, owner, eth_teste
     logs = [log for log in eth_tester_provider.get_contract_logs(log_filter)]
     assert len(logs) == 1
     assert logs[0]["foo"] == 0
+    assert logs[0].abi == contract_instance.FooHappened.abi
+
+    # Show it looks up the ABI when not cached not anymore.
+    logs[0]._abi = None
+    assert logs[0].abi == contract_instance.FooHappened.abi
 
 
 def test_get_contract_logs_single_log_query_multiple_values(

@@ -100,6 +100,11 @@ def test_contract_log_access(log):
     assert log.bar == log["bar"] == log.get("bar") == 1
 
 
+def test_contract_log_abi(log):
+    # The log fixture is very basic class usage.
+    assert log.abi.name == "MyEvent"
+
+
 def test_topic_filter_encoding():
     event_abi = EventABI.model_validate_json(RAW_EVENT_ABI)
     log_filter = LogFilter.from_event(

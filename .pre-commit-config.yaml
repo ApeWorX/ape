@@ -5,12 +5,12 @@ repos:
     -   id: check-yaml
 
 -   repo: https://github.com/PyCQA/isort
-    rev: 5.13.2
+    rev: 6.0.0
     hooks:
       - id: isort
 
 -   repo: https://github.com/psf/black
-    rev: 24.10.0
+    rev: 25.1.0
     hooks:
       - id: black
         name: black
@@ -22,7 +22,7 @@ repos:
         additional_dependencies: [flake8-breakpoint, flake8-print, flake8-pydantic, flake8-type-checking]
 
 -   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.14.1
+    rev: v1.15.0
     hooks:
     -   id: mypy
         additional_dependencies: [
@@ -37,7 +37,7 @@ repos:
         ]
 
 -   repo: https://github.com/executablebooks/mdformat
-    rev: 0.7.19
+    rev: 0.7.22
     hooks:
     -   id: mdformat
         additional_dependencies: [mdformat-gfm, mdformat-frontmatter, mdformat-pyproject]

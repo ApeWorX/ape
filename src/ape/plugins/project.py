@@ -16,8 +16,8 @@ class ProjectPlugin(PluginType):
     via ``.gitmodules``.
     """
 
-    @hookspec  # type: ignore[empty-body]
-    def projects(self) -> Iterator[type["ProjectAPI"]]:
+    @hookspec
+    def projects(self) -> Iterator[type["ProjectAPI"]]:  # type: ignore[empty-body]
         """
         A hook that returns a :class:`~ape.api.projects.ProjectAPI` subclass type.
 
