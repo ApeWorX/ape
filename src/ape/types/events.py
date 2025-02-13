@@ -38,7 +38,7 @@ class LogFilter(BaseModel):
     @classmethod
     def compute_selectors(cls, values):
         values["selectors"] = {
-            encode_hex(keccak(text=event.selector)): event for event in values.get("events", [])
+            encode_hex(keccak(text=event.selector)): event for event in values.get("events") or []
         }
 
         return values
@@ -47,6 +47,16 @@ class LogFilter(BaseModel):
     @classmethod
     def validate_start_block(cls, value):
         return value or 0
+
+    @field_validator("addresses", "events", "topic_filter", mode="before")
+    @classmethod
+    def _convert_none_to_empty_list(cls, value):
+        return value or []
+
+    @field_validator("selectors", mode="before")
+    @classmethod
+    def _convert_none_to_dict(cls, value):
+        return value or {}
 
     def model_dump(self, *args, **kwargs):
         _Hash32 = Union[Hash32, HexBytes, HexStr]

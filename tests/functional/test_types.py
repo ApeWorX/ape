@@ -117,6 +117,16 @@ def test_topic_filter_encoding():
     ]
 
 
+def test_log_filter_model_validate_coerces_nones():
+    log_filter = LogFilter.model_validate(
+        {"addresses": None, "events": None, "topic_filter": None, "selectors": None}
+    )
+    assert log_filter.addresses == []
+    assert log_filter.events == []
+    assert log_filter.topic_filter == []
+    assert log_filter.selectors == {}
+
+
 def test_address_type(owner):
     class MyModel(BaseModel):
         addr: AddressType
