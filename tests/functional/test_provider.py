@@ -248,6 +248,14 @@ def test_get_contract_logs_single_log(chain, contract_instance, owner, eth_teste
     logs[0]._abi = None
     assert logs[0].abi == contract_instance.FooHappened.abi
 
+    # Ensure topics are expected.
+    topics = logs[0].topics
+    expected_topics = [
+        "0x1a7c56fae0af54ebae73bc4699b9de9835e7bb86b050dff7e80695b633f17abd",
+        "0x0000000000000000000000000000000000000000000000000000000000000000",
+    ]
+    assert topics == expected_topics
+
 
 def test_get_contract_logs_single_log_query_multiple_values(
     chain, contract_instance, owner, eth_tester_provider

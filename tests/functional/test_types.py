@@ -105,6 +105,12 @@ def test_contract_log_abi(log):
     assert log.abi.name == "MyEvent"
 
 
+def test_contract_log_topics(log):
+    actual = log.topics
+    expected = ["0x4dbfb68b43dddfa12b51ebe99ab8fded620f9a0ac23142879a4f192a1b7952d2"]
+    assert actual == expected
+
+
 def test_topic_filter_encoding():
     event_abi = EventABI.model_validate_json(RAW_EVENT_ABI)
     log_filter = LogFilter.from_event(
