@@ -577,11 +577,24 @@ def encode_topics(abi: EventABI, topics: Optional[dict[str, Any]] = None) -> lis
             continue
 
         input_type = topic_inputs[input_name].type
-        if input_type == "address" and not isinstance(input_value, str):
-            # Allows accounts and ENS to work as query inputs.
-            from ape.types import AddressType
+        if input_type == "address":
+            convert = ManagerAccessMixin.conversion_manager.convert
+            if isinstance(input_value, (list, tuple)):
+                adjusted_value = []
+                for addr in input_value:
+                    if isinstance(addr, str):
+                        adjusted_value.append(convert(addr))
+                    else:
+                        from ape.types import AddressType
 
-            input_value = ManagerAccessMixin.conversion_manager.convert(input_value, AddressType)
+                        adjusted_value.append(convert(addr, AddressType))
+
+                input_value = adjusted_value
+
+            elif not isinstance(input_value, str):
+                from ape.types import AddressType
+
+                input_value = convert(input_value, AddressType)
 
         values[input_name] = input_value
 
