@@ -234,6 +234,7 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#ape.types.events.ContractLog.block_number"><code class="docutils literal notranslate">block_number</span></code></a></li>
 <li><a class="reference internal" href="#ape.types.events.ContractLog.log_index"><code class="docutils literal notranslate">log_index</span></code></a></li>
 <li><a class="reference internal" href="#ape.types.events.ContractLog.timestamp"><code class="docutils literal notranslate">timestamp</span></code></a></li>
+<li><a class="reference internal" href="#ape.types.events.ContractLog.topics"><code class="docutils literal notranslate">topics</span></code></a></li>
 <li><a class="reference internal" href="#ape.types.events.ContractLog.transaction_hash"><code class="docutils literal notranslate">transaction_hash</span></code></a></li>
 <li><a class="reference internal" href="#ape.types.events.ContractLog.transaction_index"><code class="docutils literal notranslate">transaction_index</span></code></a></li>
 </ul>
@@ -1031,6 +1032,12 @@ See <a class="reference internal" href="#ape.types.coverage.CoverageStatement" t
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">timestamp</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ape.types.events.ContractLog.timestamp" title="Link to this definition"></a></dt>
 <dd><p>The UNIX timestamp of when the event was emitted.</p>
 <p>NOTE: This performs a block lookup.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.types.events.ContractLog.topics">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">topics</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">HexStr</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.types.events.ContractLog.topics" title="Link to this definition"></a></dt>
+<dd><p>The encoded hex-str topics values.</p>
 </dd></dl>
 
 <dl class="py attribute">
