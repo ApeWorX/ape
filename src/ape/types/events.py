@@ -77,11 +77,6 @@ class LogFilter(BaseModel):
         """
         abi = getattr(event, "abi", event)
         topic_filter = encode_topics(abi, search_topics or {})
-
-        # Remove trailing wild-cards, since they have no effect.
-        while topic_filter[-1] is None:
-            topic_filter.pop()
-
         return cls(
             addresses=addresses or [],
             events=[abi],
