@@ -274,6 +274,27 @@ def test_get_contract_logs_single_log_query_multiple_values(
     assert logs[-1]["foo"] == 0
 
 
+def test_get_contract_logs_multiple_accounts_for_address(
+    chain, contract_instance, owner, eth_tester_provider
+):
+    """
+    Tests the condition when you pass in multiple AddressAPI objects
+    during an address-topic search.
+    """
+    contract_instance.logAddressArray(sender=owner)  # Create logs
+    block = chain.blocks.height
+    log_filter = LogFilter.from_event(
+        event=contract_instance.EventWithAddressArray,
+        search_topics={"some_address": [owner, contract_instance]},
+        addresses=[contract_instance, owner],
+        start_block=block,
+        stop_block=block,
+    )
+    logs = [log for log in eth_tester_provider.get_contract_logs(log_filter)]
+    assert len(logs) >= 1
+    assert logs[-1]["some_address"] == owner.address
+
+
 def test_get_contract_logs_single_log_unmatched(
     chain, contract_instance, owner, eth_tester_provider
 ):
