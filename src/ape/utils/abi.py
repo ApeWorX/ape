@@ -9,7 +9,7 @@ from eth_abi.decoding import UnsignedIntegerDecoder
 from eth_abi.encoding import UnsignedIntegerEncoder
 from eth_abi.exceptions import DecodingError, InsufficientDataBytes
 from eth_abi.registry import BaseEquals, registry
-from eth_pydantic_types import HexBytes
+from eth_pydantic_types import HexBytes, HexStr
 from eth_pydantic_types.validators import validate_bytes_size
 from eth_utils import decode_hex
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, EventABIType, MethodABI
@@ -546,7 +546,7 @@ def _enrich_natspec(natspec: str) -> str:
     return re.sub(NATSPEC_KEY_PATTERN, replacement, natspec)
 
 
-def encode_topics(abi: EventABI, topics: Optional[dict[str, Any]] = None) -> list[str]:
+def encode_topics(abi: EventABI, topics: Optional[dict[str, Any]] = None) -> list[HexStr]:
     """
     Encode the given topics using the given ABI. Useful for searching logs.
 

@@ -1,9 +1,8 @@
 from collections.abc import Iterable, Iterator, Sequence
 from functools import cached_property
-from typing import TYPE_CHECKING, Any, Optional, Union, cast
+from typing import TYPE_CHECKING, Any, Optional, Union
 
-from eth_pydantic_types import HexBytes
-from eth_typing import Hash32, HexStr
+from eth_pydantic_types import HexBytes, HexStr
 from eth_utils import encode_hex, is_hex, keccak, to_hex
 from ethpm_types.abi import EventABI
 from pydantic import BaseModel, field_serializer, field_validator, model_validator
@@ -57,13 +56,11 @@ class LogFilter(BaseModel):
         return value or {}
 
     def model_dump(self, *args, **kwargs):
-        _Hash32 = Union[Hash32, HexBytes, HexStr]
-        topics = cast(Sequence[Optional[Union[_Hash32, Sequence[_Hash32]]]], self.topic_filter)
         return FilterParams(
             address=self.addresses,
             fromBlock=to_hex(self.start_block),
             toBlock=to_hex(self.stop_block or self.start_block),
-            topics=topics,
+            topics=self.topic_filter,  # type: ignore
         )
 
     @classmethod
