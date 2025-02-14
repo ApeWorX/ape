@@ -248,6 +248,14 @@ def test_get_contract_logs_single_log(chain, contract_instance, owner, eth_teste
     logs[0]._abi = None
     assert logs[0].abi == contract_instance.FooHappened.abi
 
+    # Ensure topics are expected.
+    topics = logs[0].topics
+    expected_topics = [
+        "0x1a7c56fae0af54ebae73bc4699b9de9835e7bb86b050dff7e80695b633f17abd",
+        "0x0000000000000000000000000000000000000000000000000000000000000000",
+    ]
+    assert topics == expected_topics
+
 
 def test_get_contract_logs_single_log_query_multiple_values(
     chain, contract_instance, owner, eth_tester_provider
@@ -264,6 +272,27 @@ def test_get_contract_logs_single_log_query_multiple_values(
     logs = [log for log in eth_tester_provider.get_contract_logs(log_filter)]
     assert len(logs) >= 1
     assert logs[-1]["foo"] == 0
+
+
+def test_get_contract_logs_multiple_accounts_for_address(
+    chain, contract_instance, owner, eth_tester_provider
+):
+    """
+    Tests the condition when you pass in multiple AddressAPI objects
+    during an address-topic search.
+    """
+    contract_instance.logAddressArray(sender=owner)  # Create logs
+    block = chain.blocks.height
+    log_filter = LogFilter.from_event(
+        event=contract_instance.EventWithAddressArray,
+        search_topics={"some_address": [owner, contract_instance]},
+        addresses=[contract_instance, owner],
+        start_block=block,
+        stop_block=block,
+    )
+    logs = [log for log in eth_tester_provider.get_contract_logs(log_filter)]
+    assert len(logs) >= 1
+    assert logs[-1]["some_address"] == owner.address
 
 
 def test_get_contract_logs_single_log_unmatched(

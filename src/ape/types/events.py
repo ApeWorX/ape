@@ -1,11 +1,8 @@
 from collections.abc import Iterable, Iterator, Sequence
 from functools import cached_property
-from typing import TYPE_CHECKING, Any, Optional, Union, cast
+from typing import TYPE_CHECKING, Any, Optional, Union
 
-from eth_abi.abi import encode
-from eth_abi.packed import encode_packed
-from eth_pydantic_types import HexBytes
-from eth_typing import Hash32, HexStr
+from eth_pydantic_types import HexBytes, HexStr
 from eth_utils import encode_hex, is_hex, keccak, to_hex
 from ethpm_types.abi import EventABI
 from pydantic import BaseModel, field_serializer, field_validator, model_validator
@@ -14,7 +11,7 @@ from web3.types import FilterParams
 from ape.exceptions import ContractNotFoundError
 from ape.types.address import AddressType
 from ape.types.basic import HexInt
-from ape.utils.abi import LogInputABICollection
+from ape.utils.abi import LogInputABICollection, encode_topics
 from ape.utils.basemodel import BaseInterfaceModel, ExtraAttributesMixin, ExtraModelAttributes
 from ape.utils.misc import ZERO_ADDRESS, log_instead_of_fail
 
@@ -59,13 +56,11 @@ class LogFilter(BaseModel):
         return value or {}
 
     def model_dump(self, *args, **kwargs):
-        _Hash32 = Union[Hash32, HexBytes, HexStr]
-        topics = cast(Sequence[Optional[Union[_Hash32, Sequence[_Hash32]]]], self.topic_filter)
         return FilterParams(
             address=self.addresses,
             fromBlock=to_hex(self.start_block),
             toBlock=to_hex(self.stop_block or self.start_block),
-            topics=topics,
+            topics=self.topic_filter,  # type: ignore
         )
 
     @classmethod
@@ -80,46 +75,11 @@ class LogFilter(BaseModel):
         """
         Construct a log filter from an event topic query.
         """
-        from ape import convert
-        from ape.utils.abi import LogInputABICollection, is_dynamic_sized_type
-
-        event_abi: EventABI = getattr(event, "abi", event)  # type: ignore
-        search_topics = search_topics or {}
-        topic_filter: list[Optional[HexStr]] = [encode_hex(keccak(text=event_abi.selector))]
-        abi_inputs = LogInputABICollection(event_abi)
-
-        def encode_topic_value(abi_type, value):
-            if isinstance(value, (list, tuple)):
-                return [encode_topic_value(abi_type, v) for v in value]
-            elif is_dynamic_sized_type(abi_type):
-                return encode_hex(keccak(encode_packed([str(abi_type)], [value])))
-            elif abi_type == "address":
-                value = convert(value, AddressType)
-
-            return encode_hex(encode([abi_type], [value]))
-
-        for topic in abi_inputs.topic_abi_types:
-            if topic.name in search_topics:
-                encoded_value = encode_topic_value(topic.type, search_topics[topic.name])
-                topic_filter.append(encoded_value)
-            else:
-                topic_filter.append(None)
-
-        topic_names = [i.name for i in abi_inputs.topic_abi_types if i.name]
-        invalid_topics = set(search_topics) - set(topic_names)
-        if invalid_topics:
-            raise ValueError(
-                f"{event_abi.name} defines {', '.join(topic_names)} as indexed topics, "
-                f"but you provided {', '.join(invalid_topics)}"
-            )
-
-        # remove trailing wildcards since they have no effect
-        while topic_filter[-1] is None:
-            topic_filter.pop()
-
+        abi = getattr(event, "abi", event)
+        topic_filter = encode_topics(abi, search_topics or {})
         return cls(
             addresses=addresses or [],
-            events=[event_abi],
+            events=[abi],
             topic_filter=topic_filter,
             start_block=start_block,
             stop_block=stop_block,
@@ -265,6 +225,13 @@ class ContractLog(ExtraAttributesMixin, BaseContractLog):
 
         self._abi = abi
         return abi
+
+    @cached_property
+    def topics(self) -> list[HexStr]:
+        """
+        The encoded hex-str topics values.
+        """
+        return encode_topics(self.abi, self.event_arguments)
 
     @property
     def timestamp(self) -> int:
