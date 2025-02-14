@@ -1,24 +1,21 @@
 import re
 from collections.abc import Sequence
 from dataclasses import make_dataclass
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import Any, Optional, Union
 
 from eth_abi import grammar
-from eth_abi.abi import decode, encode
+from eth_abi.abi import decode
 from eth_abi.decoding import UnsignedIntegerDecoder
 from eth_abi.encoding import UnsignedIntegerEncoder
 from eth_abi.exceptions import DecodingError, InsufficientDataBytes
-from eth_abi.packed import encode_packed
 from eth_abi.registry import BaseEquals, registry
 from eth_pydantic_types import HexBytes
 from eth_pydantic_types.validators import validate_bytes_size
-from eth_utils import decode_hex, encode_hex, keccak
+from eth_utils import decode_hex
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, EventABIType, MethodABI
 
 from ape.logging import logger
-
-if TYPE_CHECKING:
-    from eth_typing import HexStr
+from ape.utils.basemodel import ManagerAccessMixin
 
 ARRAY_PATTERN = re.compile(r"[(*\w,? )]*\[\d*]")
 NATSPEC_KEY_PATTERN = re.compile(r"(@\w+)")
@@ -549,71 +546,44 @@ def _enrich_natspec(natspec: str) -> str:
     return re.sub(NATSPEC_KEY_PATTERN, replacement, natspec)
 
 
-def encode_topics(
-    event: EventABI,
-    topics: Optional[dict[str, str]] = None,
-    allow_wildcards: bool = True,
-) -> list[Optional["HexStr"]]:
+def encode_topics(abi: EventABI, topics: Optional[dict[str, Any]] = None) -> list[str]:
     """
-    Encode the given topics.
+    Encode the given topics using the given ABI. Useful for searching logs.
 
     Args:
-        event (EventABI: The ABI of the event to encode.
-        topics (dict[str, str] | None): The topics to encode.
+        abi (EventABI): The event.
+        topics (dict[str, Any] } None): Topic inputs to encode.
 
     Returns:
-        list[Optional[HexStr]]: The encoded topics.
+        list[str]: Encoded topics.
     """
     topics = topics or {}
-    topic_filter: list[Optional["HexStr"]] = [encode_hex(keccak(text=event.selector))]
-    abi_inputs = LogInputABICollection(event)
+    values = {}
 
-    for topic in abi_inputs.topic_abi_types:
-        if topic.name in topics:
-            encoded_value = encode_topic_value(topic.type, topics[topic.name])
-            topic_filter.append(encoded_value)
-        elif allow_wildcards:
-            topic_filter.append(None)
+    unnamed_iter = 0
+    topic_inputs = {}
+    for abi_input in abi.inputs:
+        if not abi_input.indexed:
+            continue
+
+        if name := abi_input.name:
+            topic_inputs[name] = abi_input
         else:
-            raise ValueError(f"'{topic.name}' is not a topic.")
+            topic_inputs[f"_{unnamed_iter}"] = abi_input
 
-    topic_names = [i.name for i in abi_inputs.topic_abi_types if i.name]
-    invalid_topics = set(topics) - set(topic_names)
-    if invalid_topics:
-        raise ValueError(
-            f"{event.name} defines {', '.join(topic_names)} as indexed topics, "
-            f"but you provided {', '.join(invalid_topics)}"
-        )
+    for input_name, input_value in topics.items():
+        if input_name not in topic_inputs:
+            # Was trying to use data or is not part of search.
+            continue
 
-    if allow_wildcards:
-        # Remove trailing wildcards since they have no effect
-        while topic_filter[-1] is None:
-            topic_filter.pop()
+        input_type = topic_inputs[input_name].type
+        if input_type == "address" and not isinstance(input_value, str):
+            # Allows accounts and ENS to work as query inputs.
+            from ape.types import AddressType
 
-    return topic_filter
+            input_value = ManagerAccessMixin.conversion_manager.convert(input_value, AddressType)
 
+        values[input_name] = input_value
 
-def encode_topic_value(abi_type, value):
-    """
-    Encode a single topic.
-
-    Args:
-        abi_type (str): The ABI type of the topic.
-        value (Any): The value to encode.
-
-    Returns:
-        str: a hex-str of th encoded topic value.
-    """
-    if isinstance(value, (list, tuple)):
-        return [encode_topic_value(abi_type, v) for v in value]
-
-    elif is_dynamic_sized_type(abi_type):
-        return encode_hex(keccak(encode_packed([str(abi_type)], [value])))
-
-    elif abi_type == "address":
-        from ape import convert
-        from ape.types import AddressType
-
-        value = convert(value, AddressType)
-
-    return encode_hex(encode([abi_type], [value]))
+    # The type-ignore is because there should be no None values when allow_wildcards=False
+    return abi.encode_topics(values)  # type: ignore

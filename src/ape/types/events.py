@@ -79,7 +79,7 @@ class LogFilter(BaseModel):
         Construct a log filter from an event topic query.
         """
         abi = getattr(event, "abi", event)
-        topic_filter = encode_topics(abi, search_topics)
+        topic_filter = encode_topics(abi, search_topics or {})
         return cls(
             addresses=addresses or [],
             events=[abi],
@@ -234,10 +234,7 @@ class ContractLog(ExtraAttributesMixin, BaseContractLog):
         """
         The encoded hex-str topics values.
         """
-        topic_inputs = [ipt.name or "" for ipt in self.abi.inputs if ipt.indexed]
-        values = {k: v for k, v in self.event_arguments.items() if k in topic_inputs}
-        # The type-ignore is because there should be no None values when allow_wildcards=False
-        return encode_topics(self.abi, values, allow_wildcards=False)  # type: ignore
+        return encode_topics(self.abi, self.event_arguments)
 
     @property
     def timestamp(self) -> int:
