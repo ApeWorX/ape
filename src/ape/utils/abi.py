@@ -585,5 +585,4 @@ def encode_topics(abi: EventABI, topics: Optional[dict[str, Any]] = None) -> lis
 
         values[input_name] = input_value
 
-    # The type-ignore is because there should be no None values when allow_wildcards=False
     return abi.encode_topics(values)  # type: ignore
