@@ -164,7 +164,9 @@ class TestAccountManager(list, ManagerAccessMixin):
         try:
             result = self.provider.unlock_account(address)
         except NotImplementedError as err:
-            raise AccountsError("Your provider does not support impersonating accounts.") from err
+            raise AccountsError(
+                f"Provider '{self.provider.name}' does not support impersonating accounts."
+            ) from err
 
         if result:
             if address in self._impersonated_accounts:

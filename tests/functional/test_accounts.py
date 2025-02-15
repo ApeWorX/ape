@@ -495,7 +495,7 @@ def test_autosign_transactions(runner, keyfile_account, receiver):
 
 def test_impersonate_not_implemented(accounts, address):
     expected_err_msg = (
-        r"Your provider does not support impersonating accounts:\\n"
+        r"Provider 'test' does not support impersonating accounts:\\n"
         rf"No account with address '{address}'\."
     )
     with pytest.raises(KeyError, match=expected_err_msg):
@@ -522,7 +522,7 @@ def test_impersonated_account_ignores_signature_check_on_txn(accounts, address):
 
 def test_contract_as_sender_non_fork_network(contract_instance):
     expected_err_msg = (
-        r"Your provider does not support impersonating accounts:\\n"
+        r"Provider 'test' does not support impersonating accounts:\\n"
         rf"No account with address '{contract_instance}'\."
     )
     with pytest.raises(KeyError, match=expected_err_msg):
