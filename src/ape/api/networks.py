@@ -5,13 +5,8 @@ from functools import cached_property, partial
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar, Optional, Union
 
-from eth_account import Account as EthAccount
-from eth_account._utils.signing import (
-    encode_transaction,
-    serializable_unsigned_transaction_from_dict,
-)
 from eth_pydantic_types import HexBytes
-from eth_utils import keccak, to_int
+from eth_utils import keccak
 from evmchains import PUBLIC_CHAIN_META
 from pydantic import model_validator
 
@@ -22,7 +17,6 @@ from ape.exceptions import (
     NetworkNotFoundError,
     ProviderNotConnectedError,
     ProviderNotFoundError,
-    SignatureError,
 )
 from ape.logging import logger
 from ape.types.address import AddressType
@@ -217,31 +211,6 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         Returns:
             :class:`~ape.ape.transactions.TransactionAPI`
         """
-
-    def serialize_transaction(self) -> bytes:
-        """
-        Serialize a transaction to bytes.
-
-        Returns:
-            bytes
-        """
-        if not self.signature:
-            raise SignatureError("The transaction is not signed.")
-
-        txn_data = self.model_dump(exclude={"sender"})
-        unsigned_txn = serializable_unsigned_transaction_from_dict(txn_data)
-        signature = (
-            self.signature.v,
-            to_int(self.signature.r),
-            to_int(self.signature.s),
-        )
-
-        signed_txn = encode_transaction(unsigned_txn, signature)
-
-        if self.sender and EthAccount.recover_transaction(signed_txn) != self.sender:
-            raise SignatureError("Recovered signer doesn't match sender!")
-
-        return signed_txn
 
     @abstractmethod
     def decode_receipt(self, data: dict) -> "ReceiptAPI":
