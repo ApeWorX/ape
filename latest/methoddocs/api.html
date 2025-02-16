@@ -138,7 +138,6 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#ape.api.accounts.AccountAPI.declare"><code class="docutils literal notranslate">declare()</span></code></a></li>
 <li><a class="reference internal" href="#ape.api.accounts.AccountAPI.deploy"><code class="docutils literal notranslate">deploy()</span></code></a></li>
 <li><a class="reference internal" href="#ape.api.accounts.AccountAPI.get_deployment_address"><code class="docutils literal notranslate">get_deployment_address()</span></code></a></li>
-<li><a class="reference internal" href="#ape.api.accounts.AccountAPI.prepare_transaction"><code class="docutils literal notranslate">prepare_transaction()</span></code></a></li>
 <li><a class="reference internal" href="#ape.api.accounts.AccountAPI.sign_message"><code class="docutils literal notranslate">sign_message()</span></code></a></li>
 <li><a class="reference internal" href="#ape.api.accounts.AccountAPI.sign_raw_msghash"><code class="docutils literal notranslate">sign_raw_msghash()</span></code></a></li>
 <li><a class="reference internal" href="#ape.api.accounts.AccountAPI.sign_transaction"><code class="docutils literal notranslate">sign_transaction()</span></code></a></li>
@@ -204,6 +203,7 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#ape.api.address.BaseAddress.history"><code class="docutils literal notranslate">history</span></code></a></li>
 <li><a class="reference internal" href="#ape.api.address.BaseAddress.is_contract"><code class="docutils literal notranslate">is_contract</span></code></a></li>
 <li><a class="reference internal" href="#ape.api.address.BaseAddress.nonce"><code class="docutils literal notranslate">nonce</span></code></a></li>
+<li><a class="reference internal" href="#ape.api.address.BaseAddress.prepare_transaction"><code class="docutils literal notranslate">prepare_transaction()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -823,27 +823,6 @@ the account’s current nonce.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ape.api.accounts.AccountAPI.prepare_transaction">
-<span class="sig-name descname"><span class="pre">prepare_transaction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">txn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><span class="pre">TransactionAPI</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><span class="pre">TransactionAPI</span></a></span></span><a class="headerlink" href="#ape.api.accounts.AccountAPI.prepare_transaction" title="Link to this definition"></a></dt>
-<dd><p>Set default values on a transaction.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Raises<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><a class="reference internal" href="exceptions.html#ape.exceptions.AccountsError" title="ape.exceptions.AccountsError"><strong>AccountsError</strong></a> – When the account cannot afford the transaction
-    or the nonce is invalid.</p></li>
-<li><p><a class="reference internal" href="exceptions.html#ape.exceptions.TransactionError" title="ape.exceptions.TransactionError"><strong>TransactionError</strong></a> – When given negative required confirmations.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Parameters<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>txn</strong> (<a class="reference internal" href="#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransactionAPI</span></code></a>) – The transaction to prepare.</p>
-</dd>
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransactionAPI</span></code></a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="ape.api.accounts.AccountAPI.sign_message">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sign_message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">signer_options</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="types.html#ape.types.signatures.MessageSignature" title="ape.types.signatures.MessageSignature"><span class="pre">MessageSignature</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#ape.api.accounts.AccountAPI.sign_message" title="Link to this definition"></a></dt>
 <dd><p>Sign a message.</p>
@@ -1391,6 +1370,27 @@ or to refer to an EOA the user doesn’t personally control.</p>
 <dt class="sig sig-object py" id="ape.api.address.BaseAddress.nonce">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">nonce</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ape.api.address.BaseAddress.nonce" title="Link to this definition"></a></dt>
 <dd><p>The number of transactions associated with the address.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.api.address.BaseAddress.prepare_transaction">
+<span class="sig-name descname"><span class="pre">prepare_transaction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">txn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><span class="pre">TransactionAPI</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><span class="pre">TransactionAPI</span></a></span></span><a class="headerlink" href="#ape.api.address.BaseAddress.prepare_transaction" title="Link to this definition"></a></dt>
+<dd><p>Set default values on a transaction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="exceptions.html#ape.exceptions.AccountsError" title="ape.exceptions.AccountsError"><strong>AccountsError</strong></a> – When the account cannot afford the transaction
+    or the nonce is invalid.</p></li>
+<li><p><a class="reference internal" href="exceptions.html#ape.exceptions.TransactionError" title="ape.exceptions.TransactionError"><strong>TransactionError</strong></a> – When given negative required confirmations.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>txn</strong> (<a class="reference internal" href="#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransactionAPI</span></code></a>) – The transaction to prepare.</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransactionAPI</span></code></a></p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
