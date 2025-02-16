@@ -1027,3 +1027,21 @@ def test_calldata_arg(calldata, expected, contract_instance, owner):
     tx = contract_instance.functionWithCalldata(calldata, sender=owner)
     assert not tx.failed
     assert HexBytes(expected) in tx.data
+
+
+def test_call(fallback_contract, owner):
+    """
+    Fallback contract call test.
+    """
+    tx = fallback_contract(sender=owner, value="1 wei")
+    assert not tx.failed
+
+
+def test_call_contract_as_sender(fallback_contract, owner, vyper_contract_instance):
+    owner.transfer(fallback_contract, "1 ETH")
+    with pytest.raises(SignatureError) as info:
+        fallback_contract(sender=fallback_contract, value="1 wei")
+
+    transaction = info.value.transaction
+    assert transaction is not None
+    assert transaction.nonce is not None  # Proves it was prepared.

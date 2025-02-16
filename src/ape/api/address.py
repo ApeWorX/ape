@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Any
 
 from eth_pydantic_types import HexBytes
 
-from ape.exceptions import ConversionError
+from ape.exceptions import AccountsError, ConversionError
 from ape.types.address import AddressType
 from ape.types.units import CurrencyValue
 from ape.utils.basemodel import BaseInterface
@@ -103,9 +103,17 @@ class BaseAddress(BaseInterface):
         """
 
         txn = self.as_transaction(**kwargs)
-        if "sender" in kwargs and hasattr(kwargs["sender"], "call"):
-            sender = kwargs["sender"]
-            return sender.call(txn, **kwargs)
+        if "sender" in kwargs:
+            if hasattr(kwargs["sender"], "call"):
+                # AccountAPI
+                sender = kwargs["sender"]
+                return sender.call(txn, **kwargs)
+
+            elif hasattr(kwargs["sender"], "prepare_transaction"):
+                # BaseAddress (likely, a ContractInstance)
+                prepare_transaction = kwargs["sender"].prepare_transaction(txn)
+                return self.provider.send_transaction(prepare_transaction)
+
         elif "sender" not in kwargs and self.account_manager.default_sender is not None:
             return self.account_manager.default_sender.call(txn, **kwargs)
 
@@ -185,6 +193,44 @@ class BaseAddress(BaseInterface):
     def estimate_gas_cost(self, **kwargs) -> int:
         txn = self.as_transaction(**kwargs)
         return self.provider.estimate_gas_cost(txn)
+
+    def prepare_transaction(self, txn: "TransactionAPI") -> "TransactionAPI":
+        """
+        Set default values on a transaction.
+
+        Raises:
+            :class:`~ape.exceptions.AccountsError`: When the account cannot afford the transaction
+              or the nonce is invalid.
+            :class:`~ape.exceptions.TransactionError`: When given negative required confirmations.
+
+        Args:
+            txn (:class:`~ape.api.transactions.TransactionAPI`): The transaction to prepare.
+
+        Returns:
+            :class:`~ape.api.transactions.TransactionAPI`
+        """
+
+        # NOTE: Allow overriding nonce, assume user understands what this does
+        if txn.nonce is None:
+            txn.nonce = self.nonce
+        elif txn.nonce < self.nonce:
+            raise AccountsError("Invalid nonce, will not publish.")
+
+        txn = self.provider.prepare_transaction(txn)
+
+        if (
+            txn.sender not in self.account_manager.test_accounts._impersonated_accounts
+            and txn.total_transfer_value > self.balance
+        ):
+            raise AccountsError(
+                f"Transfer value meets or exceeds account balance "
+                f"for account '{self.address}' on chain '{self.provider.chain_id}' "
+                f"using provider '{self.provider.name}'.\n"
+                "Are you using the correct account / chain / provider combination?\n"
+                f"(transfer_value={txn.total_transfer_value}, balance={self.balance})."
+            )
+
+        return txn
 
 
 class Address(BaseAddress):
