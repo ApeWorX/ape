@@ -1043,4 +1043,5 @@ def test_call_contract_as_sender(fallback_contract, owner, vyper_contract_instan
         fallback_contract(sender=fallback_contract, value="1 wei")
 
     transaction = info.value.transaction
+    assert transaction is not None
     assert transaction.nonce is not None  # Proves it was prepared.
