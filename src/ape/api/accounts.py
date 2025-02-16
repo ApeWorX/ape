@@ -188,7 +188,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         if sign:
             prepared_txn = self.sign_transaction(txn, **signer_options)
             if not prepared_txn:
-                raise SignatureError("The transaction was not signed.")
+                raise SignatureError("The transaction was not signed.", transaction=txn)
 
         else:
             prepared_txn = txn

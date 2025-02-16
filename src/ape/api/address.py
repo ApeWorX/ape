@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Any
 
 from eth_pydantic_types import HexBytes
 
-from ape.exceptions import ConversionError, AccountsError
+from ape.exceptions import AccountsError, ConversionError
 from ape.types.address import AddressType
 from ape.types.units import CurrencyValue
 from ape.utils.basemodel import BaseInterface

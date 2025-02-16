@@ -226,7 +226,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
             bytes
         """
         if not self.signature:
-            raise SignatureError("The transaction is not signed.")
+            raise SignatureError("The transaction is not signed.", transaction=self)
 
         txn_data = self.model_dump(exclude={"sender"})
         unsigned_txn = serializable_unsigned_transaction_from_dict(txn_data)
@@ -239,7 +239,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         signed_txn = encode_transaction(unsigned_txn, signature)
 
         if self.sender and EthAccount.recover_transaction(signed_txn) != self.sender:
-            raise SignatureError("Recovered signer doesn't match sender!")
+            raise SignatureError("Recovered signer doesn't match sender!", transaction=signed_txn)
 
         return signed_txn
 

@@ -161,7 +161,7 @@ class TestAccount(TestAccountAPI):
             ) = sign_transaction_dict(private_key, tx_data)
         except TypeError as err:
             # Occurs when missing properties on the txn that are needed to sign.
-            raise SignatureError(str(err)) from err
+            raise SignatureError(str(err), transaction=txn) from err
 
         # NOTE: Using `to_bytes(hexstr=to_hex(sig_r))` instead of `to_bytes(sig_r)` as
         #   a performance optimization.
