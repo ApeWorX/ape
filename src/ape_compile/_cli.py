@@ -42,6 +42,11 @@ def _include_dependencies_callback(ctx, param, value):
     help="Also compile dependencies",
     callback=_include_dependencies_callback,
 )
+@click.option(
+    "--exclude-compiler",
+    type=click.Choice(["solidity", "vyper"], case_sensitive=False),
+    help="Exclude a specific compiler (solidity or vyper)",
+)
 @config_override_option()
 def cli(
     cli_ctx,
@@ -50,6 +55,7 @@ def cli(
     use_cache: bool,
     display_size: bool,
     include_dependencies,
+    exclude_compiler: str,
     config_override,
 ):
     """
@@ -68,7 +74,9 @@ def cli(
     if file_paths:
         contracts = {
             k: v.contract_type
-            for k, v in project.load_contracts(*file_paths, use_cache=use_cache).items()
+            for k, v in project.load_contracts(
+                *file_paths, use_cache=use_cache, exclude_compiler=exclude_compiler
+            ).items()
         }
         cli_ctx.logger.success("'local project' compiled.")
         compiled = True
