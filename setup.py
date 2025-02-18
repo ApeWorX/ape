@@ -20,6 +20,8 @@ extras_require = {
         "pytest-timeout>=2.2.0,<3",  # For avoiding timing out during tests
         "hypothesis>=6.2.0,<7.0",  # Strategy-based fuzzer
         "hypothesis-jsonschema==0.19.0",  # JSON Schema fuzzer extension
+        "ape-vyper",  # Needed for compiling test contracts
+        "ape-solidity",  # Needed for compiling test contracts
     ],
     "lint": [
         "black>=25.1.0,<26",  # Auto-formatter and linter
@@ -31,7 +33,7 @@ extras_require = {
         "types-toml",  # Needed due to mypy typeshed
         "types-SQLAlchemy>=1.4.49",  # Needed due to mypy typeshed
         "types-python-dateutil",  # Needed due to mypy typeshed
-        "flake8>=7.1.1,<8",  # Style linter
+        "flake8>=7.1.2,<8",  # Style linter
         "flake8-breakpoint>=1.1.0,<2",  # Detect breakpoints left in code
         "flake8-print>=4.0.1,<5",  # Detect print statements left in code
         "flake8-pydantic",  # For detecting issues with Pydantic models

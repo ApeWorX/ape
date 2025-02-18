@@ -1,5 +1,4 @@
 import json
-from pathlib import Path
 
 import pytest
 
@@ -62,14 +61,11 @@ def test_Contract_from_json_str_retrieval_check_fails(mocker, chain, vyper_contr
     assert isinstance(contract, ContractInstance)
 
 
-def test_Contract_from_file(contract_instance):
+def test_Contract_from_file(contract_instance, project):
     """
     need feedback about the json file specifications
     """
-    PROJECT_PATH = Path(__file__).parent
-    CONTRACTS_FOLDER = PROJECT_PATH / "data" / "contracts" / "ethereum" / "abi"
-    json_abi_file = f"{CONTRACTS_FOLDER}/contract_abi.json"
-
+    json_abi_file = project.sources.lookup("contract_abi.json")
     address = contract_instance.address
     contract = Contract(address, abi=json_abi_file)
 
@@ -85,10 +81,11 @@ def test_Contract_at_unknown_address(networks_connected_to_tester, address):
 
 
 def test_Contract_specify_contract_type(
-    solidity_contract_instance, vyper_contract_type, owner, networks_connected_to_tester
+    solidity_contract_instance, project, owner, networks_connected_to_tester
 ):
     # Vyper contract type is very close to solidity's.
     # This test purposely uses the other just to show we are able to specify it externally.
+    vyper_contract_type = project.VyperContract.contract_type
     contract = Contract(solidity_contract_instance.address, contract_type=vyper_contract_type)
     assert contract.address == solidity_contract_instance.address
     assert contract.contract_type == vyper_contract_type
