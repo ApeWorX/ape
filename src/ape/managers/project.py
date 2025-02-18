@@ -2700,29 +2700,6 @@ class LocalProject(Project):
             self._manifest = manifest
 
     @contextmanager
-    def in_new_path(self, path: Optional[Path] = None):
-        """
-        Change the project directory in a context.
-        NOTE: This is not typically advised. Most use-cases, you
-        can use multiple projects.
-
-        Args:
-            path (Path): The new path of this project.
-        """
-        if path is None:
-            with create_tempdir() as tmp_path:
-                with self.in_new_path(tmp_path):
-                    yield
-
-        else:
-            original_path = self.path
-            self.chdir(path=path)
-            try:
-                yield
-            finally:
-                self.chdir(original_path)
-
-    @contextmanager
     def within_project_path(self):
         """
         A context-manager for changing the current working directory to the
