@@ -1,5 +1,4 @@
 import json
-import os
 import random
 import shutil
 from collections.abc import Callable, Iterable, Iterator
@@ -32,6 +31,7 @@ from ape.utils.basemodel import (
 )
 from ape.utils.misc import SOURCE_EXCLUDE_PATTERNS, log_instead_of_fail
 from ape.utils.os import (
+    ChangeDirectory,
     clean_path,
     create_tempdir,
     get_all_files_in_directory,
@@ -2592,22 +2592,50 @@ class LocalProject(Project):
             path (Path): The path of the new project.
               If not given, defaults to the project's path.
         """
-        path = path or self.path
-        os.chdir(path)
-        if self.path == path:
-            return  # Already setup.
+        return ChangeDirectory(
+            self.path,
+            path or self.path,
+            on_push=self._handle_path_changed,
+            on_pop=self._handle_path_restored,
+        )
+
+    def _handle_path_changed(self, path: Path) -> dict:
+        cache: dict = {
+            "__dict__": {},
+            "_session_source_change_check": self._session_source_change_check,
+            "_config_override": self._config_override,
+            "_base_path": self._base_path,
+            "manifest_path": self.manifest_path,
+            "_manifest": self._manifest,
+        }
 
         # New path: clear cached properties.
         for attr in list(self.__dict__.keys()):
             if isinstance(getattr(type(self), attr, None), cached_property):
-                del self.__dict__[attr]
+                cache["__dict__"][attr] = self.__dict__.pop(attr)
 
-        # Re-initialize
         self._session_source_change_check = set()
         self._config_override = {}
         self._base_path = Path(path).resolve()
-        self.manifest_path = self._base_path / ".build" / "__local__.json"
+
+        if self.manifest_path.name == "__local__.json":
+            self.manifest_path = self._base_path / ".build" / "__local__.json"
+
         self._manifest = self.load_manifest()
+        return cache
+
+    def _handle_path_restored(self, cache: dict) -> None:
+        self.__dict__ = {**(self.__dict__ or {}), **cache.get("__dict__", {})}
+        self._session_source_change_check = cache.get("_session_source_change_check", set())
+        self._config_override = cache.get("_config_override", {})
+        if base_path := self._base_path:
+            self._base_path = base_path
+
+        if manifest_path := cache.get("manifest_path"):
+            self.manifest_path = manifest_path
+
+        if manifest := cache.get("_manifest"):
+            self._manifest = manifest
 
     @contextmanager
     def within_project_path(self):
