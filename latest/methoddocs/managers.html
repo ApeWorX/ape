@@ -1786,10 +1786,24 @@ once and applies to all projects.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.managers.config.ConfigManager.isolate_data_folder">
-<span class="sig-name descname"><span class="pre">isolate_data_folder</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">Path</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.managers.config.ConfigManager.isolate_data_folder" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">isolate_data_folder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">keep</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">Path</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.managers.config.ConfigManager.isolate_data_folder" title="Link to this definition"></a></dt>
 <dd><p>Change Ape’s DATA_FOLDER to point a temporary path,
 in a context, for testing purposes. Any data
 cached to disk will not persist.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>keep</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>Iterable</em><em>[</em><em>str</em><em>]</em><em>, </em><em>str</em><em>]</em><em>]</em>) – Optionally, pass in
+a key of subdirectory names to include in the new isolated
+data folder. For example, pass ing <code class="docutils literal notranslate"><span class="pre">&quot;packages&quot;</span></code> to avoid
+having to re-download dependencies in an isolated environment.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The temporary data folder.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Iterator[<a class="reference internal" href="cli.html#ape.cli.paramtype.Path" title="ape.cli.paramtype.Path">Path</a>]</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
