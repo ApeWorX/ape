@@ -486,6 +486,24 @@ def test_get_when_proxy(chain, owner, minimal_proxy_container):
     assert actual == minimal_proxy.contract_type
 
 
+def test_get_pass_along_proxy_info(chain, owner, minimal_proxy_container, ethereum):
+    placeholder = "0xBEbeBeBEbeBebeBeBEBEbebEBeBeBebeBeBebebe"
+    if placeholder in chain.contracts:
+        del chain.contracts[placeholder]
+
+    minimal_proxy = owner.deploy(minimal_proxy_container, sender=owner)
+    chain.provider.network.__dict__["explorer"] = None  # Ensure no explorer, messes up test.
+    info = ethereum.get_proxy_info(minimal_proxy.address)
+    assert info
+
+    # Ensure not already cached.
+    if minimal_proxy.address in chain.contracts:
+        del chain.contracts[minimal_proxy.address]
+
+    actual = chain.contracts.get(minimal_proxy.address, proxy_info=info)
+    assert actual is None  # It can't find the contact anymore.
+
+
 def test_get_creation_metadata(chain, vyper_contract_instance, owner):
     address = vyper_contract_instance.address
     creation = chain.contracts.get_creation_metadata(address)
