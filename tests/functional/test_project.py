@@ -1065,9 +1065,16 @@ def test_chdir(project):
         project.chdir(new_path)
         assert project.path == new_path
 
-    # Undo.
-    project.chdir(original_path)
-    assert project.path == original_path
+        # Undo.
+        project.chdir(original_path)
+        assert project.path == original_path
+
+        # Show you can also use it in a context.
+        with project.chdir(new_path):
+            assert project.path == new_path
+
+        # It should have automatically undone.
+        assert project.path == original_path
 
 
 def test_within_project_path():
