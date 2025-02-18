@@ -474,6 +474,18 @@ def test_cache_non_checksum_address(chain, vyper_contract_instance):
     assert chain.contracts[vyper_contract_instance.address] == vyper_contract_instance.contract_type
 
 
+def test_get_when_proxy(chain, owner, minimal_proxy_container):
+    placeholder = "0xBEbeBeBEbeBebeBeBEBEbebEBeBeBebeBeBebebe"
+    if placeholder in chain.contracts:
+        del chain.contracts[placeholder]
+
+    minimal_proxy = owner.deploy(minimal_proxy_container, sender=owner)
+    chain.provider.network.__dict__["explorer"] = None  # Ensure no explorer, messes up test.
+
+    actual = chain.contracts.get(minimal_proxy.address)
+    assert actual == minimal_proxy.contract_type
+
+
 def test_get_creation_metadata(chain, vyper_contract_instance, owner):
     address = vyper_contract_instance.address
     creation = chain.contracts.get_creation_metadata(address)
