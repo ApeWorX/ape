@@ -85,6 +85,9 @@ jobs:
           with:
             version: 1.14.12
 
+        - name: Setup Ape
+          uses: ApeWorX/github-action@main
+
         - name: Install Dependencies
           run: |
             python -m pip install --upgrade pip
@@ -92,19 +95,15 @@ jobs:
             pip install .[test]
 
         - name: Install Ape Dependencies
-          uses: ApeWorX/github-action@main
           run: ape pm install
 
         - name: Run Functional Tests
-          uses: ApeWorX/github-action@main
           run: ape test tests/functional -m "not fuzzing" -s --cov=src --cov-append -n auto --dist loadgroup -v ERROR
 
         - name: Run Integration Tests
-          uses: ApeWorX/github-action@main
           run: ape test tests/integration -m "not fuzzing" -s --cov=src --cov-append -n auto --dist loadgroup -v ERROR
 
         - name: Run Performance Tests
-          uses: ApeWorX/github-action@main
           run: ape test tests/performance -s -v ERROR
 
     fuzzing:
