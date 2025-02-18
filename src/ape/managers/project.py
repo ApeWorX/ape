@@ -1021,6 +1021,25 @@ class PackagesCache(ManagerAccessMixin):
         manifest_file = self.get_manifest_path(package_id, version)
         manifest_file.unlink(missing_ok=True)
 
+    @contextmanager
+    def isolate_changes(self):
+        """
+        Allows you to make changes affecting the Ape packages cache in a context.
+        For example, temporarily install local "dev" packages for testing purposes.
+        """
+        with create_tempdir() as tmpdir:
+            packages_cache = tmpdir / "packages"
+            packages_cache.parent.mkdir(parents=True, exist_ok=True)
+            if self.root.is_dir():
+                shutil.copytree(self.root, packages_cache)
+            try:
+                yield
+            finally:
+                shutil.rmtree(self.root)
+                if packages_cache.is_dir():
+                    # Restore.
+                    shutil.copytree(packages_cache, self.root)
+
 
 def _version_to_options(version: str) -> tuple[str, ...]:
     if version.startswith("v"):
