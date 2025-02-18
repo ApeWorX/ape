@@ -1,6 +1,6 @@
 pragma solidity ^0.8.4;
 
-contract Proxy {
+contract SimpleProxy {
 
     address public implementation;
     uint256 public proxyType = 2;

@@ -59,25 +59,23 @@ def test_revert_abi(error_contract, not_owner):
         error_contract.withdraw(sender=not_owner)
 
 
-def test_revert_error_from_container(error_contract_container, error_contract, not_owner):
+def test_revert_error_from_container(project, error_contract, not_owner):
     """
     Test matching a revert custom Solidity error using the container instead
     of an instance, so the specific contract instance is not checked, only the
     ABI is. This is required for proper deploy-txn checks.
     """
-    with reverts(error_contract_container.Unauthorized):
+    with reverts(project.HasError.Unauthorized):
         error_contract.withdraw(sender=not_owner)
 
 
-def test_revert_error_from_container_with_expected_values(
-    error_contract_container, error_contract, not_owner
-):
+def test_revert_error_from_container_with_expected_values(project, error_contract, not_owner):
     """
     Test matching a revert custom Solidity error using the container instead
     of an instance, so the specific contract instance is not checked, only the
     ABI is. This is required for proper deploy-txn checks.
     """
-    with reverts(error_contract_container.Unauthorized, error_inputs={"addr": not_owner.address}):
+    with reverts(project.HasError.Unauthorized, error_inputs={"addr": not_owner.address}):
         error_contract.withdraw(sender=not_owner)
 
 

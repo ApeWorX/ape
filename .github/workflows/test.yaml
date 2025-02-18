@@ -94,14 +94,21 @@ jobs:
             pip uninstall eth-ape --yes
             pip install .[test]
 
+        - name: Install Ape Dependencies
+          uses: ApeWorX/github-action@main
+          run: ape pm install
+
         - name: Run Functional Tests
-          run: ape test tests/functional -m "not fuzzing" -s --cov=src --cov-append -n auto --dist loadgroup
+          uses: ApeWorX/github-action@main
+          run: ape test tests/functional -m "not fuzzing" -s --cov=src --cov-append -n auto --dist loadgroup -v ERROR
 
         - name: Run Integration Tests
-          run: ape test tests/integration -m "not fuzzing" -s --cov=src --cov-append -n auto --dist loadgroup
+          uses: ApeWorX/github-action@main
+          run: ape test tests/integration -m "not fuzzing" -s --cov=src --cov-append -n auto --dist loadgroup -v ERROR
 
         - name: Run Performance Tests
-          run: ape test tests/performance -s
+          uses: ApeWorX/github-action@main
+          run: ape test tests/performance -s -v ERROR
 
     fuzzing:
         runs-on: ubuntu-latest

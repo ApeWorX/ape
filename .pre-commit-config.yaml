@@ -16,7 +16,7 @@ repos:
         name: black
 
 -   repo: https://github.com/pycqa/flake8
-    rev: 7.1.1
+    rev: 7.1.2
     hooks:
     -   id: flake8
         additional_dependencies: [flake8-breakpoint, flake8-print, flake8-pydantic, flake8-type-checking]

@@ -94,18 +94,16 @@ def test_deploy_no_deployment_bytecode(owner, bytecode):
         contract.deploy(sender=owner)
 
 
-def test_deployments(owner, eth_tester_provider, vyper_contract_container):
-    initial_deployed_contract = vyper_contract_container.deploy(10000000, sender=owner)
-    actual = vyper_contract_container.deployments[-1].address
+def test_deployments(owner, eth_tester_provider, project):
+    initial_deployed_contract = project.VyperContract.deploy(10000000, sender=owner)
+    actual = project.VyperContract.deployments[-1].address
     expected = initial_deployed_contract.address
     assert actual == expected
 
 
-def test_deploy_proxy(
-    owner, vyper_contract_instance, proxy_contract_container, chain, eth_tester_provider
-):
+def test_deploy_proxy(owner, vyper_contract_instance, project, chain, eth_tester_provider):
     target = vyper_contract_instance.address
-    proxy = proxy_contract_container.deploy(target, sender=owner)
+    proxy = project.SimpleProxy.deploy(target, sender=owner)
 
     # Ensure we can call both proxy and target methods on it.
     assert proxy.implementation  # No attr err
@@ -139,8 +137,10 @@ def test_source_path_in_project(project_with_contract):
     assert contract_container.source_path == expected
 
 
-def test_source_path_out_of_project(contract_container, project_with_contract):
-    assert not contract_container.source_path
+def test_source_path_out_of_project(solidity_contract_instance, project):
+    solidity_contract_instance.base_path = None
+    with project.in_new_path():
+        assert not solidity_contract_instance.source_path
 
 
 def test_encode_constructor_input(contract_container, calldata):
@@ -176,8 +176,8 @@ def test_source_id(contract_container):
     assert actual == expected
 
 
-def test_at(vyper_contract_instance, vyper_contract_container):
-    instance = vyper_contract_container.at(vyper_contract_instance.address)
+def test_at(vyper_contract_instance, project):
+    instance = project.VyperContract.at(vyper_contract_instance.address)
     assert instance == vyper_contract_instance
 
 

@@ -21,7 +21,7 @@ from tests.conftest import skip_if_plugin_installed
 
 
 @pytest.fixture
-def tmp_project(with_dependencies_project_path):
+def tmp_project_with_deps(with_dependencies_project_path):
     real_project = Project(with_dependencies_project_path)
     # Copies contracts and stuff into a temp folder
     # and returns a project around the temp folder.
@@ -139,7 +139,7 @@ def test_repr(project):
     assert actual == expected
 
 
-@pytest.mark.parametrize("name", ("contracts", "sources"))
+@pytest.mark.parametrize("name", ("contracts", "contracts"))
 def test_contracts_folder_from_config(project, name):
     with project.temp_config(contracts_folder=name):
         assert project.contracts_folder == project.path / name
@@ -150,10 +150,10 @@ def test_contracts_folder_same_as_root_path(project):
         assert project.contracts_folder == project.path
 
 
-def test_contracts_folder_deduced(tmp_project):
-    new_project_path = tmp_project.path / "new"
+def test_contracts_folder_deduced(tmp_project_with_deps):
+    new_project_path = tmp_project_with_deps.path / "new"
     new_project_path.mkdir()
-    contracts_folder = new_project_path / "sources"
+    contracts_folder = new_project_path / "contracts"
     contracts_folder.mkdir()
     contract = contracts_folder / "tryme.json"
     abi = [{"name": "foo", "type": "fallback", "stateMutability": "nonpayable"}]
@@ -169,12 +169,13 @@ def test_reconfigure(project):
 
 
 def test_isolate_in_tempdir(project):
-    # Purposely not using `tmp_project` fixture.
-    with project.isolate_in_tempdir() as tmp_project:
-        assert tmp_project.path != project.path
-        assert tmp_project.in_tempdir
+    # Purposely not using `tmp_project` or `temp_project` fixtures
+    # for the purpose of directly testing `isolate_in_tempdir()`
+    with project.isolate_in_tempdir() as temp_project:
+        assert temp_project.path != temp_project.path
+        assert temp_project.in_tempdir
         # Manifest should have been created by default.
-        assert not tmp_project.manifest_path.is_file()
+        assert not temp_project.manifest_path.is_file()
 
 
 def test_isolate_in_tempdir_does_not_alter_sources(project):
@@ -253,7 +254,7 @@ def test_getattr_empty_contract(tmp_project):
 
 
 @skip_if_plugin_installed("vyper", "solidity")
-def test_getattr_same_name_as_source_file(project_with_source_files_contract):
+def test_getattr_same_name_as_source_file(project):
     expected = (
         r"'LocalProject' object has no attribute 'ContractA'\. "
         r"Also checked extra\(s\) 'contracts'\. "
@@ -263,7 +264,7 @@ def test_getattr_same_name_as_source_file(project_with_source_files_contract):
         r"Else, could it be from one of the missing compilers for extensions: .*"
     )
     with pytest.raises(AttributeError, match=expected):
-        _ = project_with_source_files_contract.ContractA
+        _ = project.ContractA
 
 
 @pytest.mark.parametrize("iypthon_attr_name", ("_repr_mimebundle_", "_ipython_display_"))
@@ -330,7 +331,7 @@ def test_extract_manifest(tmp_project, vyper_contract_instance):
 def test_extract_manifest_when_sources_missing(tmp_project):
     """
     Show that if a source is missing, it is OK. This happens when changing branches
-    after compiling and sources are only present on one of the branches.
+    after compiling and contracts are only present on one of the branches.
     """
     contract = make_contract("notreallyhere")
     tmp_project.manifest.contract_types = {contract.name: contract}
@@ -531,18 +532,18 @@ def test_clean(tmp_project):
     assert tmp_project.sources._path_cache is None
 
 
-def test_unpack(project_with_source_files_contract):
+def test_unpack(project):
     with create_tempdir() as path:
-        project_with_source_files_contract.unpack(path)
-        assert (path / "contracts" / "Contract.json").is_file()
+        project.unpack(path)
+        assert (path / project.config.contracts_folder / "VyperContract.vy").is_file()
 
-        # Show that even non-sources end up in the unpacked destination.
-        assert (path / "contracts" / "Path.with.sub.json").is_file()
+        # Show that even non-contracts end up in the unpacked destination.
+        assert (path / project.config.contracts_folder / "ThisIsNotAContract.txt").is_file()
 
 
 def test_add_compiler_data(project_with_dependency_config):
     # NOTE: Using different project than default to lessen
-    #   chance of race-conditions from multi-process test runners.
+    #   chance of race-conditions from multiprocess test runners.
     project = project_with_dependency_config
 
     # Load contracts so that any compilers that may exist are present.
@@ -730,7 +731,7 @@ class TestProject:
 
     def test_from_manifest_load_contracts(self, contract_type):
         """
-        Show if contract-types are missing but sources set,
+        Show if contract-types are missing but contracts set,
         compiling will add contract-types.
         """
         manifest = make_manifest(contract_type, include_contract_type=False)
@@ -789,11 +790,11 @@ class TestBrownieProject:
         # NOTE: `contracts/` is not part of the import key as it is
         # usually included in the import statements.
         assert [str(x) for x in config.solidity.import_remapping] == [
-            "@openzeppelin=openzeppelin/3.1.0"
+            "@openzeppelin=openzeppelin/5.2.0"
         ]
         assert config.dependencies[0]["name"] == "openzeppelin"
         assert config.dependencies[0]["github"] == "OpenZeppelin/openzeppelin-contracts"
-        assert config.dependencies[0]["version"] == "3.1.0"
+        assert config.dependencies[0]["version"] == "5.2.0"
 
 
 class TestFoundryProject:
@@ -880,13 +881,12 @@ class TestSourceManager:
         path = tmp_project.sources.lookup(source_id)
         assert path is None
 
-    def test_lookup_closest_match(self, project_with_source_files_contract):
-        pm = project_with_source_files_contract
-        source_path = pm.contracts_folder / "Contract.json"
-        temp_dir_a = pm.contracts_folder / "temp"
+    def test_lookup_closest_match(self, project):
+        source_path = project.contracts_folder / "VyperContract.vy"
+        temp_dir_a = project.contracts_folder / "temp"
         temp_dir_b = temp_dir_a / "tempb"
-        nested_source_a = temp_dir_a / "Contract.json"
-        nested_source_b = temp_dir_b / "Contract.json"
+        nested_source_a = temp_dir_a / "VyperContract.vy"
+        nested_source_b = temp_dir_b / "VyperContract.vy"
 
         def clean():
             # NOTE: Will also delete temp_dir_b.
@@ -905,19 +905,23 @@ class TestSourceManager:
                 nested_src.write_text(source_path.read_text(), encoding="utf8")
 
             # Top-level match.
-            for base in (source_path, str(source_path), "Contract", "Contract.json"):
+            for base in (source_path, str(source_path), "VyperContract", "VyperContract.vy"):
                 # Using stem in case it returns `Contract.__mock__`, which is
                 # added / removed as part of other tests (running x-dist).
-                assert pm.sources.lookup(base).stem == source_path.stem, f"Failed to lookup {base}"
+                assert (
+                    project.sources.lookup(base).stem == source_path.stem
+                ), f"Failed to lookup {base}"
 
             # Nested: 1st level
             for closest in (
                 nested_source_a,
                 str(nested_source_a),
-                "temp/Contract",
-                "temp/Contract.json",
+                "temp/VyperContract",
+                "temp/VyperContract.vy",
             ):
-                actual = pm.sources.lookup(closest)
+                actual = project.sources.lookup(closest)
+                assert actual
+
                 expected = nested_source_a
                 # Using stem in case it returns `Contract.__mock__`, which is
                 # added / removed as part of other tests (running x-dist).
@@ -927,10 +931,10 @@ class TestSourceManager:
             for closest in (
                 nested_source_b,
                 str(nested_source_b),
-                "temp/tempb/Contract",
-                "temp/tempb/Contract.json",
+                "temp/tempb/VyperContract",
+                "temp/tempb/VyperContract.vy",
             ):
-                actual = pm.sources.lookup(closest)
+                actual = project.sources.lookup(closest)
                 expected = nested_source_b
 
                 # Using stem in case it returns `Contract.__mock__`, which is
@@ -943,11 +947,10 @@ class TestSourceManager:
     def test_lookup_not_found(self, tmp_project):
         assert tmp_project.sources.lookup("madeup.json") is None
 
-    def test_lookup_missing_contracts_prefix(self, project_with_source_files_contract):
+    def test_lookup_missing_contracts_prefix(self, project):
         """
         Show we can exclude the `contracts/` prefix in a source ID.
         """
-        project = project_with_source_files_contract
         actual_from_str = project.sources.lookup("ContractA.sol")
         actual_from_path = project.sources.lookup(Path("ContractA.sol"))
         expected = project.contracts_folder / "ContractA.sol"

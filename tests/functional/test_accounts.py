@@ -312,9 +312,9 @@ def test_deploy_and_not_publish(owner, contract_container, dummy_live_network, m
     dummy_live_network.__dict__["explorer"] = None
 
 
-def test_deploy_proxy(owner, vyper_contract_instance, proxy_contract_container, chain):
+def test_deploy_proxy(owner, vyper_contract_instance, project, chain):
     target = vyper_contract_instance.address
-    proxy = owner.deploy(proxy_contract_container, target)
+    proxy = owner.deploy(project.SimpleProxy, target)
 
     # Ensure we can call both proxy and target methods on it.
     assert proxy.implementation  # No attr err
@@ -374,8 +374,9 @@ def test_deploy_no_deployment_bytecode(owner, bytecode):
         owner.deploy(contract)
 
 
-def test_deploy_contract_type(owner, vyper_contract_type, clean_contract_caches):
-    contract = owner.deploy(vyper_contract_type, 0)
+def test_deploy_contract_type(owner, project, clean_contract_caches):
+    contract_type = project.VyperContract.contract_type
+    contract = owner.deploy(contract_type, 0)
     assert contract.address
     assert contract.txn_hash
 
@@ -974,12 +975,12 @@ def test_load(account_manager, keyfile_account):
     assert account == keyfile_account
 
 
-def test_get_deployment_address(owner, vyper_contract_container):
+def test_get_deployment_address(owner, project):
     deployment_address_1 = owner.get_deployment_address()
     deployment_address_2 = owner.get_deployment_address(nonce=owner.nonce + 1)
-    instance_1 = owner.deploy(vyper_contract_container, 490)
+    instance_1 = owner.deploy(project.VyperContract, 490)
     assert instance_1.address == deployment_address_1
-    instance_2 = owner.deploy(vyper_contract_container, 490)
+    instance_2 = owner.deploy(project.VyperContract, 490)
     assert instance_2.address == deployment_address_2
 
 

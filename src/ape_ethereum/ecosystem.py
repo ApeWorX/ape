@@ -506,7 +506,7 @@ class Ethereum(EcosystemAPI):
                 # TODO perf: use a batch call here when ape adds support
                 storage = self.provider.get_storage(address, slot)
             except APINotImplementedError:
-                continue
+                break
 
             if sum(storage) == 0:
                 continue
