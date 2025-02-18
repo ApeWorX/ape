@@ -412,6 +412,14 @@ class TestPackagesCache:
         actual = cache.get_project_path("project-test-2", "v1.0.0")
         assert actual == path
 
+    def test_isolate_cache_changes(self, cache):
+        dep = LocalDependency(name="isotestdep", local=Path("isotestdep"), version="v1.0.0")
+        with cache.isolate_changes():
+            path = cache.cache_api(dep)
+            assert path.is_file()
+
+        assert not path.is_file()
+
 
 class TestLocalDependency:
     NAME = "testlocaldep"
