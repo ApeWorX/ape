@@ -1,10 +1,10 @@
 import os
 import shutil
-from collections.abc import Iterable, Iterator
+from collections.abc import Iterator
 from contextlib import contextmanager
 from functools import cached_property
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import TYPE_CHECKING, Any, Iterable, Optional, Union
 
 from ape.api.config import ApeConfig
 from ape.managers.base import BaseManager

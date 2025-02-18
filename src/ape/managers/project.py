@@ -50,9 +50,9 @@ def _path_to_source_id(path: Path, root_path: Path) -> str:
 
 class SourceManager(BaseManager):
     """
-    A manager of a local-project's sources-paths.
+    A manager of a local-project's source-paths.
     Access via ``project.sources``. Allows source-access
-    from both ``source_id`` as well as ``path``. Handles
+    from both ``source_id`` and ``path``. Handles
     detecting modified sources as well as excluded sources.
     Is meant to resemble a PackageManifest's source dict
     but with more functionality for active development.
@@ -177,7 +177,7 @@ class SourceManager(BaseManager):
     @property
     def paths(self) -> Iterator[Path]:
         """
-        All contract sources paths.
+        All contract source paths.
         """
         for path in self._all_files:
             if self.is_excluded(path):
@@ -643,7 +643,7 @@ class Dependency(BaseManager, ExtraAttributesMixin):
     def api_path(self) -> Path:
         """
         The path to the dependency's API data-file. This data is necessary
-        for managing the install of the dependency.
+        for managing the installation of the dependency.
         """
         return self._cache.get_api_path(self.package_id, self.version)
 
@@ -676,15 +676,19 @@ class Dependency(BaseManager, ExtraAttributesMixin):
         return self.api.uri
 
     def install(
-        self, use_cache: bool = True, config_override: Optional[dict] = None
+        self,
+        use_cache: bool = True,
+        config_override: Optional[dict] = None,
+        recurse: bool = True,
     ) -> "ProjectManager":
         """
         Install this dependency.
 
         Args:
-            use_cache (bool): To force a re-install, like a refresh, set this
+            use_cache (bool): To force reinstalling, like a refresh, set this
               to ``False``.
             config_override (dict): Optionally change the configuration during install.
+            recurse (bool): Set to ``False`` to avoid installing dependency of dependencies.
 
         Returns:
             :class:`~ape.managers.project.ProjectManager`: The resulting project, ready
@@ -729,8 +733,7 @@ class Dependency(BaseManager, ExtraAttributesMixin):
 
                 did_fetch = True
 
-                # Reset global tried-fetch if it succeeded, so it can refresh
-                # if needbe.
+                # Reset global tried-fetch if it succeeded, so it can refresh.
                 self._tried_fetch = False
 
         # Set name / version for the project, if it needs.
@@ -782,9 +785,8 @@ class Dependency(BaseManager, ExtraAttributesMixin):
         # Cache for next time.
         self._installation = project
 
-        # Also, install dependencies of dependencies, if fetching for the
-        # first time.
-        if did_fetch:
+        # Install dependencies of dependencies if fetching for the first time.
+        if did_fetch and recurse:
             spec = project.dependencies.get_project_dependencies(use_cache=use_cache)
             list(spec)
 
@@ -992,7 +994,7 @@ class PackagesCache(ManagerAccessMixin):
         api_file.parent.mkdir(parents=True, exist_ok=True)
         api_file.unlink(missing_ok=True)
 
-        # NOTE: All the excludes only for sabing disk space.
+        # NOTE: All the excludes only for saving disk space.
         json_text = api.model_dump_json(
             by_alias=True,
             mode="json",
@@ -1062,6 +1064,7 @@ class DependencyVersionMap(dict[str, "ProjectManager"]):
 
     def __init__(self, name: str):
         self._name = name
+        super().__init__()
 
     @log_instead_of_fail(default="<DependencyVersionMap>")
     def __repr__(self) -> str:
@@ -1565,7 +1568,7 @@ class DependencyManager(BaseManager):
         Args:
             **dependency: Dependency data, same to what you put in `dependencies:` config.
               When excluded, installs all project-specified dependencies. Also, use
-              ``use_cache=False`` to force a re-install.
+              ``use_cache=False`` to force re-installing.
 
         Returns:
             :class:`~ape.managers.project.Dependency` when given data else a list
@@ -1578,7 +1581,7 @@ class DependencyManager(BaseManager):
         # Install all project's.
         result: list[Dependency] = []
 
-        # Log the errors as they happen but don't crash the full install.
+        # Log the errors as they happen but don't crash the full installation.
         for dep in self.get_project_dependencies(use_cache=use_cache):
             result.append(dep)
 
@@ -2695,6 +2698,29 @@ class LocalProject(Project):
 
         if manifest := cache.get("_manifest"):
             self._manifest = manifest
+
+    @contextmanager
+    def in_new_path(self, path: Optional[Path] = None):
+        """
+        Change the project directory in a context.
+        NOTE: This is not typically advised. Most use-cases, you
+        can use multiple projects.
+
+        Args:
+            path (Path): The new path of this project.
+        """
+        if path is None:
+            with create_tempdir() as tmp_path:
+                with self.in_new_path(tmp_path):
+                    yield
+
+        else:
+            original_path = self.path
+            self.chdir(path=path)
+            try:
+                yield
+            finally:
+                self.chdir(original_path)
 
     @contextmanager
     def within_project_path(self):

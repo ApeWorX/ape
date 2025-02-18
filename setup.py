@@ -20,6 +20,8 @@ extras_require = {
         "pytest-timeout>=2.2.0,<3",  # For avoiding timing out during tests
         "hypothesis>=6.2.0,<7.0",  # Strategy-based fuzzer
         "hypothesis-jsonschema==0.19.0",  # JSON Schema fuzzer extension
+        "ape-vyper",  # Needed for compiling test contracts
+        "ape-solidity",  # Needed for compiling test contracts
     ],
     "lint": [
         "ruff>=0.10.0",  # Unified linter and formatter
