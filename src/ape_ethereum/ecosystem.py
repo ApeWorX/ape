@@ -505,8 +505,10 @@ class Ethereum(EcosystemAPI):
             try:
                 # TODO perf: use a batch call here when ape adds support
                 storage = self.provider.get_storage(address, slot)
-            except APINotImplementedError:
-                continue
+            except NotImplementedError:
+                # Break early on no-implemented error rather than attempting
+                # to try and more proxy types.
+                break
 
             if sum(storage) == 0:
                 continue
