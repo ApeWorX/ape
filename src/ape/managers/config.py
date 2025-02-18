@@ -1,9 +1,10 @@
 import os
-from collections.abc import Iterator
+import shutil
+from collections.abc import Iterable, Iterator
 from contextlib import contextmanager
 from functools import cached_property
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any, Optional, Union
 
 from ape.api.config import ApeConfig
 from ape.managers.base import BaseManager
@@ -113,11 +114,22 @@ class ConfigManager(ExtraAttributesMixin, BaseManager):
         return ApeConfig.from_manifest(manifest, **overrides)
 
     @contextmanager
-    def isolate_data_folder(self) -> Iterator[Path]:
+    def isolate_data_folder(
+        self, keep: Optional[Union[Iterable[str], str]] = None
+    ) -> Iterator[Path]:
         """
         Change Ape's DATA_FOLDER to point a temporary path,
         in a context, for testing purposes. Any data
         cached to disk will not persist.
+
+        Args:
+            keep (Optional[Union[Iterable[str], str]]): Optionally, pass in
+              a key of subdirectory names to include in the new isolated
+              data folder. For example, pass ing ``"packages"`` to avoid
+              having to re-download dependencies in an isolated environment.
+
+        Returns:
+            Iterator[Path]: The temporary data folder.
         """
         original_data_folder = self.DATA_FOLDER
         if in_tempdir(original_data_folder):
@@ -125,8 +137,18 @@ class ConfigManager(ExtraAttributesMixin, BaseManager):
             yield original_data_folder
 
         else:
+            keep = [keep] if isinstance(keep, str) else keep or []
             try:
                 with create_tempdir() as temp_data_folder:
+                    # Copy in items from "keep".
+                    for item in keep:
+                        path_to_keep = original_data_folder / item
+                        if not path_to_keep.is_dir():
+                            continue
+
+                        dest_path = temp_data_folder / item
+                        shutil.copytree(path_to_keep, dest_path)
+
                     self.DATA_FOLDER = temp_data_folder
                     yield temp_data_folder
 
