@@ -577,15 +577,18 @@ class ContractCache(BaseManager):
                     if fetch_from_explorer
                     else None
                 )
+                contract_type_to_cache = None
+
                 if proxy_contract_type:
                     contract_type_to_cache = _get_combined_contract_type(
                         proxy_contract_type, proxy_info, implementation_contract_type
                     )
-                else:
+                elif implementation_contract_type is not None:
                     contract_type_to_cache = implementation_contract_type
 
-                self.contract_types[address_key] = contract_type_to_cache
-                return contract_type_to_cache
+                if contract_type_to_cache is not None:
+                    self.contract_types[address_key] = contract_type_to_cache
+                    return contract_type_to_cache
 
             # Also gets cached to disk for faster lookup next time.
             if fetch_from_explorer:

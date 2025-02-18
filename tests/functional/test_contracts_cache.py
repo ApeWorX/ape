@@ -503,6 +503,9 @@ def test_get_pass_along_proxy_info(chain, owner, minimal_proxy_container, ethere
     actual = chain.contracts.get(minimal_proxy.address, proxy_info=info)
     assert actual is None  # It can't find the contact anymore.
 
+    # Ensure it does store 'None' (was a bug where it did).
+    assert minimal_proxy.address not in chain.contracts.contract_types
+
 
 def test_get_creation_metadata(chain, vyper_contract_instance, owner):
     address = vyper_contract_instance.address
