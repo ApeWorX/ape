@@ -1,5 +1,6 @@
 import os
 import re
+import shutil
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Optional, Union
 
@@ -689,3 +690,44 @@ def test_project_level_settings(project):
         assert project.config.my_string == "my_string"
         assert project.config.my_int == 123
         assert project.config.my_bool is True
+
+
+def test_isolate_data_folder(config):
+    original_data_folder = config.DATA_FOLDER
+    madeup_path = Path.home() / ".ape" / "__madeup__"
+    config.DATA_FOLDER = madeup_path
+    try:
+        with config.isolate_data_folder():
+            assert config.DATA_FOLDER != original_data_folder
+    finally:
+        config.DATA_FOLDER = original_data_folder
+
+
+def test_isolate_data_folder_already_isolated(config):
+    data_folder = config.DATA_FOLDER
+    with config.isolate_data_folder():
+        # Already isolated, so there is no change.
+        assert config.DATA_FOLDER == data_folder
+
+
+def test_isolate_data_folder_keep(config):
+    original_data_folder = config.DATA_FOLDER
+    madeup_path = Path.home() / ".ape" / "__core_aoe_test__"
+    madeup_path.mkdir(parents=True, exist_ok=True)
+    sub_dir = madeup_path / "subdir"
+    file = sub_dir / "file.txt"
+    sub_dir.mkdir(parents=True, exist_ok=True)
+    file.write_text("search for 'test_isolate_data_folder_keep' ape's tests.")
+
+    config.DATA_FOLDER = madeup_path
+    try:
+        with config.isolate_data_folder(keep="subdir"):
+            assert config.DATA_FOLDER != original_data_folder
+
+        expected_file = config.DATA_FOLDER / "subdir" / "file.txt"
+        assert expected_file.is_file()
+
+    finally:
+        config.DATA_FOLDER = original_data_folder
+        if madeup_path.is_dir():
+            shutil.rmtree(str(madeup_path), ignore_errors=True)
