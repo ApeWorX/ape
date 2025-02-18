@@ -423,6 +423,7 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#ape.managers.project.PackagesCache.get_manifest_path"><code class="docutils literal notranslate">get_manifest_path()</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.project.PackagesCache.get_project_path"><code class="docutils literal notranslate">get_project_path()</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.project.PackagesCache.get_project_versions_path"><code class="docutils literal notranslate">get_project_versions_path()</span></code></a></li>
+<li><a class="reference internal" href="#ape.managers.project.PackagesCache.isolate_changes"><code class="docutils literal notranslate">isolate_changes()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#ape.managers.project.Project"><code class="docutils literal notranslate"><span class="pre">Project</span></code></a><ul>
@@ -3357,6 +3358,13 @@ as a base.</p>
 <dt class="sig sig-object py" id="ape.managers.project.PackagesCache.get_project_versions_path">
 <span class="sig-name descname"><span class="pre">get_project_versions_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">package_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Path</span></span></span><a class="headerlink" href="#ape.managers.project.PackagesCache.get_project_versions_path" title="Link to this definition"></a></dt>
 <dd><p>The path to all the versions (projects) of a dependency.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.project.PackagesCache.isolate_changes">
+<span class="sig-name descname"><span class="pre">isolate_changes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.project.PackagesCache.isolate_changes" title="Link to this definition"></a></dt>
+<dd><p>Allows you to make changes affecting the Ape packages cache in a context.
+For example, temporarily install local “dev” packages for testing purposes.</p>
 </dd></dl>
 
 </dd></dl>
