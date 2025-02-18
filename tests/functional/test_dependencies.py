@@ -413,7 +413,7 @@ class TestPackagesCache:
         assert actual == path
 
     def test_isolate_cache_changes(self, cache):
-        dep = LocalDependency(name="depabc", local=Path("depabc"), version="v1.0.0")
+        dep = LocalDependency(name="isotestdep", local=Path("isotestdep"), version="v1.0.0")
         with cache.isolate_changes():
             path = cache.cache_api(dep)
             assert path.is_file()
