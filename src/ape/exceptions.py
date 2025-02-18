@@ -74,6 +74,10 @@ class SignatureError(AccountsError):
     Raised when there are issues with signing.
     """
 
+    def __init__(self, message: str, transaction: Optional["TransactionAPI"] = None):
+        self.transaction = transaction
+        super().__init__(message)
+
 
 class ContractDataError(ApeException):
     """

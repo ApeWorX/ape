@@ -36,7 +36,8 @@ body:
       required: true
   - type: textarea
     attributes:
-      value: |
+      label: Ape Configuration
+      placeholder: |
         ### ape-config.yaml file
 
         Paste your ape-config.yaml content in the following section
