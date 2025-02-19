@@ -22,7 +22,6 @@ from ape.exceptions import (
     APINotImplementedError,
     BlockNotFoundError,
     ChainError,
-    ConversionError,
     ProviderNotConnectedError,
     QueryEngineError,
     TransactionNotFoundError,
@@ -955,11 +954,8 @@ class ChainManager(BaseManager):
         if (isinstance(address, str) and not address.startswith("0x")) or not isinstance(
             address, str
         ):
-            try:
-                address = self.conversion_manager.convert(address, AddressType)
-            except ConversionError:
-                # Try to get the balance anyway; maybe the provider can handle it.
-                address = address
+            # Handles accounts, ENS, integers, aliases, everything.
+            address = self.account_manager.resolve_address(address)
 
         return self.provider.get_balance(address, block_id=block_id)
 

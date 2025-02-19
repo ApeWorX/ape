@@ -1006,31 +1006,31 @@ def test_call_sign_false(owner, vyper_contract_instance):
         owner.call(tx, sign=False)
 
 
-def test_resolve(owner, keyfile_account, account_manager, vyper_contract_instance):
+def test_resolve_address(owner, keyfile_account, account_manager, vyper_contract_instance):
     # Test test-account alias input.
-    actual = account_manager.resolve(owner.alias)
+    actual = account_manager.resolve_address(owner.alias)
     assert actual == owner.address
 
     # Test keyfile-account alias input.
-    actual = account_manager.resolve(keyfile_account.alias)
+    actual = account_manager.resolve_address(keyfile_account.alias)
     assert actual == keyfile_account.address
 
     # Test address input.
-    actual = account_manager.resolve(owner.address)
+    actual = account_manager.resolve_address(owner.address)
     assert actual == owner.address
 
     # Test account input.
-    actual = account_manager.resolve(owner)
+    actual = account_manager.resolve_address(owner)
     assert actual == owner.address
 
     # Test contract input.
-    actual = account_manager.resolve(vyper_contract_instance)
+    actual = account_manager.resolve_address(vyper_contract_instance)
     assert actual == vyper_contract_instance.address
 
     # Test int input.
-    actual = account_manager.resolve(int(owner.address, 16))
+    actual = account_manager.resolve_address(int(owner.address, 16))
     assert actual == owner.address
 
     # Test int input.
-    actual = account_manager.resolve(HexBytes(owner.address))
+    actual = account_manager.resolve_address(HexBytes(owner.address))
     assert actual == owner.address
