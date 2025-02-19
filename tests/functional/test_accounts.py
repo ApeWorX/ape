@@ -1004,3 +1004,33 @@ def test_call_sign_false(owner, vyper_contract_instance):
     tx = vyper_contract_instance.setNumber.as_transaction(5991)
     with pytest.raises(SignatureError):
         owner.call(tx, sign=False)
+
+
+def test_resolve(owner, keyfile_account, account_manager, vyper_contract_instance):
+    # Test test-account alias input.
+    actual = account_manager.resolve(owner.alias)
+    assert actual == owner.address
+
+    # Test keyfile-account alias input.
+    actual = account_manager.resolve(keyfile_account.alias)
+    assert actual == keyfile_account.address
+
+    # Test address input.
+    actual = account_manager.resolve(owner.address)
+    assert actual == owner.address
+
+    # Test account input.
+    actual = account_manager.resolve(owner)
+    assert actual == owner.address
+
+    # Test contract input.
+    actual = account_manager.resolve(vyper_contract_instance)
+    assert actual == vyper_contract_instance.address
+
+    # Test int input.
+    actual = account_manager.resolve(int(owner.address, 16))
+    assert actual == owner.address
+
+    # Test int input.
+    actual = account_manager.resolve(HexBytes(owner.address))
+    assert actual == owner.address
