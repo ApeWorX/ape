@@ -4,7 +4,7 @@ from abc import abstractmethod
 from collections.abc import Iterator
 from datetime import datetime as datetime_type
 from functools import cached_property
-from typing import IO, TYPE_CHECKING, Any, NoReturn, Optional, Union
+from typing import IO, TYPE_CHECKING, Any, Literal, NoReturn, Optional, Union
 
 from eth_pydantic_types import HexBytes, HexStr
 from eth_utils import is_hex, to_hex, to_int
@@ -183,26 +183,47 @@ class TransactionAPI(BaseInterfaceModel):
         return f"<{cls_name} {params}>"
 
     def __str__(self) -> str:
-        # NOTE: Using JSON mode for style.
-        data = self.model_dump(mode="json")
-        if len(data["data"]) > 9:
-            # only want to specify encoding if data["data"] is a string
-            if isinstance(data["data"], str):
-                data["data"] = (
+        return self.to_string()
+
+    def to_string(
+        self, calldata_repr: Optional[Union[Literal["full"], Literal["abridged"]]] = None
+    ) -> str:
+        """
+        Get the stringified representation of the transaction.
+
+        Args:
+            calldata_repr (bool | None): Pass "full" to see the full caldata.
+              Defaults to the value from the config (``accounts.calldata_repr``).
+
+        Returns:
+            str
+        """
+        data = self.model_dump(mode="json")  # JSON mode used for style purposes.
+
+        if calldata_repr is None:
+            # If was not specified, use the default value from the config.
+            calldata_repr = self.config_manager.accounts.calldata_repr
+
+        if calldata_repr == "full" or len(data["data"]) <= 9:
+            data["data"] = (
+                to_hex(bytes(data["data"], encoding="utf8"))
+                if isinstance(data["data"], str)
+                else to_hex(bytes(data["data"]))
+            )
+
+        else:
+            # Only want to specify encoding if data["data"] is a string
+            data["data"] = (
+                (
                     "0x"
                     + bytes(data["data"][:4], encoding="utf8").hex()
                     + "..."
                     + bytes(data["data"][-4:], encoding="utf8").hex()
                 )
-            else:
-                data["data"] = (
-                    to_hex(bytes(data["data"][:4])) + "..." + to_hex(bytes(data["data"][-4:]))
-                )
-        else:
-            if isinstance(data["data"], str):
-                data["data"] = to_hex(bytes(data["data"], encoding="utf8"))
-            else:
-                data["data"] = to_hex(bytes(data["data"]))
+                if isinstance(data["data"], str)
+                else to_hex(bytes(data["data"][:4])) + "..." + to_hex(bytes(data["data"][-4:]))
+            )
+
         params = "\n  ".join(f"{k}: {v}" for k, v in data.items())
         cls_name = getattr(type(self), "__name__", TransactionAPI.__name__)
         return f"{cls_name}:\n  {params}"
