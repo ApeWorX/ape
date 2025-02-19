@@ -136,6 +136,7 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#ape.managers.accounts.AccountManager.containers"><code class="docutils literal notranslate">containers</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.accounts.AccountManager.get_accounts_by_type"><code class="docutils literal notranslate">get_accounts_by_type()</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.accounts.AccountManager.load"><code class="docutils literal notranslate">load()</span></code></a></li>
+<li><a class="reference internal" href="#ape.managers.accounts.AccountManager.resolve_address"><code class="docutils literal notranslate">resolve_address()</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.accounts.AccountManager.test_accounts"><code class="docutils literal notranslate">test_accounts</span></code></a></li>
 </ul>
 </li>
@@ -601,6 +602,22 @@ to get.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="api.html#ape.api.accounts.AccountAPI" title="ape.api.accounts.AccountAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">AccountAPI</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.accounts.AccountManager.resolve_address">
+<span class="sig-name descname"><span class="pre">resolve_address</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">account_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="api.html#ape.api.address.BaseAddress" title="ape.api.address.BaseAddress"><span class="pre">BaseAddress</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><span class="pre">ChecksumAddress</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_AddressValidator</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">bytes</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><span class="pre">ChecksumAddress</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_AddressValidator</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#ape.managers.accounts.AccountManager.resolve_address" title="Link to this definition"></a></dt>
+<dd><p>Resolve the given input to an address.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>(</strong> (<em>account_id</em>) – class:~ape.api.address.BaseAddress, str, int, bytes): The input to resolve.
+It handles anything that converts to an AddressType like an ENS or a BaseAddress.
+It also handles account aliases Ape is aware of, or int or bytes address values.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code> | None</p>
 </dd>
 </dl>
 </dd></dl>
