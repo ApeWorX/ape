@@ -1,6 +1,13 @@
 from importlib import import_module
 
-from ape.plugins import AccountPlugin, register
+from ape.plugins import AccountPlugin, Config, register
+
+
+@register(Config)
+def config_class():
+    from ape_accounts.config import AccountsConfig
+
+    return AccountsConfig
 
 
 @register(AccountPlugin)
