@@ -318,6 +318,25 @@ def test_str_when_data_is_long_shows_first_4_bytes(vyper_contract_instance):
     assert "data: 0x30783366..." in actual
 
 
+def test_str_when_data_is_long_and_accounts_configure_full_calldata(
+    project, vyper_contract_instance
+):
+    """
+    Tests against a condition that would cause transactions to
+    fail with string-encoding errors.
+    """
+    txn = vyper_contract_instance.setNumber.as_transaction(123)
+    with project.temp_config(accounts={"calldata_repr": "full"}):
+        actual = str(txn)
+
+    expected = (
+        "data: 0x3078336662356331636230303030303030303030303030303030303030303030303030"
+        "303030303030303030303030303030303030303030303030303030303030303030303030303762"
+    )
+    assert isinstance(actual, str)
+    assert expected in actual
+
+
 def test_receipt_when_none(ethereum):
     txn = ethereum.create_transaction(data=HexBytes("0x123"))
     assert txn.receipt is None
