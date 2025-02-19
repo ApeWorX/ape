@@ -229,12 +229,14 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#ape.managers.chain.ChainManager.chain_id"><code class="docutils literal notranslate">chain_id</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.chain.ChainManager.contracts"><code class="docutils literal notranslate">contracts</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.chain.ChainManager.gas_price"><code class="docutils literal notranslate">gas_price</span></code></a></li>
+<li><a class="reference internal" href="#ape.managers.chain.ChainManager.get_balance"><code class="docutils literal notranslate">get_balance()</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.chain.ChainManager.get_receipt"><code class="docutils literal notranslate">get_receipt()</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.chain.ChainManager.history"><code class="docutils literal notranslate">history</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.chain.ChainManager.isolate"><code class="docutils literal notranslate">isolate()</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.chain.ChainManager.mine"><code class="docutils literal notranslate">mine()</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.chain.ChainManager.pending_timestamp"><code class="docutils literal notranslate">pending_timestamp</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.chain.ChainManager.restore"><code class="docutils literal notranslate">restore()</span></code></a></li>
+<li><a class="reference internal" href="#ape.managers.chain.ChainManager.set_balance"><code class="docutils literal notranslate">set_balance()</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.chain.ChainManager.snapshot"><code class="docutils literal notranslate">snapshot()</span></code></a></li>
 </ul>
 </li>
@@ -1626,6 +1628,27 @@ See <a class="reference external" href="https://chainlist.org/">ChainList</a> fo
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.chain.ChainManager.get_balance">
+<span class="sig-name descname"><span class="pre">get_balance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="api.html#ape.api.address.BaseAddress" title="ape.api.address.BaseAddress"><span class="pre">BaseAddress</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><span class="pre">ChecksumAddress</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_AddressValidator</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BlockID</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#ape.managers.chain.ChainManager.get_balance" title="Link to this definition"></a></dt>
+<dd><p>Get the balance of the given address. If <code class="docutils literal notranslate"><span class="pre">ape-ens</span></code> is installed,
+you can pass ENS names.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>address</strong> (<a class="reference internal" href="api.html#ape.api.address.BaseAddress" title="ape.api.address.BaseAddress"><em>BaseAddress</em></a><em>, </em><em>AddressType</em><em> | </em><em>str</em>) – An address, ENS, or account/contract.</p></li>
+<li><p><strong>block_id</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">BlockID</span></code> | None) – The block ID. Defaults to latest.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The account balance.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="ape.managers.chain.ChainManager.get_receipt">
 <span class="sig-name descname"><span class="pre">get_receipt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transaction_hash</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="api.html#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><span class="pre">ReceiptAPI</span></a></span></span><a class="headerlink" href="#ape.managers.chain.ChainManager.get_receipt" title="Link to this definition"></a></dt>
 <dd><p>Get a transaction receipt from the chain.</p>
@@ -1709,6 +1732,20 @@ Allows developers to go back to a previous state.</p>
 <dt class="field-even">Parameters<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>snapshot_id</strong> (Optional[<code class="xref py py-class docutils literal notranslate"><span class="pre">SnapshotID</span></code>]) – The snapshot ID. Defaults
 to the most recent snapshot ID.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.chain.ChainManager.set_balance">
+<span class="sig-name descname"><span class="pre">set_balance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">account</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="api.html#ape.api.address.BaseAddress" title="ape.api.address.BaseAddress"><span class="pre">BaseAddress</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><span class="pre">ChecksumAddress</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_AddressValidator</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amount</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.chain.ChainManager.set_balance" title="Link to this definition"></a></dt>
+<dd><p>Set an account balance, only works on development chains.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>account</strong> (<a class="reference internal" href="api.html#ape.api.address.BaseAddress" title="ape.api.address.BaseAddress"><em>BaseAddress</em></a><em>, </em><em>AddressType</em><em> | </em><em>str</em>) – The account.</p></li>
+<li><p><strong>amount</strong> (<em>int</em><em> | </em><em>str</em>) – The new balance.</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
