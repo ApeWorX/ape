@@ -4,7 +4,6 @@ from pathlib import Path
 
 import click
 from click.testing import CliRunner
-from eth_utils import is_hex
 from IPython import get_ipython
 from IPython.core.magic import Magics, line_magic, magics_class
 from rich import print as rich_print
@@ -14,7 +13,6 @@ from ape._cli import cli
 from ape.exceptions import Abort, ApeException, handle_ape_exception
 from ape.logging import logger
 from ape.managers.project import LocalProject
-from ape.types.address import AddressType
 from ape.utils.basemodel import ManagerAccessMixin
 from ape.utils.os import clean_path
 
@@ -67,11 +65,13 @@ class ApeConsoleMagics(Magics):
         provider = ape.networks.provider
         ecosystem = provider.network.ecosystem
         result = eval(line, self.ipython.user_global_ns, self.ipython.user_ns)
-        if isinstance(result, str) and not is_hex(result):
-            # Check if is an account alias.
-            address = ape.accounts.load(result).address
+
+        if isinstance(result, str) and result.startswith("0x"):
+            address = result
+
         else:
-            address = ape.convert(result, AddressType)
+            # Handles accounts, ENS, integers, BaseAddress, and aliases.
+            address = ManagerAccessMixin.account_manager.resolve_address(result) or f"{result}"
 
         decimals = ecosystem.fee_token_decimals
         symbol = ecosystem.fee_token_symbol
