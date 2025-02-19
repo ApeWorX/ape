@@ -469,7 +469,7 @@ class AccountManager(BaseManager):
     ) -> "TestAccountAPI":
         return self.test_accounts.init_test_account(index, address, private_key)
 
-    def resolve(
+    def resolve_address(
         self, account_id: Union["BaseAddress", AddressType, str, int, bytes]
     ) -> Optional[AddressType]:
         """
