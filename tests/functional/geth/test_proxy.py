@@ -7,9 +7,6 @@ from tests.conftest import geth_process_test
 
 @geth_process_test
 def test_standard_proxy(get_contract_type, owner, geth_contract, ethereum):
-    """
-    NOTE: Geth is used here because EthTester does not implement getting storage slots.
-    """
     _type = get_contract_type("eip1967")
     contract = ContractContainer(_type)
     target = geth_contract.address
@@ -22,9 +19,6 @@ def test_standard_proxy(get_contract_type, owner, geth_contract, ethereum):
 
 @geth_process_test
 def test_beacon_proxy(get_contract_type, geth_contract, owner, ethereum):
-    """
-    NOTE: Geth is used here because EthTester does not implement getting storage slots.
-    """
     _type = get_contract_type("beacon")
     beacon_contract = ContractContainer(_type)
     target = geth_contract.address
