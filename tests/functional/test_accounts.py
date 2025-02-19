@@ -71,6 +71,23 @@ def test_sign_message(signer, message):
     assert signer.check_signature(message, signature)
 
 
+def test_sign_transaction(signer, message, ethereum):
+    transaction = ethereum.create_transaction(nonce=0, max_fee=0, max_priority_fee=0)
+    signed_transaction = signer.sign_transaction(transaction)
+    assert signed_transaction.signature is not None
+
+
+def test_sign_transaction_using_keyfile_account(keyfile_account, message, ethereum, runner):
+    transaction = ethereum.create_transaction(
+        nonce=0, max_fee=0, max_priority_fee=0, data="0x21314135413451"
+    )
+
+    with runner.isolation(f"y\n{PASSPHRASE}\ny"):
+        signed_transaction = keyfile_account.sign_transaction(transaction)
+
+    assert signed_transaction.signature is not None
+
+
 def test_sign_string(signer):
     message = "Hello Apes!"
     signature = signer.sign_message(message)
