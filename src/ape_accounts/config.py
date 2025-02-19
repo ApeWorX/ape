@@ -1,4 +1,11 @@
+from enum import Enum
+
 from ape.api.config import PluginConfig
+
+
+class CalldataRepr(str, Enum):
+    full = "full"
+    abridged = "abridged"
 
 
 class AccountsConfig(PluginConfig):
@@ -6,9 +13,9 @@ class AccountsConfig(PluginConfig):
     Config accounts generally.
     """
 
-    show_full_calldata: bool = False
+    calldata_repr: CalldataRepr = CalldataRepr.abridged
     """
-    When signing transactions, ``True`` will always show the full
-    calldata where ``False`` shows an abridged version of the data
-    (enough to see the method ID). Defaults to ``False``.
+    When signing transactions, ``full`` will always show the full
+    calldata where ``abridged`` shows an abridged version of the data
+    (enough to see the method ID). Defaults to ``abridged``.
     """
