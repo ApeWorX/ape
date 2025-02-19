@@ -474,6 +474,60 @@ def test_cache_non_checksum_address(chain, vyper_contract_instance):
     assert chain.contracts[vyper_contract_instance.address] == vyper_contract_instance.contract_type
 
 
+def test_get_when_proxy(chain, owner, minimal_proxy_container, vyper_contract_instance):
+    placeholder = "0xBEbeBeBEbeBebeBeBEBEbebEBeBeBebeBeBebebe"
+    if placeholder in chain.contracts:
+        del chain.contracts[placeholder]
+
+    minimal_proxy = owner.deploy(minimal_proxy_container, sender=owner)
+    chain.provider.network.__dict__["explorer"] = None  # Ensure no explorer, messes up test.
+
+    actual = chain.contracts.get(minimal_proxy.address)
+    assert actual == minimal_proxy.contract_type
+
+
+def test_get_when_proxy_but_implementation_missing(chain, owner, vyper_contract_container):
+    """
+    Proxy is cached but implementation is missing.
+    """
+    placeholder = vyper_contract_container.deploy(1001, sender=owner)
+    assert chain.contracts[placeholder.address]  # This must be cached!
+
+    proxy_container = _make_minimal_proxy(placeholder.address)
+    minimal_proxy = owner.deploy(proxy_container, sender=owner)
+    chain.provider.network.__dict__["explorer"] = None  # Ensure no explorer, messes up test.
+
+    if minimal_proxy.address in chain.contracts:
+        # Delete the proxy but make sure it does not delete the implementation!
+        # (which it normally does here).
+        del chain.contracts[minimal_proxy.address]
+        chain.contracts[placeholder.address] = placeholder
+
+    actual = chain.contracts.get(minimal_proxy.address)
+    assert actual == minimal_proxy.contract_type
+
+
+def test_get_pass_along_proxy_info(chain, owner, minimal_proxy_container, ethereum):
+    placeholder = "0xBEbeBeBEbeBebeBeBEBEbebEBeBeBebeBeBebebe"
+    if placeholder in chain.contracts:
+        del chain.contracts[placeholder]
+
+    minimal_proxy = owner.deploy(minimal_proxy_container, sender=owner)
+    chain.provider.network.__dict__["explorer"] = None  # Ensure no explorer, messes up test.
+    info = ethereum.get_proxy_info(minimal_proxy.address)
+    assert info
+
+    # Ensure not already cached.
+    if minimal_proxy.address in chain.contracts:
+        del chain.contracts[minimal_proxy.address]
+
+    actual = chain.contracts.get(minimal_proxy.address, proxy_info=info)
+    assert actual is None  # It can't find the contact anymore.
+
+    # Ensure it does store 'None' (was a bug where it did).
+    assert minimal_proxy.address not in chain.contracts.contract_types
+
+
 def test_get_creation_metadata(chain, vyper_contract_instance, owner):
     address = vyper_contract_instance.address
     creation = chain.contracts.get_creation_metadata(address)
