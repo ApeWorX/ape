@@ -4,7 +4,7 @@ from abc import abstractmethod
 from collections.abc import Iterator
 from datetime import datetime as datetime_type
 from functools import cached_property
-from typing import IO, TYPE_CHECKING, Any, NoReturn, Optional, Union
+from typing import IO, TYPE_CHECKING, Any, Literal, NoReturn, Optional, Union
 
 from eth_pydantic_types import HexBytes, HexStr
 from eth_utils import is_hex, to_hex, to_int
@@ -185,25 +185,26 @@ class TransactionAPI(BaseInterfaceModel):
     def __str__(self) -> str:
         return self.to_string()
 
-    def to_string(self, show_full_calldata: Optional[bool] = None) -> str:
+    def to_string(
+        self, calldata_repr: Optional[Union[Literal["full"], Literal["abridged"]]] = None
+    ) -> str:
         """
         Get the stringified representation of the transaction.
 
         Args:
-            show_full_calldata (bool | None): Specify whether to abridge of show full calldata
-              when it is long. Defaults to the value from the config
-              (``accounts.show_full_calldata``).
+            calldata_repr (bool | None): Pass "full" to see the full caldata.
+              Defaults to the value from the config (``accounts.calldata_repr``).
 
         Returns:
             str
         """
         data = self.model_dump(mode="json")  # JSON mode used for style purposes.
 
-        if show_full_calldata is None:
+        if calldata_repr is None:
             # If was not specified, use the default value from the config.
-            show_full_calldata = self.config_manager.accounts.show_full_calldata
+            calldata_repr = self.config_manager.accounts.calldata_repr
 
-        if show_full_calldata or len(data["data"]) <= 9:
+        if calldata_repr == "full" or len(data["data"]) <= 9:
             data["data"] = (
                 to_hex(bytes(data["data"], encoding="utf8"))
                 if isinstance(data["data"], str)
