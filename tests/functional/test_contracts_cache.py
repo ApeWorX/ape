@@ -4,8 +4,8 @@ from ethpm_types import ContractType
 from ape import Contract
 from ape.contracts import ContractInstance
 from ape.exceptions import ContractNotFoundError, ConversionError
-from ape.logging import LogLevel
-from ape_ethereum.proxies import _make_minimal_proxy
+from ape.logging import LogLevel, logger
+from ape_ethereum.proxies import ProxyInfo, ProxyType, _make_minimal_proxy
 from tests.conftest import explorer_test, skip_if_plugin_installed
 
 
@@ -161,10 +161,10 @@ def test_instance_at_skip_proxy(mocker, chain, vyper_contract_instance, owner):
 
 def test_cache_deployment_live_network(
     chain,
+    dummy_live_network,
+    clean_contract_caches,
     vyper_contract_instance,
     vyper_contract_container,
-    clean_contract_caches,
-    dummy_live_network,
 ):
     # Arrange - Ensure the contract is not cached anywhere
     address = vyper_contract_instance.address
@@ -435,9 +435,6 @@ def test_get_attempts_explorer_logs_rate_limit_error_from_explorer(
 ):
     contract = owner.deploy(vyper_fallback_container)
 
-    # Ensure is not cached locally.
-    del chain.contracts[contract.address]
-
     # For rate limit errors, we don't show anything else,
     # as it may be confusing.
     check_error_str = "you have been rate limited"
@@ -449,10 +446,14 @@ def test_get_attempts_explorer_logs_rate_limit_error_from_explorer(
         raise ValueError("nope")
 
     with create_mock_sepolia() as network:
+        # Ensure is not cached locally.
+        del chain.contracts[contract.address]
+
         mock_explorer.get_contract_type.side_effect = get_contract_type
         network.__dict__["explorer"] = mock_explorer
         try:
-            actual = chain.contracts.get(contract.address)
+            with logger.at_level(LogLevel.INFO):
+                actual = chain.contracts.get(contract.address)
         finally:
             network.__dict__["explorer"] = None
 
@@ -528,8 +529,9 @@ def test_get_proxy_pass_proxy_info(chain, owner, minimal_proxy_container, ethere
     assert minimal_proxy.address not in chain.contracts.contract_types
 
 
+@explorer_test
 def test_get_proxy_pass_proxy_info_and_no_explorer(
-    chain, owner, minimal_proxy_container, ethereum, dummy_live_network_with_explorer
+    chain, owner, proxy_contract_container, ethereum, dummy_live_network_with_explorer
 ):
     """
     Tests the condition of both passing `proxy_info=` and setting `use_explorer=False`
@@ -540,12 +542,10 @@ def test_get_proxy_pass_proxy_info_and_no_explorer(
     if placeholder in chain.contracts:
         del chain.contracts[placeholder]
 
-    minimal_proxy = owner.deploy(minimal_proxy_container, sender=owner, required_confirmations=0)
-    info = ethereum.get_proxy_info(minimal_proxy.address)
-    assert info is not None
-
+    proxy = proxy_contract_container.deploy(placeholder, sender=owner, required_confirmations=0)
+    info = ProxyInfo(type=ProxyType.Minimal, target=placeholder)
     explorer.get_contract_type.reset_mock()
-    chain.contracts.get(minimal_proxy.address, proxy_info=info, fetch_from_explorer=False)
+    chain.contracts.get(proxy.address, proxy_info=info, fetch_from_explorer=False)
 
     # Ensure explorer was not used.
     assert explorer.get_contract_type.call_count == 0

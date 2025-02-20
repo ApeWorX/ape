@@ -10,6 +10,7 @@ from ape.exceptions import (
     ProjectError,
 )
 from ape_ethereum.ecosystem import ProxyType
+from tests.conftest import explorer_test
 
 
 def test_deploy(
@@ -55,6 +56,7 @@ def test_deploy_and_publish_live_network_no_explorer(owner, contract_container, 
         contract_container.deploy(0, sender=owner, publish=True, required_confirmations=0)
 
 
+@explorer_test
 def test_deploy_and_publish(
     owner, contract_container, dummy_live_network_with_explorer, mock_explorer
 ):
@@ -62,6 +64,7 @@ def test_deploy_and_publish(
     mock_explorer.publish_contract.assert_called_once_with(contract.address)
 
 
+@explorer_test
 def test_deploy_and_not_publish(
     owner, contract_container, dummy_live_network_with_explorer, mock_explorer
 ):
