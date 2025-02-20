@@ -472,6 +472,13 @@ def dummy_live_network(chain):
     chain.provider.network.name = original_network
 
 
+@pytest.fixture
+def dummy_live_network_with_explorer(dummy_live_network, mock_explorer):
+    dummy_live_network.__dict__["explorer"] = mock_explorer
+    yield dummy_live_network
+    dummy_live_network.__dict__.pop("explorer", None)
+
+
 @pytest.fixture(scope="session")
 def proxy_contract_container(get_contract_type):
     return ContractContainer(get_contract_type("proxy"))

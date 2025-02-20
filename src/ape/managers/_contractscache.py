@@ -605,12 +605,13 @@ class ContractCache(BaseManager):
         """
         Combines the discoverable ABIs from the proxy contract and its implementation.
         """
-        implementation_contract_type = self.get(proxy_info.target, default=default)
-        proxy_contract_type = self.get(
-            address,
+        implementation_contract_type = self._get_contract_type(
+            proxy_info.target,
             fetch_from_explorer=fetch_from_explorer,
-            proxy_info=proxy_info,
-            detect_proxy=False,
+            default=default,
+        )
+        proxy_contract_type = self._get_contract_type(
+            address, fetch_from_explorer=fetch_from_explorer
         )
         if proxy_contract_type is not None and implementation_contract_type is not None:
             combined_contract = _get_combined_contract_type(
@@ -634,6 +635,24 @@ class ContractCache(BaseManager):
 
         logger.warning(f"Unable to determine the ContractType for the proxy at '{address}'.")
         return None
+
+    def _get_contract_type(
+        self,
+        address: AddressType,
+        fetch_from_explorer: bool = True,
+        default: Optional[ContractType] = None,
+    ) -> Optional[ContractType]:
+        """
+        Get the _exact_ ContractType for a given address. For proxy contracts, returns
+        the proxy ABIs if there are any and not the implementation ABIs.
+        """
+        if contract_type := self.contract_types[address]:
+            return contract_type
+
+        elif fetch_from_explorer:
+            return self._get_contract_type_from_explorer(address)
+
+        return default
 
     @classmethod
     def get_container(cls, contract_type: ContractType) -> ContractContainer:
@@ -888,6 +907,16 @@ class ContractCache(BaseManager):
 
         if contract_type:
             # Cache contract so faster look-up next time.
+            if not isinstance(contract_type, ContractType):
+                explorer_name = self.provider.network.explorer.name
+                wrong_type = type(contract_type)
+                wrong_type_str = getattr(wrong_type, "__name__", f"{wrong_type}")
+                logger.warning(
+                    f"Explorer '{explorer_name}' returned unexpected "
+                    f"type '{wrong_type_str}' ContractType."
+                )
+                return None
+
             self.contract_types[address] = contract_type
 
         return contract_type
