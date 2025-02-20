@@ -556,9 +556,11 @@ class ContractCache(BaseManager):
         if contract_type := self.contract_types[address_key]:
             # The ContractType was previously cached.
             if default and default != contract_type:
-                # Replacing contract type
-                self.contract_types[address_key] = default
-                return default
+                # The given default ContractType is different than the cached one.
+                # Merge the two and cache the merged result.
+                combined_contract_type = _merge_contract_types(contract_type, default)
+                self.contract_types[address_key] = combined_contract_type
+                return combined_contract_type
 
             return contract_type
 
@@ -927,9 +929,7 @@ def _get_combined_contract_type(
     proxy_info: ProxyInfoAPI,
     implementation_contract_type: ContractType,
 ) -> ContractType:
-    proxy_abis = [
-        abi for abi in proxy_contract_type.abi if abi.type in ("error", "event", "function")
-    ]
+    proxy_abis = _get_relevant_additive_abis(proxy_contract_type)
 
     # Include "hidden" ABIs, such as Safe's `masterCopy()`.
     if proxy_info.abi and proxy_info.abi.signature not in [
@@ -937,6 +937,23 @@ def _get_combined_contract_type(
     ]:
         proxy_abis.append(proxy_info.abi)
 
-    combined_contract_type = implementation_contract_type.model_copy(deep=True)
-    combined_contract_type.abi.extend(proxy_abis)
-    return combined_contract_type
+    return _merge_abis(implementation_contract_type, proxy_abis)
+
+
+def _get_relevant_additive_abis(contract_type: ContractType) -> list[ABI]:
+    # Get ABIs you would want to add to a base contract as extra,
+    # such as unique ABIs from proxies.
+    return [abi for abi in contract_type.abi if abi.type in ("error", "event", "function")]
+
+
+def _merge_abis(base_contract: ContractType, extra_abis: list[ABI]) -> ContractType:
+    contract_type = base_contract.model_copy(deep=True)
+    contract_type.abi.extend(extra_abis)
+    return contract_type
+
+
+def _merge_contract_types(
+    base_contract_type: ContractType, additive_contract_type: ContractType
+) -> ContractType:
+    relevant_abis = _get_relevant_additive_abis(additive_contract_type)
+    return _merge_abis(base_contract_type, relevant_abis)
