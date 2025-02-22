@@ -1,11 +1,5 @@
-from enum import Enum
-
 from ape.api.config import PluginConfig
-
-
-class CalldataRepr(str, Enum):
-    full = "full"
-    abridged = "abridged"
+from ape.utils.abi import CalldataRepr
 
 
 class AccountsConfig(PluginConfig):
