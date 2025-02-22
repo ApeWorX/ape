@@ -1,6 +1,7 @@
 import re
 from collections.abc import Sequence
 from dataclasses import make_dataclass
+from enum import Enum
 from typing import Any, Optional, Union
 
 from eth_abi import grammar
@@ -599,3 +600,20 @@ def encode_topics(abi: EventABI, topics: Optional[dict[str, Any]] = None) -> lis
         values[input_name] = input_value
 
     return abi.encode_topics(values)  # type: ignore
+
+
+class CalldataRepr(str, Enum):
+    """
+    Control the display of calldata in Ape.
+    """
+
+    abridged = "abridged"
+    """
+    Show the first and last 4-bytes of the calldata, enough
+    to see the method ID.
+    """
+
+    full = "full"
+    """
+    Show the full calldata.
+    """

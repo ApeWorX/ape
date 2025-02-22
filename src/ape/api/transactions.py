@@ -4,7 +4,7 @@ from abc import abstractmethod
 from collections.abc import Iterator
 from datetime import datetime as datetime_type
 from functools import cached_property
-from typing import IO, TYPE_CHECKING, Any, Literal, NoReturn, Optional, Union
+from typing import IO, TYPE_CHECKING, Any, NoReturn, Optional, Union
 
 from eth_pydantic_types import HexBytes, HexStr
 from eth_utils import is_hex, to_hex, to_int
@@ -36,6 +36,7 @@ if TYPE_CHECKING:
     from ape.contracts import ContractEvent
     from ape.types.events import ContractLogContainer
     from ape.types.trace import SourceTraceback
+    from ape.utils.abi import CalldataRepr
 
 
 class TransactionAPI(BaseInterfaceModel):
@@ -185,15 +186,14 @@ class TransactionAPI(BaseInterfaceModel):
     def __str__(self) -> str:
         return self.to_string()
 
-    def to_string(
-        self, calldata_repr: Optional[Union[Literal["full"], Literal["abridged"]]] = None
-    ) -> str:
+    def to_string(self, calldata_repr: Optional["CalldataRepr"] = None) -> str:
         """
         Get the stringified representation of the transaction.
 
         Args:
-            calldata_repr (bool | None): Pass "full" to see the full caldata.
-              Defaults to the value from the config (``accounts.calldata_repr``).
+            calldata_repr (:class:`~ape.types.abi.CalldataRepr` | None): Pass "full"
+              to see the full caldata. Defaults to the value from the config
+              (``accounts.calldata_repr``).
 
         Returns:
             str
