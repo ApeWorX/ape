@@ -192,8 +192,7 @@ class TransactionAPI(BaseInterfaceModel):
 
         Args:
             calldata_repr (:class:`~ape.types.abi.CalldataRepr` | None): Pass "full"
-              to see the full caldata. Defaults to the value from the config
-              (``accounts.calldata_repr``).
+              to see the full calldata. Defaults to the value from the config.
 
         Returns:
             str
@@ -202,7 +201,7 @@ class TransactionAPI(BaseInterfaceModel):
 
         if calldata_repr is None:
             # If was not specified, use the default value from the config.
-            calldata_repr = self.config_manager.accounts.calldata_repr
+            calldata_repr = self.local_project.config.calldata_repr
 
         if calldata_repr == "full" or len(data["data"]) <= 9:
             data["data"] = (
