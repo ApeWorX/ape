@@ -880,9 +880,9 @@ def test_value_to_non_payable_fallback_and_no_receive(
             break
 
     new_contract_type = ContractType.model_validate(contract_type_data)
-    contract = owner.chain_manager.contracts.instance_at(
-        vyper_fallback_contract.address, contract_type=new_contract_type
-    )
+    contract = owner.chain_manager.contracts.instance_at(vyper_fallback_contract.address)
+    contract.contract_type = new_contract_type  # Setting to completely override instead of merge.
+
     expected = (
         r"Contract's fallback is non-payable and there is no receive ABI\. Unable to send value\."
     )
