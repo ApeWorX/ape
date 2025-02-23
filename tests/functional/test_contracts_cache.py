@@ -167,7 +167,7 @@ def test_cache_deployment_live_network(
     vyper_contract_container,
 ):
     # Arrange - Ensure the contract is not cached anywhere
-    address = vyper_contract_instance.addresstest_Contract_specify_contract_type
+    address = vyper_contract_instance.address
     contract_name = vyper_contract_instance.contract_type.name
     contract_types = chain.contracts.contract_types.memory
     chain.contracts.contract_types.memory = {

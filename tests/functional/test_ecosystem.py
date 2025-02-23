@@ -716,6 +716,7 @@ def test_default_transaction_type_changed_at_class_level(ethereum):
 @pytest.mark.parametrize("network_name", (LOCAL_NETWORK_NAME, "mainnet-fork", "mainnet_fork"))
 def test_gas_limit_local_networks(ethereum, network_name):
     network = ethereum.get_network(network_name)
+    network.__dict__.pop("gas_limit", None)  # Refresh in case was changed in another test.
     assert network.gas_limit == "max"
 
 
