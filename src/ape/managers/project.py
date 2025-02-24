@@ -1248,12 +1248,12 @@ class DependencyManager(BaseManager):
             if allow_install:
                 try:
                     dependency.install(use_cache=use_cache, config_override=config_override)
-                except ProjectError:
+                except ProjectError as err:
                     # This dependency has issues. Let's wait to until the user
                     # actually requests something before failing, and
                     # yield an uninstalled version of the specified dependency for
                     # them to fix.
-                    pass
+                    logger.error(str(err))
 
             yield dependency
 
