@@ -856,7 +856,7 @@ def test_create_transaction_with_none_values(ethereum, eth_tester_provider):
         data=None,
         chain_id=None,
         max_fee=None,
-        max_prioriy_fee=None,
+        max_priority_fee=None,
         nonce=None,
         receiver=None,
     )
