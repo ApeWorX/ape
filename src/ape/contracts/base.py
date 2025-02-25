@@ -48,6 +48,7 @@ if TYPE_CHECKING:
     from ethpm_types.contract_type import ABI_W_SELECTOR_T, ContractType
     from pandas import DataFrame
 
+    from ape.api.networks import ProxyInfoAPI
     from ape.api.transactions import ReceiptAPI, TransactionAPI
     from ape.types.address import AddressType
 
@@ -1483,7 +1484,7 @@ class ContractContainer(ContractTypeWrapper, ExtraAttributesMixin):
         address: "AddressType",
         txn_hash: Optional[Union[str, HexBytes]] = None,
         fetch_from_explorer: bool = True,
-        proxy_info: Optional[ProxyInfoAPI] = None,
+        proxy_info: Optional["ProxyInfoAPI"] = None,
         detect_proxy: bool = True,
     ) -> ContractInstance:
         """
