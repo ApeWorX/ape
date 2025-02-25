@@ -1483,6 +1483,8 @@ class ContractContainer(ContractTypeWrapper, ExtraAttributesMixin):
         address: "AddressType",
         txn_hash: Optional[Union[str, HexBytes]] = None,
         fetch_from_explorer: bool = True,
+        proxy_info: Optional[ProxyInfoAPI] = None,
+        detect_proxy: bool = True,
     ) -> ContractInstance:
         """
         Get a contract at the given address.
@@ -1507,9 +1509,11 @@ class ContractContainer(ContractTypeWrapper, ExtraAttributesMixin):
         """
         return self.chain_manager.contracts.instance_at(
             address,
-            self.contract_type,
+            contract_type=self.contract_type,
             txn_hash=txn_hash,
             fetch_from_explorer=fetch_from_explorer,
+            proxy_info=proxy_info,
+            detect_proxy=detect_proxy,
         )
 
     @cached_property
