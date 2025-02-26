@@ -400,7 +400,7 @@ class Trace(TraceAPI):
             return merge_reports(*sub_reports)
 
         elif not is_zero_hex(call["method_id"]) and not is_evm_precompile(call["method_id"]):
-            report: "GasReport" = {
+            report: GasReport = {
                 call["contract_id"]: {
                     call["method_id"]: (
                         [int(call["gas_cost"])] if call.get("gas_cost") is not None else []
@@ -453,7 +453,7 @@ class Trace(TraceAPI):
             return self.root_method_abi
         if not (contract_type := self.chain_manager.contracts.get(addr)):
             return self.root_method_abi
-        if not (calldata[:10] in contract_type.methods):
+        if calldata[:10] not in contract_type.methods:
             return self.root_method_abi
 
         return contract_type.methods[calldata[:10]]

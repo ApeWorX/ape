@@ -68,7 +68,7 @@ def _list(cli_ctx, output_format, ecosystem_filter, network_filter, provider_fil
 
         def make_sub_tree(data: dict, create_tree: Callable) -> Tree:
             name = f"[bold green]{data['name']}"
-            if "isDefault" in data and data["isDefault"]:
+            if data.get("isDefault"):
                 name += default_suffix
 
             sub_tree = create_tree(name)
@@ -149,7 +149,6 @@ def run(cli_ctx, provider, block_time):
 
 
 def _run(cli_ctx, provider: "SubprocessProvider"):
-
     provider.connect()
     if process := provider.process:
         try:

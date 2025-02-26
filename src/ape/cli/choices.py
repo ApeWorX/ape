@@ -1,7 +1,7 @@
 import re
 from collections.abc import Callable, Iterator, Sequence
 from enum import Enum
-from functools import cached_property, lru_cache
+from functools import cache, cached_property
 from importlib import import_module
 from typing import TYPE_CHECKING, Any, Optional, Union
 
@@ -93,6 +93,7 @@ class PromptChoice(click.ParamType):
 
         def choice_callback(ctx, param, value):
             return param.type.get_user_selected_choice()
+
 
         @click.command()
         @click.option(
@@ -309,7 +310,7 @@ def get_networks(
     )
 
 
-@lru_cache(maxsize=None)
+@cache
 def _get_networks_sequence_from_cache(ecosystem_key: str, network_key: str, provider_key: str):
     networks = import_module("ape.utils.basemodel").ManagerAccessMixin.network_manager
     module = import_module("ape.types.basic")

@@ -254,7 +254,6 @@ class Receipt(ReceiptAPI):
                     # Failing to get a traceback should not halt an Ape application.
                     # Sometimes, a node crashes and we are left with nothing.
                     logger.error(f"Problem retrieving traceback: {err}")
-                    pass
 
         return SourceTraceback.model_validate([])
 

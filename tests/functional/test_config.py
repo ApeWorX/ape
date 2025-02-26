@@ -289,7 +289,7 @@ def test_deployments(networks_connected_to_tester, owner, vyper_contract_contain
     deploys = {
         **_create_deployments(address=address, contract_name=instance.contract_type.name),
     }
-    with project.temp_config(**{"deployments": deploys}):
+    with project.temp_config(deployments=deploys):
         deploy_config = project.config.deployments
         assert deploy_config["ethereum"]["local"][0]["address"] == address
         deployment = vyper_contract_container.deployments[0]
@@ -301,7 +301,7 @@ def test_deployments_integer_type_addresses(networks, project):
     deploys = {
         **_create_deployments(address=0x0C25212C557D00024B7CA3DF3238683A35541354),
     }
-    with project.temp_config(**{"deployments": deploys}):
+    with project.temp_config(deployments=deploys):
         deploy_config = project.config.deployments
         assert (
             deploy_config["ethereum"]["local"][0]["address"]

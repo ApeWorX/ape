@@ -284,7 +284,7 @@ def empty_data_folder():
 
     shutil.rmtree(DATA_FOLDER, ignore_errors=True)
     DATA_FOLDER.mkdir(parents=True, exist_ok=True)
-    yield
+    return
 
 
 @pytest.fixture
@@ -491,7 +491,13 @@ class SubprocessRunner:
             env["APE_DATA_FOLDER"] = str(self.data_folder)
 
         completed_process = subprocess.run(
-            cmd_ls, capture_output=True, env=env, input=input, text=True, timeout=timeout
+            cmd_ls,
+            capture_output=True,
+            env=env,
+            input=input,
+            text=True,
+            timeout=timeout,
+            check=False,
         )
         result = SubprocessResult(completed_process)
         sys.stdin = sys.__stdin__

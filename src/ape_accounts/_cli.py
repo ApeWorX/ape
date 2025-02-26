@@ -138,7 +138,7 @@ def generate(cli_ctx, alias, hide_mnemonic, word_count, custom_hd_path):
 )
 @non_existing_alias_argument()
 def _import(cli_ctx, alias, import_from_mnemonic, custom_hd_path):
-    account: Optional["KeyfileAccount"] = None
+    account: Optional[KeyfileAccount] = None
 
     def ask_for_passphrase():
         return click.prompt(

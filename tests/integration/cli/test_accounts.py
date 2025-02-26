@@ -52,13 +52,13 @@ def temp_account():
     return Account.from_key(bytes.fromhex(PRIVATE_KEY))
 
 
-@pytest.fixture()
+@pytest.fixture
 def temp_account_mnemonic_default_hdpath():
     Account.enable_unaudited_hdwallet_features()
     return Account.from_mnemonic(MNEMONIC, account_path=ETHEREUM_DEFAULT_PATH)
 
 
-@pytest.fixture()
+@pytest.fixture
 def temp_account_mnemonic_custom_hdpath():
     Account.enable_unaudited_hdwallet_features()
     return Account.from_mnemonic(MNEMONIC, account_path=CUSTOM_HDPATH)
