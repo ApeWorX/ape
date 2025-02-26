@@ -100,11 +100,11 @@ with networks.ethereum.mainnet.use_provider("alchemy") as alchemy:
     # Connect to live network
     print(f"Connected to: {alchemy.name}")
     
-    # Create a fork of the current network
+    # Create a fork of the current network using the specified fork provider
     with networks.fork(provider_name="foundry") as fork:
         print(f"Now using fork: {fork.name}")
         
-    # You can specify a block number
+    # You can specify a block number (using the configured default fork provider)
     with networks.fork(provider_name="foundry", block_number=17000000) as fork:
         print(f"Using fork at block {fork.chain.blocks.height}")
 ```
@@ -116,12 +116,9 @@ One powerful feature of forking is the ability to manipulate block timestamps fo
 ```python
 from ape import networks, chain
 
-with networks.ethereum.mainnet.fork(provider_name="foundry") as provider:
-    # Get current timestamp
-    current_time = chain.pending_timestamp
-    
+with networks.ethereum.mainnet.fork() as provider:
     # Advance time by 7 days
-    chain.pending_timestamp = current_time + 7 * 24 * 60 * 60
+    chain.pending_timestamp += 7 * 24 * 60 * 60
     
     # Now you can test time-sensitive contract behavior
     my_contract.check_time_dependent_function()

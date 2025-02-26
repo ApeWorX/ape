@@ -69,7 +69,6 @@ Ape supports many L2 networks with their own plugins that contain ecosystem-spec
 | Gnosis    | `ape-gnosis`    | Gnosis Chain (formerly xDai)             |
 | Polygon   | `ape-polygon`   | Polygon PoS and zkEVM networks           |
 | Optimism  | `ape-optimism`  | Optimism and OP Stack networks           |
-| ZkSync    | `ape-zksync`    | ZkSync Era and its testnets              |
 
 Each plugin does different things.
 In general, L2 plugins are very small and override the Ethereum ecosystem class to modify chain-specific behaviors.

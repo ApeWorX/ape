@@ -47,9 +47,10 @@ If you need more control over proxy behavior, you can manually specify proxy inf
 ```python
 from ape import project
 from ape.api.networks import ProxyInfoAPI
+from ape_ethereum.proxies import ProxyInfo, ProxyType
 
 # Create proxy info with implementation address
-proxy_info = ProxyInfoAPI(target="0x1234567890123456789012345678901234567890", type_name="Standard")
+proxy_info = ProxyInfo(target="0x1234567890123456789012345678901234567890", type=ProxyType.STANDARD)
 
 # Create contract instance with manual proxy configuration
 contract = project.MyImplementation.at(
@@ -78,7 +79,7 @@ contract = Contract(
     "0xProxyAddress", 
     proxy_info=ProxyInfoAPI(
         target="0xImplementationAddress", 
-        type_name="Standard"
+        type_name=ProxyType.STANDARD
     )
 )
 ```
