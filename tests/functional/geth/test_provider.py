@@ -118,7 +118,7 @@ def test_uri_non_dev_and_not_configured(mocker, ethereum):
         _ = provider.uri
 
     # Show that if an evm-chains _does_ exist, it will use that.
-    patch = mocker.patch("ape_ethereum.provider.get_random_rpc")
+    patch = mocker.patch("ape_ethereum.provider.Web3Provider._get_random_rpc")
 
     # The following URL is made up (please keep example.com).
     expected = "https://gorillas.example.com/v1/rpc"

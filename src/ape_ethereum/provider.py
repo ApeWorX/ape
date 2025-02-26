@@ -420,9 +420,27 @@ class Web3Provider(ProviderAPI, ABC):
 
         # Use public RPC if available
         try:
-            return get_random_rpc(ecosystem, network)
+            rpc = get_random_rpc(ecosystem, network)
         except KeyError:
             return None
+
+        def rpc_available(rpc_uri: str) -> bool:
+            try:
+                return Web3(HTTPProvider(rpc_uri)).is_connected()
+
+            except Exception:
+                return False
+
+        retries = 10
+        while retries > 0:
+            if rpc_available(rpc):
+                return rpc
+
+            rpc = get_random_rpc(ecosystem, network)
+            logger.warning(f"RPC at '{rpc}' not available, retrying {retries} more times")
+            retries -= 1
+
+        return None
 
     @property
     def client_version(self) -> str:
