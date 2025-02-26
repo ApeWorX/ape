@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en" data-accent-color="lime" data-content_root="../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>CLIs - ape documentation</title><link rel="shortcut icon" href="../_static/favicon.ico"/><link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Querying Data" href="data.html" /><link rel="prev" title="Publishing" href="publishing.html" />
+      <link rel="canonical" href="ape/userguides/clis.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=397bb51e" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=2831755e" />
+    <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    <meta property="og:type" content="website"/>
+<meta property="og:url" content="ape/userguides/clis.html"/>
+<meta property="og:title" content="CLIs"/>
+<meta name="twitter:card" content="summary"/>
+  </head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="../index.html">
+      <img class="light-logo" src="../_static/logo_grey.svg" alt="ape" height="28" loading="lazy" />
+      <img class="dark-logo" src="../_static/logo_green.svg" alt="ape" height="28" loading="lazy" />
+      <strong>ape</strong>
+    </a>
+    <div class="sy-head-nav" id="HeadNav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials"></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="HeadNav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2 -translate-x-2"></span>
+          <span class="hamburger_3 -translate-x-1"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading" aria-level="3"><span class="caption-text">User Guides</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="accounts.html">Accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="networks.html">Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="forking_networks.html">Forking Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contracts.html">Contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="proxy.html">Proxy Contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installing_plugins.html">Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="projects.html">Developing Projects with Ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Configure Ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="compile.html">Compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="console.html">Console</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transactions.html">Transactions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trace.html">Traces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scripts.html">Scripting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="testing.html">Testing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reverts.html">Reverts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="publishing.html">Publishing</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">CLIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="data.html">Querying Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="developing_plugins.html">Developing Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="logging.html">Logging</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">CLI Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../commands/accounts.html">accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/compile.html">compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/console.html">console</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/init.html">init</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/networks.html">networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/plugins.html">plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/pm.html">pm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/run.html">run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/test.html">test</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Core Python Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape.html">ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/api.html">ape.api</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/cli.html">ape.cli</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/contracts.html">ape.contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/exceptions.html">ape.exceptions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/managers.html">ape.managers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/plugins.html">ape.plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/types.html">ape.types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/utils.html">ape.utils</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Plugin Python Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_accounts.html">ape-accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_compile.html">ape-compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_ethereum.html">ape-ethereum</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_ethereum.html#module-ape_ethereum.multicall">ape-ethereum.multicall</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_node.html">ape-node</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_pm.html">ape-pm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_test.html">ape-test</a></li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#ape-context-decorator">Ape Context Decorator</a></li>
+<li><a class="reference internal" href="#network-tools">Network Tools</a></li>
+<li><a class="reference internal" href="#account-tools">Account Tools</a></li>
+<li><a class="reference internal" href="#contract-file-paths">Contract File Paths</a></li>
+</ul>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6"><div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../index.html"><span itemprop="name">ape</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">CLIs</strong>
+        <meta itemprop="position" content="2" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+        <article class="yue" role="main">
+          <section id="clis">
+<h1>CLIs<a class="headerlink" href="#clis" title="Link to this heading"></a></h1>
+<p>Ape uses the <a class="reference external" href="https://click.palletsprojects.com/en/8.1.x/">click framework</a> for handling all CLI functionality.
+There are CLIs found in a couple areas in the Ape framework:</p>
+<ol class="arabic simple">
+<li><p>Plugins</p></li>
+<li><p>Scripts</p></li>
+</ol>
+<p>Both plugins and scripts utilize <code class="docutils literal notranslate"><span class="pre">click</span></code> for their CLIs.</p>
+<p>For plugins, CLIs are an option for extending the framework.
+You can read more about plugin development and CLIs in the <a class="reference external" href="./developing_plugins.html">developing plugins guide</a>.</p>
+<p>Scripts utilize CLIs as an option for users to develop their scripts.
+You can read more about scripting and CLIs in the <a class="reference external" href="./scripts.html">scripting guide</a>.</p>
+<p>This guide is for showcasing utilities that ship with Ape to assist in your CLI development endeavors.</p>
+<section id="ape-context-decorator">
+<h2>Ape Context Decorator<a class="headerlink" href="#ape-context-decorator" title="Link to this heading"></a></h2>
+<p>The <a class="reference external" href="../methoddocs/cli.html#ape.cli.options.ape_cli_context">&#64;ape_cli_context</a> gives you access to all the root Ape objects (<code class="docutils literal notranslate"><span class="pre">accounts</span></code>, <code class="docutils literal notranslate"><span class="pre">networks</span></code> etc.), the ape logger, and an <a class="reference external" href="../methoddocs/cli.html#ape.cli.options.ApeCliContextObject.abort">abort</a> method for stopping execution of your CLI gracefully.
+Here is an example using all of those features from the <code class="docutils literal notranslate"><span class="pre">cli_ctx</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">click</span>
+</span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.cli</span><span class="w"> </span><span class="kn">import</span> <span class="n">ape_cli_context</span>
+</span><span data-line="3">
+</span><span data-line="4">
+</span><span data-line="5"><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
+</span><span data-line="6"><span class="nd">@ape_cli_context</span><span class="p">()</span>
+</span><span data-line="7"><span class="k">def</span><span class="w"> </span><span class="nf">cmd</span><span class="p">(</span><span class="n">cli_ctx</span><span class="p">):</span>
+</span><span data-line="8">    <span class="n">cli_ctx</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Test&quot;</span><span class="p">)</span>
+</span><span data-line="9">    <span class="n">account</span> <span class="o">=</span> <span class="n">cli_ctx</span><span class="o">.</span><span class="n">account_manager</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;metamask&quot;</span><span class="p">)</span>
+</span><span data-line="10">    <span class="n">cli_ctx</span><span class="o">.</span><span class="n">abort</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Bad account: </span><span class="si">{</span><span class="n">account</span><span class="o">.</span><span class="n">address</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span></pre></div>
+</div>
+<p>In Ape, it is easy to extend the CLI context object and use the extended version in your CLIs:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.cli</span><span class="w"> </span><span class="kn">import</span> <span class="n">ApeCliContextObject</span><span class="p">,</span> <span class="n">ape_cli_context</span>
+</span><span data-line="2"><span class="kn">import</span><span class="w"> </span><span class="nn">click</span>
+</span><span data-line="3">
+</span><span data-line="4"><span class="k">class</span><span class="w"> </span><span class="nc">MyManager</span><span class="p">:</span>
+</span><span data-line="5"><span class="w">   </span><span class="sd">&quot;&quot;&quot;My custom manager.&quot;&quot;&quot;</span>
+</span><span data-line="6">
+</span><span data-line="7"><span class="k">class</span><span class="w"> </span><span class="nc">CustomContext</span><span class="p">(</span><span class="n">ApeCliContextObject</span><span class="p">):</span>
+</span><span data-line="8">   <span class="n">my_manager</span><span class="p">:</span> <span class="n">MyManager</span> <span class="o">=</span> <span class="n">MyManager</span><span class="p">()</span>
+</span><span data-line="9"><span class="w">   </span><span class="sd">&quot;&quot;&quot;Add new managers to your custom context&quot;&quot;&quot;</span>
+</span><span data-line="10">   
+</span><span data-line="11">   <span class="nd">@property</span>
+</span><span data-line="12">   <span class="k">def</span><span class="w"> </span><span class="nf">signer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span data-line="13"><span class="w">      </span><span class="sd">&quot;&quot;&quot;Utilize existing managers in your custom context.&quot;&quot;&quot;</span>
+</span><span data-line="14">      <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">account_manager</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;my_account&quot;</span><span class="p">)</span>
+</span><span data-line="15">
+</span><span data-line="16"><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
+</span><span data-line="17"><span class="nd">@ape_cli_context</span><span class="p">(</span><span class="n">obj_type</span><span class="o">=</span><span class="n">CustomContext</span><span class="p">)</span>
+</span><span data-line="18"><span class="k">def</span><span class="w"> </span><span class="nf">cli</span><span class="p">(</span><span class="n">cli_ctx</span><span class="p">):</span>
+</span><span data-line="19">    <span class="c1"># Access your manager.</span>
+</span><span data-line="20">    <span class="nb">print</span><span class="p">(</span><span class="n">cli_ctx</span><span class="o">.</span><span class="n">my_manager</span><span class="p">)</span>
+</span><span data-line="21">    <span class="c1"># Access other Ape managers.</span>
+</span><span data-line="22">    <span class="nb">print</span><span class="p">(</span><span class="n">cli_ctx</span><span class="o">.</span><span class="n">account_manager</span><span class="p">)</span>
+</span></pre></div>
+</div>
+</section>
+<section id="network-tools">
+<h2>Network Tools<a class="headerlink" href="#network-tools" title="Link to this heading"></a></h2>
+<p>The <a class="reference external" href="../methoddocs/cli.html#ape.cli.options.network_option">&#64;network_option()</a> allows you to select an ecosystem, network, and provider.
+To specify the network option, use values like:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">--network<span class="w"> </span>ethereum
+</span><span data-line="2">--network<span class="w"> </span>ethereum:sepolia
+</span><span data-line="3">--network<span class="w"> </span>ethereum:mainnet:alchemy
+</span><span data-line="4">--network<span class="w"> </span>::foundry
+</span></pre></div>
+</div>
+<p>To use default values automatically, omit sections of the choice, but leave the semi-colons for parsing.
+For example, <code class="docutils literal notranslate"><span class="pre">::test</span></code> means to use the default ecosystem and network and the <code class="docutils literal notranslate"><span class="pre">test</span></code> provider.</p>
+<p>Use <code class="docutils literal notranslate"><span class="pre">ecosystem</span></code>, <code class="docutils literal notranslate"><span class="pre">network</span></code>, and <code class="docutils literal notranslate"><span class="pre">provider</span></code> argument names in your command implementation to access their corresponding class instances:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">click</span>
+</span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.cli</span><span class="w"> </span><span class="kn">import</span> <span class="n">network_option</span>
+</span><span data-line="3">
+</span><span data-line="4"><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
+</span><span data-line="5"><span class="nd">@network_option</span><span class="p">()</span>
+</span><span data-line="6"><span class="k">def</span><span class="w"> </span><span class="nf">cmd</span><span class="p">(</span><span class="n">provider</span><span class="p">):</span>
+</span><span data-line="7">   <span class="c1"># This command only needs the provider.</span>
+</span><span data-line="8">   <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">provider</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+</span><span data-line="9">
+</span><span data-line="10"><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
+</span><span data-line="11"><span class="nd">@network_option</span><span class="p">()</span>
+</span><span data-line="12"><span class="k">def</span><span class="w"> </span><span class="nf">cmd_2</span><span class="p">(</span><span class="n">ecosystem</span><span class="p">,</span> <span class="n">network</span><span class="p">,</span> <span class="n">provider</span><span class="p">):</span>
+</span><span data-line="13">   <span class="c1"># This command uses all parts of the parsed network choice.</span>
+</span><span data-line="14">   <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">ecosystem</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+</span><span data-line="15">   <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">network</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+</span><span data-line="16">   <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">provider</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+</span></pre></div>
+</div>
+<p>The <a class="reference external" href="../methoddocs/cli.html#ape.cli.commands.ConnectedProviderCommand">ConnectedProviderCommand</a> automatically uses the <code class="docutils literal notranslate"><span class="pre">--network</span></code> option and connects to the network before any of your code executes and then disconnects afterward.
+This is useful if your script or command requires a provider connection in order for it to run.
+Additionally, specify <code class="docutils literal notranslate"><span class="pre">ecosystem</span></code>, <code class="docutils literal notranslate"><span class="pre">network</span></code>, or <code class="docutils literal notranslate"><span class="pre">provider</span></code> in your command function if you need any of those instances in your <code class="docutils literal notranslate"><span class="pre">ConnectedProviderCommand</span></code>, just like when using <code class="docutils literal notranslate"><span class="pre">network_option</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">click</span>
+</span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.cli</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConnectedProviderCommand</span>
+</span><span data-line="3">
+</span><span data-line="4"><span class="nd">@click</span><span class="o">.</span><span class="n">group</span><span class="p">()</span>
+</span><span data-line="5"><span class="k">def</span><span class="w"> </span><span class="nf">cli</span><span class="p">():</span>
+</span><span data-line="6">    <span class="k">pass</span>
+</span><span data-line="7">
+</span><span data-line="8"> <span class="nd">@cli</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="bp">cls</span><span class="o">=</span><span class="n">ConnectedProviderCommand</span><span class="p">)</span>
+</span><span data-line="9"><span class="k">def</span><span class="w"> </span><span class="nf">cmd_1</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">provider</span><span class="p">):</span>
+</span><span data-line="10">   <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">network</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+</span><span data-line="11">   <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">provider</span><span class="o">.</span><span class="n">is_connected</span><span class="p">)</span>  <span class="c1"># True</span>
+</span><span data-line="12">
+</span><span data-line="13"> <span class="nd">@cli</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="bp">cls</span><span class="o">=</span><span class="n">ConnectedProviderCommand</span><span class="p">)</span>
+</span><span data-line="14"><span class="k">def</span><span class="w"> </span><span class="nf">cmd_2</span><span class="p">(</span><span class="n">provider</span><span class="p">):</span>
+</span><span data-line="15">   <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">provider</span><span class="o">.</span><span class="n">is_connected</span><span class="p">)</span>  <span class="c1"># True</span>
+</span><span data-line="16">
+</span><span data-line="17"> <span class="nd">@cli</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="bp">cls</span><span class="o">=</span><span class="n">ConnectedProviderCommand</span><span class="p">)</span>
+</span><span data-line="18"><span class="k">def</span><span class="w"> </span><span class="nf">cmd_3</span><span class="p">():</span>
+</span><span data-line="19">   <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s2">&quot;Using params from ConnectedProviderCommand is optional&quot;</span><span class="p">)</span>
+</span></pre></div>
+</div>
+</section>
+<section id="account-tools">
+<h2>Account Tools<a class="headerlink" href="#account-tools" title="Link to this heading"></a></h2>
+<p>Use the <a class="reference external" href="../methoddocs/cli.html#ape.cli.options.account_option">&#64;account_option()</a> for adding an option to your CLIs to select an account.
+This option does several things:</p>
+<ol class="arabic simple">
+<li><p>If you only have a single account in Ape (from both test accounts <em>and</em> other accounts), it will use that account as the default.
+(this case is rare, as most people have more than one test account by default).</p></li>
+<li><p>If you have more than one account, it will prompt you to select the account to use.</p></li>
+<li><p>You can pass in an account alias or index to the option flag to have it use that account.</p></li>
+<li><p>It allows you to specify test accounts by using a choice of <code class="docutils literal notranslate"><span class="pre">TEST::{index_of_test_account}</span></code>.</p></li>
+</ol>
+<p>Thus, if you use this option, no matter what, your script will have an account to use by the time the script starts.
+Here is an example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">click</span>
+</span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.cli</span><span class="w"> </span><span class="kn">import</span> <span class="n">account_option</span>
+</span><span data-line="3">
+</span><span data-line="4">
+</span><span data-line="5"><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
+</span><span data-line="6"><span class="nd">@account_option</span><span class="p">()</span>
+</span><span data-line="7"><span class="k">def</span><span class="w"> </span><span class="nf">cmd</span><span class="p">(</span><span class="n">account</span><span class="p">):</span>
+</span><span data-line="8">    <span class="c1"># Will prompt the user to select an account if needed.</span>
+</span><span data-line="9">    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">account</span><span class="o">.</span><span class="n">alias</span><span class="p">)</span>
+</span></pre></div>
+</div>
+<p>And when invoking the command from the CLI, it would look like the following:
+(where <code class="docutils literal notranslate"><span class="pre">&lt;prefix&gt;</span></code> is either <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">run</span></code> for scripts or <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">&lt;custom-plugin-cmd&gt;</span></code> for plugins)</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">&lt;prefix&gt;<span class="w"> </span>cmd<span class="w">  </span><span class="c1"># Use the default account.</span>
+</span><span data-line="2">&lt;prefix&gt;<span class="w"> </span>cmd<span class="w"> </span>--account<span class="w"> </span><span class="m">0</span><span class="w">  </span><span class="c1"># Use first account that would show up in `select_account()`.</span>
+</span><span data-line="3">&lt;prefix&gt;<span class="w"> </span>cmd<span class="w"> </span>--account<span class="w"> </span>metamask<span class="w">  </span><span class="c1"># Use account with alias &quot;metamask&quot;.</span>
+</span><span data-line="4">&lt;prefix&gt;<span class="w"> </span>cmd<span class="w"> </span>--account<span class="w"> </span>TEST::0<span class="w">  </span><span class="c1"># Use the test account at index 0.</span>
+</span></pre></div>
+</div>
+<p>Alternatively, you can call the <a class="reference external" href="../methoddocs/cli.html#ape.cli.choices.select_account">select_account()</a> directly to have more control of when the account gets selected:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">click</span>
+</span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.cli</span><span class="w"> </span><span class="kn">import</span> <span class="n">select_account</span>
+</span><span data-line="3">
+</span><span data-line="4">
+</span><span data-line="5"><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
+</span><span data-line="6"><span class="k">def</span><span class="w"> </span><span class="nf">cmd</span><span class="p">():</span>
+</span><span data-line="7">   <span class="n">account</span> <span class="o">=</span> <span class="n">select_account</span><span class="p">(</span><span class="s2">&quot;Select an account to use&quot;</span><span class="p">)</span>
+</span><span data-line="8">   <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;You selected </span><span class="si">{</span><span class="n">account</span><span class="o">.</span><span class="n">address</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+</span></pre></div>
+</div>
+<p>Similarly, there are a couple custom arguments for aliases alone that are useful when making CLIs for account creation.
+If you use <a class="reference external" href="../methoddocs/cli.html#ape.cli.arguments.existing_alias_argument">&#64;existing_alias_argument()</a> and specify an alias does not already exist, it will error.
+And visa-versa when using <a class="reference external" href="../methoddocs/cli.html#ape.cli.arguments.non_existing_alias_argument">&#64;non_existing_alias_argument()</a>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">click</span>
+</span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.cli</span><span class="w"> </span><span class="kn">import</span> <span class="n">existing_alias_argument</span><span class="p">,</span> <span class="n">non_existing_alias_argument</span>
+</span><span data-line="3">
+</span><span data-line="4">
+</span><span data-line="5"><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
+</span><span data-line="6"><span class="nd">@existing_alias_argument</span><span class="p">()</span>
+</span><span data-line="7"><span class="k">def</span><span class="w"> </span><span class="nf">delete_account</span><span class="p">(</span><span class="n">alias</span><span class="p">):</span>
+</span><span data-line="8">    <span class="c1"># We know the alias is an existing account at this point.</span>
+</span><span data-line="9">    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">alias</span><span class="p">)</span>
+</span><span data-line="10">
+</span><span data-line="11">
+</span><span data-line="12"><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
+</span><span data-line="13"><span class="nd">@non_existing_alias_argument</span><span class="p">()</span>
+</span><span data-line="14"><span class="k">def</span><span class="w"> </span><span class="nf">create_account</span><span class="p">(</span><span class="n">alias</span><span class="p">):</span>
+</span><span data-line="15">    <span class="c1"># We know the alias is not yet used in Ape at this point.</span>
+</span><span data-line="16">    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">alias</span><span class="p">)</span>
+</span></pre></div>
+</div>
+<p>You can control additional filtering of the accounts by using the <code class="docutils literal notranslate"><span class="pre">account_type</span></code> kwarg.
+Use <code class="docutils literal notranslate"><span class="pre">account_type</span></code> to filter the choices by specific types of <a class="reference external" href="../methoddocs/api.html#ape.api.accounts.AccountAPI">AccountAPI</a>, or you can give it a list of already known accounts, or you can provide a callable-filter that takes an account and returns a boolean.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">click</span>
+</span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">accounts</span>
+</span><span data-line="3"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.cli</span><span class="w"> </span><span class="kn">import</span> <span class="n">existing_alias_argument</span><span class="p">,</span> <span class="n">select_account</span>
+</span><span data-line="4"><span class="kn">from</span><span class="w"> </span><span class="nn">ape_accounts.accounts</span><span class="w"> </span><span class="kn">import</span> <span class="n">KeyfileAccount</span>
+</span><span data-line="5">
+</span><span data-line="6"><span class="c1"># NOTE: This is just an example and not anything specific or recommended.</span>
+</span><span data-line="7"><span class="n">APPLICATION_PREFIX</span> <span class="o">=</span> <span class="s2">&quot;&lt;FOO_BAR&gt;&quot;</span>
+</span><span data-line="8">
+</span><span data-line="9"><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
+</span><span data-line="10"><span class="nd">@existing_alias_argument</span><span class="p">(</span><span class="n">account_type</span><span class="o">=</span><span class="n">KeyfileAccount</span><span class="p">)</span>
+</span><span data-line="11"><span class="k">def</span><span class="w"> </span><span class="nf">cli_0</span><span class="p">(</span><span class="n">alias</span><span class="p">):</span>
+</span><span data-line="12">   <span class="k">pass</span>
+</span><span data-line="13">
+</span><span data-line="14"><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
+</span><span data-line="15"><span class="nd">@existing_alias_argument</span><span class="p">(</span><span class="n">account_type</span><span class="o">=</span><span class="k">lambda</span> <span class="n">a</span><span class="p">:</span> <span class="n">a</span><span class="o">.</span><span class="n">alias</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">APPLICATION_PREFIX</span><span class="p">))</span>
+</span><span data-line="16"><span class="k">def</span><span class="w"> </span><span class="nf">cli_1</span><span class="p">(</span><span class="n">alias</span><span class="p">):</span>
+</span><span data-line="17">   <span class="k">pass</span>
+</span><span data-line="18">
+</span><span data-line="19"><span class="c1"># Select from the given accounts directly.</span>
+</span><span data-line="20"><span class="n">my_accounts</span> <span class="o">=</span> <span class="p">[</span><span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;me&quot;</span><span class="p">),</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;me2&quot;</span><span class="p">)]</span>
+</span><span data-line="21"><span class="n">selected_account</span> <span class="o">=</span> <span class="n">select_account</span><span class="p">(</span><span class="n">account_type</span><span class="o">=</span><span class="n">my_accounts</span><span class="p">)</span>
+</span></pre></div>
+</div>
+</section>
+<section id="contract-file-paths">
+<h2>Contract File Paths<a class="headerlink" href="#contract-file-paths" title="Link to this heading"></a></h2>
+<p>Does your CLI interact with contract source files?
+(Think <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">compile</span></code>).</p>
+<p>If so, use the <code class="docutils literal notranslate"><span class="pre">&#64;contract_file_paths_argument()</span></code> decorator in your CLI.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+</span><span data-line="2"><span class="kn">import</span><span class="w"> </span><span class="nn">click</span>
+</span><span data-line="3">
+</span><span data-line="4"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.cli</span><span class="w"> </span><span class="kn">import</span> <span class="n">contract_file_paths_argument</span>
+</span><span data-line="5">
+</span><span data-line="6"><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
+</span><span data-line="7"><span class="nd">@contract_file_paths_argument</span><span class="p">()</span>
+</span><span data-line="8"><span class="k">def</span><span class="w"> </span><span class="nf">cli</span><span class="p">(</span><span class="n">file_paths</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">Path</span><span class="p">]):</span>
+</span><span data-line="9">   <span class="c1"># Loop through all source files given (or all source files in the project).</span>
+</span><span data-line="10">    <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">file_paths</span><span class="p">:</span>
+</span><span data-line="11">        <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Source found: </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span></pre></div>
+</div>
+<p>When using the <code class="docutils literal notranslate"><span class="pre">&#64;contract_file_paths_argument()</span></code> decorator, you can pass any number of source files as arguments.
+When not passing any source file(s), <code class="docutils literal notranslate"><span class="pre">&#64;contract_file_paths_argument()</span></code> defaults to all sources in the local project.
+That is why <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">compile</span></code> compiles the full project and <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">compile</span> <span class="pre">MySource.vy</span></code> only compiles <code class="docutils literal notranslate"><span class="pre">MySource.vy</span></code> (and whatever else it needs / imports).
+Use <code class="docutils literal notranslate"><span class="pre">&#64;contract_file_paths_argument()</span></code> for any similar use-case involving contract source files.</p>
+</section>
+</section>
+
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"><div class="navigation-prev">
+    <a href="publishing.html">
+      <i class="i-lucide chevron-left"></i>
+      <div class="page-info">
+        <span>Previous</span><div class="title">Publishing</div></div>
+    </a>
+  </div><div class="navigation-next">
+    <a href="data.html">
+      <div class="page-info">
+        <span>Next</span>
+        <div class="title">Querying Data</div>
+      </div>
+      <i class="i-lucide chevron-right"></i>
+    </a>
+  </div></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2024, ApeWorX LTD</p>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials"></div>
+    </div>
+  </div>
+</footer>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script data-domain="docs.apeworx.io" defer="defer" src="https://plausible.io/js/script.js"></script>
+      <script src="../_static/shibuya.js?v=e2230717"></script></body>
+</html>
