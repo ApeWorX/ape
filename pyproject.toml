@@ -18,15 +18,6 @@ plugins = ["pydantic.mypy"]
 fallback_version = "0.8.999"
 write_to = "src/ape/version.py"
 
-# NOTE: you have to use single-quoted strings in TOML for regular expressions.
-# It's the equivalent of r-strings in Python.  Multiline strings are treated as
-# verbose regular expressions by Black.  Use [ ] to denote a significant space
-# character.
-[tool.black]
-line-length = 100
-target-version = ['py39', 'py310', 'py311', 'py312', 'py313']
-include = '\.pyi?$'
-
 [tool.pytest.ini_options]
 norecursedirs = "projects"
 
