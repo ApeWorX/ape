@@ -21,6 +21,7 @@
         - forking_networks
         - publishing
         - proxy
+        - contract_metadata
         
         # Interacting with Contracts
         - console
