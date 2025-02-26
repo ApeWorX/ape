@@ -22,7 +22,7 @@ extras_require = {
         "hypothesis-jsonschema==0.19.0",  # JSON Schema fuzzer extension
     ],
     "lint": [
-        "black>=25.1.0,<26",  # Auto-formatter and linter
+        "ruff>=0.9.7",  # Unified linter and formatter
         "mypy>=1.15.0,<1.16.0",  # Static type analyzer
         "types-PyYAML",  # Needed due to mypy typeshed
         "types-requests",  # Needed due to mypy typeshed
@@ -31,12 +31,6 @@ extras_require = {
         "types-toml",  # Needed due to mypy typeshed
         "types-SQLAlchemy>=1.4.49",  # Needed due to mypy typeshed
         "types-python-dateutil",  # Needed due to mypy typeshed
-        "flake8>=7.1.2,<8",  # Style linter
-        "flake8-breakpoint>=1.1.0,<2",  # Detect breakpoints left in code
-        "flake8-print>=4.0.1,<5",  # Detect print statements left in code
-        "flake8-pydantic",  # For detecting issues with Pydantic models
-        "flake8-type-checking",  # Detect imports to move in/out of type-checking blocks
-        "isort>=6.0.0,<7",  # Import sorting linter
         "mdformat>=0.7.22",  # Auto-formatter for markdown
         "mdformat-gfm>=0.3.5",  # Needed for formatting GitHub-flavored markdown
         "mdformat-frontmatter>=0.4.1",  # Needed for frontmatters-style headers in issue templates
@@ -70,7 +64,7 @@ extras_require["dev"] = (
     # NOTE: Do *not* install `recommended-plugins` w/ dev
 )
 
-with open("./README.md") as readme:
+with Path("./README.md").open() as readme:
     long_description = readme.read()
 
 

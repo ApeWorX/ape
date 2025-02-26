@@ -43,13 +43,72 @@ markers = """fuzzing: Run Hypothesis fuzz test suite
 pip: tests that rely on pip install operations"""
 timeout = 300
 
-[tool.isort]
-line_length = 100
-force_grid_wrap = 0
-include_trailing_comma = true
-multi_line_output = 3
-use_parentheses = true
-skip = ["version.py"]
+[tool.ruff]
+target-version = "py39"
+line-length = 100
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "B",    # flake8-bugbear
+    "C4",   # flake8-comprehensions
+    "UP",   # pyupgrade
+    "PT",   # flake8-pytest-style
+    "ICN",  # flake8-import-conventions
+    "PTH",  # flake8-use-pathlib
+    # "RET",  # flake8-return (removed per maintainer feedback)
+    # "SIM",  # flake8-simplify (removed per maintainer feedback)
+    "T20",  # flake8-print
+    "TC",   # flake8-type-checking
+    "TCH",  # flake8-type-checking
+    "RUF",  # Ruff-specific rules
+    "ERA",  # flake8-eradicate
+    "TID",  # flake8-tidy-imports
+    "BLE",  # flake8-blind-except
+    "FBT",  # flake8-boolean-trap
+    "PD",   # pandas-vet
+    "PGH",  # pygrep-hooks
+    "PLC",  # pylint conventions
+    "PLE",  # pylint errors
+    "PLW",  # pylint warnings
+    "PIE",  # flake8-pie
+]
+ignore = [
+    "PLW0603",   # Using global statement to update variable is often necessary
+    "E501",      # Line length enforced by black
+    "RUF001",    # String contains ambiguous unicode character
+    "RUF002",    # Docstring contains ambiguous unicode character
+    "RUF003",    # Comment contains ambiguous unicode character
+    "PLW2901",   # For loop variable overwritten by assignment target
+    "PD901",     # Using `.loc` to modify values is preferred over pandas direct assignments
+    "SIM102",    # Use a single if statement instead of nested if statements (maintain if-elif style)
+    "SIM108",    # Use ternary operator instead of if-else block (maintain preferred if-else style)
+    "SIM114",    # Combine if branches using logical or operator (maintain if-elif style)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"**/tests/**/*.py" = [
+    "E501",      # Line too long in tests is acceptable
+    "PLR2004",   # Magic numbers in tests are acceptable
+    "S101",      # Use of assert is fine in tests
+    "PT009",     # Use of unittest.TestCase is acceptable
+    "PLC1901",   # Empty string comparison can be simplified is less readable in tests
+]
+"**/conftest.py" = [
+    "F401",  # Imported but unused, fixtures are used implicitly
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["ape", "ape_accounts", "ape_console", "ape_ethereum", "ape_geth", "ape_networks", "ape_node", "ape_plugins", "ape_pm", "ape_test"]
+
+[tool.ruff.format]
+quote-style = "double"
+line-ending = "auto"
+indent-style = "space"
+docstring-code-format = true
 
 [tool.mdformat]
 number = true

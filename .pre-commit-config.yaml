@@ -4,22 +4,12 @@ repos:
     hooks:
     -   id: check-yaml
 
--   repo: https://github.com/PyCQA/isort
-    rev: 6.0.0
+-   repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.9.7  # Latest ruff version
     hooks:
-      - id: isort
-
--   repo: https://github.com/psf/black
-    rev: 25.1.0
-    hooks:
-      - id: black
-        name: black
-
--   repo: https://github.com/pycqa/flake8
-    rev: 7.1.2
-    hooks:
-    -   id: flake8
-        additional_dependencies: [flake8-breakpoint, flake8-print, flake8-pydantic, flake8-type-checking]
+    -   id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+    -   id: ruff-format
 
 -   repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.15.0
