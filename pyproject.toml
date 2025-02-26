@@ -68,7 +68,7 @@ select = [
     "ERA",  # flake8-eradicate
     "TID",  # flake8-tidy-imports
     "BLE",  # flake8-blind-except
-    "FBT",  # flake8-boolean-trap
+    # "FBT",  # flake8-boolean-trap (removed per maintainer feedback)
     "PD",   # pandas-vet
     "PGH",  # pygrep-hooks
     "PLC",  # pylint conventions
