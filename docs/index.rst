@@ -2,24 +2,36 @@
     :plugin-prefix: ape_
     :userguides:
         - quickstart
-        - accounts
-        - networks
-        - forking_networks
-        - contracts
-        - proxy
-        - installing_plugins
+        
+        # Getting Started with Your Project
         - projects
-        - dependencies
         - config
+        - installing_plugins
+        - dependencies
+        
+        # Development Workflow
+        - accounts
         - compile
-        - console
-        - transactions
-        - trace
-        - scripts
+        - contracts
         - testing
         - reverts
+        
+        # Deployment and Networks
+        - networks
+        - forking_networks
         - publishing
-        - clis
-        - data
-        - developing_plugins
+        - proxy
+        
+        # Interacting with Contracts
+        - console
+        - scripts
+        - transactions
+        - trace
+        
+        # Debugging and Analysis
         - logging
+        - data
+        
+        # Customization
+        - clis
+        - developing_plugins

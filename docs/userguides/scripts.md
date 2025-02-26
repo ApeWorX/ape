@@ -38,31 +38,77 @@ By default, `cli` scripts do not have [`ape.cli.network_option`](../methoddocs/c
 
 However, you can add the `network_option` or `ConnectedProviderCommand` to your scripts by importing them from the `ape.cli` namespace:
 
-```python
+````python
 import click
 from ape.cli import ConnectedProviderCommand
 
 
 @click.command(cls=ConnectedProviderCommand)
-def cli(ecosystem, network):
-    click.echo(f"You selected a provider on ecosystem '{ecosystem.name}' and {network.name}.")
+def cli(ecosystem, network, provider):
+    click.echo(f"Connected to {ecosystem.name}:{network.name} using provider '{provider.name}'.")
+    
+    # Access chain and other managers automatically
+    from ape import chain
+    click.echo(f"Current block: {chain.blocks.height}")
 
 @click.command(cls=ConnectedProviderCommand)
 def cli(network, provider):
     click.echo(f"You are connected to network '{network.name}'.")
     click.echo(provider.chain_id)
+    
+    
+## Multi-Network Commands
+
+Scripts can use the context manager for multi-network functionality.
+Here's an example of using a multi-network pattern in a script:
+
+```python
+import click
+from ape import networks, chain, accounts
+from ape.cli import network_option
+
+
+@click.command()
+@network_option()
+def cli():
+    """Connect to multiple networks in one command."""
+    # Uses the provider from network_option
+    account = accounts.load("my-account")
+    balance1 = account.balance
+    network1 = chain.provider.network.name
+    
+    print(f"Balance on {network1}: {balance1}")
+    
+    # Temporarily use a different provider than was selected originally
+    with networks.ethereum.goerli.use_provider("alchemy"):
+        balance2 = account.balance  # Balance on goerli
+        network2 = chain.provider.network.name
+        print(f"Balance on {network2}: {balance2}")
+        
+        # Can even do a third network
+        with networks.arbitrum.mainnet.use_provider("infura"):
+            balance3 = account.balance  # Balance on Arbitrum
+            network3 = chain.provider.network.name
+            print(f"Balance on {network3}: {balance3}")
+    
+    # Back to the original network
+    print(f"Back to {network1}")
+````
+
+This pattern is especially useful for cross-chain operations, data gathering from multiple networks, or comparing state between networks.
 
 @click.command(cls=ConnectedProviderCommand)
 def cli_2():
-    click.echo(f"Using any network-based argument is completely optional.")
-```
+click.echo(f"Using any network-based argument is completely optional.")
+
+````
 
 Assume we saved this script as `shownet.py` and have the [ape-alchemy](https://github.com/ApeWorX/ape-alchemy) plugin installed.
 Try changing the network using the `--network` option:
 
 ```bash
 ape run shownet --network ethereum:mainnet:alchemy
-```
+````
 
 ### Multi-network Scripting
 

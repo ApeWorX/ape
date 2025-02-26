@@ -1,6 +1,6 @@
 # Forking Networks
 
-You can fork live networks in Ape.
+You can fork live networks in Ape to test against real blockchain state locally.
 To do so, ensure you are using a provider plugin with forking features.
 Some options are:
 
@@ -13,6 +13,8 @@ You can install one of these plugins by doing:
 ape plugins install <foundry|hardhat>
 ```
 
+## Basic Fork Configuration
+
 Ensure you have also configured your upstream network (the network you are forking).
 For example, if forking `ethereum:mainnet` and using `alchemy`, set `alchemy` as the default mainnet provider:
 
@@ -24,33 +26,56 @@ ethereum:
 
 Now, you can start and connect to your forked-network:
 
-```yaml
+```shell
 ape console --network ethereum:mainnet-fork:foundry
 ```
 
 Learn more about setting up networks in the [the networks guide](./networks.html).
 
+## Advanced Fork Configuration
+
+You can configure additional fork options in your `ape-config.yaml` file:
+
+```yaml
+ethereum:
+  mainnet_fork:
+    default_provider: foundry
+    fork:
+      # Fork from a specific block number
+      block_number: 17000000
+      # Optionally enable RPC caching to speed up fork initialization
+      cache: true
+      # Override default upstream provider if needed
+      upstream_provider: alchemy
+```
+
 ## Forking Plugin Networks
 
 You can also fork L2 plugin networks.
-For example, to fork a network such as Optimism, install the `ape-optimism` plugin:
+For example, to fork a network such as Optimism or Arbitrum, install the corresponding plugin:
 
 ```shell
 ape plugins install optimism
+ape plugins install arbitrum
 ```
 
-Then, just like you did for `ethereum`, configure `optimism`'s default mainnet provider:
+Then, just like you did for `ethereum`, configure the default mainnet provider:
 
 ```yaml
 optimism:
+  mainnet:
+    default_provider: alchemy
+
+arbitrum:
   mainnet:
     default_provider: alchemy
 ```
 
 Now, you can start and connect to your forked-network:
 
-```yaml
+```shell
 ape console --network optimism:mainnet-fork:foundry
+ape console --network arbitrum:mainnet-fork:foundry
 ```
 
 ## Configure Default
@@ -66,16 +91,40 @@ Where `ecosystem-name` is the ecosystem containing the network and `network-name
 
 ## Forked Context
 
-If you are already connected to a live network wish to temporarily fork it, use the [fork() context manager](../methoddocs/managers.html#ape.managers.networks.NetworkManager.fork):
+If you are already connected to a live network and wish to temporarily fork it, use the [fork() context manager](../methoddocs/managers.html#ape.managers.networks.NetworkManager.fork):
 
 ```python
 from ape import networks
 
-def main():
-    with networks.ethereum.mainnet.use_provider("alchemy") as alchemy:
-        print(alchemy.name)
-        with networks.fork(provider_name="foundry") as foundry:
-            print(foundry.name)
+with networks.ethereum.mainnet.use_provider("alchemy") as alchemy:
+    # Connect to live network
+    print(f"Connected to: {alchemy.name}")
+    
+    # Create a fork of the current network
+    with networks.fork(provider_name="foundry") as fork:
+        print(f"Now using fork: {fork.name}")
+        
+    # You can specify a block number
+    with networks.fork(provider_name="foundry", block_number=17000000) as fork:
+        print(f"Using fork at block {fork.chain.blocks.height}")
+```
+
+## Time Travel in Forks
+
+One powerful feature of forking is the ability to manipulate block timestamps for testing time-dependent contracts:
+
+```python
+from ape import networks, chain
+
+with networks.ethereum.mainnet.fork(provider_name="foundry") as provider:
+    # Get current timestamp
+    current_time = chain.pending_timestamp
+    
+    # Advance time by 7 days
+    chain.pending_timestamp = current_time + 7 * 24 * 60 * 60
+    
+    # Now you can test time-sensitive contract behavior
+    my_contract.check_time_dependent_function()
 ```
 
 Learn more about the fork context manager [here](./networks.html#forked-context).

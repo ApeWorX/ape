@@ -17,6 +17,8 @@ The following proxies are supported in `ape-ethereum`:
 | ZeroAge      | A minimal proxy                   |
 | SoladyPush0  | Uses PUSH0                        |
 
+## Automatic Proxy Detection
+
 Proxy detection occurs when attempting to retrieve contract types in Ape.
 Ape uses various sources to find contract types, such as explorer APIs.
 See [this guide](./contracts.html) to learn more about initializing contracts.
@@ -24,6 +26,7 @@ See [this guide](./contracts.html) to learn more about initializing contracts.
 ```python
 from ape import Contract
 
+# Automatic proxy detection (default behavior)
 my_contract = Contract("0x...")
 ```
 
@@ -36,3 +39,52 @@ This allows you to still call methods as you normally do on proxy contracts.
 # However, Ape detected the implementation type and can find methods to call that way.
 my_contract.my_method(sender=account)
 ```
+
+## Manual Proxy Configuration
+
+If you need more control over proxy behavior, you can manually specify proxy information when creating contract instances with `ContractContainer.at()`:
+
+```python
+from ape import project
+from ape.api.networks import ProxyInfoAPI
+
+# Create proxy info with implementation address
+proxy_info = ProxyInfoAPI(target="0x1234567890123456789012345678901234567890", type_name="Standard")
+
+# Create contract instance with manual proxy configuration
+contract = project.MyImplementation.at(
+    "0xProxyAddress",
+    # Provide proxy information manually
+    proxy_info=proxy_info,
+)
+
+# Or disable proxy detection entirely if you know it's not a proxy
+contract = project.MyContract.at(
+    "0xAddress",
+    detect_proxy=False
+)
+```
+
+You can also use the `Contract` factory with proxy parameters:
+
+```python
+from ape import Contract
+
+# Disable proxy detection
+contract = Contract("0xAddress", detect_proxy=False)
+
+# Provide custom proxy info
+contract = Contract(
+    "0xProxyAddress", 
+    proxy_info=ProxyInfoAPI(
+        target="0xImplementationAddress", 
+        type_name="Standard"
+    )
+)
+```
+
+This is particularly useful when:
+
+1. Automatic detection fails to identify a proxy contract
+2. You want to force a specific implementation address
+3. You're working with a custom or unusual proxy pattern

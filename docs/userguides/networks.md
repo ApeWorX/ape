@@ -50,15 +50,46 @@ Next, we will talk about how to add additional networks to your Ape environment.
 
 ## L2 Networks
 
-Common L2 networks, such as Arbitrum, Polygon, Optimism, or Fantom, have ApeWorX-maintained (trusted) plugins that override the Ethereum ecosystem API class and change any defaults that are needed.
+Common L2 networks, such as Arbitrum, Polygon, Optimism, Fantom, or Base, have ApeWorX-maintained (trusted) plugins that override the Ethereum ecosystem API class and change any defaults that are needed.
 You can install these plugins by doing:
 
 ```shell
-ape plugins install arbitrum polygon optimism fantom
+ape plugins install arbitrum polygon optimism fantom base
 ```
 
+Ape supports many L2 networks with their own plugins that contain ecosystem-specific customizations:
+
+| Network   | Plugin Name     | Description                              |
+| --------- | --------------- | ---------------------------------------- |
+| Arbitrum  | `ape-arbitrum`  | Arbitrum One, Nova, and related networks |
+| Avalanche | `ape-avalanche` | Avalanche C-Chain and subnets            |
+| Base      | `ape-base`      | Base mainnet and testnet                 |
+| Blast     | `ape-blast`     | Blast L2 network                         |
+| Fantom    | `ape-fantom`    | Fantom Opera and testnet                 |
+| Gnosis    | `ape-gnosis`    | Gnosis Chain (formerly xDai)             |
+| Polygon   | `ape-polygon`   | Polygon PoS and zkEVM networks           |
+| Optimism  | `ape-optimism`  | Optimism and OP Stack networks           |
+| ZkSync    | `ape-zksync`    | ZkSync Era and its testnets              |
+
 Each plugin does different things.
-In general, L2 plugins are very small and override the Ethereum ecosystem class.
+In general, L2 plugins are very small and override the Ethereum ecosystem class to modify chain-specific behaviors.
+
+### Configuring L2 Networks
+
+Most L2 networks follow Ethereum's conventions but may have different transaction behavior. You can override specific settings:
+
+```yaml
+arbitrum:
+  # Configure network-specific settings
+  mainnet:
+    transaction_acceptance_timeout: 300  # 5 minutes
+    default_provider: alchemy
+    
+  # Configure provider-specific settings
+  goerli:
+    gas_limit: 100000000  # Higher gas limit for Arbitrum testnet
+```
+
 Here are some examples of changes L2 plugins make that allow improved support for these networks:
 
 1. Networks that don't support EIP-1559 transactions use Static-fee transaction types by default whereas `ape-ethereum` will use EIP-1559 transactions by default.
@@ -128,7 +159,7 @@ The two ways to do this are:
 The most familiar way to use custom networks (non-plugin-based networks) in Ape is to use the `networks: custom` configuration.
 Generally, you want to use the global `ape-config.yaml`, which is located in your `$HOME/.ape/` directory.
 By configuring networks globally, you can share them across all your projects.
-More information about configuring Ape (in general) can be found [here](./contracts.html).
+More information about configuring Ape (in general) can be found [here](./config.html).
 
 To add custom networks to your `ape-config.yaml` file, follow this pattern:
 
@@ -140,6 +171,9 @@ networks:
        ecosystem: shibarium            # The ecosystem name, can either be new or an existing
        base_ecosystem_plugin: polygon  # The ecosystem base-class, defaults to the default ecosystem
        default_provider: node          # Default is the generic node provider
+       block_time: 2                   # Block time in seconds (optional)
+       transaction_type: 0             # Default transaction type (optional)
+       gas_limit: 30000000             # Default gas limit (optional)
 ```
 
 The following paragraphs explain the different parameters of the custom network config.
