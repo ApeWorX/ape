@@ -424,7 +424,7 @@ class Web3Provider(ProviderAPI, ABC):
         except KeyError:
             return None
 
-        def rpc_available(rpc_uri: str):
+        def rpc_available(rpc_uri: str) -> bool:
             try:
                 return Web3(HTTPProvider(rpc_uri)).is_connected()
 
