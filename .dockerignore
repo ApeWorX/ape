@@ -1,3 +1,35 @@
-./tests
-./docs
-./.github
+# Directories
+.git/
+.github/
+docs/
+tests/
+
+# Python cache files
+**/__pycache__/
+**/*.py[cod]
+**/*$py.class
+**/.pytest_cache/
+**/.coverage
+**/.mypy_cache/
+**/.ruff_cache/
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS specific
+.DS_Store

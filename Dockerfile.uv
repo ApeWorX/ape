@@ -1,0 +1,60 @@
+#---------------------------------------------------------------------------------------------
+# See LICENSE in the project root for license information.
+#---------------------------------------------------------------------------------------------
+
+# Use the official uv Docker image with Python 3.11
+FROM ghcr.io/astral-sh/uv:python3.11-bookworm-slim AS builder
+
+# Set working directory
+WORKDIR /build
+
+# Copy project files
+COPY . .
+
+# Build wheels using uv
+RUN uv build --wheel .
+
+# Create the final image
+FROM ghcr.io/astral-sh/uv:python3.11-bookworm-slim
+
+# See http://label-schema.org for metadata schema
+LABEL org.opencontainers.image.title="ape" \
+    org.opencontainers.image.description="Ape Framework" \
+    org.opencontainers.image.url="https://apeworx.io/framework" \
+    org.opencontainers.image.documentation="https://docs.apeworx.io/ape/stable/userguides/quickstart.html\#installation" \
+    org.opencontainers.image.source="https://github.com/ApeWorX/ape" \
+    org.opencontainers.image.vendor="ApeWorX" \
+    org.opencontainers.image.licenses="Apache-2.0" \
+    org.opencontainers.image.authors="ApeWorX"
+    
+# Install build dependencies needed for installing packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    libc6-dev \
+    python3-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create non-root user
+RUN useradd --create-home --shell /bin/bash harambe
+
+# Create directory for wheels
+RUN mkdir -p /wheels
+
+# Copy wheels from builder stage
+COPY --from=builder /build/dist/*.whl /wheels/
+
+# Install the wheels with uv (using --system since we're in a Docker container)
+RUN uv pip install --system /wheels/*.whl
+
+# Verify installation
+RUN ape --version
+
+# Set working directory and permissions
+WORKDIR /home/harambe/project
+RUN chown --recursive harambe:harambe /home/harambe
+
+# Switch to non-root user
+USER harambe
+
+# Set entrypoint
+ENTRYPOINT ["ape"]
