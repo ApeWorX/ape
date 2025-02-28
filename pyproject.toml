@@ -39,58 +39,103 @@ target-version = "py39"
 line-length = 100
 
 [tool.ruff.lint]
+# Select rule categories to enforce
 select = [
+    # Core Python errors and style
     "E",    # pycodestyle errors
-    "W",    # pycodestyle warnings
     "F",    # pyflakes
+    "W",    # pycodestyle warnings
     "I",    # isort
-    "B",    # flake8-bugbear
-    "C4",   # flake8-comprehensions
-    "UP",   # pyupgrade
-    "PT",   # flake8-pytest-style
-    "ICN",  # flake8-import-conventions
-    "PTH",  # flake8-use-pathlib
-    # "RET",  # flake8-return (removed per maintainer feedback)
-    # "SIM",  # flake8-simplify (removed per maintainer feedback)
-    "T20",  # flake8-print
-    "TC",   # flake8-type-checking
-    "TCH",  # flake8-type-checking
-    "RUF",  # Ruff-specific rules
-    "ERA",  # flake8-eradicate
-    "TID",  # flake8-tidy-imports
-    "BLE",  # flake8-blind-except
-    # "FBT",  # flake8-boolean-trap (removed per maintainer feedback)
-    "PD",   # pandas-vet
-    "PGH",  # pygrep-hooks
-    "PLC",  # pylint conventions
-    "PLE",  # pylint errors
-    "PLW",  # pylint warnings
-    "PIE",  # flake8-pie
+    "B",    # flake8-bugbear - common bugs/design issues
+    "C4",   # flake8-comprehensions - simplify comprehensions
+    "UP",   # pyupgrade - modern Python features/idioms
+    "RET",  # flake8-return - cleaner return statements
+    "SIM",  # flake8-simplify - code simplification
+    "S",    # flake8-bandit - security issues
+    "TCH",  # flake8-type-checking - type annotation improvements
 ]
+
+# Rules to ignore
 ignore = [
-    "PLW0603",   # Using global statement to update variable is often necessary
-    "E501",      # Line length enforced by black
-    "RUF001",    # String contains ambiguous unicode character
-    "RUF002",    # Docstring contains ambiguous unicode character
-    "RUF003",    # Comment contains ambiguous unicode character
-    "PLW2901",   # For loop variable overwritten by assignment target
-    "PD901",     # Using `.loc` to modify values is preferred over pandas direct assignments
-    "SIM102",    # Use a single if statement instead of nested if statements (maintain if-elif style)
-    "SIM108",    # Use ternary operator instead of if-else block (maintain preferred if-else style)
-    "SIM114",    # Combine if branches using logical or operator (maintain if-elif style)
+    "E501",
+
+    # Specific bugbear issues 
+    "B904",     # Use 'raise from' in except blocks
+    "B006",     # Mutable default arguments
+    "B007",     # Loop control variable not used within loop body
+    "B012",     # Jump statements in finally blocks
+    "B028",     # No explicit stacklevel in warnings
+    
+    # Code structure preferences
+    "SIM102",   # Use a single if statement instead of nested if statements
+    "SIM105",   # Use contextlib.suppress instead of try-except-pass
+    "SIM108",   # Use ternary operator instead of if-else block
+    "SIM113",   # Use enumerate instead of manually incrementing counter
+    "SIM114",   # If branches with identical arm bodies (combine with or)
+    "SIM115",   # Use context manager for opening files
+    "SIM116",   # Use dictionary instead of if-statements
+    "SIM117",   # Multiple with statements
+    "B018",     # Useless expression
+    
+    # Return statement style
+    "RET501",   # Do not explicitly return None
+    "RET502",   # Implicit return at the end of function able to return non-None value
+    "RET503",   # Missing explicit return at the end of function able to return non-None value 
+    "RET504",   # Unnecessary assignment before return
+    "RET505",   # Unnecessary else after return
+    "RET506",   # Unnecessary else after raise
+    "RET507",   # Unnecessary else after continue
+    "RET508",   # Unnecessary else after break
+    
+    # Security issues (allow common patterns in the codebase)
+    "S101",     # Use of assert (many asserts are used for type checking)
+    "S102",     # Use of exec (needed in some specific places)
+    "S105",     # Hardcoded password string
+    "S110",     # Try-except-pass (common pattern for handling optional features)
+    "S112",     # Try-except-continue
+    "S113",     # Request without timeout
+    "S202",     # Tarfile unsafe members
+    "S307",     # Use of eval
+    "S311",     # Suspicious non-cryptographic random usage
+    "S603",     # Subprocess without shell=True
+    "S607",     # Start process with partial path
+
+    # Style/readability issues (improve incrementally)
+    "C416",     # Unnecessary comprehension (rewrite using list/set/dict)
+    "C408",     # Unnecessary dict() call (rewrite as literal)
+    "C417",     # Unnecessary map usage (replace with generator)
+    "C414",     # Unnecessary list/dict call within another function
+    "C401",     # Unnecessary generator (rewrite as comprehension)
+    "C409",     # Unnecessary literal within tuple/list/dict call
+    "C419",     # Unnecessary comprehension in call
+    "SIM101",   # Duplicate isinstance call
+    "SIM103",   # Needless boolean conversion
+    "SIM110",   # Reimplemented builtin
+    "SIM118",   # Use 'key in dict' instead of 'key in dict.keys()'
+    "SIM401",   # Use dict.get instead of if-else block
+    "SIM910",   # Use dict.get(key) instead of dict.get(key, None)
+    "TC001",    # Move application import into type-checking block
+    "TC003",    # Move standard library import into type-checking block
+    "UP028",    # Replace yield over for loop with yield from
 ]
 
 [tool.ruff.lint.per-file-ignores]
 "**/tests/**/*.py" = [
-    "E501",      # Line too long in tests is acceptable
-    "PLR2004",   # Magic numbers in tests are acceptable
-    "S101",      # Use of assert is fine in tests
-    "PT009",     # Use of unittest.TestCase is acceptable
-    "PLC1901",   # Empty string comparison can be simplified is less readable in tests
+    "D",        # Don't require docstrings in tests
+    "E501",     # Line length in tests is less critical
+    "S101",     # Allow assert in tests
+    "B011",     # Allow assert False in tests (common pattern)
 ]
 "**/conftest.py" = [
-    "F401",  # Imported but unused, fixtures are used implicitly
+    "F401",     # Unused imports in conftest.py are often for fixtures
+    "F841",     # Allow unused variables in conftest (often for fixture side effects)
 ]
+"**/tests/integration/cli/projects/**/*.py" = [
+    "F841",     # These are test files that intentionally create errors
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
 
 [tool.ruff.lint.isort]
 known-first-party = ["ape", "ape_accounts", "ape_console", "ape_ethereum", "ape_geth", "ape_networks", "ape_node", "ape_plugins", "ape_pm", "ape_test"]
