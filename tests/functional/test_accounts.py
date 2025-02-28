@@ -829,7 +829,7 @@ def test_load_public_key_from_keyfile(runner, keyfile_account):
 
         assert (
             to_hex(keyfile_account.public_key)
-            == "0x8318535b54105d4a7aae60c08fc45f9687181b4fdfc625bd1a753fa7397fed753547f11ca8696646f2f3acb08e31016afac23e630c5d11f59f61fef57b0d2aa5"  # noqa: 501
+            == "0x8318535b54105d4a7aae60c08fc45f9687181b4fdfc625bd1a753fa7397fed753547f11ca8696646f2f3acb08e31016afac23e630c5d11f59f61fef57b0d2aa5"  # noqa: E501
         )
         # no need for password when loading from the keyfile
         assert keyfile_account.public_key
