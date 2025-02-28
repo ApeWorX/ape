@@ -53,6 +53,8 @@ select = [
     "SIM",  # flake8-simplify - code simplification
     "S",    # flake8-bandit - security issues
     "TCH",  # flake8-type-checking - type annotation improvements
+    "T10",  # flake8-debugger - detect debugger calls/imports
+    "FIX",  # flake8-fixme - detect FIXME, TODO, XXX comments
 ]
 
 # Rules to ignore
@@ -65,6 +67,10 @@ ignore = [
     "B007",     # Loop control variable not used within loop body
     "B012",     # Jump statements in finally blocks
     "B028",     # No explicit stacklevel in warnings
+    
+    # FIXME/TODO comments - these are intentional markers for future work
+    "FIX002",   # Line contains TODO
+    "FIX004",   # Line contains HACK
     
     # Code structure preferences
     "SIM102",   # Use a single if statement instead of nested if statements
