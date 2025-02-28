@@ -39,8 +39,10 @@ class ConfigEnum(str, Enum):
                 FOO = "FOO"
                 BAR = "BAR"
 
+
             class MyConfig(PluginConfig):
                 my_enum: MyEnum
+
 
             model = MyConfig(my_enum="FOO")
 

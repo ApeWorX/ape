@@ -34,7 +34,7 @@ if TYPE_CHECKING:
     from ape.pytest.runners import PytestApeRunner
 
 
-class classproperty(object):
+class classproperty:
     def __init__(self, fn: Callable):
         self.fn = fn
 
@@ -539,7 +539,7 @@ def get_attribute_with_extras(obj: Any, name: str) -> Any:
         base_err = _recursion_checker.getattr_errors[name]
         message = str(base_err)
     else:
-        message = f"'{repr(obj)}' has no attribute '{name}'"
+        message = f"'{obj!r}' has no attribute '{name}'"
 
     if extras_checked:
         extras_str = ", ".join(sorted(extras_checked))

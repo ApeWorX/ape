@@ -40,7 +40,7 @@ class FixtureManager(ManagerAccessMixin):
     def __init__(self, config_wrapper: "ConfigWrapper", isolation_manager: "IsolationManager"):
         self.config_wrapper = config_wrapper
         self.isolation_manager = isolation_manager
-        self._nodeid_to_fixture_map: dict[str, "FixtureMap"] = {}
+        self._nodeid_to_fixture_map: dict[str, FixtureMap] = {}
         self._fixture_name_to_info: dict[str, dict] = {}
 
     @classmethod
@@ -780,6 +780,7 @@ def fixture(chain_isolation: Optional[bool], **kwargs):
 
         import ape
         from ape_tokens import tokens
+
 
         @ape.fixture(scope="session", chain_isolation=False, params=("WETH", "DAI", "BAT"))
         def token_addresses(request):

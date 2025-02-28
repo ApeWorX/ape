@@ -25,6 +25,7 @@ def allow_disconnected(fn: Callable):
         from ape.types import SnapshotID
         from ape.utils import return_none_when_disconnected
 
+
         @allow_disconnected
         def try_snapshot(self) -> Optional[SnapshotID]:
             return self.chain.snapshot()

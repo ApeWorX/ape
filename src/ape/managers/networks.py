@@ -34,7 +34,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
 
         # "networks" is the NetworkManager singleton
         with networks.ethereum.mainnet.use_provider("node"):
-           ...
+            ...
     """
 
     _active_provider: Optional["ProviderAPI"] = None
@@ -48,7 +48,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
     def __repr__(self) -> str:
         provider = self.active_provider
         class_name = NetworkManager.__name__
-        content = f"{class_name} active_provider={repr(provider)}" if provider else class_name
+        content = f"{class_name} active_provider={provider!r}" if provider else class_name
         return f"<{content}>"
 
     @property
@@ -241,7 +241,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         custom_networks: list = self.custom_networks
         plugin_ecosystems = self._plugin_ecosystems
         evm_chains = self._evmchains_ecosystems
-        custom_ecosystems: dict[str, "EcosystemAPI"] = {}
+        custom_ecosystems: dict[str, EcosystemAPI] = {}
         for custom_network in custom_networks:
             ecosystem_name = custom_network["ecosystem"]
             if (
@@ -278,7 +278,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
 
     @cached_property
     def _evmchains_ecosystems(self) -> dict[str, "EcosystemAPI"]:
-        ecosystems: dict[str, "EcosystemAPI"] = {}
+        ecosystems: dict[str, EcosystemAPI] = {}
         for name in PUBLIC_CHAIN_META:
             ecosystem_name = name.lower().replace(" ", "-")
             symbol = None
@@ -332,7 +332,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
             elif cls_name := getattr(provider_cls, "name", None):
                 name = cls_name
 
-            elif cls_name := getattr(provider_cls, "__name__"):
+            elif cls_name := provider_cls.__name__:
                 name = cls_name.lower()
 
             else:

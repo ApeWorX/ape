@@ -558,7 +558,7 @@ class Dependency(BaseManager, ExtraAttributesMixin):
         # This is the base project using this dependency.
         self.base_project = project or self.local_project
         # When installed (and set, lazily), this is the dependency project.
-        self._installation: Optional["ProjectManager"] = None
+        self._installation: Optional[ProjectManager] = None
         self._tried_fetch = False
 
     @log_instead_of_fail(default="<Dependency>")
@@ -933,7 +933,7 @@ def _get_cache_path(
 class PackagesCache(ManagerAccessMixin):
     def __init__(self):
         self._api_cache: dict[str, DependencyAPI] = {}
-        self._project_cache: dict[str, "ProjectManager"] = {}
+        self._project_cache: dict[str, ProjectManager] = {}
 
     def __contains__(self, package: str) -> bool:
         return package in self.installed_package_names
@@ -2249,7 +2249,7 @@ class LocalProject(Project):
                     start = "Else, could" if did_append else "Could"
                     message = (
                         f"{message} {start} it be from one of the "
-                        "missing compilers for extensions: " + f'{", ".join(sorted(missing_exts))}?'
+                        "missing compilers for extensions: " + f"{', '.join(sorted(missing_exts))}?"
                     )
 
             # NOTE: Purposely discard the stack-trace and raise a new exception.
@@ -2323,7 +2323,8 @@ class LocalProject(Project):
 
         # ape-config.yaml does no exist. Check for another ProjectAPI type.
         project_classes: Iterator[type[ProjectAPI]] = (
-            t[1] for t in self.plugin_manager.projects  # type: ignore
+            t[1]
+            for t in self.plugin_manager.projects  # type: ignore
         )
         plugins = (t for t in project_classes if not issubclass(t, ApeProject))
         for api in plugins:

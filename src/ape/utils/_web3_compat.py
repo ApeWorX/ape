@@ -23,6 +23,6 @@ def sign_hash(msghash, private_key):
 
 __all__ = [
     "ExtraDataToPOAMiddleware",
-    "sign_hash",
     "WebsocketProvider",
+    "sign_hash",
 ]

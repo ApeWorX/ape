@@ -471,7 +471,7 @@ class TestNpmDependency:
         file = contracts_folder / "contract.json"
         source_content = '{"abi": []}'
         file.write_text(source_content, encoding="utf8")
-        yield base
+        return base
 
     def test_fetch(self, node_modules_path, project_with_npm_dependency):
         pm = project_with_npm_dependency

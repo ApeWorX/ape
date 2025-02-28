@@ -23,7 +23,7 @@ class GasTracker(ManagerAccessMixin):
 
     def __init__(self, config_wrapper: "ConfigWrapper"):
         self.config_wrapper = config_wrapper
-        self.session_gas_report: Optional["GasReport"] = None
+        self.session_gas_report: Optional[GasReport] = None
 
     @property
     def enabled(self) -> bool:

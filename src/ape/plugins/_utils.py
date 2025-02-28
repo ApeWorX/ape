@@ -492,8 +492,7 @@ class PluginMetadata(BaseInterfaceModel):
 
         elif self.version is not None and upgrade:
             logger.error(
-                f"Cannot use '--upgrade' option when specifying "
-                f"a version for plugin '{self.name}'."
+                f"Cannot use '--upgrade' option when specifying a version for plugin '{self.name}'."
             )
             return None
 
@@ -578,8 +577,7 @@ class ModifyPluginResultHandler:
 
         elif self._plugin.version:
             logger.success(
-                f"Plugin '{self._plugin.name}' has been "
-                f"upgraded to version {self._plugin.version}."
+                f"Plugin '{self._plugin.name}' has been upgraded to version {self._plugin.version}."
             )
             return True
 

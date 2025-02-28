@@ -49,7 +49,7 @@ def use_scripts_sys_path(path: Path):
 
 def get_module(script_path: Path) -> str:
     mod_name = ".".join(
-        (str(script_path).replace(os.path.sep, ".").split("scripts.")[-1].split(".")[:-1])
+        str(script_path).replace(os.path.sep, ".").split("scripts.")[-1].split(".")[:-1]
     )
     return mod_name if "." in mod_name else f"scripts.{mod_name}"
 
@@ -210,7 +210,7 @@ class ScriptCommand(click.MultiCommand):
         return commands
 
     def list_commands(self, ctx):
-        return list(sorted(self.commands))
+        return sorted(self.commands)
 
     def get_command(self, ctx, name):
         if Path(name).exists():

@@ -191,19 +191,14 @@ def console(
     project_path: Path = project if isinstance(project, Path) else project.path
     banner = ""
     if verbose:
-        banner = """
-   Python:  {python_version}
-  IPython:  {ipython_version}
+        banner = f"""
+   Python:  {_python_version}
+  IPython:  {IPython.__version__}
       Ape:  {ape_version}
   Project:  {project_path}
 
     Are you ready to Ape, anon?
-    """.format(
-            python_version=_python_version,
-            ipython_version=IPython.__version__,
-            ape_version=ape_version,
-            project_path=project_path,
-        )
+    """
 
         if not environ.get("APE_TESTING"):
             faulthandler.enable()  # NOTE: In case we segfault

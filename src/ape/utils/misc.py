@@ -14,7 +14,7 @@ else:
 from asyncio import gather
 from collections.abc import Coroutine, Mapping
 from datetime import datetime, timezone
-from functools import cached_property, lru_cache, singledispatchmethod, wraps
+from functools import cached_property, singledispatchmethod, wraps
 from importlib.metadata import PackageNotFoundError, distributions
 from importlib.metadata import version as version_metadata
 from pathlib import Path
@@ -69,7 +69,7 @@ _python_version: str = (
 )
 
 
-@lru_cache(maxsize=None)
+@functools.cache
 def _get_distributions(pkg_name: Optional[str] = None) -> list:
     """
     Get a mapping of top-level packages to their distributions.
@@ -354,7 +354,7 @@ def to_int(value: Any) -> int:
     elif isinstance(value, bytes):
         return int.from_bytes(value, "big")
 
-    raise ValueError(f"cannot convert {repr(value)} to int")
+    raise ValueError(f"cannot convert {value!r} to int")
 
 
 def run_until_complete(*item: Any) -> Any:
@@ -529,19 +529,19 @@ def as_our_module(cls_or_def: _MOD_T, doc_str: Optional[str] = None) -> _MOD_T:
 
 
 __all__ = [
-    "cached_property",
+    "LOCAL_NETWORK_NAME",
     "_dict_overlay",
+    "cached_property",
     "extract_nested_value",
     "gas_estimation_error_message",
     "get_current_timestamp_ms",
-    "pragma_str_to_specifier_set",
     "get_package_version",
     "is_evm_precompile",
     "is_zero_hex",
     "load_config",
-    "LOCAL_NETWORK_NAME",
     "log_instead_of_fail",
     "nonreentrant",
+    "pragma_str_to_specifier_set",
     "raises_not_implemented",
     "run_until_complete",
     "singledispatchmethod",

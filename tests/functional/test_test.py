@@ -448,9 +448,9 @@ class TestIsolationManager:
         expected_test = 30_000_000
 
         # Show we start off clear of snapshots.
-        assert all(
-            isolation_manager.snapshots[s].identifier is None for s in Scope
-        ), "Setup failed - snapshots not empty"
+        assert all(isolation_manager.snapshots[s].identifier is None for s in Scope), (
+            "Setup failed - snapshots not empty"
+        )
 
         # Start session.
         next(session)

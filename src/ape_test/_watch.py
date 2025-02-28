@@ -79,7 +79,7 @@ class EventHandler(events.FileSystemEventHandler):
 
 
 def _run_ape_test(*pytest_args):
-    return run_subprocess(["ape", "test", *[f"{a}" for a in pytest_args]])
+    return run_subprocess(["ape", "test", *[f"{a}" for a in pytest_args]], check=False)
 
 
 def _run_main_loop(delay: float, *pytest_args: str) -> None:
