@@ -698,7 +698,7 @@ def test_isolate_data_folder(config):
     config.DATA_FOLDER = madeup_path
     try:
         with config.isolate_data_folder():
-            assert config.DATA_FOLDER != original_data_folder
+            assert original_data_folder != config.DATA_FOLDER
     finally:
         config.DATA_FOLDER = original_data_folder
 
@@ -707,7 +707,7 @@ def test_isolate_data_folder_already_isolated(config):
     data_folder = config.DATA_FOLDER
     with config.isolate_data_folder():
         # Already isolated, so there is no change.
-        assert config.DATA_FOLDER == data_folder
+        assert data_folder == config.DATA_FOLDER
 
 
 def test_isolate_data_folder_keep(config):
@@ -722,7 +722,7 @@ def test_isolate_data_folder_keep(config):
     config.DATA_FOLDER = madeup_path
     try:
         with config.isolate_data_folder(keep="subdir"):
-            assert config.DATA_FOLDER != original_data_folder
+            assert original_data_folder != config.DATA_FOLDER
 
         expected_file = config.DATA_FOLDER / "subdir" / "file.txt"
         assert expected_file.is_file()
