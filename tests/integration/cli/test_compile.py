@@ -377,20 +377,34 @@ def test_raw_compiler_output_bytecode(integ_project):
 
 
 @skip_projects_except("with-contracts")
-def test_compile_exclude(ape_cli, runner):
-    result = runner.invoke(ape_cli, ("compile", "--force"), catch_exceptions=False)
+def test_compile_exclude(ape_cli, runner, integ_project):
+    result = runner.invoke(
+        ape_cli,
+        ("compile", "--force", "--project", f"{integ_project.path}"),
+        catch_exceptions=False,
+    )
     assert "Compiling 'contracts/Exclude.json'" not in result.output
     assert "Compiling 'contracts/IgnoreUsingRegex.json'" not in result.output
     assert "Compiling 'contracts/exclude_dir/UnwantedContract.json'" not in result.output
 
 
 @skip_projects_except("with-contracts")
-def test_compile_config_override(ape_cli, runner):
+def test_compile_config_override(ape_cli, runner, integ_project):
     arguments = (
         "compile",
         "--force",
         "--config-override",
         '{"compile": {"exclude": ["*ContractA*"]}}',
+        "--project",
+        f"{integ_project.path}",
     )
     result = runner.invoke(ape_cli, arguments, catch_exceptions=False)
     assert "Compiling 'contracts/ContractA.json'" not in result.output
+
+
+@skip_projects_except("with-contracts")
+def test_compile_show_output(ape_cli, runner, integ_project):
+    arguments = ("compile", "--force", "--show-output", "--project", f"{integ_project.path}")
+    result = runner.invoke(ape_cli, arguments, catch_exceptions=False)
+    assert "Compiling 'contracts/ContractA.json'" not in result.output
+    assert '{"bytecode":"0x34611' in result.output
