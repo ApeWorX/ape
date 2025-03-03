@@ -136,6 +136,7 @@ class BlockTransactionQuery(_BaseQuery):
     """
 
     block_id: Any
+    num_transactions: NonNegativeInt
 
 
 class AccountTransactionQuery(_BaseQuery):
