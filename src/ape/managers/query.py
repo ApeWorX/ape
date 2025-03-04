@@ -52,8 +52,8 @@ if TYPE_CHECKING:
 class _RpcCursor(BaseCursorAPI):
     def shrink(
         self,
-        start_index: int | None = None,
-        end_index: int | None = None,
+        start_index: Optional[int] = None,
+        end_index: Optional[int] = None,
     ) -> "Self":
         copy = self.model_copy(deep=True)
 
@@ -102,8 +102,8 @@ class _RpcBlockTransactionCursor(_RpcCursor):
     # TODO: Move to default implementation in `BaseCursorAPI`? (remove `@abstractmethod`)
     def shrink(
         self,
-        start_index: int | None = None,
-        end_index: int | None = None,
+        start_index: Optional[int] = None,
+        end_index: Optional[int] = None,
     ) -> "Self":
         if (start_index and start_index != 0) or (
             end_index and end_index != self.query.num_transactions
@@ -142,8 +142,8 @@ class _RpcAccountTransactionCursor(_RpcCursor):
 
     def shrink(
         self,
-        start_index: int | None = None,
-        end_index: int | None = None,
+        start_index: Optional[int] = None,
+        end_index: Optional[int] = None,
     ) -> "Self":
         copy = self.model_copy(deep=True)
 
@@ -299,7 +299,11 @@ class QueryResult(BaseCursorAPI):
         return self
 
     # TODO: Move to `BaseCursorAPI` and don't have `@abstractmethod`?
-    def shrink(self, start_index: int | None = None, end_index: int | None = None) -> "Self":
+    def shrink(
+        self,
+        start_index: Optional[int] = None,
+        end_index: Optional[int] = None,
+    ) -> "Self":
         raise NotImplementedError
 
     @property
