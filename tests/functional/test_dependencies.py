@@ -217,7 +217,7 @@ def test_add_dependency_with_dependencies(project, with_dependencies_project_pat
     assert actual.version == "local"
 
 
-def test_get_project_dependencies(project, with_dependencies_project_path):
+def test_get_project_dependencies(project, ape_caplog):
     installed_package = {"name": "web3", "site_package": "web3"}
     not_installed_package = {
         "name": "apethisisnotarealpackageape",
@@ -226,11 +226,13 @@ def test_get_project_dependencies(project, with_dependencies_project_path):
     with project.temp_config(dependencies=[installed_package, not_installed_package]):
         dm = project.dependencies
         actual = list(dm.get_project_dependencies())
+        logs = ape_caplog.head
         assert len(actual) == 2
         assert actual[0].name == "web3"
         assert actual[0].installed
         assert actual[1].name == "apethisisnotarealpackageape"
         assert not actual[1].installed
+        assert "Dependency 'apethisisnotarealpackageape' not installed." in logs
 
 
 def test_install(project, mocker):
