@@ -4,7 +4,7 @@ from collections.abc import Callable, Iterator
 from functools import cached_property, singledispatchmethod
 from itertools import islice
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import TYPE_CHECKING, Any, Optional, Union, cast
 
 import click
 import narwhals.stable.v1 as nw
@@ -677,6 +677,12 @@ class ContractEvent(BaseInterfaceModel):
         for log in contract_events:
             for column in data:
                 data[column].append(getattr(log, column))
+
+        if backend is None:
+            backend = cast(nw.Implementation, self.config_manager.query.backend)
+
+        elif isinstance(backend, str):
+            backend = nw.Implementation.from_backend(backend)
 
         return nw.from_dict(data=data, backend=backend)
 
