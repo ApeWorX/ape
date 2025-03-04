@@ -183,6 +183,12 @@ class BlockContainer(BaseManager):
             for column in data:
                 data[column].append(getattr(block, column))
 
+        if backend is None:
+            backend = cast(nw.Implementation, self.config_manager.query.backend)
+
+        elif isinstance(backend, str):
+            backend = nw.Implementation.from_backend(backend)
+
         return nw.from_dict(data=data, backend=backend)
 
     def range(
@@ -411,6 +417,12 @@ class AccountHistory(BaseInterfaceModel):
         for txn in txns:
             for column in data:
                 data[column].append(getattr(txn, column))
+
+        if backend is None:
+            backend = cast(nw.Implementation, self.config_manager.query.backend)
+
+        elif isinstance(backend, str):
+            backend = nw.Implementation.from_backend(backend)
 
         return nw.from_dict(data=data, backend=backend)
 
