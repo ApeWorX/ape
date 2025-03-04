@@ -16,6 +16,7 @@ from .transactions import ReceiptAPI, TransactionAPI
 
 if TYPE_CHECKING:
     from narwhals.typing import Frame
+    from narwhals.typing import Implementation as DataframeImplementation
 
     from ape.managers.query import QueryResult
 
@@ -376,7 +377,7 @@ class BaseCursorAPI(BaseInterfaceModel, Generic[QueryType, ModelType]):
 
     # Conversion out to fulfill user query requirements
     @abstractmethod
-    def as_dataframe(self, backend: str) -> "Frame":
+    def as_dataframe(self, backend: "DataframeImplementation") -> "Frame":
         """
         Execute and return this Cursor as a `~narwhals.v1.DataFrame` or `~narwhals.v1.LazyFrame`
         object. The use of `backend is exactly as it is mentioned in the `narwhals` documentation:
@@ -387,8 +388,8 @@ class BaseCursorAPI(BaseInterfaceModel, Generic[QueryType, ModelType]):
         https://narwhals-dev.github.io/narwhals/api-reference/narwhals/#narwhals.from_dict
 
         Args:
-            backend (str): A Narwhals-compatible backend specifier. See:
-                https://narwhals-dev.github.io/narwhals/api-reference/implementation/
+            backend (:object:`~narwhals.Implementation): A Narwhals-compatible backend specifier.
+                See: https://narwhals-dev.github.io/narwhals/api-reference/implementation/
 
         Returns:
             (`~narwhals.v1.DataFrame` | `~narwhals.v1.LazyFrame`): A narwhals dataframe.
