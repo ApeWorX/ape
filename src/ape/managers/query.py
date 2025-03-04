@@ -4,7 +4,7 @@ import time
 from collections.abc import Iterator
 from functools import cached_property, singledispatchmethod
 from itertools import pairwise, tee
-from typing import TYPE_CHECKING, Optional, Self
+from typing import TYPE_CHECKING, Optional
 
 import narwhals as nw
 from pydantic import model_validator
@@ -34,13 +34,19 @@ if TYPE_CHECKING:
 
     from ape.api.providers import BlockAPI
 
+    try:
+        # Only on Python 3.11
+        from typing import Self  # type: ignore
+    except ImportError:
+        from typing_extensions import Self  # type: ignore
+
 
 class _RpcCursor(BaseCursorAPI):
     def shrink(
         self,
         start_index: int | None = None,
         end_index: int | None = None,
-    ) -> Self:
+    ) -> "Self":
         copy = self.model_copy(deep=True)
 
         if start_index is not None:
@@ -90,7 +96,7 @@ class _RpcBlockTransactionCursor(_RpcCursor):
         self,
         start_index: int | None = None,
         end_index: int | None = None,
-    ) -> Self:
+    ) -> "Self":
         if (start_index and start_index != 0) or (
             end_index and end_index != self.query.num_transactions
         ):
@@ -130,7 +136,7 @@ class _RpcAccountTransactionCursor(_RpcCursor):
         self,
         start_index: int | None = None,
         end_index: int | None = None,
-    ) -> Self:
+    ) -> "Self":
         copy = self.model_copy(deep=True)
 
         if start_index is not None:
@@ -284,7 +290,7 @@ class QueryResult(BaseCursorAPI):
         return self
 
     # TODO: Move to `BaseCursorAPI` and don't have `@abstractmethod`?
-    def shrink(self, start_index: int | None = None, end_index: int | None = None) -> Self:
+    def shrink(self, start_index: int | None = None, end_index: int | None = None) -> "Self":
         raise NotImplementedError
 
     @property

@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from collections.abc import Iterator, Sequence
 from functools import cache, cached_property
-from typing import TYPE_CHECKING, Any, ClassVar, Generic, Optional, Self, TypeVar, Union
+from typing import TYPE_CHECKING, Any, ClassVar, Generic, Optional, TypeVar, Union
 
 from ethpm_types.abi import EventABI, MethodABI
 from pydantic import NonNegativeInt, PositiveInt, field_validator, model_validator
@@ -18,6 +18,12 @@ if TYPE_CHECKING:
     from narwhals.typing import Frame
 
     from ape.managers.query import QueryResult
+
+    try:
+        # Only on Python 3.11
+        from typing import Self  # type: ignore
+    except ImportError:
+        from typing_extensions import Self  # type: ignore
 
 
 @cache
