@@ -3,7 +3,7 @@ import os
 import time
 from collections.abc import Iterator
 from functools import cached_property, singledispatchmethod
-from itertools import pairwise, tee
+from itertools import tee
 from typing import TYPE_CHECKING, Optional, Union, cast
 
 import narwhals as nw
@@ -28,6 +28,14 @@ from ape.exceptions import QueryEngineError
 from ape.logging import logger
 from ape.plugins._utils import clean_plugin_name
 from ape.utils.basemodel import ManagerAccessMixin
+
+try:
+    from itertools import pairwise
+
+except ImportError:
+    # TODO: Remove when 3.9 dropped (`itertools.pairwise` introduced in 3.10)
+    from more_itertools import pairwise  # type: ignore[no-redef,assignment]
+
 
 if TYPE_CHECKING:
     from narwhals.typing import Frame

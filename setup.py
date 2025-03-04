@@ -93,6 +93,7 @@ setup(
         "lazyasd>=0.1.4",
         "asttokens>=2.4.1,<3",  # Peer dependency; w/o pin container build fails.
         "cchecksum>=0.0.3,<1",
+        "more-itertools; python_version<'3.10'",  # backport for `itertools.pairwise`
         "narwhals>=1.29,<2",
         "packaging>=23.0,<24",
         "pluggy>=1.3,<2",
