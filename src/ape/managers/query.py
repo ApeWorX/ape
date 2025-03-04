@@ -4,7 +4,7 @@ import time
 from collections.abc import Iterator
 from functools import cached_property, singledispatchmethod
 from itertools import pairwise, tee
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, Union, cast
 
 import narwhals as nw
 from pydantic import model_validator
@@ -66,7 +66,7 @@ class _RpcCursor(BaseCursorAPI):
         # NOTE: Very loose estimate of 100ms per item
         return 0.1  # seconds
 
-    def as_dataframe(self, backend: str) -> "Frame":
+    def as_dataframe(self, backend: nw.Implementation) -> "Frame":
         data: dict[str, list] = {column: [] for column in self.query.columns}
 
         for item in self.as_model_iter():
@@ -262,6 +262,7 @@ class DefaultQueryProvider(QueryEngineAPI):
 
 class QueryResult(BaseCursorAPI):
     cursors: list[BaseCursorAPI]
+    """The optimal set of cursors (in sorted order) that fulfill this query."""
 
     @model_validator(mode="after")
     def validate_coverage(self):
@@ -302,7 +303,18 @@ class QueryResult(BaseCursorAPI):
         return self.total_time / sum(len(c.query) for c in self.cursors)
 
     # Conversion out to fulfill user query requirements
-    def as_dataframe(self, backend: str = "pandas") -> "Frame":
+    def as_dataframe(
+        self,
+        backend: Union[str, nw.Implementation, None] = None,
+    ) -> "Frame":
+        if backend is None:
+            backend = cast(nw.Implementation, self.config_manager.config.query.backend)
+
+        elif isinstance(backend, str):
+            backend = nw.Implementation.from_backend(backend)
+
+        assert isinstance(backend, str)
+
         # TODO: Source `backend` from core `query:` config if defaulted to `None`
         return nw.concat([c.as_dataframe(backend=backend) for c in self.cursors], how="vertical")
 
@@ -413,7 +425,9 @@ class QueryManager(ManagerAccessMixin):
         yield last_best_cursor.shrink(start_index=last_start_index)
 
     def _experimental_query(
-        self, query: QueryType, engine_to_use: Optional[str] = None
+        self,
+        query: QueryType,
+        engine_to_use: Optional[str] = None,
     ) -> QueryResult:
         if not engine_to_use:
             # Sort by earliest point in cursor window (then by longest coverage if same start)
