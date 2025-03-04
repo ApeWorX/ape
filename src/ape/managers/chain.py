@@ -123,8 +123,7 @@ class BlockContainer(BaseManager):
         stop_block: int | None = None,
         step: int = 1,
         engine_to_use: str | None = None,
-        # TODO: add support to source this from Config
-        backend: str = "pandas",
+        backend: str | nw.Implementation | None = None,
     ) -> "Frame":
         """
         A method for querying blocks and returning an Iterator. If you
@@ -146,6 +145,8 @@ class BlockContainer(BaseManager):
               Defaults to ``1``.
             engine_to_use (str | None): query engine to use, bypasses query
               engine selection algorithm.
+            backend (str | :class:`~narwhals.Implementation` | None): A Narwhals-compatible
+                backend. See: https://narwhals-dev.github.io/narwhals/api-reference/implementation
 
         Returns:
             :class:`~narwhals.typing.Frame`
@@ -355,8 +356,7 @@ class AccountHistory(BaseInterfaceModel):
         start_nonce: int = 0,
         stop_nonce: int | None = None,
         engine_to_use: str | None = None,
-        # TODO: add support to source this from Config
-        backend: str = "pandas",
+        backend: str | nw.Implementation | None = None,
     ) -> "Frame":
         """
         A method for querying transactions made by an account and returning an Iterator.
@@ -376,6 +376,8 @@ class AccountHistory(BaseInterfaceModel):
               in the query. Defaults to the latest transaction.
             engine_to_use (str | None): query engine to use, bypasses query
               engine selection algorithm.
+            backend (str | :class:`~narwhals.Implementation` | None): A Narwhals-compatible
+                backend. See: https://narwhals-dev.github.io/narwhals/api-reference/implementation
 
         Returns:
             :class:`~narwhals.typing.Frame`

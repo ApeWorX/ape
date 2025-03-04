@@ -747,8 +747,7 @@ class ContractEvent(BaseInterfaceModel):
         stop_block: int | None = None,
         step: int = 1,
         engine_to_use: str | None = None,
-        # TODO: add support to source this from Config
-        backend: str = "pandas",
+        backend: str | nw.Implementation | None = None,
     ) -> "Frame":
         """
         Iterate through blocks for log events
@@ -764,6 +763,8 @@ class ContractEvent(BaseInterfaceModel):
               Defaults to ``1``.
             engine_to_use (str | None): query engine to use, bypasses query
               engine selection algorithm.
+            backend (str | :class:`~narwhals.Implementation` | None): A Narwhals-compatible
+                backend. See: https://narwhals-dev.github.io/narwhals/api-reference/implementation
 
         Returns:
             :class:`~narwhals.typing.Frame`
