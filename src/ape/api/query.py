@@ -333,8 +333,8 @@ class BaseCursorAPI(BaseInterfaceModel, Generic[QueryType, ModelType]):
     @abstractmethod
     def shrink(
         self,
-        start_index: int | None = None,
-        end_index: int | None = None,
+        start_index: Optional[int] = None,
+        end_index: Optional[int] = None,
     ) -> "Self":
         """
         Create a copy of this object with the query window shrunk inwards to `start_index` and/or
