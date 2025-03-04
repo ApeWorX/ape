@@ -201,7 +201,7 @@ class TransactionAPI(BaseInterfaceModel):
 
         if calldata_repr is None:
             # If was not specified, use the default value from the config.
-            calldata_repr = self.local_project.config.calldata_repr
+            calldata_repr = self.local_project.config.display.calldata
 
         if calldata_repr == "full" or len(data["data"]) <= 9:
             data["data"] = (
