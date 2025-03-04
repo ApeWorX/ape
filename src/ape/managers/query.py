@@ -260,8 +260,8 @@ class DefaultQueryProvider(QueryEngineAPI):
         )
 
 
-class QueryResult(BaseCursorAPI):
-    cursors: list[BaseCursorAPI]
+class QueryResult(BaseCursorAPI[ModelType]):
+    cursors: list[BaseCursorAPI[ModelType]]
     """The optimal set of cursors (in sorted order) that fulfill this query."""
 
     @model_validator(mode="after")
@@ -308,12 +308,10 @@ class QueryResult(BaseCursorAPI):
         backend: str | nw.Implementation | None = None,
     ) -> "Frame":
         if backend is None:
-            backend = cast(nw.Implementation, self.config_manager.config.query.backend)
+            backend = cast(nw.Implementation, self.config_manager.query.backend)
 
         elif isinstance(backend, str):
             backend = nw.Implementation.from_backend(backend)
-
-        assert isinstance(backend, str)
 
         # TODO: Source `backend` from core `query:` config if defaulted to `None`
         return nw.concat([c.as_dataframe(backend=backend) for c in self.cursors], how="vertical")
@@ -447,7 +445,7 @@ class QueryManager(ManagerAccessMixin):
             )
 
         logger.debug("Sorted cursors:\n  " + "\n  ".join(map(str, all_cursors)))
-        result = QueryResult(
+        result: QueryResult = QueryResult(
             query=query,
             cursors=list(self._solve_optimal_coverage(query, all_cursors)),
         )
