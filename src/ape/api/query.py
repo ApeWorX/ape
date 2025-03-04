@@ -1,12 +1,13 @@
 from abc import abstractmethod
 from collections.abc import Iterator, Sequence
 from functools import cache, cached_property
-from typing import TYPE_CHECKING, Any, ClassVar, Generic, Optional, TypeVar, Union
+from typing import TYPE_CHECKING, Any, ClassVar, Generic, Optional, Type, TypeVar, Union
 
 from ethpm_types.abi import EventABI, MethodABI
 from pydantic import NonNegativeInt, PositiveInt, field_validator, model_validator
 
 from ape.logging import logger
+from ape.types import ContractLog
 from ape.types.address import AddressType
 from ape.utils import singledispatchmethod
 from ape.utils.basemodel import BaseInterface, BaseInterfaceModel, BaseModel
@@ -103,13 +104,14 @@ ModelType = TypeVar("ModelType", bound=BaseInterfaceModel)
 
 
 class _BaseQuery(BaseModel, Generic[ModelType]):
-    Model: ClassVar[ModelType]
+    Model: ClassVar[Optional[Type[BaseInterfaceModel]]] = None
+
     columns: set[str]
 
     @field_validator("columns", mode="before")
     def expand_wildcard(cls, value: Any) -> Any:
-        if isinstance(value, str) and value == "*":
-            return _basic_columns(cls.Model)
+        if cls.Model:
+            return validate_and_expand_columns(value, cls.Model)
 
         return value
 
@@ -180,18 +182,20 @@ class _BaseBlockQuery(_BaseQuery):
         return self.stop_block
 
 
-class BlockQuery(_BaseBlockQuery):
+class BlockQuery(_BaseBlockQuery, _BaseQuery[BlockAPI]):
     """
     A ``QueryType`` that collects properties of ``BlockAPI`` over a range of
     blocks between ``start_block`` and ``stop_block``.
     """
 
 
-class BlockTransactionQuery(_BaseQuery):
+class BlockTransactionQuery(_BaseQuery[TransactionAPI]):
     """
     A ``QueryType`` that collects properties of ``TransactionAPI`` over a range of
     transactions collected inside the ``BlockAPI` object represented by ``block_id``.
     """
+
+    Model = TransactionAPI
 
     block_id: Any
     num_transactions: NonNegativeInt
@@ -205,18 +209,19 @@ class BlockTransactionQuery(_BaseQuery):
         return self.num_transactions - 1
 
 
-class AccountTransactionQuery(_BaseQuery):
+class AccountTransactionQuery(_BaseQuery[TransactionAPI]):
     """
     A ``QueryType`` that collects properties of ``TransactionAPI`` over a range
     of transactions made by ``account`` between ``start_nonce`` and ``stop_nonce``.
     """
+
+    Model = TransactionAPI
 
     account: AddressType
     start_nonce: NonNegativeInt = 0
     stop_nonce: NonNegativeInt
 
     @model_validator(mode="before")
-    @classmethod
     def check_start_nonce_before_stop_nonce(cls, values: dict) -> dict:
         if values["stop_nonce"] < values["start_nonce"]:
             raise ValueError(
@@ -235,16 +240,7 @@ class AccountTransactionQuery(_BaseQuery):
         return self.stop_nonce
 
 
-class ContractCreationQuery(_BaseQuery):
-    """
-    A ``QueryType`` that obtains information about contract deployment.
-    Returns ``ContractCreation(txn_hash, block, deployer, factory)``.
-    """
-
-    contract: AddressType
-
-
-class ContractCreation(BaseModel, BaseInterface):
+class ContractCreation(BaseInterfaceModel):
     """
     Contract-creation metadata, such as the transaction
     and deployer. Useful for contract-verification,
@@ -303,18 +299,31 @@ class ContractCreation(BaseModel, BaseInterface):
         )
 
 
-class ContractEventQuery(_BaseBlockQuery):
+class ContractCreationQuery(_BaseQuery[ContractCreation]):
+    """
+    A ``QueryType`` that obtains information about contract deployment.
+    Returns ``ContractCreation(txn_hash, block, deployer, factory)``.
+    """
+
+    Model = ContractCreation
+
+    contract: AddressType
+
+
+class ContractEventQuery(_BaseBlockQuery, _BaseQuery[ContractLog]):
     """
     A ``QueryType`` that collects members from ``event`` over a range of
     logs emitted by ``contract`` between ``start_block`` and ``stop_block``.
     """
+
+    Model = ContractLog
 
     contract: Union[list[AddressType], AddressType]
     event: EventABI
     search_topics: Optional[dict[str, Any]] = None
 
 
-class ContractMethodQuery(_BaseBlockQuery):
+class ContractMethodQuery(_BaseBlockQuery, _BaseQuery[Any]):
     """
     A ``QueryType`` that collects return values from calling ``method`` in ``contract``
     over a range of blocks between ``start_block`` and ``stop_block``.
@@ -325,11 +334,8 @@ class ContractMethodQuery(_BaseBlockQuery):
     method_args: dict[str, Any]
 
 
-QueryType = TypeVar("QueryType", bound=_BaseQuery)
-
-
-class BaseCursorAPI(BaseInterfaceModel, Generic[QueryType, ModelType]):
-    query: QueryType
+class BaseCursorAPI(BaseInterfaceModel, Generic[ModelType]):
+    query: _BaseQuery[ModelType]
 
     @abstractmethod
     def shrink(
@@ -406,6 +412,16 @@ class BaseCursorAPI(BaseInterfaceModel, Generic[QueryType, ModelType]):
         Returns:
             `Iterator[ModelType]`: A sequence of Ape API models.
         """
+
+
+QueryType = Union[
+    AccountTransactionQuery,
+    BlockQuery,
+    BlockTransactionQuery,
+    ContractCreationQuery,
+    ContractEventQuery,
+    ContractMethodQuery,
+]
 
 
 class QueryEngineAPI(BaseInterface):
