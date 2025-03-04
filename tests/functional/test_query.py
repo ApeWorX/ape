@@ -1,6 +1,6 @@
 import time
 
-import pandas as pd
+import narwhals as nw
 import pytest
 
 from ape.api.query import validate_and_expand_columns
@@ -12,15 +12,15 @@ def test_basic_query(chain, eth_tester_provider):
     blocks_df0 = chain.blocks.query("*")
     blocks_df1 = chain.blocks.query("number", "timestamp")
 
-    assert list(blocks_df0["number"].values)[:4] == [0, 1, 2, 3]
+    assert blocks_df0["number"].to_list()[:4] == [0, 1, 2, 3]
     assert len(blocks_df1) == len(chain.blocks)
     assert (
-        blocks_df1.iloc[3]["timestamp"]
-        >= blocks_df1.iloc[2]["timestamp"]
-        >= blocks_df1.iloc[1]["timestamp"]
-        >= blocks_df1.iloc[0]["timestamp"]
+        blocks_df1["timestamp"][3]
+        >= blocks_df1["timestamp"][2]
+        >= blocks_df1["timestamp"][1]
+        >= blocks_df1["timestamp"][0]
     )
-    assert list(blocks_df0.columns) == [
+    assert blocks_df0.columns == [
         "base_fee",
         "difficulty",
         "gas_limit",
@@ -40,8 +40,8 @@ def test_relative_block_query(chain, eth_tester_provider):
     chain.mine(10)
     df = chain.blocks.query("*", start_block=-8, stop_block=-2)
     assert len(df) == 7
-    assert df.number.min() == chain.blocks[-8].number == start_block + 3
-    assert df.number.max() == chain.blocks[-2].number == start_block + 9
+    assert df["number"].min() == chain.blocks[-8].number == start_block + 3
+    assert df["number"].max() == chain.blocks[-2].number == start_block + 9
 
 
 def test_block_transaction_query(chain, eth_tester_provider, sender, receiver):
@@ -56,8 +56,8 @@ def test_transaction_contract_event_query(contract_instance, owner, eth_tester_p
     contract_instance.fooAndBar(sender=owner)
     time.sleep(0.1)
     df_events = contract_instance.FooHappened.query("*", start_block=-1)
-    assert isinstance(df_events, pd.DataFrame)
-    assert df_events.event_name[0] == "FooHappened"
+    assert isinstance(df_events, nw.DataFrame)
+    assert df_events["event_name"][0] == "FooHappened"
 
 
 def test_transaction_contract_event_query_starts_query_at_deploy_tx(
@@ -66,8 +66,8 @@ def test_transaction_contract_event_query_starts_query_at_deploy_tx(
     contract_instance.fooAndBar(sender=owner)
     time.sleep(0.1)
     df_events = contract_instance.FooHappened.query("*")
-    assert isinstance(df_events, pd.DataFrame)
-    assert df_events.event_name[0] == "FooHappened"
+    assert isinstance(df_events, nw.DataFrame)
+    assert df_events["event_name"][0] == "FooHappened"
 
 
 class Model(BaseInterfaceModel):

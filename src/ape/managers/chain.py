@@ -1,22 +1,17 @@
 from collections import defaultdict
 from collections.abc import Iterator
 from contextlib import contextmanager
-from functools import cached_property, partial, singledispatchmethod
+from functools import cached_property, singledispatchmethod
 from statistics import mean, median
 from typing import IO, TYPE_CHECKING, Optional, Union, cast
 
-import pandas as pd
+import narwhals.stable.v1 as nw
 from rich.box import SIMPLE
 from rich.table import Table
 
 from ape.api.address import BaseAddress
 from ape.api.providers import BlockAPI
-from ape.api.query import (
-    AccountTransactionQuery,
-    BlockQuery,
-    extract_fields,
-    validate_and_expand_columns,
-)
+from ape.api.query import AccountTransactionQuery, BlockQuery, validate_and_expand_columns
 from ape.api.transactions import ReceiptAPI
 from ape.exceptions import (
     APINotImplementedError,
@@ -35,6 +30,7 @@ from ape.utils.basemodel import BaseInterfaceModel
 from ape.utils.misc import ZERO_ADDRESS, is_evm_precompile, is_zero_hex, log_instead_of_fail
 
 if TYPE_CHECKING:
+    from narwhals.typing import Frame
     from rich.console import Console as RichConsole
 
     from ape.types import BlockID, ContractCode, GasReport, SnapshotID, SourceTraceback
@@ -123,7 +119,9 @@ class BlockContainer(BaseManager):
         stop_block: Optional[int] = None,
         step: int = 1,
         engine_to_use: Optional[str] = None,
-    ) -> pd.DataFrame:
+        # TODO: add support to source this from Config
+        backend: str = "pandas",
+    ) -> "Frame":
         """
         A method for querying blocks and returning an Iterator. If you
         do not provide a starting block, the 0 block is assumed. If you do not
@@ -146,7 +144,7 @@ class BlockContainer(BaseManager):
               engine selection algorithm.
 
         Returns:
-            pd.DataFrame
+            :class:`~narwhals.typing.Frame`
         """
 
         if start_block < 0:
@@ -170,13 +168,17 @@ class BlockContainer(BaseManager):
             step=step,
         )
 
+        # TODO: In v0.9, just use `result.as_dataframe(backend=backend)` API
         blocks = self.query_manager.query(query, engine_to_use=engine_to_use)
         columns: list[str] = validate_and_expand_columns(  # type: ignore
             columns, self.head.__class__
         )
-        extraction = partial(extract_fields, columns=columns)
-        data = map(lambda b: extraction(b), blocks)
-        return pd.DataFrame(columns=columns, data=data)
+        data: dict[str, list] = {column: [] for column in columns}
+        for block in blocks:
+            for column in data:
+                data[column].append(getattr(block, column))
+
+        return nw.from_dict(data=data, backend=backend)
 
     def range(
         self,
@@ -351,7 +353,9 @@ class AccountHistory(BaseInterfaceModel):
         start_nonce: int = 0,
         stop_nonce: Optional[int] = None,
         engine_to_use: Optional[str] = None,
-    ) -> pd.DataFrame:
+        # TODO: add support to source this from Config
+        backend: str = "pandas",
+    ) -> "Frame":
         """
         A method for querying transactions made by an account and returning an Iterator.
         If you do not provide a starting nonce, the first transaction is assumed.
@@ -372,7 +376,7 @@ class AccountHistory(BaseInterfaceModel):
               engine selection algorithm.
 
         Returns:
-            pd.DataFrame
+            :class:`~narwhals.typing.Frame`
         """
 
         if start_nonce < 0:
@@ -396,11 +400,15 @@ class AccountHistory(BaseInterfaceModel):
             stop_nonce=stop_nonce,
         )
 
+        # TODO: In v0.9, just use `result.as_dataframe(backend=backend)` API
         txns = self.query_manager.query(query, engine_to_use=engine_to_use)
         columns = validate_and_expand_columns(columns, ReceiptAPI)  # type: ignore
-        extraction = partial(extract_fields, columns=columns)
-        data = map(lambda tx: extraction(tx), txns)
-        return pd.DataFrame(columns=columns, data=data)
+        data: dict[str, list] = {column: [] for column in columns}
+        for txn in txns:
+            for column in data:
+                data[column].append(getattr(txn, column))
+
+        return nw.from_dict(data=data, backend=backend)
 
     def __iter__(self) -> Iterator[ReceiptAPI]:  # type: ignore[override]
         yield from self.outgoing
