@@ -239,7 +239,7 @@ def test_uninstall(name, project):
     version = "4.4.2"
     dm = project.dependencies
     dependency = dm.get_dependency(name, version)
-    with dependency._cache.isolate_cache_changes():
+    with dependency._cache.isolate_changes():
         dependency.uninstall()
         assert not any(
             (d.name == name or d.package_id == name) and d.version == version for d in dm.installed

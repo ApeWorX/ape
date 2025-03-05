@@ -142,7 +142,7 @@ def test_source_path_in_project(project_with_contract):
 
 def test_source_path_out_of_project(solidity_contract_instance, project):
     solidity_contract_instance.base_path = None
-    with project.chdir():
+    with project.isolate_in_tempdir(chdir=True):
         assert not solidity_contract_instance.source_path
 
 

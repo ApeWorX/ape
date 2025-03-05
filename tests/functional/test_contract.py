@@ -81,13 +81,17 @@ def test_Contract_at_unknown_address(networks_connected_to_tester, address):
 
 
 def test_Contract_specify_contract_type(
-    solidity_contract_instance, project, owner, networks_connected_to_tester
+    vyper_contract_instance, solidity_contract_instance, owner, networks_connected_to_tester
 ):
+    """
+    When specifying a contract type, it merges it with the existing cached contract-type.
+    """
     # Solidity's contract type is very close to Vyper's.
     # This test purposely uses the other just to show we are able to specify it externally.
-    vyper_contract_type = project.VyperContract.contract_type
-    contract = Contract(solidity_contract_instance.address, contract_type=vyper_contract_type)
-    assert contract.address == solidity_contract_instance.address
-    assert contract.contract_type == vyper_contract_type
-    assert contract.setNumber(2, sender=owner)
-    assert contract.myNumber() == 2
+    solidity_contract_type = solidity_contract_instance.contract_type
+    contract = Contract(vyper_contract_instance.address, contract_type=solidity_contract_type)
+    assert contract.address == vyper_contract_instance.address
+
+    abis = [abi.name for abi in contract.contract_type.abi if hasattr(abi, "name")]
+    assert "setNumber" in abis  # Shared ABI.
+    assert "ACustomError" in abis  # SolidityContract-defined ABI.

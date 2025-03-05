@@ -485,11 +485,11 @@ def test_get_proxy(chain, owner, minimal_proxy_container, vyper_contract_instanc
     assert actual == minimal_proxy.contract_type
 
 
-def test_get_proxy_implementation_missing(chain, owner, vyper_contract_container):
+def test_get_proxy_implementation_missing(chain, owner, project):
     """
     Proxy is cached but implementation is missing.
     """
-    placeholder = vyper_contract_container.deploy(1001, sender=owner)
+    placeholder = project.VyperContract.deploy(1001, sender=owner)
     assert chain.contracts[placeholder.address]  # This must be cached!
 
     proxy_container = _make_minimal_proxy(placeholder.address)
@@ -529,7 +529,7 @@ def test_get_proxy_pass_proxy_info(chain, owner, minimal_proxy_container, ethere
 
 @explorer_test
 def test_get_proxy_pass_proxy_info_and_no_explorer(
-    chain, owner, proxy_contract_container, ethereum, dummy_live_network_with_explorer
+    chain, owner, project, ethereum, dummy_live_network_with_explorer
 ):
     """
     Tests the condition of both passing `proxy_info=` and setting `use_explorer=False`
@@ -540,7 +540,7 @@ def test_get_proxy_pass_proxy_info_and_no_explorer(
     if placeholder in chain.contracts:
         del chain.contracts[placeholder]
 
-    proxy = proxy_contract_container.deploy(placeholder, sender=owner, required_confirmations=0)
+    proxy = project.SimpleProxy.deploy(placeholder, sender=owner, required_confirmations=0)
     info = ProxyInfo(type=ProxyType.Minimal, target=placeholder)
     explorer.get_contract_type.reset_mock()
     chain.contracts.get(proxy.address, proxy_info=info, fetch_from_explorer=False)

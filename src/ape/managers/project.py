@@ -1815,8 +1815,13 @@ class Project(ProjectManager):
         """
         config_override = config_override or {}
         name = config_override.get("name", self.name)
+        chdir = config_override.pop("chdir", False)
         with create_tempdir(name=name) as path:
-            yield self.unpack(path, config_override=config_override)
+            if chdir:
+                with self.chdir(path):
+                    yield self.unpack(path, config_override=config_override)
+            else:
+                yield self.unpack(path, config_override=config_override)
 
     @contextmanager
     def temp_config(self, **config):
