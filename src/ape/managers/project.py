@@ -1565,7 +1565,7 @@ class DependencyManager(BaseManager):
             base_path (Path): The target path.
             cache_name (str): The cache folder name to create
               at the target path. Defaults to ``.cache`` because
-              that is what is what ``ape-solidity`` uses.
+              that is what ``ape-solidity`` uses.
         """
         cache_folder = base_path / cache_name
         for dependency in self.specified:
