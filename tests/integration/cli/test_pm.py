@@ -116,6 +116,36 @@ def test_install_config_override(pm_runner, integ_project):
     assert actual == "src"
 
 
+@skip_projects_except("with-contracts")
+def test_install_package_id(pm_runner, integ_project):
+    package_id = [x for x in integ_project.dependencies][0].package_id
+    result = pm_runner.invoke("install", package_id)
+    assert result.exit_code == 0, result.output
+
+
+@skip_projects_except("with-contracts")
+def test_install_name(pm_runner, integ_project):
+    name = [x for x in integ_project.dependencies][0].name
+    result = pm_runner.invoke("install", name)
+    assert result.exit_code == 0, result.output
+
+
+@skip_projects_except("with-contracts")
+def test_install_name_with_version_in_id(pm_runner, integ_project):
+    dependency = [x for x in integ_project.dependencies][0]
+    result = pm_runner.invoke("install", f"{dependency.name}@{dependency.version}")
+    assert result.exit_code == 0, result.output
+    assert f"Package '{dependency.name}@{dependency.version}' installed." in result.output
+
+
+@skip_projects_except("with-contracts")
+def test_install_name_with_version_flag(pm_runner, integ_project):
+    dependency = [x for x in integ_project.dependencies][0]
+    result = pm_runner.invoke("install", f"{dependency.name}", "--version", dependency.version)
+    assert result.exit_code == 0, result.output
+    assert f"Package '{dependency.name}@{dependency.version}' installed." in result.output
+
+
 @run_once
 def test_compile_package_not_exists(pm_runner, integ_project):
     pm_runner.project = integ_project

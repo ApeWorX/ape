@@ -151,7 +151,7 @@ def _package_callback(ctx, param, value):
     except Exception:
         pass
     else:
-        if path.is_file():
+        if path.exists():
             return _handle_package_path(path, original_value=value)
 
     if isinstance(value, str) and ":" in value:
