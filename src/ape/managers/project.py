@@ -1359,19 +1359,20 @@ class DependencyManager(BaseManager):
 
         return None
 
-    def get_versions(self, name: str) -> Iterator[Dependency]:
+    def get_versions(self, name: str, allow_install: bool = True) -> Iterator[Dependency]:
         """
         Get all installed versions of a dependency.
 
         Args:
             name (str): The name of the dependency.
+            allow_install (bool): Set to ``False`` to not allow installing.
 
         Returns:
             Iterator[:class:`~ape.managers.project.Dependency`]
         """
-        # First, check specified. Note: installs if needed.
+        # First, check specified.
         versions_yielded = set()
-        for dependency in self.get_project_dependencies(name=name):
+        for dependency in self.get_project_dependencies(name=name, allow_install=allow_install):
             if dependency.version in versions_yielded:
                 continue
 
