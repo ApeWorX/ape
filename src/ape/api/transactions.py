@@ -36,6 +36,7 @@ if TYPE_CHECKING:
     from ape.contracts import ContractEvent
     from ape.types.events import ContractLogContainer
     from ape.types.trace import SourceTraceback
+    from ape.utils.abi import CalldataRepr
 
 
 class TransactionAPI(BaseInterfaceModel):
@@ -183,26 +184,45 @@ class TransactionAPI(BaseInterfaceModel):
         return f"<{cls_name} {params}>"
 
     def __str__(self) -> str:
-        # NOTE: Using JSON mode for style.
-        data = self.model_dump(mode="json")
-        if len(data["data"]) > 9:
-            # only want to specify encoding if data["data"] is a string
-            if isinstance(data["data"], str):
-                data["data"] = (
+        return self.to_string()
+
+    def to_string(self, calldata_repr: Optional["CalldataRepr"] = None) -> str:
+        """
+        Get the stringified representation of the transaction.
+
+        Args:
+            calldata_repr (:class:`~ape.types.abi.CalldataRepr` | None): Pass "full"
+              to see the full calldata. Defaults to the value from the config.
+
+        Returns:
+            str
+        """
+        data = self.model_dump(mode="json")  # JSON mode used for style purposes.
+
+        if calldata_repr is None:
+            # If was not specified, use the default value from the config.
+            calldata_repr = self.local_project.config.display.calldata
+
+        if calldata_repr == "full" or len(data["data"]) <= 9:
+            data["data"] = (
+                to_hex(bytes(data["data"], encoding="utf8"))
+                if isinstance(data["data"], str)
+                else to_hex(bytes(data["data"]))
+            )
+
+        else:
+            # Only want to specify encoding if data["data"] is a string
+            data["data"] = (
+                (
                     "0x"
                     + bytes(data["data"][:4], encoding="utf8").hex()
                     + "..."
                     + bytes(data["data"][-4:], encoding="utf8").hex()
                 )
-            else:
-                data["data"] = (
-                    to_hex(bytes(data["data"][:4])) + "..." + to_hex(bytes(data["data"][-4:]))
-                )
-        else:
-            if isinstance(data["data"], str):
-                data["data"] = to_hex(bytes(data["data"], encoding="utf8"))
-            else:
-                data["data"] = to_hex(bytes(data["data"]))
+                if isinstance(data["data"], str)
+                else to_hex(bytes(data["data"][:4])) + "..." + to_hex(bytes(data["data"][-4:]))
+            )
+
         params = "\n  ".join(f"{k}: {v}" for k, v in data.items())
         cls_name = getattr(type(self), "__name__", TransactionAPI.__name__)
         return f"{cls_name}:\n  {params}"
