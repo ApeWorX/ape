@@ -7,7 +7,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="_static/pygments.css?v=397bb51e" />
-    <link rel="stylesheet" type="text/css" href="_static/shibuya.css?v=2831755e" />
+    <link rel="stylesheet" type="text/css" href="_static/shibuya.css?v=3b41e830" />
     <link media="print" rel="stylesheet" type="text/css" href="_static/print.css?v=20ff2c19" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -548,6 +548,8 @@ data-aria-dark="Switch to auto color mode">
 </li>
         <li><a href="methoddocs/api.html#ape.api.config.DeploymentConfig.__pydantic_computed_fields__">(ape.api.config.DeploymentConfig attribute)</a>
 </li>
+        <li><a href="methoddocs/api.html#ape.api.config.DisplayConfig.__pydantic_computed_fields__">(ape.api.config.DisplayConfig attribute)</a>
+</li>
         <li><a href="methoddocs/api.html#ape.api.config.PluginConfig.__pydantic_computed_fields__">(ape.api.config.PluginConfig attribute)</a>
 </li>
         <li><a href="methoddocs/api.html#ape.api.convert.ConverterAPI.__pydantic_computed_fields__">(ape.api.convert.ConverterAPI attribute)</a>
@@ -584,6 +586,8 @@ data-aria-dark="Switch to auto color mode">
       <ul>
         <li><a href="methoddocs/api.html#ape.api.config.DeploymentConfig.__pydantic_extra__">(ape.api.config.DeploymentConfig attribute)</a>
 </li>
+        <li><a href="methoddocs/api.html#ape.api.config.DisplayConfig.__pydantic_extra__">(ape.api.config.DisplayConfig attribute)</a>
+</li>
         <li><a href="methoddocs/api.html#ape.api.config.PluginConfig.__pydantic_extra__">(ape.api.config.PluginConfig attribute)</a>
 </li>
         <li><a href="methoddocs/api.html#ape.api.networks.ProxyInfoAPI.__pydantic_extra__">(ape.api.networks.ProxyInfoAPI attribute)</a>
@@ -617,6 +621,8 @@ data-aria-dark="Switch to auto color mode">
         <li><a href="methoddocs/api.html#ape.api.config.ApeConfig.__pydantic_fields__">(ape.api.config.ApeConfig attribute)</a>
 </li>
         <li><a href="methoddocs/api.html#ape.api.config.DeploymentConfig.__pydantic_fields__">(ape.api.config.DeploymentConfig attribute)</a>
+</li>
+        <li><a href="methoddocs/api.html#ape.api.config.DisplayConfig.__pydantic_fields__">(ape.api.config.DisplayConfig attribute)</a>
 </li>
         <li><a href="methoddocs/api.html#ape.api.config.PluginConfig.__pydantic_fields__">(ape.api.config.PluginConfig attribute)</a>
 </li>
@@ -656,6 +662,8 @@ data-aria-dark="Switch to auto color mode">
       <ul>
         <li><a href="methoddocs/api.html#ape.api.config.DeploymentConfig.__pydantic_fields_set__">(ape.api.config.DeploymentConfig attribute)</a>
 </li>
+        <li><a href="methoddocs/api.html#ape.api.config.DisplayConfig.__pydantic_fields_set__">(ape.api.config.DisplayConfig attribute)</a>
+</li>
         <li><a href="methoddocs/api.html#ape.api.config.PluginConfig.__pydantic_fields_set__">(ape.api.config.PluginConfig attribute)</a>
 </li>
         <li><a href="methoddocs/api.html#ape.api.networks.ProxyInfoAPI.__pydantic_fields_set__">(ape.api.networks.ProxyInfoAPI attribute)</a>
@@ -679,6 +687,8 @@ data-aria-dark="Switch to auto color mode">
 
       <ul>
         <li><a href="methoddocs/api.html#ape.api.config.DeploymentConfig.__pydantic_private__">(ape.api.config.DeploymentConfig attribute)</a>
+</li>
+        <li><a href="methoddocs/api.html#ape.api.config.DisplayConfig.__pydantic_private__">(ape.api.config.DisplayConfig attribute)</a>
 </li>
         <li><a href="methoddocs/api.html#ape.api.config.PluginConfig.__pydantic_private__">(ape.api.config.PluginConfig attribute)</a>
 </li>
@@ -758,6 +768,8 @@ data-aria-dark="Switch to auto color mode">
 </li>
         <li><a href="methoddocs/api.html#ape.api.config.DeploymentConfig.__signature__">(ape.api.config.DeploymentConfig attribute)</a>
 </li>
+        <li><a href="methoddocs/api.html#ape.api.config.DisplayConfig.__signature__">(ape.api.config.DisplayConfig attribute)</a>
+</li>
         <li><a href="methoddocs/api.html#ape.api.config.PluginConfig.__signature__">(ape.api.config.PluginConfig attribute)</a>
 </li>
         <li><a href="methoddocs/api.html#ape.api.convert.ConverterAPI.__signature__">(ape.api.convert.ConverterAPI attribute)</a>
@@ -818,6 +830,8 @@ data-aria-dark="Switch to auto color mode">
       <li><a href="methoddocs/exceptions.html#ape.exceptions.Abort">Abort</a>
 </li>
       <li><a href="methoddocs/cli.html#ape.cli.options.ApeCliContextObject.abort">abort() (ape.cli.options.ApeCliContextObject static method)</a>
+</li>
+      <li><a href="methoddocs/utils.html#ape.utils.abi.CalldataRepr.abridged">abridged (ape.utils.abi.CalldataRepr attribute)</a>
 </li>
       <li><a href="methoddocs/ape_ethereum.html#ape_ethereum.transactions.AccessList">AccessList (class in ape_ethereum.transactions)</a>
 </li>
@@ -1706,6 +1720,10 @@ data-aria-dark="Switch to auto color mode">
       </ul></li>
       <li><a href="methoddocs/contracts.html#ape.contracts.base.ContractInstance.call_view_method">call_view_method() (ape.contracts.base.ContractInstance method)</a>
 </li>
+      <li><a href="methoddocs/api.html#ape.api.config.DisplayConfig.calldata">calldata (ape.api.config.DisplayConfig attribute)</a>
+</li>
+      <li><a href="methoddocs/utils.html#ape.utils.abi.CalldataRepr">CalldataRepr (class in ape.utils.abi)</a>
+</li>
       <li><a href="methoddocs/ape_ethereum.html#ape_ethereum.trace.CallTrace">CallTrace (class in ape_ethereum.trace)</a>
 </li>
       <li><a href="methoddocs/managers.html#ape.managers.compilers.CompilerManager.can_trace_source">can_trace_source() (ape.managers.compilers.CompilerManager method)</a>
@@ -1853,10 +1871,10 @@ data-aria-dark="Switch to auto color mode">
         <li><a href="methoddocs/ape_test.html#ape_test.provider.LocalProvider.connect">(ape_test.provider.LocalProvider method)</a>
 </li>
       </ul></li>
-      <li><a href="methoddocs/managers.html#ape.managers.networks.NetworkManager.connected">connected (ape.managers.networks.NetworkManager property)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="methoddocs/managers.html#ape.managers.networks.NetworkManager.connected">connected (ape.managers.networks.NetworkManager property)</a>
+</li>
       <li><a href="methoddocs/cli.html#ape.cli.commands.ConnectedProviderCommand">ConnectedProviderCommand (class in ape.cli.commands)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.connection_id">connection_id (ape.api.providers.ProviderAPI property)</a>
@@ -2212,6 +2230,10 @@ data-aria-dark="Switch to auto color mode">
 </li>
       <li><a href="methoddocs/utils.html#ape.utils.basemodel.DiskCacheableModel">DiskCacheableModel (class in ape.utils.basemodel)</a>
 </li>
+      <li><a href="methoddocs/api.html#ape.api.config.ApeConfig.display">display (ape.api.config.ApeConfig attribute)</a>
+</li>
+      <li><a href="methoddocs/api.html#ape.api.config.DisplayConfig">DisplayConfig (class in ape.api.config)</a>
+</li>
       <li><a href="methoddocs/ape_ethereum.html#ape_ethereum.transactions.DynamicFeeTransaction">DynamicFeeTransaction (class in ape_ethereum.transactions)</a>
 </li>
   </ul></td>
@@ -2479,6 +2501,8 @@ data-aria-dark="Switch to auto color mode">
         <li><a href="methoddocs/contracts.html#ape.contracts.base.ContractInstance.from_receipt">(ape.contracts.base.ContractInstance class method)</a>
 </li>
       </ul></li>
+      <li><a href="methoddocs/utils.html#ape.utils.abi.CalldataRepr.full">full (ape.utils.abi.CalldataRepr attribute)</a>
+</li>
       <li><a href="methoddocs/types.html#ape.types.coverage.FunctionCoverage.full_name">full_name (ape.types.coverage.FunctionCoverage attribute)</a>
 </li>
       <li><a href="methoddocs/types.html#ape.types.coverage.ContractCoverage.function_hits">function_hits (ape.types.coverage.ContractCoverage property)</a>
@@ -4448,6 +4472,8 @@ data-aria-dark="Switch to auto color mode">
       <li><a href="methoddocs/managers.html#ape.managers.converters.TimestampConverter">TimestampConverter (class in ape.managers.converters)</a>
 </li>
       <li><a href="methoddocs/utils.html#ape.utils.misc.to_int">to_int() (in module ape.utils.misc)</a>
+</li>
+      <li><a href="methoddocs/api.html#ape.api.transactions.TransactionAPI.to_string">to_string() (ape.api.transactions.TransactionAPI method)</a>
 </li>
       <li><a href="methoddocs/types.html#ape.types.events.ContractLog.topics">topics (ape.types.events.ContractLog property)</a>
 </li>

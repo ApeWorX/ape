@@ -7,7 +7,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=397bb51e" />
-    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=2831755e" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=3b41e830" />
     <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -128,6 +128,11 @@ data-aria-dark="Switch to auto color mode">
     </button>
     <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
 <li><a class="reference internal" href="#module-ape.utils.abi">ABI</a><ul>
+<li><a class="reference internal" href="#ape.utils.abi.CalldataRepr"><code class="docutils literal notranslate"><span class="pre">CalldataRepr</span></code></a><ul>
+<li><a class="reference internal" href="#ape.utils.abi.CalldataRepr.abridged"><code class="docutils literal notranslate">abridged</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.abi.CalldataRepr.full"><code class="docutils literal notranslate">full</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#ape.utils.abi.Struct"><code class="docutils literal notranslate"><span class="pre">Struct</span></code></a><ul>
 <li><a class="reference internal" href="#ape.utils.abi.Struct.items"><code class="docutils literal notranslate">items()</span></code></a></li>
 </ul>
@@ -284,6 +289,26 @@ data-aria-dark="Switch to auto color mode">
 <h1>ape.utils<a class="headerlink" href="#ape-utils" title="Link to this heading"></a></h1>
 <section id="module-ape.utils.abi">
 <span id="abi"></span><h2>ABI<a class="headerlink" href="#module-ape.utils.abi" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.utils.abi.CalldataRepr">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.utils.abi.</span></span><span class="sig-name descname"><span class="pre">CalldataRepr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.abi.CalldataRepr" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<p>Control the display of calldata in Ape.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.utils.abi.CalldataRepr.abridged">
+<span class="sig-name descname"><span class="pre">abridged</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'abridged'</span></em><a class="headerlink" href="#ape.utils.abi.CalldataRepr.abridged" title="Link to this definition"></a></dt>
+<dd><p>Show the first and last 4-bytes of the calldata, enough
+to see the method ID.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.utils.abi.CalldataRepr.full">
+<span class="sig-name descname"><span class="pre">full</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'full'</span></em><a class="headerlink" href="#ape.utils.abi.CalldataRepr.full" title="Link to this definition"></a></dt>
+<dd><p>Show the full calldata.</p>
+</dd></dl>
+
+</dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="ape.utils.abi.Struct">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.utils.abi.</span></span><span class="sig-name descname"><span class="pre">Struct</span></span><a class="headerlink" href="#ape.utils.abi.Struct" title="Link to this definition"></a></dt>
