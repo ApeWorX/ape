@@ -46,7 +46,7 @@ These properties unlock valuable workflows such as:
 
 ```python
 # Verify contract ownership
-def is_creator(contract, address):
+def is_creator(contract, address) -> bool:
     """Check if an address is the creator of a contract"""
     metadata = contract.creation_metadata
     return metadata and metadata.deployer == address
