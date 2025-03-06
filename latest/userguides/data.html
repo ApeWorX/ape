@@ -2,7 +2,7 @@
 <html lang="en" data-accent-color="lime" data-content_root="../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Querying Data - ape documentation</title><link rel="shortcut icon" href="../_static/favicon.ico"/><link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Developing Plugins" href="developing_plugins.html" /><link rel="prev" title="CLIs" href="clis.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Querying Data - ape documentation</title><link rel="shortcut icon" href="../_static/favicon.ico"/><link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" />
       <link rel="canonical" href="ape/userguides/data.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
@@ -57,66 +57,7 @@ data-aria-dark="Switch to auto color mode">
   <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
     <div class="sy-lside-inner md:sticky">
       <div class="sy-scrollbar p-6">
-        <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading" aria-level="3"><span class="caption-text">User Guides</span></p>
-<ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="accounts.html">Accounts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="networks.html">Networks</a></li>
-<li class="toctree-l1"><a class="reference internal" href="forking_networks.html">Forking Networks</a></li>
-<li class="toctree-l1"><a class="reference internal" href="contracts.html">Contracts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="proxy.html">Proxy Contracts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="installing_plugins.html">Plugins</a></li>
-<li class="toctree-l1"><a class="reference internal" href="projects.html">Developing Projects with Ape</a></li>
-<li class="toctree-l1"><a class="reference internal" href="dependencies.html">Dependencies</a></li>
-<li class="toctree-l1"><a class="reference internal" href="config.html">Configure Ape</a></li>
-<li class="toctree-l1"><a class="reference internal" href="compile.html">Compile</a></li>
-<li class="toctree-l1"><a class="reference internal" href="console.html">Console</a></li>
-<li class="toctree-l1"><a class="reference internal" href="transactions.html">Transactions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="trace.html">Traces</a></li>
-<li class="toctree-l1"><a class="reference internal" href="scripts.html">Scripting</a></li>
-<li class="toctree-l1"><a class="reference internal" href="testing.html">Testing</a></li>
-<li class="toctree-l1"><a class="reference internal" href="reverts.html">Reverts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="publishing.html">Publishing</a></li>
-<li class="toctree-l1"><a class="reference internal" href="clis.html">CLIs</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Querying Data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="developing_plugins.html">Developing Plugins</a></li>
-<li class="toctree-l1"><a class="reference internal" href="logging.html">Logging</a></li>
-</ul>
-<p class="caption" role="heading" aria-level="3"><span class="caption-text">CLI Reference</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../commands/accounts.html">accounts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../commands/compile.html">compile</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../commands/console.html">console</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../commands/init.html">init</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../commands/networks.html">networks</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../commands/plugins.html">plugins</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../commands/pm.html">pm</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../commands/run.html">run</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../commands/test.html">test</a></li>
-</ul>
-<p class="caption" role="heading" aria-level="3"><span class="caption-text">Core Python Reference</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape.html">ape</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/api.html">ape.api</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/cli.html">ape.cli</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/contracts.html">ape.contracts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/exceptions.html">ape.exceptions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/managers.html">ape.managers</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/plugins.html">ape.plugins</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/types.html">ape.types</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/utils.html">ape.utils</a></li>
-</ul>
-<p class="caption" role="heading" aria-level="3"><span class="caption-text">Plugin Python Reference</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_accounts.html">ape-accounts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_compile.html">ape-compile</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_ethereum.html">ape-ethereum</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_ethereum.html#module-ape_ethereum.multicall">ape-ethereum.multicall</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_node.html">ape-node</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_pm.html">ape-pm</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_test.html">ape-test</a></li>
-</ul>
-
+        <div class="globaltoc" data-expand-depth="0">
         </div>
       </div>
     </div>
@@ -130,7 +71,6 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#getting-block-data">Getting Block Data</a></li>
 <li><a class="reference internal" href="#getting-account-transaction-data">Getting Account Transaction Data</a></li>
 <li><a class="reference internal" href="#getting-contract-event-data">Getting Contract Event Data</a></li>
-<li><a class="reference internal" href="#using-the-cache">Using the Cache</a></li>
 </ul>
 </div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
   </aside>
@@ -168,84 +108,62 @@ routed through our query management system, which incorporates data from many so
 your set of installed plugins.</p>
 <section id="getting-block-data">
 <h2>Getting Block Data<a class="headerlink" href="#getting-block-data" title="Link to this heading"></a></h2>
-<p>Use <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">console</span></code>:</p>
+<p>Use <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">console</span></code> to connect to a network:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>console<span class="w"> </span>--network<span class="w"> </span>ethereum:mainnet:infura
 </span></pre></div>
 </div>
-<p>Run a few queries:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="n">df</span> <span class="o">=</span> <span class="n">chain</span><span class="o">.</span><span class="n">blocks</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">,</span> <span class="n">stop_block</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
-</span><span data-line="2"><span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="n">chain</span><span class="o">.</span><span class="n">blocks</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">transactions</span>  <span class="c1"># List of transactions in block</span>
+<p>Run block queries:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="c1"># Query the first 20 blocks with all fields</span>
+</span><span data-line="2"><span class="n">df</span> <span class="o">=</span> <span class="n">chain</span><span class="o">.</span><span class="n">blocks</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">,</span> <span class="n">stop_block</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+</span><span data-line="3">
+</span><span data-line="4"><span class="c1"># Get specific fields from blocks</span>
+</span><span data-line="5"><span class="n">df</span> <span class="o">=</span> <span class="n">chain</span><span class="o">.</span><span class="n">blocks</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;number,timestamp,gas_used&quot;</span><span class="p">,</span> <span class="n">start_block</span><span class="o">=</span><span class="mi">16_000_000</span><span class="p">,</span> <span class="n">stop_block</span><span class="o">=</span><span class="mi">16_000_100</span><span class="p">)</span>
+</span><span data-line="6">
+</span><span data-line="7"><span class="c1"># Access individual blocks</span>
+</span><span data-line="8"><span class="n">latest_block</span> <span class="o">=</span> <span class="n">chain</span><span class="o">.</span><span class="n">blocks</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+</span><span data-line="9"><span class="n">previous_block</span> <span class="o">=</span> <span class="n">chain</span><span class="o">.</span><span class="n">blocks</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+</span><span data-line="10">
+</span><span data-line="11"><span class="c1"># Access transactions in a block</span>
+</span><span data-line="12"><span class="n">transactions</span> <span class="o">=</span> <span class="n">previous_block</span><span class="o">.</span><span class="n">transactions</span>
 </span></pre></div>
 </div>
 </section>
 <section id="getting-account-transaction-data">
 <h2>Getting Account Transaction Data<a class="headerlink" href="#getting-account-transaction-data" title="Link to this heading"></a></h2>
-<p>Each account within ape will also fetch and store transactional data that you can query.
-To work with an account’s transaction data, you can do stuff like this:</p>
+<p>Each account within Ape fetches and stores transactional data that you can query.
+To work with an account’s transaction history:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">chain</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="n">chain</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="s2">&quot;example.eth&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;value&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>  <span class="c1"># All value sent by this address</span>
-</span><span data-line="4"><span class="n">acct</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;my-acct&quot;</span><span class="p">)</span>
-</span><span data-line="5"><span class="n">tx</span> <span class="o">=</span> <span class="n">acct</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># Last txn `acct` made</span>
-</span><span data-line="6"><span class="n">acct</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;total_fees_paid&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>  <span class="c1"># Sum of ether paid for fees by `acct`</span>
+</span><span data-line="3"><span class="c1"># Query by ENS name</span>
+</span><span data-line="4"><span class="n">total_value</span> <span class="o">=</span> <span class="n">chain</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="s2">&quot;example.eth&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;value&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>  <span class="c1"># All value sent by this address</span>
+</span><span data-line="5">
+</span><span data-line="6"><span class="c1"># Query by account object</span>
+</span><span data-line="7"><span class="n">acct</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;harambe&quot;</span><span class="p">)</span>
+</span><span data-line="8"><span class="n">tx</span> <span class="o">=</span> <span class="n">acct</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># Last transaction `harambe` made</span>
+</span><span data-line="9">
+</span><span data-line="10"><span class="c1"># Sum total fees paid</span>
+</span><span data-line="11"><span class="n">fees_paid</span> <span class="o">=</span> <span class="n">acct</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;total_fees_paid&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>  <span class="c1"># Sum of ether paid for fees</span>
 </span></pre></div>
 </div>
 </section>
 <section id="getting-contract-event-data">
 <h2>Getting Contract Event Data<a class="headerlink" href="#getting-contract-event-data" title="Link to this heading"></a></h2>
-<p>On a deployed contract, you can query event history.</p>
-<p>For example, we have a contract with a <code class="docutils literal notranslate"><span class="pre">FooHappened</span></code> event that you want to query from.
-This is how you would query the args from an event:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="n">df</span> <span class="o">=</span> <span class="n">contract_instance</span><span class="o">.</span><span class="n">FooHappened</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">,</span> <span class="n">start_block</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+<p>On a deployed contract, you can query event history:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="c1"># Query all fields from a specific event</span>
+</span><span data-line="2"><span class="n">df</span> <span class="o">=</span> <span class="n">contract_instance</span><span class="o">.</span><span class="n">FooHappened</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">)</span>
+</span><span data-line="3">
+</span><span data-line="4"><span class="c1"># Query specific event fields</span>
+</span><span data-line="5"><span class="n">df</span> <span class="o">=</span> <span class="n">contract_instance</span><span class="o">.</span><span class="n">Transfer</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;from_,to,value&quot;</span><span class="p">,</span> <span class="n">start_block</span><span class="o">=-</span><span class="mi">1000</span><span class="p">)</span>
+</span><span data-line="6">
+</span><span data-line="7"><span class="c1"># Filter high-value transfers (example with ERC-20 token)</span>
+</span><span data-line="8"><span class="n">high_value_transfers</span> <span class="o">=</span> <span class="n">contract_instance</span><span class="o">.</span><span class="n">Transfer</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;from_,to,value&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;value &gt; 1000000&quot;</span><span class="p">)</span>
+</span><span data-line="9">
+</span><span data-line="10"><span class="c1"># Query by block range</span>
+</span><span data-line="11"><span class="n">events</span> <span class="o">=</span> <span class="n">contract_instance</span><span class="o">.</span><span class="n">FooHappened</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">,</span> <span class="n">start_block</span><span class="o">=</span><span class="mi">15_000_000</span><span class="p">,</span> <span class="n">stop_block</span><span class="o">=</span><span class="mi">15_100_000</span><span class="p">)</span>
 </span></pre></div>
 </div>
-<p>where <code class="docutils literal notranslate"><span class="pre">contract_instance</span></code> is the return value of <code class="docutils literal notranslate"><span class="pre">owner.deploy(MyContract)</span></code></p>
-<p>See <a class="reference external" href="../userguides/contracts.html">this guide</a> for more information how to deploy or load contracts.</p>
-</section>
-<section id="using-the-cache">
-<h2>Using the Cache<a class="headerlink" href="#using-the-cache" title="Link to this heading"></a></h2>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This is in Beta release.
-This functionality is in constant development and many features are in planning stages.
-Use the cache plugin to store provider data in a sqlite database.</p>
-</div>
-<p>To use the cache, first you must initialize it for each network you plan on caching data for:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>cache<span class="w"> </span>init<span class="w"> </span>--network<span class="w"> </span>&lt;ecosystem-name&gt;:&lt;network-name&gt;
-</span></pre></div>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Caching only works for permanently available networks.
-It will not work with local development networks.</p>
-</div>
-<p>For example, to initialize the cache database for the Ethereum mainnet network, you would do the following:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>cache<span class="w"> </span>init<span class="w"> </span>--network<span class="w"> </span>ethereum:mainnet
-</span></pre></div>
-</div>
-<p>This creates a SQLite database file in ape’s data folder inside your home directory.</p>
-<p>You can query the cache database directly, for debugging purposes.
-The cache database has the following tables:</p>
-<div class="table-wrapper colwidths-auto docutils container">
-<table class="docutils align-default">
-<thead>
-<tr class="row-odd"><th class="head"><p>Table Name</p></th>
-<th class="head"><p>Dataclass base</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">blocks</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">BlockAPI</span></code></p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">transactions</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">ReceiptAPI</span></code></p></td>
-</tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">contract_events</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">ContractLog</span></code></p></td>
-</tr>
-</tbody>
-</table>
-</div>
+<p>Where <code class="docutils literal notranslate"><span class="pre">contract_instance</span></code> is the return value of <code class="docutils literal notranslate"><span class="pre">owner.deploy(MyContract)</span></code> or <code class="docutils literal notranslate"><span class="pre">Contract(&quot;0x...&quot;)</span></code></p>
+<p>See <a class="reference external" href="../userguides/contracts.html">this guide</a> for more information on how to deploy or load contracts.</p>
 </section>
 </section>
 
@@ -254,21 +172,7 @@ The cache database has the following tables:</p>
     <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
   </svg>
   <span>Back to top</span>
-</button><div class="navigation flex print:hidden"><div class="navigation-prev">
-    <a href="clis.html">
-      <i class="i-lucide chevron-left"></i>
-      <div class="page-info">
-        <span>Previous</span><div class="title">CLIs</div></div>
-    </a>
-  </div><div class="navigation-next">
-    <a href="developing_plugins.html">
-      <div class="page-info">
-        <span>Next</span>
-        <div class="title">Developing Plugins</div>
-      </div>
-      <i class="i-lucide chevron-right"></i>
-    </a>
-  </div></div></div>
+</button><div class="navigation flex print:hidden"></div></div>
     </div>
   </main>
 </div>

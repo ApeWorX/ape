@@ -2,7 +2,7 @@
 <html lang="en" data-accent-color="lime" data-content_root="../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Proxy Contracts - ape documentation</title><link rel="shortcut icon" href="../_static/favicon.ico"/><link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Plugins" href="installing_plugins.html" /><link rel="prev" title="Contracts" href="contracts.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Proxy Contracts - ape documentation</title><link rel="shortcut icon" href="../_static/favicon.ico"/><link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" />
       <link rel="canonical" href="ape/userguides/proxy.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
@@ -57,66 +57,7 @@ data-aria-dark="Switch to auto color mode">
   <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
     <div class="sy-lside-inner md:sticky">
       <div class="sy-scrollbar p-6">
-        <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading" aria-level="3"><span class="caption-text">User Guides</span></p>
-<ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="accounts.html">Accounts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="networks.html">Networks</a></li>
-<li class="toctree-l1"><a class="reference internal" href="forking_networks.html">Forking Networks</a></li>
-<li class="toctree-l1"><a class="reference internal" href="contracts.html">Contracts</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Proxy Contracts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="installing_plugins.html">Plugins</a></li>
-<li class="toctree-l1"><a class="reference internal" href="projects.html">Developing Projects with Ape</a></li>
-<li class="toctree-l1"><a class="reference internal" href="dependencies.html">Dependencies</a></li>
-<li class="toctree-l1"><a class="reference internal" href="config.html">Configure Ape</a></li>
-<li class="toctree-l1"><a class="reference internal" href="compile.html">Compile</a></li>
-<li class="toctree-l1"><a class="reference internal" href="console.html">Console</a></li>
-<li class="toctree-l1"><a class="reference internal" href="transactions.html">Transactions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="trace.html">Traces</a></li>
-<li class="toctree-l1"><a class="reference internal" href="scripts.html">Scripting</a></li>
-<li class="toctree-l1"><a class="reference internal" href="testing.html">Testing</a></li>
-<li class="toctree-l1"><a class="reference internal" href="reverts.html">Reverts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="publishing.html">Publishing</a></li>
-<li class="toctree-l1"><a class="reference internal" href="clis.html">CLIs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="data.html">Querying Data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="developing_plugins.html">Developing Plugins</a></li>
-<li class="toctree-l1"><a class="reference internal" href="logging.html">Logging</a></li>
-</ul>
-<p class="caption" role="heading" aria-level="3"><span class="caption-text">CLI Reference</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../commands/accounts.html">accounts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../commands/compile.html">compile</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../commands/console.html">console</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../commands/init.html">init</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../commands/networks.html">networks</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../commands/plugins.html">plugins</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../commands/pm.html">pm</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../commands/run.html">run</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../commands/test.html">test</a></li>
-</ul>
-<p class="caption" role="heading" aria-level="3"><span class="caption-text">Core Python Reference</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape.html">ape</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/api.html">ape.api</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/cli.html">ape.cli</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/contracts.html">ape.contracts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/exceptions.html">ape.exceptions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/managers.html">ape.managers</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/plugins.html">ape.plugins</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/types.html">ape.types</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/utils.html">ape.utils</a></li>
-</ul>
-<p class="caption" role="heading" aria-level="3"><span class="caption-text">Plugin Python Reference</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_accounts.html">ape-accounts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_compile.html">ape-compile</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_ethereum.html">ape-ethereum</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_ethereum.html#module-ape_ethereum.multicall">ape-ethereum.multicall</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_node.html">ape-node</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_pm.html">ape-pm</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_test.html">ape-test</a></li>
-</ul>
-
+        <div class="globaltoc" data-expand-depth="0">
         </div>
       </div>
     </div>
@@ -126,7 +67,11 @@ data-aria-dark="Switch to auto color mode">
     <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
       <i class="i-lucide close"></i>
     </button>
-    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#automatic-proxy-detection">Automatic Proxy Detection</a></li>
+<li><a class="reference internal" href="#manual-proxy-configuration">Manual Proxy Configuration</a></li>
+</ul>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
   </aside>
   <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
   <main class="sy-main w-full max-sm:max-w-full print:pt-6"><div class="sy-breadcrumbs" role="navigation">
@@ -202,12 +147,15 @@ The following proxies are supported in <code class="docutils literal notranslate
 </tbody>
 </table>
 </div>
+<section id="automatic-proxy-detection">
+<h2>Automatic Proxy Detection<a class="headerlink" href="#automatic-proxy-detection" title="Link to this heading"></a></h2>
 <p>Proxy detection occurs when attempting to retrieve contract types in Ape.
 Ape uses various sources to find contract types, such as explorer APIs.
 See <a class="reference external" href="./contracts.html">this guide</a> to learn more about initializing contracts.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">Contract</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="n">my_contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span><span class="s2">&quot;0x...&quot;</span><span class="p">)</span>
+</span><span data-line="3"><span class="c1"># Automatic proxy detection (default behavior)</span>
+</span><span data-line="4"><span class="n">my_contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span><span class="s2">&quot;0x...&quot;</span><span class="p">)</span>
 </span></pre></div>
 </div>
 <p>Ape will check the address you give it and detect if it hosts a proxy contract.
@@ -219,27 +167,61 @@ This allows you to still call methods as you normally do on proxy contracts.</p>
 </span></pre></div>
 </div>
 </section>
+<section id="manual-proxy-configuration">
+<h2>Manual Proxy Configuration<a class="headerlink" href="#manual-proxy-configuration" title="Link to this heading"></a></h2>
+<p>If you need more control over proxy behavior, you can manually specify proxy information when creating contract instances with <code class="docutils literal notranslate"><span class="pre">ContractContainer.at()</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">project</span>
+</span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.api.networks</span><span class="w"> </span><span class="kn">import</span> <span class="n">ProxyInfoAPI</span>
+</span><span data-line="3"><span class="kn">from</span><span class="w"> </span><span class="nn">ape_ethereum.proxies</span><span class="w"> </span><span class="kn">import</span> <span class="n">ProxyInfo</span><span class="p">,</span> <span class="n">ProxyType</span>
+</span><span data-line="4">
+</span><span data-line="5"><span class="c1"># Create proxy info with implementation address</span>
+</span><span data-line="6"><span class="n">proxy_info</span> <span class="o">=</span> <span class="n">ProxyInfo</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="s2">&quot;0x1234567890123456789012345678901234567890&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">ProxyType</span><span class="o">.</span><span class="n">STANDARD</span><span class="p">)</span>
+</span><span data-line="7">
+</span><span data-line="8"><span class="c1"># Create contract instance with manual proxy configuration</span>
+</span><span data-line="9"><span class="n">contract</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">MyImplementation</span><span class="o">.</span><span class="n">at</span><span class="p">(</span>
+</span><span data-line="10">    <span class="s2">&quot;0xProxyAddress&quot;</span><span class="p">,</span>
+</span><span data-line="11">    <span class="c1"># Provide proxy information manually</span>
+</span><span data-line="12">    <span class="n">proxy_info</span><span class="o">=</span><span class="n">proxy_info</span><span class="p">,</span>
+</span><span data-line="13"><span class="p">)</span>
+</span><span data-line="14">
+</span><span data-line="15"><span class="c1"># Or disable proxy detection entirely if you know it&#39;s not a proxy</span>
+</span><span data-line="16"><span class="n">contract</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="o">.</span><span class="n">at</span><span class="p">(</span>
+</span><span data-line="17">    <span class="s2">&quot;0xAddress&quot;</span><span class="p">,</span>
+</span><span data-line="18">    <span class="n">detect_proxy</span><span class="o">=</span><span class="kc">False</span>
+</span><span data-line="19"><span class="p">)</span>
+</span></pre></div>
+</div>
+<p>You can also use the <code class="docutils literal notranslate"><span class="pre">Contract</span></code> factory with proxy parameters:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">Contract</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="c1"># Disable proxy detection</span>
+</span><span data-line="4"><span class="n">contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span><span class="s2">&quot;0xAddress&quot;</span><span class="p">,</span> <span class="n">detect_proxy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span><span data-line="5">
+</span><span data-line="6"><span class="c1"># Provide custom proxy info</span>
+</span><span data-line="7"><span class="n">contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span>
+</span><span data-line="8">    <span class="s2">&quot;0xProxyAddress&quot;</span><span class="p">,</span> 
+</span><span data-line="9">    <span class="n">proxy_info</span><span class="o">=</span><span class="n">ProxyInfoAPI</span><span class="p">(</span>
+</span><span data-line="10">        <span class="n">target</span><span class="o">=</span><span class="s2">&quot;0xImplementationAddress&quot;</span><span class="p">,</span> 
+</span><span data-line="11">        <span class="n">type_name</span><span class="o">=</span><span class="n">ProxyType</span><span class="o">.</span><span class="n">STANDARD</span>
+</span><span data-line="12">    <span class="p">)</span>
+</span><span data-line="13"><span class="p">)</span>
+</span></pre></div>
+</div>
+<p>This is particularly useful when:</p>
+<ol class="arabic simple">
+<li><p>Automatic detection fails to identify a proxy contract</p></li>
+<li><p>You want to force a specific implementation address</p></li>
+<li><p>You’re working with a custom or unusual proxy pattern</p></li>
+</ol>
+</section>
+</section>
 
         </article><button class="back-to-top" type="button">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
     <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
   </svg>
   <span>Back to top</span>
-</button><div class="navigation flex print:hidden"><div class="navigation-prev">
-    <a href="contracts.html">
-      <i class="i-lucide chevron-left"></i>
-      <div class="page-info">
-        <span>Previous</span><div class="title">Contracts</div></div>
-    </a>
-  </div><div class="navigation-next">
-    <a href="installing_plugins.html">
-      <div class="page-info">
-        <span>Next</span>
-        <div class="title">Plugins</div>
-      </div>
-      <i class="i-lucide chevron-right"></i>
-    </a>
-  </div></div></div>
+</button><div class="navigation flex print:hidden"></div></div>
     </div>
   </main>
 </div>

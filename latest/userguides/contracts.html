@@ -2,7 +2,7 @@
 <html lang="en" data-accent-color="lime" data-content_root="../">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Contracts - ape documentation</title><link rel="shortcut icon" href="../_static/favicon.ico"/><link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Proxy Contracts" href="proxy.html" /><link rel="prev" title="Forking Networks" href="forking_networks.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Contracts - ape documentation</title><link rel="shortcut icon" href="../_static/favicon.ico"/><link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" />
       <link rel="canonical" href="ape/userguides/contracts.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
@@ -57,66 +57,7 @@ data-aria-dark="Switch to auto color mode">
   <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
     <div class="sy-lside-inner md:sticky">
       <div class="sy-scrollbar p-6">
-        <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading" aria-level="3"><span class="caption-text">User Guides</span></p>
-<ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="accounts.html">Accounts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="networks.html">Networks</a></li>
-<li class="toctree-l1"><a class="reference internal" href="forking_networks.html">Forking Networks</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Contracts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="proxy.html">Proxy Contracts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="installing_plugins.html">Plugins</a></li>
-<li class="toctree-l1"><a class="reference internal" href="projects.html">Developing Projects with Ape</a></li>
-<li class="toctree-l1"><a class="reference internal" href="dependencies.html">Dependencies</a></li>
-<li class="toctree-l1"><a class="reference internal" href="config.html">Configure Ape</a></li>
-<li class="toctree-l1"><a class="reference internal" href="compile.html">Compile</a></li>
-<li class="toctree-l1"><a class="reference internal" href="console.html">Console</a></li>
-<li class="toctree-l1"><a class="reference internal" href="transactions.html">Transactions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="trace.html">Traces</a></li>
-<li class="toctree-l1"><a class="reference internal" href="scripts.html">Scripting</a></li>
-<li class="toctree-l1"><a class="reference internal" href="testing.html">Testing</a></li>
-<li class="toctree-l1"><a class="reference internal" href="reverts.html">Reverts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="publishing.html">Publishing</a></li>
-<li class="toctree-l1"><a class="reference internal" href="clis.html">CLIs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="data.html">Querying Data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="developing_plugins.html">Developing Plugins</a></li>
-<li class="toctree-l1"><a class="reference internal" href="logging.html">Logging</a></li>
-</ul>
-<p class="caption" role="heading" aria-level="3"><span class="caption-text">CLI Reference</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../commands/accounts.html">accounts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../commands/compile.html">compile</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../commands/console.html">console</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../commands/init.html">init</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../commands/networks.html">networks</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../commands/plugins.html">plugins</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../commands/pm.html">pm</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../commands/run.html">run</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../commands/test.html">test</a></li>
-</ul>
-<p class="caption" role="heading" aria-level="3"><span class="caption-text">Core Python Reference</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape.html">ape</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/api.html">ape.api</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/cli.html">ape.cli</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/contracts.html">ape.contracts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/exceptions.html">ape.exceptions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/managers.html">ape.managers</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/plugins.html">ape.plugins</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/types.html">ape.types</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/utils.html">ape.utils</a></li>
-</ul>
-<p class="caption" role="heading" aria-level="3"><span class="caption-text">Plugin Python Reference</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_accounts.html">ape-accounts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_compile.html">ape-compile</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_ethereum.html">ape-ethereum</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_ethereum.html#module-ape_ethereum.multicall">ape-ethereum.multicall</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_node.html">ape-node</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_pm.html">ape-pm</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_test.html">ape-test</a></li>
-</ul>
-
+        <div class="globaltoc" data-expand-depth="0">
         </div>
       </div>
     </div>
@@ -133,7 +74,6 @@ data-aria-dark="Switch to auto color mode">
 </ul>
 </li>
 <li><a class="reference internal" href="#from-project-contract-address">From Project Contract Address</a></li>
-<li><a class="reference internal" href="#from-any-address">From Any Address</a></li>
 <li><a class="reference internal" href="#from-abis">From ABIs</a></li>
 <li><a class="reference internal" href="#from-previous-deployment">From Previous Deployment</a></li>
 <li><a class="reference internal" href="#contract-interaction">Contract Interaction</a><ul>
@@ -260,15 +200,17 @@ More information on publishing contracts can be found in <a class="reference ext
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">project</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="n">contract</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="o">.</span><span class="n">at</span><span class="p">(</span><span class="s2">&quot;0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45&quot;</span><span class="p">)</span>
-</span></pre></div>
-</div>
-</section>
-<section id="from-any-address">
-<h2>From Any Address<a class="headerlink" href="#from-any-address" title="Link to this heading"></a></h2>
-<p>If you already know the address of a contract, you can create instances of it using the <code class="docutils literal notranslate"><span class="pre">Contract</span></code> top-level factory:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">Contract</span>
-</span><span data-line="2">
-</span><span data-line="3"><span class="n">contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span><span class="s2">&quot;0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45&quot;</span><span class="p">)</span>
+</span><span data-line="4">
+</span><span data-line="5"><span class="n">By</span> <span class="n">default</span><span class="p">,</span> <span class="n">Ape</span> <span class="n">will</span> <span class="n">detect</span> <span class="k">if</span> <span class="n">the</span> <span class="n">contract</span> <span class="ow">is</span> <span class="n">a</span> <span class="n">proxy</span> <span class="ow">and</span> <span class="n">use</span> <span class="n">the</span> <span class="n">implementation</span> <span class="n">contract</span><span class="s1">&#39;s interface. See the [Proxy Contracts guide](./proxy.html) for more details on proxy handling.</span>
+</span><span data-line="6">
+</span><span data-line="7"><span class="c1">## From Any Address</span>
+</span><span data-line="8">
+</span><span data-line="9"><span class="n">If</span> <span class="n">you</span> <span class="n">already</span> <span class="n">know</span> <span class="n">the</span> <span class="n">address</span> <span class="n">of</span> <span class="n">a</span> <span class="n">contract</span><span class="p">,</span> <span class="n">you</span> <span class="n">can</span> <span class="n">create</span> <span class="n">instances</span> <span class="n">of</span> <span class="n">it</span> <span class="n">using</span> <span class="n">the</span> <span class="err">`</span><span class="n">Contract</span><span class="err">`</span> <span class="n">top</span><span class="o">-</span><span class="n">level</span> <span class="n">factory</span><span class="p">:</span>
+</span><span data-line="10">
+</span><span data-line="11"><span class="err">```</span><span class="n">python</span>
+</span><span data-line="12"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">Contract</span>
+</span><span data-line="13">
+</span><span data-line="14"><span class="n">contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span><span class="s2">&quot;0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45&quot;</span><span class="p">)</span>
 </span></pre></div>
 </div>
 <p>If the contract ABI and/or code is cached on disk or in memory (such as from a previous deploy or retrieval), it will use it.
@@ -564,20 +506,29 @@ Multicall allows you to group function calls and transactions into a single call
 </span><span data-line="8">    <span class="c1"># Use multi-call.</span>
 </span><span data-line="9">    <span class="n">call</span> <span class="o">=</span> <span class="n">multicall</span><span class="o">.</span><span class="n">Call</span><span class="p">()</span>
 </span><span data-line="10">    <span class="k">for</span> <span class="n">pool</span> <span class="ow">in</span> <span class="n">POOLS</span><span class="p">:</span>
-</span><span data-line="11">        <span class="n">call</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">pool</span><span class="o">.</span><span class="n">getReserves</span><span class="p">)</span>
-</span><span data-line="12">
-</span><span data-line="13">    <span class="nb">print</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">call</span><span class="p">()))</span>
-</span><span data-line="14">
-</span><span data-line="15">    <span class="c1"># Use multi-transaction.</span>
-</span><span data-line="16">    <span class="n">tx</span> <span class="o">=</span> <span class="n">multicall</span><span class="o">.</span><span class="n">Transaction</span><span class="p">()</span>
-</span><span data-line="17">    <span class="k">for</span> <span class="n">pool</span> <span class="ow">in</span> <span class="n">POOLS</span><span class="p">:</span>
-</span><span data-line="18">        <span class="n">tx</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">pool</span><span class="o">.</span><span class="n">ApplyDiscount</span><span class="p">,</span> <span class="mi">123</span><span class="p">)</span>
-</span><span data-line="19">
-</span><span data-line="20">    <span class="n">acct</span> <span class="o">=</span> <span class="n">ape</span><span class="o">.</span><span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;signer&quot;</span><span class="p">)</span>
-</span><span data-line="21">    <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">tx</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">acct</span><span class="p">):</span>
-</span><span data-line="22">        <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+</span><span data-line="11">        <span class="c1"># By default allowFailure=True, so the multicall continues even if one call fails</span>
+</span><span data-line="12">        <span class="n">call</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">pool</span><span class="o">.</span><span class="n">getReserves</span><span class="p">)</span>
+</span><span data-line="13">        
+</span><span data-line="14">        <span class="c1"># To require a call to succeed (revert entire multicall if this call fails)</span>
+</span><span data-line="15">        <span class="n">call</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">pool</span><span class="o">.</span><span class="n">anotherMethod</span><span class="p">,</span> <span class="n">allowFailure</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span><span data-line="16">
+</span><span data-line="17">    <span class="nb">print</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">call</span><span class="p">()))</span>
+</span><span data-line="18">
+</span><span data-line="19">    <span class="c1"># Use multi-transaction.</span>
+</span><span data-line="20">    <span class="n">tx</span> <span class="o">=</span> <span class="n">multicall</span><span class="o">.</span><span class="n">Transaction</span><span class="p">()</span>
+</span><span data-line="21">    <span class="k">for</span> <span class="n">pool</span> <span class="ow">in</span> <span class="n">POOLS</span><span class="p">:</span>
+</span><span data-line="22">        <span class="c1"># Same allowFailure option for transactions</span>
+</span><span data-line="23">        <span class="n">tx</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">pool</span><span class="o">.</span><span class="n">ApplyDiscount</span><span class="p">,</span> <span class="mi">123</span><span class="p">,</span> <span class="n">allowFailure</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span data-line="24">        
+</span><span data-line="25">        <span class="c1"># For payable functions, you can also specify value</span>
+</span><span data-line="26">        <span class="n">tx</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">pool</span><span class="o">.</span><span class="n">deposit</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+</span><span data-line="27">
+</span><span data-line="28">    <span class="n">acct</span> <span class="o">=</span> <span class="n">ape</span><span class="o">.</span><span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;signer&quot;</span><span class="p">)</span>
+</span><span data-line="29">    <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">tx</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">acct</span><span class="p">):</span>
+</span><span data-line="30">        <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
 </span></pre></div>
 </div>
+<p>When using <code class="docutils literal notranslate"><span class="pre">allowFailure=True</span></code> (the default), if a specific call in the multicall fails, the overall multicall will still succeed and the result for the failed call will be <code class="docutils literal notranslate"><span class="pre">None</span></code>. This is useful when you want to batch multiple calls together and don’t want the entire batch to fail if just one call fails.</p>
 </section>
 </section>
 
@@ -586,21 +537,7 @@ Multicall allows you to group function calls and transactions into a single call
     <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
   </svg>
   <span>Back to top</span>
-</button><div class="navigation flex print:hidden"><div class="navigation-prev">
-    <a href="forking_networks.html">
-      <i class="i-lucide chevron-left"></i>
-      <div class="page-info">
-        <span>Previous</span><div class="title">Forking Networks</div></div>
-    </a>
-  </div><div class="navigation-next">
-    <a href="proxy.html">
-      <div class="page-info">
-        <span>Next</span>
-        <div class="title">Proxy Contracts</div>
-      </div>
-      <i class="i-lucide chevron-right"></i>
-    </a>
-  </div></div></div>
+</button><div class="navigation flex print:hidden"></div></div>
     </div>
   </main>
 </div>
