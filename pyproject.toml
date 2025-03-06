@@ -6,9 +6,8 @@ contracts_folder = "tests/functional/data/contracts"
 
 [[tool.ape.dependencies]]
 name = "openzeppelin"
-version = "4.4.2"
+version = "4.9.6"
 github = "OpenZeppelin/openzeppelin-contracts"
-config_override = { "solidity" = { "version" = "0.8.22" } }
 
 [[tool.ape.dependencies]]
 name = "openzeppelin"

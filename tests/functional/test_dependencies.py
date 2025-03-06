@@ -69,16 +69,16 @@ def test_dependency_with_multiple_versions(project):
     dm = project.dependencies
 
     # We can get both projects at once! One for each version.
-    oz_442 = dm.get_dependency(
+    oz_496 = dm.get_dependency(
         name,
-        "4.4.2",
+        "4.9.6",
     )
     oz_520 = dm.get_dependency(name, "5.2.0")
     base_uri = "https://github.com/OpenZeppelin/openzeppelin-contracts/releases/tag"
 
-    assert oz_442.version == "4.4.2"
-    assert oz_442.name == name
-    assert str(oz_442.uri) == f"{base_uri}/v4.4.2"
+    assert oz_496.version == "4.9.6"
+    assert oz_496.name == name
+    assert str(oz_496.uri) == f"{base_uri}/v4.9.6"
     assert oz_520.version == "5.2.0"
     assert oz_520.name == name
     assert str(oz_520.uri) == f"{base_uri}/v5.2.0"
@@ -108,17 +108,17 @@ def test_uri_map(project_with_dependency_config):
 
 def test_get_dependency_by_package_id(project):
     dm = project.dependencies
-    actual = dm.get_dependency("OpenZeppelin/openzeppelin-contracts", "4.4.2")
+    actual = dm.get_dependency("OpenZeppelin/openzeppelin-contracts", "4.9.6")
     assert actual.name == "openzeppelin"
-    assert actual.version == "4.4.2"
+    assert actual.version == "4.9.6"
     assert actual.package_id == "OpenZeppelin/openzeppelin-contracts"
 
 
 def test_get_dependency_by_name(project):
     dm = project.dependencies
-    actual = dm.get_dependency("openzeppelin", "4.4.2")
+    actual = dm.get_dependency("openzeppelin", "4.9.6")
     assert actual.name == "openzeppelin"
-    assert actual.version == "4.4.2"
+    assert actual.version == "4.9.6"
     assert actual.package_id == "OpenZeppelin/openzeppelin-contracts"
 
 
@@ -236,7 +236,7 @@ def test_install_dependencies_of_dependencies(project, with_dependencies_project
 
 @pytest.mark.parametrize("name", ("openzeppelin", "OpenZeppelin/openzeppelin-contracts"))
 def test_uninstall(name, project):
-    version = "4.4.2"
+    version = "4.9.6"
     dm = project.dependencies
     dependency = dm.get_dependency(name, version)
     with dependency._cache.isolate_changes():
@@ -248,13 +248,13 @@ def test_uninstall(name, project):
 
 def test_unpack(project):
     dm = project.dependencies
-    dep = dm.get_dependency("openzeppelin", "4.4.2")
+    dep = dm.get_dependency("openzeppelin", "4.9.6")
     with create_tempdir() as tempdir:
         created = list(dep.unpack(tempdir))
         assert len(created) == 1
         assert created[0].package_id == "OpenZeppelin/openzeppelin-contracts"
 
-        files = [x.name for x in (tempdir / "openzeppelin" / "4.4.2" / "contracts").iterdir()]
+        files = [x.name for x in (tempdir / "openzeppelin" / "4.9.6" / "contracts").iterdir()]
         assert "token" in files
         assert "access" in files
 
@@ -777,6 +777,6 @@ class TestProject:
         Access contracts using __getattr__ from the dependency's project.
         """
         name = "openzeppelin"
-        oz_442 = project.dependencies.get_dependency(name, "4.4.2")
-        contract = oz_442.project.AccessControl
+        oz_492 = project.dependencies.get_dependency(name, "4.9.6")
+        contract = oz_492.project.AccessControl
         assert contract.contract_type.name == "AccessControl"
