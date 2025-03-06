@@ -85,7 +85,7 @@ arbitrum:
     default_provider: alchemy
     
   # Configure provider-specific settings
-  goerli:
+  sepolia:
     gas_limit: 100000000  # Higher gas limit for Arbitrum testnet
 ```
 
