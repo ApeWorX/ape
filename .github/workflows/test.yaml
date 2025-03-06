@@ -86,7 +86,7 @@ jobs:
             version: 1.14.12
 
         - name: Setup Ape
-          uses: ApeWorX/github-action@main
+          uses: ApeWorX/github-action@v3
 
         - name: Install Dependencies
           run: |
