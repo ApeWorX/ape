@@ -597,3 +597,12 @@ def _json_option(name, help, **kwargs):
 
 def config_override_option(**kwargs):
     return _json_option("--config-override", help="Config override mappings", **kwargs)
+
+
+def exclude_compiler_option(**kwargs):
+    return click.option(
+        "--exclude-compiler",
+        help="Exclude a specific compiler from the compilation process",
+        type=str,
+        **kwargs,
+    )
