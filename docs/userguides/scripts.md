@@ -81,7 +81,7 @@ def cli():
     
     # Temporarily use a different provider than was selected originally
     with networks.ethereum.sepolia.use_provider("alchemy"):
-        balance2 = account.balance  # Balance on goerli
+        balance2 = account.balance  # Balance on Sepolia
         network2 = chain.provider.network.name
         print(f"Balance on {network2}: {balance2}")
         
