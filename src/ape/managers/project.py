@@ -1308,6 +1308,44 @@ class DependencyManager(BaseManager):
 
         return None
 
+    def get_dependency_api(self, package_id: str, version: Optional[str] = None) -> DependencyAPI:
+        """
+        Get a dependency API. If not given version and there are multiple,
+        returns the latest.
+
+        Args:
+            package_id (str): The package ID or name of the dependency.
+            version (str): The version of the dependency.
+
+        Returns:
+            :class:`~ape.api.projects.DependencyAPI`
+        """
+        # Check by package ID first.
+        if dependency := self._get_dependency_api_by_package_id(package_id, version=version):
+            return dependency
+
+        elif dependency := self._get_dependency_api_by_package_id(
+            package_id, version=version, attr="name"
+        ):
+            return dependency
+
+        package_str = f"{package_id}@{version}" if version else package_id
+        message = f"No matching dependency found with package ID '{package_str}'"
+        raise ProjectError(message)
+
+    def _get_dependency_api_by_package_id(
+        self, package_id: str, version: Optional[str] = None, attr: str = "package_id"
+    ) -> Optional[DependencyAPI]:
+        matching = []
+        for dependency in self.config_apis:
+            if getattr(dependency, attr) != package_id:
+                continue
+
+            if (version and dependency.version_id == version) or not version:
+                matching.append(dependency)
+
+        return sorted(matching, key=lambda d: d.version_id)[-1] if matching else None
+
     def _get(
         self, name: str, version: str, allow_install: bool = True, checked: Optional[set] = None
     ) -> Optional[Dependency]:

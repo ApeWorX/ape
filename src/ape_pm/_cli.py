@@ -167,21 +167,9 @@ def _package_callback(ctx, param, value):
         if not version and "@" in value:
             name, version = value.split("@")
 
-        # Check my package ID.
-        for dependency in project.dependencies.config_apis:
-            if dependency.package_id != name:
-                continue
-
-            if (version and dependency.version_id == version) or not version:
-                return dependency
-
-        # Check by name.
-        for dependency in project.dependencies.config_apis:
-            if dependency.name != name:
-                continue
-
-            if (version and dependency.version_id == version) or not version:
-                return dependency
+        if dependency := project.dependencies.get_dependency_api(name, version=version):
+            return dependency
+            return dependency
 
     raise click.BadArgumentUsage(f"Unknown package '{value}'.")
 
