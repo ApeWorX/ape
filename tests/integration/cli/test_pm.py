@@ -19,7 +19,7 @@ def pm_runner(config):
 
 
 @run_once
-def test_install_path_not_exists(pm_runner):
+def test_install_unknown_package(pm_runner):
     path = "path/to/nowhere"
     result = pm_runner.invoke("install", path)
     assert result.exit_code != 0, result.output

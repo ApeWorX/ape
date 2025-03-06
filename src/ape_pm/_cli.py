@@ -166,8 +166,11 @@ def _package_callback(ctx, param, value):
         if not version and "@" in value:
             name, version = value.split("@")
 
-        if dependency := project.dependencies.get_dependency_api(name, version=version):
-            return dependency
+        try:
+            dependency = project.dependencies.get_dependency_api(name, version=version)
+        except ProjectError:
+            pass
+        else:
             return dependency
 
     raise click.BadArgumentUsage(f"Unknown package '{value}'.")
