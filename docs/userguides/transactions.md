@@ -91,6 +91,7 @@ assert receipt.sender == dev
 ```
 
 **NOTE**: The `creation_metadata` contains other information as well, such as `.factory` for factory-deployed contracts.
+Learn more about creation metadata in the [Creation Metadata User Guide](./contract_metadata.html).
 
 ## Dynamic-Fee Transactions
 
