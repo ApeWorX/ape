@@ -130,7 +130,6 @@ def _package_callback(ctx, param, value):
         # Install all packages from local project.
         return None
 
-    # Check if it is a dependency not listed anywhere.
     elif isinstance(value, Path):
         return _handle_package_path(value)
 
