@@ -80,7 +80,7 @@ def cli():
     print(f"Balance on {network1}: {balance1}")
     
     # Temporarily use a different provider than was selected originally
-    with networks.ethereum.goerli.use_provider("alchemy"):
+    with networks.ethereum.sepolia.use_provider("alchemy"):
         balance2 = account.balance  # Balance on goerli
         network2 = chain.provider.network.name
         print(f"Balance on {network2}: {balance2}")
