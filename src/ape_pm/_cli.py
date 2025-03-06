@@ -159,7 +159,7 @@ def _package_callback(ctx, param, value):
         parts = value.split(":")
         return {parts[0]: parts[1]}
 
-    elif isinstance(value, str) and ":" not in value:
+    elif isinstance(value, str):
         from ape import project
 
         version = ctx.params.get("version")
@@ -167,25 +167,21 @@ def _package_callback(ctx, param, value):
         if not version and "@" in value:
             name, version = value.split("@")
 
-        if version:
-            try:
-                return project.dependencies.get_dependency(name, version, allow_install=False)
-            except ProjectError:
-                # Try another method; maybe it is not a package ID.
-                pass
+        # Check my package ID.
+        for dependency in project.dependencies.config_apis:
+            if dependency.package_id != name:
+                continue
 
-        else:
-            try:
-                dependency_ls = [
-                    v for v in project.dependencies.get_versions(name=name, allow_install=False)
-                ]
-            except ProjectError:
-                # Try another method; maybe it is not a package ID.
-                pass
+            if (version and dependency.version_id == version) or not version:
+                return dependency
 
-            else:
-                if dependency_ls:
-                    return sorted(dependency_ls, key=lambda v: v.version)[-1]
+        # Check by name.
+        for dependency in project.dependencies.config_apis:
+            if dependency.name != name:
+                continue
+
+            if (version and dependency.version_id == version) or not version:
+                return dependency
 
     raise click.BadArgumentUsage(f"Unknown package '{value}'.")
 
@@ -220,27 +216,25 @@ def install(cli_ctx, package, name, version, ref, force, config_override):
         cli_ctx.logger.success(message)
         return
 
-    from ape.managers.project import Dependency
+    from ape.api.projects import DependencyAPI
 
-    if isinstance(package, Dependency):
-        dependency = package
-        dependency.install(use_cache=not force)
+    if isinstance(package, DependencyAPI):
+        package = package.model_dump()
 
-    else:
-        if name:
-            package["name"] = name
-        if ref:
-            package["ref"] = ref
-        if version:
-            package["version"] = version
-        if config_override:
-            package["config_override"] = config_override
+    if name:
+        package["name"] = name
+    if ref:
+        package["ref"] = ref
+    if version:
+        package["version"] = version
+    if config_override:
+        package["config_override"] = config_override
 
-        try:
-            dependency = pm.dependencies.install(**package, use_cache=not force)
-        except Exception as err:
-            cli_ctx.logger.log_error(err)
-            sys.exit(1)
+    try:
+        dependency = pm.dependencies.install(**package, use_cache=not force)
+    except Exception as err:
+        cli_ctx.logger.log_error(err)
+        sys.exit(1)
 
     cli_ctx.logger.success(f"Package '{dependency.name}@{dependency.version}' installed.")
 

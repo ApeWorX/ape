@@ -1438,7 +1438,7 @@ class DependencyManager(BaseManager):
         version_options = _version_to_options(version)
 
         # Also try the lower of the name
-        # so ``OpenZeppelin`` would give you ``openzeppelin``.
+        # so `OpenZeppelin` would give you `openzeppelin`.
         id_options = [dependency_id]
         if dependency_id.lower() != dependency_id:
             # Ensure we try dependency_id without lower first.
