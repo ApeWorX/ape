@@ -1006,7 +1006,9 @@ class Ethereum(EcosystemAPI):
                         value[struct_key] = (
                             self.decode_address(struct_val)
                             if struct_type == "address"
-                            else HexBytes(struct_val) if "bytes" in struct_type else struct_val
+                            else HexBytes(struct_val)
+                            if "bytes" in struct_type
+                            else struct_val
                         )
                     converted_arguments[key] = value
 
@@ -1188,6 +1190,10 @@ class Ethereum(EcosystemAPI):
         return call
 
     def _enrich_contract_id(self, address: AddressType, **kwargs) -> str:
+        # Defensively pop `contract_type` key from kwargs in case the contract type set by a
+        # previous call is not valid for this address.
+        kwargs.pop("contract_type", None)
+
         if address and address == kwargs.get("sender"):
             return "tx.origin"
 
@@ -1200,11 +1206,13 @@ class Ethereum(EcosystemAPI):
 
         kwargs["contract_type"] = contract_type
         if kwargs.get("use_symbol_for_tokens") and "symbol" in contract_type.view_methods:
-            # Use token symbol as name
-            contract = self.chain_manager.contracts.instance_at(
-                address, contract_type=contract_type
-            )
+            # Store contract_type in cache only if missing
+            if (contract := self.chain_manager.contracts.instance_at(address)) is None:
+                contract = self.chain_manager.contracts.instance_at(
+                    address, contract_type=contract_type
+                )
 
+            # Use token symbol as name
             try:
                 symbol = contract.symbol(skip_trace=True)
             except ApeException:
