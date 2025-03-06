@@ -1,6 +1,7 @@
 # Contract Creation Metadata
 
-Ape provides powerful contract creation metadata capabilities that reveal deployment details like deployer address, transaction hash, block number, and factory information. This data enables contract verification, historical analysis, and audit workflows.
+Ape provides powerful contract creation metadata capabilities that reveal deployment details like deployer address, transaction hash, block number, and factory information.
+This data enables contract verification, historical analysis, and audit workflows.
 
 ## Accessing Creation Metadata
 
@@ -62,21 +63,26 @@ Ape uses a sophisticated fallback system to retrieve contract creation metadata 
 
 ### In-Session Deployments
 
-Contracts deployed in the current Ape session have their metadata automatically captured in memory. This approach provides instantaneous access with zero configuration but only works for contracts deployed during the active session.
+Contracts deployed in the current Ape session have their metadata automatically captured in memory.
+This approach provides instantaneous access with zero configuration but only works for contracts deployed during the active session.
 
 ### Otterscan API Integration
 
-For nodes with [Otterscan extensions](https://docs.otterscan.io/api-docs/ots-api), Ape utilizes the `ots_getContractCreator` RPC endpoint to obtain precise creation information. This method offers complete data including factory details but requires a specially configured node with Otterscan functionality.
+For nodes with [Otterscan extensions](https://docs.otterscan.io/api-docs/ots-api), Ape utilizes the `ots_getContractCreator` RPC endpoint to obtain precise creation information.
+This method offers complete data including factory details but requires a specially configured node with Otterscan functionality.
 
 ### Archive Node Deployment Detection
 
-When working with archive nodes, Ape employs a binary search technique with `eth_getCode` to identify the deployment block, then uses block tracing (`debug_traceBlockByNumber` or `trace_replayBlockTransactions`) to reconstruct the deployment. This approach works with many Ethereum clients but requires archive node access and performs slower than other methods.
+When working with archive nodes, Ape employs a binary search technique with `eth_getCode` to identify the deployment block, then uses block tracing (`debug_traceBlockByNumber` or `trace_replayBlockTransactions`) to reconstruct the deployment.
+This approach works with many Ethereum clients but requires archive node access and performs slower than other methods.
 
 ### Explorer API Fallback
 
-As a final option, Ape can query blockchain explorers using plugins like `ape-etherscan`. This approach offers broad compatibility across most networks with explorers but depends on third-party services, API keys, and may lack complete factory information.
+As a final option, Ape can query blockchain explorers using plugins like `ape-etherscan`.
+This approach offers broad compatibility across most networks with explorers but depends on third-party services, API keys, and may lack complete factory information.
 
-Ape intelligently attempts these methods in sequence, moving to the next if one fails. If all methods fail, `creation_metadata` returns `None`:
+Ape intelligently attempts these methods in sequence, moving to the next if one fails.
+If all methods fail, `creation_metadata` returns `None`:
 
 ```python
 metadata = contract.creation_metadata
@@ -88,7 +94,8 @@ else:
 
 ## Metadata Caching
 
-To optimize performance, Ape automatically caches creation metadata. For permanent networks (not local or fork networks), this data persists on disk for future sessions, eliminating repeated lookup overhead.
+To optimize performance, Ape automatically caches creation metadata.
+For permanent networks (not local or fork networks), this data persists on disk for future sessions, eliminating repeated lookup overhead.
 
 ## Advanced Programmatic Access
 
