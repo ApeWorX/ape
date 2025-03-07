@@ -260,6 +260,10 @@ Then, add the following to your config so that Ape can find the dependency:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>pm<span class="w"> </span>install<span class="w"> </span>--force
 </span></pre></div>
 </div>
+<p>To install a specific dependency by ID that is listed in a config file, use the ID or name as the package argument:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>pm<span class="w"> </span>install<span class="w"> </span>OpenZeppelin/openzeppelin-contracts
+</span></pre></div>
+</div>
 <p>To install a dependency that is not in your config, you can specify it directly along with <code class="docutils literal notranslate"><span class="pre">--name</span></code> and <code class="docutils literal notranslate"><span class="pre">--version</span></code>:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>pm<span class="w"> </span>install<span class="w"> </span>gh:OpenZeppelin/openzeppelin-contracts<span class="w"> </span>--name<span class="w"> </span>openzeppelin<span class="w"> </span>--version<span class="w"> </span><span class="s2">&quot;4.6.0&quot;</span>
 </span></pre></div>

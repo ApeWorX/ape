@@ -165,6 +165,12 @@ If the dependencies are already cached and you want to re-install them, use the 
 ape pm install --force
 ```
 
+To install a specific dependency by ID that is listed in a config file, use the ID or name as the package argument:
+
+```shell
+ape pm install OpenZeppelin/openzeppelin-contracts
+```
+
 To install a dependency that is not in your config, you can specify it directly along with `--name` and `--version`:
 
 ```shell
