@@ -1308,6 +1308,44 @@ class DependencyManager(BaseManager):
 
         return None
 
+    def get_dependency_api(self, package_id: str, version: Optional[str] = None) -> DependencyAPI:
+        """
+        Get a dependency API. If not given version and there are multiple,
+        returns the latest.
+
+        Args:
+            package_id (str): The package ID or name of the dependency.
+            version (str): The version of the dependency.
+
+        Returns:
+            :class:`~ape.api.projects.DependencyAPI`
+        """
+        # Check by package ID first.
+        if dependency := self._get_dependency_api_by_package_id(package_id, version=version):
+            return dependency
+
+        elif dependency := self._get_dependency_api_by_package_id(
+            package_id, version=version, attr="name"
+        ):
+            return dependency
+
+        package_str = f"{package_id}@{version}" if version else package_id
+        message = f"No matching dependency found with package ID '{package_str}'"
+        raise ProjectError(message)
+
+    def _get_dependency_api_by_package_id(
+        self, package_id: str, version: Optional[str] = None, attr: str = "package_id"
+    ) -> Optional[DependencyAPI]:
+        matching = []
+        for dependency in self.config_apis:
+            if getattr(dependency, attr) != package_id:
+                continue
+
+            if (version and dependency.version_id == version) or not version:
+                matching.append(dependency)
+
+        return sorted(matching, key=lambda d: d.version_id)[-1] if matching else None
+
     def _get(
         self, name: str, version: str, allow_install: bool = True, checked: Optional[set] = None
     ) -> Optional[Dependency]:
@@ -1359,19 +1397,20 @@ class DependencyManager(BaseManager):
 
         return None
 
-    def get_versions(self, name: str) -> Iterator[Dependency]:
+    def get_versions(self, name: str, allow_install: bool = True) -> Iterator[Dependency]:
         """
         Get all installed versions of a dependency.
 
         Args:
             name (str): The name of the dependency.
+            allow_install (bool): Set to ``False`` to not allow installing.
 
         Returns:
             Iterator[:class:`~ape.managers.project.Dependency`]
         """
-        # First, check specified. Note: installs if needed.
+        # First, check specified.
         versions_yielded = set()
-        for dependency in self.get_project_dependencies(name=name):
+        for dependency in self.get_project_dependencies(name=name, allow_install=allow_install):
             if dependency.version in versions_yielded:
                 continue
 
@@ -1437,7 +1476,7 @@ class DependencyManager(BaseManager):
         version_options = _version_to_options(version)
 
         # Also try the lower of the name
-        # so ``OpenZeppelin`` would give you ``openzeppelin``.
+        # so `OpenZeppelin` would give you `openzeppelin`.
         id_options = [dependency_id]
         if dependency_id.lower() != dependency_id:
             # Ensure we try dependency_id without lower first.
@@ -1564,7 +1603,7 @@ class DependencyManager(BaseManager):
             base_path (Path): The target path.
             cache_name (str): The cache folder name to create
               at the target path. Defaults to ``.cache`` because
-              that is what is what ``ape-solidity`` uses.
+              that is what ``ape-solidity`` uses.
         """
         cache_folder = base_path / cache_name
         for dependency in self.specified:
