@@ -64,8 +64,7 @@ extras_require["dev"] = (
     # NOTE: Do *not* install `recommended-plugins` w/ dev
 )
 
-with Path("./README.md").open() as readme:
-    long_description = readme.read()
+long_description = Path("./README.md").read_text()
 
 
 setup(
