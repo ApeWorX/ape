@@ -102,7 +102,7 @@ docker run \
 
 After you have installed Ape, run `ape --version` to verify the installation was successful.
 
-Interact with Ape using either the [CLI](https://docs.apeworx.io/ape/latest/index.html) or [Python code](https://docs.apeworx.io/ape/latest/index.html).
+Interact with Ape using either the [CLI](https://docs.apeworx.io/ape/latest/userguides/clis.html) or [Python code](https://docs.apeworx.io/ape/latest/userguides/scripts.html).
 
 See the following user-guides for more in-depth tutorials:
 
