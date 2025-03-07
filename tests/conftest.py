@@ -284,7 +284,6 @@ def empty_data_folder():
 
     shutil.rmtree(DATA_FOLDER, ignore_errors=True)
     DATA_FOLDER.mkdir(parents=True, exist_ok=True)
-    return
 
 
 @pytest.fixture
