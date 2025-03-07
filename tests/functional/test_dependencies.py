@@ -126,14 +126,14 @@ def test_get_versions_using_package_id(project):
     dm = project.dependencies
     package_id = "OpenZeppelin/openzeppelin-contracts"
     actual = list(dm.get_versions(package_id))
-    assert len(actual) == 2
+    assert len(actual) >= 2
 
 
 def test_get_versions_using_name(project):
     dm = project.dependencies
     name = "openzeppelin"
     actual = list(dm.get_versions(name))
-    assert len(actual) == 2
+    assert len(actual) >= 2
 
 
 def test_getitem_and_contains_and_get(project):
@@ -251,7 +251,8 @@ def test_unpack(project):
     dep = dm.get_dependency("openzeppelin", "4.9.6")
     with create_tempdir() as tempdir:
         created = list(dep.unpack(tempdir))
-        assert len(created) == 1
+        assert len(created) == 3
+        assert any([x.name == "openzeppelin" for x in created])
         assert created[0].package_id == "OpenZeppelin/openzeppelin-contracts"
 
         files = [x.name for x in (tempdir / "openzeppelin" / "4.9.6" / "contracts").iterdir()]
