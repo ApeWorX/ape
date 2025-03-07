@@ -505,7 +505,7 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
             exclude_unset=True,
             exclude_defaults=True,
         )
-        return yaml.dump(data)
+        return yaml.safe_dump(data)
 
     @only_raise_attribute_error
     def __getattr__(self, attr_name: str) -> Any:

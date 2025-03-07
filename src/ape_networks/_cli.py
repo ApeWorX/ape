@@ -97,7 +97,7 @@ def _list(cli_ctx, output_format, ecosystem_filter, network_filter, provider_fil
             )
 
         try:
-            click.echo(yaml.dump(network_data, sort_keys=True).strip())
+            click.echo(yaml.safe_dump(network_data, sort_keys=True).strip())
         except ValueError as err:
             try:
                 data_str = json.dumps(network_data)
