@@ -19,9 +19,6 @@ from typing import TYPE_CHECKING, Any, ClassVar, Optional, Union, cast
 from eth_utils import to_hex
 from pydantic import Field, computed_field, field_serializer, model_validator
 
-from ape.api.networks import NetworkAPI
-from ape.api.query import BlockTransactionQuery
-from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.exceptions import (
     APINotImplementedError,
     ProviderError,
@@ -43,6 +40,9 @@ from ape.utils.misc import (
 )
 from ape.utils.process import JoinableQueue, spawn
 from ape.utils.rpc import RPCHeaders
+
+from .networks import NetworkAPI
+from .transactions import ReceiptAPI, TransactionAPI
 
 if TYPE_CHECKING:
     from eth_pydantic_types import HexBytes
@@ -151,12 +151,21 @@ class BlockAPI(BaseInterfaceModel):
         """
         All transactions in a block.
         """
+        from ape.api.query import BlockTransactionQuery
+
         if self.hash is None:
-            # Unable to query transactions.
+            # NOTE: Only "unsealed" blocks do not have a hash
+            raise ProviderError("Unable to find block transactions: not sealed yet")
+
+        elif self.num_transactions == 0:
             return []
 
         try:
-            query = BlockTransactionQuery(columns=["*"], block_id=self.hash)
+            query = BlockTransactionQuery(
+                columns=["*"],
+                num_transactions=self.num_transactions,
+                block_id=self.hash,
+            )
             return cast(list[TransactionAPI], list(self.query_manager.query(query)))
         except QueryEngineError as err:
             # NOTE: Re-raising a better error here because was confusing
