@@ -95,10 +95,12 @@ More information on publishing contracts can be found in [this guide](./publishi
 
 You can also use the [at() method](../methoddocs/contracts.html#ape.contracts.base.ContractContainer.at) from the same top-level project manager when you know the address of an already-deployed contract:
 
-````python
+```python
 from ape import project
 
 contract = project.MyContract.at("0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45")
+
+```
 
 By default, Ape will detect if the contract is a proxy and use the implementation contract's interface. See the [Proxy Contracts guide](./proxy.html) for more details on proxy handling.
 
@@ -110,7 +112,7 @@ If you already know the address of a contract, you can create instances of it us
 from ape import Contract
 
 contract = Contract("0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45")
-````
+```
 
 If the contract ABI and/or code is cached on disk or in memory (such as from a previous deploy or retrieval), it will use it.
 Otherwise, it will fetch the `ContractType` using the explorer plugin from the active network, such as [ape-etherscan](https://github.com/ApeWorX/ape-etherscan).
@@ -192,7 +194,7 @@ def main():
 Then, after you have a contract instance, you can call methods on the contract.
 For example, let's say you have a Vyper contract containing some functions:
 
-```python
+```vyper
 wdAmount: public(uint256)
 
 @pure

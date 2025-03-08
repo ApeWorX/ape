@@ -38,7 +38,7 @@ By default, `cli` scripts do not have [`ape.cli.network_option`](../methoddocs/c
 
 However, you can add the `network_option` or `ConnectedProviderCommand` to your scripts by importing them from the `ape.cli` namespace:
 
-````python
+```python
 import click
 from ape.cli import ConnectedProviderCommand
 
@@ -56,7 +56,8 @@ def cli(network, provider):
     click.echo(f"You are connected to network '{network.name}'.")
     click.echo(provider.chain_id)
     
-    
+```
+
 ## Multi-Network Commands
 
 Scripts can use the context manager for multi-network functionality.
@@ -93,7 +94,7 @@ def cli():
     
     # Back to the original network
     print(f"Back to {network1}")
-````
+```
 
 This pattern is especially useful for cross-chain operations, data gathering from multiple networks, or comparing state between networks.
 
