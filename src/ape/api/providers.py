@@ -254,6 +254,13 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @property
+    def ipc_path(self) -> Optional[Path]:
+        """
+        Return the IPC path for the provider, is supported.
+        """
+        return None
+
+    @property
     def http_uri(self) -> Optional[str]:
         """
         Return the raw HTTP/HTTPS URI to connect to this provider, if supported.
@@ -984,7 +991,9 @@ class SubprocessProvider(ProviderAPI):
     """
 
     PROCESS_WAIT_TIMEOUT: int = 15
+    background: bool = False
     process: Optional[Popen] = None
+    allow_start: bool = True
     is_stopping: bool = False
 
     stdout_queue: Optional[JoinableQueue] = None
@@ -1059,7 +1068,7 @@ class SubprocessProvider(ProviderAPI):
             or self.config_manager.get_config("test").disconnect_providers_after
         )
         if disconnect_after:
-            atexit.register(self.disconnect)
+            atexit.register(self._disconnect_atexit)
 
         # Register handlers to ensure atexit handlers are called when Python dies.
         def _signal_handler(signum, frame):
@@ -1068,6 +1077,12 @@ class SubprocessProvider(ProviderAPI):
 
         signal(SIGINT, _signal_handler)
         signal(SIGTERM, _signal_handler)
+
+    def _disconnect_atexit(self):
+        if self.background:
+            return
+
+        self.disconnect()
 
     def disconnect(self):
         """
@@ -1078,24 +1093,37 @@ class SubprocessProvider(ProviderAPI):
         if self.process:
             self.stop()
 
+        # Delete entry from managed list of running nodes.
+        self.network_manager.running_nodes.remove_provider(self)
+
     def start(self, timeout: int = 20):
         """Start the process and wait for its RPC to be ready."""
 
         if self.is_connected:
             logger.info(f"Connecting to existing '{self.process_name}' process.")
             self.process = None  # Not managing the process.
-        else:
+
+        elif self.allow_start:
             logger.info(f"Starting '{self.process_name}' process.")
             pre_exec_fn = _linux_set_death_signal if platform.uname().system == "Linux" else None
             self.stderr_queue = JoinableQueue()
             self.stdout_queue = JoinableQueue()
-            out_file = PIPE if logger.level <= LogLevel.DEBUG else DEVNULL
+
+            if self.background or logger.level > LogLevel.DEBUG:
+                out_file = DEVNULL
+            else:
+                out_file = PIPE
+
             cmd = self.build_command()
-            self.process = Popen(cmd, preexec_fn=pre_exec_fn, stdout=out_file, stderr=out_file)
+            process = Popen(cmd, preexec_fn=pre_exec_fn, stdout=out_file, stderr=out_file)
+            self.process = process
             spawn(self.produce_stdout_queue)
             spawn(self.produce_stderr_queue)
             spawn(self.consume_stdout_queue)
             spawn(self.consume_stderr_queue)
+
+            # Cache the process so we can manage it even if lost.
+            self.network_manager.running_nodes.cache_provider(self)
 
             with RPCTimeoutError(self, seconds=timeout) as _timeout:
                 while True:

@@ -1,25 +1,156 @@
+import os
+import signal
 from collections.abc import Collection, Iterator
 from functools import cached_property
-from typing import TYPE_CHECKING, Optional, Union
+from pathlib import Path
+from typing import TYPE_CHECKING, Any, Optional, Union
 
 from evmchains import PUBLIC_CHAIN_META
+from pydantic import ValidationError
 
 from ape.api.networks import ProviderContextManager
 from ape.exceptions import EcosystemNotFoundError, NetworkError, NetworkNotFoundError
 from ape.managers.base import BaseManager
 from ape.utils.basemodel import (
+    BaseModel,
+    DiskCacheableModel,
     ExtraAttributesMixin,
     ExtraModelAttributes,
     get_attribute_with_extras,
     only_raise_attribute_error,
 )
 from ape.utils.misc import _dict_overlay, log_instead_of_fail
+from ape.utils.os import clean_path
 from ape_ethereum.provider import EthereumNodeProvider
 
 if TYPE_CHECKING:
     from ape.api.networks import EcosystemAPI, NetworkAPI
-    from ape.api.providers import ProviderAPI
+    from ape.api.providers import ProviderAPI, SubprocessProvider
     from ape.utils.rpc import RPCHeaders
+
+
+class NodeProcessData(BaseModel):
+    """
+    Cached data for node subprocesses managed by Ape.
+    """
+
+    network_choice: str
+    """
+    The network triple ``ecosystem:network:node``.
+    """
+
+    ipc_path: Optional[Path] = None
+    """
+    The IPC path this node process communicates on.
+    """
+
+    http_uri: Optional[str] = None
+    """
+    The HTTP URI this node process exposes.
+    """
+
+    ws_uri: Optional[str] = None
+    """
+    The websockets URI this node process exposes.
+    """
+
+    @log_instead_of_fail(default="<NodeProcessData>")
+    def __repr__(self) -> str:
+        if ipc := self.ipc_path:
+            return f"{self.network_choice} - {clean_path(ipc)}"
+
+        elif uri := (self.http_uri or self.ws_uri):
+            return f"{self.network_choice} - {uri}"
+
+        return self.network_choice
+
+    def matches_provider(self, provider: "SubprocessProvider") -> bool:
+        if self.network_choice != f"{provider.network.choice}:{provider.name}":
+            return False
+
+        # Skip if any of the connection paths (IPC, HTTP, WS) differ
+        for attr in ("ipc_path", "http_uri", "ws_uri"):
+            if (
+                getattr(provider, attr)
+                and getattr(self, attr)
+                and getattr(provider, attr) != getattr(self, attr)
+            ):
+                return False
+
+        return True
+
+
+class NodeProcessMap(DiskCacheableModel):
+    """
+    All managed running network subprocesses.
+    """
+
+    nodes: dict[int, NodeProcessData] = {}
+
+    @property
+    def path(self) -> Path:
+        return self._path
+
+    @property
+    def process_ids(self) -> tuple[int, ...]:
+        return tuple(self.nodes.keys())
+
+    def __bool__(self) -> bool:
+        """
+        True if there is at least one managed node process.
+        """
+        return bool(self.nodes)
+
+    def get(self, pid: int) -> Optional[NodeProcessData]:
+        return self.nodes.get(int(pid))
+
+    def cache_provider(self, provider: "SubprocessProvider"):
+        # Don't use `provider.network_choice` here because we want to ensure the provider
+        # name is used and not the URI for the third part of the choice.
+        network_choice = f"{provider.network.choice}:{provider.name}"
+        data: dict[str, Any] = {
+            "network_choice": network_choice,
+            "ipc_path": provider.ipc_path,
+            "http_uri": provider.http_uri,
+            "ws_uri": provider.ws_uri,
+        }
+        data = {k: v for k, v in data.items() if v is not None}
+
+        if process := provider.process:
+            obj = NodeProcessData.model_validate(data)
+
+            # Ensure no duplicates (bad clean?)
+            self._delete_all_matching(obj)
+
+            self.nodes[process.pid] = obj
+            self.model_dump_file()
+
+        else:
+            raise NetworkError("Unable to cache subprocess-provider information: not connected.")
+
+    def _delete_all_matching(self, node: NodeProcessData):
+        pids_to_remove = set()
+        for pid, other_node in self.nodes.items():
+            if other_node == node:
+                # Exact match but different PID. Bad clean.
+                pids_to_remove.add(pid)
+
+        for pid in pids_to_remove:
+            del self.nodes[pid]
+
+    def remove_provider(self, provider: "SubprocessProvider"):
+        pids_to_remove = {
+            pid for pid, data in self.nodes.items() if data.matches_provider(provider)
+        }
+        self.nodes = {pid: node for pid, node in self.nodes.items() if pid not in pids_to_remove}
+        self.model_dump_file()
+
+    def remove_processes(self, *pids: int):
+        self.nodes = {k: v for k, v in self.nodes.items() if k not in pids}
+        self.model_dump_file()
+
+    def clean(self):
+        self._path.unlink(missing_ok=True)
 
 
 class NetworkManager(BaseManager, ExtraAttributesMixin):
@@ -96,6 +227,89 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
             :class:`~ape.api.providers.ProviderAPI`
         """
         return self.network.ecosystem
+
+    @cached_property
+    def running_nodes(self) -> NodeProcessMap:
+        """
+        All running development nodes managed by Ape.
+        """
+        path = self.config_manager.DATA_FOLDER / "processes" / "nodes.json"
+        try:
+            return NodeProcessMap.model_validate_file(path)
+        except ValidationError:
+            path.unlink(missing_ok=True)
+            return NodeProcessMap.model_validate_file(path)
+
+    def get_running_node(self, pid: int) -> "SubprocessProvider":
+        """
+        Get a running subprocess provider for the given ``pid``.
+
+        Args:
+            pid (int): The process ID.
+
+        Returns:
+            class:`~ape.api.providers.SubprocessProvider`
+        """
+        if not (data := self.running_nodes.get(pid)):
+            raise NetworkError(f"No running node for pid '{pid}'.")
+
+        network_choice = data.network_choice
+
+        provider_settings: dict = {
+            "ipc_path": data.ipc_path,
+            "http_uri": data.http_uri,
+            "ws_uri": data.ws_uri,
+        }
+        provider_settings = {k: v for k, v in provider_settings.items() if v is not None}
+
+        provider = self.get_provider_from_choice(
+            network_choice=network_choice, provider_settings=provider_settings or None
+        )
+        # If this is not a subprocess provider, it may be ok to proceed.
+        # However, the rest of Ape will assume it is.
+        return provider  # type: ignore[return-value]
+
+    def kill_node_process(self, *process_ids: int) -> dict[int, NodeProcessData]:
+        """
+        Kill a node process managed by Ape.
+
+        Args:
+            *process_ids (int): The process ID to kill.
+
+        Returns:
+            dict[str, :class:`~ape.managers.networks.NodeProcessData`]: The process data
+            of all terminated processes.
+        """
+        if not self.running_nodes:
+            return {}
+
+        if not process_ids:
+            # Defaults to all managed processes.
+            process_ids = self.running_nodes.process_ids
+
+        pids_killed = {}
+        for pid in process_ids:
+            if not (data := self.running_nodes.nodes.get(pid)):
+                continue
+
+            try:
+                provider = self.get_running_node(pid)
+            except Exception:
+                # Still try to kill the process (below).
+                pass
+            else:
+                # Gracefully disconnect _before_ killing process.
+                provider.disconnect()
+
+            try:
+                os.kill(pid, signal.SIGTERM)
+            except Exception:
+                pass
+            else:
+                pids_killed[pid] = data
+
+        self.running_nodes.remove_processes(*process_ids)
+        return pids_killed
 
     def get_request_headers(
         self, ecosystem_name: str, network_name: str, provider_name: str
