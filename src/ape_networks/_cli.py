@@ -51,10 +51,16 @@ def _lazy_get(name: str) -> Sequence:
 @_filter_option("ecosystem", lambda: _lazy_get("ecosystem"))
 @_filter_option("network", lambda: _lazy_get("network"))
 @_filter_option("provider", lambda: _lazy_get("provider"))
-def _list(cli_ctx, output_format, ecosystem_filter, network_filter, provider_filter):
+@click.option("--running", is_flag=True, help="List running networks")
+def _list(cli_ctx, output_format, ecosystem_filter, network_filter, provider_filter, running):
     """
     List all the registered ecosystems, networks, and providers.
     """
+    if running:
+        # TODO: Honor filter args.
+        _print_running_networks(cli_ctx)
+        return
+
     network_data = cli_ctx.network_manager.get_network_data(
         ecosystem_filter=ecosystem_filter,
         network_filter=network_filter,
@@ -109,6 +115,32 @@ def _list(cli_ctx, output_format, ecosystem_filter, network_filter, provider_fil
             ) from err
 
 
+def _print_running_networks(cli_ctx):
+    from ape.utils.os import clean_path
+
+    rows = [["PID", "NETWORK", "IPC", "HTTP", "WS"]]  # Store headers as a list
+    for pid, node in cli_ctx.network_manager.running_nodes.nodes.items():
+        rows.append(
+            [
+                pid,
+                node.network_choice,
+                str(clean_path(node.ipc_path) if node.ipc_path else None),
+                node.http_uri,
+                node.ws_uri,
+            ]
+        )
+
+    if len(rows) == 1:
+        # Only header row.
+        click.echo("Local node(s) not running.")
+
+    else:
+        col_widths = [max(len(str(row[i])) for row in rows) for i in range(len(rows[0]))]
+        for row in rows:
+            formatted_row = "  ".join(str(row[i]).ljust(col_widths[i]) for i in range(len(row)))
+            echo_rich_text(formatted_row)
+
+
 @cli.command(short_help="Start a node process")
 @ape_cli_context()
 @network_option(default="ethereum:local:node")
@@ -150,11 +182,17 @@ def run(cli_ctx, provider, block_time, background):
 
 
 def _run(cli_ctx, provider: "SubprocessProvider", background: bool = False):
+    provider.background = background
     provider.connect()
+
     if process := provider.process:
+        if background:
+            # End this process, letting the node continue running.
+            # This node can be killed later using the `ape networks kill` command.
+            return
+
         try:
-            if not background:
-                process.wait()
+            process.wait()
         finally:
             try:
                 provider.disconnect()
@@ -165,3 +203,44 @@ def _run(cli_ctx, provider: "SubprocessProvider", background: bool = False):
     else:
         provider.disconnect()
         cli_ctx.abort("Process already running.")
+
+
+@cli.command(short_help="Stop node processes")
+@ape_cli_context()
+@click.option("--pid", "process_ids", help="The PID of the process(es) to kill", multiple=True)
+@network_option(default=None)
+def kill(cli_ctx, process_ids, provider):
+    """
+    Stop node processes
+    """
+    if not cli_ctx.network_manager.running_nodes:
+        echo_rich_text("No running nodes found.")
+
+    elif processes_killed := cli_ctx.network_manager.kill_node_process(*process_ids):
+        # Killed 1 or more nodes.
+        click.echo("Stopped the following node(s):")
+        pids_stopped = set()
+        for pid, data in processes_killed.items():
+            echo_rich_text(f"\t{repr(data)}")
+            pids_stopped.add(pid)
+
+        if rest := [pid for pid in process_ids if pid not in pids_stopped]:
+            click.echo(f"The remaining process IDs were no longer valid: {','.join(rest)}.")
+
+    else:
+        # Terminated the process outside of Ape.
+        click.echo("No running nodes found, but cleaned up cache.")
+
+
+@cli.command(short_help="Check if a provider is available")
+@ape_cli_context()
+@network_option()
+def ping(cli_ctx, provider):
+    if hasattr(provider, "allow_start"):
+        # We don't want to allow starting processes; this is used for
+        # checking if processes are alive (as well as checking live URIs).
+        provider.allow_start = False
+
+    provider.connect()
+    status = "AVAILABLE" if provider.is_connected else "UNAVAILABLE"
+    click.echo(f"'{provider.network_choice}' connection status: {status}")
