@@ -145,7 +145,7 @@ def test_chain_id_when_disconnected(eth_tester_provider):
         eth_tester_provider.connect()
 
 
-def test_chain_id_adhoc(networks):
+def test_chain_id_adhoc_http(networks):
     with networks.parse_network_choice("https://www.shibrpc.com") as bor:
         assert bor.chain_id == 109
 

@@ -974,7 +974,15 @@ class NetworkAPI(BaseInterfaceModel):
         **NOTE**: Unless overridden, returns same as
         :py:attr:`ape.api.providers.ProviderAPI.chain_id`.
         """
-        return self.provider.chain_id
+        if self.provider.network == self:
+            # Ensure 'active_provider' is actually (seemingly) connected
+            # to this network.
+            return self.provider.chain_id
+
+        raise NetworkError(
+            "Unable to reference provider to get `chain_id`: "
+            f"Network '{self.name}' is detached and information is missing."
+        )
 
     @property
     def network_id(self) -> int:
