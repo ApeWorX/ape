@@ -108,7 +108,7 @@ setup(
         "pydantic-settings>=2.5.2,<3",
         "pytest>=8.0,<9.0",
         "python-dateutil>=2.8.2,<3",
-        "PyYAML>=5.0,<7",
+        "PyYAML>=5.1,<7",
         "requests>=2.28.1,<3",
         "rich>=12.5.1,<14",
         "SQLAlchemy>=1.4.35",
