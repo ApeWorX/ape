@@ -39,6 +39,7 @@ from ape_ethereum.transactions import (
     TransactionType,
 )
 from ape_node.provider import GethDevProcess, Node, NodeSoftwareNotInstalledError
+from build.lib.ape.exceptions import ProviderNotConnectedError
 from tests.conftest import GETH_URI, geth_process_test
 
 
@@ -234,6 +235,21 @@ def test_chain_id_live_network_connected_uses_web3_chain_id(mocker, geth_provide
 
     # Still use the connected chain ID instead network's
     assert actual == 1337
+
+
+@geth_process_test
+def test_chain_id_adhoc_ipc_not_connected(networks, geth_provider):
+    ipc_path = str(geth_provider.ipc_path)
+    provider = networks.get_provider_from_choice(ipc_path)
+
+    # Clear chain ID for this test.
+    provider.__dict__.pop("chain_id", None)
+    assert not provider.is_connected, "Provider cannot be connected for this test"
+
+    # We expect this error because this means it attempts RPC to get the chain ID
+    # and does not reference the "active" provider (which is different).
+    with pytest.raises(ProviderNotConnectedError):
+        _ = provider.chain_id
 
 
 @geth_process_test
