@@ -256,7 +256,7 @@ class ProviderAPI(BaseInterfaceModel):
     @property
     def ipc_path(self) -> Optional[Path]:
         """
-        Return the IPC path for the provider, is supported.
+        Return the IPC path for the provider, if supported.
         """
         return None
 
