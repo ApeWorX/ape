@@ -21,6 +21,7 @@ from ape.exceptions import (
     ContractLogicError,
     NetworkMismatchError,
     ProviderError,
+    ProviderNotConnectedError,
     TransactionError,
     TransactionNotFoundError,
     VirtualMachineError,
@@ -39,7 +40,6 @@ from ape_ethereum.transactions import (
     TransactionType,
 )
 from ape_node.provider import GethDevProcess, Node, NodeSoftwareNotInstalledError
-from build.lib.ape.exceptions import ProviderNotConnectedError
 from tests.conftest import GETH_URI, geth_process_test
 
 
