@@ -135,7 +135,7 @@ def integ_project(request, project_dir_map):
 def ape_cli():
     from ape._cli import cli
 
-    yield cli
+    return cli
 
 
 def assert_failure(result, expected_output):

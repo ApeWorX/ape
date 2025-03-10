@@ -41,7 +41,7 @@ class ConverterAPI(BaseInterfaceModel, Generic[ConvertedType]):
             convert("0x283Af0B28c62C092C9727F1Ee09c02CA627EB7F5", bytes)
             # HexBytes('0x283af0b28c62c092c9727f1ee09c02ca627eb7f5')
 
-            convert("vitalik.eth", AddressType) # with ape-ens plugin installed
+            convert("vitalik.eth", AddressType)  # with ape-ens plugin installed
             # '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'
 
         """

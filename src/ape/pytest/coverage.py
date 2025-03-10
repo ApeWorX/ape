@@ -27,10 +27,10 @@ class CoverageData(ManagerAccessMixin):
         sources: Union[Iterable["ContractSource"], Callable[[], Iterable["ContractSource"]]],
     ):
         self.project = project
-        self._sources: Union[
-            Iterable["ContractSource"], Callable[[], Iterable["ContractSource"]]
-        ] = sources
-        self._report: Optional["CoverageReport"] = None
+        self._sources: Union[Iterable[ContractSource], Callable[[], Iterable[ContractSource]]] = (
+            sources
+        )
+        self._report: Optional[CoverageReport] = None
 
     @property
     def sources(self) -> list["ContractSource"]:

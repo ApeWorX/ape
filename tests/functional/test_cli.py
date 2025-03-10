@@ -396,7 +396,7 @@ def test_account_option_alias_not_found(runner, keyfile_account):
 
     result = runner.invoke(cmd, ("--account", "THIS ALAS IS NOT FOUND"))
     expected = (
-        "Invalid value for '--account': " "Account with alias 'THIS ALAS IS NOT FOUND' not found"
+        "Invalid value for '--account': Account with alias 'THIS ALAS IS NOT FOUND' not found"
     )
     assert expected in result.output
 
@@ -463,7 +463,6 @@ def test_verbosity_option_uses_logger_level_as_default(runner):
         @verbosity_option(default=None)
         def cmd():
             click.echo(f"LogLevel={logger.level}")
-            pass
 
         result = runner.invoke(cmd)
         assert "LogLevel=10" in result.output

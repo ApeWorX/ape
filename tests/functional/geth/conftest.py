@@ -62,7 +62,7 @@ def mock_geth(geth_provider, mock_web3):
         name="node",
         network=geth_provider.network,
         provider_settings={},
-        data_folder=Path("."),
+        data_folder=Path(),
     )
     original_web3 = provider._web3
     provider._web3 = mock_web3

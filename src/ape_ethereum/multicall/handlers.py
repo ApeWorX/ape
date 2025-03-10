@@ -55,6 +55,7 @@ class BaseMulticall(ManagerAccessMixin):
 
             from ape_ethereum import multicall
 
+
             @pytest.fixture(scope="session")
             def use_multicall():
                 # NOTE: use this fixture any test where you want to use a multicall
@@ -168,7 +169,7 @@ class Call(BaseMulticall):
         super().__init__(address=address, supported_chains=supported_chains)
 
         self.abis: list[MethodABI] = []
-        self._result: Union[None, list[tuple[bool, "HexBytes"]]] = None
+        self._result: Union[None, list[tuple[bool, HexBytes]]] = None
 
     @property
     def handler(self) -> ContractCallHandler:  # type: ignore[override]

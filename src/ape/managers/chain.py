@@ -336,14 +336,14 @@ class AccountHistory(BaseInterfaceModel):
 
             elif receipt.nonce > start_nonce:
                 # NOTE: There's a gap in our sessional history, so fetch from query engine
-                yield from iter(self[start_nonce : receipt.nonce + 1])  # noqa: E203
+                yield from iter(self[start_nonce : receipt.nonce + 1])
 
             yield receipt
             start_nonce = receipt.nonce + 1  # start next loop on the next item
 
         if start_nonce != stop_nonce:
             # NOTE: there is no more session history, so just return query engine iterator
-            yield from iter(self[start_nonce : stop_nonce + 1])  # noqa: E203
+            yield from iter(self[start_nonce : stop_nonce + 1])
 
     def query(
         self,
@@ -794,6 +794,7 @@ class ChainManager(BaseManager):
         Usage example::
 
             from ape import chain
+
             chain.pending_timestamp += 3600
         """
         return self.provider.get_block("pending").timestamp

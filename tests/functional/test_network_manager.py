@@ -221,9 +221,9 @@ def test_parse_network_choice_multiple_contexts(
     eth_tester_provider, get_provider_with_unused_chain_id
 ):
     first_context = get_provider_with_unused_chain_id()
-    assert (
-        eth_tester_provider.chain_id == DEFAULT_TEST_CHAIN_ID
-    ), "Test setup failed - expecting to start on default chain ID"
+    assert eth_tester_provider.chain_id == DEFAULT_TEST_CHAIN_ID, (
+        "Test setup failed - expecting to start on default chain ID"
+    )
     assert eth_tester_provider.make_request("eth_chainId") == DEFAULT_TEST_CHAIN_ID
 
     with first_context:
@@ -250,7 +250,7 @@ def test_getattr_custom_ecosystem(networks, custom_networks_config_dict, project
     data["networks"]["custom"][0]["ecosystem"] = "custom-ecosystem"
 
     with project.temp_config(**data):
-        actual = getattr(networks, "custom_ecosystem")
+        actual = networks.custom_ecosystem
         assert isinstance(actual, EcosystemAPI)
 
 

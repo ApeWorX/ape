@@ -10,8 +10,8 @@ def test_networks_context_does_not_disconnect(networks):
         # Show more info for debugging purposes
         context = networks.ethereum.local.use_provider("test")
         error_output = f"""
-        ape: {shutil.which('ape')},
-        connected_providers: {', '.join([pid for pid in context.connected_providers.keys()])},
+        ape: {shutil.which("ape")},
+        connected_providers: {", ".join([pid for pid in context.connected_providers.keys()])},
         """
         assert False, f"Provider lost connection!\n{error_output}"
 

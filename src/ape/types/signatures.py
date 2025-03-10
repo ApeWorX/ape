@@ -35,7 +35,7 @@ def signable_message_repr(msg) -> str:
     version_str = _bytes_to_human_str(msg.version) or default_value
     header_str = _bytes_to_human_str(msg.header) or default_value
     body_str = _bytes_to_human_str(msg.body) or default_value
-    return f"{name}(" f'version="{version_str}", header="{header_str}", body="{body_str}")'
+    return f'{name}(version="{version_str}", header="{header_str}", body="{body_str}")'
 
 
 SignableMessage.__repr__ = signable_message_repr  # type: ignore[method-assign]
@@ -145,4 +145,4 @@ class TransactionSignature(_Signature):
     """
 
 
-__all__ = ["MessageSignature", "TransactionSignature", "SignableMessage"]
+__all__ = ["MessageSignature", "SignableMessage", "TransactionSignature"]

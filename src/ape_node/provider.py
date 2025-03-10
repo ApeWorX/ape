@@ -329,7 +329,7 @@ class EthereumNetworkConfig(PluginConfig):
 
         if "chain_id" not in value:
             value["chain_id"] = DEFAULT_TEST_CHAIN_ID
-        if "uri" not in value and "ipc_path" in value or "ws_uri" in value or "http_uri" in value:
+        if ("uri" not in value and "ipc_path" in value) or "ws_uri" in value or "http_uri" in value:
             # No need to add default HTTP URI if was given only IPC Path
             return {**{k: v for k, v in DEFAULT_SETTINGS.items() if k != "uri"}, **value}
 

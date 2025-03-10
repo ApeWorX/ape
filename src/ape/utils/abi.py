@@ -318,7 +318,6 @@ class Struct:
 
     def __setitem__(self, key, value):
         """Override"""
-        pass
 
 
 def create_struct(name: str, types: Sequence[ABIType], output_values: Sequence) -> Any:

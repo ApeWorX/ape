@@ -76,7 +76,7 @@ class ApeConsoleMagics(Magics):
         decimals = ecosystem.fee_token_decimals
         symbol = ecosystem.fee_token_symbol
         balance = provider.get_balance(address)
-        return f"{round(balance / 10 ** decimals, 8)} {symbol}"
+        return f"{round(balance / 10**decimals, 8)} {symbol}"
 
 
 def custom_exception_handler(self, etype, value, tb, tb_offset=None):
