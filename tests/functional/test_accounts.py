@@ -971,8 +971,8 @@ def test_import_account_from_private_key_invalid_passphrase():
     with pytest.raises(AccountsError, match="Account file encryption passphrase must be provided."):
         import_account_from_private_key(
             "invalid-passphrase",
-            b"bytestring",
-            PRIVATE_KEY,  # type: ignore
+            b"bytestring",  # type: ignore
+            PRIVATE_KEY,
         )
 
 

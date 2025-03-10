@@ -190,8 +190,10 @@ class Web3Provider(ProviderAPI, ABC):
 
             return send_tx_wrapper
 
-        cls.send_transaction = post_tx_hook(cls.send_transaction)
-        cls.connect = post_connect_hook(cls.connect)
+        send_tx_wrapper = post_tx_hook(cls.send_transaction)
+        connect_wrapper = post_connect_hook(cls.connect)
+        cls.send_transaction = send_tx_wrapper  # type: ignore[method-assign]
+        cls.connect = connect_wrapper  # type: ignore[method-assign]
         return super().__new__(cls)  # pydantic v2 doesn't want args
 
     def __init__(self, *args, **kwargs):
