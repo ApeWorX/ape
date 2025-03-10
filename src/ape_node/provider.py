@@ -186,6 +186,7 @@ class GethDevProcess(BaseGethProcess):
 
         process_kwargs = {
             "auto_disconnect": kwargs.get("auto_disconnect", True),
+            "background": kwargs.get("background", False),
             "block_time": block_time,
             "executable": kwargs.get("executable"),
             "extra_funded_accounts": extra_accounts,
