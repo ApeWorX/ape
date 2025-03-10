@@ -1584,7 +1584,7 @@ class EthereumNodeProvider(Web3Provider, ABC):
         return _get_default_data_dir()
 
     @property
-    def ipc_path(self) -> Path:
+    def ipc_path(self) -> Optional[Path]:
         if path := super().ipc_path:
             return path
 
@@ -1692,9 +1692,10 @@ class EthereumNodeProvider(Web3Provider, ABC):
 
     def _log_connection(self, client_name: str):
         msg = f"Connecting to existing {client_name.strip()} node at"
+
         suffix = (
             self.ipc_path.as_posix().replace(Path.home().as_posix(), "$HOME")
-            if self.ipc_path.exists()
+            if self.ipc_path is not None and self.ipc_path.exists()
             else self._clean_uri
         )
         logger.info(f"{msg} {suffix}.")
