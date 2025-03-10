@@ -35,12 +35,12 @@ def module_one(chain):
 
 @pytest.fixture(scope="session")
 def alice(accounts):
-    yield accounts[0]
+    return accounts[0]
 
 
 @pytest.fixture(scope="session")
 def bob(accounts):
-    yield accounts[1]
+    return accounts[1]
 
 
 @pytest.fixture(params=(5, 6, 7))

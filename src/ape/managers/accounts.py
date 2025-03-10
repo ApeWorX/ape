@@ -317,10 +317,10 @@ class AccountManager(BaseManager):
         Usage example::
 
             def test_my_contract(accounts):
-               # The "accounts" fixture uses the AccountsManager.test_accounts()
-               sender = accounts[0]
-               receiver = accounts[1]
-               ...
+                # The "accounts" fixture uses the AccountsManager.test_accounts()
+                sender = accounts[0]
+                receiver = accounts[1]
+                ...
 
         Returns:
             :class:`TestAccountContainer`

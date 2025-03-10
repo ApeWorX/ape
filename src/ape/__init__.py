@@ -8,16 +8,16 @@ if threading.current_thread() is threading.main_thread():
 import sys as _sys
 
 __all__ = [
+    "Contract",
+    "Project",  # So you can load other projects
     "accounts",
     "chain",
     "compilers",
     "config",
     "convert",
-    "Contract",
     "fixture",
     "networks",
     "project",
-    "Project",  # So you can load other projects
     "reverts",
 ]
 

@@ -394,4 +394,4 @@ def silenced(func: Callable):
     return wrapper
 
 
-__all__ = ["DEFAULT_LOG_LEVEL", "logger", "LogLevel", "ApeLogger", "get_rich_console", "silenced"]
+__all__ = ["DEFAULT_LOG_LEVEL", "ApeLogger", "LogLevel", "get_rich_console", "logger", "silenced"]

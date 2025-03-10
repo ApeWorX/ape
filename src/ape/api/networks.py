@@ -301,7 +301,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         """
         Networks from config.
         """
-        networks: dict[str, "NetworkAPI"] = {}
+        networks: dict[str, NetworkAPI] = {}
         custom_networks: list[dict] = [
             n
             for n in self.network_manager.custom_networks
@@ -649,6 +649,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
 
             from ape.api import EcosystemAPI
             from eth_pydantic_types import HexBytes
+
 
             class MyEcosystem(EcosystemAPI):
                 def get_method_selector(self, abi: MethodABI) -> HexBytes:
@@ -1341,6 +1342,7 @@ class NetworkAPI(BaseInterfaceModel):
         Usage example::
 
             from ape import networks
+
             mainnet = networks.ethereum.mainnet  # An instance of NetworkAPI
             with mainnet.use_default_provider():
                 ...
@@ -1470,11 +1472,11 @@ def create_network_type(chain_id: int, network_id: int, is_fork: bool = False) -
 
 # TODO: Can remove in 0.9 since `LOCAL_NETWORK_NAME` doesn't need to be here.
 __all__ = [
-    "create_network_type",
-    "EcosystemAPI",
     "LOCAL_NETWORK_NAME",  # Have to leave for backwards compat.
+    "EcosystemAPI",
     "ForkedNetworkAPI",
     "NetworkAPI",
     "ProviderContextManager",
     "ProxyInfoAPI",
+    "create_network_type",
 ]

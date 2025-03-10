@@ -515,7 +515,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             match = self._CANNOT_AFFORD_GAS_PATTERN.match(str(exception))
             if match:
                 txn_gas, bal = match.groups()
-                sender = getattr(kwargs["txn"], "sender")
+                sender = kwargs["txn"].sender
                 new_message = (
                     f"Sender '{sender}' cannot afford txn gas {txn_gas} with account balance {bal}."
                 )
