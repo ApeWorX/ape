@@ -1881,10 +1881,12 @@ Use this to limit the values of a config item, such as colors <code class="docut
 </span><span data-line="2">    <span class="n">FOO</span> <span class="o">=</span> <span class="s2">&quot;FOO&quot;</span>
 </span><span data-line="3">    <span class="n">BAR</span> <span class="o">=</span> <span class="s2">&quot;BAR&quot;</span>
 </span><span data-line="4">
-</span><span data-line="5"><span class="k">class</span><span class="w"> </span><span class="nc">MyConfig</span><span class="p">(</span><span class="n">PluginConfig</span><span class="p">):</span>
-</span><span data-line="6">    <span class="n">my_enum</span><span class="p">:</span> <span class="n">MyEnum</span>
-</span><span data-line="7">
-</span><span data-line="8"><span class="n">model</span> <span class="o">=</span> <span class="n">MyConfig</span><span class="p">(</span><span class="n">my_enum</span><span class="o">=</span><span class="s2">&quot;FOO&quot;</span><span class="p">)</span>
+</span><span data-line="5">
+</span><span data-line="6"><span class="k">class</span><span class="w"> </span><span class="nc">MyConfig</span><span class="p">(</span><span class="n">PluginConfig</span><span class="p">):</span>
+</span><span data-line="7">    <span class="n">my_enum</span><span class="p">:</span> <span class="n">MyEnum</span>
+</span><span data-line="8">
+</span><span data-line="9">
+</span><span data-line="10"><span class="n">model</span> <span class="o">=</span> <span class="n">MyConfig</span><span class="p">(</span><span class="n">my_enum</span><span class="o">=</span><span class="s2">&quot;FOO&quot;</span><span class="p">)</span>
 </span></pre></div>
 </div>
 <dl class="py method">
@@ -2111,7 +2113,7 @@ when the item fails to convert properly.</p>
 </span><span data-line="10"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;0x283Af0B28c62C092C9727F1Ee09c02CA627EB7F5&quot;</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span>
 </span><span data-line="11"><span class="c1"># HexBytes(&#39;0x283af0b28c62c092c9727f1ee09c02ca627eb7f5&#39;)</span>
 </span><span data-line="12">
-</span><span data-line="13"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;vitalik.eth&quot;</span><span class="p">,</span> <span class="n">AddressType</span><span class="p">)</span> <span class="c1"># with ape-ens plugin installed</span>
+</span><span data-line="13"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;vitalik.eth&quot;</span><span class="p">,</span> <span class="n">AddressType</span><span class="p">)</span>  <span class="c1"># with ape-ens plugin installed</span>
 </span><span data-line="14"><span class="c1"># &#39;0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&#39;</span>
 </span></pre></div>
 </div>
@@ -2632,9 +2634,10 @@ Defaults to using <code class="docutils literal notranslate"><span class="pre">k
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.api</span><span class="w"> </span><span class="kn">import</span> <span class="n">EcosystemAPI</span>
 </span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">eth_pydantic_types</span><span class="w"> </span><span class="kn">import</span> <span class="n">HexBytes</span>
 </span><span data-line="3">
-</span><span data-line="4"><span class="k">class</span><span class="w"> </span><span class="nc">MyEcosystem</span><span class="p">(</span><span class="n">EcosystemAPI</span><span class="p">):</span>
-</span><span data-line="5">    <span class="k">def</span><span class="w"> </span><span class="nf">get_method_selector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">abi</span><span class="p">:</span> <span class="n">MethodABI</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">HexBytes</span><span class="p">:</span>
-</span><span data-line="6">        <span class="k">return</span> <span class="n">HexBytes</span><span class="p">(</span><span class="n">abi</span><span class="o">.</span><span class="n">selector</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span>  <span class="c1"># Simple bytes selector</span>
+</span><span data-line="4">
+</span><span data-line="5"><span class="k">class</span><span class="w"> </span><span class="nc">MyEcosystem</span><span class="p">(</span><span class="n">EcosystemAPI</span><span class="p">):</span>
+</span><span data-line="6">    <span class="k">def</span><span class="w"> </span><span class="nf">get_method_selector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">abi</span><span class="p">:</span> <span class="n">MethodABI</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">HexBytes</span><span class="p">:</span>
+</span><span data-line="7">        <span class="k">return</span> <span class="n">HexBytes</span><span class="p">(</span><span class="n">abi</span><span class="o">.</span><span class="n">selector</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span>  <span class="c1"># Simple bytes selector</span>
 </span></pre></div>
 </div>
 <dl class="field-list simple">
@@ -3074,9 +3077,10 @@ method <a class="reference internal" href="#ape.api.providers.ProviderAPI.discon
 <p><strong>NOTE</strong>: If multiple providers exist, uses whatever was “first” registered.</p>
 <p>Usage example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">networks</span>
-</span><span data-line="2"><span class="n">mainnet</span> <span class="o">=</span> <span class="n">networks</span><span class="o">.</span><span class="n">ethereum</span><span class="o">.</span><span class="n">mainnet</span>  <span class="c1"># An instance of NetworkAPI</span>
-</span><span data-line="3"><span class="k">with</span> <span class="n">mainnet</span><span class="o">.</span><span class="n">use_default_provider</span><span class="p">():</span>
-</span><span data-line="4">    <span class="o">...</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="n">mainnet</span> <span class="o">=</span> <span class="n">networks</span><span class="o">.</span><span class="n">ethereum</span><span class="o">.</span><span class="n">mainnet</span>  <span class="c1"># An instance of NetworkAPI</span>
+</span><span data-line="4"><span class="k">with</span> <span class="n">mainnet</span><span class="o">.</span><span class="n">use_default_provider</span><span class="p">():</span>
+</span><span data-line="5">    <span class="o">...</span>
 </span></pre></div>
 </div>
 <dl class="field-list simple">

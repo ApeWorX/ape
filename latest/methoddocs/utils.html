@@ -1178,9 +1178,10 @@ warns and returns <code class="docutils literal notranslate"><span class="pre">N
 </span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">SnapshotID</span>
 </span><span data-line="3"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">return_none_when_disconnected</span>
 </span><span data-line="4">
-</span><span data-line="5"><span class="nd">@allow_disconnected</span>
-</span><span data-line="6"><span class="k">def</span><span class="w"> </span><span class="nf">try_snapshot</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">SnapshotID</span><span class="p">]:</span>
-</span><span data-line="7">    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">chain</span><span class="o">.</span><span class="n">snapshot</span><span class="p">()</span>
+</span><span data-line="5">
+</span><span data-line="6"><span class="nd">@allow_disconnected</span>
+</span><span data-line="7"><span class="k">def</span><span class="w"> </span><span class="nf">try_snapshot</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">SnapshotID</span><span class="p">]:</span>
+</span><span data-line="8">    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">chain</span><span class="o">.</span><span class="n">snapshot</span><span class="p">()</span>
 </span></pre></div>
 </div>
 </dd></dl>

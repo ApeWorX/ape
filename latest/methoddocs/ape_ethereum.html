@@ -1886,10 +1886,11 @@ Must use a provider that supports <code class="docutils literal notranslate"><sp
 <p>Usage example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape_ethereum</span><span class="w"> </span><span class="kn">import</span> <span class="n">multicall</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">)</span>
-</span><span data-line="4"><span class="k">def</span><span class="w"> </span><span class="nf">use_multicall</span><span class="p">():</span>
-</span><span data-line="5">    <span class="c1"># NOTE: use this fixture any test where you want to use a multicall</span>
-</span><span data-line="6">    <span class="k">return</span> <span class="n">multicall</span><span class="o">.</span><span class="n">BaseMulticall</span><span class="o">.</span><span class="n">inject</span><span class="p">()</span>
+</span><span data-line="3">
+</span><span data-line="4"><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">)</span>
+</span><span data-line="5"><span class="k">def</span><span class="w"> </span><span class="nf">use_multicall</span><span class="p">():</span>
+</span><span data-line="6">    <span class="c1"># NOTE: use this fixture any test where you want to use a multicall</span>
+</span><span data-line="7">    <span class="k">return</span> <span class="n">multicall</span><span class="o">.</span><span class="n">BaseMulticall</span><span class="o">.</span><span class="n">inject</span><span class="p">()</span>
 </span></pre></div>
 </div>
 </dd></dl>

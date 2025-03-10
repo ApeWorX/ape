@@ -417,14 +417,15 @@ when creating a <a class="reference internal" href="#ape.cli.choices.output_form
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">def</span><span class="w"> </span><span class="nf">choice_callback</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">param</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
 </span><span data-line="2">    <span class="k">return</span> <span class="n">param</span><span class="o">.</span><span class="n">type</span><span class="o">.</span><span class="n">get_user_selected_choice</span><span class="p">()</span>
 </span><span data-line="3">
-</span><span data-line="4"><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
-</span><span data-line="5"><span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
-</span><span data-line="6">    <span class="s2">&quot;--choice&quot;</span><span class="p">,</span>
-</span><span data-line="7">    <span class="nb">type</span><span class="o">=</span><span class="n">PromptChoice</span><span class="p">([</span><span class="s2">&quot;foo&quot;</span><span class="p">,</span> <span class="s2">&quot;bar&quot;</span><span class="p">]),</span>
-</span><span data-line="8">    <span class="n">callback</span><span class="o">=</span><span class="n">choice_callback</span><span class="p">,</span>
-</span><span data-line="9"><span class="p">)</span>
-</span><span data-line="10"><span class="k">def</span><span class="w"> </span><span class="nf">cmd</span><span class="p">(</span><span class="n">choice</span><span class="p">):</span>
-</span><span data-line="11">    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;__expected_</span><span class="si">{</span><span class="n">choice</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="4">
+</span><span data-line="5"><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
+</span><span data-line="6"><span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
+</span><span data-line="7">    <span class="s2">&quot;--choice&quot;</span><span class="p">,</span>
+</span><span data-line="8">    <span class="nb">type</span><span class="o">=</span><span class="n">PromptChoice</span><span class="p">([</span><span class="s2">&quot;foo&quot;</span><span class="p">,</span> <span class="s2">&quot;bar&quot;</span><span class="p">]),</span>
+</span><span data-line="9">    <span class="n">callback</span><span class="o">=</span><span class="n">choice_callback</span><span class="p">,</span>
+</span><span data-line="10"><span class="p">)</span>
+</span><span data-line="11"><span class="k">def</span><span class="w"> </span><span class="nf">cmd</span><span class="p">(</span><span class="n">choice</span><span class="p">):</span>
+</span><span data-line="12">    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;__expected_</span><span class="si">{</span><span class="n">choice</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </span></pre></div>
 </div>
 <dl class="py method">

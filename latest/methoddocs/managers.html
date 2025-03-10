@@ -633,10 +633,10 @@ are also the subject of a fixture available in the <code class="docutils literal
 number-of-accounts using the <code class="docutils literal notranslate"><span class="pre">test</span></code> section of the <cite>ape-config.yaml</cite> file.</p>
 <p>Usage example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">def</span><span class="w"> </span><span class="nf">test_my_contract</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
-</span><span data-line="2">   <span class="c1"># The &quot;accounts&quot; fixture uses the AccountsManager.test_accounts()</span>
-</span><span data-line="3">   <span class="n">sender</span> <span class="o">=</span> <span class="n">accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-</span><span data-line="4">   <span class="n">receiver</span> <span class="o">=</span> <span class="n">accounts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-</span><span data-line="5">   <span class="o">...</span>
+</span><span data-line="2">    <span class="c1"># The &quot;accounts&quot; fixture uses the AccountsManager.test_accounts()</span>
+</span><span data-line="3">    <span class="n">sender</span> <span class="o">=</span> <span class="n">accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</span><span data-line="4">    <span class="n">receiver</span> <span class="o">=</span> <span class="n">accounts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+</span><span data-line="5">    <span class="o">...</span>
 </span></pre></div>
 </div>
 <dl class="field-list simple">
@@ -1729,7 +1729,8 @@ Defaults to None.</p></li>
 You can also set the timestamp for development purposes.</p>
 <p>Usage example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">chain</span>
-</span><span data-line="2"><span class="n">chain</span><span class="o">.</span><span class="n">pending_timestamp</span> <span class="o">+=</span> <span class="mi">3600</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="n">chain</span><span class="o">.</span><span class="n">pending_timestamp</span> <span class="o">+=</span> <span class="mi">3600</span>
 </span></pre></div>
 </div>
 </dd></dl>
@@ -1890,7 +1891,7 @@ when the item fails to convert properly.</p>
 </span><span data-line="10"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;0x283Af0B28c62C092C9727F1Ee09c02CA627EB7F5&quot;</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span>
 </span><span data-line="11"><span class="c1"># HexBytes(&#39;0x283af0b28c62c092c9727f1ee09c02ca627eb7f5&#39;)</span>
 </span><span data-line="12">
-</span><span data-line="13"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;vitalik.eth&quot;</span><span class="p">,</span> <span class="n">AddressType</span><span class="p">)</span> <span class="c1"># with ape-ens plugin installed</span>
+</span><span data-line="13"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;vitalik.eth&quot;</span><span class="p">,</span> <span class="n">AddressType</span><span class="p">)</span>  <span class="c1"># with ape-ens plugin installed</span>
 </span><span data-line="14"><span class="c1"># &#39;0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&#39;</span>
 </span></pre></div>
 </div>
@@ -1982,7 +1983,7 @@ when the item fails to convert properly.</p>
 </span><span data-line="10"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;0x283Af0B28c62C092C9727F1Ee09c02CA627EB7F5&quot;</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span>
 </span><span data-line="11"><span class="c1"># HexBytes(&#39;0x283af0b28c62c092c9727f1ee09c02ca627eb7f5&#39;)</span>
 </span><span data-line="12">
-</span><span data-line="13"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;vitalik.eth&quot;</span><span class="p">,</span> <span class="n">AddressType</span><span class="p">)</span> <span class="c1"># with ape-ens plugin installed</span>
+</span><span data-line="13"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;vitalik.eth&quot;</span><span class="p">,</span> <span class="n">AddressType</span><span class="p">)</span>  <span class="c1"># with ape-ens plugin installed</span>
 </span><span data-line="14"><span class="c1"># &#39;0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&#39;</span>
 </span></pre></div>
 </div>
@@ -2207,7 +2208,7 @@ when the item fails to convert properly.</p>
 </span><span data-line="10"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;0x283Af0B28c62C092C9727F1Ee09c02CA627EB7F5&quot;</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span>
 </span><span data-line="11"><span class="c1"># HexBytes(&#39;0x283af0b28c62c092c9727f1ee09c02ca627eb7f5&#39;)</span>
 </span><span data-line="12">
-</span><span data-line="13"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;vitalik.eth&quot;</span><span class="p">,</span> <span class="n">AddressType</span><span class="p">)</span> <span class="c1"># with ape-ens plugin installed</span>
+</span><span data-line="13"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;vitalik.eth&quot;</span><span class="p">,</span> <span class="n">AddressType</span><span class="p">)</span>  <span class="c1"># with ape-ens plugin installed</span>
 </span><span data-line="14"><span class="c1"># &#39;0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&#39;</span>
 </span></pre></div>
 </div>
@@ -2256,7 +2257,7 @@ when the item fails to convert properly.</p>
 </span><span data-line="10"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;0x283Af0B28c62C092C9727F1Ee09c02CA627EB7F5&quot;</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span>
 </span><span data-line="11"><span class="c1"># HexBytes(&#39;0x283af0b28c62c092c9727f1ee09c02ca627eb7f5&#39;)</span>
 </span><span data-line="12">
-</span><span data-line="13"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;vitalik.eth&quot;</span><span class="p">,</span> <span class="n">AddressType</span><span class="p">)</span> <span class="c1"># with ape-ens plugin installed</span>
+</span><span data-line="13"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;vitalik.eth&quot;</span><span class="p">,</span> <span class="n">AddressType</span><span class="p">)</span>  <span class="c1"># with ape-ens plugin installed</span>
 </span><span data-line="14"><span class="c1"># &#39;0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&#39;</span>
 </span></pre></div>
 </div>
@@ -2305,7 +2306,7 @@ when the item fails to convert properly.</p>
 </span><span data-line="10"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;0x283Af0B28c62C092C9727F1Ee09c02CA627EB7F5&quot;</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span>
 </span><span data-line="11"><span class="c1"># HexBytes(&#39;0x283af0b28c62c092c9727f1ee09c02ca627eb7f5&#39;)</span>
 </span><span data-line="12">
-</span><span data-line="13"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;vitalik.eth&quot;</span><span class="p">,</span> <span class="n">AddressType</span><span class="p">)</span> <span class="c1"># with ape-ens plugin installed</span>
+</span><span data-line="13"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;vitalik.eth&quot;</span><span class="p">,</span> <span class="n">AddressType</span><span class="p">)</span>  <span class="c1"># with ape-ens plugin installed</span>
 </span><span data-line="14"><span class="c1"># &#39;0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&#39;</span>
 </span></pre></div>
 </div>
@@ -2354,7 +2355,7 @@ when the item fails to convert properly.</p>
 </span><span data-line="10"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;0x283Af0B28c62C092C9727F1Ee09c02CA627EB7F5&quot;</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span>
 </span><span data-line="11"><span class="c1"># HexBytes(&#39;0x283af0b28c62c092c9727f1ee09c02ca627eb7f5&#39;)</span>
 </span><span data-line="12">
-</span><span data-line="13"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;vitalik.eth&quot;</span><span class="p">,</span> <span class="n">AddressType</span><span class="p">)</span> <span class="c1"># with ape-ens plugin installed</span>
+</span><span data-line="13"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;vitalik.eth&quot;</span><span class="p">,</span> <span class="n">AddressType</span><span class="p">)</span>  <span class="c1"># with ape-ens plugin installed</span>
 </span><span data-line="14"><span class="c1"># &#39;0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&#39;</span>
 </span></pre></div>
 </div>
@@ -2402,7 +2403,7 @@ when the item fails to convert properly.</p>
 </span><span data-line="10"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;0x283Af0B28c62C092C9727F1Ee09c02CA627EB7F5&quot;</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span>
 </span><span data-line="11"><span class="c1"># HexBytes(&#39;0x283af0b28c62c092c9727f1ee09c02ca627eb7f5&#39;)</span>
 </span><span data-line="12">
-</span><span data-line="13"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;vitalik.eth&quot;</span><span class="p">,</span> <span class="n">AddressType</span><span class="p">)</span> <span class="c1"># with ape-ens plugin installed</span>
+</span><span data-line="13"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;vitalik.eth&quot;</span><span class="p">,</span> <span class="n">AddressType</span><span class="p">)</span>  <span class="c1"># with ape-ens plugin installed</span>
 </span><span data-line="14"><span class="c1"># &#39;0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&#39;</span>
 </span></pre></div>
 </div>
@@ -2452,7 +2453,7 @@ when the item fails to convert properly.</p>
 </span><span data-line="10"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;0x283Af0B28c62C092C9727F1Ee09c02CA627EB7F5&quot;</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span>
 </span><span data-line="11"><span class="c1"># HexBytes(&#39;0x283af0b28c62c092c9727f1ee09c02ca627eb7f5&#39;)</span>
 </span><span data-line="12">
-</span><span data-line="13"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;vitalik.eth&quot;</span><span class="p">,</span> <span class="n">AddressType</span><span class="p">)</span> <span class="c1"># with ape-ens plugin installed</span>
+</span><span data-line="13"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;vitalik.eth&quot;</span><span class="p">,</span> <span class="n">AddressType</span><span class="p">)</span>  <span class="c1"># with ape-ens plugin installed</span>
 </span><span data-line="14"><span class="c1"># &#39;0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&#39;</span>
 </span></pre></div>
 </div>
@@ -2492,7 +2493,7 @@ However, use this singleton for more granular access to networks.</p>
 </span><span data-line="2">
 </span><span data-line="3"><span class="c1"># &quot;networks&quot; is the NetworkManager singleton</span>
 </span><span data-line="4"><span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">ethereum</span><span class="o">.</span><span class="n">mainnet</span><span class="o">.</span><span class="n">use_provider</span><span class="p">(</span><span class="s2">&quot;node&quot;</span><span class="p">):</span>
-</span><span data-line="5">   <span class="o">...</span>
+</span><span data-line="5">    <span class="o">...</span>
 </span></pre></div>
 </div>
 <dl class="py property">
