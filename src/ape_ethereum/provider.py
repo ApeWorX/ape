@@ -214,7 +214,7 @@ class Web3Provider(ProviderAPI, ABC):
 
     @property
     def _network_config(self) -> dict:
-        config: dict = self.config.get(self.network.ecosystem.name, None)
+        config: dict = self.settings.get(self.network.ecosystem.name, None)
         if config is None:
             return {}
 
@@ -226,13 +226,13 @@ class Web3Provider(ProviderAPI, ABC):
         result = None
         rpc: str
         if rpc := settings.get(key):
-            result = rpc
+            result = f"{rpc}"
 
         else:
             # See if it was configured for the network directly.
             config = self._network_config
             if rpc := config.get(key):
-                result = rpc
+                result = f"{rpc}"
 
         if result:
             if validator(result):
@@ -257,7 +257,7 @@ class Web3Provider(ProviderAPI, ABC):
 
     @property
     def _configured_uri(self) -> Optional[str]:
-        for key in ("uri", "url"):
+        for key in ("uri", "url", "ipc_path", "http_uri", "ws_uri"):
             if rpc := self._get_configured_rpc(key, _is_uri):
                 return rpc
 
@@ -1573,7 +1573,7 @@ class EthereumNodeProvider(Web3Provider, ABC):
 
     @property
     def _clean_uri(self) -> str:
-        uri = self.uri
+        uri = f"{self.uri}"
         return sanitize_url(uri) if _is_http_url(uri) or _is_ws_url(uri) else uri
 
     @property

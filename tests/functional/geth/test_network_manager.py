@@ -76,3 +76,4 @@ def test_parse_network_choice_pid(geth_provider, networks):
     # Show we are able to connect to providers via PID URL.
     with networks.parse_network_choice(f"pid://{pid}") as provider:
         assert provider.is_connected
+        assert provider.network_choice == f"ethereum:local:{geth_provider.ipc_path}"

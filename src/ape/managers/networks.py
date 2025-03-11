@@ -262,18 +262,35 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         if not (data := self.running_nodes.get(pid)):
             raise NetworkError(f"No running node for pid '{pid}'.")
 
-        network_choice = data.network_choice
+        uri = None
+        if ipc := data.ipc_path:
+            if ipc.exists():
+                uri = ipc
+
+        else:
+            uri = data.http_uri or data.ws_uri
+
+        if uri is None:
+            NetworkError(f"Cannot connect to node on PID '{pid}': Missing URI data.")
+
+        # In this case, we want the more connectable network choice.
+        network_parts = data.network_choice.split(":")
+        network_choice = f"{':'.join(network_parts[:2])}:{uri}"
 
         provider_settings: dict = {
-            "ipc_path": data.ipc_path,
-            "http_uri": data.http_uri,
-            "ws_uri": data.ws_uri,
+            network_parts[0]: {
+                network_parts[1]: {
+                    "ipc_path": data.ipc_path,
+                    "http_uri": data.http_uri,
+                    "ws_uri": data.ws_uri,
+                    "uri": None,
+                }
+            }
         }
-        provider_settings = {k: v for k, v in provider_settings.items() if v is not None}
-
         provider = self.get_provider_from_choice(
             network_choice=network_choice, provider_settings=provider_settings or None
         )
+
         # If this is not a subprocess provider, it may be ok to proceed.
         # However, the rest of Ape will assume it is.
         return provider  # type: ignore[return-value]
