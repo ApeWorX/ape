@@ -262,7 +262,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         if not (data := self.running_nodes.get(pid)):
             raise NetworkError(f"No running node for pid '{pid}'.")
 
-        uri = None
+        uri: Optional[Union[str, Path]] = None
         if ipc := data.ipc_path:
             if ipc.exists():
                 uri = ipc
