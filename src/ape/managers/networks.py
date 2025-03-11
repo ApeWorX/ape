@@ -101,6 +101,9 @@ class NodeProcessMap(DiskCacheableModel):
         """
         return bool(self.nodes)
 
+    def __contains__(self, pid: int) -> bool:
+        return pid in self.nodes
+
     def get(self, pid: int) -> Optional[NodeProcessData]:
         return self.nodes.get(int(pid))
 

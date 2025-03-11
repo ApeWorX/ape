@@ -1115,7 +1115,7 @@ class SubprocessProvider(ProviderAPI):
                 out_file = PIPE
 
             cmd = self.build_command()
-            process = Popen(cmd, preexec_fn=pre_exec_fn, stdout=out_file, stderr=out_file)
+            process = popen(cmd, preexec_fn=pre_exec_fn, stdout=out_file, stderr=out_file)
             self.process = process
             spawn(self.produce_stdout_queue)
             spawn(self.produce_stderr_queue)
@@ -1132,6 +1132,9 @@ class SubprocessProvider(ProviderAPI):
 
                     time.sleep(0.1)
                     _timeout.check()
+
+        else:
+            raise ProviderError("Process not started and cannot connect to existing process.")
 
     def produce_stdout_queue(self):
         process = self.process
@@ -1278,3 +1281,8 @@ def _linux_set_death_signal():
     # the second argument is what signal to send to child subprocesses
     libc = ctypes.CDLL("libc.so.6")
     return libc.prctl(1, SIGTERM)
+
+
+def popen(cmd: list[str], **kwargs):
+    # Abstracted for testing purporses.
+    return Popen(cmd, **kwargs)
