@@ -802,9 +802,9 @@ class TestSubprocessProvider:
                 return ["apemockprocess"]
 
         # Hack to allow abstract methods anyway.
-        MockSubprocessProvider.__abstractmethods__ = set()
+        MockSubprocessProvider.__abstractmethods__ = set()  # type: ignore
 
-        return MockSubprocessProvider(name="apemockprocess", network=eth_tester_provider.network)
+        return MockSubprocessProvider(name="apemockprocess", network=eth_tester_provider.network)  # type: ignore
 
     def test_start(self, subprocess_provider):
         assert not subprocess_provider.is_connected

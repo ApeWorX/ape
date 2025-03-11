@@ -523,8 +523,8 @@ class TestNodeProcessMap:
                 return True
 
         # Hack to allow abstract methods.
-        MyFakeProvider.__abstractmethods__ = set()
-        provider = MyFakeProvider(name="fake", network=eth_tester_provider.network)
+        MyFakeProvider.__abstractmethods__ = set()  # type: ignore
+        provider = MyFakeProvider(name="fake", network=eth_tester_provider.network)  # type: ignore
         provider.process = mock_process
 
         with create_tempdir() as tmp:
