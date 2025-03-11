@@ -525,6 +525,14 @@ To run a network with a process, use the `ape networks run` command:
 ape networks run
 ```
 
+This launches a development node in the current working terminal session.
+To continue developing, you will have to launch a new terminal session.
+Alternatively, you can use the `--background` flag to background the process:
+
+```shell
+ape networks run --background
+```
+
 By default, `ape networks run` runs a development Node (geth) process.
 To use a different network, such as `hardhat` or Anvil nodes, use the `--network` flag:
 
@@ -533,6 +541,23 @@ ape networks run --network ethereum:local:foundry
 ```
 
 To configure the network's block time, use the `--block-time` option.
+
+```shell
+ape networks run --network ethereum:local:foundry --block-time 10
+```
+
+Once you are done with your node, you can simply exit the process to tear it down.
+Or, if you used `--background` or lost the process some other way, you can stop the node using the `kill` command:
+
+```shell
+ape networks kill
+```
+
+To list all running networks, use the `list --running` command:
+
+```shell
+ape networks list --running
+```
 
 ## Provider Interaction
 
