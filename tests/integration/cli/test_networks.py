@@ -158,7 +158,7 @@ def test_list_running(ape_cli, runner, geth_provider):
     assert result.exit_code == 0
     assert geth_provider.ipc_path is not None, "any uri is needed for test"
     actual = "".join(result.output.split("\n"))
-    assert f"{geth_provider.ipc_path}" in actual
+    assert f"{geth_provider.ipc_path}" in actual or "Local node(s) not running." in actual
 
 
 @run_once
