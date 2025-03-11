@@ -6,6 +6,7 @@ import pytest
 import ape
 from ape.api.networks import EcosystemAPI
 from ape.exceptions import NetworkError, ProviderNotFoundError
+from ape.managers.networks import NodeProcessData
 from ape.utils.misc import LOCAL_NETWORK_NAME
 from ape.utils.testing import DEFAULT_TEST_CHAIN_ID
 
@@ -134,7 +135,9 @@ def test_get_provider_when_no_default(network_with_no_providers):
 
 def test_repr_connected_to_local(networks_connected_to_tester):
     actual = repr(networks_connected_to_tester)
-    expected = f"<NetworkManager active_provider=<Test chain_id={DEFAULT_TEST_CHAIN_ID}>>"
+    expected = (
+        f"<NetworkManager active_provider=<Test chain_id={DEFAULT_TEST_CHAIN_ID}>>"
+    )
     assert actual == expected
 
     # Check individual network
@@ -147,12 +150,17 @@ def test_repr_disconnected(networks_disconnected):
     assert repr(networks_disconnected) == "<NetworkManager>"
     assert repr(networks_disconnected.ethereum) == "<ethereum>"
     assert repr(networks_disconnected.ethereum.local) == "<ethereum:local>"
-    assert repr(networks_disconnected.ethereum.sepolia) == "<ethereum:sepolia chain_id=11155111>"
+    assert (
+        repr(networks_disconnected.ethereum.sepolia)
+        == "<ethereum:sepolia chain_id=11155111>"
+    )
 
 
 def test_get_provider_from_choice_custom_provider(networks_connected_to_tester):
     uri = "https://geth:1234567890abcdef@geth.foo.bar/"
-    provider = networks_connected_to_tester.get_provider_from_choice(f"ethereum:local:{uri}")
+    provider = networks_connected_to_tester.get_provider_from_choice(
+        f"ethereum:local:{uri}"
+    )
     assert uri in provider.connection_id
     assert provider.name == "node"
     assert provider.uri == uri
@@ -169,7 +177,9 @@ def test_get_provider_from_choice_custom_adhoc_ecosystem(networks_connected_to_t
     assert provider.network.ecosystem.name == "ethereum"
 
 
-def test_parse_network_choice_same_provider(chain, networks_connected_to_tester, get_context):
+def test_parse_network_choice_same_provider(
+    chain, networks_connected_to_tester, get_context
+):
     context = get_context()
     start_count = len(context.connected_providers)
     original_block_number = chain.blocks.height
@@ -191,7 +201,9 @@ def test_parse_network_choice_same_provider(chain, networks_connected_to_tester,
 
 
 @pytest.mark.xdist_group(name="multiple-eth-testers")
-def test_parse_network_choice_new_chain_id(get_provider_with_unused_chain_id, get_context):
+def test_parse_network_choice_new_chain_id(
+    get_provider_with_unused_chain_id, get_context
+):
     start_count = len(get_context().connected_providers)
     context = get_provider_with_unused_chain_id()
     with context:
@@ -221,9 +233,9 @@ def test_parse_network_choice_multiple_contexts(
     eth_tester_provider, get_provider_with_unused_chain_id
 ):
     first_context = get_provider_with_unused_chain_id()
-    assert eth_tester_provider.chain_id == DEFAULT_TEST_CHAIN_ID, (
-        "Test setup failed - expecting to start on default chain ID"
-    )
+    assert (
+        eth_tester_provider.chain_id == DEFAULT_TEST_CHAIN_ID
+    ), "Test setup failed - expecting to start on default chain ID"
     assert eth_tester_provider.make_request("eth_chainId") == DEFAULT_TEST_CHAIN_ID
 
     with first_context:
@@ -435,7 +447,9 @@ def test_fork_with_negative_block_number(
     assert actual == expected
 
 
-def test_fork_past_genesis(networks, mock_sepolia, mock_fork_provider, eth_tester_provider):
+def test_fork_past_genesis(
+    networks, mock_sepolia, mock_fork_provider, eth_tester_provider
+):
     block_id = -10_000_000_000
     with pytest.raises(NetworkError, match="Unable to fork past genesis block."):
         with networks.fork(block_number=block_id):
@@ -471,7 +485,9 @@ def test_custom_networks_defined_in_non_local_project(custom_networks_config_dic
     custom_networks["networks"]["custom"][0]["name"] = net_name
     custom_networks["networks"]["custom"][0]["ecosystem"] = eco_name
 
-    with ape.Project.create_temporary_project(config_override=custom_networks) as temp_project:
+    with ape.Project.create_temporary_project(
+        config_override=custom_networks
+    ) as temp_project:
         nm = temp_project.network_manager
 
         # Tests `.get_ecosystem()` for custom networks.
@@ -496,3 +512,14 @@ def test_get_ecosystem_from_evmchains(networks):
     moonbeam = networks.get_ecosystem("moonbeam")
     assert isinstance(moonbeam, EcosystemAPI)
     assert moonbeam.name == "moonbeam"
+
+
+class TestNodeProcessData:
+    def test_matches_provider(self, eth_tester_provider):
+        data = NodeProcessData(
+            network_choice=f"{eth_tester_provider.network.choice}:{eth_tester_provider.name}",
+            ipc_path="test.ipc",
+        )
+        assert not data.matches_provider(eth_tester_provider)
+        data.ipc_path = None
+        assert data.matches_provider(eth_tester_provider)
