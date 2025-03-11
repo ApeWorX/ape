@@ -97,8 +97,15 @@ class NodeProcessMap(DiskCacheableModel):
         """
         return bool(self.nodes)
 
-    def __contains__(self, pid: int) -> bool:
-        return pid in self.nodes
+    def __contains__(self, pid_or_provider: Union[int, "SubprocessProvider"]) -> bool:
+        if isinstance(pid_or_provider, int):
+            return pid_or_provider in self.nodes
+
+        for data in self.nodes.values():
+            if data.matches_provider(pid_or_provider):
+                return True
+
+        return False
 
     def get(self, pid: int) -> Optional[NodeProcessData]:
         return self.nodes.get(int(pid))
@@ -125,9 +132,7 @@ class NodeProcessMap(DiskCacheableModel):
             self.model_dump_file()
 
         else:
-            raise NetworkError(
-                "Unable to cache subprocess-provider information: not connected."
-            )
+            raise NetworkError("Unable to cache subprocess-provider information: not connected.")
 
     def _delete_all_matching(self, node: NodeProcessData):
         pids_to_remove = set()
@@ -143,9 +148,7 @@ class NodeProcessMap(DiskCacheableModel):
         pids_to_remove = {
             pid for pid, data in self.nodes.items() if data.matches_provider(provider)
         }
-        self.nodes = {
-            pid: node for pid, node in self.nodes.items() if pid not in pids_to_remove
-        }
+        self.nodes = {pid: node for pid, node in self.nodes.items() if pid not in pids_to_remove}
         self.model_dump_file()
 
     def remove_processes(self, *pids: int):
@@ -182,9 +185,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
     def __repr__(self) -> str:
         provider = self.active_provider
         class_name = NetworkManager.__name__
-        content = (
-            f"{class_name} active_provider={provider!r}" if provider else class_name
-        )
+        content = f"{class_name} active_provider={provider!r}" if provider else class_name
         return f"<{content}>"
 
     @property
@@ -265,9 +266,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
             "http_uri": data.http_uri,
             "ws_uri": data.ws_uri,
         }
-        provider_settings = {
-            k: v for k, v in provider_settings.items() if v is not None
-        }
+        provider_settings = {k: v for k, v in provider_settings.items() if v is not None}
 
         provider = self.get_provider_from_choice(
             network_choice=network_choice, provider_settings=provider_settings or None
@@ -357,9 +356,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         """
         network_name = self.network.name
         is_fork_already = network_name.endswith("-fork")
-        forked_network_name = (
-            network_name if is_fork_already else f"{network_name}-fork"
-        )
+        forked_network_name = network_name if is_fork_already else f"{network_name}-fork"
         try:
             forked_network = self.ecosystem.get_network(forked_network_name)
         except NetworkNotFoundError as err:
@@ -479,8 +476,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
                 continue
 
             base_ecosystem_name = (
-                custom_network.get("base_ecosystem_plugin")
-                or self.default_ecosystem_name
+                custom_network.get("base_ecosystem_plugin") or self.default_ecosystem_name
             )
 
             if base_ecosystem_name not in plugin_ecosystems:
@@ -570,9 +566,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
             name = provider_name
 
         provider_settings: dict = {}
-        if connection_str.startswith("https://") or connection_str.startswith(
-            "http://"
-        ):
+        if connection_str.startswith("https://") or connection_str.startswith("http://"):
             provider_settings["uri"] = connection_str
         elif connection_str.endswith(".ipc"):
             provider_settings["ipc_path"] = connection_str
@@ -655,16 +649,12 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
 
         ecosystem_items = self.ecosystems
         if ecosystem_filter:
-            ecosystem_items = {
-                n: e for n, e in ecosystem_items.items() if n in ecosystem_filter
-            }
+            ecosystem_items = {n: e for n, e in ecosystem_items.items() if n in ecosystem_filter}
 
         for ecosystem_name, ecosystem in ecosystem_items.items():
             network_items = ecosystem.networks
             if network_filter:
-                network_items = {
-                    n: net for n, net in network_items.items() if n in network_filter
-                }
+                network_items = {n: net for n, net in network_items.items() if n in network_filter}
 
             if not network_items:
                 continue
@@ -740,9 +730,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
 
         raise EcosystemNotFoundError(ecosystem_name, options=self.ecosystem_names)
 
-    def _get_ecosystem_from_evmchains(
-        self, ecosystem_name: str
-    ) -> Optional["EcosystemAPI"]:
+    def _get_ecosystem_from_evmchains(self, ecosystem_name: str) -> Optional["EcosystemAPI"]:
         if ecosystem_name not in PUBLIC_CHAIN_META:
             return None
 
@@ -818,25 +806,17 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         elif len(selections) == 2:
             # Only ecosystem and network were specified, not provider
             ecosystem_name, network_name = selections
-            ecosystem = self.get_ecosystem(
-                ecosystem_name or self.default_ecosystem.name
-            )
-            network = ecosystem.get_network(
-                network_name or ecosystem.default_network_name
-            )
+            ecosystem = self.get_ecosystem(ecosystem_name or self.default_ecosystem.name)
+            network = ecosystem.get_network(network_name or ecosystem.default_network_name)
             return network.get_provider(provider_settings=provider_settings)
 
         elif len(selections) == 3:
             # Everything is specified, use specified provider for ecosystem and network
             ecosystem_name, network_name, provider_name = selections
             ecosystem = (
-                self.get_ecosystem(ecosystem_name)
-                if ecosystem_name
-                else self.default_ecosystem
+                self.get_ecosystem(ecosystem_name) if ecosystem_name else self.default_ecosystem
             )
-            network = ecosystem.get_network(
-                network_name or ecosystem.default_network_name
-            )
+            network = ecosystem.get_network(network_name or ecosystem.default_network_name)
             return network.get_provider(
                 provider_name=provider_name, provider_settings=provider_settings
             )
@@ -974,9 +954,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
             if network_filter and network_name not in network_filter:
                 continue
 
-            network_data = ecosystem.get_network_data(
-                network_name, provider_filter=provider_filter
-            )
+            network_data = ecosystem.get_network_data(network_name, provider_filter=provider_filter)
             ecosystem_data["networks"].append(network_data)
 
         return ecosystem_data
