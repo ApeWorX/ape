@@ -304,7 +304,7 @@ def test_create_custom_provider_ws(networks, scheme):
 def test_create_custom_provider_ipc(networks):
     provider = networks.create_custom_provider("path/to/geth.ipc")
     assert provider.ipc_path == Path("path/to/geth.ipc")
-    assert provider.uri == provider.ipc_path
+    assert provider.uri == f"{provider.ipc_path}"
 
 
 def test_ecosystems(networks):
