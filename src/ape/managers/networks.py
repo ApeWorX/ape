@@ -107,8 +107,11 @@ class NodeProcessMap(DiskCacheableModel):
 
         return False
 
-    def get(self, pid: int) -> Optional[NodeProcessData]:
-        return self.nodes.get(int(pid))
+    def get(self, pid_or_provider: Union[int, str]) -> Optional[NodeProcessData]:
+        return self.nodes.get(int(pid_or_provider))
+
+    def lookup_processes(self, provider: "SubprocessProvider") -> dict[int, NodeProcessData]:
+        return {pid: data for pid, data in self.nodes.items() if data.matches_provider(provider)}
 
     def cache_provider(self, provider: "SubprocessProvider"):
         # Don't use `provider.network_choice` here because we want to ensure the provider

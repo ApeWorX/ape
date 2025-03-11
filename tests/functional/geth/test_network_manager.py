@@ -64,3 +64,15 @@ def test_parse_network_choice_evmchains(networks, connection_str):
             else f"{connection_str}:node"
         )
         assert moon_provider.network_choice == expected_network_choice
+
+
+@geth_process_test
+def test_parse_network_choice_pid(geth_provider, networks):
+    if proc := geth_provider.process:
+        pid = proc.pid
+    else:
+        pid = next(networks.running_nodes.lookup_processes(geth_provider))
+
+    # Show we are able to connect to providers via PID URL.
+    with networks.parse_network_choice(f"pid://{pid}") as provider:
+        assert provider.is_connected
