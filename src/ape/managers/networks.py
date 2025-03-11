@@ -780,6 +780,14 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
             default_network = self.default_ecosystem.default_network
             return default_network.get_provider(provider_settings=provider_settings)
 
+        elif network_choice.startswith("pid://"):
+            # Was given a process ID (already running node on local machine).
+            pid_str = network_choice[len("pid://") :]
+            if not pid_str.isdigit():
+                raise ValueError(f"Invalid PID: {pid_str}")
+
+            return self.get_running_node(int(pid_str))
+
         elif _is_adhoc_url(network_choice):
             # Custom network w/o ecosystem & network spec.
             return self.create_custom_provider(network_choice)
