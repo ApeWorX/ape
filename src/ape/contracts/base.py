@@ -790,7 +790,7 @@ class ContractEvent(BaseInterfaceModel):
                 [
                     log
                     for log in receipt.logs
-                    if log["address"] == getattr(self, "address", log["address"])
+                    if log["address"] == getattr(self.contract, "address", log["address"])
                 ],
                 self.abi,
             )
