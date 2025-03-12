@@ -785,8 +785,13 @@ class ContractEvent(BaseInterfaceModel):
         # NOTE: Safe to use a list because a receipt should never have too many logs.
         return list(
             ecosystem.decode_logs(
-                # NOTE: Filter out logs that do not match this address (okay to be empty)
-                [log for log in receipt.logs if log["address"] == self.contract.address],
+                # NOTE: Filter out logs that do not match this address (if address available)
+                #       (okay to be empty list, since EcosystemAPI.decode_logs will return [])
+                [
+                    log
+                    for log in receipt.logs
+                    if log["address"] == getattr(self, "address", log["address"]
+                ],
                 self.abi,
             )
         )
