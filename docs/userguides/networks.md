@@ -550,7 +550,7 @@ Once you are done with your node, you can simply exit the process to tear it dow
 Or, if you used `--background` or lost the process some other way, you can stop the node using the `kill` command:
 
 ```shell
-ape networks kill
+ape networks kill --all
 ```
 
 To list all running networks, use the `list --running` command:
