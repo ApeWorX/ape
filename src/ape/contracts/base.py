@@ -783,7 +783,18 @@ class ContractEvent(BaseInterfaceModel):
         ecosystem = self.provider.network.ecosystem
 
         # NOTE: Safe to use a list because a receipt should never have too many logs.
-        return list(ecosystem.decode_logs(receipt.logs, self.abi))
+        return list(
+            ecosystem.decode_logs(
+                # NOTE: Filter out logs that do not match this address (if address available)
+                #       (okay to be empty list, since EcosystemAPI.decode_logs will return [])
+                [
+                    log
+                    for log in receipt.logs
+                    if log["address"] == getattr(self.contract, "address", log["address"])
+                ],
+                self.abi,
+            )
+        )
 
     def poll_logs(
         self,
