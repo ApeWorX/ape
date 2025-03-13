@@ -1134,7 +1134,7 @@ def test_enrich_trace(ethereum, vyper_contract_instance, owner):
 
 def test_enrich_trace_handles_call_type_enum(ethereum, vyper_contract_instance, owner):
     """
-    Testing a custom trace who's call tree uses an Enum type instead of a str.
+    Testing a custom trace whose call tree uses an Enum type instead of a str.
     """
 
     class PluginTxTrace(TransactionTrace):
