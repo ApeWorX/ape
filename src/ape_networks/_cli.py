@@ -209,7 +209,7 @@ def _run(cli_ctx, provider: "SubprocessProvider", background: bool = False):
 @ape_cli_context()
 @click.option("--pid", "process_ids", help="The PID of the process(es) to kill", multiple=True)
 @network_option(default=None)
-def kill(cli_ctx, process_ids, provider):
+def kill(cli_ctx, process_ids):
     """
     Stop node processes
     """
