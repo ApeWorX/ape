@@ -56,6 +56,16 @@ def test_from_receipt(owner, contract_instance, assert_log_values):
     assert_receipt_logs(receipt_2, 3)
 
 
+def test_from_receipt_different_contract(
+    owner, vyper_contract_instance, solidity_contract_instance, assert_log_values
+):
+    # NOTE: Ths event type is similar but defined on a different contract.
+    event_type = solidity_contract_instance.NumberChange
+    receipt = vyper_contract_instance.setNumber(1, sender=owner)
+    logs = event_type.from_receipt(receipt)
+    assert len(logs) == 0
+
+
 def test_from_event_type(contract_instance, owner, assert_log_values):
     event_type = contract_instance.NumberChange
     start_num = 6
