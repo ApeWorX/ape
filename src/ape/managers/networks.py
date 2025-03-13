@@ -309,10 +309,6 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         if not self.running_nodes:
             return {}
 
-        if not process_ids:
-            # Defaults to all managed processes.
-            process_ids = self.running_nodes.process_ids
-
         pids_killed = {}
         for pid in process_ids:
             if not (data := self.running_nodes.nodes.get(pid)):
