@@ -1206,6 +1206,24 @@ def test_enrich_trace_handles_events(ethereum, vyper_contract_instance, owner):
     assert events == expected
 
 
+def test_enrich_trace_avoids_using_wrong_contract_type(
+    ethereum, vyper_contract_instance, solidity_contract_instance, owner, chain
+):
+    tx = vyper_contract_instance.setNumber(96247783, sender=owner)
+    trace = TransactionTrace(transaction_hash=tx.txn_hash)
+
+    # Purposely passing in the wrong contract type here.
+    actual = ethereum.enrich_trace(trace, contract_type=solidity_contract_instance.contract_type)
+
+    assert isinstance(actual, TransactionTrace)
+    assert actual._enriched_calltree is not None
+    assert re.match(r"VyperContract\.setNumber\(num=\d*\) \[\d* gas]", repr(actual))
+
+    # Ensure the contract type was not corrupted.
+    ct = chain.contracts[vyper_contract_instance.address]
+    assert ct == vyper_contract_instance.contract_type
+
+
 def test_get_deployment_address(ethereum, owner, vyper_contract_container):
     actual = ethereum.get_deployment_address(owner.address, owner.nonce)
     expected = owner.deploy(vyper_contract_container, 490)
