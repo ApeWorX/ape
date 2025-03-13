@@ -33,7 +33,7 @@ def assert_log_values(owner):
     return _assert_log_values
 
 
-def test_from_receipts(owner, contract_instance, assert_log_values):
+def test_from_receipt(owner, contract_instance, assert_log_values):
     event_type = contract_instance.NumberChange
 
     # Invoke a transaction 3 times that generates 3 logs.
@@ -46,7 +46,7 @@ def test_from_receipts(owner, contract_instance, assert_log_values):
         assert len(logs) == 1
         assert_log_values(logs[0], num)
 
-        # Also verify can we logs the other way
+        # Also verify can we decode logs the other way
         logs = receipt.decode_logs(event_type)
         assert len(logs) == 1
         assert_log_values(logs[0], num)
