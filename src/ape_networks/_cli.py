@@ -207,14 +207,27 @@ def _run(cli_ctx, provider: "SubprocessProvider", background: bool = False):
 
 @cli.command(short_help="Stop node processes")
 @ape_cli_context()
-@click.option("--pid", "process_ids", help="The PID of the process(es) to kill", multiple=True)
+@click.option("--pid", "process_ids", help="The PID of the process(es) to kill", multiple=True, type=int)
+@click.option("--all", "kill_all", is_flag=True, help="Kill all running processes")
 @network_option(default=None)
-def kill(cli_ctx, process_ids):
+def kill(cli_ctx, process_ids, kill_all):
     """
     Stop node processes
     """
-    if not cli_ctx.network_manager.running_nodes:
-        echo_rich_text("No running nodes found.")
+    if kill_all:
+        if process_ids:
+            raise click.BadOptionUsage("--all", "Cannot use `--all` with PID arguments.")
+
+        process_ids = cli_ctx.network_manager.running_nodes.process_ids
+
+    if not process_ids:
+        message = (
+            "No running nodes found."
+            if not cli_ctx.network_manager.running_nodes
+            else "No processes given. Use `--all` to kill all processes."
+        )
+        echo_rich_text(message)
+        return
 
     elif processes_killed := cli_ctx.network_manager.kill_node_process(*process_ids):
         # Killed 1 or more nodes.
