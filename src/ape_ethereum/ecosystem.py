@@ -1192,7 +1192,7 @@ class Ethereum(EcosystemAPI):
     def _enrich_contract_id(self, address: AddressType, **kwargs) -> str:
         # Defensively pop "contract_type" key from kwargs. `_get_contract_type_for_enrichment` will
         # preferentially return a `contract_type` from kwargs without checking the contract cache.
-        # The contract_type may not match the contract address being enriched if this method was 
+        # The contract_type may not match the contract address being enriched if this method was
         # previously called for a different contract.
         kwargs.pop("contract_type", None)
 
