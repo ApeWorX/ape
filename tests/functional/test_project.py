@@ -217,7 +217,6 @@ def test_getattr_not_exists(project):
 
 
 def test_getattr_detects_changes(tmp_project):
-    breakpoint()
     source_id = tmp_project.VyperContract.contract_type.source_id
     new_abi = {
         "inputs": [],
@@ -276,7 +275,7 @@ def test_getattr_ipython_canary_check(project):
     # Remove contract types, if there is any.
     project.manifest.contract_types = {}
     with pytest.raises(AttributeError):
-        _ = tmp_project._ipython_canary_method_should_not_exist_
+        _ = tmp_project._ipython_canary_method_should_not_exist_  # type: ignore[attr-defined]
 
     # Prove it did not compile looking for this.
     assert not project.manifest.contract_types
@@ -966,8 +965,7 @@ class TestSourceManager:
             random_file.write_text("what, this isn't json?!", encoding="utf8")
 
             path_ids = {
-                f"{project.contracts_folder.name}/{src.name}"
-                for src in project.sources.paths
+                f"{project.contracts_folder.name}/{src.name}" for src in project.sources.paths
             }
             excluded = {".DS_Store", "Other.json", ".cache/dontmindme.json"}
             for actual in (path_ids, project.sources):
