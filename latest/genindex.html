@@ -94,9 +94,18 @@ data-aria-dark="Switch to auto color mode">
       <ul>
         <li><a href="commands/accounts.html#cmdoption-accounts-list-all">accounts-list command line option</a>
 </li>
+        <li><a href="commands/networks.html#cmdoption-networks-kill-all">networks-kill command line option</a>
+</li>
         <li><a href="commands/plugins.html#cmdoption-plugins-list-a">plugins-list command line option</a>
 </li>
         <li><a href="commands/pm.html#cmdoption-pm-list-all">pm-list command line option</a>
+</li>
+      </ul></li>
+      <li>
+    --background
+
+      <ul>
+        <li><a href="commands/networks.html#cmdoption-networks-run-background">networks-run command line option</a>
 </li>
       </ul></li>
       <li>
@@ -208,7 +217,11 @@ data-aria-dark="Switch to auto color mode">
     --network
 
       <ul>
+        <li><a href="commands/networks.html#cmdoption-networks-kill-network">networks-kill command line option</a>
+</li>
         <li><a href="commands/networks.html#cmdoption-networks-list-network">networks-list command line option</a>
+</li>
+        <li><a href="commands/networks.html#cmdoption-networks-ping-network">networks-ping command line option</a>
 </li>
         <li><a href="commands/networks.html#cmdoption-networks-run-network">networks-run command line option</a>
 </li>
@@ -232,6 +245,13 @@ data-aria-dark="Switch to auto color mode">
 
       <ul>
         <li><a href="commands/pm.html#cmdoption-pm-install-ref">pm-install command line option</a>
+</li>
+      </ul></li>
+      <li>
+    --running
+
+      <ul>
+        <li><a href="commands/networks.html#cmdoption-networks-list-running">networks-list command line option</a>
 </li>
       </ul></li>
       <li>
@@ -277,7 +297,11 @@ data-aria-dark="Switch to auto color mode">
 </li>
         <li><a href="commands/init.html#cmdoption-init-v">init command line option</a>
 </li>
+        <li><a href="commands/networks.html#cmdoption-networks-kill-v">networks-kill command line option</a>
+</li>
         <li><a href="commands/networks.html#cmdoption-networks-list-v">networks-list command line option</a>
+</li>
+        <li><a href="commands/networks.html#cmdoption-networks-ping-v">networks-ping command line option</a>
 </li>
         <li><a href="commands/networks.html#cmdoption-networks-run-v">networks-run command line option</a>
 </li>
@@ -416,7 +440,11 @@ data-aria-dark="Switch to auto color mode">
 </li>
         <li><a href="commands/init.html#cmdoption-init-v">init command line option</a>
 </li>
+        <li><a href="commands/networks.html#cmdoption-networks-kill-v">networks-kill command line option</a>
+</li>
         <li><a href="commands/networks.html#cmdoption-networks-list-v">networks-list command line option</a>
+</li>
+        <li><a href="commands/networks.html#cmdoption-networks-ping-v">networks-ping command line option</a>
 </li>
         <li><a href="commands/networks.html#cmdoption-networks-run-v">networks-run command line option</a>
 </li>
@@ -2759,6 +2787,8 @@ data-aria-dark="Switch to auto color mode">
 </li>
       <li><a href="methoddocs/managers.html#ape.managers.networks.NetworkManager.get_request_headers">get_request_headers() (ape.managers.networks.NetworkManager method)</a>
 </li>
+      <li><a href="methoddocs/managers.html#ape.managers.networks.NetworkManager.get_running_node">get_running_node() (ape.managers.networks.NetworkManager method)</a>
+</li>
       <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.get_storage">get_storage() (ape.api.providers.ProviderAPI method)</a>
 
       <ul>
@@ -2890,6 +2920,8 @@ data-aria-dark="Switch to auto color mode">
       <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.http_uri">http_uri (ape.api.providers.ProviderAPI property)</a>
 
       <ul>
+        <li><a href="methoddocs/managers.html#ape.managers.networks.NodeProcessData.http_uri">(ape.managers.networks.NodeProcessData attribute)</a>
+</li>
         <li><a href="methoddocs/ape_ethereum.html#ape_ethereum.provider.Web3Provider.http_uri">(ape_ethereum.provider.Web3Provider property)</a>
 </li>
         <li><a href="methoddocs/ape_test.html#ape_test.provider.LocalProvider.http_uri">(ape_test.provider.LocalProvider property)</a>
@@ -2982,16 +3014,28 @@ data-aria-dark="Switch to auto color mode">
 </li>
       <li><a href="methoddocs/contracts.html#ape.contracts.base.ContractInstance.invoke_transaction">invoke_transaction() (ape.contracts.base.ContractInstance method)</a>
 </li>
-      <li><a href="methoddocs/ape_node.html#ape_node.provider.EthereumNodeConfig.ipc_path">ipc_path (ape_node.provider.EthereumNodeConfig attribute)</a>
+      <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.ipc_path">ipc_path (ape.api.providers.ProviderAPI property)</a>
+
+      <ul>
+        <li><a href="methoddocs/managers.html#ape.managers.networks.NodeProcessData.ipc_path">(ape.managers.networks.NodeProcessData attribute)</a>
 </li>
+        <li><a href="methoddocs/ape_ethereum.html#ape_ethereum.provider.EthereumNodeProvider.ipc_path">(ape_ethereum.provider.EthereumNodeProvider property)</a>
+</li>
+        <li><a href="methoddocs/ape_ethereum.html#ape_ethereum.provider.Web3Provider.ipc_path">(ape_ethereum.provider.Web3Provider property)</a>
+</li>
+        <li><a href="methoddocs/ape_node.html#ape_node.provider.EthereumNodeConfig.ipc_path">(ape_node.provider.EthereumNodeConfig attribute)</a>
+</li>
+        <li><a href="methoddocs/ape_test.html#ape_test.provider.LocalProvider.ipc_path">(ape_test.provider.LocalProvider property)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/api.html#ape.api.networks.NetworkAPI.is_adhoc">is_adhoc (ape.api.networks.NetworkAPI property)</a>
 </li>
       <li><a href="methoddocs/utils.html#ape.utils.abi.is_array">is_array() (in module ape.utils.abi)</a>
 </li>
       <li><a href="methoddocs/managers.html#ape.managers.project.Project.is_compiled">is_compiled (ape.managers.project.Project property)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.is_connected">is_connected (ape.api.providers.ProviderAPI property)</a>
 
       <ul>
@@ -3103,6 +3147,10 @@ data-aria-dark="Switch to auto color mode">
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/ape_accounts.html#ape_accounts.accounts.KeyfileAccount">KeyfileAccount (class in ape_accounts.accounts)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="methoddocs/managers.html#ape.managers.networks.NetworkManager.kill_node_process">kill_node_process() (ape.managers.networks.NetworkManager method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -3277,6 +3325,8 @@ data-aria-dark="Switch to auto color mode">
 </li>
       </ul></li>
       <li><a href="methoddocs/utils.html#ape.utils.basemodel.DiskCacheableModel.model_dump_file">model_dump_file() (ape.utils.basemodel.DiskCacheableModel method)</a>
+</li>
+      <li><a href="methoddocs/utils.html#ape.utils.basemodel.DiskCacheableModel.model_read_file">model_read_file() (ape.utils.basemodel.DiskCacheableModel method)</a>
 </li>
       <li><a href="methoddocs/utils.html#ape.utils.basemodel.DiskCacheableModel.model_validate_file">model_validate_file() (ape.utils.basemodel.DiskCacheableModel class method)</a>
 </li>
@@ -3479,6 +3529,8 @@ data-aria-dark="Switch to auto color mode">
       <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.network_choice">network_choice (ape.api.providers.ProviderAPI property)</a>
 
       <ul>
+        <li><a href="methoddocs/managers.html#ape.managers.networks.NodeProcessData.network_choice">(ape.managers.networks.NodeProcessData attribute)</a>
+</li>
         <li><a href="methoddocs/ape_ethereum.html#ape_ethereum.provider.Web3Provider.network_choice">(ape_ethereum.provider.Web3Provider property)</a>
 </li>
       </ul></li>
@@ -3496,8 +3548,6 @@ data-aria-dark="Switch to auto color mode">
 </li>
       <li><a href="methoddocs/ape_ethereum.html#ape_ethereum.ecosystem.NetworkConfig">NetworkConfig (class in ape_ethereum.ecosystem)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/exceptions.html#ape.exceptions.NetworkError">NetworkError</a>
 </li>
       <li><a href="methoddocs/managers.html#ape.managers.networks.NetworkManager">NetworkManager (class in ape.managers.networks)</a>
@@ -3516,8 +3566,25 @@ data-aria-dark="Switch to auto color mode">
         <li><a href="methoddocs/api.html#ape.api.networks.EcosystemAPI.networks">(ape.api.networks.EcosystemAPI property)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/plugins.html#ape.plugins.network.NetworkPlugin.networks">networks() (ape.plugins.network.NetworkPlugin method)</a>
 </li>
+      <li>
+    networks-kill command line option
+
+      <ul>
+        <li><a href="commands/networks.html#cmdoption-networks-kill-all">--all</a>
+</li>
+        <li><a href="commands/networks.html#cmdoption-networks-kill-network">--network</a>
+</li>
+        <li><a href="commands/networks.html#cmdoption-networks-kill-v">--verbosity</a>
+</li>
+        <li><a href="commands/networks.html#cmdoption-networks-kill-v">-v</a>
+</li>
+        <li><a href="commands/networks.html#cmdoption-networks-kill-arg-PROCESS_IDS">PROCESS_IDS</a>
+</li>
+      </ul></li>
       <li>
     networks-list command line option
 
@@ -3530,15 +3597,30 @@ data-aria-dark="Switch to auto color mode">
 </li>
         <li><a href="commands/networks.html#cmdoption-networks-list-provider">--provider</a>
 </li>
+        <li><a href="commands/networks.html#cmdoption-networks-list-running">--running</a>
+</li>
         <li><a href="commands/networks.html#cmdoption-networks-list-v">--verbosity</a>
 </li>
         <li><a href="commands/networks.html#cmdoption-networks-list-v">-v</a>
 </li>
       </ul></li>
       <li>
+    networks-ping command line option
+
+      <ul>
+        <li><a href="commands/networks.html#cmdoption-networks-ping-network">--network</a>
+</li>
+        <li><a href="commands/networks.html#cmdoption-networks-ping-v">--verbosity</a>
+</li>
+        <li><a href="commands/networks.html#cmdoption-networks-ping-v">-v</a>
+</li>
+      </ul></li>
+      <li>
     networks-run command line option
 
       <ul>
+        <li><a href="commands/networks.html#cmdoption-networks-run-background">--background</a>
+</li>
         <li><a href="commands/networks.html#cmdoption-networks-run-block-time">--block-time</a>
 </li>
         <li><a href="commands/networks.html#cmdoption-networks-run-network">--network</a>
@@ -3553,6 +3635,10 @@ data-aria-dark="Switch to auto color mode">
       <li><a href="methoddocs/ape_ethereum.html#ape_ethereum.transactions.TransactionStatusEnum.NO_ERROR">NO_ERROR (ape_ethereum.transactions.TransactionStatusEnum attribute)</a>
 </li>
       <li><a href="methoddocs/ape_node.html#ape_node.provider.Node">Node (class in ape_node.provider)</a>
+</li>
+      <li><a href="methoddocs/managers.html#ape.managers.networks.NodeProcessData">NodeProcessData (class in ape.managers.networks)</a>
+</li>
+      <li><a href="methoddocs/managers.html#ape.managers.networks.NodeProcessMap">NodeProcessMap (class in ape.managers.networks)</a>
 </li>
       <li><a href="methoddocs/ape_node.html#ape_node.provider.NodeSoftwareNotInstalledError">NodeSoftwareNotInstalledError</a>
 </li>
@@ -3856,6 +3942,13 @@ data-aria-dark="Switch to auto color mode">
       </ul></li>
       <li><a href="methoddocs/utils.html#ape.utils.testing.GeneratedDevAccount.private_key">private_key (ape.utils.testing.GeneratedDevAccount attribute)</a>
 </li>
+      <li>
+    PROCESS_IDS
+
+      <ul>
+        <li><a href="commands/networks.html#cmdoption-networks-kill-arg-PROCESS_IDS">networks-kill command line option</a>
+</li>
+      </ul></li>
       <li><a href="methoddocs/api.html#ape.api.providers.SubprocessProvider.process_name">process_name (ape.api.providers.SubprocessProvider property)</a>
 
       <ul>
@@ -4137,6 +4230,8 @@ data-aria-dark="Switch to auto color mode">
       <li><a href="methoddocs/utils.html#ape.utils.os.run_in_tempdir">run_in_tempdir() (in module ape.utils.os)</a>
 </li>
       <li><a href="methoddocs/utils.html#ape.utils.misc.run_until_complete">run_until_complete() (in module ape.utils.misc)</a>
+</li>
+      <li><a href="methoddocs/managers.html#ape.managers.networks.NetworkManager.running_nodes">running_nodes (ape.managers.networks.NetworkManager property)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -4729,15 +4824,17 @@ data-aria-dark="Switch to auto color mode">
 </li>
       <li><a href="methoddocs/managers.html#ape.managers.project.LocalProject.within_project_path">within_project_path() (ape.managers.project.LocalProject method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/api.html#ape.api.config.ApeConfig.write_to_disk">write_to_disk() (ape.api.config.ApeConfig method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="methoddocs/types.html#ape.types.trace.ControlFlow.ws_begin_lineno">ws_begin_lineno (ape.types.trace.ControlFlow property)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.ws_uri">ws_uri (ape.api.providers.ProviderAPI property)</a>
 
       <ul>
+        <li><a href="methoddocs/managers.html#ape.managers.networks.NodeProcessData.ws_uri">(ape.managers.networks.NodeProcessData attribute)</a>
+</li>
         <li><a href="methoddocs/ape_ethereum.html#ape_ethereum.provider.Web3Provider.ws_uri">(ape_ethereum.provider.Web3Provider property)</a>
 </li>
         <li><a href="methoddocs/ape_test.html#ape_test.provider.LocalProvider.ws_uri">(ape_test.provider.LocalProvider property)</a>

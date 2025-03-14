@@ -184,6 +184,7 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#ape_ethereum.provider.EthereumNodeProvider.connection_id"><code class="docutils literal notranslate">.connection_id</span></code></a></li>
 <li><a class="reference internal" href="#ape_ethereum.provider.EthereumNodeProvider.connection_str"><code class="docutils literal notranslate">.connection_str</span></code></a></li>
 <li><a class="reference internal" href="#ape_ethereum.provider.EthereumNodeProvider.disconnect"><code class="docutils literal notranslate">.disconnect()</span></code></a></li>
+<li><a class="reference internal" href="#ape_ethereum.provider.EthereumNodeProvider.ipc_path"><code class="docutils literal notranslate">.ipc_path</span></code></a></li>
 <li><a class="reference internal" href="#ape_ethereum.provider.EthereumNodeProvider.name"><code class="docutils literal notranslate">.name</span></code></a></li>
 <li><a class="reference internal" href="#ape_ethereum.provider.EthereumNodeProvider.request_header"><code class="docutils literal notranslate">.request_header</span></code></a></li>
 </ul>
@@ -207,6 +208,7 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#ape_ethereum.provider.Web3Provider.get_transactions_by_block"><code class="docutils literal notranslate">.get_transactions_by_block()</span></code></a></li>
 <li><a class="reference internal" href="#ape_ethereum.provider.Web3Provider.get_virtual_machine_error"><code class="docutils literal notranslate">.get_virtual_machine_error()</span></code></a></li>
 <li><a class="reference internal" href="#ape_ethereum.provider.Web3Provider.http_uri"><code class="docutils literal notranslate">.http_uri</span></code></a></li>
+<li><a class="reference internal" href="#ape_ethereum.provider.Web3Provider.ipc_path"><code class="docutils literal notranslate">.ipc_path</span></code></a></li>
 <li><a class="reference internal" href="#ape_ethereum.provider.Web3Provider.is_connected"><code class="docutils literal notranslate">.is_connected</span></code></a></li>
 <li><a class="reference internal" href="#ape_ethereum.provider.Web3Provider.make_request"><code class="docutils literal notranslate">.make_request()</span></code></a></li>
 <li><a class="reference internal" href="#ape_ethereum.provider.Web3Provider.max_gas"><code class="docutils literal notranslate">.max_gas</span></code></a></li>
@@ -875,6 +877,12 @@ or an IPC path.</p>
 <dd><p>Disconnect from a provider, such as tear-down a process or quit an HTTP session.</p>
 </dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="ape_ethereum.provider.EthereumNodeProvider.ipc_path">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ipc_path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape_ethereum.provider.EthereumNodeProvider.ipc_path" title="Link to this definition"></a></dt>
+<dd><p>Return the IPC path for the provider, if supported.</p>
+</dd></dl>
+
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape_ethereum.provider.EthereumNodeProvider.name">
 <span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_ethereum.provider.EthereumNodeProvider.name" title="Link to this definition"></a></dt>
@@ -1198,6 +1206,12 @@ to trace.</p>
 <dt class="sig sig-object py" id="ape_ethereum.provider.Web3Provider.http_uri">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">http_uri</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape_ethereum.provider.Web3Provider.http_uri" title="Link to this definition"></a></dt>
 <dd><p>Return the raw HTTP/HTTPS URI to connect to this provider, if supported.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape_ethereum.provider.Web3Provider.ipc_path">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ipc_path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape_ethereum.provider.Web3Provider.ipc_path" title="Link to this definition"></a></dt>
+<dd><p>Return the IPC path for the provider, if supported.</p>
 </dd></dl>
 
 <dl class="py property">

@@ -335,14 +335,25 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#ape.managers.networks.NetworkManager.get_network_choices"><code class="docutils literal notranslate">get_network_choices()</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.networks.NetworkManager.get_provider_from_choice"><code class="docutils literal notranslate">get_provider_from_choice()</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.networks.NetworkManager.get_request_headers"><code class="docutils literal notranslate">get_request_headers()</span></code></a></li>
+<li><a class="reference internal" href="#ape.managers.networks.NetworkManager.get_running_node"><code class="docutils literal notranslate">get_running_node()</span></code></a></li>
+<li><a class="reference internal" href="#ape.managers.networks.NetworkManager.kill_node_process"><code class="docutils literal notranslate">kill_node_process()</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.networks.NetworkManager.network"><code class="docutils literal notranslate">network</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.networks.NetworkManager.network_data"><code class="docutils literal notranslate">network_data</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.networks.NetworkManager.network_names"><code class="docutils literal notranslate">network_names</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.networks.NetworkManager.parse_network_choice"><code class="docutils literal notranslate">parse_network_choice()</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.networks.NetworkManager.provider_names"><code class="docutils literal notranslate">provider_names</span></code></a></li>
+<li><a class="reference internal" href="#ape.managers.networks.NetworkManager.running_nodes"><code class="docutils literal notranslate">running_nodes</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.networks.NetworkManager.set_default_ecosystem"><code class="docutils literal notranslate">set_default_ecosystem()</span></code></a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#ape.managers.networks.NodeProcessData"><code class="docutils literal notranslate"><span class="pre">NodeProcessData</span></code></a><ul>
+<li><a class="reference internal" href="#ape.managers.networks.NodeProcessData.http_uri"><code class="docutils literal notranslate">http_uri</span></code></a></li>
+<li><a class="reference internal" href="#ape.managers.networks.NodeProcessData.ipc_path"><code class="docutils literal notranslate">ipc_path</span></code></a></li>
+<li><a class="reference internal" href="#ape.managers.networks.NodeProcessData.network_choice"><code class="docutils literal notranslate">network_choice</span></code></a></li>
+<li><a class="reference internal" href="#ape.managers.networks.NodeProcessData.ws_uri"><code class="docutils literal notranslate">ws_uri</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ape.managers.networks.NodeProcessMap"><code class="docutils literal notranslate"><span class="pre">NodeProcessMap</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#module-ape.managers.project">Project</a><ul>
@@ -2684,6 +2695,41 @@ Defaults to the default ecosystem, network, and provider combination.</p></li>
 <dd><p>All request headers to be used when connecting to this network.</p>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.networks.NetworkManager.get_running_node">
+<span class="sig-name descname"><span class="pre">get_running_node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="api.html#ape.api.providers.SubprocessProvider" title="ape.api.providers.SubprocessProvider"><span class="pre">SubprocessProvider</span></a></span></span><a class="headerlink" href="#ape.managers.networks.NetworkManager.get_running_node" title="Link to this definition"></a></dt>
+<dd><p>Get a running subprocess provider for the given <code class="docutils literal notranslate"><span class="pre">pid</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pid</strong> (<em>int</em>) – The process ID.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><cite>~ape.api.providers.SubprocessProvider</cite></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>class</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.networks.NetworkManager.kill_node_process">
+<span class="sig-name descname"><span class="pre">kill_node_process</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">process_ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#ape.managers.networks.NodeProcessData" title="ape.managers.networks.NodeProcessData"><span class="pre">NodeProcessData</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.managers.networks.NetworkManager.kill_node_process" title="Link to this definition"></a></dt>
+<dd><p>Kill a node process managed by Ape.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>*process_ids</strong> (<em>int</em>) – The process ID to kill.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The process data
+of all terminated processes.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict[str, <a class="reference internal" href="#ape.managers.networks.NodeProcessData" title="ape.managers.networks.NodeProcessData"><code class="xref py py-class docutils literal notranslate"><span class="pre">NodeProcessData</span></code></a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="ape.managers.networks.NetworkManager.network">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">network</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="api.html#ape.api.networks.NetworkAPI" title="ape.api.networks.NetworkAPI"><span class="pre">NetworkAPI</span></a></em><a class="headerlink" href="#ape.managers.networks.NetworkManager.network" title="Link to this definition"></a></dt>
@@ -2755,6 +2801,12 @@ session. Defaults to <code class="docutils literal notranslate"><span class="pre
 <dd><p>The set of all provider names in <code class="docutils literal notranslate"><span class="pre">ape</span></code>.</p>
 </dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.managers.networks.NetworkManager.running_nodes">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">running_nodes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ape.managers.networks.NodeProcessMap" title="ape.managers.networks.NodeProcessMap"><span class="pre">NodeProcessMap</span></a></em><a class="headerlink" href="#ape.managers.networks.NetworkManager.running_nodes" title="Link to this definition"></a></dt>
+<dd><p>All running development nodes managed by Ape.</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.managers.networks.NetworkManager.set_default_ecosystem">
 <span class="sig-name descname"><span class="pre">set_default_ecosystem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ecosystem_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.networks.NetworkManager.set_default_ecosystem" title="Link to this definition"></a></dt>
@@ -2770,6 +2822,42 @@ as the default.</p>
 </dl>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.managers.networks.NodeProcessData">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.managers.networks.</span></span><span class="sig-name descname"><span class="pre">NodeProcessData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">network_choice</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ipc_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">http_uri</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ws_uri</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.networks.NodeProcessData" title="Link to this definition"></a></dt>
+<dd><p>Cached data for node subprocesses managed by Ape.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.managers.networks.NodeProcessData.http_uri">
+<span class="sig-name descname"><span class="pre">http_uri</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.managers.networks.NodeProcessData.http_uri" title="Link to this definition"></a></dt>
+<dd><p>The HTTP URI this node process exposes.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.managers.networks.NodeProcessData.ipc_path">
+<span class="sig-name descname"><span class="pre">ipc_path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.managers.networks.NodeProcessData.ipc_path" title="Link to this definition"></a></dt>
+<dd><p>The IPC path this node process communicates on.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.managers.networks.NodeProcessData.network_choice">
+<span class="sig-name descname"><span class="pre">network_choice</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape.managers.networks.NodeProcessData.network_choice" title="Link to this definition"></a></dt>
+<dd><p>The network triple <code class="docutils literal notranslate"><span class="pre">ecosystem:network:node</span></code>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.managers.networks.NodeProcessData.ws_uri">
+<span class="sig-name descname"><span class="pre">ws_uri</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.managers.networks.NodeProcessData.ws_uri" title="Link to this definition"></a></dt>
+<dd><p>The websockets URI this node process exposes.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.managers.networks.NodeProcessMap">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.managers.networks.</span></span><span class="sig-name descname"><span class="pre">NodeProcessMap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nodes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#ape.managers.networks.NodeProcessData" title="ape.managers.networks.NodeProcessData"><span class="pre">NodeProcessData</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.networks.NodeProcessMap" title="Link to this definition"></a></dt>
+<dd><p>All managed running network subprocesses.</p>
 </dd></dl>
 
 </section>

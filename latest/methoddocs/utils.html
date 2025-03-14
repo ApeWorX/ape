@@ -161,6 +161,7 @@ data-aria-dark="Switch to auto color mode">
 </li>
 <li><a class="reference internal" href="#ape.utils.basemodel.DiskCacheableModel"><code class="docutils literal notranslate"><span class="pre">DiskCacheableModel</span></code></a><ul>
 <li><a class="reference internal" href="#ape.utils.basemodel.DiskCacheableModel.model_dump_file"><code class="docutils literal notranslate">model_dump_file()</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.basemodel.DiskCacheableModel.model_read_file"><code class="docutils literal notranslate">model_read_file()</span></code></a></li>
 <li><a class="reference internal" href="#ape.utils.basemodel.DiskCacheableModel.model_validate_file"><code class="docutils literal notranslate">model_validate_file()</span></code></a></li>
 </ul>
 </li>
@@ -523,6 +524,13 @@ saves the file in that dir with the name of class with a
 </ul>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.utils.basemodel.DiskCacheableModel.model_read_file">
+<span class="sig-name descname"><span class="pre">model_read_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#ape.utils.basemodel.DiskCacheableModel.model_read_file" title="Link to this definition"></a></dt>
+<dd><p>Get the file’s raw data. This is different from <code class="docutils literal notranslate"><span class="pre">model_dump()</span></code> because it
+reads directly from the file without validation.</p>
 </dd></dl>
 
 <dl class="py method">
