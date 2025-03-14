@@ -92,12 +92,7 @@ class BaseAddress(BaseInterface):
 
     def __hash__(self) -> int:
         """Return consistent hash for all address representations with the same value."""
-        value = self.address
-
-        try:
-            return int(self.conversion_manager.convert(value, AddressType), 16)
-        except Exception:
-            raise TypeError(f"Cannot hash address of type: {type(value)}")
+        return hash(int(self.address, base=16))
 
     def __call__(self, **kwargs) -> "ReceiptAPI":
         """
