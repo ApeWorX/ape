@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any, Optional, Union
 from urllib.parse import urlparse
 
 from eth_utils import add_0x_prefix, to_hex
-from geth.chain import initialize_chain
+from geth.chain import initialize_chain as initialize_gethdev_chain
 from geth.process import BaseGethProcess
 from geth.wrapper import construct_test_chain_kwargs
 from pydantic import field_validator
@@ -110,6 +110,10 @@ class GethDevProcess(BaseGethProcess):
         auto_disconnect: bool = True,
         extra_funded_accounts: Optional[list[str]] = None,
         hd_path: Optional[str] = DEFAULT_TEST_HD_PATH,
+        block_time: Optional[int] = None,
+        generate_accounts: bool = True,
+        initialize_chain: bool = True,
+        background: bool = False,
     ):
         executable = executable or "geth"
         if not shutil.which(executable):
@@ -118,6 +122,7 @@ class GethDevProcess(BaseGethProcess):
         self._data_dir = data_dir
         self.is_running = False
         self._auto_disconnect = auto_disconnect
+        self.background = background
 
         kwargs_ctor: dict = {
             "data_dir": self.data_dir,
@@ -141,6 +146,8 @@ class GethDevProcess(BaseGethProcess):
             kwargs_ctor["ws_enabled"] = False
             kwargs_ctor["ws_addr"] = None
             kwargs_ctor["ws_port"] = None
+        if block_time is not None:
+            kwargs_ctor["dev_period"] = f"{block_time}"
 
         geth_kwargs = construct_test_chain_kwargs(**kwargs_ctor)
 
@@ -149,15 +156,22 @@ class GethDevProcess(BaseGethProcess):
 
         geth_kwargs["dev_mode"] = True
         hd_path = hd_path or DEFAULT_TEST_HD_PATH
-        self._dev_accounts = generate_dev_accounts(
-            mnemonic, number_of_accounts=number_of_accounts, hd_path=hd_path
-        )
-        addresses = [a.address for a in self._dev_accounts]
-        addresses.extend(extra_funded_accounts or [])
-        bal_dict = {"balance": str(initial_balance)}
-        alloc = {a: bal_dict for a in addresses}
-        genesis = create_genesis_data(alloc, chain_id)
-        initialize_chain(genesis, self.data_dir)
+
+        if generate_accounts:
+            self._dev_accounts = generate_dev_accounts(
+                mnemonic, number_of_accounts=number_of_accounts, hd_path=hd_path
+            )
+        else:
+            self._dev_accounts = []
+
+        if initialize_chain:
+            addresses = [a.address for a in self._dev_accounts]
+            addresses.extend(extra_funded_accounts or [])
+            bal_dict = {"balance": str(initial_balance)}
+            alloc = {a: bal_dict for a in addresses}
+            genesis = create_genesis_data(alloc, chain_id)
+            initialize_gethdev_chain(genesis, self.data_dir)
+
         super().__init__(geth_kwargs)
 
     @classmethod
@@ -166,9 +180,14 @@ class GethDevProcess(BaseGethProcess):
         number_of_accounts = kwargs.get("number_of_accounts", DEFAULT_NUMBER_OF_TEST_ACCOUNTS)
         balance = kwargs.get("initial_balance", DEFAULT_TEST_ACCOUNT_BALANCE)
         extra_accounts = [a.lower() for a in kwargs.get("extra_funded_accounts", [])]
+        block_time = kwargs.get("block_time", None)
+        if isinstance(block_time, int):
+            block_time = f"{block_time}"
 
         process_kwargs = {
             "auto_disconnect": kwargs.get("auto_disconnect", True),
+            "background": kwargs.get("background", False),
+            "block_time": block_time,
             "executable": kwargs.get("executable"),
             "extra_funded_accounts": extra_accounts,
             "hd_path": kwargs.get("hd_path", DEFAULT_TEST_HD_PATH),
@@ -260,7 +279,12 @@ class GethDevProcess(BaseGethProcess):
             return
 
         self.is_running = True
-        out_file = PIPE if logger.level <= LogLevel.DEBUG else DEVNULL
+
+        if self.background or logger.level > LogLevel.DEBUG:
+            out_file = DEVNULL
+        else:
+            out_file = PIPE
+
         self.proc = Popen(
             self.command,
             stdin=PIPE,
@@ -277,7 +301,12 @@ class GethDevProcess(BaseGethProcess):
 
     def _clean(self):
         if self._data_dir.is_dir():
-            shutil.rmtree(self._data_dir, ignore_errors=True)
+            # In case data-dir is being used for something else,
+            # only delete geth-dev node related stuff.
+            (self._data_dir / "genesis.json").unlink(missing_ok=True)
+            shutil.rmtree((self._data_dir / "geth").as_posix(), ignore_errors=True)
+            shutil.rmtree((self._data_dir / "keystore").as_posix(), ignore_errors=True)
+            shutil.rmtree((self._data_dir / "subprocess_output").as_posix(), ignore_errors=True)
 
         # dir must exist when initializing chain.
         self._data_dir.mkdir(parents=True, exist_ok=True)
@@ -295,7 +324,7 @@ class EthereumNetworkConfig(PluginConfig):
     holesky: dict = {}
     sepolia: dict = {}
     # Make sure to run via `geth --dev` (or similar)
-    local: dict = {**DEFAULT_SETTINGS.copy(), "chain_id": DEFAULT_TEST_CHAIN_ID}
+    local: dict = {**DEFAULT_SETTINGS.copy(), "chain_id": DEFAULT_TEST_CHAIN_ID, "block_time": 0}
 
     model_config = SettingsConfigDict(extra="allow", env_prefix="APE_NODE_")
 
@@ -308,7 +337,7 @@ class EthereumNetworkConfig(PluginConfig):
 
         if "chain_id" not in value:
             value["chain_id"] = DEFAULT_TEST_CHAIN_ID
-        if "uri" not in value and "ipc_path" in value or "ws_uri" in value or "http_uri" in value:
+        if ("uri" not in value and "ipc_path" in value) or "ws_uri" in value or "http_uri" in value:
             # No need to add default HTTP URI if was given only IPC Path
             return {**{k: v for k, v in DEFAULT_SETTINGS.items() if k != "uri"}, **value}
 
@@ -392,6 +421,10 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
         return self.settings.ethereum.local.get("chain_id", DEFAULT_TEST_CHAIN_ID)
 
     @property
+    def block_time(self) -> Optional[int]:
+        return self.settings.ethereum.local.get("block_time")
+
+    @property
     def data_dir(self) -> Path:
         # Overridden from base class for placing debug logs in ape data folder.
         return self.settings.data_dir or self.config_manager.DATA_FOLDER / self.name
@@ -422,9 +455,11 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
         self._set_web3()
         if self.is_connected:
             self._complete_connect()
-        else:
+
+        elif self.allow_start:
             # Starting the process.
             self.start()
+            atexit.register(self._disconnect_atexit)
 
     def start(self, timeout: int = 20):
         geth_dev = self._create_process()
@@ -450,6 +485,8 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
             spawn(self.consume_stdout_queue)
             spawn(self.consume_stderr_queue)
 
+            self.network_manager.running_nodes.cache_provider(self)
+
     def _create_process(self) -> GethDevProcess:
         # NOTE: Using JSON mode to ensure types can be passed as CLI args.
         test_config = self.config_manager.get_config("test").model_dump(mode="json")
@@ -459,9 +496,11 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
             test_config["executable"] = self.settings.executable
 
         test_config["ipc_path"] = self.ipc_path
-        test_config["auto_disconnect"] = self._test_runner is None or test_config.get(
-            "disconnect_providers_after", True
-        )
+
+        # Let the provider handle disconnecting the process.
+        # This avoids multiple atexit handlers from being unnecessarily
+        # registered that do some of the same thing.
+        test_config["auto_disconnect"] = False
 
         # Include extra accounts to allocated funds to at genesis.
         extra_accounts = self.settings.ethereum.local.get("extra_funded_accounts", [])
@@ -469,14 +508,24 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
         extra_accounts = list({a.lower() for a in extra_accounts})
         test_config["extra_funded_accounts"] = extra_accounts
         test_config["initial_balance"] = self.test_config.balance
+        test_config["background"] = self.background
         uri = self.ws_uri or self.uri
-        return GethDevProcess.from_uri(uri, self.data_dir, **test_config)
+
+        return GethDevProcess.from_uri(
+            uri,
+            self.data_dir,
+            block_time=self.block_time,
+            **test_config,
+        )
 
     def disconnect(self):
         # Must disconnect process first.
         if self._process is not None:
             self._process.disconnect()
             self._process = None
+
+            # Remove self from managed-processes list.
+            self.network_manager.running_nodes.remove_provider(self)
 
         # Also unset the subprocess-provider reference.
         # NOTE: Type ignore is wrong; TODO: figure out why.

@@ -173,6 +173,11 @@ def test_set_pending_timestamp_failure(chain):
         )
 
 
+def test_get_balance(chain, owner):
+    assert chain.get_balance(owner) == owner.balance
+    assert chain.get_balance(owner.address) == owner.balance
+
+
 def test_set_balance(chain, owner):
     with pytest.raises(APINotImplementedError):
         chain.set_balance(owner, "1000 ETH")

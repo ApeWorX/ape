@@ -33,7 +33,7 @@ def assert_log_values(owner):
     return _assert_log_values
 
 
-def test_from_receipts(owner, contract_instance, assert_log_values):
+def test_from_receipt(owner, contract_instance, assert_log_values):
     event_type = contract_instance.NumberChange
 
     # Invoke a transaction 3 times that generates 3 logs.
@@ -46,7 +46,7 @@ def test_from_receipts(owner, contract_instance, assert_log_values):
         assert len(logs) == 1
         assert_log_values(logs[0], num)
 
-        # Also verify can we logs the other way
+        # Also verify can we decode logs the other way
         logs = receipt.decode_logs(event_type)
         assert len(logs) == 1
         assert_log_values(logs[0], num)
@@ -54,6 +54,16 @@ def test_from_receipts(owner, contract_instance, assert_log_values):
     assert_receipt_logs(receipt_0, 1)
     assert_receipt_logs(receipt_1, 2)
     assert_receipt_logs(receipt_2, 3)
+
+
+def test_from_receipt_different_contract(
+    owner, vyper_contract_instance, solidity_contract_instance, assert_log_values
+):
+    # NOTE: Ths event type is similar but defined on a different contract.
+    event_type = solidity_contract_instance.NumberChange
+    receipt = vyper_contract_instance.setNumber(1, sender=owner)
+    logs = event_type.from_receipt(receipt)
+    assert len(logs) == 0
 
 
 def test_from_event_type(contract_instance, owner, assert_log_values):
@@ -471,3 +481,17 @@ def test_model_dump_json():
         '"MyEvent","log_index":0,'
         '"transaction_hash":"0x00000000000000000000000004d21f074916369e"}'
     )
+
+
+def test_transaction_hash():
+    event_arguments = {"key": 123, "validators": [HexBytes(123)]}
+    txn_hash = "a3430927834bd23"
+    event = ContractLog(
+        block_number=123,
+        block_hash="block-hash",
+        event_arguments=event_arguments,
+        event_name="MyEvent",
+        log_index=0,
+        transaction_hash=txn_hash,
+    )
+    assert event.transaction_hash == f"0x{txn_hash}"

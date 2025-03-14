@@ -394,6 +394,35 @@ class ConversionManager(BaseManager):
 
         raise ConversionError(f"No conversion registered to handle '{value}'.")
 
+    def get_converters_by_type(self, converter_type: type) -> list[ConverterAPI]:
+        """
+        Get all the converters for the given type.
+
+        Args:
+            converter_type (type): The type to get converters for.
+
+        Returns:
+            list[ConverterAPI]: All registered converters for the given type.
+        """
+        return self._converters.get(converter_type, [])
+
+    def get_converter(self, name: str) -> ConverterAPI:
+        """
+        Get a converter plugin by name.
+
+        Args:
+            name (str): The name of the converter.
+
+        Returns:
+            :class:`~ape.api.converters.ConverterAPI`: The converter.
+        """
+        for converter_ls in self._converters.values():
+            for converter in converter_ls:
+                if converter.name == name.lower():
+                    return converter
+
+        raise ConversionError("No converters with name '{name}'.'")
+
     def convert_method_args(
         self,
         abi: Union["MethodABI", "ConstructorABI", "EventABI"],

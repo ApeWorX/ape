@@ -20,6 +20,7 @@ from ape.exceptions import (
 )
 from ape.types.gas import AutoGasLimit
 from ape.types.signatures import recover_signer
+from ape.utils.testing import DEFAULT_TEST_MNEMONIC
 from ape_accounts.accounts import (
     KeyfileAccount,
     generate_account,
@@ -70,6 +71,23 @@ def test_sign_message(signer, message):
     assert signer.check_signature(message, signature)
 
 
+def test_sign_transaction(signer, message, ethereum):
+    transaction = ethereum.create_transaction(nonce=0, max_fee=0, max_priority_fee=0)
+    signed_transaction = signer.sign_transaction(transaction)
+    assert signed_transaction.signature is not None
+
+
+def test_sign_transaction_using_keyfile_account(keyfile_account, message, ethereum, runner):
+    transaction = ethereum.create_transaction(
+        nonce=0, max_fee=0, max_priority_fee=0, data="0x21314135413451"
+    )
+
+    with runner.isolation(f"y\n{PASSPHRASE}\ny"):
+        signed_transaction = keyfile_account.sign_transaction(transaction)
+
+    assert signed_transaction.signature is not None
+
+
 def test_sign_string(signer):
     message = "Hello Apes!"
     signature = signer.sign_message(message)
@@ -118,7 +136,7 @@ def test_sign_message_with_prompts(runner, keyfile_account, message):
 
 def test_sign_raw_hash(runner, keyfile_account):
     # NOTE: `message` is a 32 byte raw hash, which is treated specially
-    message = b"\xAB" * 32
+    message = b"\xab" * 32
 
     # "y\na\ny": yes sign raw hash, password, yes keep unlocked
     with runner.isolation(input=f"y\n{PASSPHRASE}\ny"):
@@ -144,9 +162,9 @@ def test_transfer(sender, receiver, eth_tester_provider, convert):
     expected_sender_loss = receipt.total_fees_paid + value_int
     expected_sender_balance = initial_sender_balance - expected_sender_loss
     assert receiver.balance == expected_receiver_balance
-    assert (
-        sender.balance == expected_sender_balance
-    ), f"difference: {abs(sender.balance - expected_sender_balance)}"
+    assert sender.balance == expected_sender_balance, (
+        f"difference: {abs(sender.balance - expected_sender_balance)}"
+    )
 
 
 def test_transfer_with_negative_value(sender, receiver):
@@ -170,7 +188,7 @@ def test_transfer_without_value_send_everything_true_with_low_gas(sender, receiv
 
     # Clear balance of sender.
     # Use small gas so for sure runs out of money.
-    receipt = sender.transfer(receiver, send_everything=True, gas=21000)
+    receipt = sender.transfer(receiver, send_everything=True, gas=22000)
 
     value_given = receipt.value
     total_spent = value_given + receipt.total_fees_paid
@@ -261,6 +279,11 @@ def test_transfer_mixed_up_sender_and_value(sender, receiver):
         sender.transfer("123 wei", receiver)
 
 
+def test_transfer_sign_is_false(sender, receiver):
+    with pytest.raises(SignatureError):
+        sender.transfer(receiver, "1 gwei", sign=False)
+
+
 def test_deploy(owner, contract_container, clean_contract_caches):
     contract = owner.deploy(contract_container, 0)
     assert contract.address
@@ -291,19 +314,19 @@ def test_deploy_and_publish_live_network_no_explorer(owner, contract_container, 
 
 
 @explorer_test
-def test_deploy_and_publish(owner, contract_container, dummy_live_network, mock_explorer):
-    dummy_live_network.__dict__["explorer"] = mock_explorer
+def test_deploy_and_publish(
+    owner, contract_container, dummy_live_network_with_explorer, mock_explorer
+):
     contract = owner.deploy(contract_container, 0, publish=True, required_confirmations=0)
     mock_explorer.publish_contract.assert_called_once_with(contract.address)
-    dummy_live_network.__dict__["explorer"] = None
 
 
 @explorer_test
-def test_deploy_and_not_publish(owner, contract_container, dummy_live_network, mock_explorer):
-    dummy_live_network.__dict__["explorer"] = mock_explorer
+def test_deploy_and_not_publish(
+    owner, contract_container, dummy_live_network_with_explorer, mock_explorer
+):
     owner.deploy(contract_container, 0, publish=True, required_confirmations=0)
     assert not mock_explorer.call_count
-    dummy_live_network.__dict__["explorer"] = None
 
 
 def test_deploy_proxy(owner, vyper_contract_instance, proxy_contract_container, chain):
@@ -489,7 +512,7 @@ def test_autosign_transactions(runner, keyfile_account, receiver):
 
 def test_impersonate_not_implemented(accounts, address):
     expected_err_msg = (
-        r"Your provider does not support impersonating accounts:\\n"
+        r"Provider 'test' does not support impersonating accounts:\\n"
         rf"No account with address '{address}'\."
     )
     with pytest.raises(KeyError, match=expected_err_msg):
@@ -516,7 +539,7 @@ def test_impersonated_account_ignores_signature_check_on_txn(accounts, address):
 
 def test_contract_as_sender_non_fork_network(contract_instance):
     expected_err_msg = (
-        r"Your provider does not support impersonating accounts:\\n"
+        r"Provider 'test' does not support impersonating accounts:\\n"
         rf"No account with address '{contract_instance}'\."
     )
     with pytest.raises(KeyError, match=expected_err_msg):
@@ -691,18 +714,26 @@ def test_using_different_hd_path(accounts, project, eth_tester_provider):
     assert old_address != new_address
 
 
-def test_using_random_mnemonic(accounts, project, eth_tester_provider):
-    mnemonic = "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat"
-    test_config = {"test": {"mnemonic": mnemonic}}
+def test_mnemonic(accounts):
+    actual = accounts.mnemonic
+    expected = DEFAULT_TEST_MNEMONIC
+    assert actual == expected
 
-    old_address = accounts[0].address
-    original_settings = eth_tester_provider.settings.model_dump(by_alias=True)
-    with project.temp_config(**test_config):
-        eth_tester_provider.update_settings(test_config["test"])
-        new_address = accounts[0].address
 
-    eth_tester_provider.update_settings(original_settings)
-    assert old_address != new_address
+def test_mnemonic_setter(accounts):
+    original_mnemonic = accounts.mnemonic
+    new_mnemonic = "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat"
+    original_address = accounts[0].address
+
+    # Change.
+    accounts.mnemonic = new_mnemonic
+    new_address = accounts[0].address
+
+    # Put back.
+    accounts.mnemonic = original_mnemonic
+
+    # Assert.
+    assert new_address != original_address
 
 
 def test_iter_test_accounts(accounts):
@@ -798,7 +829,7 @@ def test_load_public_key_from_keyfile(runner, keyfile_account):
 
         assert (
             to_hex(keyfile_account.public_key)
-            == "0x8318535b54105d4a7aae60c08fc45f9687181b4fdfc625bd1a753fa7397fed753547f11ca8696646f2f3acb08e31016afac23e630c5d11f59f61fef57b0d2aa5"  # noqa: 501
+            == "0x8318535b54105d4a7aae60c08fc45f9687181b4fdfc625bd1a753fa7397fed753547f11ca8696646f2f3acb08e31016afac23e630c5d11f59f61fef57b0d2aa5"  # noqa: E501
         )
         # no need for password when loading from the keyfile
         assert keyfile_account.public_key
@@ -939,7 +970,9 @@ def test_import_account_from_private_key_invalid_passphrase():
 
     with pytest.raises(AccountsError, match="Account file encryption passphrase must be provided."):
         import_account_from_private_key(
-            "invalid-passphrase", b"bytestring", PRIVATE_KEY  # type: ignore
+            "invalid-passphrase",
+            b"bytestring",  # type: ignore
+            PRIVATE_KEY,
         )
 
 
@@ -978,3 +1011,45 @@ def test_repr(account_manager):
     """
     actual = repr(account_manager)
     assert actual == "<AccountManager>"
+
+
+def test_call(owner, vyper_contract_instance):
+    tx = vyper_contract_instance.setNumber.as_transaction(5991)
+    receipt = owner.call(tx)
+    assert not receipt.failed
+
+
+def test_call_sign_false(owner, vyper_contract_instance):
+    tx = vyper_contract_instance.setNumber.as_transaction(5991)
+    with pytest.raises(SignatureError):
+        owner.call(tx, sign=False)
+
+
+def test_resolve_address(owner, keyfile_account, account_manager, vyper_contract_instance):
+    # Test test-account alias input.
+    actual = account_manager.resolve_address(owner.alias)
+    assert actual == owner.address
+
+    # Test keyfile-account alias input.
+    actual = account_manager.resolve_address(keyfile_account.alias)
+    assert actual == keyfile_account.address
+
+    # Test address input.
+    actual = account_manager.resolve_address(owner.address)
+    assert actual == owner.address
+
+    # Test account input.
+    actual = account_manager.resolve_address(owner)
+    assert actual == owner.address
+
+    # Test contract input.
+    actual = account_manager.resolve_address(vyper_contract_instance)
+    assert actual == vyper_contract_instance.address
+
+    # Test int input.
+    actual = account_manager.resolve_address(int(owner.address, 16))
+    assert actual == owner.address
+
+    # Test int input.
+    actual = account_manager.resolve_address(HexBytes(owner.address))
+    assert actual == owner.address

@@ -190,8 +190,10 @@ class Web3Provider(ProviderAPI, ABC):
 
             return send_tx_wrapper
 
-        setattr(cls, "send_transaction", post_tx_hook(cls.send_transaction))
-        setattr(cls, "connect", post_connect_hook(cls.connect))
+        send_tx_wrapper = post_tx_hook(cls.send_transaction)
+        connect_wrapper = post_connect_hook(cls.connect)
+        cls.send_transaction = send_tx_wrapper  # type: ignore[method-assign]
+        cls.connect = connect_wrapper  # type: ignore[method-assign]
         return super().__new__(cls)  # pydantic v2 doesn't want args
 
     def __init__(self, *args, **kwargs):
@@ -212,7 +214,7 @@ class Web3Provider(ProviderAPI, ABC):
 
     @property
     def _network_config(self) -> dict:
-        config: dict = self.config.get(self.network.ecosystem.name, None)
+        config: dict = self.settings.get(self.network.ecosystem.name, None)
         if config is None:
             return {}
 
@@ -224,13 +226,13 @@ class Web3Provider(ProviderAPI, ABC):
         result = None
         rpc: str
         if rpc := settings.get(key):
-            result = rpc
+            result = f"{rpc}"
 
         else:
             # See if it was configured for the network directly.
             config = self._network_config
             if rpc := config.get(key):
-                result = rpc
+                result = f"{rpc}"
 
         if result:
             if validator(result):
@@ -255,7 +257,7 @@ class Web3Provider(ProviderAPI, ABC):
 
     @property
     def _configured_uri(self) -> Optional[str]:
-        for key in ("uri", "url"):
+        for key in ("uri", "url", "ipc_path", "http_uri", "ws_uri"):
             if rpc := self._get_configured_rpc(key, _is_uri):
                 return rpc
 
@@ -336,7 +338,9 @@ class Web3Provider(ProviderAPI, ABC):
         # NOTE: Don't use default IPC path here. IPC must be
         #   configured if it is the only RPC.
 
-        raise ProviderError("Missing URI.")
+        raise ProviderError(
+            f"Missing URI for network '{self.network.name}' on '{self.network.ecosystem.name}'."
+        )
 
     @property
     def network_choice(self) -> str:
@@ -418,9 +422,27 @@ class Web3Provider(ProviderAPI, ABC):
 
         # Use public RPC if available
         try:
-            return get_random_rpc(ecosystem, network)
+            rpc = get_random_rpc(ecosystem, network)
         except KeyError:
             return None
+
+        def rpc_available(rpc_uri: str) -> bool:
+            try:
+                return Web3(HTTPProvider(rpc_uri)).is_connected()
+
+            except Exception:
+                return False
+
+        retries = 10
+        while retries > 0:
+            if rpc_available(rpc):
+                return rpc
+
+            rpc = get_random_rpc(ecosystem, network)
+            logger.warning(f"RPC at '{rpc}' not available, retrying {retries} more times")
+            retries -= 1
+
+        return None
 
     @property
     def client_version(self) -> str:
@@ -572,8 +594,12 @@ class Web3Provider(ProviderAPI, ABC):
     @cached_property
     def chain_id(self) -> int:
         default_chain_id = None
-        if (not self.network.is_adhoc and self.network.is_custom) or not self.network.is_dev:
-            # If using a live network, the chain ID is hardcoded.
+        if not self.network.is_adhoc and self.network.is_custom:
+            # If using a configured, custom network, the chain ID is hardcoded.
+            default_chain_id = self.network.chain_id
+
+        elif not self.network.is_dev and not self.network.is_adhoc:
+            # If using a configured public network, the chain ID is hardcoded.
             default_chain_id = self.network.chain_id
 
         try:
@@ -1547,7 +1573,7 @@ class EthereumNodeProvider(Web3Provider, ABC):
 
     @property
     def _clean_uri(self) -> str:
-        uri = self.uri
+        uri = f"{self.uri}"
         return sanitize_url(uri) if _is_http_url(uri) or _is_ws_url(uri) else uri
 
     @property
@@ -1558,7 +1584,7 @@ class EthereumNodeProvider(Web3Provider, ABC):
         return _get_default_data_dir()
 
     @property
-    def ipc_path(self) -> Path:
+    def ipc_path(self) -> Optional[Path]:
         if path := super().ipc_path:
             return path
 
@@ -1666,9 +1692,10 @@ class EthereumNodeProvider(Web3Provider, ABC):
 
     def _log_connection(self, client_name: str):
         msg = f"Connecting to existing {client_name.strip()} node at"
+
         suffix = (
             self.ipc_path.as_posix().replace(Path.home().as_posix(), "$HOME")
-            if self.ipc_path.exists()
+            if self.ipc_path is not None and self.ipc_path.exists()
             else self._clean_uri
         )
         logger.info(f"{msg} {suffix}.")

@@ -26,14 +26,11 @@ jobs:
             python -m pip install --upgrade pip
             pip install .[lint]
 
-        - name: Run Black
-          run: black --check .
+        - name: Run Ruff Lint
+          run: ruff check .
 
-        - name: Run isort
-          run: isort --check-only .
-
-        - name: Run flake8
-          run: flake8 .
+        - name: Run Ruff Format
+          run: ruff format --check .
 
         - name: Run mdformat
           run: mdformat . --check

@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 from requests.exceptions import ConnectTimeout, HTTPError
 
+from ape.exceptions import ProjectError
 from ape.utils._github import _GithubClient
 from ape.utils.os import create_tempdir
 
@@ -40,6 +41,18 @@ def github_client(mock_session):
 
 
 class TestGithubClient:
+    def test_get_repo_unknown_repo(self, mocker, mock_session):
+        client = _GithubClient(session=mock_session)
+
+        # Make it raise 404.
+        response = mocker.MagicMock()
+        response.status_code = 404
+        error = HTTPError(response=response)
+        mock_session.request.side_effect = error
+
+        with pytest.raises(ProjectError, match=f"Unknown repository '{ORG_NAME}/{REPO_NAME}'"):
+            client.get_repo(ORG_NAME, REPO_NAME)
+
     def test_clone_repo(self, mocker):
         # NOTE: this test actually clones the repo.
         client = _GithubClient()

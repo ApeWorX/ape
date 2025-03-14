@@ -4,8 +4,8 @@ from ethpm_types import ContractType
 from ape import Contract
 from ape.contracts import ContractInstance
 from ape.exceptions import ContractNotFoundError, ConversionError
-from ape.logging import LogLevel
-from ape_ethereum.proxies import _make_minimal_proxy
+from ape.logging import LogLevel, logger
+from ape_ethereum.proxies import ProxyInfo, ProxyType, _make_minimal_proxy
 from tests.conftest import explorer_test, skip_if_plugin_installed
 
 
@@ -161,10 +161,10 @@ def test_instance_at_skip_proxy(mocker, chain, vyper_contract_instance, owner):
 
 def test_cache_deployment_live_network(
     chain,
+    dummy_live_network,
+    clean_contract_caches,
     vyper_contract_instance,
     vyper_contract_container,
-    clean_contract_caches,
-    dummy_live_network,
 ):
     # Arrange - Ensure the contract is not cached anywhere
     address = vyper_contract_instance.address
@@ -435,9 +435,6 @@ def test_get_attempts_explorer_logs_rate_limit_error_from_explorer(
 ):
     contract = owner.deploy(vyper_fallback_container)
 
-    # Ensure is not cached locally.
-    del chain.contracts[contract.address]
-
     # For rate limit errors, we don't show anything else,
     # as it may be confusing.
     check_error_str = "you have been rate limited"
@@ -449,10 +446,14 @@ def test_get_attempts_explorer_logs_rate_limit_error_from_explorer(
         raise ValueError("nope")
 
     with create_mock_sepolia() as network:
+        # Ensure is not cached locally.
+        del chain.contracts[contract.address]
+
         mock_explorer.get_contract_type.side_effect = get_contract_type
         network.__dict__["explorer"] = mock_explorer
         try:
-            actual = chain.contracts.get(contract.address)
+            with logger.at_level(LogLevel.INFO):
+                actual = chain.contracts.get(contract.address)
         finally:
             network.__dict__["explorer"] = None
 
@@ -472,6 +473,82 @@ def test_cache_non_checksum_address(chain, vyper_contract_instance):
     lowered_address = vyper_contract_instance.address.lower()
     chain.contracts[lowered_address] = vyper_contract_instance.contract_type
     assert chain.contracts[vyper_contract_instance.address] == vyper_contract_instance.contract_type
+
+
+def test_get_proxy(chain, owner, minimal_proxy_container, vyper_contract_instance):
+    placeholder = "0xBEbeBeBEbeBebeBeBEBEbebEBeBeBebeBeBebebe"
+    if placeholder in chain.contracts:
+        del chain.contracts[placeholder]
+
+    minimal_proxy = owner.deploy(minimal_proxy_container, sender=owner)
+    chain.provider.network.__dict__["explorer"] = None  # Ensure no explorer, messes up test.
+
+    actual = chain.contracts.get(minimal_proxy.address)
+    assert actual == minimal_proxy.contract_type
+
+
+def test_get_proxy_implementation_missing(chain, owner, vyper_contract_container):
+    """
+    Proxy is cached but implementation is missing.
+    """
+    placeholder = vyper_contract_container.deploy(1001, sender=owner)
+    assert chain.contracts[placeholder.address]  # This must be cached!
+
+    proxy_container = _make_minimal_proxy(placeholder.address)
+    minimal_proxy = owner.deploy(proxy_container, sender=owner)
+    chain.provider.network.__dict__["explorer"] = None  # Ensure no explorer, messes up test.
+
+    if minimal_proxy.address in chain.contracts:
+        # Delete the proxy but make sure it does not delete the implementation!
+        # (which it normally does here).
+        del chain.contracts[minimal_proxy.address]
+        chain.contracts[placeholder.address] = placeholder
+
+    actual = chain.contracts.get(minimal_proxy.address)
+    assert actual == minimal_proxy.contract_type
+
+
+def test_get_proxy_pass_proxy_info(chain, owner, minimal_proxy_container, ethereum):
+    placeholder = "0xBEbeBeBEbeBebeBeBEBEbebEBeBeBebeBeBebebe"
+    if placeholder in chain.contracts:
+        del chain.contracts[placeholder]
+
+    minimal_proxy = owner.deploy(minimal_proxy_container, sender=owner)
+    chain.provider.network.__dict__["explorer"] = None  # Ensure no explorer, messes up test.
+    info = ethereum.get_proxy_info(minimal_proxy.address)
+    assert info
+
+    # Ensure not already cached.
+    if minimal_proxy.address in chain.contracts:
+        del chain.contracts[minimal_proxy.address]
+
+    actual = chain.contracts.get(minimal_proxy.address, proxy_info=info)
+    assert actual is None  # It can't find the contact anymore.
+
+    # Ensure it does store 'None' (was a bug where it did).
+    assert minimal_proxy.address not in chain.contracts.contract_types
+
+
+@explorer_test
+def test_get_proxy_pass_proxy_info_and_no_explorer(
+    chain, owner, proxy_contract_container, ethereum, dummy_live_network_with_explorer
+):
+    """
+    Tests the condition of both passing `proxy_info=` and setting `use_explorer=False`
+    when getting the ContractType of a proxy.
+    """
+    explorer = dummy_live_network_with_explorer.explorer
+    placeholder = "0xBEbeBeBEbeBebeBeBEBEbebEBeBeBebeBeBebebe"
+    if placeholder in chain.contracts:
+        del chain.contracts[placeholder]
+
+    proxy = proxy_contract_container.deploy(placeholder, sender=owner, required_confirmations=0)
+    info = ProxyInfo(type=ProxyType.Minimal, target=placeholder)
+    explorer.get_contract_type.reset_mock()
+    chain.contracts.get(proxy.address, proxy_info=info, fetch_from_explorer=False)
+
+    # Ensure explorer was not used.
+    assert explorer.get_contract_type.call_count == 0
 
 
 def test_get_creation_metadata(chain, vyper_contract_instance, owner):

@@ -1,5 +1,4 @@
 import json
-import os
 import random
 import shutil
 from collections.abc import Callable, Iterable, Iterator
@@ -32,6 +31,7 @@ from ape.utils.basemodel import (
 )
 from ape.utils.misc import SOURCE_EXCLUDE_PATTERNS, log_instead_of_fail
 from ape.utils.os import (
+    ChangeDirectory,
     clean_path,
     create_tempdir,
     get_all_files_in_directory,
@@ -558,7 +558,7 @@ class Dependency(BaseManager, ExtraAttributesMixin):
         # This is the base project using this dependency.
         self.base_project = project or self.local_project
         # When installed (and set, lazily), this is the dependency project.
-        self._installation: Optional["ProjectManager"] = None
+        self._installation: Optional[ProjectManager] = None
         self._tried_fetch = False
 
     @log_instead_of_fail(default="<Dependency>")
@@ -933,7 +933,7 @@ def _get_cache_path(
 class PackagesCache(ManagerAccessMixin):
     def __init__(self):
         self._api_cache: dict[str, DependencyAPI] = {}
-        self._project_cache: dict[str, "ProjectManager"] = {}
+        self._project_cache: dict[str, ProjectManager] = {}
 
     def __contains__(self, package: str) -> bool:
         return package in self.installed_package_names
@@ -1020,6 +1020,25 @@ class PackagesCache(ManagerAccessMixin):
         api_file.unlink(missing_ok=True)
         manifest_file = self.get_manifest_path(package_id, version)
         manifest_file.unlink(missing_ok=True)
+
+    @contextmanager
+    def isolate_changes(self):
+        """
+        Allows you to make changes affecting the Ape packages cache in a context.
+        For example, temporarily install local "dev" packages for testing purposes.
+        """
+        with create_tempdir() as tmpdir:
+            packages_cache = tmpdir / "packages"
+            packages_cache.parent.mkdir(parents=True, exist_ok=True)
+            if self.root.is_dir():
+                shutil.copytree(self.root, packages_cache)
+            try:
+                yield
+            finally:
+                shutil.rmtree(self.root)
+                if packages_cache.is_dir():
+                    # Restore.
+                    shutil.copytree(packages_cache, self.root)
 
 
 def _version_to_options(version: str) -> tuple[str, ...]:
@@ -1229,12 +1248,12 @@ class DependencyManager(BaseManager):
             if allow_install:
                 try:
                     dependency.install(use_cache=use_cache, config_override=config_override)
-                except ProjectError:
+                except ProjectError as err:
                     # This dependency has issues. Let's wait to until the user
                     # actually requests something before failing, and
                     # yield an uninstalled version of the specified dependency for
                     # them to fix.
-                    pass
+                    logger.error(str(err))
 
             yield dependency
 
@@ -1289,6 +1308,44 @@ class DependencyManager(BaseManager):
 
         return None
 
+    def get_dependency_api(self, package_id: str, version: Optional[str] = None) -> DependencyAPI:
+        """
+        Get a dependency API. If not given version and there are multiple,
+        returns the latest.
+
+        Args:
+            package_id (str): The package ID or name of the dependency.
+            version (str): The version of the dependency.
+
+        Returns:
+            :class:`~ape.api.projects.DependencyAPI`
+        """
+        # Check by package ID first.
+        if dependency := self._get_dependency_api_by_package_id(package_id, version=version):
+            return dependency
+
+        elif dependency := self._get_dependency_api_by_package_id(
+            package_id, version=version, attr="name"
+        ):
+            return dependency
+
+        package_str = f"{package_id}@{version}" if version else package_id
+        message = f"No matching dependency found with package ID '{package_str}'"
+        raise ProjectError(message)
+
+    def _get_dependency_api_by_package_id(
+        self, package_id: str, version: Optional[str] = None, attr: str = "package_id"
+    ) -> Optional[DependencyAPI]:
+        matching = []
+        for dependency in self.config_apis:
+            if getattr(dependency, attr) != package_id:
+                continue
+
+            if (version and dependency.version_id == version) or not version:
+                matching.append(dependency)
+
+        return sorted(matching, key=lambda d: d.version_id)[-1] if matching else None
+
     def _get(
         self, name: str, version: str, allow_install: bool = True, checked: Optional[set] = None
     ) -> Optional[Dependency]:
@@ -1340,19 +1397,20 @@ class DependencyManager(BaseManager):
 
         return None
 
-    def get_versions(self, name: str) -> Iterator[Dependency]:
+    def get_versions(self, name: str, allow_install: bool = True) -> Iterator[Dependency]:
         """
         Get all installed versions of a dependency.
 
         Args:
             name (str): The name of the dependency.
+            allow_install (bool): Set to ``False`` to not allow installing.
 
         Returns:
             Iterator[:class:`~ape.managers.project.Dependency`]
         """
-        # First, check specified. Note: installs if needed.
+        # First, check specified.
         versions_yielded = set()
-        for dependency in self.get_project_dependencies(name=name):
+        for dependency in self.get_project_dependencies(name=name, allow_install=allow_install):
             if dependency.version in versions_yielded:
                 continue
 
@@ -1418,7 +1476,7 @@ class DependencyManager(BaseManager):
         version_options = _version_to_options(version)
 
         # Also try the lower of the name
-        # so ``OpenZeppelin`` would give you ``openzeppelin``.
+        # so `OpenZeppelin` would give you `openzeppelin`.
         id_options = [dependency_id]
         if dependency_id.lower() != dependency_id:
             # Ensure we try dependency_id without lower first.
@@ -1545,7 +1603,7 @@ class DependencyManager(BaseManager):
             base_path (Path): The target path.
             cache_name (str): The cache folder name to create
               at the target path. Defaults to ``.cache`` because
-              that is what is what ``ape-solidity`` uses.
+              that is what ``ape-solidity`` uses.
         """
         cache_folder = base_path / cache_name
         for dependency in self.specified:
@@ -1952,7 +2010,7 @@ class Project(ProjectManager):
         Change a project's config.
 
         Args:
-            **overrides: Config key-value pairs. Completely overridesfe
+            **overrides: Config key-value pairs. Completely overrides
               existing.
         """
 
@@ -2230,7 +2288,7 @@ class LocalProject(Project):
                     start = "Else, could" if did_append else "Could"
                     message = (
                         f"{message} {start} it be from one of the "
-                        "missing compilers for extensions: " + f'{", ".join(sorted(missing_exts))}?'
+                        "missing compilers for extensions: " + f"{', '.join(sorted(missing_exts))}?"
                     )
 
             # NOTE: Purposely discard the stack-trace and raise a new exception.
@@ -2304,7 +2362,8 @@ class LocalProject(Project):
 
         # ape-config.yaml does no exist. Check for another ProjectAPI type.
         project_classes: Iterator[type[ProjectAPI]] = (
-            t[1] for t in self.plugin_manager.projects  # type: ignore
+            t[1]
+            for t in self.plugin_manager.projects  # type: ignore
         )
         plugins = (t for t in project_classes if not issubclass(t, ApeProject))
         for api in plugins:
@@ -2592,22 +2651,50 @@ class LocalProject(Project):
             path (Path): The path of the new project.
               If not given, defaults to the project's path.
         """
-        path = path or self.path
-        os.chdir(path)
-        if self.path == path:
-            return  # Already setup.
+        return ChangeDirectory(
+            self.path,
+            path or self.path,
+            on_push=self._handle_path_changed,
+            on_pop=self._handle_path_restored,
+        )
+
+    def _handle_path_changed(self, path: Path) -> dict:
+        cache: dict = {
+            "__dict__": {},
+            "_session_source_change_check": self._session_source_change_check,
+            "_config_override": self._config_override,
+            "_base_path": self._base_path,
+            "manifest_path": self.manifest_path,
+            "_manifest": self._manifest,
+        }
 
         # New path: clear cached properties.
         for attr in list(self.__dict__.keys()):
             if isinstance(getattr(type(self), attr, None), cached_property):
-                del self.__dict__[attr]
+                cache["__dict__"][attr] = self.__dict__.pop(attr)
 
-        # Re-initialize
         self._session_source_change_check = set()
         self._config_override = {}
         self._base_path = Path(path).resolve()
-        self.manifest_path = self._base_path / ".build" / "__local__.json"
+
+        if self.manifest_path.name == "__local__.json":
+            self.manifest_path = self._base_path / ".build" / "__local__.json"
+
         self._manifest = self.load_manifest()
+        return cache
+
+    def _handle_path_restored(self, cache: dict) -> None:
+        self.__dict__ = {**(self.__dict__ or {}), **cache.get("__dict__", {})}
+        self._session_source_change_check = cache.get("_session_source_change_check", set())
+        self._config_override = cache.get("_config_override", {})
+        if base_path := self._base_path:
+            self._base_path = base_path
+
+        if manifest_path := cache.get("manifest_path"):
+            self.manifest_path = manifest_path
+
+        if manifest := cache.get("_manifest"):
+            self._manifest = manifest
 
     @contextmanager
     def within_project_path(self):

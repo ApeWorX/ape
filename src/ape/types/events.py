@@ -1,18 +1,17 @@
 from collections.abc import Iterable, Iterator, Sequence
 from functools import cached_property
-from typing import TYPE_CHECKING, Any, Optional, Union, cast
+from typing import TYPE_CHECKING, Any, Optional, Union
 
-from eth_abi.abi import encode
-from eth_abi.packed import encode_packed
-from eth_pydantic_types import HexBytes
-from eth_typing import Hash32, HexStr
-from eth_utils import encode_hex, keccak, to_hex
+from eth_pydantic_types import HexBytes, HexStr
+from eth_utils import encode_hex, is_hex, keccak, to_hex
 from ethpm_types.abi import EventABI
 from pydantic import BaseModel, field_serializer, field_validator, model_validator
 from web3.types import FilterParams
 
+from ape.exceptions import ContractNotFoundError
 from ape.types.address import AddressType
 from ape.types.basic import HexInt
+from ape.utils.abi import LogInputABICollection, encode_topics
 from ape.utils.basemodel import BaseInterfaceModel, ExtraAttributesMixin, ExtraModelAttributes
 from ape.utils.misc import ZERO_ADDRESS, log_instead_of_fail
 
@@ -36,7 +35,7 @@ class LogFilter(BaseModel):
     @classmethod
     def compute_selectors(cls, values):
         values["selectors"] = {
-            encode_hex(keccak(text=event.selector)): event for event in values.get("events", [])
+            encode_hex(keccak(text=event.selector)): event for event in values.get("events") or []
         }
 
         return values
@@ -46,14 +45,22 @@ class LogFilter(BaseModel):
     def validate_start_block(cls, value):
         return value or 0
 
+    @field_validator("addresses", "events", "topic_filter", mode="before")
+    @classmethod
+    def _convert_none_to_empty_list(cls, value):
+        return value or []
+
+    @field_validator("selectors", mode="before")
+    @classmethod
+    def _convert_none_to_dict(cls, value):
+        return value or {}
+
     def model_dump(self, *args, **kwargs):
-        _Hash32 = Union[Hash32, HexBytes, HexStr]
-        topics = cast(Sequence[Optional[Union[_Hash32, Sequence[_Hash32]]]], self.topic_filter)
         return FilterParams(
             address=self.addresses,
             fromBlock=to_hex(self.start_block),
             toBlock=to_hex(self.stop_block or self.start_block),
-            topics=topics,
+            topics=self.topic_filter,  # type: ignore
         )
 
     @classmethod
@@ -68,46 +75,11 @@ class LogFilter(BaseModel):
         """
         Construct a log filter from an event topic query.
         """
-        from ape import convert
-        from ape.utils.abi import LogInputABICollection, is_dynamic_sized_type
-
-        event_abi: EventABI = getattr(event, "abi", event)  # type: ignore
-        search_topics = search_topics or {}
-        topic_filter: list[Optional[HexStr]] = [encode_hex(keccak(text=event_abi.selector))]
-        abi_inputs = LogInputABICollection(event_abi)
-
-        def encode_topic_value(abi_type, value):
-            if isinstance(value, (list, tuple)):
-                return [encode_topic_value(abi_type, v) for v in value]
-            elif is_dynamic_sized_type(abi_type):
-                return encode_hex(keccak(encode_packed([str(abi_type)], [value])))
-            elif abi_type == "address":
-                value = convert(value, AddressType)
-
-            return encode_hex(encode([abi_type], [value]))
-
-        for topic in abi_inputs.topic_abi_types:
-            if topic.name in search_topics:
-                encoded_value = encode_topic_value(topic.type, search_topics[topic.name])
-                topic_filter.append(encoded_value)
-            else:
-                topic_filter.append(None)
-
-        topic_names = [i.name for i in abi_inputs.topic_abi_types if i.name]
-        invalid_topics = set(search_topics) - set(topic_names)
-        if invalid_topics:
-            raise ValueError(
-                f"{event_abi.name} defines {', '.join(topic_names)} as indexed topics, "
-                f"but you provided {', '.join(invalid_topics)}"
-            )
-
-        # remove trailing wildcards since they have no effect
-        while topic_filter[-1] is None:
-            topic_filter.pop()
-
+        abi = getattr(event, "abi", event)
+        topic_filter = encode_topics(abi, search_topics or {})
         return cls(
             addresses=addresses or [],
-            events=[event_abi],
+            events=[abi],
             topic_filter=topic_filter,
             start_block=start_block,
             stop_block=stop_block,
@@ -175,6 +147,14 @@ class ContractLog(ExtraAttributesMixin, BaseContractLog):
     An instance of a log from a contract.
     """
 
+    def __init__(self, *args, **kwargs):
+        abi = kwargs.pop("_abi", None)
+        super().__init__(*args, **kwargs)
+        if isinstance(abi, LogInputABICollection):
+            abi = abi.abi
+
+        self._abi = abi
+
     transaction_hash: Any
     """The hash of the transaction containing this log."""
 
@@ -193,6 +173,18 @@ class ContractLog(ExtraAttributesMixin, BaseContractLog):
     Is `None` when from the pending block.
     """
 
+    @field_validator("transaction_hash", mode="before")
+    @classmethod
+    def _validate_transaction_hash(cls, transaction_hash):
+        if (
+            isinstance(transaction_hash, str)
+            and is_hex(transaction_hash)
+            and not transaction_hash.startswith("0x")
+        ):
+            return f"0x{transaction_hash}"
+
+        return transaction_hash
+
     @field_serializer("transaction_hash", "block_hash")
     def _serialize_hashes(self, value, info):
         return self._serialize_value(value, info)
@@ -203,6 +195,43 @@ class ContractLog(ExtraAttributesMixin, BaseContractLog):
     @cached_property
     def block(self) -> "BlockAPI":
         return self.chain_manager.blocks[self.block_number]
+
+    @property
+    def abi(self) -> EventABI:
+        """
+        An ABI describing the event.
+        """
+        if abi := self._abi:
+            return abi
+
+        try:
+            contract = self.chain_manager.contracts[self.contract_address]
+        except (ContractNotFoundError, KeyError):
+            pass
+
+        else:
+            for event_abi in contract.events:
+                if event_abi.name == self.event_name and len(event_abi.inputs) == len(
+                    self.event_arguments
+                ):
+                    abi = event_abi
+
+        if abi is None:
+            # Last case scenario, try to calculate it.
+            # NOTE: This is a rare edge case that shouldn't really happen,
+            #   so this is a lower priorty.
+            # TODO: Handle inputs here.
+            abi = EventABI(name=self.event_name)
+
+        self._abi = abi
+        return abi
+
+    @cached_property
+    def topics(self) -> list[HexStr]:
+        """
+        The encoded hex-str topics values.
+        """
+        return encode_topics(self.abi, self.event_arguments)
 
     @property
     def timestamp(self) -> int:

@@ -217,7 +217,7 @@ def test_add_dependency_with_dependencies(project, with_dependencies_project_pat
     assert actual.version == "local"
 
 
-def test_get_project_dependencies(project, with_dependencies_project_path):
+def test_get_project_dependencies(project, ape_caplog):
     installed_package = {"name": "web3", "site_package": "web3"}
     not_installed_package = {
         "name": "apethisisnotarealpackageape",
@@ -226,11 +226,13 @@ def test_get_project_dependencies(project, with_dependencies_project_path):
     with project.temp_config(dependencies=[installed_package, not_installed_package]):
         dm = project.dependencies
         actual = list(dm.get_project_dependencies())
+        logs = ape_caplog.head
         assert len(actual) == 2
         assert actual[0].name == "web3"
         assert actual[0].installed
         assert actual[1].name == "apethisisnotarealpackageape"
         assert not actual[1].installed
+        assert "Dependency 'apethisisnotarealpackageape' not installed." in logs
 
 
 def test_install(project, mocker):
@@ -412,6 +414,14 @@ class TestPackagesCache:
         actual = cache.get_project_path("project-test-2", "v1.0.0")
         assert actual == path
 
+    def test_isolate_cache_changes(self, cache):
+        dep = LocalDependency(name="isotestdep", local=Path("isotestdep"), version="v1.0.0")
+        with cache.isolate_changes():
+            path = cache.cache_api(dep)
+            assert path.is_file()
+
+        assert not path.is_file()
+
 
 class TestLocalDependency:
     NAME = "testlocaldep"
@@ -463,7 +473,7 @@ class TestNpmDependency:
         file = contracts_folder / "contract.json"
         source_content = '{"abi": []}'
         file.write_text(source_content, encoding="utf8")
-        yield base
+        return base
 
     def test_fetch(self, node_modules_path, project_with_npm_dependency):
         pm = project_with_npm_dependency

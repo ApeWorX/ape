@@ -42,9 +42,9 @@ def test_run(scripts_runner, integ_project):
     ]
     for script_file in scripts:
         result = scripts_runner.invoke(script_file.stem)
-        assert (
-            result.exit_code == 0
-        ), f"Unexpected exit code for '{script_file.name}'\n{result.output}"
+        assert result.exit_code == 0, (
+            f"Unexpected exit code for '{script_file.name}'\n{result.output}"
+        )
 
         if script_file.stem.startswith("_"):
             assert "Super secret script output" not in result.output
@@ -108,9 +108,9 @@ def test_run_when_script_errors(scripts_runner, integ_project):
         result = scripts_runner.invoke(
             script_file.stem,
         )
-        assert (
-            result.exit_code != 0
-        ), f"Unexpected exit code for '{script_file.name}'.\n{result.output}"
+        assert result.exit_code != 0, (
+            f"Unexpected exit code for '{script_file.name}'.\n{result.output}"
+        )
         assert "Expected exception" in result._completed_process.stderr
 
 

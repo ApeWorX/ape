@@ -17,6 +17,7 @@ from ape.exceptions import (
     ContractLogicError,
     CustomError,
     MethodNonPayableError,
+    SignatureError,
 )
 from ape.types.address import AddressType
 from ape_ethereum.transactions import TransactionStatusEnum, TransactionType
@@ -72,6 +73,11 @@ def test_eq(vyper_contract_instance, chain):
 def test_contract_transactions(owner, contract_instance):
     contract_instance.setNumber(2, sender=owner)
     assert contract_instance.myNumber() == 2
+
+
+def test_contract_transaction_when_sign_false(owner, contract_instance):
+    with pytest.raises(SignatureError):
+        contract_instance.setNumber(2, sender=owner, sign=False)
 
 
 def test_wrong_number_of_arguments(owner, contract_instance):
@@ -874,9 +880,9 @@ def test_value_to_non_payable_fallback_and_no_receive(
             break
 
     new_contract_type = ContractType.model_validate(contract_type_data)
-    contract = owner.chain_manager.contracts.instance_at(
-        vyper_fallback_contract.address, contract_type=new_contract_type
-    )
+    contract = owner.chain_manager.contracts.instance_at(vyper_fallback_contract.address)
+    contract.contract_type = new_contract_type  # Setting to completely override instead of merge.
+
     expected = (
         r"Contract's fallback is non-payable and there is no receive ABI\. Unable to send value\."
     )
@@ -1021,3 +1027,21 @@ def test_calldata_arg(calldata, expected, contract_instance, owner):
     tx = contract_instance.functionWithCalldata(calldata, sender=owner)
     assert not tx.failed
     assert HexBytes(expected) in tx.data
+
+
+def test_call(fallback_contract, owner):
+    """
+    Fallback contract call test.
+    """
+    tx = fallback_contract(sender=owner, value="1 wei")
+    assert not tx.failed
+
+
+def test_call_contract_as_sender(fallback_contract, owner, vyper_contract_instance):
+    owner.transfer(fallback_contract, "1 ETH")
+    with pytest.raises(SignatureError) as info:
+        fallback_contract(sender=fallback_contract, value="1 wei")
+
+    transaction = info.value.transaction
+    assert transaction is not None
+    assert transaction.nonce is not None  # Proves it was prepared.

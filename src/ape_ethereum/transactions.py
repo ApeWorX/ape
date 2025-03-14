@@ -72,7 +72,7 @@ class BaseTransaction(TransactionAPI):
                     "Did you forget to add the `sender=` kwarg to the transaction function call?"
                 )
 
-            raise SignatureError(message)
+            raise SignatureError(message, transaction=self)
 
         txn_data = self.model_dump(by_alias=True, exclude={"sender", "type"})
 
@@ -107,7 +107,8 @@ class BaseTransaction(TransactionAPI):
             recovered_signer = EthAccount.recover_transaction(signed_txn)
             if recovered_signer != self.sender:
                 raise SignatureError(
-                    f"Recovered signer '{recovered_signer}' doesn't match sender {self.sender}!"
+                    f"Recovered signer '{recovered_signer}' doesn't match sender {self.sender}!",
+                    transaction=self,
                 )
 
         return signed_txn
@@ -253,7 +254,6 @@ class Receipt(ReceiptAPI):
                     # Failing to get a traceback should not halt an Ape application.
                     # Sometimes, a node crashes and we are left with nothing.
                     logger.error(f"Problem retrieving traceback: {err}")
-                    pass
 
         return SourceTraceback.model_validate([])
 

@@ -279,7 +279,7 @@ def test_getattr_ipython_canary_check(tmp_project):
     # Remove contract types, if there for some reason is any.
     tmp_project.manifest.contract_types = {}
     with pytest.raises(AttributeError):
-        getattr(tmp_project, "_ipython_canary_method_should_not_exist_")
+        tmp_project._ipython_canary_method_should_not_exist_
 
     # Prove it did not compile looking for this.
     assert not tmp_project.manifest.contract_types
@@ -816,9 +816,7 @@ class TestFoundryProject:
 [submodule "lib/erc4626-tests"]
     path = lib/erc4626-tests
     url = https://github.com/a16z/erc4626-tests.git
-""".lstrip().replace(
-            "    ", "\t"
-        )
+""".lstrip().replace("    ", "\t")
 
     def test_extract_config(self, foundry_toml, gitmodules, mock_github):
         with create_tempdir() as temp_dir:
@@ -1065,9 +1063,16 @@ def test_chdir(project):
         project.chdir(new_path)
         assert project.path == new_path
 
-    # Undo.
-    project.chdir(original_path)
-    assert project.path == original_path
+        # Undo.
+        project.chdir(original_path)
+        assert project.path == original_path
+
+        # Show you can also use it in a context.
+        with project.chdir(new_path):
+            assert project.path == new_path
+
+        # It should have automatically undone.
+        assert project.path == original_path
 
 
 def test_within_project_path():

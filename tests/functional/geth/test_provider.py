@@ -1,6 +1,7 @@
 import re
+from abc import ABC
 from pathlib import Path
-from typing import cast
+from typing import Optional, cast
 
 import pytest
 from eth_pydantic_types import HashBytes32
@@ -12,6 +13,7 @@ from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.exceptions import ExtraDataLengthError
 from web3.providers import HTTPProvider
 
+from ape.api import NetworkAPI
 from ape.exceptions import (
     APINotImplementedError,
     BlockNotFoundError,
@@ -19,14 +21,16 @@ from ape.exceptions import (
     ContractLogicError,
     NetworkMismatchError,
     ProviderError,
+    ProviderNotConnectedError,
     TransactionError,
     TransactionNotFoundError,
     VirtualMachineError,
 )
 from ape.utils import to_int
 from ape.utils._web3_compat import ExtraDataToPOAMiddleware
+from ape.utils.os import create_tempdir
 from ape_ethereum.ecosystem import Block
-from ape_ethereum.provider import DEFAULT_SETTINGS, EthereumNodeProvider
+from ape_ethereum.provider import DEFAULT_SETTINGS, EthereumNodeProvider, Web3Provider
 from ape_ethereum.trace import TraceApproach
 from ape_ethereum.transactions import (
     AccessList,
@@ -115,7 +119,7 @@ def test_uri_non_dev_and_not_configured(mocker, ethereum):
         _ = provider.uri
 
     # Show that if an evm-chains _does_ exist, it will use that.
-    patch = mocker.patch("ape_ethereum.provider.get_random_rpc")
+    patch = mocker.patch("ape_ethereum.provider.Web3Provider._get_random_rpc")
 
     # The following URL is made up (please keep example.com).
     expected = "https://gorillas.example.com/v1/rpc"
@@ -141,6 +145,29 @@ def test_uri_invalid(geth_provider, project, ethereum):
 
     finally:
         geth_provider.provider_settings = settings
+
+
+def test_uri_missing(mock_sepolia):
+    class MyProvider(Web3Provider, ABC):
+        network: NetworkAPI = mock_sepolia
+        name: str = "devnode"
+        _connected_uri = None
+        _configured_rpc = None
+
+        @property
+        def _default_http_uri(self) -> Optional[str]:
+            # Doing this to get the error to occur.
+            return None
+
+        def connect(self):
+            pass
+
+        def disconnect(self):
+            pass
+
+    provider = MyProvider()
+    with pytest.raises(ProviderError, match="Missing URI for network 'sepolia' on 'ethereum'."):
+        _ = provider.uri
 
 
 @geth_process_test
@@ -208,6 +235,21 @@ def test_chain_id_live_network_connected_uses_web3_chain_id(mocker, geth_provide
 
     # Still use the connected chain ID instead network's
     assert actual == 1337
+
+
+@geth_process_test
+def test_chain_id_adhoc_ipc_not_connected(networks, geth_provider):
+    ipc_path = str(geth_provider.ipc_path)
+    provider = networks.get_provider_from_choice(ipc_path)
+
+    # Clear chain ID for this test.
+    provider.__dict__.pop("chain_id", None)
+    assert not provider.is_connected, "Provider cannot be connected for this test"
+
+    # We expect this error because this means it attempts RPC to get the chain ID
+    # and does not reference the "active" provider (which is different).
+    with pytest.raises(ProviderNotConnectedError):
+        _ = provider.chain_id
 
 
 @geth_process_test
@@ -695,7 +737,7 @@ def test_make_request_not_exists_different_messages(message, mock_web3, geth_pro
 def test_geth_bin_not_found():
     bin_name = "__NOT_A_REAL_EXECUTABLE_HOPEFULLY__"
     with pytest.raises(NodeSoftwareNotInstalledError):
-        _ = GethDevProcess(Path.cwd(), executable=bin_name)
+        _ = GethDevProcess(Path.cwd() / "notexists", executable=bin_name)
 
 
 @geth_process_test
@@ -917,3 +959,37 @@ def test_geth_dev_from_uri_ipc(data_folder):
     assert kwargs.get("ws_api") is None
     assert kwargs.get("ws_addr") is None
     assert kwargs.get("rpc_addr") is None
+
+
+@geth_process_test
+def test_geth_dev_block_period(data_folder):
+    geth_dev = GethDevProcess.from_uri(
+        "path/to/geth.ipc",
+        data_folder,
+        block_time=1,
+        generate_accounts=False,
+        initialize_chain=False,
+    )
+    assert geth_dev.geth_kwargs["dev_period"] == "1"
+
+
+def test_geth_dev_disconnect_does_not_delete_unrelated_files_in_given_data_dir():
+    """
+    One time, I used a data-dir containing other files I didn't want to lose. GethDevProcess
+    deleted the entire folder during `.disconnect()`, and it was tragic. Ensure this does
+    not happen to anyone else.
+    """
+    with create_tempdir() as temp_dir:
+        file = temp_dir / "dont_delete_me_plz.txt"
+        file.write_text("Please don't delete me.")
+
+        geth_dev = GethDevProcess.from_uri(
+            "path/to/geth.ipc",
+            temp_dir,
+            block_time=1,
+            generate_accounts=False,
+            initialize_chain=False,
+        )
+        geth_dev.disconnect()
+        assert file.is_file()
+        assert not (temp_dir / "genesis.json").is_file()

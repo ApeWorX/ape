@@ -74,6 +74,10 @@ class SignatureError(AccountsError):
     Raised when there are issues with signing.
     """
 
+    def __init__(self, message: str, transaction: Optional["TransactionAPI"] = None):
+        self.transaction = transaction
+        super().__init__(message)
+
 
 class ContractDataError(ApeException):
     """
@@ -119,7 +123,7 @@ class ArgumentsLengthError(ContractDataError):
             super().__init__(f"{prefix}.")
             return
 
-        inputs_ls: list[Union["MethodABI", "ConstructorABI", int]] = (
+        inputs_ls: list[Union[MethodABI, ConstructorABI, int]] = (
             inputs if isinstance(inputs, list) else [inputs]
         )
         if not inputs_ls:
@@ -252,7 +256,7 @@ class TransactionError(ApeException):
     @property
     def source_traceback(self) -> Optional["SourceTraceback"]:
         tb = self._source_traceback
-        result: Optional["SourceTraceback"]
+        result: Optional[SourceTraceback]
         if not self._attempted_source_traceback and tb is None and self.txn is not None:
             result = _get_ape_traceback_from_tx(self.txn)
             # Prevent re-trying.
@@ -524,7 +528,7 @@ class BlockNotFoundError(ProviderError):
             if not block_id_str.startswith("0x"):
                 block_id_str = f"0x{block_id_str}"
         else:
-            block_id_str: "HexStr" = f"{block_id}"  # type: ignore
+            block_id_str: HexStr = f"{block_id}"  # type: ignore
 
         message = (
             "Missing latest block."
@@ -908,7 +912,7 @@ def _get_ape_traceback_from_tx(txn: FailedTxn) -> Optional["SourceTraceback"]:
     from ape.api.transactions import ReceiptAPI
 
     try:
-        receipt: "ReceiptAPI" = txn if isinstance(txn, ReceiptAPI) else txn.receipt  # type: ignore
+        receipt: ReceiptAPI = txn if isinstance(txn, ReceiptAPI) else txn.receipt  # type: ignore
     except Exception:
         # Receipt not real enough, maybe was a re-played call.
         return None

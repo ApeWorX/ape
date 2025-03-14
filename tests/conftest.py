@@ -284,7 +284,6 @@ def empty_data_folder():
 
     shutil.rmtree(DATA_FOLDER, ignore_errors=True)
     DATA_FOLDER.mkdir(parents=True, exist_ok=True)
-    yield
 
 
 @pytest.fixture
@@ -347,7 +346,7 @@ def skip_if_plugin_installed(*plugin_names: str):
                 compiler = ape.compilers.get_compiler(name)
                 if compiler:
 
-                    def test_skip_from_compiler(*args, **kwargs):
+                    def test_skip_from_compiler(*args, name=name, **kwargs):
                         pytest.mark.skip(msg_f.format(name))
 
                     # NOTE: By returning a function, we avoid a collection warning.
@@ -360,7 +359,7 @@ def skip_if_plugin_installed(*plugin_names: str):
                 ]
                 if any(x.startswith(name.upper()) for x in address_converters):
 
-                    def test_skip_from_converter():
+                    def test_skip_from_converter(name=name):
                         pytest.mark.skip(msg_f.format(name))
 
                     return test_skip_from_converter
@@ -491,7 +490,13 @@ class SubprocessRunner:
             env["APE_DATA_FOLDER"] = str(self.data_folder)
 
         completed_process = subprocess.run(
-            cmd_ls, capture_output=True, env=env, input=input, text=True, timeout=timeout
+            cmd_ls,
+            capture_output=True,
+            env=env,
+            input=input,
+            text=True,
+            timeout=timeout,
+            check=False,
         )
         result = SubprocessResult(completed_process)
         sys.stdin = sys.__stdin__

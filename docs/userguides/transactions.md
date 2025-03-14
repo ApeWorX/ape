@@ -91,6 +91,7 @@ assert receipt.sender == dev
 ```
 
 **NOTE**: The `creation_metadata` contains other information as well, such as `.factory` for factory-deployed contracts.
+Learn more about creation metadata in the [Creation Metadata User Guide](./contract_metadata.html).
 
 ## Dynamic-Fee Transactions
 
@@ -222,13 +223,13 @@ Otherwise, you will get an `AttributeError`.
 For longer running scripts, you may need to increase the transaction acceptance timeout.
 ```
 
-The default value is 2 minutes for live networks and 20 seconds for local networks.
+The default value is 2 minutes (`120` seconds) for live networks and 20 seconds for local networks.
 In your `ape-config.yaml` file, add the following:
 
 ```yaml
 ethereum:
   mainnet:
-    transaction_acceptance_timeout: 600  # 5 minutes
+    transaction_acceptance_timeout: 600  # 10 minutes
 ```
 
 ## Traces

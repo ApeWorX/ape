@@ -15,12 +15,7 @@ from ape.exceptions import ProviderNotConnectedError, SignatureError
 from ape.types.signatures import MessageSignature, TransactionSignature
 from ape.utils._web3_compat import sign_hash
 from ape.utils.misc import log_instead_of_fail
-from ape.utils.testing import (
-    DEFAULT_NUMBER_OF_TEST_ACCOUNTS,
-    DEFAULT_TEST_HD_PATH,
-    DEFAULT_TEST_MNEMONIC,
-    generate_dev_accounts,
-)
+from ape.utils.testing import generate_dev_accounts
 
 if TYPE_CHECKING:
     from ape.api.transactions import TransactionAPI
@@ -37,20 +32,24 @@ class TestAccountContainer(TestAccountContainerAPI):
         return self.number_of_accounts + len(self.generated_accounts)
 
     @property
+    def mnemonic(self) -> str:
+        # Overridden so we can overload the setter.
+        return self.config_manager.test.mnemonic
+
+    @mnemonic.setter
+    def mnemonic(self, mnemonic: str) -> None:
+        # Overridden so we can also clear out generated accounts cache.
+        self.config_manager.test.mnemonic = mnemonic
+        self.generated_accounts = []
+
+    @TestAccountContainerAPI.mnemonic.setter
+    def mnemonic(self, mnemonic: str) -> None:
+        self.config_manager.test.mnemonic = mnemonic
+        self.generated_accounts = []
+
+    @property
     def config(self):
         return self.config_manager.get_config("test")
-
-    @property
-    def mnemonic(self) -> str:
-        return self.config.get("mnemonic", DEFAULT_TEST_MNEMONIC)
-
-    @property
-    def number_of_accounts(self) -> int:
-        return self.config.get("number_of_accounts", DEFAULT_NUMBER_OF_TEST_ACCOUNTS)
-
-    @property
-    def hd_path(self) -> str:
-        return self.config.get("hd_path", DEFAULT_TEST_HD_PATH)
 
     @property
     def aliases(self) -> Iterator[str]:
@@ -162,7 +161,7 @@ class TestAccount(TestAccountAPI):
             ) = sign_transaction_dict(private_key, tx_data)
         except TypeError as err:
             # Occurs when missing properties on the txn that are needed to sign.
-            raise SignatureError(str(err)) from err
+            raise SignatureError(str(err), transaction=txn) from err
 
         # NOTE: Using `to_bytes(hexstr=to_hex(sig_r))` instead of `to_bytes(sig_r)` as
         #   a performance optimization.

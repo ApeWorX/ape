@@ -2,11 +2,11 @@ import contextlib
 from collections.abc import Generator, Iterator
 from contextlib import AbstractContextManager as ContextManager
 from functools import cached_property, singledispatchmethod
-from typing import Optional, Union
+from typing import TYPE_CHECKING, Optional, Union
 
 from eth_utils import is_hex
 
-from ape.api.accounts import (
+from ape.api import (
     AccountAPI,
     AccountContainerAPI,
     ImpersonatedAccount,
@@ -19,12 +19,15 @@ from ape.types.address import AddressType
 from ape.utils.basemodel import ManagerAccessMixin
 from ape.utils.misc import log_instead_of_fail
 
+if TYPE_CHECKING:
+    from ape.api.address import BaseAddress
+
 _DEFAULT_SENDERS: list[AccountAPI] = []
 
 
 @contextlib.contextmanager
 def _use_sender(
-    account: Union[AccountAPI, TestAccountAPI]
+    account: Union[AccountAPI, TestAccountAPI],
 ) -> "Generator[AccountAPI, TestAccountAPI, None]":
     try:
         _DEFAULT_SENDERS.append(account)
@@ -52,6 +55,35 @@ class TestAccountManager(list, ManagerAccessMixin):
             plugin_name: container_type(name=plugin_name, account_type=account_type)
             for plugin_name, (container_type, account_type) in account_types
         }
+
+    @property
+    def mnemonic(self) -> str:
+        """
+        The seed phrase for generated test accounts.
+        """
+        return self.config_manager.get_config("test").mnemonic
+
+    @mnemonic.setter
+    def mnemonic(self, value: str):
+        """
+        The seed phrase for generated test accounts.
+        **WARNING**: Changing the test-mnemonic mid-session
+           re-starts the provider (if connected to one).
+        """
+        self.config_manager.test.mnemonic = value
+        self.containers["test"].mnemonic = value
+
+        if provider := self.network_manager.active_provider:
+            provider.update_settings({"mnemonic": value})
+
+        self._accounts_by_index = {}
+
+    @property
+    def number_of_accounts(self) -> int:
+        """
+        The number of test accounts to generate and fund by default.
+        """
+        return self.config_manager.test.number_of_accounts
 
     @property
     def hd_path(self) -> str:
@@ -135,7 +167,9 @@ class TestAccountManager(list, ManagerAccessMixin):
         try:
             result = self.provider.unlock_account(address)
         except NotImplementedError as err:
-            raise AccountsError("Your provider does not support impersonating accounts.") from err
+            raise AccountsError(
+                f"Provider '{self.provider.name}' does not support impersonating accounts."
+            ) from err
 
         if result:
             if address in self._impersonated_accounts:
@@ -283,10 +317,10 @@ class AccountManager(BaseManager):
         Usage example::
 
             def test_my_contract(accounts):
-               # The "accounts" fixture uses the AccountsManager.test_accounts()
-               sender = accounts[0]
-               receiver = accounts[1]
-               ...
+                # The "accounts" fixture uses the AccountsManager.test_accounts()
+                sender = accounts[0]
+                receiver = accounts[1]
+                ...
 
         Returns:
             :class:`TestAccountContainer`
@@ -434,3 +468,52 @@ class AccountManager(BaseManager):
         self, index: int, address: AddressType, private_key: str
     ) -> "TestAccountAPI":
         return self.test_accounts.init_test_account(index, address, private_key)
+
+    def resolve_address(
+        self, account_id: Union["BaseAddress", AddressType, str, int, bytes]
+    ) -> Optional[AddressType]:
+        """
+        Resolve the given input to an address.
+
+        Args:
+            account_id (:class:~ape.api.address.BaseAddress, str, int, bytes): The input to resolve.
+                It handles anything that converts to an AddressType like an ENS or a BaseAddress.
+                It also handles account aliases Ape is aware of, or int or bytes address values.
+
+        Returns:
+            :class:`~ape.types.AddressType` | None
+        """
+        if isinstance(account_id, str) and account_id.startswith("0x"):
+            # Was given a hex-address string.
+            if provider := self.network_manager.active_provider:
+                return provider.network.ecosystem.decode_address(account_id)
+            else:
+                # Assume Ethereum-like.
+                return self.network_manager.ether.decode_address(account_id)
+
+        elif not isinstance(account_id, str):
+            # Was given either an integer, bytes, or a BaseAddress (account or contract).
+            return self.conversion_manager.convert(account_id, AddressType)
+
+        elif isinstance(account_id, str) and account_id in self.aliases:
+            # Was given an account alias.
+            account = self.load(account_id)
+            return account.address
+
+        elif (
+            isinstance(account_id, str)
+            and account_id.startswith("TEST::")
+            and account_id[-1].isdigit()
+        ):
+            # Test account "alias".
+            account_idx = int(account_id[-1])
+            return self.test_accounts[account_idx]
+
+        elif isinstance(account_id, str) and not is_hex(account_id):
+            # Was maybe given an ENS name.
+            try:
+                return self.conversion_manager.convert(account_id, AddressType)
+            except ConversionError:
+                return None
+
+        return None

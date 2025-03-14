@@ -554,42 +554,39 @@ class ContractCache(BaseManager):
             return None
 
         if contract_type := self.contract_types[address_key]:
+            # The ContractType was previously cached.
             if default and default != contract_type:
-                # Replacing contract type
-                self.contract_types[address_key] = default
-                return default
+                # The given default ContractType is different than the cached one.
+                # Merge the two and cache the merged result.
+                combined_contract_type = _merge_contract_types(contract_type, default)
+                self.contract_types[address_key] = combined_contract_type
+                return combined_contract_type
 
             return contract_type
 
-        else:
-            # Contract is not cached yet. Check broader sources, such as an explorer.
-            if not proxy_info and detect_proxy:
-                # Proxy info not provided. Attempt to detect.
-                if not (proxy_info := self.proxy_infos[address_key]):
-                    if proxy_info := self.provider.network.ecosystem.get_proxy_info(address_key):
-                        self.proxy_infos[address_key] = proxy_info
+        # Contract is not cached yet. Check broader sources, such as an explorer.
+        if not proxy_info and detect_proxy:
+            # Proxy info not provided. Attempt to detect.
+            if not (proxy_info := self.proxy_infos[address_key]):
+                if proxy_info := self.provider.network.ecosystem.get_proxy_info(address_key):
+                    self.proxy_infos[address_key] = proxy_info
 
-            if proxy_info:
-                # Contract is a proxy (either was detected or provided).
-                implementation_contract_type = self.get(proxy_info.target, default=default)
-                proxy_contract_type = (
-                    self._get_contract_type_from_explorer(address_key)
-                    if fetch_from_explorer
-                    else None
-                )
-                if proxy_contract_type:
-                    contract_type_to_cache = _get_combined_contract_type(
-                        proxy_contract_type, proxy_info, implementation_contract_type
-                    )
-                else:
-                    contract_type_to_cache = implementation_contract_type
+        if proxy_info:
+            if proxy_contract_type := self._get_proxy_contract_type(
+                address_key,
+                proxy_info,
+                fetch_from_explorer=fetch_from_explorer,
+                default=default,
+            ):
+                # `proxy_contract_type` is one of the following:
+                # 1. A ContractType with the combined proxy and implementation ABIs
+                # 2. Implementation-only ABI ContractType (like forwarder proxies)
+                # 3. Proxy only ABI (e.g. unverified implementation ContractType)
+                return proxy_contract_type
 
-                self.contract_types[address_key] = contract_type_to_cache
-                return contract_type_to_cache
-
-            # Also gets cached to disk for faster lookup next time.
-            if fetch_from_explorer:
-                contract_type = self._get_contract_type_from_explorer(address_key)
+        # Also gets cached to disk for faster lookup next time.
+        if fetch_from_explorer:
+            contract_type = self._get_contract_type_from_explorer(address_key)
 
         # Cache locally for faster in-session look-up.
         if contract_type:
@@ -599,6 +596,65 @@ class ContractCache(BaseManager):
             return default
 
         return contract_type
+
+    def _get_proxy_contract_type(
+        self,
+        address: AddressType,
+        proxy_info: ProxyInfoAPI,
+        fetch_from_explorer: bool = True,
+        default: Optional[ContractType] = None,
+    ) -> Optional[ContractType]:
+        """
+        Combines the discoverable ABIs from the proxy contract and its implementation.
+        """
+        implementation_contract_type = self._get_contract_type(
+            proxy_info.target,
+            fetch_from_explorer=fetch_from_explorer,
+            default=default,
+        )
+        proxy_contract_type = self._get_contract_type(
+            address, fetch_from_explorer=fetch_from_explorer
+        )
+        if proxy_contract_type is not None and implementation_contract_type is not None:
+            combined_contract = _get_combined_contract_type(
+                proxy_contract_type, proxy_info, implementation_contract_type
+            )
+            self.contract_types[address] = combined_contract
+            return combined_contract
+
+        elif implementation_contract_type is not None:
+            contract_type_to_cache = implementation_contract_type
+            self.contract_types[address] = implementation_contract_type
+            return contract_type_to_cache
+
+        elif proxy_contract_type is not None:
+            # In this case, the implementation ContactType was not discovered.
+            # However, we were able to discover the ContractType of the proxy.
+            # Proceed with caching the proxy; the user can update the type later
+            # when the implementation is discoverable.
+            self.contract_types[address] = proxy_contract_type
+            return proxy_contract_type
+
+        logger.warning(f"Unable to determine the ContractType for the proxy at '{address}'.")
+        return None
+
+    def _get_contract_type(
+        self,
+        address: AddressType,
+        fetch_from_explorer: bool = True,
+        default: Optional[ContractType] = None,
+    ) -> Optional[ContractType]:
+        """
+        Get the _exact_ ContractType for a given address. For proxy contracts, returns
+        the proxy ABIs if there are any and not the implementation ABIs.
+        """
+        if contract_type := self.contract_types[address]:
+            return contract_type
+
+        elif fetch_from_explorer:
+            return self._get_contract_type_from_explorer(address)
+
+        return default
 
     @classmethod
     def get_container(cls, contract_type: ContractType) -> ContractContainer:
@@ -853,6 +909,16 @@ class ContractCache(BaseManager):
 
         if contract_type:
             # Cache contract so faster look-up next time.
+            if not isinstance(contract_type, ContractType):
+                explorer_name = self.provider.network.explorer.name
+                wrong_type = type(contract_type)
+                wrong_type_str = getattr(wrong_type, "__name__", f"{wrong_type}")
+                logger.warning(
+                    f"Explorer '{explorer_name}' returned unexpected "
+                    f"type '{wrong_type_str}' ContractType."
+                )
+                return None
+
             self.contract_types[address] = contract_type
 
         return contract_type
@@ -863,9 +929,7 @@ def _get_combined_contract_type(
     proxy_info: ProxyInfoAPI,
     implementation_contract_type: ContractType,
 ) -> ContractType:
-    proxy_abis = [
-        abi for abi in proxy_contract_type.abi if abi.type in ("error", "event", "function")
-    ]
+    proxy_abis = _get_relevant_additive_abis(proxy_contract_type)
 
     # Include "hidden" ABIs, such as Safe's `masterCopy()`.
     if proxy_info.abi and proxy_info.abi.signature not in [
@@ -873,6 +937,23 @@ def _get_combined_contract_type(
     ]:
         proxy_abis.append(proxy_info.abi)
 
-    combined_contract_type = implementation_contract_type.model_copy(deep=True)
-    combined_contract_type.abi.extend(proxy_abis)
-    return combined_contract_type
+    return _merge_abis(implementation_contract_type, proxy_abis)
+
+
+def _get_relevant_additive_abis(contract_type: ContractType) -> list[ABI]:
+    # Get ABIs you would want to add to a base contract as extra,
+    # such as unique ABIs from proxies.
+    return [abi for abi in contract_type.abi if abi.type in ("error", "event", "function")]
+
+
+def _merge_abis(base_contract: ContractType, extra_abis: list[ABI]) -> ContractType:
+    contract_type = base_contract.model_copy(deep=True)
+    contract_type.abi.extend(extra_abis)
+    return contract_type
+
+
+def _merge_contract_types(
+    base_contract_type: ContractType, additive_contract_type: ContractType
+) -> ContractType:
+    relevant_abis = _get_relevant_additive_abis(additive_contract_type)
+    return _merge_abis(base_contract_type, relevant_abis)

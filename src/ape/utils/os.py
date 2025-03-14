@@ -463,3 +463,49 @@ def within_directory(directory: Path):
     finally:
         if Path.cwd() != here:
             os.chdir(here)
+
+
+class ChangeDirectory:
+    """
+    A context-manager for changing a directory. Initializing it
+    will still change the directory, but you can optionally exit
+    out of it to restore back to the original directory. Additionally,
+    provides hooks to run when each of these events occur.
+    """
+
+    def __init__(
+        self,
+        original_path: Path,
+        new_path: Path,
+        chdir: Optional[Callable[[Path], None]] = None,
+        on_push: Optional[Callable[[Path], dict]] = None,
+        on_pop: Optional[Callable[[dict], None]] = None,
+    ):
+        self.original_path = original_path
+        self.new_path = new_path
+        self._on_push = on_push
+        self._on_pop = on_pop
+        self._chdir = chdir or os.chdir
+
+        # Initiate the change now so you can still use this class
+        # on methods that are not intended to be used in a context.
+        if self.original_path != self.new_path:
+            self._chdir(new_path)
+            self._cache: dict = {} if self._on_push is None else self._on_push(new_path)
+            self._did_change = True
+        else:
+            self._cache = {}
+            self._did_change = False
+
+    def __enter__(self):
+        return self.new_path
+
+    def __exit__(self, *args):
+        if not self._did_change:
+            # Don't do anything. Nothing changed.
+            return
+
+        # Handle the return to the original path.
+        self._chdir(self.original_path)
+        if self._on_pop:
+            self._on_pop(self._cache)

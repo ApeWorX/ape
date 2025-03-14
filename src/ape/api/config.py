@@ -13,6 +13,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from ape.exceptions import ConfigError
 from ape.logging import logger
 from ape.types.address import AddressType
+from ape.utils.abi import CalldataRepr
 from ape.utils.basemodel import (
     ExtraAttributesMixin,
     ExtraModelAttributes,
@@ -39,8 +40,10 @@ class ConfigEnum(str, Enum):
                 FOO = "FOO"
                 BAR = "BAR"
 
+
             class MyConfig(PluginConfig):
                 my_enum: MyEnum
+
 
             model = MyConfig(my_enum="FOO")
 
@@ -278,6 +281,17 @@ def _get_problem_with_config(errors: list, path: Path) -> Optional[str]:
     return f"'{clean_path(path)}' is invalid!\n{final_msg}"
 
 
+class DisplayConfig(PluginConfig):
+    """
+    Configure dispaly settings in Ape.
+    """
+
+    calldata: CalldataRepr = CalldataRepr.abridged
+    """
+    Dictates how the calldata displays when signing transactions.
+    """
+
+
 class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
     """
     The top-level config.
@@ -315,6 +329,11 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
     )
     """
     Data for deployed contracts from the project.
+    """
+
+    display: DisplayConfig = DisplayConfig()
+    """
+    Configure dispaly settings in Ape.
     """
 
     interfaces_folder: str = "interfaces"
@@ -488,7 +507,7 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
             exclude_unset=True,
             exclude_defaults=True,
         )
-        return yaml.dump(data)
+        return yaml.safe_dump(data)
 
     @only_raise_attribute_error
     def __getattr__(self, attr_name: str) -> Any:

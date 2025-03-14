@@ -100,6 +100,17 @@ def test_contract_log_access(log):
     assert log.bar == log["bar"] == log.get("bar") == 1
 
 
+def test_contract_log_abi(log):
+    # The log fixture is very basic class usage.
+    assert log.abi.name == "MyEvent"
+
+
+def test_contract_log_topics(log):
+    actual = log.topics
+    expected = ["0x4dbfb68b43dddfa12b51ebe99ab8fded620f9a0ac23142879a4f192a1b7952d2"]
+    assert actual == expected
+
+
 def test_topic_filter_encoding():
     event_abi = EventABI.model_validate_json(RAW_EVENT_ABI)
     log_filter = LogFilter.from_event(
@@ -110,6 +121,16 @@ def test_topic_filter_encoding():
         None,
         "0x0000000000000000000000008c44cc5c0f5cd2f7f17b9aca85d456df25a61ae8",
     ]
+
+
+def test_log_filter_model_validate_coerces_nones():
+    log_filter = LogFilter.model_validate(
+        {"addresses": None, "events": None, "topic_filter": None, "selectors": None}
+    )
+    assert log_filter.addresses == []
+    assert log_filter.events == []
+    assert log_filter.topic_filter == []
+    assert log_filter.selectors == {}
 
 
 def test_address_type(owner):
