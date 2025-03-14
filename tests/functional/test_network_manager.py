@@ -5,8 +5,11 @@ import pytest
 
 import ape
 from ape.api.networks import EcosystemAPI
+from ape.api.providers import SubprocessProvider
 from ape.exceptions import NetworkError, ProviderNotFoundError
+from ape.managers.networks import NodeProcessData, NodeProcessMap
 from ape.utils.misc import LOCAL_NETWORK_NAME
+from ape.utils.os import create_tempdir
 from ape.utils.testing import DEFAULT_TEST_CHAIN_ID
 
 
@@ -301,7 +304,7 @@ def test_create_custom_provider_ws(networks, scheme):
 def test_create_custom_provider_ipc(networks):
     provider = networks.create_custom_provider("path/to/geth.ipc")
     assert provider.ipc_path == Path("path/to/geth.ipc")
-    assert provider.uri == provider.ipc_path
+    assert provider.uri == f"{provider.ipc_path}"
 
 
 def test_ecosystems(networks):
@@ -496,3 +499,40 @@ def test_get_ecosystem_from_evmchains(networks):
     moonbeam = networks.get_ecosystem("moonbeam")
     assert isinstance(moonbeam, EcosystemAPI)
     assert moonbeam.name == "moonbeam"
+
+
+class TestNodeProcessData:
+    def test_matches_provider(self, eth_tester_provider):
+        data = NodeProcessData(
+            network_choice=f"{eth_tester_provider.network.choice}:{eth_tester_provider.name}",
+            ipc_path="test.ipc",
+        )
+        assert not data.matches_provider(eth_tester_provider)
+        data.ipc_path = None
+        assert data.matches_provider(eth_tester_provider)
+
+
+class TestNodeProcessMap:
+    def test_cache_and_remove_provider(self, mocker, eth_tester_provider):
+        mock_process = mocker.MagicMock()
+        mock_process.pid = 12345678901234567890
+
+        class MyFakeProvider(SubprocessProvider):
+            @property
+            def is_connected(self):
+                return True
+
+        # Hack to allow abstract methods.
+        MyFakeProvider.__abstractmethods__ = set()  # type: ignore
+        provider = MyFakeProvider(name="fake", network=eth_tester_provider.network)  # type: ignore
+        provider.process = mock_process
+
+        with create_tempdir() as tmp:
+            file = tmp / "networks.json"
+            mapping = NodeProcessMap(path=file)
+            mapping.cache_provider(provider)
+            assert provider in mapping
+
+            # Not test removing it.
+            mapping.remove_provider(provider)
+            assert provider not in mapping
