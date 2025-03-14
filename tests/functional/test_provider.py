@@ -12,6 +12,7 @@ from requests import HTTPError
 from web3.exceptions import ContractPanicError, TimeExhausted
 
 from ape import convert
+from ape.api.providers import SubprocessProvider
 from ape.exceptions import (
     APINotImplementedError,
     BlockNotFoundError,
@@ -367,7 +368,9 @@ def test_set_timestamp_handle_same_time_race_condition(mocker, eth_tester_provid
     eth_tester_provider.set_timestamp(123)
 
 
-def test_get_virtual_machine_error_when_txn_failed_includes_base_error(eth_tester_provider):
+def test_get_virtual_machine_error_when_txn_failed_includes_base_error(
+    eth_tester_provider,
+):
     txn_failed = TransactionFailed()
     actual = eth_tester_provider.get_virtual_machine_error(txn_failed)
     assert actual.base_err == txn_failed
@@ -416,7 +419,12 @@ def test_no_comma_in_rpc_url():
 
 
 def test_send_transaction_when_no_error_and_receipt_fails(
-    mocker, mock_web3, mock_transaction, eth_tester_provider, owner, vyper_contract_instance
+    mocker,
+    mock_web3,
+    mock_transaction,
+    eth_tester_provider,
+    owner,
+    vyper_contract_instance,
 ):
     start_web3 = eth_tester_provider._web3
     eth_tester_provider._web3 = mock_web3
@@ -661,7 +669,11 @@ def test_account_balance_state(project, eth_tester_provider, owner):
 
 @pytest.mark.parametrize(
     "uri,key",
-    [("ws://example.com", "ws_uri"), ("wss://example.com", "ws_uri"), ("wss://example.com", "uri")],
+    [
+        ("ws://example.com", "ws_uri"),
+        ("wss://example.com", "ws_uri"),
+        ("wss://example.com", "uri"),
+    ],
 )
 def test_node_ws_uri(project, uri, key):
     node = project.network_manager.ethereum.sepolia.get_provider("node")
@@ -755,3 +767,55 @@ def test_connect_uses_cached_chain_id(mocker, mock_web3, ethereum, eth_tester_pr
     provider.connect()
     # It is still cached from the previous connection.
     assert chain_id_tracker.call_count == 1
+
+
+class TestSubprocessProvider:
+    FAKE_PID = 12345678901234567890
+
+    @pytest.fixture(autouse=True)
+    def mock_process(self, mocker):
+        mock_process = mocker.MagicMock()
+        mock_process.pid = self.FAKE_PID
+        return mock_process
+
+    @pytest.fixture(autouse=True)
+    def popen_patch(self, mocker, mock_process):
+        # Prevent actually creating new processes.
+        patch = mocker.patch("ape.api.providers.popen")
+        patch.return_value = mock_process
+        return patch
+
+    @pytest.fixture(autouse=True)
+    def spawn_patch(self, mocker):
+        # Prevent spawning process monitoring threads.
+        return mocker.patch("ape.api.providers.spawn")
+
+    @pytest.fixture
+    def subprocess_provider(self, popen_patch, eth_tester_provider):
+        class MockSubprocessProvider(SubprocessProvider):
+            @property
+            def is_connected(self):
+                # Once Popen is called once, we are "connected"
+                return popen_patch.call_count > 0
+
+            def build_command(self) -> list[str]:
+                return ["apemockprocess"]
+
+        # Hack to allow abstract methods anyway.
+        MockSubprocessProvider.__abstractmethods__ = set()  # type: ignore
+
+        return MockSubprocessProvider(name="apemockprocess", network=eth_tester_provider.network)  # type: ignore
+
+    def test_start(self, subprocess_provider):
+        assert not subprocess_provider.is_connected
+        subprocess_provider.start()
+        assert subprocess_provider.is_connected
+
+        # Show it gets tracked in network manager's managed nodes.
+        assert self.FAKE_PID in subprocess_provider.network_manager.running_nodes
+
+    def test_start_allow_start_false(self, subprocess_provider):
+        subprocess_provider.allow_start = False
+        expected = r"Process not started and cannot connect to existing process\."
+        with pytest.raises(ProviderError, match=expected):
+            subprocess_provider.start()
