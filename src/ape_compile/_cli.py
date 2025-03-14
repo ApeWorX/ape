@@ -42,6 +42,7 @@ def _include_dependencies_callback(ctx, param, value):
     help="Also compile dependencies",
     callback=_include_dependencies_callback,
 )
+@click.option("--show-output", is_flag=True, help="Show contract-types in stdout")
 @config_override_option()
 def cli(
     cli_ctx,
@@ -51,6 +52,7 @@ def cli(
     display_size: bool,
     include_dependencies,
     config_override,
+    show_output,
 ):
     """
     Compiles the manifest for this project and saves the results
@@ -70,6 +72,11 @@ def cli(
             k: v.contract_type
             for k, v in project.load_contracts(*file_paths, use_cache=use_cache).items()
         }
+
+        if show_output:
+            for contract in contracts.values():
+                click.echo(contract.model_dump_json())
+
         cli_ctx.logger.success("'local project' compiled.")
         compiled = True
         if display_size:
@@ -79,7 +86,7 @@ def cli(
         project.dependencies
     ) > 0:
         for dependency in project.dependencies:
-            # Even if compiling we failed, we at least tried
+            # Even if compiling we failed, we at least tried,
             # and so we don't need to warn "Nothing to compile".
             compiled = True
 
