@@ -207,7 +207,7 @@ def _run(cli_ctx, provider: "SubprocessProvider", background: bool = False):
 
 @cli.command(short_help="Stop node processes")
 @ape_cli_context()
-@click.argument("process_ids", nargs=-1, type=int)
+@click.argument("process_ids", rnargs=-1, type=int)
 @click.option("--all", "kill_all", is_flag=True, help="Kill all running processes")
 @network_option(default=None)
 def kill(cli_ctx, process_ids, kill_all):
