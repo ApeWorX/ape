@@ -90,6 +90,15 @@ class BaseAddress(BaseInterface):
         """
         return self.address
 
+    def __hash__(self) -> int:
+        """Return consistent hash for all address representations with the same value."""
+        value = self.address
+
+        try:
+            return int(self.conversion_manager.convert(value, AddressType), 16)
+        except Exception:
+            raise TypeError(f"Cannot hash address of type: {type(value)}")
+
     def __call__(self, **kwargs) -> "ReceiptAPI":
         """
         Call this address directly. For contracts, this may mean invoking their
