@@ -1190,6 +1190,12 @@ class Ethereum(EcosystemAPI):
         return call
 
     def _enrich_contract_id(self, address: AddressType, **kwargs) -> str:
+        # Defensively pop "contract_type" key from kwargs. `_get_contract_type_for_enrichment` will
+        # preferentially return a `contract_type` from kwargs without checking the contract cache.
+        # The contract_type may not match the contract address being enriched if this method was
+        # previously called for a different contract.
+        kwargs.pop("contract_type", None)
+
         if address and address == kwargs.get("sender"):
             return "tx.origin"
 
@@ -1203,9 +1209,7 @@ class Ethereum(EcosystemAPI):
         kwargs["contract_type"] = contract_type
         if kwargs.get("use_symbol_for_tokens") and "symbol" in contract_type.view_methods:
             # Use token symbol as name
-            contract = self.chain_manager.contracts.instance_at(
-                address, contract_type=contract_type
-            )
+            contract = self.chain_manager.contracts.instance_at(address)
 
             try:
                 symbol = contract.symbol(skip_trace=True)

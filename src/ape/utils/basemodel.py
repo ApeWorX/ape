@@ -3,6 +3,7 @@ TODO: In 0.9, move this module to `ape.types`.
 """
 
 import inspect
+import json
 from abc import ABC
 from collections.abc import Callable, Iterator, Mapping, Sequence
 from importlib import import_module
@@ -626,6 +627,25 @@ class DiskCacheableModel(BaseModel):
         super().__init__(*args, **kwargs)
         self._path = path
 
+    def model_read_file(self, path: Optional[Path] = None) -> dict:
+        """
+        Get the file's raw data. This is different from ``model_dump()`` because it
+        reads directly from the file without validation.
+        """
+        path = self._get_path(path=path)
+        return self._model_read_file(path)
+
+    @classmethod
+    def _model_read_file(cls, path: Path) -> dict:
+        """
+        Get the file's raw data. This is different from ``model_dump()`` because it
+        reads directly from the file without validation.
+        """
+        if json_str := path.read_text(encoding="utf8") if path.is_file() else "":
+            return json.loads(json_str)
+
+        return {}
+
     def model_dump_file(self, path: Optional[Path] = None, **kwargs):
         """
         Save this model to disk.
@@ -653,11 +673,8 @@ class DiskCacheableModel(BaseModel):
               if one wasn't declared at init time.
             **kwargs: Extra kwargs to pass to ``.model_validate_json()``.
         """
-        if json_str := path.read_text(encoding="utf8") if path.is_file() else "":
-            model = cls.model_validate_json(json_str, **kwargs)
-        else:
-            model = cls.model_validate({})
-
+        data = cls._model_read_file(path)
+        model = cls.model_validate(data, **kwargs)
         model._path = path
         return model
 
