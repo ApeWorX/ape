@@ -122,6 +122,7 @@ ignore = [
     "SIM910",   # Use dict.get(key) instead of dict.get(key, None)
     "TC001",    # Move application import into type-checking block
     "TC003",    # Move standard library import into type-checking block
+    "TC006",    # Add quotes to type expression in `typing.cast()`
     "UP028",    # Replace yield over for loop with yield from
 ]
 

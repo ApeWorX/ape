@@ -168,7 +168,7 @@ class GethDevProcess(BaseGethProcess):
             addresses = [a.address for a in self._dev_accounts]
             addresses.extend(extra_funded_accounts or [])
             bal_dict = {"balance": str(initial_balance)}
-            alloc = {a: bal_dict for a in addresses}
+            alloc = dict.fromkeys(addresses, bal_dict)
             genesis = create_genesis_data(alloc, chain_id)
             initialize_gethdev_chain(genesis, self.data_dir)
 
