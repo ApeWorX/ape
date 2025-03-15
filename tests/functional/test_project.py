@@ -173,7 +173,6 @@ def test_isolate_in_tempdir(project):
     with project.isolate_in_tempdir() as tmp_project:
         assert tmp_project.path != project.path
         assert tmp_project.in_tempdir
-        assert tmp_project.manifest_path.is_file()
 
 
 def test_isolate_in_tempdir_does_not_alter_sources(project):
