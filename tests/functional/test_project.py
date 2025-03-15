@@ -173,8 +173,6 @@ def test_isolate_in_tempdir(project):
     with project.isolate_in_tempdir() as tmp_project:
         assert tmp_project.path != project.path
         assert tmp_project.in_tempdir
-        # Manifest should have been created by default.
-        assert not tmp_project.manifest_path.is_file()
 
 
 def test_isolate_in_tempdir_does_not_alter_sources(project):
@@ -408,7 +406,7 @@ def test_load_contracts_detect_change(tmp_project, ape_caplog):
 
     # Must be compiled first.
     with ape_caplog.at_level(LogLevel.INFO):
-        contracts = tmp_project.load_contracts()
+        contracts = tmp_project.load_contracts(use_cache=False)
         assert "Other" in contracts
         ape_caplog.assert_last_log("Compiling")
 
@@ -472,7 +470,7 @@ def test_load_contracts_after_deleting_same_named_contract(tmp_project, compiler
 def test_load_contracts_output_abi(tmp_project):
     cfg = {"output_extra": ["ABI"]}
     with tmp_project.temp_config(compile=cfg):
-        _ = tmp_project.load_contracts()
+        _ = tmp_project.load_contracts(use_cache=False)
         abi_folder = tmp_project.manifest_path.parent / "abi"
         assert abi_folder.is_dir()
         files = [x for x in abi_folder.iterdir()]
@@ -540,9 +538,17 @@ def test_unpack(project_with_source_files_contract):
         assert (path / "contracts" / "Path.with.sub.json").is_file()
 
 
+def test_unpack_includes_build_file(project_with_contracts):
+    project_with_contracts.load_contracts()
+    with create_tempdir() as path:
+        project_with_contracts.unpack(path)
+        expected = project_with_contracts.path / ".build" / "__local__.json"
+        assert expected.is_file()
+
+
 def test_add_compiler_data(project_with_dependency_config):
     # NOTE: Using different project than default to lessen
-    #   chance of race-conditions from multi-process test runners.
+    #   chance of race-conditions from multiprocess test runners.
     project = project_with_dependency_config
 
     # Load contracts so that any compilers that may exist are present.
@@ -682,9 +688,6 @@ class TestProject:
 
             #  Re-init to show it doesn't create the manifest file.
             project = Project(temp_project.path)
-
-            # Manifest should not have been created by default
-            assert not project.manifest_path.is_file()
 
     def test_init_invalid_config(self):
         here = os.curdir
