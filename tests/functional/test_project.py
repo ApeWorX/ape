@@ -876,12 +876,14 @@ class TestSourceManager:
         path = project.sources.lookup(source_id)
         assert path.is_file(), "Test path does not exist."
 
-        with Project.create_temporary_project() as other_tmp_project:
+        cfg = {"contracts_folder": project.config.contracts_folder}
+        with Project.create_temporary_project(config_override=cfg) as other_tmp_project:
             new_source = other_tmp_project.path / source_id
             new_source.parent.mkdir(parents=True, exist_ok=True)
             new_source.write_text(path.read_text(encoding="utf8"), encoding="utf8")
 
             actual = other_tmp_project.sources.lookup(source_id)
+            assert actual is not None
             expected = other_tmp_project.path / source_id
             assert actual == expected
 
