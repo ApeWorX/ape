@@ -866,6 +866,27 @@ class TestSourceManager:
         path = tmp_project.sources.lookup(source_id)
         assert path == tmp_project.path / source_id
 
+    def test_lookup_same_source_id_as_local_project(self, project, tmp_project):
+        """
+        Tests against a bug where if the source ID of the project matched
+        a file in the local project, it would mistakenly return the path
+        to the local file instead of the project's file.
+        """
+        source_id = project.contracts["ContractA"].source_id
+        path = project.sources.lookup(source_id)
+        assert path.is_file(), "Test path does not exist."
+
+        cfg = {"contracts_folder": project.config.contracts_folder}
+        with Project.create_temporary_project(config_override=cfg) as other_tmp_project:
+            new_source = other_tmp_project.path / source_id
+            new_source.parent.mkdir(parents=True, exist_ok=True)
+            new_source.write_text(path.read_text(encoding="utf8"), encoding="utf8")
+
+            actual = other_tmp_project.sources.lookup(source_id)
+            assert actual is not None
+            expected = other_tmp_project.path / source_id
+            assert actual == expected
+
     def test_lookup_missing_extension(self, tmp_project):
         source_id = tmp_project.Other.contract_type.source_id
         source_id_wo_ext = ".".join(source_id.split(".")[:-1])
