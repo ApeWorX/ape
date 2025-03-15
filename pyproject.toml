@@ -1,6 +1,9 @@
 [build-system]
 requires = ["setuptools>=75.0.0", "wheel", "setuptools_scm[toml]>=5.0"]
 
+[tool.ape]
+contracts_folder = "tests/functional/data/contracts/ethereum/local"
+
 [tool.ape.test]
 show_internal = true
 

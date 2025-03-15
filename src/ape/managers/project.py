@@ -259,7 +259,7 @@ class SourceManager(BaseManager):
             Path: The full path to the source file.
         """
         input_path = Path(path_id)
-        if input_path.is_file():
+        if input_path.is_file() and input_path.is_relative_to(self.root_path):
             # Already given an existing file.
             return input_path.absolute()
 
