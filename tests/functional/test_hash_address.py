@@ -1,5 +1,7 @@
 def test_hash_same_as_python_hash(accounts):
     for account in accounts:
+        # NOTE: According to CPython spec, `hash` is truncated according to OS bit width
+        #       https://docs.python.org/3/library/functions.html#hash
         assert account.__hash__() == hash(account)
 
 
