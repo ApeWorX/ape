@@ -2532,12 +2532,17 @@ class LocalProject(Project):
             tests_destination = destination / "tests"
             shutil.copytree(self.tests_folder, tests_destination, dirs_exist_ok=True)
 
-        # Unpack interfaces folder.
-        if self.interfaces_folder.is_dir():
+        # Unpack interfaces folder. Avoid double unpacking if already covered in contracts folder.
+        if self.interfaces_folder.is_dir() and self.interfaces_folder.is_relative_to(self.contracts_folder):
             prefix = get_relative_path(self.interfaces_folder, self.path)
             interfaces_destination = destination / prefix / self.config.interfaces_folder
             interfaces_destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copytree(self.interfaces_folder, interfaces_destination, dirs_exist_ok=True)
+
+        # Unpack build folder (to avoid needless re-compiling).
+        if self.manifest_path.parent.is_dir() and self.manifest_path.parent.name == ".build":
+            build_destination = destination / ".build"
+            shutil.copytree(self.manifest_path.parent, build_destination, dirs_exist_ok=True)
 
         return LocalProject(destination, config_override=config_override)
 
