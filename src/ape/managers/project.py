@@ -2533,7 +2533,9 @@ class LocalProject(Project):
             shutil.copytree(self.tests_folder, tests_destination, dirs_exist_ok=True)
 
         # Unpack interfaces folder. Avoid double unpacking if already covered in contracts folder.
-        if self.interfaces_folder.is_dir() and self.interfaces_folder.is_relative_to(self.contracts_folder):
+        if self.interfaces_folder.is_dir() and self.interfaces_folder.is_relative_to(
+            self.contracts_folder
+        ):
             prefix = get_relative_path(self.interfaces_folder, self.path)
             interfaces_destination = destination / prefix / self.config.interfaces_folder
             interfaces_destination.parent.mkdir(parents=True, exist_ok=True)
