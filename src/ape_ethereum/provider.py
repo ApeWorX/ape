@@ -1749,7 +1749,7 @@ def _create_web3(
         providers.append(lambda: WebsocketProvider(endpoint_uri=ws))
 
     provider = AutoProvider(potential_providers=providers)
-    return Web3(provider)
+    return Web3(provider, middleware=[])
 
 
 def _get_default_data_dir() -> Path:
