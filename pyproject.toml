@@ -1,6 +1,19 @@
 [build-system]
 requires = ["setuptools>=75.0.0", "wheel", "setuptools_scm[toml]>=5.0"]
 
+[tool.ape]
+contracts_folder = "tests/functional/data/contracts"
+
+[[tool.ape.dependencies]]
+name = "openzeppelin"
+version = "4.9.6"
+github = "OpenZeppelin/openzeppelin-contracts"
+
+[[tool.ape.dependencies]]
+name = "openzeppelin"
+version = "5.2.0"
+github = "OpenZeppelin/openzeppelin-contracts"
+
 [tool.ape.test]
 show_internal = true
 

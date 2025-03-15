@@ -140,7 +140,7 @@ class TestCoverageProject:
         assert coverage_project.function_rate == 0.5
 
     def test_lines_coverage(self, coverage_project):
-        # Doubles because has 2 sources in it now (with same amounts of things)
+        # Doubles because has 2 contracts in it now (with same amounts of things)
         assert coverage_project.lines_covered == 8
 
     def test_miss_count(self, coverage_project):
@@ -170,8 +170,9 @@ class TestCoverageData:
         return Source.model_validate("test")
 
     @pytest.fixture(scope="class")
-    def contract_source(self, vyper_contract_type, src):
-        return ContractSource(contract_type=vyper_contract_type, source=src)
+    def contract_source(self, project, src):
+        contract_type = project.VyperContract.contract_type
+        return ContractSource(contract_type=contract_type, source=src)
 
     @pytest.fixture
     def coverage_data(self, project, contract_source):

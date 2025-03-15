@@ -165,7 +165,7 @@ A simple example of configuring dependencies looks like this:
 [[tool.ape.dependencies]]
 name = "openzeppelin"
 github = "OpenZeppelin/openzeppelin-contracts"
-version = "4.4.2"
+version = "4.9.6"
 ```
 
 Or the equivalent YAML:
@@ -174,7 +174,7 @@ Or the equivalent YAML:
 dependencies:
   - name: openzeppelin
     github: OpenZeppelin/openzeppelin-contracts
-    version: 4.4.2
+    version: 4.9.6
 ```
 
 ## Deployments
