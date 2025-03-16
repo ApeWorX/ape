@@ -546,6 +546,36 @@ def test_unpack_includes_build_file(project_with_contracts):
         assert expected.is_file()
 
 
+def test_unpack_includes_interfaces():
+    iname = "unp_interface"
+    with create_tempdir() as path:
+        interfaces = path / "interfaces"
+        interfaces.mkdir(parents=True, exist_ok=True)
+        interface = interfaces / f"{iname}.json"
+        interface.write_text("{}", encoding="utf8")
+
+        project = Project(path)
+        with create_tempdir() as new_path:
+            project.unpack(new_path)
+            expected_interface = new_path / "interfaces" / f"{iname}.json"
+            assert expected_interface.is_file()
+
+
+def test_unpack_includes_interfaces_when_part_of_contracts():
+    iname = "unp_interface"
+    with create_tempdir() as path:
+        interfaces = path / "contracts" / "interfaces"
+        interfaces.mkdir(parents=True, exist_ok=True)
+        interface = interfaces / f"{iname}.json"
+        interface.write_text("{}", encoding="utf8")
+
+        project = Project(path)
+        with create_tempdir() as new_path:
+            project.unpack(new_path)
+            expected_interface = new_path / "contracts" / "interfaces" / f"{iname}.json"
+            assert expected_interface.is_file()
+
+
 def test_add_compiler_data(project_with_dependency_config):
     # NOTE: Using different project than default to lessen
     #   chance of race-conditions from multiprocess test runners.
