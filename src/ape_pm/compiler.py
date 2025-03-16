@@ -45,7 +45,7 @@ class InterfaceCompiler(CompilerAPI):
         }
         logger.info(f"Compiling {', '.join(source_ids.values())}.")
         for path in contract_filepaths:
-            if (not path.is_absolute() and (project.path / path).is_file()):
+            if not path.is_absolute() and (project.path / path).is_file():
                 # Was given a relative path to the project.
                 src_path = project.path / path
 
