@@ -269,12 +269,12 @@ def test_console_none_network(integ_project, ape_cli, runner):
 
 
 @skip_projects_except("with-contracts")
-def test_console_natspecs(integ_project, solidity_contract_type, console_runner):
+def test_console_natspecs(integ_project, project, console_runner):
     """
     This test shows that the various natspec integrations with ABI-backed
     types work in ``ape console``.
     """
-    contract_code = solidity_contract_type.model_dump_json(by_alias=True)
+    contract_code = project.SolidityContract.contract_type.model_dump_json(by_alias=True)
     # flake8: noqa
     cmd_ls = [
         "%load_ext ape_console.plugin",
