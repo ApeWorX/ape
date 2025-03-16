@@ -39,7 +39,8 @@ def test_compile_missing_contracts_dir(ape_cli, runner, project):
 
 @skip_non_compilable_projects
 def test_compile(ape_cli, runner, integ_project, clean_cache):
-    assert not integ_project.manifest.contract_types, "Setup failed - expecting clean start"
+    integ_project.clean()
+
     cmd = ("compile", "--project", f"{integ_project.path}")
     result = runner.invoke(ape_cli, cmd, catch_exceptions=False)
     assert result.exit_code == 0, result.output
