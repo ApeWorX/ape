@@ -1,12 +1,8 @@
-import json
-import os
 import re
-import subprocess
 import sys
 from collections.abc import Iterable, Iterator, Sequence
 from enum import Enum
 from functools import cached_property
-from pathlib import Path
 from shutil import which
 from typing import TYPE_CHECKING, Any, Optional
 from urllib.parse import urlparse
@@ -486,55 +482,8 @@ class PluginMetadata(BaseInterfaceModel):
         trusted_list = trusted_list or TRUSTED_PLUGINS
         return self.name in trusted_list
 
-    def is_venv(self):
-        """
-        Check if the current Python environment is a virtual environment.
-        Returns True for venv, virtualenv, and conda environments.
-        """
-        standard_venv = hasattr(sys, "real_prefix") or (
-            hasattr(sys, "base_prefix") and sys.base_prefix != sys.prefix
-        )
-        conda_env = os.environ.get("CONDA_PREFIX") is not None
-
-        return standard_venv or conda_env
-
-    def infer_pipx_venv_location(self, package_name: str) -> Optional[str]:
-        """
-        Get the virtual environment location for a specific package using `pipx list --json`.
-
-        Args:
-            package_name (str): The name of the package to look up.
-
-        Returns:
-            str: The path to the virtual environment for the specified package if found else None
-        """
-        logger.info("Trying to infer virtual environment location using pipx")
-        try:
-            result = subprocess.run(
-                ["pipx", "list", "--json"],
-                capture_output=True,
-                text=True,
-                check=True,
-            )
-            pipx_data = json.loads(result.stdout)
-
-            if package_name not in pipx_data.get("venvs", {}):
-                return None
-
-            bin_path = pipx_data["venvs"][package_name]["metadata"]["main_package"]["app_paths"][0][
-                "__Path__"
-            ]
-            venv_path = str(
-                Path(bin_path).parent.parent
-            )  # Go up two levels to get the venv directory
-
-            return venv_path
-        except Exception as e:
-            logger.warning("Exception while trying to infer virtual environment location: %s", e)
-            return None
-
     def _prepare_install(
-        self, upgrade: bool = False, skip_confirmation: bool = False
+        self, upgrade: bool = False, skip_confirmation: bool = False, python_location: str = None
     ) -> Optional[dict[str, Any]]:
         # NOTE: Internal and only meant to be called by the CLI.
         if self.in_core:
@@ -552,12 +501,14 @@ class PluginMetadata(BaseInterfaceModel):
             logger.warning(f"Plugin '{self.name}' is not an trusted plugin.")
 
         result_handler = ModifyPluginResultHandler(self)
-        pip_arguments = [*self.pip_command, "install"]
 
-        if not self.is_venv() and self.pip_command[0] == "uv":
-            virtual_env = self.infer_pipx_venv_location("eth-ape")
-            if virtual_env:
-                pip_arguments.extend(("--python", virtual_env))
+        if python_location:
+            if self.pip_command[0] == "uv":
+                pip_arguments = [*self.pip_command, "install", "--python", python_location]
+            else:
+                pip_arguments = [*self.pip_command, "--python", python_location, "install"]
+        else:
+            pip_arguments = [*self.pip_command, "install"]
 
         if upgrade:
             logger.info(f"Upgrading '{self.name}' plugin ...")
@@ -590,8 +541,14 @@ class PluginMetadata(BaseInterfaceModel):
             )
             return None
 
-    def _get_uninstall_args(self) -> list[str]:
-        arguments = [*self.pip_command, "uninstall"]
+    def _get_uninstall_args(self, python_location: str) -> list[str]:
+        if python_location:
+            if self.pip_command[0] == "uv":
+                arguments = [*self.pip_command, "uninstall", "--python", python_location]
+            else:
+                arguments = [*self.pip_command, "--python", python_location, "uninstall", "-y"]
+        else:
+            arguments = [*self.pip_command, "uninstall"]
 
         if self.pip_command[0] != "uv":
             arguments.append("-y")
