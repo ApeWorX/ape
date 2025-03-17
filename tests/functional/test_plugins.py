@@ -17,6 +17,7 @@ from ape.plugins._utils import (
     _filter_plugins_from_dists,
     ape_version,
 )
+from ape_plugins._cli import validate_python_path
 
 CORE_PLUGINS = ("run",)
 AVAILABLE_PLUGINS = ("available", "installed")
@@ -89,6 +90,20 @@ def plugin_metadata(package_names, plugin_test_env) -> PluginMetadataList:
     names.remove("ape-thirdparty")
     names.add(f"ape-thirdparty==0.{ape_version.minor}.0")
     return PluginMetadataList.from_package_names(names, trusted_list=("installed",))
+
+
+@pytest.fixture
+def mock_python_path(tmp_path):
+    """Create a temporary path to simulate a Python interpreter location."""
+    python_path = tmp_path / "python"
+    python_path.touch()
+    return str(python_path)
+
+
+@pytest.fixture
+def mock_nonexistent_path():
+    """Return a path that definitely doesn't exist."""
+    return "/path/that/does/not/exist/python"
 
 
 class TestPluginMetadataList:
@@ -408,3 +423,65 @@ def test_core_plugins():
     non_core_plugins = ("ape_arbitrum", "ape_vyper", "ape_solidity", "ape_ens")
     assert not any(p in CORE_PLUGINS_LIST for p in non_core_plugins)
     assert "ape_ethereum" in CORE_PLUGINS_LIST
+
+
+@pytest.fixture
+def mock_python_path(tmp_path):
+    """Create a temporary path to simulate a Python interpreter location."""
+    python_path = tmp_path / "python"
+    python_path.touch()
+    return str(python_path)
+
+
+class TestBuildPipArgs:
+    @parametrize_pip_cmd
+    def test_prepare_package_manager_args_with_python_location(self, pip_command, mock_python_path):
+        metadata = PluginMetadata(name="test", pip_command=pip_command)
+
+        args = metadata.prepare_package_manager_args("install", python_location=mock_python_path)
+
+        if pip_command[0] == "uv":
+            expected = pip_command + ["install", "--python", mock_python_path]
+        else:
+            expected = pip_command + ["--python", mock_python_path, "install"]
+
+        assert args == expected
+
+    @parametrize_pip_cmd
+    def test_prepare_package_manager_args_with_extra_args(self, pip_command):
+        metadata = PluginMetadata(name="test", pip_command=pip_command)
+
+        extra = ["--quiet", "--no-deps"]
+        args = metadata.prepare_package_manager_args("install", extra_args=extra)
+
+        expected = pip_command + ["install"] + extra
+        assert args == expected
+
+    @parametrize_pip_cmd
+    def test_prepare_package_manager_args_with_both_options(self, pip_command, mock_python_path):
+        metadata = PluginMetadata(name="test", pip_command=pip_command)
+
+        extra = ["--quiet", "--no-deps"]
+        args = metadata.prepare_package_manager_args(
+            "install", python_location=mock_python_path, extra_args=extra
+        )
+
+        if pip_command[0] == "uv":
+            expected = pip_command + ["install", "--python", mock_python_path] + extra
+        else:
+            expected = pip_command + ["--python", mock_python_path, "install"] + extra
+
+        assert args == expected
+
+    @parametrize_pip_cmd
+    def test_prepare_package_manager_args_with_uninstall_verb(self, pip_command, mock_python_path):
+        metadata = PluginMetadata(name="test", pip_command=pip_command)
+
+        args = metadata.prepare_package_manager_args("uninstall", python_location=mock_python_path)
+
+        if pip_command[0] == "uv":
+            expected = pip_command + ["uninstall", "--python", mock_python_path]
+        else:
+            expected = pip_command + ["--python", mock_python_path, "uninstall"]
+
+        assert args == expected
