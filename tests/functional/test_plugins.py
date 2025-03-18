@@ -17,7 +17,6 @@ from ape.plugins._utils import (
     _filter_plugins_from_dists,
     ape_version,
 )
-from ape_plugins._cli import validate_python_path
 
 CORE_PLUGINS = ("run",)
 AVAILABLE_PLUGINS = ("available", "installed")
@@ -269,7 +268,7 @@ class TestPluginMetadata:
     @parametrize_pip_cmd
     def test_get_uninstall_args(self, pip_command):
         metadata = PluginMetadata(name="dontmatter", pip_command=pip_command)
-        arguments = metadata._get_uninstall_args()
+        arguments = metadata._get_uninstall_args(python_location=None)
         pip_cmd_len = len(metadata.pip_command)
 
         for idx, pip_pt in enumerate(pip_command):
@@ -423,14 +422,6 @@ def test_core_plugins():
     non_core_plugins = ("ape_arbitrum", "ape_vyper", "ape_solidity", "ape_ens")
     assert not any(p in CORE_PLUGINS_LIST for p in non_core_plugins)
     assert "ape_ethereum" in CORE_PLUGINS_LIST
-
-
-@pytest.fixture
-def mock_python_path(tmp_path):
-    """Create a temporary path to simulate a Python interpreter location."""
-    python_path = tmp_path / "python"
-    python_path.touch()
-    return str(python_path)
 
 
 class TestBuildPipArgs:
