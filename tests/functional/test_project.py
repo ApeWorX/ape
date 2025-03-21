@@ -1070,10 +1070,10 @@ class TestContractManager:
         assert actual[0].contract_type.name == "VyperContract"
 
     def test_values(self, tmp_project):
-        contracts: dict[str, ContractContainer] = dict(tmp_project.contracts)
-        assert "VyperContract" in contracts
-        example = contracts["VyperContract"]
-        count = len(contracts)
+        actual = [c.name for c in tmp_project.contracts.values()]
+        assert "VyperContract" in actual
+        example = tmp_project.contracts["VyperContract"]
+        count = len(tmp_project.contracts)
 
         # Delete a file and try again, as a test.
         file = tmp_project.path / example.source_id
