@@ -146,8 +146,12 @@ class SourceManager(BaseManager):
                 yield self[source_id]
             except KeyError:
                 # Deleted before yield.
-                path = self._get_source_id(source_id)
-                self._path_cache = [p for p in self._path_cache if p != path]
+                path = self._get_path(source_id)
+                self._path_cache = (
+                    None
+                    if self._path_cache is None
+                    else [p for p in (self._path_cache or []) if p != path]
+                )
                 continue
 
     @singledispatchmethod
