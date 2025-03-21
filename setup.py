@@ -24,7 +24,7 @@ extras_require = {
         "ape-solidity>=0.8.5,<0.9",  # Needed for compiling test contracts
     ],
     "lint": [
-        "ruff>=0.11.0",  # Unified linter and formatter
+        "ruff>=0.11.2",  # Unified linter and formatter
         "mypy>=1.15.0,<1.16.0",  # Static type analyzer
         "types-PyYAML",  # Needed due to mypy typeshed
         "types-requests",  # Needed due to mypy typeshed
@@ -96,7 +96,7 @@ setup(
         "cchecksum>=0.0.3,<1",
         # Pandas peer-dep: Numpy 2.0 causes issues for some users.
         "numpy<2",
-        "packaging>=23.0,<24",
+        "packaging",
         "pandas>=2.2.2,<3",
         "pluggy>=1.3,<2",
         "pydantic>=2.10.0,<3",

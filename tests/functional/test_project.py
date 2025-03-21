@@ -524,6 +524,7 @@ def test_clean(project):
     assert not project.manifest_path.is_file()
     assert project._manifest.contract_types is None
     assert project.sources._path_cache is None
+    assert project._manifest.compilers is None
 
 
 def test_unpack(project):
@@ -574,41 +575,21 @@ def test_unpack_includes_interfaces_when_part_of_contracts():
 
 
 def test_add_compiler_data(project_with_dependency_config):
+    project_with_dependency_config.clean()
+
     # NOTE: Using different project than default to lessen
     #   chance of race-conditions from multiprocess test runners.
     project = project_with_dependency_config
 
     # Load contracts so that any compilers that may exist are present.
     project.load_contracts()
-    start_compilers = project.manifest.compilers or []
 
-    # NOTE: Pre-defining things to lessen chance of race condition.
     compiler = Compiler(
         name="comp",
         version="1.0.0",
         contractTypes=["foo"],
         settings={"outputSelection": {"path/to/Foo.sol": "*"}},
     )
-    compiler_2 = Compiler(
-        name="test",
-        version="2.0.0",
-        contractTypes=["bar", "stay"],
-        settings={"outputSelection": {"path/to/Bar.vy": "*", "stay.vy": "*"}},
-    )
-
-    # NOTE: Has same contract as compiler 2 and thus replaces the contract.
-    compiler_3 = Compiler(
-        name="test",
-        version="3.0.0",
-        contractTypes=["bar"],
-        settings={"outputSelection": {"path/to/Bar.vy": "*"}},
-    )
-
-    argument = [compiler]
-    second_arg = [compiler_2]
-    third_arg = [compiler_3]
-    first_exp = [*start_compilers, compiler]
-    final_exp = [*first_exp, compiler_2]
 
     # Ensure types are in manifest for type-source-id lookup.
     bar = ContractType(contractName="bar", sourceId="path/to/Bar.vy")
@@ -621,15 +602,34 @@ def test_add_compiler_data(project_with_dependency_config):
     assert project._manifest.contract_types, "Setup failed - need manifest contract types"
 
     # Add twice to show it's only added once.
-    project.add_compiler_data(argument)
-    project.add_compiler_data(argument)
-    assert project.manifest.compilers == first_exp
+    project.add_compiler_data([compiler])
+    project.add_compiler_data([compiler])
+
+    if compiler.name not in [x.name for x in project.manifest.compilers]:
+        names = [x.name for x in project.manifest.compilers]
+        pytest.fail(f"Missing expected compiler with name '{compiler.name}'. Names: {names}")
+    if compiler.version not in [x.version for x in project.manifest.compilers]:
+        pytest.fail(f"Missing expected compiler with version '{compiler.version}'")
 
     # NOTE: `add_compiler_data()` will not override existing compilers.
     #   Use `update_cache()` for that.
-    project.add_compiler_data(second_arg)
-    assert project.manifest.compilers == final_exp
-    project.add_compiler_data(third_arg)
+    compiler_2 = Compiler(
+        name="test",
+        version="2.0.0",
+        contractTypes=["bar", "stay"],
+        settings={"outputSelection": {"path/to/Bar.vy": "*", "stay.vy": "*"}},
+    )
+    project.add_compiler_data([compiler_2])
+    assert project.manifest.compilers == [compiler, compiler_2]
+
+    # NOTE: Has same contract as compiler 2 and thus replaces the contract.
+    compiler_3 = Compiler(
+        name="test",
+        version="3.0.0",
+        contractTypes=["bar"],
+        settings={"outputSelection": {"path/to/Bar.vy": "*"}},
+    )
+    project.add_compiler_data([compiler_3])
     comp = [c for c in project.manifest.compilers if c.name == "test" and c.version == "2.0.0"][0]
     assert "bar" not in comp.contractTypes
     assert "path/to/Bar.vy" not in comp.settings["outputSelection"]
@@ -641,7 +641,7 @@ def test_add_compiler_data(project_with_dependency_config):
 
     # Show that compilers without contract types go away.
     (compiler_3.contractTypes or []).append("stay")
-    project.add_compiler_data(third_arg)
+    project.add_compiler_data([compiler_3])
     comp_check = [
         c for c in project.manifest.compilers if c.name == "test" and c.version == "2.0.0"
     ]
@@ -649,13 +649,12 @@ def test_add_compiler_data(project_with_dependency_config):
 
     # Show error on multiple of same compiler.
     compiler_4 = Compiler(name="test123", version="3.0.0", contractTypes=["bar"])
-    compiler_5 = Compiler(name="test123", version="3.0.0", contractTypes=["baz"])
+    compiler_5 = compiler_4.model_copy(update={"contractTypes": ["baz"]})
     with pytest.raises(ProjectError, match=r".*was given multiple of the same compiler.*"):
         project.add_compiler_data([compiler_4, compiler_5])
 
     # Show error when contract type collision (only happens with inputs, else latter replaces).
-    compiler_4 = Compiler(name="test321", version="3.0.0", contractTypes=["bar"])
-    compiler_5 = Compiler(name="test456", version="9.0.0", contractTypes=["bar"])
+    compiler_5.contractTypes = ["bar"]
     with pytest.raises(ProjectError, match=r".*'bar' collision across compilers.*"):
         project.add_compiler_data([compiler_4, compiler_5])
 
