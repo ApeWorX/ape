@@ -39,7 +39,7 @@ interface IERC1967 {
  *
  * The success and return data of the delegated call will be returned back to the caller of the proxy.
  */
-abstract contract Proxy {
+abstract contract BaseProxy {
     /**
      * @dev Delegates the current call to `implementation`.
      *
@@ -624,7 +624,7 @@ library ERC1967Utils {
  * IMPORTANT: Do not use the implementation logic to modify the beacon storage slot. Doing so would leave the proxy in
  * an inconsistent state where the beacon storage slot does not match the beacon address.
  */
-contract BeaconProxy is Proxy {
+contract BeaconProxy is BaseProxy {
     // An immutable address for the beacon to avoid unnecessary SLOADs before each delegate call.
     address private immutable _beacon;
 
