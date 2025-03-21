@@ -392,8 +392,9 @@ def test_load_contracts(tmp_project):
     assert contracts_forced == contracts
 
     # Delete a file and ensure it does not show up in dict.
-    contract_to_rm = next(iter(contracts.values()))
-    (tmp_project.path / contract_to_rm.source_id).unlink()
+    contract_to_rm = tmp_project.contracts["VyperContract"]
+    contract_path = tmp_project.sources.lookup(contract_to_rm.source_id)
+    contract_path.unlink()
     contracts = tmp_project.load_contracts()
     assert contract_to_rm.name not in contracts
 
