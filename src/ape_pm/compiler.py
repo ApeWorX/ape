@@ -45,13 +45,16 @@ class InterfaceCompiler(CompilerAPI):
         }
         logger.info(f"Compiling {', '.join(source_ids.values())}.")
         for path in contract_filepaths:
-            if not path.is_file() and (project.path / path).is_file():
-                # Was given a relative path.
+            if not path.is_absolute() and (project.path / path).is_file():
+                # Was given a relative path to the project.
                 src_path = project.path / path
-            elif not path.is_file():
-                raise CompilerError(f"'{path}' is not a file.")
-            else:
+
+            elif path.is_file():
+                # Absolute existing path.
                 src_path = path
+
+            else:
+                raise CompilerError(f"'{path}' is not a file.")
 
             code = src_path.read_text()
             source_id = source_ids[path]
