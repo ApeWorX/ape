@@ -230,7 +230,7 @@ def clean_contract_caches(chain):
 
 
 @pytest.fixture
-def project_with_dependency_config(project):
+def project_with_dependency_config(empty_project):
     dependencies_config = {
         "contracts_folder": "functional/data/contracts/local",
         "dependencies": [
@@ -244,8 +244,10 @@ def project_with_dependency_config(project):
             }
         ],
     }
-    project.clean()
-    with project.isolate_in_tempdir(**dependencies_config) as tmp_project:
+    empty_project.clean()
+
+    # NOTE: Use empty project because it is faster to compile.
+    with empty_project.isolate_in_tempdir(**dependencies_config) as tmp_project:
         yield tmp_project
 
 
