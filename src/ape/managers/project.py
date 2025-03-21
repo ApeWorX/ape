@@ -2506,15 +2506,16 @@ class LocalProject(Project):
         Clone this project to a temporary directory and return
         its project.vers_settings["outputSelection"]
         """
+        sources = dict(self.sources.items())
         if self.in_tempdir:
             # Already in a tempdir.
             if config_override:
                 self.reconfigure(**config_override)
 
+            self.manifest.sources = sources
             yield self
 
         else:
-            sources = dict(self.sources.items())
             with super().isolate_in_tempdir(**config_override) as project:
                 # Add sources to manifest memory, in case they are missing.
                 project.manifest.sources = sources

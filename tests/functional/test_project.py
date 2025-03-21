@@ -214,7 +214,7 @@ def test_getattr_not_exists(project):
     assert "ape/managers/project.py:" in repr(err.traceback[-1])
 
 
-def test_getattr_detects_changes(project, tmp_project):
+def test_getattr_detects_changes(tmp_project):
     # For this test, ensure we use a JSON/ABI contract so it is easier
     # to change its contents.
     source_id = tmp_project.contract_abi.contract_type.source_id
@@ -324,26 +324,26 @@ def test_extract_manifest(project, vyper_contract_instance):
     assert False, "Failed to find expected deployment URI"
 
 
-def test_extract_manifest_when_sources_missing(project):
+def test_extract_manifest_when_sources_missing(empty_project):
     """
     Show that if a source is missing, it is OK. This happens when changing branches
     after compiling and contracts are only present on one of the branches.
     """
     contract = make_contract("notreallyhere")
-    project.manifest.contract_types = {contract.name: contract}
-    manifest = project.extract_manifest()
+    empty_project.manifest.contract_types = {contract.name: contract}
+    manifest = empty_project.extract_manifest()
 
     # Source is skipped because missing.
     assert "notreallyhere" not in manifest.contract_types
 
 
-def test_extract_manifest_excludes_cache(tmp_project):
-    cachefile = tmp_project.contracts_folder / ".cache" / "CacheFile.json"
-    cachefile2 = tmp_project.contracts_folder / ".cache" / "subdir" / "Cache2.json"
+def test_extract_manifest_excludes_cache(empty_project):
+    cachefile = empty_project.contracts_folder / ".cache" / "CacheFile.json"
+    cachefile2 = empty_project.contracts_folder / ".cache" / "subdir" / "Cache2.json"
     cachefile2.parent.mkdir(parents=True)
     cachefile.write_text("Doesn't matter", encoding="utf8")
     cachefile2.write_text("Doesn't matter", encoding="utf8")
-    manifest = tmp_project.extract_manifest()
+    manifest = empty_project.extract_manifest()
     assert isinstance(manifest, PackageManifest)
     assert ".cache/CacheFile.json" not in (manifest.sources or {})
     assert ".cache/subdir/CacheFile.json" not in (manifest.sources or {})
@@ -369,18 +369,18 @@ def test_exclusions(project):
             assert exclusion in project.exclusions
 
 
-def test_update_manifest(project):
+def test_update_manifest(empty_project):
     compiler = Compiler(name="comp", version="1.0.0", contractTypes=["foo.txt"])
-    project.update_manifest(compilers=[compiler])
-    actual = project.manifest.compilers
+    empty_project.update_manifest(compilers=[compiler])
+    actual = empty_project.manifest.compilers
     assert actual == [compiler]
 
-    project.update_manifest(name="test", version="1.0.0")
-    assert project.manifest.name == "test"
-    assert project.manifest.version == "1.0.0"
+    empty_project.update_manifest(name="test", version="1.0.0")
+    assert empty_project.manifest.name == "test"
+    assert empty_project.manifest.version == "1.0.0"
 
     # The compilers should not have changed.
-    actual = project.manifest.compilers
+    actual = empty_project.manifest.compilers
     assert actual == [compiler]
 
 
@@ -655,6 +655,7 @@ def test_add_compiler_data(project_with_dependency_config):
 
     # Show error when contract type collision (only happens with inputs, else latter replaces).
     compiler_5.contractTypes = ["bar"]
+    compiler_5.name = f"{compiler_5.name}new"
     with pytest.raises(ProjectError, match=r".*'bar' collision across compilers.*"):
         project.add_compiler_data([compiler_4, compiler_5])
 
