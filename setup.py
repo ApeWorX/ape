@@ -94,7 +94,7 @@ setup(
         "cchecksum>=0.0.3,<1",
         # Pandas peer-dep: Numpy 2.0 causes issues for some users.
         "numpy<2",
-        "packaging>=23.0,<24",
+        "packaging>=24.2,<25",
         "pandas>=2.2.2,<3",
         "pluggy>=1.3,<2",
         "pydantic>=2.10.0,<3",
