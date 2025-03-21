@@ -142,7 +142,13 @@ class SourceManager(BaseManager):
 
     def values(self) -> Iterator[Source]:
         for source_id in self.keys():
-            yield self[source_id]
+            try:
+                yield self[source_id]
+            except KeyError:
+                # Deleted before yield.
+                path = self._get_source_id(source_id)
+                self._path_cache = [p for p in self._path_cache if p != path]
+                continue
 
     @singledispatchmethod
     def __contains__(self, item) -> bool:
@@ -438,7 +444,11 @@ class ContractManager(BaseManager):
     def values(self) -> Iterator[ContractContainer]:
         # dict-like behavior.
         for name in self:
-            yield self[name]
+            try:
+                yield self[name]
+            except KeyError:
+                # Deleted before yield.
+                continue
 
     def _compile_missing_contracts(self, paths: Iterable[Union[Path, str]]):
         non_compiled_sources = self._get_needs_compile(paths)
