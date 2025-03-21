@@ -97,7 +97,8 @@ def validate_python_path(ctx, param, value):
     path = Path(value).expanduser().resolve()
     if not path.exists():
         ctx.fail(f"Python path does not exist: {value}")
-    return str(path)
+
+    return f"{path}"
 
 
 def python_location_option(help: str = "", **kwargs):
@@ -240,7 +241,7 @@ def uninstall(cli_ctx, plugins, skip_confirmation, python: str):
             skip_confirmation or click.confirm(f"Remove plugin '{plugin}'?")
         ):
             cli_ctx.logger.info(f"Uninstalling '{plugin.name}'...")
-            arguments = plugin._get_uninstall_args(python)
+            arguments = plugin._get_uninstall_args(python_location=python)
 
             # NOTE: Be *extremely careful* with this command, as it modifies the user's
             #       installed packages, to potentially catastrophic results

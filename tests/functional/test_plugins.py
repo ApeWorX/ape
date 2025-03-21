@@ -96,7 +96,7 @@ def mock_python_path(tmp_path):
     """Create a temporary path to simulate a Python interpreter location."""
     python_path = tmp_path / "python"
     python_path.touch()
-    return str(python_path)
+    return f"{python_path}"
 
 
 @pytest.fixture
@@ -431,11 +431,11 @@ class TestBuildPipArgs:
 
         args = metadata.prepare_package_manager_args("install", python_location=mock_python_path)
 
-        if pip_command[0] == "uv":
-            expected = pip_command + ["install", "--python", mock_python_path]
-        else:
-            expected = pip_command + ["--python", mock_python_path, "install"]
-
+        expected = (
+            [*pip_command, "install", "--python", mock_python_path]
+            if pip_command[0] == "uv"
+            else [*pip_command, "--python", mock_python_path, "install"]
+        )
         assert args == expected
 
     @parametrize_pip_cmd
@@ -457,11 +457,11 @@ class TestBuildPipArgs:
             "install", python_location=mock_python_path, extra_args=extra
         )
 
-        if pip_command[0] == "uv":
-            expected = pip_command + ["install", "--python", mock_python_path] + extra
-        else:
-            expected = pip_command + ["--python", mock_python_path, "install"] + extra
-
+        expected = (
+            [*pip_command, "install", "--python", mock_python_path] + extra
+            if pip_command[0] == "uv"
+            else [*pip_command, "--python", mock_python_path, "install"] + extra
+        )
         assert args == expected
 
     @parametrize_pip_cmd
@@ -470,9 +470,9 @@ class TestBuildPipArgs:
 
         args = metadata.prepare_package_manager_args("uninstall", python_location=mock_python_path)
 
-        if pip_command[0] == "uv":
-            expected = pip_command + ["uninstall", "--python", mock_python_path]
-        else:
-            expected = pip_command + ["--python", mock_python_path, "uninstall"]
-
+        expected = (
+            [*pip_command, "uninstall", "--python", mock_python_path]
+            if pip_command[0] == "uv"
+            else [*pip_command, "--python", mock_python_path, "uninstall"]
+        )
         assert args == expected

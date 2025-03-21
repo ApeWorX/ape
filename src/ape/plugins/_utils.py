@@ -486,7 +486,7 @@ class PluginMetadata(BaseInterfaceModel):
         self,
         verb: str,
         python_location: Optional[str] = None,
-        extra_args: Optional[list[str]] = None,
+        extra_args: Optional[Iterable[str]] = None,
     ) -> list[str]:
         """
         Build command arguments for pip or uv package managers.
@@ -494,19 +494,21 @@ class PluginMetadata(BaseInterfaceModel):
         Usage:
             args = prepare_package_manager_args("install", "/path/to/python", ["--user"])
         """
-        extra_args = extra_args or []
+        extra_args = list(extra_args) if extra_args else []
         command = list(self.pip_command)
 
         if command[0] == "uv":
-            if python_location:
-                return command + [verb, "--python", python_location] + extra_args
-            else:
-                return command + [verb] + extra_args
-        else:
-            if python_location:
-                return command + ["--python", python_location, verb] + extra_args
-            else:
-                return command + [verb] + extra_args
+            return (
+                [*command, verb, "--python", python_location] + extra_args
+                if python_location
+                else [*command, verb, *extra_args]
+            )
+
+        return (
+            [*command, "--python", python_location, verb] + extra_args
+            if python_location
+            else [*command, verb, *extra_args]
+        )
 
     def _prepare_install(
         self,
