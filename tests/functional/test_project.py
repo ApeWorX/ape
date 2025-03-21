@@ -127,7 +127,8 @@ def test_name_from_config(project):
         assert project.name == "foo-bar"
 
 
-def test_repr(project):
+def test_repr():
+    project = Project(Path(__file__).parent)
     actual = repr(project)
     expected_project_path = str(project.path).replace(str(Path.home()), "$HOME")
     expected = f"<ProjectManager {expected_project_path}>"
