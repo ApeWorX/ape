@@ -1038,6 +1038,7 @@ class PackagesCache(ManagerAccessMixin):
                 shutil.rmtree(self.root)
                 if packages_cache.is_dir():
                     # Restore.
+                    self.root.parent.mkdir(parents=True, exist_ok=True)
                     shutil.copytree(packages_cache, self.root)
 
 
@@ -2511,11 +2512,13 @@ class LocalProject(Project):
 
     def unpack(self, destination: Path, config_override: Optional[dict] = None) -> "LocalProject":
         config_override = {**self._config_override, **(config_override or {})}
+        destination.mkdir(parents=True, exist_ok=True)
 
         # Unpack contracts.
         if self.contracts_folder.is_dir():
             contracts_path = get_relative_path(self.contracts_folder, self.path)
             contracts_destination = destination / contracts_path
+            contracts_destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copytree(self.contracts_folder, contracts_destination, dirs_exist_ok=True)
 
         # Unpack config file.
