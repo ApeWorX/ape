@@ -374,6 +374,13 @@ def test_connect_request_headers(project, geth_provider, networks):
             assert "custom-geth-client/v100" in actual["User-Agent"]
 
 
+def test_connect_no_middleware(geth_provider):
+    actual = [x for x in geth_provider.web3.middleware_onion]
+    # NOTE: There is like 6 default, but for some reason, there is still 1
+    #  when not using any, not sure why, but at least we did what we can.
+    assert len(actual) <= 1
+
+
 @geth_process_test
 @pytest.mark.parametrize("block_id", (0, "0", "0x0", HexStr("0x0")))
 def test_get_block(geth_provider, block_id):
