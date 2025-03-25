@@ -79,10 +79,9 @@ def cli(
         project.dependencies
     ) > 0:
         for dependency in project.dependencies:
-            # Even if compiling we failed, we at least tried
+            # Even if compiling failed, we at least tried,
             # and so we don't need to warn "Nothing to compile".
             compiled = True
-
             try:
                 contract_types = dependency.project.load_contracts(use_cache=use_cache)
             except Exception as err:
