@@ -9,7 +9,7 @@ The following proxies are supported in `ape-ethereum`:
 | Standard     | EIP-1967                          |
 | Beacon       | EIP-1967                          |
 | UUPS         | EIP-1822                          |
-| Vyper        | vyper \<0.2.9 create_forwarder_to |
+| Vyper        | vyper \<0.2.9 create_forwarder_to() |
 | Clones       | 0xsplits clones                   |
 | Safe         | Formerly Gnosis Safe              |
 | OpenZeppelin | OZ Upgradable                     |
