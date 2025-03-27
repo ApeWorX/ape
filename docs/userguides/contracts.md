@@ -99,7 +99,10 @@ You can also use the [at() method](../methoddocs/contracts.html#ape.contracts.ba
 from ape import project
 
 contract = project.MyContract.at("0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45")
+
 ```
+
+By default, Ape will detect if the contract is a proxy and use the implementation contract's interface. See the [Proxy Contracts guide](./proxy.html) for more details on proxy handling.
 
 ## From Any Address
 
@@ -191,7 +194,7 @@ def main():
 Then, after you have a contract instance, you can call methods on the contract.
 For example, let's say you have a Vyper contract containing some functions:
 
-```python
+```vyper
 wdAmount: public(uint256)
 
 @pure
@@ -453,16 +456,26 @@ def main():
     # Use multi-call.
     call = multicall.Call()
     for pool in POOLS:
+        # By default allowFailure=True, so the multicall continues even if one call fails
         call.add(pool.getReserves)
+        
+        # To require a call to succeed (revert entire multicall if this call fails)
+        call.add(pool.anotherMethod, allowFailure=False)
 
     print(list(call()))
 
     # Use multi-transaction.
     tx = multicall.Transaction()
     for pool in POOLS:
-        tx.add(pool.ApplyDiscount, 123)
+        # Same allowFailure option for transactions
+        tx.add(pool.ApplyDiscount, 123, allowFailure=True)
+        
+        # For payable functions, you can also specify value
+        tx.add(pool.deposit, value=1000)
 
     acct = ape.accounts.load("signer")
     for result in tx(sender=acct):
         print(result)
 ```
+
+When using `allowFailure=True` (the default), if a specific call in the multicall fails, the overall multicall will still succeed and the result for the failed call will be `None`. This is useful when you want to batch multiple calls together and don't want the entire batch to fail if just one call fails.

@@ -482,8 +482,39 @@ class PluginMetadata(BaseInterfaceModel):
         trusted_list = trusted_list or TRUSTED_PLUGINS
         return self.name in trusted_list
 
+    def prepare_package_manager_args(
+        self,
+        verb: str,
+        python_location: Optional[str] = None,
+        extra_args: Optional[Iterable[str]] = None,
+    ) -> list[str]:
+        """
+        Build command arguments for pip or uv package managers.
+
+        Usage:
+            args = prepare_package_manager_args("install", "/path/to/python", ["--user"])
+        """
+        extra_args = list(extra_args) if extra_args else []
+        command = list(self.pip_command)
+
+        if command[0] == "uv":
+            return (
+                [*command, verb, "--python", python_location] + extra_args
+                if python_location
+                else [*command, verb, *extra_args]
+            )
+
+        return (
+            [*command, "--python", python_location, verb] + extra_args
+            if python_location
+            else [*command, verb, *extra_args]
+        )
+
     def _prepare_install(
-        self, upgrade: bool = False, skip_confirmation: bool = False
+        self,
+        upgrade: bool = False,
+        skip_confirmation: bool = False,
+        python_location: Optional[str] = None,
     ) -> Optional[dict[str, Any]]:
         # NOTE: Internal and only meant to be called by the CLI.
         if self.in_core:
@@ -492,8 +523,7 @@ class PluginMetadata(BaseInterfaceModel):
 
         elif self.version is not None and upgrade:
             logger.error(
-                f"Cannot use '--upgrade' option when specifying "
-                f"a version for plugin '{self.name}'."
+                f"Cannot use '--upgrade' option when specifying a version for plugin '{self.name}'."
             )
             return None
 
@@ -502,7 +532,10 @@ class PluginMetadata(BaseInterfaceModel):
             logger.warning(f"Plugin '{self.name}' is not an trusted plugin.")
 
         result_handler = ModifyPluginResultHandler(self)
-        pip_arguments = [*self.pip_command, "install"]
+
+        pip_arguments = self.prepare_package_manager_args(
+            verb="install", python_location=python_location
+        )
 
         if upgrade:
             logger.info(f"Upgrading '{self.name}' plugin ...")
@@ -535,8 +568,10 @@ class PluginMetadata(BaseInterfaceModel):
             )
             return None
 
-    def _get_uninstall_args(self) -> list[str]:
-        arguments = [*self.pip_command, "uninstall"]
+    def _get_uninstall_args(self, python_location: Optional[str]) -> list[str]:
+        arguments = self.prepare_package_manager_args(
+            verb="uninstall", python_location=python_location
+        )
 
         if self.pip_command[0] != "uv":
             arguments.append("-y")
@@ -578,8 +613,7 @@ class ModifyPluginResultHandler:
 
         elif self._plugin.version:
             logger.success(
-                f"Plugin '{self._plugin.name}' has been "
-                f"upgraded to version {self._plugin.version}."
+                f"Plugin '{self._plugin.name}' has been upgraded to version {self._plugin.version}."
             )
             return True
 

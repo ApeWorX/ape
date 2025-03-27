@@ -43,13 +43,13 @@ def __getattr__(name: str):
 
 
 __all__ = [
-    "TestAccountContainer",
-    "TestAccount",
+    "ApeTestConfig",
+    "CoverageConfig",
+    "CoverageReportsConfig",
     "EthTesterProviderConfig",
-    "LocalProvider",
     "GasConfig",
     "GasExclusion",
-    "CoverageReportsConfig",
-    "CoverageConfig",
-    "ApeTestConfig",
+    "LocalProvider",
+    "TestAccount",
+    "TestAccountContainer",
 ]

@@ -336,8 +336,8 @@ def _select_method_abi(abis: list["MethodABI"], args: Union[tuple, list]) -> "Me
 class ContractTransaction(ManagerAccessMixin):
     def __init__(self, abi: "MethodABI", address: "AddressType") -> None:
         super().__init__()
-        self.abi: "MethodABI" = abi
-        self.address: "AddressType" = address
+        self.abi: MethodABI = abi
+        self.address: AddressType = address
 
     @log_instead_of_fail(default="<ContractTransaction>")
     def __repr__(self) -> str:
@@ -783,7 +783,18 @@ class ContractEvent(BaseInterfaceModel):
         ecosystem = self.provider.network.ecosystem
 
         # NOTE: Safe to use a list because a receipt should never have too many logs.
-        return list(ecosystem.decode_logs(receipt.logs, self.abi))
+        return list(
+            ecosystem.decode_logs(
+                # NOTE: Filter out logs that do not match this address (if address available)
+                #       (okay to be empty list, since EcosystemAPI.decode_logs will return [])
+                [
+                    log
+                    for log in receipt.logs
+                    if log["address"] == getattr(self.contract, "address", log["address"])
+                ],
+                self.abi,
+            )
+        )
 
     def poll_logs(
         self,
@@ -1088,7 +1099,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
 
     @cached_property
     def _view_methods_(self) -> dict[str, ContractCallHandler]:
-        view_methods: dict[str, list["MethodABI"]] = dict()
+        view_methods: dict[str, list[MethodABI]] = dict()
 
         for abi in self.contract_type.view_methods:
             if abi.name in view_methods:
@@ -1107,7 +1118,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
 
     @cached_property
     def _mutable_methods_(self) -> dict[str, ContractTransactionHandler]:
-        mutable_methods: dict[str, list["MethodABI"]] = dict()
+        mutable_methods: dict[str, list[MethodABI]] = dict()
 
         for abi in self.contract_type.mutable_methods:
             if abi.name in mutable_methods:
@@ -1247,7 +1258,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
 
     @cached_property
     def _events_(self) -> dict[str, list[ContractEvent]]:
-        events: dict[str, list["EventABI"]] = {}
+        events: dict[str, list[EventABI]] = {}
 
         for abi in self.contract_type.events:
             if abi.name in events:
@@ -1266,7 +1277,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
 
     @cached_property
     def _errors_(self) -> dict[str, list[type[CustomError]]]:
-        abis: dict[str, list["ErrorABI"]] = {}
+        abis: dict[str, list[ErrorABI]] = {}
 
         try:
             for abi in self.contract_type.errors:

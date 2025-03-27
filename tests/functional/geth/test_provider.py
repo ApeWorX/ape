@@ -21,6 +21,7 @@ from ape.exceptions import (
     ContractLogicError,
     NetworkMismatchError,
     ProviderError,
+    ProviderNotConnectedError,
     TransactionError,
     TransactionNotFoundError,
     VirtualMachineError,
@@ -237,6 +238,21 @@ def test_chain_id_live_network_connected_uses_web3_chain_id(mocker, geth_provide
 
 
 @geth_process_test
+def test_chain_id_adhoc_ipc_not_connected(networks, geth_provider):
+    ipc_path = str(geth_provider.ipc_path)
+    provider = networks.get_provider_from_choice(ipc_path)
+
+    # Clear chain ID for this test.
+    provider.__dict__.pop("chain_id", None)
+    assert not provider.is_connected, "Provider cannot be connected for this test"
+
+    # We expect this error because this means it attempts RPC to get the chain ID
+    # and does not reference the "active" provider (which is different).
+    with pytest.raises(ProviderNotConnectedError):
+        _ = provider.chain_id
+
+
+@geth_process_test
 def test_connect_wrong_chain_id(ethereum, geth_provider, web3_factory):
     start_network = geth_provider.network
     expected_error_message = (
@@ -356,6 +372,13 @@ def test_connect_request_headers(project, geth_provider, networks):
             assert "ETH/1.0" in actual["User-Agent"]
             assert "MyPrivateNetwork/0.0.1" in actual["User-Agent"]
             assert "custom-geth-client/v100" in actual["User-Agent"]
+
+
+def test_connect_no_middleware(geth_provider):
+    actual = [x for x in geth_provider.web3.middleware_onion]
+    # NOTE: There is like 6 default, but for some reason, there is still 1
+    #  when not using any, not sure why, but at least we did what we can.
+    assert len(actual) <= 1
 
 
 @geth_process_test

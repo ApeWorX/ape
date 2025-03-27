@@ -150,12 +150,28 @@ def _package_callback(ctx, param, value):
     except Exception:
         pass
     else:
-        return _handle_package_path(path, original_value=value)
+        if path.exists():
+            return _handle_package_path(path, original_value=value)
 
     if isinstance(value, str) and ":" in value:
         # Catch-all for unknown dependency types that may exist.
         parts = value.split(":")
         return {parts[0]: parts[1]}
+
+    elif isinstance(value, str):
+        from ape import project
+
+        version = ctx.params.get("version")
+        name = value
+        if not version and "@" in value:
+            name, version = value.split("@")
+
+        try:
+            dependency = project.dependencies.get_dependency_api(name, version=version)
+        except ProjectError:
+            pass
+        else:
+            return dependency
 
     raise click.BadArgumentUsage(f"Unknown package '{value}'.")
 
@@ -190,6 +206,11 @@ def install(cli_ctx, package, name, version, ref, force, config_override):
         cli_ctx.logger.success(message)
         return
 
+    from ape.api.projects import DependencyAPI
+
+    if isinstance(package, DependencyAPI):
+        package = package.model_dump()
+
     if name:
         package["name"] = name
     if ref:
@@ -203,8 +224,9 @@ def install(cli_ctx, package, name, version, ref, force, config_override):
         dependency = pm.dependencies.install(**package, use_cache=not force)
     except Exception as err:
         cli_ctx.logger.log_error(err)
-    else:
-        cli_ctx.logger.success(f"Package '{dependency.name}@{dependency.version}' installed.")
+        sys.exit(1)
+
+    cli_ctx.logger.success(f"Package '{dependency.name}@{dependency.version}' installed.")
 
 
 @cli.command()

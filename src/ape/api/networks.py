@@ -301,7 +301,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         """
         Networks from config.
         """
-        networks: dict[str, "NetworkAPI"] = {}
+        networks: dict[str, NetworkAPI] = {}
         custom_networks: list[dict] = [
             n
             for n in self.network_manager.custom_networks
@@ -650,6 +650,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
             from ape.api import EcosystemAPI
             from eth_pydantic_types import HexBytes
 
+
             class MyEcosystem(EcosystemAPI):
                 def get_method_selector(self, abi: MethodABI) -> HexBytes:
                     return HexBytes(abi.selector.encode())  # Simple bytes selector
@@ -973,7 +974,18 @@ class NetworkAPI(BaseInterfaceModel):
         **NOTE**: Unless overridden, returns same as
         :py:attr:`ape.api.providers.ProviderAPI.chain_id`.
         """
-        return self.provider.chain_id
+        if (
+            self.provider.network.name == self.name
+            and self.provider.network.ecosystem.name == self.ecosystem.name
+        ):
+            # Ensure 'active_provider' is actually (seemingly) connected
+            # to this network.
+            return self.provider.chain_id
+
+        raise NetworkError(
+            "Unable to reference provider to get `chain_id`: "
+            f"Network '{self.name}' is detached and information is missing."
+        )
 
     @property
     def network_id(self) -> int:
@@ -1341,6 +1353,7 @@ class NetworkAPI(BaseInterfaceModel):
         Usage example::
 
             from ape import networks
+
             mainnet = networks.ethereum.mainnet  # An instance of NetworkAPI
             with mainnet.use_default_provider():
                 ...
@@ -1470,11 +1483,11 @@ def create_network_type(chain_id: int, network_id: int, is_fork: bool = False) -
 
 # TODO: Can remove in 0.9 since `LOCAL_NETWORK_NAME` doesn't need to be here.
 __all__ = [
-    "create_network_type",
-    "EcosystemAPI",
     "LOCAL_NETWORK_NAME",  # Have to leave for backwards compat.
+    "EcosystemAPI",
     "ForkedNetworkAPI",
     "NetworkAPI",
     "ProviderContextManager",
     "ProxyInfoAPI",
+    "create_network_type",
 ]

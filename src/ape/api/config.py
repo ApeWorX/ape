@@ -40,8 +40,10 @@ class ConfigEnum(str, Enum):
                 FOO = "FOO"
                 BAR = "BAR"
 
+
             class MyConfig(PluginConfig):
                 my_enum: MyEnum
+
 
             model = MyConfig(my_enum="FOO")
 
@@ -505,7 +507,7 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
             exclude_unset=True,
             exclude_defaults=True,
         )
-        return yaml.dump(data)
+        return yaml.safe_dump(data)
 
     @only_raise_attribute_error
     def __getattr__(self, attr_name: str) -> Any:

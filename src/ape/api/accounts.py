@@ -179,8 +179,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
             amount_to_send = self.balance - total_fees
             if amount_to_send <= 0:
                 raise AccountsError(
-                    f"Sender does not have enough to cover transaction value and gas: "
-                    f"{total_fees}"
+                    f"Sender does not have enough to cover transaction value and gas: {total_fees}"
                 )
             else:
                 txn.value = amount_to_send

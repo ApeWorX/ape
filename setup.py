@@ -22,7 +22,7 @@ extras_require = {
         "hypothesis-jsonschema==0.19.0",  # JSON Schema fuzzer extension
     ],
     "lint": [
-        "black>=25.1.0,<26",  # Auto-formatter and linter
+        "ruff>=0.10.0",  # Unified linter and formatter
         "mypy>=1.15.0,<1.16.0",  # Static type analyzer
         "types-PyYAML",  # Needed due to mypy typeshed
         "types-requests",  # Needed due to mypy typeshed
@@ -31,12 +31,6 @@ extras_require = {
         "types-toml",  # Needed due to mypy typeshed
         "types-SQLAlchemy>=1.4.49",  # Needed due to mypy typeshed
         "types-python-dateutil",  # Needed due to mypy typeshed
-        "flake8>=7.1.2,<8",  # Style linter
-        "flake8-breakpoint>=1.1.0,<2",  # Detect breakpoints left in code
-        "flake8-print>=4.0.1,<5",  # Detect print statements left in code
-        "flake8-pydantic",  # For detecting issues with Pydantic models
-        "flake8-type-checking",  # Detect imports to move in/out of type-checking blocks
-        "isort>=6.0.0,<7",  # Import sorting linter
         "mdformat>=0.7.22",  # Auto-formatter for markdown
         "mdformat-gfm>=0.3.5",  # Needed for formatting GitHub-flavored markdown
         "mdformat-frontmatter>=0.4.1",  # Needed for frontmatters-style headers in issue templates
@@ -70,8 +64,7 @@ extras_require["dev"] = (
     # NOTE: Do *not* install `recommended-plugins` w/ dev
 )
 
-with open("./README.md") as readme:
-    long_description = readme.read()
+long_description = Path("./README.md").read_text()
 
 
 setup(
@@ -108,7 +101,7 @@ setup(
         "pydantic-settings>=2.5.2,<3",
         "pytest>=8.0,<9.0",
         "python-dateutil>=2.8.2,<3",
-        "PyYAML>=5.0,<7",
+        "PyYAML>=5.1,<7",
         "requests>=2.28.1,<3",
         "rich>=12.5.1,<14",
         "SQLAlchemy>=1.4.35",
@@ -123,7 +116,7 @@ setup(
         "eth-typing>=3.5.2,<6",
         "eth-utils>=2.1.0,<6",
         "hexbytes>=0.3.1,<2",
-        "py-geth>=5.2.1,<6",
+        "py-geth>=5.3.0,<6",
         "trie>=3.0.1,<4",  # Peer: stricter pin needed for uv support.
         "web3[tester]>=6.20.1,<8",
         # ** Dependencies maintained by ApeWorX **

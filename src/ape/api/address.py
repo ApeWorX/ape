@@ -90,6 +90,10 @@ class BaseAddress(BaseInterface):
         """
         return self.address
 
+    def __hash__(self) -> int:
+        """Return consistent hash for all address representations with the same value."""
+        return hash(int(self.address, base=16))
+
     def __call__(self, **kwargs) -> "ReceiptAPI":
         """
         Call this address directly. For contracts, this may mean invoking their

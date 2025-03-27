@@ -64,6 +64,21 @@ True
 ContractLogicError('!authorized')
 ```
 
+This is especially useful when you want to examine the details of a failed transaction without the exception interrupting your workflow. For example, you might want to catch and log transaction failures in a script:
+
+```python
+try:
+    # Try to execute a risky transaction
+    receipt = contract.riskFunction(sender=account, raise_on_revert=False)
+    if receipt.failed:
+        logger.warning(f"Transaction failed: {receipt.error}")
+        # Perform some fallback action
+    else:
+        logger.info("Transaction succeeded!")
+except Exception as e:
+    logger.error(f"Unexpected error: {e}")
+```
+
 ## Dev Messages
 
 Dev messages allow smart-contract authors to save gas by avoiding revert-messages.

@@ -28,10 +28,10 @@ def display_config(ctx, param, value):
 
     click.echo("# Current configuration")
 
-    # NOTE: Using json-mode as yaml.dump requires JSON-like structure.
+    # NOTE: Using json-mode as yaml.safe_dump requires JSON-like structure.
     model = access.local_project.config.model_dump(mode="json")
 
-    click.echo(yaml.dump(model))
+    click.echo(yaml.safe_dump(model))
     ctx.exit()  # NOTE: Must exit to bypass running ApeCLI
 
 
