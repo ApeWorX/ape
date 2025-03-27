@@ -450,7 +450,9 @@ class ContractManager(BaseManager):
                     yield path
 
     def _compile_contracts(
-        self, paths: Iterable[Union[Path, str]], exclude_compiler: Optional[str] = None
+        self,
+        paths: Iterable[Union[Path, str]],
+        exclude_compiler: Optional[Union[str, list[str]]] = None,
     ):
         if not (
             new_types := {
@@ -483,7 +485,7 @@ class ContractManager(BaseManager):
         self,
         paths: Union[Path, str, Iterable[Union[Path, str]]],
         use_cache: bool = True,
-        exclude_compiler: Optional[str] = None,
+        exclude_compiler: Optional[Union[str, list[str]]] = None,
     ) -> Iterator[ContractContainer]:
         path_ls = list([paths] if isinstance(paths, (Path, str)) else paths)
         if not path_ls:
@@ -2555,7 +2557,7 @@ class LocalProject(Project):
         self,
         *source_ids: Union[str, Path],
         use_cache: bool = True,
-        exclude_compiler: Optional[str] = None,
+        exclude_compiler: Optional[Union[str, list[str]]] = None,
     ) -> dict[str, ContractContainer]:
         paths: Iterable[Path]
         starting: dict[str, ContractContainer] = {}

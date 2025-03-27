@@ -604,5 +604,6 @@ def exclude_compiler_option(**kwargs):
         "--exclude-compiler",
         help="Exclude a specific compiler from the compilation process",
         type=str,
+        multiple=True,
         **kwargs,
     )

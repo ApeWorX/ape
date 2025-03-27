@@ -56,7 +56,7 @@ def cli(
     use_cache: bool,
     display_size: bool,
     include_dependencies,
-    exclude_compiler: str,
+    exclude_compiler: list[str],
     config_override,
 ):
     """
