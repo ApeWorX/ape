@@ -8,7 +8,7 @@ from ape.cli.arguments import contract_file_paths_argument
 from ape.cli.options import (
     ape_cli_context,
     config_override_option,
-    exclude_compiler_option,
+    excluded_compilers_option,
     project_option,
 )
 
@@ -47,7 +47,7 @@ def _include_dependencies_callback(ctx, param, value):
     help="Also compile dependencies",
     callback=_include_dependencies_callback,
 )
-@exclude_compiler_option()
+@excluded_compilers_option()
 @config_override_option()
 def cli(
     cli_ctx,

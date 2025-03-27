@@ -599,7 +599,7 @@ def config_override_option(**kwargs):
     return _json_option("--config-override", help="Config override mappings", **kwargs)
 
 
-def exclude_compiler_option(**kwargs):
+def excluded_compilers_option(**kwargs):
     return click.option(
         "--exclude-compiler",
         "excluded_compilers",
