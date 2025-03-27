@@ -602,6 +602,7 @@ def config_override_option(**kwargs):
 def exclude_compiler_option(**kwargs):
     return click.option(
         "--exclude-compiler",
+        "excluded_compilers",
         help="Exclude a specific compiler from the compilation process",
         type=str,
         multiple=True,

@@ -99,7 +99,7 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
         contract_filepaths: Union[Path, str, Iterable[Union[Path, str]]],
         project: Optional["ProjectManager"] = None,
         settings: Optional[dict] = None,
-        exclude_compiler: Optional[Union[str, list[str]]] = None,
+        excluded_compilers: Optional[list[str]] = None,
     ) -> Iterator["ContractType"]:
         """
         Invoke :meth:`ape.ape.compiler.CompilerAPI.compile` for each of the given files.
@@ -138,7 +138,7 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
 
         for next_ext, path_set in files_by_ext.items():
             compiler = self.registered_compilers[next_ext]
-            if exclude_compiler and compiler.name.lower() in [c.lower() for c in exclude_compiler]:
+            if excluded_compilers and compiler.name.lower() in [c.lower() for c in excluded_compilers]:
                 continue
             try:
                 compiler_settings = settings.get(compiler.name, {})
