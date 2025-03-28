@@ -138,7 +138,7 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
 
         for next_ext, path_set in files_by_ext.items():
             compiler = self.registered_compilers[next_ext]
-            if excluded_compilers and compiler.name.lower() in [c.lower() for c in excluded_compilers]:
+            if excluded_compilers and compiler.name.lower() in excluded_compilers:
                 continue
             try:
                 compiler_settings = settings.get(compiler.name, {})

@@ -599,12 +599,27 @@ def config_override_option(**kwargs):
     return _json_option("--config-override", help="Config override mappings", **kwargs)
 
 
+def _excluded_compilers_callback(ctx, param, value):
+    if not value:
+        return
+
+    return [c.lower() for c in value]
+
+
 def excluded_compilers_option(**kwargs):
+    from ape.utils.basemodel import ManagerAccessMixin
+
+    registered_compilers_options = [
+        compiler.name
+        for compiler in ManagerAccessMixin.compiler_manager.registered_compilers.values()
+    ]
+
     return click.option(
         "--exclude-compiler",
         "excluded_compilers",
-        help="Exclude a specific compiler from the compilation process",
-        type=str,
+        help="Exclude specific compilers from the compilation process",
+        type=click.Choice(registered_compilers_options, case_sensitive=False),
+        callback=_excluded_compilers_callback,
         multiple=True,
         **kwargs,
     )
