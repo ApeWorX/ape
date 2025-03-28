@@ -609,9 +609,7 @@ def _excluded_compilers_callback(ctx, param, value):
 def excluded_compilers_option(**kwargs):
     from ape.utils.basemodel import ManagerAccessMixin
 
-    registered_compilers_options = list(
-        ManagerAccessMixin.compiler_manager.registered_compilers
-    )
+    registered_compilers_options = list(ManagerAccessMixin.compiler_manager.registered_compilers)
 
     return click.option(
         "--exclude-compiler",
