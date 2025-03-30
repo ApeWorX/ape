@@ -341,10 +341,10 @@ def _change_version(spec: str):
     ape_retcode = _install("eth-ape", spec)
     if ape_retcode == 0 and plugin_retcode == 0:
         prefix = "Ape"
-        if plugin_retcode == 0:
+        if plugin_retcode == 0 and get_plugin_dists():
             prefix = f"{prefix} and plugins"
 
         logger.success(f"{prefix} have successfully upgraded.")
     # else: _install logs errors already.
-
-    sys.exit(ape_retcode | plugin_retcode)
+    exit_code = ape_retcode if ape_retcode != 0 else plugin_retcode
+    sys.exit(exit_code)
