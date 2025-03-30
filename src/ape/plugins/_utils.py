@@ -167,8 +167,8 @@ class ApeVersion:
         for spec in spec_set:
             spec_version = Version(spec.version)
             if spec.operator in ("==", "<", "<=") and (
-                (self.is_pre_one and spec_version.major < ape_version.major)
-                or (self.is_pre_one and spec_version.minor < ape_version.minor)
+                (self.is_pre_one and spec_version.major < self.major)
+                or (self.is_pre_one and spec_version.minor < self.minor)
             ):
                 return True
 
