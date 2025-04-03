@@ -41,3 +41,45 @@ class WeiConversions(ConverterAPI):
             Decimal(value.replace("_", "").replace(",", "")) * ETHER_UNITS[unit.lower()]
         )
         return CurrencyValue(converted_value)
+
+
+class WeiIntStrConversions(ConverterAPI):
+    """Converts a int to a string units like 1e18 to '1 ether'."""
+
+    def is_convertible(self, value: str) -> bool:
+        return isinstance(value, int)
+
+    def convert(self, value: int) -> str:
+        from ape import convert
+
+        decimal_value = convert(value, Decimal)
+
+        return convert(decimal_value, str)
+
+
+class EthDecimalStrConversions(ConverterAPI):
+    """Converts a decimal to a string units like 1.0 to '1 ether'."""
+
+    def is_convertible(self, value: str) -> bool:
+        return isinstance(value, Decimal)
+
+    def convert(self, value: Decimal) -> str:
+        ETH_THRESHOLD = 1 / Decimal(1e3)
+        GWEI_THRESHOLD = 1 / Decimal(1e12)
+
+        if value < GWEI_THRESHOLD:
+            return f"{value * Decimal(1e18).normalize():,f} wei"
+        elif GWEI_THRESHOLD <= value < ETH_THRESHOLD:
+            return f"{value * Decimal(1e9).normalize():,f} gwei"
+        # value >= ETH_THRESHOLD
+        return f"{value.normalize():,f} ether"
+
+
+class WeiIntEthDecimalConversions(ConverterAPI):
+    """Converts a int to a decimal units like 1e18 to Decimal('1.0')"""
+
+    def is_convertible(self, value: int) -> bool:
+        return isinstance(value, int)
+
+    def convert(self, value: int) -> Decimal:
+        return Decimal(value) / Decimal(1e18)
