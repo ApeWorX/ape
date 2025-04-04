@@ -287,14 +287,14 @@ class QueryResult(BaseCursorAPI[ModelType]):
                 cursor.total_time,
                 "seconds",
             )
-            assert (
-                cursor.query.start_index == current_pos
-            ), f"Cursor {i} starts at {cursor.query.start_index}, expected {current_pos}"
+            assert cursor.query.start_index == current_pos, (
+                f"Cursor {i} starts at {cursor.query.start_index}, expected {current_pos}"
+            )
             current_pos = cursor.query.end_index + 1
 
-        assert (
-            current_pos == self.query.end_index + 1
-        ), f"Coverage ended at {current_pos - 1}, expected {self.query.end_index}"
+        assert current_pos == self.query.end_index + 1, (
+            f"Coverage ended at {current_pos - 1}, expected {self.query.end_index}"
+        )
 
         return self
 
@@ -386,7 +386,6 @@ class QueryManager(ManagerAccessMixin):
         #       (resolves corner case when `query.start_index` == `query.end_index`)
         last_best_cursor = min(all_cursors, key=lambda c: (c.query, c.total_time))
         for start_index, end_index in pairwise(query_segments):
-
             lowest_unit_time = float("inf")
             best_cursor = None
             for cursor in all_cursors:
