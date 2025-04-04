@@ -449,11 +449,17 @@ class ContractManager(BaseManager):
                 else:
                     yield path
 
-    def _compile_contracts(self, paths: Iterable[Union[Path, str]]):
+    def _compile_contracts(
+        self,
+        paths: Iterable[Union[Path, str]],
+        excluded_compilers: Optional[list[str]] = None,
+    ):
         if not (
             new_types := {
                 ct.name: ct
-                for ct in self.compiler_manager.compile(paths, project=self.project)
+                for ct in self.compiler_manager.compile(
+                    paths, project=self.project, excluded_compilers=excluded_compilers
+                )
                 if ct.name
             }
         ):
@@ -476,7 +482,10 @@ class ContractManager(BaseManager):
             yield from self._compile(paths, use_cache=use_cache)
 
     def _compile(
-        self, paths: Union[Path, str, Iterable[Union[Path, str]]], use_cache: bool = True
+        self,
+        paths: Union[Path, str, Iterable[Union[Path, str]]],
+        use_cache: bool = True,
+        excluded_compilers: Optional[list[str]] = None,
     ) -> Iterator[ContractContainer]:
         path_ls = list([paths] if isinstance(paths, (Path, str)) else paths)
         if not path_ls:
@@ -495,7 +504,7 @@ class ContractManager(BaseManager):
         if needs_compile := list(
             self._get_needs_compile(path_ls_final) if use_cache else path_ls_final
         ):
-            self._compile_contracts(needs_compile)
+            self._compile_contracts(needs_compile, excluded_compilers=excluded_compilers)
 
         src_ids = [f"{Path(p).relative_to(self.project.path)}" for p in path_ls_final]
         for contract_type in (self.project.manifest.contract_types or {}).values():
@@ -2592,7 +2601,10 @@ class LocalProject(Project):
         self.manifest_path.write_text(manifest_text, encoding="utf8")
 
     def load_contracts(
-        self, *source_ids: Union[str, Path], use_cache: bool = True
+        self,
+        *source_ids: Union[str, Path],
+        use_cache: bool = True,
+        excluded_compilers: Optional[list[str]] = None,
     ) -> dict[str, ContractContainer]:
         paths: Iterable[Path]
         starting: dict[str, ContractContainer] = {}
@@ -2608,7 +2620,9 @@ class LocalProject(Project):
 
         new_types = {
             c.contract_type.name: c
-            for c in self.contracts._compile(paths, use_cache=use_cache)
+            for c in self.contracts._compile(
+                paths, use_cache=use_cache, excluded_compilers=excluded_compilers
+            )
             if c.contract_type.name
         }
         return {**starting, **new_types}
