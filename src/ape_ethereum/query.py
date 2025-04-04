@@ -1,12 +1,12 @@
 from collections.abc import Iterator
 from functools import singledispatchmethod
 
-from ape.api.query import ContractCreation, ContractCreationQuery, QueryAPI, QueryType
+from ape.api.query import ContractCreation, ContractCreationQuery, QueryEngineAPI, QueryType
 from ape.exceptions import APINotImplementedError, ProviderError, QueryEngineError
 from ape.types.address import AddressType
 
 
-class EthereumQueryProvider(QueryAPI):
+class EthereumQueryProvider(QueryEngineAPI):
     """
     Implements more advanced queries specific to Ethereum clients.
     """

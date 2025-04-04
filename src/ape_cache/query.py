@@ -14,7 +14,7 @@ from ape.api.query import (
     BlockQuery,
     BlockTransactionQuery,
     ContractEventQuery,
-    QueryAPI,
+    QueryEngineAPI,
     QueryType,
 )
 from ape.api.transactions import TransactionAPI
@@ -27,7 +27,7 @@ from . import models
 from .models import Blocks, ContractEvents, Transactions
 
 
-class CacheQueryProvider(QueryAPI):
+class CacheQueryProvider(QueryEngineAPI):
     """
     Default implementation of the :class:`~ape.api.query.QueryAPI`.
     Allows for the query of blockchain data using a connected provider.
