@@ -16,8 +16,8 @@ from .providers import BlockAPI
 from .transactions import ReceiptAPI, TransactionAPI
 
 if TYPE_CHECKING:
+    from narwhals import Implementation as DataframeImplementation
     from narwhals.typing import Frame
-    from narwhals.typing import Implementation as DataframeImplementation
 
     from ape.managers.query import QueryResult
 
