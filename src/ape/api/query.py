@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from collections.abc import Iterator, Sequence
 from functools import cache, cached_property
-from typing import TYPE_CHECKING, Any, ClassVar, Generic, Optional, Type, TypeVar, Union
+from typing import TYPE_CHECKING, Any, ClassVar, Generic, Optional, TypeVar, Union
 
 from ethpm_types.abi import EventABI, MethodABI
 from pydantic import NonNegativeInt, PositiveInt, field_validator, model_validator
@@ -16,8 +16,8 @@ from .providers import BlockAPI
 from .transactions import ReceiptAPI, TransactionAPI
 
 if TYPE_CHECKING:
+    from narwhals import Implementation as DataframeImplementation
     from narwhals.typing import Frame
-    from narwhals.typing import Implementation as DataframeImplementation
 
     from ape.managers.query import QueryResult
 
@@ -104,7 +104,7 @@ ModelType = TypeVar("ModelType", bound=BaseInterfaceModel)
 
 
 class _BaseQuery(BaseModel, Generic[ModelType]):
-    Model: ClassVar[Optional[Type[BaseInterfaceModel]]] = None
+    Model: ClassVar[Optional[type[BaseInterfaceModel]]] = None
 
     columns: set[str]
 
