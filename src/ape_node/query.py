@@ -2,13 +2,13 @@ from collections.abc import Iterator
 from functools import singledispatchmethod
 from typing import Optional
 
-from ape.api.query import ContractCreation, ContractCreationQuery, QueryAPI, QueryType
+from ape.api.query import ContractCreation, ContractCreationQuery, QueryEngineAPI, QueryType
 from ape.exceptions import QueryEngineError
 from ape.types.address import AddressType
 from ape_ethereum.provider import EthereumNodeProvider
 
 
-class OtterscanQueryEngine(QueryAPI):
+class OtterscanQueryEngine(QueryEngineAPI):
     @singledispatchmethod
     def estimate_query(self, query: QueryType) -> Optional[int]:  # type: ignore[override]
         return None
