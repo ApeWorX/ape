@@ -20,9 +20,11 @@ extras_require = {
         "pytest-timeout>=2.2.0,<3",  # For avoiding timing out during tests
         "hypothesis>=6.2.0,<7.0",  # Strategy-based fuzzer
         "hypothesis-jsonschema==0.19.0",  # JSON Schema fuzzer extension
+        "ape-vyper>=0.8.9,<0.9",  # Needed for compiling test contracts
+        "ape-solidity>=0.8.5,<0.9",  # Needed for compiling test contracts
     ],
     "lint": [
-        "ruff>=0.10.0",  # Unified linter and formatter
+        "ruff>=0.11.2",  # Unified linter and formatter
         "mypy>=1.15.0,<1.16.0",  # Static type analyzer
         "types-PyYAML",  # Needed due to mypy typeshed
         "types-requests",  # Needed due to mypy typeshed
