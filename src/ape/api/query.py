@@ -3,20 +3,19 @@ from collections.abc import Iterator, Sequence
 from functools import cache, cached_property
 from typing import TYPE_CHECKING, Any, ClassVar, Generic, Optional, TypeVar, Union
 
+import narwhals as nw
 from ethpm_types.abi import EventABI, MethodABI
 from pydantic import NonNegativeInt, PositiveInt, field_validator, model_validator
 
 from ape.logging import logger
 from ape.types import ContractLog
 from ape.types.address import AddressType
-from ape.utils import singledispatchmethod
 from ape.utils.basemodel import BaseInterface, BaseInterfaceModel, BaseModel
 
 from .providers import BlockAPI
 from .transactions import ReceiptAPI, TransactionAPI
 
 if TYPE_CHECKING:
-    from narwhals import Implementation as DataframeImplementation
     from narwhals.typing import Frame
 
     from ape.managers.query import QueryResult
@@ -309,6 +308,15 @@ class ContractCreationQuery(_BaseQuery[ContractCreation]):
 
     contract: AddressType
 
+    @property
+    def start_index(self) -> int:
+        return 0
+
+    @property
+    def end_index(self) -> int:
+        # TODO: Can this support multiple instances? Do we care anymore?
+        return 1
+
 
 class ContractEventQuery(_BaseBlockQuery, _BaseQuery[ContractLog]):
     """
@@ -334,10 +342,9 @@ class ContractMethodQuery(_BaseBlockQuery, _BaseQuery[Any]):
     method_args: dict[str, Any]
 
 
-class BaseCursorAPI(BaseInterfaceModel, Generic[ModelType]):
+class CursorAPI(BaseInterfaceModel, Generic[ModelType]):
     query: _BaseQuery[ModelType]
 
-    @abstractmethod
     def shrink(
         self,
         start_index: Optional[int] = None,
@@ -355,18 +362,21 @@ class BaseCursorAPI(BaseInterfaceModel, Generic[ModelType]):
         Returns:
             Self: a copy of itself, only with the smaller query window applied.
         """
+        raise NotImplementedError
 
     @property
-    @abstractmethod
     def total_time(self) -> float:
         """
         The estimated total time that this cursor would take to execute. Note that this is only an
         approximation, but should be relatively accurate for the `QueryManager`'s solver algorithm
         to work well. Is used for printing metrics to the user.
 
+        Default implementation of this property is the span of this cursor times `.time_per_row`.
+
         Returns:
             float: Time (in seconds) that the query should take to execute fully.
         """
+        return (self.query.end_index - self.query.start_index) * (self.time_per_row)
 
     @property
     @abstractmethod
@@ -382,8 +392,7 @@ class BaseCursorAPI(BaseInterfaceModel, Generic[ModelType]):
         """
 
     # Conversion out to fulfill user query requirements
-    @abstractmethod
-    def as_dataframe(self, backend: "DataframeImplementation") -> "Frame":
+    def as_dataframe(self, backend: nw.Implementation) -> "Frame":
         """
         Execute and return this Cursor as a `~narwhals.v1.DataFrame` or `~narwhals.v1.LazyFrame`
         object. The use of `backend is exactly as it is mentioned in the `narwhals` documentation:
@@ -393,6 +402,8 @@ class BaseCursorAPI(BaseInterfaceModel, Generic[ModelType]):
         plugin, for example you can use `~narwhals.from_dict` to convert results into a Frame:
         https://narwhals-dev.github.io/narwhals/api-reference/narwhals/#narwhals.from_dict
 
+        Default implementation of this method uses `.as_model_iter()` to fulfill this requirement.
+
         Args:
             backend (:object:`~narwhals.Implementation): A Narwhals-compatible backend specifier.
                 See: https://narwhals-dev.github.io/narwhals/api-reference/implementation/
@@ -400,6 +411,13 @@ class BaseCursorAPI(BaseInterfaceModel, Generic[ModelType]):
         Returns:
             (`~narwhals.v1.DataFrame` | `~narwhals.v1.LazyFrame`): A narwhals dataframe.
         """
+        data: dict[str, list] = {column: [] for column in self.query.columns}
+
+        for item in self.as_model_iter():
+            for column in data:
+                data[column].append(getattr(item, column))
+
+        return nw.from_dict(data, backend=backend)
 
     @abstractmethod
     def as_model_iter(self) -> Iterator[ModelType]:
@@ -425,38 +443,45 @@ QueryType = Union[
 
 
 class QueryEngineAPI(BaseInterface):
-    @singledispatchmethod
-    def exec(self, query: QueryType) -> Iterator[BaseCursorAPI]:
+    def exec(self, query: QueryType) -> Iterator[CursorAPI]:
         """
-        Obtain `BaseCursorAPI` object(s) that may covers (subset of) `query`. A plugin should yield
+        Obtain `CursorAPI` object(s) that may covers (subset of) `query`. A plugin should yield
         one or more cursor(s) that covers some subset of the length of `query`'s row-space, as
         indicated by `QueryType.start_index` and `QueryType.end_index`. These query types will
         either be fed into an algorithm to determine the cheapest possible coverage of the query,
         or be sourced directly from the provider in response to a user-specified query.
 
-        Note that this method uses `@singledispatchmethod` decorator to make it possible to specify
-        only certain types of queries that your plugin might be able to handle, which will cause it
-        to skip using this plugin for non-overriden queries by default, as this method yields an
-        empty iterator which will indicate that your plugin can be skipped.
+        Note that this method encourages the use of `@singledispatchmethod` decorator to make it
+        possible to specify only certain types of queries that your plugin might be able to handle,
+        which will cause it to skip using this plugin for non-overriden queries by default, as this
+        method yields an empty iterator which will indicate that your plugin can be skipped.
 
-        Add `@QueryEngineAPI.exec.register` as a decorator on your method in order to add support
-        for particular query types.
+        Add `exec = functools.singledispatchmethod(QueryEngineAPI.exec)` to your subclass, and then
+        `@exec.register` as a decorator on your method in order to support particular query types.
 
         Args:
             query (`~QueryType`): The query being handled by this method.
 
         Returns:
-            Iterator[`~BaseCursorAPI`]: Zero (or more) cursor(s) that provide data for a portion of
+            Iterator[`~CursorAPI`]: Zero (or more) cursor(s) that provide data for a portion of
                 `query`'s range. Defaults to not providing any coverage.
 
         Usage example::
 
-            >>> from ape.api import QueryEngineAPI
+            >>> from functools import singledispatchmethod
+            >>> from ape.api import CursorAPI, QueryEngineAPI
+            >>> class PluginCursor(CursorAPI):
+            ...     ...  # See `CursorAPI`'s documentation for methods to implement
             >>> class PluginQueryEngine(QueryEngineAPI):
-            ...     @QueryEngineAPI.exec.register
-            ...     def exec_queryX(self, query: SomethingQuery) -> Iterator[PluginCursorSubclass]:
-            ...         yield PluginCursorSubclass(query=query, ...)
-            ...         # NOTE: Can yield more if plugin does not have full coverage of query
+            ...     # NOTE: Do this if you want to define multiple dispatch handlers easily
+            ...     exec = singledispatchmethod(QueryEngineAPI.exec)
+            ...     # NOTE: Do *not* use the name `exec` for the dispatch method's name!
+            ...     @exec.register
+            ...     def exec_queryX(self, query: SomethingQuery) -> Iterator[PluginCursor]:
+            ...         yield PluginCursor(query=query, ...)
+            ...         # NOTE: Can yield more cursors if plugin does not have full coverage,
+            ...         #       or has piece-wise coverage of the query space
+
         """
         return iter([])  # Will avoid using any cursors from this plugin for querying this type
 

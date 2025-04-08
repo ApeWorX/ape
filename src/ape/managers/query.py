@@ -12,11 +12,11 @@ from pydantic import model_validator
 # TODO: Switch to `import narwhals.v1 as nw` per narwhals documentation
 from ape.api.query import (
     AccountTransactionQuery,
-    BaseCursorAPI,
     BaseInterfaceModel,
     BlockQuery,
     BlockTransactionQuery,
     ContractEventQuery,
+    CursorAPI,
     ModelType,
     QueryAPI,
     QueryEngineAPI,
@@ -49,7 +49,7 @@ if TYPE_CHECKING:
         from typing_extensions import Self  # type: ignore
 
 
-class _RpcCursor(BaseCursorAPI):
+class _RpcCursor(CursorAPI):
     def shrink(
         self,
         start_index: Optional[int] = None,
@@ -64,10 +64,6 @@ class _RpcCursor(BaseCursorAPI):
             copy.query.stop_block = end_index
 
         return copy
-
-    @property
-    def total_time(self) -> float:
-        return self.time_per_row * (1 + self.query.end_index - self.query.start_index)
 
     @property
     def time_per_row(self) -> float:
@@ -99,7 +95,7 @@ class _RpcBlockCursor(_RpcCursor):
 class _RpcBlockTransactionCursor(_RpcCursor):
     query: BlockTransactionQuery
 
-    # TODO: Move to default implementation in `BaseCursorAPI`? (remove `@abstractmethod`)
+    # TODO: Move to default implementation in `CursorAPI`? (remove `@abstractmethod`)
     def shrink(
         self,
         start_index: Optional[int] = None,
@@ -173,27 +169,27 @@ class DefaultQueryProvider(QueryEngineAPI):
     Allows for the query of blockchain data using connected provider.
     """
 
-    def __init__(self):
-        # TODO: What is this for?
-        self.supports_contract_creation = None
+    @singledispatchmethod
+    def exec(self, query: QueryType) -> Iterator[CursorAPI]:  # type: ignore[override]
+        return super().exec(query)
 
-    @QueryEngineAPI.exec.register
+    @exec.register
     def exec_block_query(self, query: BlockQuery) -> Iterator[_RpcBlockCursor]:
         yield _RpcBlockCursor(query=query)
 
-    @QueryEngineAPI.exec.register
+    @exec.register
     def exec_block_transaction_query(
         self, query: BlockTransactionQuery
     ) -> Iterator[_RpcBlockTransactionCursor]:
         yield _RpcBlockTransactionCursor(query=query)
 
-    @QueryEngineAPI.exec.register
+    @exec.register
     def exec_contract_event_query(
         self, query: ContractEventQuery
     ) -> Iterator[_RpcContractEventCursor]:
         yield _RpcContractEventCursor(query=query)
 
-    @QueryEngineAPI.exec.register
+    @exec.register
     def exec_account_transaction_query(
         self, query: AccountTransactionQuery
     ) -> Iterator[_RpcAccountTransactionCursor]:
@@ -268,8 +264,8 @@ class DefaultQueryProvider(QueryEngineAPI):
         )
 
 
-class QueryResult(BaseCursorAPI[ModelType]):
-    cursors: list[BaseCursorAPI[ModelType]]
+class QueryResult(CursorAPI[ModelType]):
+    cursors: list[CursorAPI[ModelType]]
     """The optimal set of cursors (in sorted order) that fulfill this query."""
 
     @model_validator(mode="after")
@@ -297,14 +293,6 @@ class QueryResult(BaseCursorAPI[ModelType]):
         )
 
         return self
-
-    # TODO: Move to `BaseCursorAPI` and don't have `@abstractmethod`?
-    def shrink(
-        self,
-        start_index: Optional[int] = None,
-        end_index: Optional[int] = None,
-    ) -> "Self":
-        raise NotImplementedError
 
     @property
     def total_time(self) -> float:
@@ -369,8 +357,8 @@ class QueryManager(ManagerAccessMixin):
     def _solve_optimal_coverage(
         self,
         query: QueryType,
-        all_cursors: list[BaseCursorAPI],
-    ) -> Iterator[BaseCursorAPI]:
+        all_cursors: list[CursorAPI],
+    ) -> Iterator[CursorAPI]:
         # NOTE: Use this to reduce the amount of brute force iteration over query window
         query_segments = sorted(
             set(
@@ -454,6 +442,10 @@ class QueryManager(ManagerAccessMixin):
                 f"Query engine `{engine_to_use}` not found. "
                 f"Did you mean {' or '.join(self._suggest_engines(engine_to_use))}?"
             )
+
+        if len(all_cursors) == 0:
+            # NOTE: Likely indicates a problem with the default or selected query engine
+            raise QueryEngineError(f"No data available for {query.__class__.__name__}")
 
         logger.debug("Sorted cursors:\n  " + "\n  ".join(map(str, all_cursors)))
         result: QueryResult = QueryResult(
