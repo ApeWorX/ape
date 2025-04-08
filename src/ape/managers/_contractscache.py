@@ -955,5 +955,9 @@ def _merge_abis(base_contract: ContractType, extra_abis: list[ABI]) -> ContractT
 def _merge_contract_types(
     base_contract_type: ContractType, additive_contract_type: ContractType
 ) -> ContractType:
+    existing_methods = set(_get_relevant_additive_abis(base_contract_type))
     relevant_abis = _get_relevant_additive_abis(additive_contract_type)
-    return _merge_abis(base_contract_type, relevant_abis)
+    return _merge_abis(
+        base_contract_type,
+        [abi for abi in relevant_abis if abi not in existing_methods],
+    )
