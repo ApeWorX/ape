@@ -7,7 +7,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=397bb51e" />
-    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=3b41e830" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=c516b45e" />
     <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -480,7 +480,10 @@ message.</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.types.coverage.ContractCoverage.model_dump">
 <span class="sig-name descname"><span class="pre">model_dump</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#ape.types.coverage.ContractCoverage.model_dump" title="Link to this definition"></a></dt>
-<dd><p>Usage docs: <a class="reference external" href="https://docs.pydantic.dev/2.10/concepts/serialization/#modelmodel_dump">https://docs.pydantic.dev/2.10/concepts/serialization/#modelmodel_dump</a></p>
+<dd><dl class="simple">
+<dt>!!! abstract “Usage Documentation”</dt><dd><p>[<cite>model_dump</cite>](../concepts/serialization.md#modelmodel_dump)</p>
+</dd>
+</dl>
 <p>Generate a dictionary representation of the model, optionally specifying which fields to include or exclude.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -498,6 +501,8 @@ If mode is ‘python’, the output may contain non-JSON-serializable Python obj
 <li><p><strong>round_trip</strong> – If True, dumped values should be valid as input for non-idempotent types such as Json[T].</p></li>
 <li><p><strong>warnings</strong> – How to handle serialization errors. False/”none” ignores them, True/”warn” logs errors,
 “error” raises a [<cite>PydanticSerializationError</cite>][pydantic_core.PydanticSerializationError].</p></li>
+<li><p><strong>fallback</strong> – A function to call when an unknown value is encountered. If not provided,
+a [<cite>PydanticSerializationError</cite>][pydantic_core.PydanticSerializationError] error is raised.</p></li>
 <li><p><strong>serialize_as_any</strong> – Whether to serialize fields with duck-typing serialization behavior.</p></li>
 </ul>
 </dd>
@@ -578,7 +583,10 @@ in every contract in this source.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.types.coverage.ContractSourceCoverage.model_dump">
 <span class="sig-name descname"><span class="pre">model_dump</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#ape.types.coverage.ContractSourceCoverage.model_dump" title="Link to this definition"></a></dt>
-<dd><p>Usage docs: <a class="reference external" href="https://docs.pydantic.dev/2.10/concepts/serialization/#modelmodel_dump">https://docs.pydantic.dev/2.10/concepts/serialization/#modelmodel_dump</a></p>
+<dd><dl class="simple">
+<dt>!!! abstract “Usage Documentation”</dt><dd><p>[<cite>model_dump</cite>](../concepts/serialization.md#modelmodel_dump)</p>
+</dd>
+</dl>
 <p>Generate a dictionary representation of the model, optionally specifying which fields to include or exclude.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -596,6 +604,8 @@ If mode is ‘python’, the output may contain non-JSON-serializable Python obj
 <li><p><strong>round_trip</strong> – If True, dumped values should be valid as input for non-idempotent types such as Json[T].</p></li>
 <li><p><strong>warnings</strong> – How to handle serialization errors. False/”none” ignores them, True/”warn” logs errors,
 “error” raises a [<cite>PydanticSerializationError</cite>][pydantic_core.PydanticSerializationError].</p></li>
+<li><p><strong>fallback</strong> – A function to call when an unknown value is encountered. If not provided,
+a [<cite>PydanticSerializationError</cite>][pydantic_core.PydanticSerializationError] error is raised.</p></li>
 <li><p><strong>serialize_as_any</strong> – Whether to serialize fields with duck-typing serialization behavior.</p></li>
 </ul>
 </dd>
@@ -670,7 +680,10 @@ in every contract in every source in this this project.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.types.coverage.CoverageProject.model_dump">
 <span class="sig-name descname"><span class="pre">model_dump</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#ape.types.coverage.CoverageProject.model_dump" title="Link to this definition"></a></dt>
-<dd><p>Usage docs: <a class="reference external" href="https://docs.pydantic.dev/2.10/concepts/serialization/#modelmodel_dump">https://docs.pydantic.dev/2.10/concepts/serialization/#modelmodel_dump</a></p>
+<dd><dl class="simple">
+<dt>!!! abstract “Usage Documentation”</dt><dd><p>[<cite>model_dump</cite>](../concepts/serialization.md#modelmodel_dump)</p>
+</dd>
+</dl>
 <p>Generate a dictionary representation of the model, optionally specifying which fields to include or exclude.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -688,6 +701,8 @@ If mode is ‘python’, the output may contain non-JSON-serializable Python obj
 <li><p><strong>round_trip</strong> – If True, dumped values should be valid as input for non-idempotent types such as Json[T].</p></li>
 <li><p><strong>warnings</strong> – How to handle serialization errors. False/”none” ignores them, True/”warn” logs errors,
 “error” raises a [<cite>PydanticSerializationError</cite>][pydantic_core.PydanticSerializationError].</p></li>
+<li><p><strong>fallback</strong> – A function to call when an unknown value is encountered. If not provided,
+a [<cite>PydanticSerializationError</cite>][pydantic_core.PydanticSerializationError] error is raised.</p></li>
 <li><p><strong>serialize_as_any</strong> – Whether to serialize fields with duck-typing serialization behavior.</p></li>
 </ul>
 </dd>
@@ -784,7 +799,10 @@ in every contract in every source in every project in this report.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.types.coverage.CoverageReport.model_dump">
 <span class="sig-name descname"><span class="pre">model_dump</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#ape.types.coverage.CoverageReport.model_dump" title="Link to this definition"></a></dt>
-<dd><p>Usage docs: <a class="reference external" href="https://docs.pydantic.dev/2.10/concepts/serialization/#modelmodel_dump">https://docs.pydantic.dev/2.10/concepts/serialization/#modelmodel_dump</a></p>
+<dd><dl class="simple">
+<dt>!!! abstract “Usage Documentation”</dt><dd><p>[<cite>model_dump</cite>](../concepts/serialization.md#modelmodel_dump)</p>
+</dd>
+</dl>
 <p>Generate a dictionary representation of the model, optionally specifying which fields to include or exclude.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -802,6 +820,8 @@ If mode is ‘python’, the output may contain non-JSON-serializable Python obj
 <li><p><strong>round_trip</strong> – If True, dumped values should be valid as input for non-idempotent types such as Json[T].</p></li>
 <li><p><strong>warnings</strong> – How to handle serialization errors. False/”none” ignores them, True/”warn” logs errors,
 “error” raises a [<cite>PydanticSerializationError</cite>][pydantic_core.PydanticSerializationError].</p></li>
+<li><p><strong>fallback</strong> – A function to call when an unknown value is encountered. If not provided,
+a [<cite>PydanticSerializationError</cite>][pydantic_core.PydanticSerializationError] error is raised.</p></li>
 <li><p><strong>serialize_as_any</strong> – Whether to serialize fields with duck-typing serialization behavior.</p></li>
 </ul>
 </dd>
@@ -937,7 +957,10 @@ statements (such as auto-getters).</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.types.coverage.FunctionCoverage.model_dump">
 <span class="sig-name descname"><span class="pre">model_dump</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#ape.types.coverage.FunctionCoverage.model_dump" title="Link to this definition"></a></dt>
-<dd><p>Usage docs: <a class="reference external" href="https://docs.pydantic.dev/2.10/concepts/serialization/#modelmodel_dump">https://docs.pydantic.dev/2.10/concepts/serialization/#modelmodel_dump</a></p>
+<dd><dl class="simple">
+<dt>!!! abstract “Usage Documentation”</dt><dd><p>[<cite>model_dump</cite>](../concepts/serialization.md#modelmodel_dump)</p>
+</dd>
+</dl>
 <p>Generate a dictionary representation of the model, optionally specifying which fields to include or exclude.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -955,6 +978,8 @@ If mode is ‘python’, the output may contain non-JSON-serializable Python obj
 <li><p><strong>round_trip</strong> – If True, dumped values should be valid as input for non-idempotent types such as Json[T].</p></li>
 <li><p><strong>warnings</strong> – How to handle serialization errors. False/”none” ignores them, True/”warn” logs errors,
 “error” raises a [<cite>PydanticSerializationError</cite>][pydantic_core.PydanticSerializationError].</p></li>
+<li><p><strong>fallback</strong> – A function to call when an unknown value is encountered. If not provided,
+a [<cite>PydanticSerializationError</cite>][pydantic_core.PydanticSerializationError] error is raised.</p></li>
 <li><p><strong>serialize_as_any</strong> – Whether to serialize fields with duck-typing serialization behavior.</p></li>
 </ul>
 </dd>
@@ -1074,7 +1099,10 @@ Is <cite>None</cite> when from the pending block.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.types.events.LogFilter.model_dump">
 <span class="sig-name descname"><span class="pre">model_dump</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.types.events.LogFilter.model_dump" title="Link to this definition"></a></dt>
-<dd><p>Usage docs: <a class="reference external" href="https://docs.pydantic.dev/2.10/concepts/serialization/#modelmodel_dump">https://docs.pydantic.dev/2.10/concepts/serialization/#modelmodel_dump</a></p>
+<dd><dl class="simple">
+<dt>!!! abstract “Usage Documentation”</dt><dd><p>[<cite>model_dump</cite>](../concepts/serialization.md#modelmodel_dump)</p>
+</dd>
+</dl>
 <p>Generate a dictionary representation of the model, optionally specifying which fields to include or exclude.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1092,6 +1120,8 @@ If mode is ‘python’, the output may contain non-JSON-serializable Python obj
 <li><p><strong>round_trip</strong> – If True, dumped values should be valid as input for non-idempotent types such as Json[T].</p></li>
 <li><p><strong>warnings</strong> – How to handle serialization errors. False/”none” ignores them, True/”warn” logs errors,
 “error” raises a [<cite>PydanticSerializationError</cite>][pydantic_core.PydanticSerializationError].</p></li>
+<li><p><strong>fallback</strong> – A function to call when an unknown value is encountered. If not provided,
+a [<cite>PydanticSerializationError</cite>][pydantic_core.PydanticSerializationError] error is raised.</p></li>
 <li><p><strong>serialize_as_any</strong> – Whether to serialize fields with duck-typing serialization behavior.</p></li>
 </ul>
 </dd>
