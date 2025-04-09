@@ -5,6 +5,7 @@ from ape import Contract
 from ape.contracts import ContractInstance
 from ape.exceptions import ContractNotFoundError, ConversionError
 from ape.logging import LogLevel, logger
+from ape.managers._contractscache import _merge_contract_types
 from ape_ethereum.proxies import ProxyInfo, ProxyType, _make_minimal_proxy
 from tests.conftest import explorer_test, skip_if_plugin_installed
 
@@ -17,6 +18,15 @@ def contract_0(vyper_contract_container):
 @pytest.fixture
 def contract_1(solidity_contract_container):
     return solidity_contract_container
+
+
+def test_merge_contract_types(contract_instance):
+    ct = contract_instance.contract_type
+    modified_ct = ct.model_copy(deep=True)
+    modified_ct.view_methods[0].name = "foo"
+    new_ct = _merge_contract_types(ct, modified_ct)
+    assert len(new_ct.abi) == len(ct.abi) + 1 == len(modified_ct.abi) + 1
+    assert len(new_ct.abi) == len(_merge_contract_types(new_ct, modified_ct).abi)
 
 
 def test_instance_at(chain, contract_instance):
