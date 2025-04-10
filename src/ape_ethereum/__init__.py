@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from ape import plugins
 
 
@@ -10,9 +12,17 @@ def config_class():
 
 @plugins.register(plugins.ConversionPlugin)
 def converters():
-    from ape_ethereum._converters import WeiConversions
+    from ape_ethereum._converters import (
+        EthDecimalStrConversions,
+        WeiConversions,
+        WeiIntEthDecimalConversions,
+        WeiIntStrConversions,
+    )
 
     yield int, WeiConversions
+    yield str, WeiIntStrConversions
+    yield str, EthDecimalStrConversions
+    yield Decimal, WeiIntEthDecimalConversions
 
 
 @plugins.register(plugins.EcosystemPlugin)
