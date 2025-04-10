@@ -53,7 +53,7 @@ dependencies:
 ```
 
 The `ref:` config installs the code from that reference; the `version:` config uses the official GitHub release API, and then only if that fails will it check the `git` references.
-Often times, the `v` prefix is required when using tags.
+Oftentimes, the `v` prefix is required when using tags.
 However, if cloning the tag fails, `ape` will retry with a `v` prefix.
 Bypass the original failing attempt by including a `v` in your dependency config.
 
@@ -282,7 +282,7 @@ dependencies:
 
 This is the same as if these values were in an `ape-config.yaml` file in the project directly.
 
-You can also specify `--config-override` in the `ape pm install` command to try different settings more adhoc:
+You can also specify `--config-override` in the `ape pm install` command to try different settings more ad hoc:
 
 ```shell
 ape pm install --config-override '{"solidity": {"evm_version": "paris"}}'
