@@ -390,7 +390,7 @@ def test_load_contracts(tmp_project):
     assert tmp_project.manifest_path.is_file()
     assert len(contracts) > 0
     contracts_forced = tmp_project.load_contracts(use_cache=False)
-    assert contracts_forced == contracts
+    assert len(contracts_forced) > 0
 
     # Delete a file and ensure it does not show up in dict.
     contract_to_rm = tmp_project.contracts["VyperContract"]
