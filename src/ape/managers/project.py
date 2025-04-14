@@ -596,7 +596,13 @@ class Dependency(BaseManager, ExtraAttributesMixin):
         if path.exists():
             pkg_id = clean_path(Path(pkg_id))
 
-        return f"<Dependency package={pkg_id} version={self.api.version_id}>"
+        prefix = f"<Dependency package={pkg_id}"
+        if self._installation:
+            # Avoid including version ID if not installed, as it may be slow
+            # to calculate the version.
+            return f"{prefix} version={self.api.version}>"
+
+        return f"{prefix} (not installed)>"
 
     def __hash__(self):
         return hash(f"{self.package_id}@{self.version}")
@@ -659,6 +665,18 @@ class Dependency(BaseManager, ExtraAttributesMixin):
         return self._cache.get_project_path(self.package_id, self.version)
 
     @property
+    def _project_cache_exists(self) -> bool:
+        if self._installation is None:
+            return False
+
+        path = self._cache.get_project_path(self.package_id, self.version)
+        if not path.is_dir():
+            return False
+
+        # Ensure there are actually project files in here.
+        return len([x for x in self.project_path.iterdir() if not x.name.startswith(".")]) > 0
+
+    @property
     def manifest_path(self) -> Path:
         """
         The path to the dependency's manifest. When compiling, the artifacts go here.
@@ -695,6 +713,13 @@ class Dependency(BaseManager, ExtraAttributesMixin):
         return False
 
     @property
+    def compiled(self) -> bool:
+        """
+        True if installed and compiled.
+        """
+        return self.installed and self.project.is_compiled
+
+    @property
     def uri(self) -> str:
         """
         The dependency's URI for refreshing.
@@ -723,17 +748,15 @@ class Dependency(BaseManager, ExtraAttributesMixin):
         config_override = {**(self.api.config_override or {}), **(config_override or {})}
         project = None
         did_fetch = False
+
+        # Check and used already installed project if we can.
         if self._installation is not None and use_cache:
             if config_override:
                 self._installation.reconfigure(**config_override)
 
             return self._installation
 
-        elif (
-            not self.project_path.is_dir()
-            or len([x for x in self.project_path.iterdir() if not x.name.startswith(".")]) == 0
-            or not use_cache
-        ):
+        elif not self._project_cache_exists or not use_cache:
             unpacked = False
             if use_cache and self.manifest_path.is_file():
                 # Attempt using sources from manifest. This may happen
@@ -823,7 +846,10 @@ class Dependency(BaseManager, ExtraAttributesMixin):
         self._installation = None
 
     def compile(
-        self, use_cache: bool = True, config_override: Optional[dict] = None
+        self,
+        use_cache: bool = True,
+        config_override: Optional[dict] = None,
+        allow_install: bool = False,
     ) -> dict[str, ContractContainer]:
         """
         Compile a dependency.
@@ -832,50 +858,57 @@ class Dependency(BaseManager, ExtraAttributesMixin):
             use_cache (bool): Set to ``False`` to force a re-compile.
             config_override (Optional[dict]): Optionally override the configuration,
               which may be needed for compiling.
+            allow_install (bool): Set to ``True`` to allow installing.
 
         Returns:
             dict[str, :class:`~ape.contracts.ContractContainer`]
         """
         override = {**self.api.config_override, **(config_override or {})}
         self.api.config_override = override
-        project = self.project
+
+        if not self.installed and allow_install:
+            project = self.install()
+        else:
+            # Will raise if not installed and allow_install=False.
+            project = self.project
+
         if override:
             # Ensure is using most up-to-date config override.
             project.reconfigure(**override)
             self._cache.cache_api(self.api)
 
-        result = project.load_contracts(use_cache=use_cache)
-        if not result:
-            contracts_folder = project.contracts_folder
-            message = "Compiling dependency produced no contract types."
-            if isinstance(project, LocalProject):
-                all_files = [x.name for x in get_all_files_in_directory(contracts_folder)]
-                has_solidity_sources = any(get_full_extension(Path(x)) == ".sol" for x in all_files)
-                has_vyper_sources = any(
-                    get_full_extension(Path(x)) in (".vy", ".vyi") for x in all_files
-                )
-                compilers = self.compiler_manager.registered_compilers
-                warn_sol = has_solidity_sources and ".sol" not in compilers
-                warn_vyper = has_vyper_sources and ".vy" not in compilers
-                suffix = ""
-                if warn_sol:
-                    suffix = "Try installing 'ape-solidity'"
-                    if warn_vyper:
-                        suffix += " or 'ape-vyper'"
-                elif warn_vyper:
-                    suffix = "Try installing 'ape-vyper'"
+        if result := project.load_contracts(use_cache=use_cache):
+            return result
 
-                elif len(all_files) == 0:
-                    suffix = (
-                        f"No source files found! (contracts_folder={clean_path(contracts_folder)})"
-                    )
+        # Failed to get any contract types out of the dependency project.
+        # Try to figure out the best reason as to why this happened.
+        contracts_folder = project.contracts_folder
+        message = "Compiling dependency produced no contract types."
+        if isinstance(project, LocalProject):
+            all_files = [x.name for x in get_all_files_in_directory(contracts_folder)]
+            has_solidity_sources = any(get_full_extension(Path(x)) == ".sol" for x in all_files)
+            has_vyper_sources = any(
+                get_full_extension(Path(x)) in (".vy", ".vyi") for x in all_files
+            )
+            compilers = self.compiler_manager.registered_compilers
+            warn_sol = has_solidity_sources and ".sol" not in compilers
+            warn_vyper = has_vyper_sources and ".vy" not in compilers
+            suffix = ""
+            if warn_sol:
+                suffix = "Try installing 'ape-solidity'"
+                if warn_vyper:
+                    suffix += " or 'ape-vyper'"
+            elif warn_vyper:
+                suffix = "Try installing 'ape-vyper'"
 
-                if suffix:
-                    message = f"{message} {suffix}."
+            elif len(all_files) == 0:
+                suffix = f"No source files found! (contracts_folder={clean_path(contracts_folder)})"
 
-            logger.warning(message)
+            if suffix:
+                message = f"{message} {suffix}."
 
-        return result
+        logger.warning(message)
+        return None
 
     def unpack(self, path: Path) -> Iterator["Dependency"]:
         """
@@ -1230,7 +1263,7 @@ class DependencyManager(BaseManager):
         """
         All dependencies specified in the config.
         """
-        yield from self.get_project_dependencies()
+        yield from self.get_project_dependencies(allow_install=False)
 
     def get_project_dependencies(
         self,

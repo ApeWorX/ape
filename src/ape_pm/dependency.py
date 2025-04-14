@@ -481,17 +481,20 @@ class PythonDependency(DependencyAPI):
 
     @property
     def version_id(self) -> str:
-        if self.pypi:
+        if self.version:
+            return self.version
+
+        elif self.pypi:
             # Version available in package data.
-            if not (vers := self.version_from_package_data or ""):
-                # I doubt this is a possible condition, but just in case.
-                raise ProjectError(f"Missing version from PyPI for package '{self.package_id}'.")
+            vers = self._get_version_from_package_data()
 
         elif self.site_package:
             try:
                 vers = f"{metadata.version(self.package_id)}"
-            except metadata.PackageNotFoundError as err:
-                raise ProjectError(f"Dependency '{self.package_id}' not installed.") from err
+            except metadata.PackageNotFoundError:
+                # Python dependency not installed; use latest from pypi.
+                # If is not on PyPI, assume it will be installed locally and use "local" as the version.
+                vers = self.version_from_package_data or "local"
 
             if spec_vers := self.version:
                 if spec_vers != vers:
@@ -530,11 +533,15 @@ class PythonDependency(DependencyAPI):
             response.raise_for_status()
         except requests.HTTPError as err:
             if err.response.status_code == 404:
-                raise ProjectError(
+                msg = (
                     f"Unknown dependency '{self.package_id}'. "
-                    "Is it spelled correctly and available on PyPI? "
-                    "For local Python packages, use the `python:` key."
+                    "Is it spelled correctly and available on PyPI?"
                 )
+                if self.site_package is None:
+                    msg = f"{msg} For local Python packages, use the `site_package:` key."
+
+                raise ProjectError(msg)
+
             else:
                 raise ProjectError(
                     f"Problem downloading package data for '{self.package_id}': {err}"
@@ -593,3 +600,10 @@ class PythonDependency(DependencyAPI):
                     file.write(chunk)
 
         return archive_destination
+
+    def _get_version_from_package_data(self) -> str:
+        if vers := self.version_from_package_data:
+            return vers
+
+        # I doubt this is a possible condition, but just in case.
+        raise ProjectError(f"Missing version from PyPI for package '{self.package_id}'.")
