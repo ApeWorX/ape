@@ -227,7 +227,7 @@ The <code class="docutils literal notranslate"><span class="pre">ref:</span></co
 </span></pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">ref:</span></code> config installs the code from that reference; the <code class="docutils literal notranslate"><span class="pre">version:</span></code> config uses the official GitHub release API, and then only if that fails will it check the <code class="docutils literal notranslate"><span class="pre">git</span></code> references.
-Often times, the <code class="docutils literal notranslate"><span class="pre">v</span></code> prefix is required when using tags.
+Oftentimes, the <code class="docutils literal notranslate"><span class="pre">v</span></code> prefix is required when using tags.
 However, if cloning the tag fails, <code class="docutils literal notranslate"><span class="pre">ape</span></code> will retry with a <code class="docutils literal notranslate"><span class="pre">v</span></code> prefix.
 Bypass the original failing attempt by including a <code class="docutils literal notranslate"><span class="pre">v</span></code> in your dependency config.</p>
 <p><strong>By knowing if the release is from the version API or only available via tag, and whether the version is v-prefixed or not, you save Ape some time and complexity when installing dependencies.</strong></p>
@@ -416,7 +416,7 @@ Otherwise, you just give it the name.</p>
 </span></pre></div>
 </div>
 <p>This is the same as if these values were in an <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file in the project directly.</p>
-<p>You can also specify <code class="docutils literal notranslate"><span class="pre">--config-override</span></code> in the <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">pm</span> <span class="pre">install</span></code> command to try different settings more adhoc:</p>
+<p>You can also specify <code class="docutils literal notranslate"><span class="pre">--config-override</span></code> in the <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">pm</span> <span class="pre">install</span></code> command to try different settings more ad hoc:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>pm<span class="w"> </span>install<span class="w"> </span>--config-override<span class="w"> </span><span class="s1">&#39;{&quot;solidity&quot;: {&quot;evm_version&quot;: &quot;paris&quot;}}&#39;</span>
 </span></pre></div>
 </div>
