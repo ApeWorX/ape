@@ -193,10 +193,7 @@ def test_get_project_dependencies(project, ape_caplog):
         assert actual[0].installed
         assert actual[1].name == "apethisisnotarealpackageape"
         assert not actual[1].installed
-        assert (
-            "Fetching failed: Package 'apethisisnotarealpackageape' not found in site-packages"
-            in logs
-        )
+        assert "Dependency 'apethisisnotarealpackageape' not installed." in logs
 
 
 def test_install(temp_project, mocker):
@@ -624,7 +621,7 @@ class TestPythonDependency:
     def test_version_id_not_found(self):
         name = "xxthisnameisnotarealpythonpackagexx"
         dependency = PythonDependency.model_validate({"site_package": name})
-        expected = f"Dependency '{name}' not installed."
+        expected = rf"Dependency '{name}' not installed\. Either install or specify the `version:` to continue."
         with pytest.raises(ProjectError, match=expected):
             _ = dependency.version_id
 
