@@ -350,9 +350,9 @@ def test_extract_manifest_excludes_cache(empty_project):
     assert ".cache/subdir/CacheFile.json" not in (manifest.sources or {})
 
 
-def test_extract_manifest_compiles(project):
-    project.manifest.contract_types = {}  # Not compiled.
-    actual = project.extract_manifest()
+def test_extract_manifest_compiles(smaller_project):
+    smaller_project.manifest.contract_types = {}  # Not compiled.
+    actual = smaller_project.extract_manifest()
     assert actual.contract_types  # Fails if empty
 
 
@@ -385,9 +385,9 @@ def test_update_manifest(empty_project):
     assert actual == [compiler]
 
 
-def test_load_contracts(tmp_project):
-    contracts = tmp_project.load_contracts()
-    assert tmp_project.manifest_path.is_file()
+def test_load_contracts(smaller_project):
+    contracts = smaller_project.load_contracts()
+    assert smaller_project.manifest_path.is_file()
     assert len(contracts) > 0
     contracts_forced = tmp_project.load_contracts(use_cache=False)
     assert len(contracts_forced) > 0
@@ -537,11 +537,11 @@ def test_unpack(project):
         assert (path / project.config.contracts_folder / "ThisIsNotAContract.txt").is_file()
 
 
-def test_unpack_includes_build_file(project_with_contracts):
-    project_with_contracts.load_contracts()
+def test_unpack_includes_build_file(smaller_project):
+    smaller_project.load_contracts()
     with create_tempdir() as path:
-        project_with_contracts.unpack(path)
-        expected = project_with_contracts.path / ".build" / "__local__.json"
+        smaller_project.unpack(path)
+        expected = smaller_project.path / ".build" / "__local__.json"
         assert expected.is_file()
 
 
@@ -678,21 +678,21 @@ def test_project_api_foundry_and_ape_config_found(foundry_toml):
         assert not isinstance(actual, FoundryProject)
 
 
-def test_get_contract(project_with_contracts):
-    actual = project_with_contracts.get_contract("Other")
+def test_get_contract(smaller_project):
+    actual = smaller_project.get_contract("Other")
     assert isinstance(actual, ContractContainer), f"{type(actual)}"
     assert actual.contract_type.name == "Other"
 
     # Ensure manifest is only loaded once by none-ing out the path.
     # Otherwise, this can be a MAJOR performance hit.
-    manifest_path = project_with_contracts.manifest_path
-    project_with_contracts.manifest_path = None
+    manifest_path = smaller_project.manifest_path
+    smaller_project.manifest_path = None
     try:
-        actual = project_with_contracts.get_contract("Other")
+        actual = smaller_project.get_contract("Other")
         assert isinstance(actual, ContractContainer)
         assert actual.contract_type.name == "Other"
     finally:
-        project_with_contracts.manifest_path = manifest_path
+        smaller_project.manifest_path = manifest_path
 
 
 def test_get_contract_not_exists(project):
@@ -1029,27 +1029,27 @@ class TestSourceManager:
                     expected = f"{project.contracts_folder.name}/{exclusion}"
                     assert expected not in actual
 
-    def test_is_excluded(self, project_with_contracts):
+    def test_is_excluded(self, smaller_project):
         exclude_cfg = {"compile": {"exclude": ["exclude_dir/*", "Excl*.json"]}}
         source_ids = ("contracts/exclude_dir/UnwantedContract.json", "contracts/Exclude.json")
-        with project_with_contracts.temp_config(**exclude_cfg):
+        with smaller_project.temp_config(**exclude_cfg):
             for source_id in source_ids:
-                path = project_with_contracts.path / source_id
-                assert project_with_contracts.sources.is_excluded(path)
+                path = smaller_project.path / source_id
+                assert smaller_project.sources.is_excluded(path)
 
-    def test_items(self, project_with_contracts):
-        actual = list(project_with_contracts.sources.items())
+    def test_items(self, smaller_project):
+        actual = list(smaller_project.sources.items())
         assert len(actual) > 0
         assert isinstance(actual[0], tuple)
         assert "contracts/Other.json" in [x[0] for x in actual]
         assert isinstance(actual[0][1], Source)
 
-    def test_keys(self, project_with_contracts):
-        actual = list(project_with_contracts.sources.keys())
+    def test_keys(self, smaller_project):
+        actual = list(smaller_project.sources.keys())
         assert "contracts/Other.json" in actual
 
-    def test_values(self, project_with_contracts):
-        actual = list(project_with_contracts.sources.values())
+    def test_values(self, smaller_project):
+        actual = list(smaller_project.sources.values())
         assert all(isinstance(x, Source) for x in actual)
 
 

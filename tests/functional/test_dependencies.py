@@ -193,7 +193,10 @@ def test_get_project_dependencies(project, ape_caplog):
         assert actual[0].installed
         assert actual[1].name == "apethisisnotarealpackageape"
         assert not actual[1].installed
-        assert "Dependency 'apethisisnotarealpackageape' not installed." in logs
+        assert (
+            "Fetching failed: Package 'apethisisnotarealpackageape' not found in site-packages"
+            in logs
+        )
 
 
 def test_install(temp_project, mocker):
@@ -644,7 +647,7 @@ class TestDependency:
     def test_repr(self, dependency):
         actual = repr(dependency)
         path = str(Path.cwd()).replace(str(Path.home()), "$HOME")
-        expected = f"<Dependency package={path} version=1.0.0>"
+        expected = f"<LocalDependency local={path}, version=1.0.0>"
         assert actual == expected
 
     def test_project_path(self, dependency, data_folder):

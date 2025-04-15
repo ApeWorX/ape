@@ -540,9 +540,13 @@ class PythonDependency(DependencyAPI):
                 if self.site_package is None:
                     msg = f"{msg} For local Python packages, use the `site_package:` key."
 
-                raise ProjectError(msg)
+                logger.error(msg)
+
+                # There is no available package data; use empty dict.
+                return {}
 
             else:
+                # It at least should have worked in this case, so it is ok to raise an error.
                 raise ProjectError(
                     f"Problem downloading package data for '{self.package_id}': {err}"
                 )

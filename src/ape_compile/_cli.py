@@ -95,10 +95,10 @@ def cli(
             # and so we don't need to warn "Nothing to compile".
             compiled = True
             try:
-                contract_types = [
-                    c.contract_type
+                contract_types: dict[str, ContractType] = {
+                    c.contract_type.name: c.contract_type
                     for c in dependency.compile(use_cache=use_cache, allow_install=True).values()
-                ]
+                }
             except Exception as err:
                 msg = f"Dependency '{dependency.name}' not installed. Reason: {err}"
                 cli_ctx.logger.error(msg)

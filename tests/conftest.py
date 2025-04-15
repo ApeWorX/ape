@@ -628,7 +628,10 @@ def shared_contracts_folder():
 
 
 @pytest.fixture
-def project_with_contracts(with_dependencies_project_path):
+def smaller_project(with_dependencies_project_path):
+    """
+    Useful to avoid compiling the massive main test contracts.
+    """
     return Project(with_dependencies_project_path)
 
 

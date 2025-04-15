@@ -589,20 +589,7 @@ class Dependency(BaseManager, ExtraAttributesMixin):
 
     @log_instead_of_fail(default="<Dependency>")
     def __repr__(self) -> str:
-        pkg_id = self.package_id
-
-        # Handle local dependencies better.
-        path = Path(pkg_id)
-        if path.exists():
-            pkg_id = clean_path(Path(pkg_id))
-
-        prefix = f"<Dependency package={pkg_id}"
-        if self._installation:
-            # Avoid including version ID if not installed, as it may be slow
-            # to calculate the version.
-            return f"{prefix} version={self.api.version}>"
-
-        return f"{prefix} (not installed)>"
+        return repr(self.api)
 
     def __hash__(self):
         return hash(f"{self.package_id}@{self.version}")
@@ -908,7 +895,7 @@ class Dependency(BaseManager, ExtraAttributesMixin):
                 message = f"{message} {suffix}."
 
         logger.warning(message)
-        return None
+        return {}
 
     def unpack(self, path: Path) -> Iterator["Dependency"]:
         """
