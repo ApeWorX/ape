@@ -266,6 +266,9 @@ class FoundryProject(ProjectAPI):
         if evm_version := data.get("evm_version"):
             sol_cfg["evm_version"] = evm_version
 
+        if via_ir := data.get("via_ir"):
+            sol_cfg["viaIR"] = via_ir
+
         foundry_remappings = [*data.get("remappings", []), *self._parse_remappings_file()]
         if remappings := self._parse_remappings(
             foundry_remappings, dependencies, lib_paths, contracts_folder=contracts_folder
