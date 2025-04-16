@@ -294,9 +294,26 @@ contract = Contract("0x...")
 assert contract.get_static_list() == [1, 2, 3]
 ```
 
+By default, Ape decodes returndata into Python types.
+Use `decode=False` to get the raw returndata bytes from a call instead:
+
+```python
+from ape import accounts, Contract
+from eth_pydantic_types import HexBytes
+
+account = accounts.load("<ALIAS>")
+contract = Contract("0x...")
+
+assert contract.get_static_list() == HexBytes(
+    "0x0000000000000000000000000000000000000000000000000000000000000001"
+    "0000000000000000000000000000000000000000000000000000000000000002"
+    "0000000000000000000000000000000000000000000000000000000000000003"
+)
+```
+
 ### Calling Transactions and Transacting Calls
 
-You can treat transactions as calls and vice-versa.
+You can treat transactions as calls and vice versa.
 
 For example, let's say we have a Solidity function:
 
