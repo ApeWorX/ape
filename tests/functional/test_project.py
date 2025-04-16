@@ -385,24 +385,24 @@ def test_update_manifest(empty_project):
     assert actual == [compiler]
 
 
-def test_load_contracts(smaller_project):
-    contracts = smaller_project.load_contracts()
-    assert smaller_project.manifest_path.is_file()
+def test_load_contracts(small_temp_project):
+    contracts = small_temp_project.load_contracts()
+    assert small_temp_project.manifest_path.is_file()
     assert len(contracts) > 0
-    contracts_forced = smaller_project.load_contracts(use_cache=False)
+    contracts_forced = small_temp_project.load_contracts(use_cache=False)
     assert len(contracts_forced) > 0
 
     # Delete a file and ensure it does not show up in dict.
     try:
-        contract_to_rm = smaller_project.contracts["Other"]
+        contract_to_rm = small_temp_project.contracts["Other"]
     except KeyError:
-        existing_contracts = ",".join([k for k in smaller_project.contracts.keys()])
+        existing_contracts = ",".join([k for k in small_temp_project.contracts.keys()])
         pytest.fail(f"Contract named 'Other' not found. Existing contracts: {existing_contracts}")
         return
 
-    contract_path = smaller_project.sources.lookup(contract_to_rm.source_id)
+    contract_path = small_temp_project.sources.lookup(contract_to_rm.source_id)
     contract_path.unlink()
-    contracts = smaller_project.load_contracts()
+    contracts = small_temp_project.load_contracts()
     assert contract_to_rm.name not in contracts
 
 

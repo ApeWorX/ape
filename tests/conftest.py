@@ -636,6 +636,12 @@ def smaller_project(with_dependencies_project_path):
 
 
 @pytest.fixture
+def small_temp_project(smaller_project):
+    with smaller_project.isolate_in_tempdir() as temp_project:
+        yield temp_project
+
+
+@pytest.fixture
 def temp_project(project):
     with project.isolate_in_tempdir() as temp_project:
         yield temp_project
