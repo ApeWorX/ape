@@ -18,7 +18,12 @@ from pydantic_core import Url
 
 from ape.api.projects import ApeProject, DependencyAPI, ProjectAPI
 from ape.contracts import ContractContainer, ContractInstance
-from ape.exceptions import APINotImplementedError, ChainError, CompilerError, ProjectError
+from ape.exceptions import (
+    APINotImplementedError,
+    ChainError,
+    CompilerError,
+    ProjectError,
+)
 from ape.logging import logger
 from ape.managers.base import BaseManager
 from ape.managers.config import ApeConfig
@@ -732,7 +737,10 @@ class Dependency(BaseManager, ExtraAttributesMixin):
             :class:`~ape.managers.project.ProjectManager`: The resulting project, ready
             for compiling.
         """
-        config_override = {**(self.api.config_override or {}), **(config_override or {})}
+        config_override = {
+            **(self.api.config_override or {}),
+            **(config_override or {}),
+        }
         project = None
         did_fetch = False
 
@@ -959,7 +967,11 @@ def _get_cache_suffix(package_id: str, version: str, suffix: str = "") -> Path:
 
 
 def _get_cache_path(
-    base_path: Path, package_id: str, version: str, is_dir: bool = False, suffix: str = ""
+    base_path: Path,
+    package_id: str,
+    version: str,
+    is_dir: bool = False,
+    suffix: str = "",
 ) -> Path:
     options = _version_to_options(version)
     original = None
@@ -1311,11 +1323,16 @@ class DependencyManager(BaseManager):
         for data in self.config.dependencies:
             yield self.decode_dependency(**data)
 
+    # TODO: We may want to discern between dependencies where their API files are known
+    #   versus dependencies where their projects are cached, as there is a difference.
     @property
     def installed(self) -> Iterator[Dependency]:
         """
         All installed dependencies, regardless of their project
-        affiliation.
+        affiliation. NOTE: By "installed" here, we simply
+        mean the API files are cached and known by Ape.
+        However, it does not guarantee the project is
+        installed.
         """
         if not self.packages_cache.api_folder.is_dir():
             return
@@ -1396,7 +1413,11 @@ class DependencyManager(BaseManager):
         return sorted(matching, key=lambda d: d.version_id)[-1] if matching else None
 
     def _get(
-        self, name: str, version: str, allow_install: bool = True, checked: Optional[set] = None
+        self,
+        name: str,
+        version: str,
+        allow_install: bool = True,
+        checked: Optional[set] = None,
     ) -> Optional[Dependency]:
         checked = checked or set()
 
@@ -1495,9 +1516,17 @@ class DependencyManager(BaseManager):
             versions_yielded.add(dependency.version)
 
     def _create_dependency(self, api: DependencyAPI) -> Dependency:
-        if api in self._cache:
+        try:
+            is_cached = self._cache.__contains__(api)
+        except ProjectError:
+            # Certain kinds of dependencies have no version ID
+            # when uninstalled, and it will cause the hash error.
+            is_cached = False
+
+        if is_cached:
             return self._cache[api]
 
+        # Create new instance.
         dependency = Dependency(api, project=self.project)
         self._cache[api] = dependency
         return dependency
@@ -1706,7 +1735,9 @@ class ProjectManager(ExtraAttributesMixin, BaseManager):
 
     @classmethod
     def from_manifest(
-        cls, manifest: Union[PackageManifest, Path, str], config_override: Optional[dict] = None
+        cls,
+        manifest: Union[PackageManifest, Path, str],
+        config_override: Optional[dict] = None,
     ) -> "Project":
         """
         Create an Ape project using only a manifest.
