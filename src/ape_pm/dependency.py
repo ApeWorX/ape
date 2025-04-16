@@ -493,8 +493,8 @@ class PythonDependency(DependencyAPI):
                 vers = f"{metadata.version(self.package_id)}"
             except metadata.PackageNotFoundError:
                 # Python dependency not installed; use latest from pypi.
-                if vers := self.version_from_package_data:
-                    return vers
+                if pkg_vers := self.version_from_package_data:
+                    return pkg_vers
 
                 # Force the user to specify the version, as it is not installed and not
                 # available on PyPI.
