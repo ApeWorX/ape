@@ -1093,6 +1093,9 @@ class TestContractManager:
 
 class TestDeploymentManager:
     def test_track(self, project, vyper_contract_instance):
+        # Doing this next line only in case was changes in some other test.
+        vyper_contract_instance.contract_type = project.VyperContract.contract_type
+
         project.deployments.track(vyper_contract_instance, allow_dev=True)
         deployment = next(iter(project.deployments), None)
         contract_type = vyper_contract_instance.contract_type
