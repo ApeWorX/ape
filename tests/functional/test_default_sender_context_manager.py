@@ -21,7 +21,7 @@ def test_default_sender_test_account(solidity_contract_instance, owner, accounts
 
 
 def test_default_sender_account(
-    solidity_contract_container,
+    project,
     networks_connected_to_tester,
     account_manager,
     keyfile_account,
@@ -30,7 +30,7 @@ def test_default_sender_account(
 
     with account_manager.use_sender(keyfile_account) as acct:
         acct.set_autosign(True, passphrase)
-        contract = keyfile_account.deploy(solidity_contract_container, 0)
+        contract = keyfile_account.deploy(project.SolidityContract, 0)
 
     with account_manager.use_sender(keyfile_account) as acct:
         acct.set_autosign(True, passphrase)

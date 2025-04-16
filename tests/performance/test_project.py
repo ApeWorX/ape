@@ -1,7 +1,7 @@
-def test_get_contract(benchmark, project_with_contracts):
-    _ = project_with_contracts.Other  # Ensure compiled first.
+def test_get_contract(benchmark, smaller_project):
+    _ = smaller_project.Other  # Ensure compiled first.
     benchmark.pedantic(
-        lambda *args, **kwargs: project_with_contracts.get_contract(*args, **kwargs),
+        lambda *args, **kwargs: smaller_project.get_contract(*args, **kwargs),
         args=(("Other",),),
         rounds=5,
         warmup_rounds=1,  # It's always slower the first time, a little bit.

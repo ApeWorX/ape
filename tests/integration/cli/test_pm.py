@@ -343,7 +343,7 @@ def test_list(pm_runner, integ_project):
     # NOTE: Not using f-str here so we can see the spacing.
     expected = """
 NAME                                VERSION  INSTALLED  COMPILED
-apedependencythatisnotinstalledape  <error>  False      False
+apedependencythatisnotinstalledape  1.2.3    False      False
 dependency-in-project-only          local    False      False
     """.strip()
     assert expected in result.output
@@ -354,7 +354,7 @@ dependency-in-project-only          local    False      False
 
     expected = """
 NAME                                VERSION  INSTALLED  COMPILED
-apedependencythatisnotinstalledape  <error>  False      False
+apedependencythatisnotinstalledape  1.2.3    False      False
 dependency-in-project-only          local    True       False
     """.strip()
     result = pm_runner.invoke("list")

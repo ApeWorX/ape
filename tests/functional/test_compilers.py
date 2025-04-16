@@ -13,8 +13,8 @@ from ape_compile.config import Config
 
 
 def test_get_imports(project, compilers):
-    # See ape-solidity for better tests
-    assert not compilers.get_imports(project.sources.paths)
+    actual = compilers.get_imports(project.sources.paths)
+    assert len(actual) > 0
 
 
 def test_get_compiler(compilers):
