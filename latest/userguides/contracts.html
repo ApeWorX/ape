@@ -427,10 +427,25 @@ Here is an example of making a call by checking the result of <code class="docut
 </span><span data-line="7"><span class="k">assert</span> <span class="n">contract</span><span class="o">.</span><span class="n">get_static_list</span><span class="p">()</span> <span class="o">==</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
 </span></pre></div>
 </div>
+<p>By default, Ape decodes returndata into Python types.
+Use <code class="docutils literal notranslate"><span class="pre">decode=False</span></code> to get the raw returndata bytes from a call instead:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">Contract</span>
+</span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">eth_pydantic_types</span><span class="w"> </span><span class="kn">import</span> <span class="n">HexBytes</span>
+</span><span data-line="3">
+</span><span data-line="4"><span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;&lt;ALIAS&gt;&quot;</span><span class="p">)</span>
+</span><span data-line="5"><span class="n">contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span><span class="s2">&quot;0x...&quot;</span><span class="p">)</span>
+</span><span data-line="6">
+</span><span data-line="7"><span class="k">assert</span> <span class="n">contract</span><span class="o">.</span><span class="n">get_static_list</span><span class="p">()</span> <span class="o">==</span> <span class="n">HexBytes</span><span class="p">(</span>
+</span><span data-line="8">    <span class="s2">&quot;0x0000000000000000000000000000000000000000000000000000000000000001&quot;</span>
+</span><span data-line="9">    <span class="s2">&quot;0000000000000000000000000000000000000000000000000000000000000002&quot;</span>
+</span><span data-line="10">    <span class="s2">&quot;0000000000000000000000000000000000000000000000000000000000000003&quot;</span>
+</span><span data-line="11"><span class="p">)</span>
+</span></pre></div>
+</div>
 </section>
 <section id="calling-transactions-and-transacting-calls">
 <h3>Calling Transactions and Transacting Calls<a class="headerlink" href="#calling-transactions-and-transacting-calls" title="Link to this heading"></a></h3>
-<p>You can treat transactions as calls and vice-versa.</p>
+<p>You can treat transactions as calls and vice versa.</p>
 <p>For example, let’s say we have a Solidity function:</p>
 <div class="highlight-solidity notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kt">function</span><span class="w"> </span><span class="nv">addBalance</span><span class="p">(</span><span class="kt">uint256</span><span class="w"> </span><span class="nv">new_bal</span><span class="p">)</span><span class="w"> </span><span class="kt">external</span><span class="w"> </span><span class="kt">returns</span><span class="p">(</span><span class="kt">uint256</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 </span><span data-line="2"><span class="w">    </span>balances<span class="p">[</span><span class="k">msg.sender</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>new_bal<span class="p">;</span>
