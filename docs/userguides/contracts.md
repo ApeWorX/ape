@@ -69,9 +69,9 @@ To learn more about contract interaction via transactions, see the [Contract Int
 
 ### Deploy Scripts
 
-Often time, the deployment process may be unique or complex.
+Oftentime, the deployment process may be unique or complex.
 Or possibly, you need to run the deploy-logic from CI or in a repeatable fashion.
-Or perhaps, you just want to avoid having to invoking Python directly.
+Or perhaps, you just want to avoid having to invoke Python directly.
 In those cases, you can use Ape's scripting system to save time and store your deployment logic.
 Simply copy your Python logic into an Ape script and run it via:
 
