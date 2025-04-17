@@ -65,6 +65,23 @@ def test_contract_interaction(eth_tester_provider, owner, vyper_contract_instanc
     assert estimate_gas_spy.call_count == 0
 
 
+def test_contract_call(vyper_contract_instance):
+    """
+    By default, calls returndata gets decoded into Python types.
+    """
+    result = vyper_contract_instance.myNumber()
+    assert isinstance(result, int)
+
+
+def test_contract_call_decode_false(vyper_contract_instance):
+    """
+    Use decode=False to get the raw bytes returndata of a function call.
+    """
+    result = vyper_contract_instance.myNumber(decode=False)
+    assert not isinstance(result, int)
+    assert isinstance(result, bytes)
+
+
 def test_eq(vyper_contract_instance, chain):
     other = chain.contracts.instance_at(vyper_contract_instance.address)
     assert other == vyper_contract_instance

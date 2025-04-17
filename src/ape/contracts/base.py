@@ -119,9 +119,15 @@ class ContractCall(ManagerAccessMixin):
         )
 
     def __call__(self, *args, **kwargs) -> Any:
+        decode_output = kwargs.pop("decode", True)
         txn = self.serialize_transaction(*args, **kwargs)
         txn.chain_id = self.provider.network.chain_id
         raw_output = self.provider.send_call(txn, **kwargs)
+
+        if not decode_output:
+            return raw_output
+
+        # Decode the output bytes into Python types.
         output = self.provider.network.ecosystem.decode_returndata(
             self.abi,
             raw_output,
