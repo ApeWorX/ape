@@ -59,6 +59,7 @@ out = 'out'
 libs = ['lib']
 solc = "0.8.18"
 evm_version = 'cancun'
+via_ir = true
 
 remappings = [
     'forge-std/=lib/forge-std/src/',
@@ -877,6 +878,7 @@ class TestFoundryProject:
             ]
             assert actual_sol["version"] == "0.8.18"
             assert actual_sol["evm_version"] == "cancun"
+            assert actual_sol["via_ir"] is True
 
             # Ensure dependencies migrated from .gitmodules.
             assert "dependencies" in actual, "Dependencies failed to migrate"
