@@ -292,6 +292,25 @@ def test_poll_logs(chain, vyper_contract_instance, eth_tester_provider, owner, P
     assert actual[2].block_number == actual[2].block.number == actual[1].block_number + 1
 
 
+def test_poll_logs_with_topics(chain, vyper_contract_instance, eth_tester_provider, owner, PollDaemon):
+    size = 1
+    logs: Queue = Queue(maxsize=size)
+    poller = vyper_contract_instance.NumberChange.poll_logs(start_block=0, topics={"newNum": 33})
+    start_block = chain.blocks.height
+
+    with PollDaemon("logs", poller, logs.put, logs.full):
+        # Sleep first to ensure listening before emitting logs.
+        time.sleep(1)
+
+        vyper_contract_instance.setNumber(1, sender=owner)  # block s+1
+        vyper_contract_instance.setNumber(33, sender=owner)  # block s+2
+        vyper_contract_instance.setNumber(7, sender=owner)  # block s+3
+
+    actual = [logs.get() for _ in range(size)]
+    assert all(a.newNum == e for a, e in zip(actual, (33,)))
+    assert actual[0].block_number == actual[0].block.number == start_block + 2
+
+
 def test_poll_logs_timeout(vyper_contract_instance, eth_tester_provider, owner, PollDaemon):
     new_block_timeout = 1
     poller = vyper_contract_instance.NumberChange.poll_logs(new_block_timeout=new_block_timeout)
