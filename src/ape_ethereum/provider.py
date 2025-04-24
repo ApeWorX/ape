@@ -1140,7 +1140,7 @@ class Web3Provider(ProviderAPI, ABC):
             if address is not None:
                 log_params["addresses"] = [address]
             if topics is not None:
-                log_params["topics"] = topics
+                log_params["topic_filter"] = topics
 
             log_filter = LogFilter(**log_params)
             yield from self.get_contract_logs(log_filter)
