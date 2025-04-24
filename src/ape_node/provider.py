@@ -76,17 +76,9 @@ def create_genesis_data(alloc: Alloc, chain_id: int) -> "GenesisDataTypedDict":
             "terminalTotalDifficulty": 0,
             "terminalTotalDifficultyPassed": True,
             "blobSchedule": {
-                "cancun": {
-                    "target": 3,
-                    "max": 6,
-                    "baseFeeUpdateFraction": 3338477
-                },
-                "prague": {
-                    "target": 6,
-                    "max": 9,
-                    "baseFeeUpdateFraction": 5007716
-                }
-            }
+                "cancun": {"target": 3, "max": 6, "baseFeeUpdateFraction": 3338477},
+                "prague": {"target": 6, "max": 9, "baseFeeUpdateFraction": 5007716},
+            },
         },
         "coinbase": ZERO_ADDRESS,
         "difficulty": "0x0",
