@@ -68,9 +68,11 @@ def test_parse_network_choice_evmchains(networks, connection_str):
 
 @geth_process_test
 def test_parse_network_choice_pid(geth_provider, networks):
+    pid = None
     if proc := geth_provider.process:
-        pid = proc.pid
-    else:
+        pid = proc.pid  # Still potentially None.
+
+    if pid is None:
         pid = next(networks.running_nodes.lookup_processes(geth_provider))
 
     # Show we are able to connect to providers via PID URL.
