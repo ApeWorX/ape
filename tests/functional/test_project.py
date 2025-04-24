@@ -540,10 +540,14 @@ def test_unpack(project_with_source_files_contract):
 
 
 def test_unpack_includes_build_file(project_with_contracts):
-    project_with_contracts.load_contracts()
+    build_path = project_with_contracts.path / ".build" / "__local__.json"
+    if not build_path.is_file():
+        build_path.parent.mkdir(parents=True)
+        build_path.write_text("{}", encoding="utf8")
+
     with create_tempdir() as path:
+        expected = path / ".build" / "__local__.json"
         project_with_contracts.unpack(path)
-        expected = project_with_contracts.path / ".build" / "__local__.json"
         assert expected.is_file()
 
 
