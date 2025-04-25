@@ -383,6 +383,10 @@ class Receipt(ReceiptAPI):
             return decoded_logs
 
     def _decode_ds_note(self, log: dict) -> Optional[ContractLog]:
+        if len(log["topics"]) == 0:
+            # anon event log
+            return None
+
         # The first topic encodes the function selector
         selector, tail = log["topics"][0][:4], log["topics"][0][4:]
         if sum(tail):
