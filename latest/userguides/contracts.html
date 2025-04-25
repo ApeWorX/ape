@@ -145,6 +145,7 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#private-transactions">Private Transactions</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#events">Events</a></li>
 <li><a class="reference internal" href="#decoding-and-encoding-inputs">Decoding and Encoding Inputs</a></li>
 <li><a class="reference internal" href="#contract-interface-introspection">Contract Interface Introspection</a></li>
 <li><a class="reference internal" href="#multi-call-and-multi-transaction">Multi-Call and Multi-Transaction</a></li>
@@ -505,6 +506,23 @@ For example, EVM providers likely will use the <code class="docutils literal not
 <p>The <code class="docutils literal notranslate"><span class="pre">private=True</span></code> is available on all contract interactions.</p>
 </section>
 </section>
+<section id="events">
+<h2>Events<a class="headerlink" href="#events" title="Link to this heading"></a></h2>
+<p>Smart Contracts on many blockchains support a feature called Events,
+which are user-defined hooks created in smart contract code that can trigger off-chain callbacks to clients configured to receive them.
+This feature can be extremely useful for purposes such as triggering real-time responses to smart contract transactons in client-side scripts.</p>
+<p>Ape provides many features for working with contract event logs.
+If your contract instance has an Event called <code class="docutils literal notranslate"><span class="pre">MyEvent</span></code> in it’s ABI, you can access these features by calling <code class="docutils literal notranslate"><span class="pre">contract_instance.MyEvent</span></code>.
+For example, if you want to create a script that listens to new event logs from your contract where the indexed argument <code class="docutils literal notranslate"><span class="pre">arg</span></code> is a specific value,
+you can do:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">for</span> <span class="n">log</span> <span class="ow">in</span> <span class="n">contract_instance</span><span class="o">.</span><span class="n">MyEvent</span><span class="o">.</span><span class="n">poll_logs</span><span class="p">(</span><span class="n">argname</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+</span><span data-line="2">    <span class="k">assert</span> <span class="n">log</span><span class="o">.</span><span class="n">argname</span> <span class="o">==</span> <span class="mi">1</span>  <span class="c1"># NOTE: we only filter on logs where `log.argname=1`</span>
+</span><span data-line="3">    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;New log received:&quot;</span><span class="p">,</span> <span class="n">log</span><span class="p">)</span>
+</span></pre></div>
+</div>
+<p>Ape also provides features for collecting historical event logs through it’s data system.
+To learn more about Ape’s data query capabilities with events, visit <a class="reference external" href="./data#getting-contract-event-data">Querying Data</a>.</p>
+</section>
 <section id="decoding-and-encoding-inputs">
 <h2>Decoding and Encoding Inputs<a class="headerlink" href="#decoding-and-encoding-inputs" title="Link to this heading"></a></h2>
 <p>If you want to separately decode and encode inputs without sending a transaction or making a call, you can achieve this with Ape.
@@ -584,7 +602,7 @@ Multicall allows you to group function calls and transactions into a single call
 </span><span data-line="10">    <span class="k">for</span> <span class="n">pool</span> <span class="ow">in</span> <span class="n">POOLS</span><span class="p">:</span>
 </span><span data-line="11">        <span class="c1"># By default allowFailure=True, so the multicall continues even if one call fails</span>
 </span><span data-line="12">        <span class="n">call</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">pool</span><span class="o">.</span><span class="n">getReserves</span><span class="p">)</span>
-</span><span data-line="13">        
+</span><span data-line="13">
 </span><span data-line="14">        <span class="c1"># To require a call to succeed (revert entire multicall if this call fails)</span>
 </span><span data-line="15">        <span class="n">call</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">pool</span><span class="o">.</span><span class="n">anotherMethod</span><span class="p">,</span> <span class="n">allowFailure</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </span><span data-line="16">
@@ -595,7 +613,7 @@ Multicall allows you to group function calls and transactions into a single call
 </span><span data-line="21">    <span class="k">for</span> <span class="n">pool</span> <span class="ow">in</span> <span class="n">POOLS</span><span class="p">:</span>
 </span><span data-line="22">        <span class="c1"># Same allowFailure option for transactions</span>
 </span><span data-line="23">        <span class="n">tx</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">pool</span><span class="o">.</span><span class="n">ApplyDiscount</span><span class="p">,</span> <span class="mi">123</span><span class="p">,</span> <span class="n">allowFailure</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span><span data-line="24">        
+</span><span data-line="24">
 </span><span data-line="25">        <span class="c1"># For payable functions, you can also specify value</span>
 </span><span data-line="26">        <span class="n">tx</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">pool</span><span class="o">.</span><span class="n">deposit</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
 </span><span data-line="27">
