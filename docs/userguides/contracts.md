@@ -385,6 +385,26 @@ receipt = contract.set_number(sender=dev, private=True)
 
 The `private=True` is available on all contract interactions.
 
+## Events
+
+Smart Contracts on many blockchains support a feature called Events,
+which are user-defined hooks created in smart contract code that can trigger off-chain callbacks to clients configured to receive them.
+This feature can be extremely useful for purposes such as triggering real-time responses to smart contract transactons in client-side scripts.
+
+Ape provides many features for working with contract event logs.
+If your contract instance has an Event called `MyEvent` in it's ABI, you can access these features by calling `contract_instance.MyEvent`.
+For example, if you want to create a script that listens to new event logs from your contract where the indexed argument `arg` is a specific value,
+you can do:
+
+```python
+for log in contract_instance.MyEvent.poll_logs(argname=1):
+    assert log.argname == 1  # NOTE: we only filter on logs where `log.argname=1`
+    print("New log received:", log)
+```
+
+Ape also provides features for collecting historical event logs through it's data system.
+To learn more about Ape's data query capabilities with events, visit [Querying Data](./data#getting-contract-event-data).
+
 ## Decoding and Encoding Inputs
 
 If you want to separately decode and encode inputs without sending a transaction or making a call, you can achieve this with Ape.
@@ -475,7 +495,7 @@ def main():
     for pool in POOLS:
         # By default allowFailure=True, so the multicall continues even if one call fails
         call.add(pool.getReserves)
-        
+
         # To require a call to succeed (revert entire multicall if this call fails)
         call.add(pool.anotherMethod, allowFailure=False)
 
@@ -486,7 +506,7 @@ def main():
     for pool in POOLS:
         # Same allowFailure option for transactions
         tx.add(pool.ApplyDiscount, 123, allowFailure=True)
-        
+
         # For payable functions, you can also specify value
         tx.add(pool.deposit, value=1000)
 
