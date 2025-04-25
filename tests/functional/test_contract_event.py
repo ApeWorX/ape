@@ -303,7 +303,7 @@ def test_poll_logs_with_topics(
 ):
     size = 1
     logs: Queue = Queue(maxsize=size)
-    poller = vyper_contract_instance.NumberChange.poll_logs(start_block=0, topics={"newNum": 33})
+    poller = vyper_contract_instance.NumberChange.poll_logs(start_block=0, newNum=33)
     start_block = chain.blocks.height
 
     with PollDaemon("logs", poller, logs.put, logs.full):

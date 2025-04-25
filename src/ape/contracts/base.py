@@ -31,7 +31,7 @@ from ape.exceptions import (
 )
 from ape.logging import get_rich_console, logger
 from ape.types.events import ContractLog, LogFilter, MockContractLog
-from ape.utils.abi import StructParser, _enrich_natspec
+from ape.utils.abi import StructParser, _enrich_natspec, encode_topics
 from ape.utils.basemodel import (
     BaseInterfaceModel,
     ExtraAttributesMixin,
@@ -811,15 +811,18 @@ class ContractEvent(BaseInterfaceModel):
         stop_block: Optional[int] = None,
         required_confirmations: Optional[int] = None,
         new_block_timeout: Optional[int] = None,
+        search_topics: Optional[dict[str, Any]] = None,
+        **search_topic_kwargs: dict[str, Any],
     ) -> Iterator[ContractLog]:
         """
-        Poll new blocks. Optionally set a start block to include historical blocks.
+        Poll new logs for this event. Can specify topic filters to use when setting up the filter.
+        Optionally set a start block to include historical blocks.
 
         **NOTE**: This is a daemon method; it does not terminate unless an exception occurs.
 
         Usage example::
 
-            for new_log in contract.MyEvent.poll_logs():
+            for new_log in contract.MyEvent.poll_logs(arg=1):
                 print(f"New event log found: block_number={new_log.block_number}")
 
         Args:
@@ -833,6 +836,10 @@ class ContractEvent(BaseInterfaceModel):
             new_block_timeout (Optional[int]): The amount of time to wait for a new block before
               quitting. Defaults to 10 seconds for local networks or ``50 * block_time`` for live
               networks.
+            search_topics (Optional[dict[str, Any]]): A dictionary of search topics to use when
+              constructing a polling filter. Overrides the value of `**search_topics_kwargs`.
+            search_topics_kwargs: Search topics to use when constructing a polling filter. Allows
+              easily specifying topic filters using kwarg syntax but can be used w/ `search_topics`
 
         Returns:
             Iterator[:class:`~ape.types.ContractLog`]
@@ -847,6 +854,11 @@ class ContractEvent(BaseInterfaceModel):
             yield from self.range(start_block, height)
             start_block = height + 1
 
+        if search_topics:
+            search_topic_kwargs.update(search_topics)
+
+        topics = encode_topics(self.abi, search_topic_kwargs)
+
         if address := getattr(self.contract, "address", None):
             # NOTE: Now we process the rest
             yield from self.provider.poll_logs(
@@ -855,6 +867,7 @@ class ContractEvent(BaseInterfaceModel):
                 required_confirmations=required_confirmations,
                 new_block_timeout=new_block_timeout,
                 events=[self.abi],
+                topics=topics,
             )
 
 
