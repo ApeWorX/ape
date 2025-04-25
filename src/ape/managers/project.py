@@ -2553,6 +2553,7 @@ class LocalProject(Project):
         # Unpack build folder (to avoid needless re-compiling).
         if self.manifest_path.parent.is_dir() and self.manifest_path.parent.name == ".build":
             build_destination = destination / ".build"
+            build_destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copytree(self.manifest_path.parent, build_destination, dirs_exist_ok=True)
 
         return LocalProject(destination, config_override=config_override)

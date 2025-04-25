@@ -275,8 +275,6 @@ def test_getattr_ipython(tmp_project, iypthon_attr_name):
 
 
 def test_getattr_ipython_canary_check(tmp_project):
-    # Remove contract types, if there for some reason is any.
-    tmp_project.manifest.contract_types = {}
     with pytest.raises(AttributeError):
         tmp_project._ipython_canary_method_should_not_exist_
 
@@ -540,10 +538,14 @@ def test_unpack(project_with_source_files_contract):
 
 
 def test_unpack_includes_build_file(project_with_contracts):
-    project_with_contracts.load_contracts()
+    build_path = project_with_contracts.path / ".build" / "__local__.json"
+    if not build_path.is_file():
+        build_path.parent.mkdir(parents=True)
+        build_path.write_text("{}", encoding="utf8")
+
     with create_tempdir() as path:
+        expected = path / ".build" / "__local__.json"
         project_with_contracts.unpack(path)
-        expected = project_with_contracts.path / ".build" / "__local__.json"
         assert expected.is_file()
 
 
