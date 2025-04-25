@@ -138,7 +138,13 @@ def test_range(chain, contract_instance, owner, assert_log_values):
 
 
 def test_range_by_address(
-    mocker, chain, eth_tester_provider, accounts, contract_instance, owner, assert_log_values
+    mocker,
+    chain,
+    eth_tester_provider,
+    accounts,
+    contract_instance,
+    owner,
+    assert_log_values,
 ):
     get_logs_spy = mocker.spy(eth_tester_provider.tester.ethereum_tester, "get_logs")
     contract_instance.setAddress(accounts[1], sender=owner)
@@ -292,7 +298,9 @@ def test_poll_logs(chain, vyper_contract_instance, eth_tester_provider, owner, P
     assert actual[2].block_number == actual[2].block.number == actual[1].block_number + 1
 
 
-def test_poll_logs_with_topics(chain, vyper_contract_instance, eth_tester_provider, owner, PollDaemon):
+def test_poll_logs_with_topics(
+    chain, vyper_contract_instance, eth_tester_provider, owner, PollDaemon
+):
     size = 1
     logs: Queue = Queue(maxsize=size)
     poller = vyper_contract_instance.NumberChange.poll_logs(start_block=0, topics={"newNum": 33})

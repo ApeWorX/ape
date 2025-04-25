@@ -615,7 +615,10 @@ class ContractEvent(BaseInterfaceModel):
             else:
                 converted_args[key] = self.conversion_manager.convert(value, py_type)
 
-        properties: dict = {"event_arguments": converted_args, "event_name": self.abi.name}
+        properties: dict = {
+            "event_arguments": converted_args,
+            "event_name": self.abi.name,
+        }
         if hasattr(self.contract, "address"):
             # Only address if this is off an instance.
             properties["contract_address"] = self.contract.address
@@ -666,7 +669,7 @@ class ContractEvent(BaseInterfaceModel):
                 f"'stop={stop_block}' cannot be greater than the chain length ({HEAD})."
             )
         query: dict = {
-            "columns": list(ContractLog.__pydantic_fields__) if columns[0] == "*" else columns,
+            "columns": (list(ContractLog.__pydantic_fields__) if columns[0] == "*" else columns),
             "event": self.abi,
             "start_block": start_block,
             "stop_block": stop_block,
