@@ -283,7 +283,7 @@ def _get_problem_with_config(errors: list, path: Path) -> Optional[str]:
 
 class DisplayConfig(PluginConfig):
     """
-    Configure dispaly settings in Ape.
+    Configure display settings in Ape.
     """
 
     calldata: CalldataRepr = CalldataRepr.abridged
@@ -333,7 +333,7 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
 
     display: DisplayConfig = DisplayConfig()
     """
-    Configure dispaly settings in Ape.
+    Configure display settings in Ape.
     """
 
     interfaces_folder: str = "interfaces"

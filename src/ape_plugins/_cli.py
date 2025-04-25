@@ -263,14 +263,14 @@ def update():
     _change_version(ape_version.next_version_range)
 
 
-def _version_callack(ctx, param, value):
+def _version_callback(ctx, param, value):
     obj = Version(value)
     version_str = f"0.{obj.minor}.0" if obj.major == 0 else f"{obj.major}.0.0"
     return f"=={version_str}"
 
 
 @cli.command()
-@click.argument("version", callback=_version_callack)
+@click.argument("version", callback=_version_callback)
 def change_version(version):
     """
     Change ape and all plugins version
