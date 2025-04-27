@@ -197,6 +197,42 @@ def test_tests_folder_configuration(project):
     assert "1 passed" in result.output
 
 
+def test_tests_folder_with_pytest_args(project):
+    """
+    Test that the tests_folder configuration works with pytest arguments
+    (compatibility with #2513).
+    """
+    # Create test directories
+    tests_dir = project.path / "tests"
+    tests_dir.mkdir()
+    test_file = tests_dir / "test_sample.py"
+    test_file.write_text("""
+def test_pass(): assert True
+def test_fail(): assert False
+""")
+
+    # Test with -k argument
+    result = project.run("test", "-k", "test_pass")
+    assert result.exit_code == 0
+    assert "1 passed" in result.output
+
+    # Test with -v argument
+    result = project.run("test", "-v")
+    assert result.exit_code == 1  # One test fails
+    assert "2 tests" in result.output
+
+    # Test with custom tests folder and pytest args
+    custom_tests_dir = project.path / "custom_tests"
+    custom_tests_dir.mkdir()
+    test_file = custom_tests_dir / "test_custom.py"
+    test_file.write_text("def test_custom(): assert True")
+
+    with project.temp_config(tests_folder="custom_tests"):
+        result = project.run("test", "-v")
+        assert result.exit_code == 0
+        assert "1 passed" in result.output
+
+
 class TestFixtureManager:
     @pytest.fixture
     def fixture_manager(self, mocker):

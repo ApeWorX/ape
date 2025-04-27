@@ -382,23 +382,33 @@ node:
 
 To learn more about how request headers work in Ape, see [this section of the Networking guide](./networks.html#request-headers).
 
-## Testing
+## Test Configuration
 
-Configure your test accounts and test folder:
+You can configure test-related settings in the `ape-config.yaml` file under the `test` section.
+
+### Test Accounts
+
+Configure your test accounts using the following options:
 
 ```yaml
 test:
   mnemonic: test test test test test test test test test test test junk
   number_of_accounts: 5
-
-# Optional: Configure the tests folder location
-tests_folder: tests
 ```
 
-The `tests_folder` setting allows you to specify the location of your test files. If not set, Ape will:
-1. Use the configured `tests_folder` if specified
-2. Use the `tests/` directory if it exists
-3. Fall back to pytest's default behavior
+- `mnemonic`: The mnemonic phrase for generating test accounts.
+- `number_of_accounts`: The number of test accounts to generate (default: 5).
+
+### Tests Folder
+
+Specify the folder where your test files are located using the `tests_folder` key. By default, Ape uses the `tests/` folder if it exists.
+
+```yaml
+test:
+  tests_folder: tests
+```
+
+If the specified folder does not exist, Ape will raise an error. Ensure the folder exists in your project directory.
 
 ## Plugin Settings
 

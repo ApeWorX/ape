@@ -119,7 +119,10 @@ def cli(cli_ctx, watch, watch_folders, watch_delay, pytest_args):
         # If tests/ exists but not configured, use it
         pytest_arg_ls.insert(0, "tests")
 
+    # Validate and process pytest arguments
     pytest_arg_ls = _validate_pytest_args(*pytest_arg_ls)
+    
+    # Run tests with watch mode if enabled
     if watch:
         _run_with_observer(watch_folders, watch_delay, *pytest_arg_ls)
     else:
