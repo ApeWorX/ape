@@ -384,13 +384,21 @@ To learn more about how request headers work in Ape, see [this section of the Ne
 
 ## Testing
 
-Configure your test accounts:
+Configure your test accounts and test folder:
 
 ```yaml
 test:
   mnemonic: test test test test test test test test test test test junk
   number_of_accounts: 5
+
+# Optional: Configure the tests folder location
+tests_folder: tests
 ```
+
+The `tests_folder` setting allows you to specify the location of your test files. If not set, Ape will:
+1. Use the configured `tests_folder` if specified
+2. Use the `tests/` directory if it exists
+3. Fall back to pytest's default behavior
 
 ## Plugin Settings
 

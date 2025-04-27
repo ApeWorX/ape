@@ -313,6 +313,13 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
     contracts.
     """
 
+    tests_folder: Optional[str] = None
+    """
+    The path to the folder containing the test files.
+    **NOTE**: Non-absolute paths are relative to the project-root.
+    If not set, defaults to "tests" if it exists, otherwise uses pytest's default behavior.
+    """
+
     default_ecosystem: str = "ethereum"
     """
     The default ecosystem to use in Ape.

@@ -108,10 +108,20 @@ def cli(cli_ctx, watch, watch_folders, watch_delay, pytest_args):
     if pytest_verbosity := cli_ctx.get("pytest_verbosity"):
         pytest_arg_ls.append(pytest_verbosity)
 
+    # Get the project's test folder configuration
+    project = cli_ctx.project_manager.local_project
+    if project.config.tests_folder:
+        # If tests_folder is configured, use it
+        test_path = project.path / project.config.tests_folder
+        if test_path.is_dir():
+            pytest_arg_ls.insert(0, str(test_path))
+    elif (project.path / "tests").is_dir():
+        # If tests/ exists but not configured, use it
+        pytest_arg_ls.insert(0, "tests")
+
     pytest_arg_ls = _validate_pytest_args(*pytest_arg_ls)
     if watch:
         _run_with_observer(watch_folders, watch_delay, *pytest_arg_ls)
-
     else:
         return_code = pytest.main([*pytest_arg_ls], ["ape_test"])
         if return_code:

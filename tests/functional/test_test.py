@@ -168,6 +168,35 @@ def test_connect_to_mainnet_by_default(mocker):
         runner._connect()
 
 
+def test_tests_folder_configuration(project):
+    """
+    Test that the tests_folder configuration is properly handled.
+    """
+    # Create a custom tests directory
+    custom_tests_dir = project.path / "custom_tests"
+    custom_tests_dir.mkdir()
+    test_file = custom_tests_dir / "test_custom.py"
+    test_file.write_text("def test_custom(): assert True")
+
+    # Configure the custom tests directory
+    with project.temp_config(tests_folder="custom_tests"):
+        # Run the test command
+        result = project.run("test")
+        assert result.exit_code == 0
+        assert "1 passed" in result.output
+
+    # Test with default tests directory
+    tests_dir = project.path / "tests"
+    tests_dir.mkdir()
+    test_file = tests_dir / "test_default.py"
+    test_file.write_text("def test_default(): assert True")
+
+    # Run without configuration
+    result = project.run("test")
+    assert result.exit_code == 0
+    assert "1 passed" in result.output
+
+
 class TestFixtureManager:
     @pytest.fixture
     def fixture_manager(self, mocker):
