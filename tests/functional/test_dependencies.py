@@ -640,6 +640,16 @@ class TestGitHubDependency:
             dependency.fetch(path)
             assert not readonly_file.is_file()
 
+    def test_ssh(self, mock_client):
+        dependency = GithubDependency(
+            github="ApeWorX/ApeNotAThing", ref="3.0.0", name="apetestdep", scheme="ssh"
+        )
+        dependency._github_client = mock_client
+        with create_tempdir() as path:
+            dependency.fetch(path)
+
+        assert mock_client.clone_repo.call_args[-1]["scheme"] == "ssh"
+
 
 class TestPythonDependency:
     @pytest.fixture(scope="class", params=("site_package", "python", "pypi"))

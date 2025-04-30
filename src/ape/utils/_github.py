@@ -173,7 +173,7 @@ class _GithubClient:
         repo_name: str,
         target_path: Union[str, Path],
         branch: Optional[str] = None,
-        scheme: str = "http",
+        scheme: str = "https",
     ):
         repo = self.get_repo(org_name, repo_name)
         branch = branch or repo["default_branch"]

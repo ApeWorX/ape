@@ -138,6 +138,11 @@ class GithubDependency(DependencyAPI):
     **NOTE**: Will be ignored if given a 'ref'.
     """
 
+    scheme: str = "https"
+    """
+    Either HTTPS or SSH; only used with `ref:`.
+    """
+
     # Exists as property so can be changed for testing.
     _github_client: _GithubClient = github_client
 
@@ -242,7 +247,11 @@ class GithubDependency(DependencyAPI):
             attempt += 1
             try:
                 self._github_client.clone_repo(
-                    self.org_name, self.repo_name, destination, branch=ref
+                    self.org_name,
+                    self.repo_name,
+                    destination,
+                    branch=ref,
+                    scheme=self.scheme,
                 )
             except Exception:
                 if attempt == num_attempts:
