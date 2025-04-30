@@ -331,6 +331,9 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
     Data for deployed contracts from the project.
     """
 
+    deterministic_deployments: list[DeploymentConfig] = Field(default_factory=list)
+    # NOTE: Unprocessed deployments to merge in later
+
     display: DisplayConfig = DisplayConfig()
     """
     Configure display settings in Ape.
@@ -415,6 +418,12 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
         if "contracts_folder" in fixed_model and isinstance(fixed_model["contracts_folder"], Path):
             fixed_model["contracts_folder"] = str(fixed_model["contracts_folder"])
 
+        # NOTE: Parse these separately
+        if "deployments" in fixed_model and (
+            deterministic_deployments := (fixed_model["deployments"].pop("deterministic", []))
+        ):
+            fixed_model["deterministic_deployments"] = deterministic_deployments
+
         return fixed_model
 
     @cached_property
@@ -425,10 +434,28 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
                 raise ConfigError(f"Invalid ecosystem '{ecosystem_name}' in deployments config.")
 
             ecosystem = self.network_manager.ecosystems[ecosystem_name]
-            for network_name, network_deploys in ecosystem_deploys.items():
+            for network_name in ecosystem_deploys:
                 if network_name not in ecosystem.networks:
                     raise ConfigError(
                         f"Invalid network '{ecosystem_name}:{network_name}' in deployments config."
+                    )
+
+        # NOTE: Merge deterministic deployments after we initializing `NetworkManager.ecosystems`
+        for ecosystem_name, ecosystem in self.network_manager.ecosystems.items():
+            if ecosystem_name not in self.deployment_data:
+                self.deployment_data[ecosystem_name] = dict()
+
+            for network_name in ecosystem.networks:
+                if network_name == "local" or network_name.endswith("-fork"):
+                    continue
+
+                elif network_name not in self.deployment_data[ecosystem_name]:
+                    self.deployment_data[ecosystem_name][network_name] = (
+                        self.deterministic_deployments
+                    )
+                else:
+                    self.deployment_data[ecosystem_name][network_name].extend(
+                        self.deterministic_deployments
                     )
 
         return self.deployment_data
