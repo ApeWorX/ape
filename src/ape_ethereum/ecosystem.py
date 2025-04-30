@@ -447,7 +447,7 @@ class Ethereum(EcosystemAPI):
         bytes_obj = contract_type.deployment_bytecode
         contract_bytes = (bytes_obj.to_bytes() or b"") if bytes_obj else b""
         header = kwargs.pop("header", BLUEPRINT_HEADER)
-        blueprint_bytecode = header + HexBytes(0) + contract_bytes
+        blueprint_bytecode = header + b"\x00" + contract_bytes
         len_bytes = len(blueprint_bytecode).to_bytes(2, "big")
         return_data_size = kwargs.pop("return_data_size", HexBytes("0x61"))
         return_instructions = kwargs.pop("return_instructions", HexBytes("0x3d81600a3d39f3"))

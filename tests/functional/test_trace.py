@@ -155,6 +155,7 @@ VyperContract\.getNestedAddressArray\(\) -> \[
 
 
 def test_transaction_trace_list_of_lists(vyper_contract_instance, owner):
+    vyper_contract_instance.loadArrays(sender=owner)
     tx = vyper_contract_instance.getNestedArrayMixedDynamic.transact(sender=owner)
     actual = f"{tx.trace}"
     expected = r"""

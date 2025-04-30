@@ -9,8 +9,8 @@ def test_append_gas(gas_tracker, geth_account, geth_contract):
     report = gas_tracker.session_gas_report
     contract_name = geth_contract.contract_type.name
     assert contract_name in report
-    assert "setNumber" in report[contract_name]
-    assert tx.gas_used in report[contract_name]["setNumber"]
+    assert "setNumber(uint256)" in report[contract_name]
+    assert tx.gas_used in report[contract_name]["setNumber(uint256)"]
 
 
 @geth_process_test

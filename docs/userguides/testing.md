@@ -449,7 +449,7 @@ assert x != 0  # dev: invalid value
 Take for example:
 
 ```python
-# @version 0.3.7
+# @version 0.4.0
 
 @external
 def check_value(_value: uint256) -> bool:
@@ -512,12 +512,12 @@ Similarly, if you require dev assertions for non-reentrant functions you must be
 
 ```python
 @internal
-@nonreentrant('lock')
+@nonreentrant
 def _foo_internal():  # dev: correct location
     pass
 
 @external
-@nonreentrant('lock')
+@nonreentrant
 def foo():
     self._foo_internal()  # dev: incorrect location
 ```

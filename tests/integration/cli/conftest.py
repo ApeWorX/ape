@@ -146,14 +146,14 @@ def assert_failure(result, expected_output):
 
 
 @pytest.fixture
-def clean_cache(project):
+def clean_cache(integ_project):
     """
     Use this fixture to ensure a project
     does not have a cached compilation.
     """
-    project.clean()
+    integ_project.clean()
     yield
-    project.clean()
+    integ_project.clean()
 
 
 @pytest.fixture(scope="session")

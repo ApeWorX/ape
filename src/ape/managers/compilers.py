@@ -155,7 +155,7 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
 
                     yield contract
 
-            except CompilerError as err:
+            except Exception as err:
                 # One of the compilers failed. Show the error but carry on.
                 logger.log_debug_stack_trace()
                 errors.append(err)

@@ -170,7 +170,6 @@ class BaseAddress(BaseInterface):
         """
         The number of bytes in the smart contract.
         """
-
         return len(self.code)
 
     @property
@@ -178,7 +177,6 @@ class BaseAddress(BaseInterface):
         """
         ``True`` when there is code associated with the address.
         """
-
         return len(HexBytes(self.code)) > 0
 
     @cached_property

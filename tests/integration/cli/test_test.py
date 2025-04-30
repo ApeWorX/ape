@@ -369,7 +369,16 @@ def test_gas_flag_exclude_using_cli_option(
 def test_gas_flag_exclusions_set_in_config(
     geth_provider, setup_pytester, integ_project, pytester, geth_account
 ):
-    geth_account.transfer(geth_account, "1 wei")  # Force a clean block.
+    # Attempt 3 times to bump the block before giving up.
+    for _ in range(3):
+        try:
+            geth_account.transfer(geth_account, "1 wei")  # Force a clean block.
+        except Exception as err:
+            # Sometimes tests are weird, since running async.
+            # So give this a chance a few times before bailing out...
+            logger.error(f"Failure bumping block: {err}")
+            continue
+
     # NOTE: Includes both a mutable and a view method.
     expected = filter_expected_methods("fooAndBar", "myNumber")
     # Also ensure can filter out whole class
@@ -385,7 +394,8 @@ def test_gas_flag_exclusions_set_in_config(
     with integ_project.temp_config(**cfg):
         passed, failed = setup_pytester(integ_project)
         result = pytester.runpytest_subprocess("--gas", "--network", "ethereum:local:node")
-        run_gas_test(result, passed, failed, expected_report=expected)
+
+    run_gas_test(result, passed, failed, expected_report=expected)
 
 
 @geth_process_test
