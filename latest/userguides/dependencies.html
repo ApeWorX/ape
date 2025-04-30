@@ -231,6 +231,14 @@ Oftentimes, the <code class="docutils literal notranslate"><span class="pre">v</
 However, if cloning the tag fails, <code class="docutils literal notranslate"><span class="pre">ape</span></code> will retry with a <code class="docutils literal notranslate"><span class="pre">v</span></code> prefix.
 Bypass the original failing attempt by including a <code class="docutils literal notranslate"><span class="pre">v</span></code> in your dependency config.</p>
 <p><strong>By knowing if the release is from the version API or only available via tag, and whether the version is v-prefixed or not, you save Ape some time and complexity when installing dependencies.</strong></p>
+<p>When using ref, you can also specify the scheme for the <code class="docutils literal notranslate"><span class="pre">git</span></code> tool to use when cloning, such as <code class="docutils literal notranslate"><span class="pre">https</span></code> (default) or <code class="docutils literal notranslate"><span class="pre">ssh</span></code>.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">dependencies</span><span class="p">:</span>
+</span><span data-line="2"><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Uniswap</span>
+</span><span data-line="3"><span class="w">    </span><span class="nt">github</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Uniswap/v3-core</span>
+</span><span data-line="4"><span class="w">    </span><span class="nt">ref</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1.0.0</span>
+</span><span data-line="5"><span class="w">    </span><span class="nt">scheme</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ssh</span>
+</span></pre></div>
+</div>
 </section>
 <section id="pypi">
 <h3>PyPI<a class="headerlink" href="#pypi" title="Link to this heading"></a></h3>

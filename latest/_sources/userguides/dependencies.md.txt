@@ -59,6 +59,16 @@ Bypass the original failing attempt by including a `v` in your dependency config
 
 **By knowing if the release is from the version API or only available via tag, and whether the version is v-prefixed or not, you save Ape some time and complexity when installing dependencies.**
 
+When using ref, you can also specify the scheme for the `git` tool to use when cloning, such as `https` (default) or `ssh`.
+
+```yaml
+dependencies:
+  - name: Uniswap
+    github: Uniswap/v3-core
+    ref: v1.0.0
+    scheme: ssh
+```
+
 ### PyPI
 
 You can use dependencies from [PyPI](https://pypi.org/) by using the `pypi:` key.

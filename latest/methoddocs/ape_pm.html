@@ -141,6 +141,7 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#ape_pm.dependency.GithubDependency.github"><code class="docutils literal notranslate">github</span></code></a></li>
 <li><a class="reference internal" href="#ape_pm.dependency.GithubDependency.package_id"><code class="docutils literal notranslate">package_id</span></code></a></li>
 <li><a class="reference internal" href="#ape_pm.dependency.GithubDependency.ref"><code class="docutils literal notranslate">ref</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.GithubDependency.scheme"><code class="docutils literal notranslate">scheme</span></code></a></li>
 <li><a class="reference internal" href="#ape_pm.dependency.GithubDependency.uri"><code class="docutils literal notranslate">uri</span></code></a></li>
 <li><a class="reference internal" href="#ape_pm.dependency.GithubDependency.version"><code class="docutils literal notranslate">version</span></code></a></li>
 <li><a class="reference internal" href="#ape_pm.dependency.GithubDependency.version_id"><code class="docutils literal notranslate">version_id</span></code></a></li>
@@ -313,7 +314,7 @@ to enrich.</p>
 
 <dl class="py class" id="module-ape_pm.dependency">
 <dt class="sig sig-object py" id="ape_pm.dependency.GithubDependency">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape_pm.dependency.</span></span><span class="sig-name descname"><span class="pre">GithubDependency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name:</span> <span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_override:</span> <span class="pre">dict</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">github:</span> <span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_pm.dependency.GithubDependency" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape_pm.dependency.</span></span><span class="sig-name descname"><span class="pre">GithubDependency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name:</span> <span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_override:</span> <span class="pre">dict</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">github:</span> <span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheme:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'https'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_pm.dependency.GithubDependency" title="Link to this definition"></a></dt>
 <dd><p>A dependency from Github. Use the <code class="docutils literal notranslate"><span class="pre">github</span></code> key in your <code class="docutils literal notranslate"><span class="pre">dependencies:</span></code>
 section of your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file to declare a dependency from GitHub.</p>
 <p>Config example:</p>
@@ -358,6 +359,17 @@ instead of the ‘release’ field, the repository
 gets cloned instead of downloaded via the
 official GitHub release API.</p>
 <p><strong>NOTE</strong>: Will be ignored if given a ‘release’.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape_pm.dependency.GithubDependency.scheme">
+<span class="sig-name descname"><span class="pre">scheme</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_pm.dependency.GithubDependency.scheme" title="Link to this definition"></a></dt>
+<dd><p><a href="#id1"><span class="problematic" id="id2">`</span></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Either HTTPS or SSH; only used with <a href="#id3"><span class="problematic" id="id4">`</span></a>ref</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py property">
