@@ -585,7 +585,7 @@ class TestGitHubDependency:
         mock_client.download_package.side_effect = ValueError("nope")
 
         # Simulate only the non-v prefix ref working (for a fuller flow)
-        def needs_non_v_prefix_ref(n0, n1, dst_path, branch):
+        def needs_non_v_prefix_ref(n0, n1, dst_path, branch, scheme):
             # NOTE: This assertion is very important!
             #  We must only give it non-existing directories.
             assert not dst_path.is_dir()
@@ -602,10 +602,10 @@ class TestGitHubDependency:
         assert mock_client.clone_repo.call_count == 2
         # Show it first tried with the v
         assert calls[0][0] == ("ApeWorX", "ApeNotAThing", path)
-        assert calls[0][1] == {"branch": "v3.0.0"}
+        assert calls[0][1] == {"branch": "v3.0.0", "scheme": "https"}
         # The second call does not have the v!
         assert calls[1][0] == ("ApeWorX", "ApeNotAThing", path)
-        assert calls[1][1] == {"branch": "3.0.0"}
+        assert calls[1][1] == {"branch": "3.0.0", "scheme": "https"}
 
     def test_fetch_ref(self, mock_client):
         """
@@ -619,7 +619,11 @@ class TestGitHubDependency:
 
         assert mock_client.download_package.call_count == 0
         mock_client.clone_repo.assert_called_once_with(
-            "ApeWorX", "ApeNotAThing", path, branch="3.0.0"
+            "ApeWorX",
+            "ApeNotAThing",
+            path,
+            branch="3.0.0",
+            scheme="https",
         )
 
     def test_fetch_existing_destination_with_read_only_files(self, mock_client):
