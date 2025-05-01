@@ -102,10 +102,10 @@ jobs:
           run: ape pm install
 
         - name: Run Functional Tests
-          run: ape test tests/functional -m "not fuzzing" -s --cov=src --cov-append -n auto --dist loadgroup -v ERROR
+          run: ape test tests/functional -m "not fuzzing" -s --cov=src --cov-append -v ERROR
 
         - name: Run Integration Tests
-          run: ape test tests/integration -m "not fuzzing" -s --cov=src --cov-append -n auto --dist loadgroup -v ERROR
+          run: ape test tests/integration -m "not fuzzing" -s --cov=src --cov-append -v ERROR
 
         - name: Run Performance Tests
           run: ape test tests/performance -s -v ERROR
