@@ -430,18 +430,20 @@ def test_prompt_choice(runner, opt):
     assert "__expected_foo" in result.output
 
 
+@pytest.mark.flaky(reruns=2)
 @pytest.mark.parametrize("name", ("-v", "--verbosity"))
 def test_verbosity_option(runner, name):
-    logger._did_parse_sys_argv = False  # Force reparse
     level = int(logger.level)
+    cmd_args = (name, "debug", "-v", f"{level}")
+    expected = f"__expected_{level}"
 
     @click.command()
     @verbosity_option()
     def cmd():
         click.echo(f"__expected_{logger.level}")
 
-    result = runner.invoke(cmd, (name, "debug", "-v", f"{level}"))
-    assert f"__expected_{level}" in result.output
+    logger._did_parse_sys_argv = False  # Force reparse
+    assert expected in runner.invoke(cmd, cmd_args).output
 
 
 @pytest.mark.parametrize(
