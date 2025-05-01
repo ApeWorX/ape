@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional
 
 import click
-from eip712.messages import EIP712Message
+from eip712.messages import EIP712Message, EIP712Type
 from eth_account import Account as EthAccount
 from eth_account.hdaccount import ETHEREUM_DEFAULT_PATH
 from eth_account.messages import encode_defunct
@@ -166,49 +166,8 @@ class KeyfileAccount(AccountAPI):
         self.keyfile_path.unlink()
 
     def sign_message(self, msg: Any, **signer_options) -> Optional[MessageSignature]:
-        if isinstance(msg, str):
-            display_msg = f"Signing raw string: '{msg}'"
-            msg = encode_defunct(text=msg)
-
-        elif isinstance(msg, int):
-            display_msg = f"Signing raw integer: {msg}"
-            msg = encode_defunct(hexstr=to_hex(msg))
-
-        elif isinstance(msg, bytes):
-            display_msg = f"Signing raw bytes: '{to_hex(msg)}'"
-            msg = encode_defunct(primitive=msg)
-
-        elif isinstance(msg, EIP712Message):
-            # Display message data to user
-            display_msg = "Signing EIP712 Message\n"
-
-            # Domain Data
-            display_msg += "Domain\n"
-            if msg._name_:
-                display_msg += f"\tName: {msg._name_}\n"
-            if msg._version_:
-                display_msg += f"\tVersion: {msg._version_}\n"
-            if msg._chainId_:
-                display_msg += f"\tChain ID: {msg._chainId_}\n"
-            if msg._verifyingContract_:
-                display_msg += f"\tContract: {msg._verifyingContract_}\n"
-            if msg._salt_:
-                display_msg += f"\tSalt: {to_hex(msg._salt_)}\n"
-
-            # Message Data
-            display_msg += "Message\n"
-            for field, value in msg._body_["message"].items():
-                if isinstance(value, bytes):
-                    value = to_hex(value)
-                display_msg += f"\t{field}: {value}\n"
-
-            # Convert EIP712Message to SignableMessage for handling below
-            msg = msg.signable_message
-
-        elif isinstance(msg, SignableMessage):
-            display_msg = str(msg)
-
-        else:
+        display_msg, msg = _get_signing_message_with_display(msg)
+        if display_msg is None:
             logger.warning("Unsupported message type, (type=%r, msg=%r)", type(msg), msg)
             return None
 
@@ -383,3 +342,70 @@ def import_account_from_private_key(
     account = EthAccount.from_key(to_bytes(hexstr=private_key))
 
     return _write_and_return_account(alias, passphrase, account)
+
+
+# Abstracted to make testing easier.
+def _get_signing_message_with_display(msg) -> tuple[Optional[str], Any]:
+    display_msg = None
+
+    if isinstance(msg, str):
+        display_msg = f"Signing raw string: '{msg}'"
+        msg = encode_defunct(text=msg)
+
+    elif isinstance(msg, int):
+        display_msg = f"Signing raw integer: {msg}"
+        msg = encode_defunct(hexstr=to_hex(msg))
+
+    elif isinstance(msg, bytes):
+        display_msg = f"Signing raw bytes: '{to_hex(msg)}'"
+        msg = encode_defunct(primitive=msg)
+
+    elif isinstance(msg, EIP712Message):
+        # Display message data to user
+        display_msg = "Signing EIP712 Message\n"
+
+        # Domain Data
+        display_msg += "Domain\n"
+        if msg._name_:
+            display_msg += f"\tName: {msg._name_}\n"
+        if msg._version_:
+            display_msg += f"\tVersion: {msg._version_}\n"
+        if msg._chainId_:
+            display_msg += f"\tChain ID: {msg._chainId_}\n"
+        if msg._verifyingContract_:
+            display_msg += f"\tContract: {msg._verifyingContract_}\n"
+        if msg._salt_:
+            display_msg += f"\tSalt: {to_hex(msg._salt_)}\n"
+
+        # Message Data
+        display_msg += "Message\n"
+        for field, value in msg._body_["message"].items():
+            if isinstance(value, EIP712Type):
+                msg_fields = [x for x in dir(value) if not x.startswith("_")]
+                msg_value = ""
+                for msg_field in msg_fields:
+                    attr = getattr(value, msg_field)
+                    if isinstance(attr, bytes):
+                        attr = to_hex(attr)
+
+                    msg_value += f"\t\t{msg_field}: {attr}\n"
+
+                display_msg += f"\t{field}:\n{msg_value}\n"
+
+            else:
+                if isinstance(value, bytes):
+                    value = to_hex(value)
+
+                display_msg += f"\t{field}: {value}\n"
+
+        display_msg = display_msg.strip()
+        msg = msg.signable_message
+
+    elif isinstance(msg, SignableMessage):
+        display_msg = f"{msg}"
+
+    # Using 2 spaces is cleaner than a full tab.
+    if display_msg is not None:
+        display_msg = display_msg.replace("\t", "  ")
+
+    return (display_msg, msg)

@@ -1,7 +1,7 @@
 from os import environ
 
 import pytest
-from eip712.messages import EIP712Message
+from eip712.messages import EIP712Message, EIP712Type
 from eth_account.messages import encode_defunct
 from eth_pydantic_types import HexBytes
 from eth_utils import to_hex
@@ -23,6 +23,7 @@ from ape.types.signatures import recover_signer
 from ape.utils.testing import DEFAULT_TEST_MNEMONIC
 from ape_accounts.accounts import (
     KeyfileAccount,
+    _get_signing_message_with_display,
     generate_account,
     import_account_from_mnemonic,
     import_account_from_private_key,
@@ -61,9 +62,14 @@ def message():
     return encode_defunct(text="Hello Apes!")
 
 
+class Baz(EIP712Type):
+    addr: "address"  # type: ignore  # noqa: F821
+
+
 class Foo(EIP712Message):
     _name_: "string" = "Foo"  # type: ignore  # noqa: F821
     bar: "address"  # type: ignore  # noqa: F821
+    baz: Baz
 
 
 def test_sign_message(signer, message):
@@ -112,7 +118,8 @@ def test_recover_signer(signer, message):
 
 
 def test_sign_eip712_message(signer):
-    foo = Foo(signer.address)  # type: ignore[call-arg]
+    baz = Baz(addr=signer.address)  # type: ignore[call-arg]
+    foo = Foo(bar=signer.address, baz=baz)  # type: ignore[call-arg]
     signature = signer.sign_message(foo)
     assert signer.check_signature(foo, signature)
 
@@ -132,6 +139,23 @@ def test_sign_message_with_prompts(runner, keyfile_account, message):
     # Nonce should not change from signing messages.
     end_nonce = keyfile_account.nonce
     assert start_nonce == end_nonce
+
+
+def test_sign_eip712_message_shows_custom_types(signer):
+    baz = Baz(addr=signer.address)  # type: ignore[call-arg]
+    foo = Foo(bar=signer.address, baz=baz)  # type: ignore[call-arg]
+    display_msg, msg = _get_signing_message_with_display(foo)
+    expected = """
+Signing EIP712 Message
+Domain
+  Name: Foo
+Message
+  bar: 0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc
+  baz:
+    addr: 0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc
+""".strip()
+    assert display_msg
+    assert display_msg.strip() == expected
 
 
 def test_sign_raw_hash(runner, keyfile_account):
