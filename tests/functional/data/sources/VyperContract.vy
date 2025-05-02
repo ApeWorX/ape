@@ -64,8 +64,8 @@ myNumber: public(uint256)
 prevNumber: public(uint256)
 theAddress: public(address)
 balances: public(HashMap[address, uint256])
-dynArray: public(DynArray[uint256, 1024][3])
-mixedArray: public(DynArray[DynArray[uint256, 1024][3], 1024][5])
+dynArray: public(DynArray[uint256, 3][3])
+mixedArray: public(DynArray[DynArray[uint256, 3][3], 3][5])
 arraysLoaded: bool
 
 MAX_FOO : constant(uint256) = 5
@@ -168,14 +168,12 @@ def getEmptyTupleOfIntAndDynArray() -> (DynArray[uint256, 10], DynArray[MyStruct
 @external
 def getStructWithArray() -> WithArray:
     return WithArray(
-        {
-            foo: 1,
-            arr: [
-                MyStruct(a=msg.sender, b=block.prevhash, c=244),
-                MyStruct(a=msg.sender, b=block.prevhash, c=244)
-            ],
-            bar: 2
-        }
+        foo=1,
+        arr=[
+            MyStruct(a=msg.sender, b=block.prevhash, c=244),
+            MyStruct(a=msg.sender, b=block.prevhash, c=244)
+        ],
+        bar=2
     )
 
 @pure

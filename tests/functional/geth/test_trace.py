@@ -206,7 +206,7 @@ VyperContract\.getNestedAddressArray\(\) -> \[
 
 @geth_process_test
 def test_str_list_of_lists(geth_contract, geth_account):
-    geth_contract.loadArrays(sender=geth_account)
+    geth_contract.loadArrays(sender=geth_account, gas=2400000)
     tx = geth_contract.getNestedArrayMixedDynamic.transact(sender=geth_account)
     actual = f"{tx.trace}"
     expected = r"""
