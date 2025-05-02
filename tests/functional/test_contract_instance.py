@@ -542,11 +542,13 @@ def test_get_nested_array_dynamic_fixed(contract_instance, owner):
 
 
 def test_get_nested_array_fixed_dynamic(contract_instance, owner):
+    contract_instance.loadArrays(sender=owner)
     actual = contract_instance.getNestedArrayFixedDynamic()
     assert actual == [[0], [0, 1], [0, 1, 2]]
 
 
 def test_get_nested_array_mixed_dynamic(contract_instance, owner):
+    contract_instance.loadArrays(sender=owner)
     actual = contract_instance.getNestedArrayMixedDynamic()
     assert len(actual) == 5
     assert len(actual[0]) == 1

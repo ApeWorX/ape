@@ -9,6 +9,7 @@ contract SolidityContract {
     mapping(address => uint256) public balances;
     uint256[][3] dynArray;
     uint256[][3][][5] mixedArray;
+    bool arraysLoaded = false;
 
     uint256 constant MAX_FOO = 5;
 
@@ -100,21 +101,12 @@ contract SolidityContract {
     constructor(uint256 num) {
         myNumber = num;
         owner = msg.sender;
-
-        dynArray[0] = [uint(0)];
-        dynArray[1] = [uint(0), 1];
-        dynArray[2] = [uint(0), 1, 2];
-
-        mixedArray[0].push(dynArray);
-        mixedArray[1].push(dynArray);
-        mixedArray[1].push(dynArray);
     }
 
     function fooAndBar() public {
         emit FooHappened(0);
         emit BarHappened(1);
     }
-
 
     /**
      * @notice Sets a new number, with restrictions and event emission
@@ -311,7 +303,7 @@ contract SolidityContract {
     }
 
     function functionWithCalldata(bytes calldata data) public {
-        
+
     }
 
     function setStruct(MyStruct memory _my_struct) public pure {
@@ -338,5 +330,19 @@ contract SolidityContract {
     function logUintArray() public {
         uint256[1] memory agts = [uint256(1)];
         emit EventWithUintArray(agts);
+    }
+
+    function loadArrays() public {
+        if (!arraysLoaded) {
+            dynArray[0] = [uint(0)];
+            dynArray[1] = [uint(0), 1];
+            dynArray[2] = [uint(0), 1, 2];
+
+            mixedArray[0].push(dynArray);
+            mixedArray[1].push(dynArray);
+            mixedArray[1].push(dynArray);
+
+            arraysLoaded = true;
+        }
     }
 }

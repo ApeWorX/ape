@@ -296,6 +296,7 @@ def test_return_value(owner, vyper_contract_instance):
     It works by using eth_call to get the result rather than
     tracing-RPCs.
     """
+    vyper_contract_instance.loadArrays(sender=owner)
     receipt = vyper_contract_instance.getNestedArrayMixedDynamic.transact(sender=owner)
     actual = receipt.return_value
     assert len(actual) == 5
