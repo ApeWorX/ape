@@ -1,4 +1,4 @@
-# @version 0.3.9
+# @version 0.4.0
 
 # @dev Emitted when number is changed.
 #
@@ -66,19 +66,15 @@ theAddress: public(address)
 balances: public(HashMap[address, uint256])
 dynArray: public(DynArray[uint256, 1024][3])
 mixedArray: public(DynArray[DynArray[uint256, 1024][3], 1024][5])
+arraysLoaded: bool
 
 MAX_FOO : constant(uint256) = 5
 
-@external
+@deploy
 def __init__(num: uint256):
     self.myNumber = num
     self.owner = msg.sender
-    self.dynArray[0] = [0]
-    self.dynArray[1] = [0, 1]
-    self.dynArray[2] = [0, 1, 2]
-    self.mixedArray[0].append(self.dynArray)
-    self.mixedArray[1].append(self.dynArray)
-    self.mixedArray[1].append(self.dynArray)
+    self.arraysLoaded = False
 
 @external
 def fooAndBar():
@@ -113,27 +109,27 @@ def setBalance(_address: address, bal: uint256):
 @view
 @external
 def getStruct() -> MyStruct:
-    return MyStruct({a: msg.sender, b: block.prevhash, c: 244})
+    return MyStruct(a=msg.sender, b=block.prevhash, c=244)
 
 @view
 @external
 def getNestedStruct1() -> NestedStruct1:
-    return NestedStruct1({t: MyStruct({a: msg.sender, b: block.prevhash, c: 244}), foo: 1})
+    return NestedStruct1(t=MyStruct(a=msg.sender, b=block.prevhash, c=244), foo=1)
 
 @view
 @external
 def getNestedStruct2() -> NestedStruct2:
-    return NestedStruct2({foo: 2, t: MyStruct({a: msg.sender, b: block.prevhash, c: 244})})
+    return NestedStruct2(foo=2, t=MyStruct(a=msg.sender, b=block.prevhash, c=244))
 
 @view
 @external
 def getNestedStructWithTuple1() -> (NestedStruct1, uint256):
-    return (NestedStruct1({t: MyStruct({a: msg.sender, b: block.prevhash, c: 244}), foo: 1}), 1)
+    return (NestedStruct1(t=MyStruct(a=msg.sender, b=block.prevhash, c=244), foo=1), 1)
 
 @view
 @external
 def getNestedStructWithTuple2() -> (uint256, NestedStruct2):
-    return (2, NestedStruct2({foo: 2, t: MyStruct({a: msg.sender, b: block.prevhash, c: 244})}))
+    return (2, NestedStruct2(foo=2, t=MyStruct(a=msg.sender, b=block.prevhash, c=244)))
 
 @pure
 @external
@@ -175,8 +171,8 @@ def getStructWithArray() -> WithArray:
         {
             foo: 1,
             arr: [
-                MyStruct({a: msg.sender, b: block.prevhash, c: 244}),
-                MyStruct({a: msg.sender, b: block.prevhash, c: 244})
+                MyStruct(a=msg.sender, b=block.prevhash, c=244),
+                MyStruct(a=msg.sender, b=block.prevhash, c=244)
             ],
             bar: 2
         }
@@ -206,16 +202,16 @@ def getAddressArray() -> DynArray[address, 2]:
 @external
 def getDynamicStructArray() -> DynArray[NestedStruct1, 2]:
     return [
-        NestedStruct1({t: MyStruct({a: msg.sender, b: block.prevhash, c: 244}), foo: 1}),
-        NestedStruct1({t: MyStruct({a: msg.sender, b: block.prevhash, c: 244}), foo: 2})
+        NestedStruct1(t=MyStruct(a=msg.sender, b=block.prevhash, c=244), foo=1),
+        NestedStruct1(t=MyStruct(a=msg.sender, b=block.prevhash, c=244), foo=2)
     ]
 
 @view
 @external
 def getStaticStructArray() -> NestedStruct2[2]:
     return [
-        NestedStruct2({foo: 1, t: MyStruct({a: msg.sender, b: block.prevhash, c: 244})}),
-        NestedStruct2({foo: 2, t: MyStruct({a: msg.sender, b: block.prevhash, c: 244})})
+        NestedStruct2(foo=1, t=MyStruct(a=msg.sender, b=block.prevhash, c=244)),
+        NestedStruct2(foo=2, t=MyStruct(a=msg.sender, b=block.prevhash, c=244))
     ]
 
 @pure
@@ -304,11 +300,11 @@ def setStructArray(_my_struct_array: MyStruct[2]):
 @external
 def logStruct():
     _bytes: bytes32 = 0x1234567890abcdef0123456789abcdef0123456789abcdef0123456789abcdef
-    _struct: MyStruct = MyStruct({
-        a: msg.sender,
-        b: _bytes,
-        c: 244
-    })
+    _struct: MyStruct = MyStruct(
+        a=msg.sender,
+        b=_bytes,
+        c=244
+    )
     log EventWithStruct(_struct)
 
 @external
@@ -322,3 +318,14 @@ def logAddressArray():
 def logUintArray():
     agts: uint256[1] = [1]
     log EventWithUintArray(agts)
+
+@external
+def loadArrays():
+    if not self.arraysLoaded:
+        self.dynArray[0] = [0]
+        self.dynArray[1] = [0, 1]
+        self.dynArray[2] = [0, 1, 2]
+        self.mixedArray[0].append(self.dynArray)
+        self.mixedArray[1].append(self.dynArray)
+        self.mixedArray[1].append(self.dynArray)
+        self.arraysLoaded = True

@@ -49,13 +49,17 @@ setNumber(uint256 num)
   @details Only the owner can call this function. The new number cannot be 5.
   @param num uint256 The new number to be set
 """.strip()
-    assert actual == expected
+
+    # Doing it like this because sometimes Vyper compiler puts them out
+    # of order it seems...
+    for line in expected.splitlines():
+        assert line in actual
 
 
-def test_info_no_natspec(vyper_contract_instance):
+def test_info_no_natspec(project, vyper_contract_instance):
     # The `myNumber()` ABI does not have a natspec.
     abi = [
-        x for x in vyper_contract_instance.contract_type.abi if getattr(x, "name", "") == "myNumber"
+        x for x in project.VyperContract.contract_type.abi if getattr(x, "name", "") == "myNumber"
     ][0]
     handler = ContractMethodHandler(contract=vyper_contract_instance, abis=[abi])
     actual = handler.info

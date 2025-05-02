@@ -768,7 +768,6 @@ class ChainManager(BaseManager):
         """
         The price for what it costs to transact.
         """
-
         return self.provider.gas_price
 
     @property

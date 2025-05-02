@@ -930,7 +930,7 @@ class ContractTypeWrapper(ManagerAccessMixin):
     def source_path(self) -> Optional[Path]:
         """
         Returns the path to the local contract if determined that this container
-        belongs to the active project by cross checking source_id.
+        belongs to the active project by cross-checking source_id.
         """
         if not (source_id := self.contract_type.source_id):
             return None
@@ -1537,6 +1537,9 @@ class ContractContainer(ContractTypeWrapper, ExtraAttributesMixin):
             txn_hash (Union[str, HexBytes]): The hash of the transaction that deployed the
               contract, if available. Defaults to ``None``.
             fetch_from_explorer (bool): Set to ``False`` to avoid fetching from an explorer.
+            proxy_info (:class:`~ape.api.networks.ProxyInfoAPI` | None): Proxy info object to set
+              to avoid detection; defaults to ``None`` which will detect it if ``detect_proxy=True``.
+            detect_proxy (bool): Set to ``False`` to avoid detecting missing proxy info.
 
         Returns:
             :class:`~ape.contracts.ContractInstance`
