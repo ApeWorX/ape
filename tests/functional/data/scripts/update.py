@@ -27,6 +27,10 @@ def cli(cli_ctx, contract):
     code = contract.read_text(encoding="utf-8")
     destination = ARTIFACTS_PATH / f"{contract.stem}.json"
     contract_type = cm.compile_source(compiler, code, contractName=contract.stem)
+
+    if contract.source_id is None:
+        contract.source_id = f"{contract}"
+
     destination.unlink()
     destination.write_text(contract_type.model_dump_json())
     click.echo("Done!")
