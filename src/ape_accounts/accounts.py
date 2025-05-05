@@ -12,7 +12,7 @@ from eth_account.hdaccount import ETHEREUM_DEFAULT_PATH
 from eth_account.messages import encode_defunct
 from eth_keys import keys  # type: ignore
 from eth_pydantic_types import HexBytes
-from eth_utils import to_bytes, to_hex
+from eth_utils import to_bytes, to_hex, remove_0x_prefix
 
 from ape.api.accounts import AccountAPI, AccountContainerAPI
 from ape.exceptions import AccountsError
@@ -20,7 +20,7 @@ from ape.logging import logger
 from ape.types.signatures import MessageSignature, SignableMessage, TransactionSignature
 from ape.utils._web3_compat import sign_hash
 from ape.utils.basemodel import ManagerAccessMixin
-from ape.utils.misc import log_instead_of_fail
+from ape.utils.misc import log_instead_of_fail, derive_public_key
 from ape.utils.validators import _validate_account_alias, _validate_account_passphrase
 
 if TYPE_CHECKING:
@@ -109,19 +109,18 @@ class KeyfileAccount(AccountAPI):
 
     @property
     def public_key(self) -> HexBytes:
-        if "public_key" in self.keyfile:
-            return HexBytes(bytes.fromhex(self.keyfile["public_key"]))
+        keyfile_data = self.keyfile
+        if "public_key" in keyfile_data:
+            return HexBytes(bytes.fromhex(keyfile_data["public_key"]))
 
         # Derive the public key from the private key
-        pk = keys.PrivateKey(self.__key)
-        public_key = f"{pk.public_key}"[2:]
-        key_file_data = self.keyfile
-        key_file_data["public_key"] = public_key
+        public_key = derive_public_key(self.__key)
+        keyfile_data["public_key"] = remove_0x_prefix(public_key.hex())
 
         # Store the public key so we don't have to derive it again.
-        self.keyfile_path.write_text(json.dumps(key_file_data), encoding="utf8")
+        self.keyfile_path.write_text(json.dumps(keyfile_data), encoding="utf8")
 
-        return HexBytes(bytes.fromhex(public_key))
+        return public_key
 
     def unlock(self, passphrase: Optional[str] = None):
         if not passphrase:

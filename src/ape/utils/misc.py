@@ -19,6 +19,7 @@ from importlib.metadata import PackageNotFoundError, distributions
 from importlib.metadata import version as version_metadata
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional, TypeVar, cast
+from eth_keys import keys  # type: ignore
 
 import yaml
 from eth_pydantic_types import HexBytes
@@ -526,6 +527,21 @@ def as_our_module(cls_or_def: _MOD_T, doc_str: Optional[str] = None) -> _MOD_T:
         cls_or_def.__module__ = module.__name__
 
     return cls_or_def
+
+
+def derive_public_key(private_key: bytes) -> HexBytes:
+    """
+    Derive the public key for the given private key.
+
+    Args:
+        private_key (bytes): The private key.
+
+    Returns:
+        HexBytes: The public key.
+    """
+    pk = keys.PrivateKey(private_key)
+    public_key = f"{pk.public_key}"[2:]
+    return HexBytes(bytes.fromhex(public_key))
 
 
 __all__ = [

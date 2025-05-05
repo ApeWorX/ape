@@ -842,9 +842,12 @@ def test_prepare_transaction_and_call_using_max_gas(tx_type, ethereum, sender, e
     assert not actual.failed
 
 
-def test_public_key(runner, keyfile_account):
+def test_public_key(runner, keyfile_account, owner):
     with runner.isolation(input=f"{PASSPHRASE}\ny\n"):
         assert isinstance(keyfile_account.public_key, HexBytes)
+
+    # Also, show the test accounts have access to their public key.
+    assert owner.public_key is not None
 
 
 def test_load_public_key_from_keyfile(runner, keyfile_account):
