@@ -76,6 +76,10 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
     def public_key(self) -> Optional["HexBytes"]:
         """
         The public key for the account.
+
+        ```{notice}
+        Account might not have this property if feature is unsupported or inaccessible.
+        ```
         """
         return None
 
