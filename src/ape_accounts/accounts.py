@@ -139,7 +139,10 @@ class KeyfileAccount(AccountAPI):
                 passphrase = self._prompt_for_passphrase(
                     f"Enter passphrase to permanently unlock '{self.alias}'"
                 )
-        assert passphrase is not None, "Passphrase can't be 'None'"
+
+        if passphrase is None:
+            raise AccountsError("Passphrase can't be 'None'")
+
         # Rest of the code to unlock the account using the passphrase
         self.__cached_key = self.__decrypt_keyfile(passphrase)
         self.locked = False
