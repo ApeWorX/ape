@@ -540,17 +540,7 @@ class PythonDependency(DependencyAPI):
             response.raise_for_status()
         except requests.HTTPError as err:
             if err.response.status_code == 404:
-                msg = (
-                    f"Unknown dependency '{self.package_id}'. "
-                    "Is it spelled correctly and available on PyPI?"
-                )
-
-                if self.site_package is None:
-                    msg = f"{msg} For local Python packages, use the `site_package:` key."
-
-                logger.error(msg)
-
-                # There is no available package data; use empty dict.
+                # There is no available package data on PyPI; use empty dict.
                 return {}
 
             else:
