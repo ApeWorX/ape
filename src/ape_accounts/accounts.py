@@ -11,6 +11,7 @@ from eth_account import Account as EthAccount
 from eth_account.hdaccount import ETHEREUM_DEFAULT_PATH
 from eth_account.messages import encode_defunct
 from eth_pydantic_types import HexBytes
+from eth_typing import HexStr
 from eth_utils import remove_0x_prefix, to_bytes, to_hex
 
 from ape.api.accounts import AccountAPI, AccountContainerAPI
@@ -114,7 +115,7 @@ class KeyfileAccount(AccountAPI):
 
         # Derive the public key from the private key
         public_key = derive_public_key(self.__key)
-        keyfile_data["public_key"] = remove_0x_prefix(public_key.hex())
+        keyfile_data["public_key"] = remove_0x_prefix(HexStr(public_key.hex()))
 
         # Store the public key so we don't have to derive it again.
         self.keyfile_path.write_text(json.dumps(keyfile_data), encoding="utf8")
