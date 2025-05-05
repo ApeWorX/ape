@@ -707,7 +707,7 @@ class TestDependency:
     def test_repr(self, dependency):
         actual = repr(dependency)
         path = str(Path.cwd()).replace(str(Path.home()), "$HOME")
-        expected = f"<Dependency package={path} version=1.0.0>"
+        expected = f"<LocalDependency local={path}, version=1.0.0>"
         assert actual == expected
 
     def test_project_path(self, dependency, data_folder):

@@ -408,7 +408,7 @@ class PollDaemonThread(threading.Thread):
             try:
                 self._handler(next(self._poller))
             except (ChainError, ProviderError):
-                # Check if can stop once more before exiting
+                # Check if we can stop once more before exiting
                 if self._do_stop():
                     return
 

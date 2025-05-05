@@ -367,7 +367,7 @@ def test_compile_only_dependency(ape_cli, runner, integ_project, clean_cache, ap
     assert result.exit_code == 1, result.output  # exit_code=1 because 1 dependency is bad.
     assert expected_log_message in result.output
 
-    error_str = "Dependency 'apedependencythatisnotinstalledape' not installed."
+    error_str = "Dependency 'dependency-that-is-not-installed' not installed."
     assert error_str in result.output
 
 
