@@ -462,13 +462,13 @@ def test_project_option(integ_project, ape_cli, runner):
 
     # NOTE: Using isolated filesystem so that
     with runner.isolated_filesystem():
-        # Setup a project
+        # Set up a project
         project_name = "test-token-project"
         project_dir = Path.cwd() / project_name
         tests_dir = project_dir / "tests"
         tests_dir.mkdir(parents=True)
 
-        # Setup a test
+        # Set up a test
         test_file = tests_dir / "test_project_option.py"
         test_text = """
 def test_project_option():
