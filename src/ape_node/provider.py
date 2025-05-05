@@ -1,4 +1,5 @@
 import atexit
+import re
 import shutil
 from pathlib import Path
 from subprocess import DEVNULL, PIPE, Popen
@@ -541,6 +542,11 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
         super().disconnect()
 
     def send_transaction(self, txn: "TransactionAPI") -> "ReceiptAPI":
+        return self._send_transaction_with_retries(txn)
+
+    def _send_transaction_with_retries(
+        self, txn: "TransactionAPI", nonce_retries: int = 0, max_nonce_retries: int = 5
+    ) -> "ReceiptAPI":
         try:
             return super().send_transaction(txn)
         except VirtualMachineError as err:
@@ -555,6 +561,19 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
                 signed_transaction = account.sign_transaction(txn)
                 logger.debug("Gas-limit exceeds block gas limit. Retrying using block gas limit.")
                 return super().send_transaction(signed_transaction)
+
+            elif re.match(r".*Nonce '\d*' is too low.*", str(err)):
+                retries = nonce_retries + 1
+                if retries > max_nonce_retries:
+                    raise  # This error.
+
+                # Try again with a new nonce.
+                txn.nonce += 1
+                return self._send_transaction_with_retries(
+                    txn,
+                    nonce_retries=retries,
+                    max_nonce_retries=max_nonce_retries,
+                )
 
             raise  # Whatever error it already is (Ape-ified from ape-ethereum.provider base).
 
