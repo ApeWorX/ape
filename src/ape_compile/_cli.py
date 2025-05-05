@@ -88,14 +88,21 @@ def cli(
         project.dependencies
     ) > 0:
         for dependency in project.dependencies:
-            # Even if compiling we failed, we at least tried
+            if use_cache and dependency.compiled:
+                continue
+
+            # Even if compiling we failed, we at least tried,
             # and so we don't need to warn "Nothing to compile".
             compiled = True
 
             try:
-                contract_types = dependency.project.load_contracts(use_cache=use_cache)
+                contract_types: dict[str, ContractType] = {
+                    c.contract_type.name: c.contract_type
+                    for c in dependency.compile(use_cache=use_cache, allow_install=True).values()
+                }
             except Exception as err:
-                cli_ctx.logger.log_error(err)
+                msg = f"Dependency '{dependency.name}' not installed. Reason: {err}"
+                cli_ctx.logger.error(msg)
                 errored = True
                 continue
 

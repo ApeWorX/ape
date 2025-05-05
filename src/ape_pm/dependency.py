@@ -3,7 +3,6 @@ import os
 import shutil
 from collections.abc import Iterable
 from functools import cached_property
-from importlib import metadata
 from pathlib import Path
 from typing import Optional, Union
 
