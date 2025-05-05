@@ -111,19 +111,17 @@ class KeyfileAccount(AccountAPI):
     def public_key(self) -> HexBytes:
         if "public_key" in self.keyfile:
             return HexBytes(bytes.fromhex(self.keyfile["public_key"]))
-        key = self.__key
 
         # Derive the public key from the private key
-        pk = keys.PrivateKey(key)
-        # convert from eth_keys.datatypes.PublicKey to str to make it HexBytes
-        publicKey = str(pk.public_key)
-
+        pk = keys.PrivateKey(self.__key)
+        public_key = f"{pk.public_key}"[2:]
         key_file_data = self.keyfile
-        key_file_data["public_key"] = publicKey[2:]
+        key_file_data["public_key"] = public_key
 
+        # Store the public key so we don't have to derive it again.
         self.keyfile_path.write_text(json.dumps(key_file_data), encoding="utf8")
 
-        return HexBytes(bytes.fromhex(publicKey[2:]))
+        return HexBytes(bytes.fromhex(public_key))
 
     def unlock(self, passphrase: Optional[str] = None):
         if not passphrase:
