@@ -132,11 +132,12 @@ def test_name_from_config(project):
         assert project.name == "foo-bar"
 
 
-def test_repr(project):
-    actual = repr(project)
-    # NOTE: tmp path is NOT relative to home.
-    expected_project_path = str(project.path).replace(str(Path.home()), "$HOME")
-    expected = f"<ProjectManager {expected_project_path}>"
+def test_repr():
+    with create_tempdir() as tmpdir:
+        project = Project(tmpdir)
+        actual = repr(project)
+
+    expected = f"<ProjectManager {tmpdir}>"
     assert actual == expected
 
 
