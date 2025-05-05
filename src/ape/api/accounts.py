@@ -72,6 +72,17 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         """
         return None
 
+    @property
+    def public_key(self) -> Optional["HexBytes"]:
+        """
+        The public key for the account.
+
+        ```{notice}
+        Account might not have this property if feature is unsupported or inaccessible.
+        ```
+        """
+        return None
+
     def sign_raw_msghash(self, msghash: "HexBytes") -> Optional[MessageSignature]:
         """
         Sign a raw message hash.

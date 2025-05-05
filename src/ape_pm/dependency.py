@@ -101,7 +101,7 @@ class LocalDependency(DependencyAPI):
 
 class GithubDependency(DependencyAPI):
     """
-    A dependency from Github. Use the ``github`` key in your ``dependencies:``
+    A dependency from GitHub. Use the ``github`` key in your ``dependencies:``
     section of your ``ape-config.yaml`` file to declare a dependency from GitHub.
 
     Config example::

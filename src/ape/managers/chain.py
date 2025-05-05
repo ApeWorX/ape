@@ -768,7 +768,6 @@ class ChainManager(BaseManager):
         """
         The price for what it costs to transact.
         """
-
         return self.provider.gas_price
 
     @property
@@ -782,7 +781,6 @@ class ChainManager(BaseManager):
             NotImplementedError: When this provider does not implement
               `EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__.
         """
-
         return self.provider.base_fee
 
     @property

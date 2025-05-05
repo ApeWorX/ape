@@ -10,9 +10,9 @@ from eip712.messages import EIP712Message, EIP712Type
 from eth_account import Account as EthAccount
 from eth_account.hdaccount import ETHEREUM_DEFAULT_PATH
 from eth_account.messages import encode_defunct
-from eth_keys import keys  # type: ignore
 from eth_pydantic_types import HexBytes
-from eth_utils import to_bytes, to_hex
+from eth_typing import HexStr
+from eth_utils import remove_0x_prefix, to_bytes, to_hex
 
 from ape.api.accounts import AccountAPI, AccountContainerAPI
 from ape.exceptions import AccountsError
@@ -20,7 +20,7 @@ from ape.logging import logger
 from ape.types.signatures import MessageSignature, SignableMessage, TransactionSignature
 from ape.utils._web3_compat import sign_hash
 from ape.utils.basemodel import ManagerAccessMixin
-from ape.utils.misc import log_instead_of_fail
+from ape.utils.misc import derive_public_key, log_instead_of_fail
 from ape.utils.validators import _validate_account_alias, _validate_account_passphrase
 
 if TYPE_CHECKING:
@@ -108,22 +108,19 @@ class KeyfileAccount(AccountAPI):
         return key
 
     @property
-    def public_key(self) -> HexBytes:
-        if "public_key" in self.keyfile:
-            return HexBytes(bytes.fromhex(self.keyfile["public_key"]))
-        key = self.__key
+    def public_key(self) -> Optional[HexBytes]:
+        keyfile_data = self.keyfile
+        if "public_key" in keyfile_data:
+            return HexBytes(bytes.fromhex(keyfile_data["public_key"]))
 
         # Derive the public key from the private key
-        pk = keys.PrivateKey(key)
-        # convert from eth_keys.datatypes.PublicKey to str to make it HexBytes
-        publicKey = str(pk.public_key)
+        public_key = derive_public_key(self.__key)
+        keyfile_data["public_key"] = remove_0x_prefix(HexStr(public_key.hex()))
 
-        key_file_data = self.keyfile
-        key_file_data["public_key"] = publicKey[2:]
+        # Store the public key so we don't have to derive it again.
+        self.keyfile_path.write_text(json.dumps(keyfile_data), encoding="utf8")
 
-        self.keyfile_path.write_text(json.dumps(key_file_data), encoding="utf8")
-
-        return HexBytes(bytes.fromhex(publicKey[2:]))
+        return public_key
 
     def unlock(self, passphrase: Optional[str] = None):
         if not passphrase:
@@ -141,7 +138,10 @@ class KeyfileAccount(AccountAPI):
                 passphrase = self._prompt_for_passphrase(
                     f"Enter passphrase to permanently unlock '{self.alias}'"
                 )
-        assert passphrase is not None, "Passphrase can't be 'None'"
+
+        if passphrase is None:
+            raise AccountsError("Passphrase can't be 'None'")
+
         # Rest of the code to unlock the account using the passphrase
         self.__cached_key = self.__decrypt_keyfile(passphrase)
         self.locked = False

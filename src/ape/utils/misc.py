@@ -21,6 +21,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional, TypeVar, cast
 
 import yaml
+from eth_keys import keys  # type: ignore
 from eth_pydantic_types import HexBytes
 from eth_utils import is_0x_prefixed
 from packaging.specifiers import SpecifierSet
@@ -526,6 +527,21 @@ def as_our_module(cls_or_def: _MOD_T, doc_str: Optional[str] = None) -> _MOD_T:
         cls_or_def.__module__ = module.__name__
 
     return cls_or_def
+
+
+def derive_public_key(private_key: bytes) -> HexBytes:
+    """
+    Derive the public key for the given private key.
+
+    Args:
+        private_key (bytes): The private key.
+
+    Returns:
+        HexBytes: The public key.
+    """
+    pk = keys.PrivateKey(private_key)
+    public_key = f"{pk.public_key}"[2:]
+    return HexBytes(bytes.fromhex(public_key))
 
 
 __all__ = [

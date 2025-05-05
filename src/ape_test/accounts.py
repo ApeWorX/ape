@@ -14,7 +14,7 @@ from ape.api.accounts import TestAccountAPI, TestAccountContainerAPI
 from ape.exceptions import ProviderNotConnectedError, SignatureError
 from ape.types.signatures import MessageSignature, TransactionSignature
 from ape.utils._web3_compat import sign_hash
-from ape.utils.misc import log_instead_of_fail
+from ape.utils.misc import derive_public_key, log_instead_of_fail
 from ape.utils.testing import generate_dev_accounts
 
 if TYPE_CHECKING:
@@ -117,6 +117,10 @@ class TestAccount(TestAccountAPI):
     @property
     def address(self) -> "AddressType":
         return self.network_manager.ethereum.decode_address(self.address_str)
+
+    @property
+    def public_key(self) -> "HexBytes":
+        return derive_public_key(HexBytes(self.private_key))
 
     @log_instead_of_fail(default="<TestAccount>")
     def __repr__(self) -> str:

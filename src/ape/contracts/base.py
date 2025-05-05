@@ -1537,6 +1537,9 @@ class ContractContainer(ContractTypeWrapper, ExtraAttributesMixin):
             txn_hash (Union[str, HexBytes]): The hash of the transaction that deployed the
               contract, if available. Defaults to ``None``.
             fetch_from_explorer (bool): Set to ``False`` to avoid fetching from an explorer.
+            proxy_info (:class:`~ape.api.networks.ProxyInfoAPI` | None): Proxy info object to set
+              to avoid detection; defaults to ``None`` which will detect it if ``detect_proxy=True``.
+            detect_proxy (bool): Set to ``False`` to avoid detecting missing proxy info.
 
         Returns:
             :class:`~ape.contracts.ContractInstance`
