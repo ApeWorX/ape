@@ -73,7 +73,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         return None
 
     @property
-    def public_key(self) -> Optional[HexBytes]:
+    def public_key(self) -> Optional["HexBytes"]:
         """
         The public key for the account.
         """
