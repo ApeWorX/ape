@@ -714,7 +714,10 @@ class Dependency(BaseManager, ExtraAttributesMixin):
         return self.api.uri
 
     def install(
-        self, use_cache: bool = True, config_override: Optional[dict] = None, recurse: bool = True,
+        self,
+        use_cache: bool = True,
+        config_override: Optional[dict] = None,
+        recurse: bool = True,
     ) -> "ProjectManager":
         """
         Install this dependency.
@@ -830,7 +833,10 @@ class Dependency(BaseManager, ExtraAttributesMixin):
         self._installation = None
 
     def compile(
-        self, use_cache: bool = True, config_override: Optional[dict] = None, allow_install: bool = False,
+        self,
+        use_cache: bool = True,
+        config_override: Optional[dict] = None,
+        allow_install: bool = False,
     ) -> dict[str, ContractContainer]:
         """
         Compile a dependency.
@@ -953,7 +959,11 @@ def _get_cache_suffix(package_id: str, version: str, suffix: str = "") -> Path:
 
 
 def _get_cache_path(
-    base_path: Path, package_id: str, version: str, is_dir: bool = False, suffix: str = "",
+    base_path: Path,
+    package_id: str,
+    version: str,
+    is_dir: bool = False,
+    suffix: str = "",
 ) -> Path:
     options = _version_to_options(version)
     original = None
@@ -2125,7 +2135,9 @@ class DeploymentManager(ManagerAccessMixin):
                 if not self._is_deployment(deployment):
                     continue
 
-                instance = EthPMContractInstance.model_validate_json(deployment.read_text(encoding="utf8"))
+                instance = EthPMContractInstance.model_validate_json(
+                    deployment.read_text(encoding="utf8")
+                )
                 if not instance.block:
                     continue
 

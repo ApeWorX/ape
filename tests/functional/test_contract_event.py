@@ -299,9 +299,7 @@ def test_poll_logs(chain, vyper_contract_instance, eth_tester_provider, owner, P
     assert actual[2].block_number == actual[2].block.number == actual[1].block_number + 1
 
 
-def test_poll_logs_with_topics(
-    vyper_contract_instance, eth_tester_provider, owner, PollDaemon
-):
+def test_poll_logs_with_topics(vyper_contract_instance, eth_tester_provider, owner, PollDaemon):
     size = 3
     logs: Queue = Queue(maxsize=size)
     start_block = vyper_contract_instance.creation_metadata.block or 0
@@ -318,6 +316,7 @@ def test_poll_logs_with_topics(
 
     actual = [logs.get() for _ in range(size)]
     assert all(a.newNum == e for a, e in zip(actual, (33,)))
+
 
 def test_poll_logs_timeout(vyper_contract_instance, eth_tester_provider, owner, PollDaemon):
     new_block_timeout = 1
