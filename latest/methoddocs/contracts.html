@@ -464,6 +464,9 @@ a different ABI than <code class="xref py py-attr docutils literal notranslate">
 <li><p><strong>txn_hash</strong> (<em>Union</em><em>[</em><em>str</em><em>, </em><em>HexBytes</em><em>]</em>) – The hash of the transaction that deployed the
 contract, if available. Defaults to <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
 <li><p><strong>fetch_from_explorer</strong> (<em>bool</em>) – Set to <code class="docutils literal notranslate"><span class="pre">False</span></code> to avoid fetching from an explorer.</p></li>
+<li><p><strong>proxy_info</strong> (<a class="reference internal" href="api.html#ape.api.networks.ProxyInfoAPI" title="ape.api.networks.ProxyInfoAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProxyInfoAPI</span></code></a> | None) – Proxy info object to set
+to avoid detection; defaults to <code class="docutils literal notranslate"><span class="pre">None</span></code> which will detect it if <code class="docutils literal notranslate"><span class="pre">detect_proxy=True</span></code>.</p></li>
+<li><p><strong>detect_proxy</strong> (<em>bool</em>) – Set to <code class="docutils literal notranslate"><span class="pre">False</span></code> to avoid detecting missing proxy info.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>

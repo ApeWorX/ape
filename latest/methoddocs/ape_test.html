@@ -131,6 +131,7 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#ape_test.accounts.TestAccount"><code class="docutils literal notranslate"><span class="pre">TestAccount</span></code></a><ul>
 <li><a class="reference internal" href="#ape_test.accounts.TestAccount.address"><code class="docutils literal notranslate">address</span></code></a></li>
 <li><a class="reference internal" href="#ape_test.accounts.TestAccount.alias"><code class="docutils literal notranslate">alias</span></code></a></li>
+<li><a class="reference internal" href="#ape_test.accounts.TestAccount.public_key"><code class="docutils literal notranslate">public_key</span></code></a></li>
 <li><a class="reference internal" href="#ape_test.accounts.TestAccount.sign_message"><code class="docutils literal notranslate">sign_message()</span></code></a></li>
 <li><a class="reference internal" href="#ape_test.accounts.TestAccount.sign_raw_msghash"><code class="docutils literal notranslate">sign_raw_msghash()</span></code></a></li>
 <li><a class="reference internal" href="#ape_test.accounts.TestAccount.sign_transaction"><code class="docutils literal notranslate">sign_transaction()</span></code></a></li>
@@ -265,6 +266,15 @@ data-aria-dark="Switch to auto color mode">
 <dt class="sig sig-object py" id="ape_test.accounts.TestAccount.alias">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">alias</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_test.accounts.TestAccount.alias" title="Link to this definition"></a></dt>
 <dd><p>A shortened-name for quicker access to the account.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape_test.accounts.TestAccount.public_key">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">public_key</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">HexBytes</span></em><a class="headerlink" href="#ape_test.accounts.TestAccount.public_key" title="Link to this definition"></a></dt>
+<dd><p>The public key for the account.</p>
+<p><code class="docutils literal notranslate"><span class="pre">`{notice}</span>
+<span class="pre">Account</span> <span class="pre">might</span> <span class="pre">not</span> <span class="pre">have</span> <span class="pre">this</span> <span class="pre">property</span> <span class="pre">if</span> <span class="pre">feature</span> <span class="pre">is</span> <span class="pre">unsupported</span> <span class="pre">or</span> <span class="pre">inaccessible.</span>
+<span class="pre">`</span></code></p>
 </dd></dl>
 
 <dl class="py method">
