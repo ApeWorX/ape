@@ -141,18 +141,22 @@ class SourceManager(BaseManager):
             yield self._get_source_id(path)
 
     def values(self) -> Iterator[Source]:
+        paths_to_rm = set()
         for source_id in self.keys():
             try:
                 yield self[source_id]
             except KeyError:
                 # Deleted before yield.
                 path = self._get_path(source_id)
-                self._path_cache = (
-                    None
-                    if self._path_cache is None
-                    else [p for p in (self._path_cache or []) if p != path]
-                )
+                paths_to_rm.add(path)
                 continue
+
+        if paths_to_rm:
+            self._path_cache = (
+                None
+                if self._path_cache is None
+                else [p for p in (self._path_cache or []) if p not in paths_to_rm]
+            )
 
     @singledispatchmethod
     def __contains__(self, item) -> bool:
