@@ -1,10 +1,11 @@
 from os import environ
 
 import pytest
+from cchecksum import to_checksum_address
 from eip712.messages import EIP712Message, EIP712Type
 from eth_account.messages import encode_defunct
 from eth_pydantic_types import HexBytes
-from eth_utils import to_hex
+from eth_utils import keccak, to_hex
 from ethpm_types import ContractType
 
 import ape
@@ -844,10 +845,16 @@ def test_prepare_transaction_and_call_using_max_gas(tx_type, ethereum, sender, e
 
 def test_public_key(runner, keyfile_account, owner):
     with runner.isolation(input=f"{PASSPHRASE}\ny\n"):
+        pub_key = keyfile_account.public_key
         assert isinstance(keyfile_account.public_key, HexBytes)
 
+        # Prove it is the correct public key by deriving the address.
+        derived_address = to_checksum_address(keccak(pub_key)[-20:])
+        assert derived_address == keyfile_account.address
+
     # Also, show the test accounts have access to their public key.
-    assert owner.public_key is not None
+    derived_address = to_checksum_address(keccak(owner.public_key)[-20:])
+    assert derived_address == owner.address
 
 
 def test_load_public_key_from_keyfile(runner, keyfile_account):

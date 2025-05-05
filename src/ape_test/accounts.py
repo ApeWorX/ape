@@ -14,7 +14,7 @@ from ape.api.accounts import TestAccountAPI, TestAccountContainerAPI
 from ape.exceptions import ProviderNotConnectedError, SignatureError
 from ape.types.signatures import MessageSignature, TransactionSignature
 from ape.utils._web3_compat import sign_hash
-from ape.utils.misc import log_instead_of_fail, derive_public_key
+from ape.utils.misc import derive_public_key, log_instead_of_fail
 from ape.utils.testing import generate_dev_accounts
 
 if TYPE_CHECKING:

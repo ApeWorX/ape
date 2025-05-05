@@ -10,9 +10,8 @@ from eip712.messages import EIP712Message, EIP712Type
 from eth_account import Account as EthAccount
 from eth_account.hdaccount import ETHEREUM_DEFAULT_PATH
 from eth_account.messages import encode_defunct
-from eth_keys import keys  # type: ignore
 from eth_pydantic_types import HexBytes
-from eth_utils import to_bytes, to_hex, remove_0x_prefix
+from eth_utils import remove_0x_prefix, to_bytes, to_hex
 
 from ape.api.accounts import AccountAPI, AccountContainerAPI
 from ape.exceptions import AccountsError
@@ -20,7 +19,7 @@ from ape.logging import logger
 from ape.types.signatures import MessageSignature, SignableMessage, TransactionSignature
 from ape.utils._web3_compat import sign_hash
 from ape.utils.basemodel import ManagerAccessMixin
-from ape.utils.misc import log_instead_of_fail, derive_public_key
+from ape.utils.misc import derive_public_key, log_instead_of_fail
 from ape.utils.validators import _validate_account_alias, _validate_account_passphrase
 
 if TYPE_CHECKING:

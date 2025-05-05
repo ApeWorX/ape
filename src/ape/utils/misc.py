@@ -19,9 +19,9 @@ from importlib.metadata import PackageNotFoundError, distributions
 from importlib.metadata import version as version_metadata
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional, TypeVar, cast
-from eth_keys import keys  # type: ignore
 
 import yaml
+from eth_keys import keys  # type: ignore
 from eth_pydantic_types import HexBytes
 from eth_utils import is_0x_prefixed
 from packaging.specifiers import SpecifierSet
