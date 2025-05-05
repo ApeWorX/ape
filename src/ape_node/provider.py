@@ -562,15 +562,20 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
                 logger.debug("Gas-limit exceeds block gas limit. Retrying using block gas limit.")
                 return super().send_transaction(signed_transaction)
 
-            elif re.match(r".*Nonce '\d*' is too low.*", str(err)):
+            elif txn.sender in self.account_manager.test_accounts and re.match(
+                r".*Nonce '\d*' is too low.*", str(err)
+            ):
                 retries = nonce_retries + 1
                 if retries > max_nonce_retries:
                     raise  # This error.
 
                 # Try again with a new nonce.
-                txn.nonce += 1
+                account = self.account_manager.test_accounts[txn.sender]
+                txn.nonce = account.nonce
+                signed_transaction = account.sign_transaction(txn)
+                logger.debug("Test transaction received bad nonce. Retrying using latest nonce.")
                 return self._send_transaction_with_retries(
-                    txn,
+                    signed_transaction,
                     nonce_retries=retries,
                     max_nonce_retries=max_nonce_retries,
                 )
