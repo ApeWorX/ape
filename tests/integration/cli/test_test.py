@@ -144,10 +144,11 @@ def setup_pytester(pytester, owner):
 def run_gas_test(
     result, expected_passed: int, expected_failed: int, expected_report: str = EXPECTED_GAS_REPORT
 ):
-    (
-        result.assert_outcomes(passed=expected_passed, failed=expected_failed),
-        "\n".join(result.outlines),
-    )
+    try:
+        result.assert_outcomes(passed=expected_passed, failed=expected_failed)
+    except AssertionError:
+        pytest.fail("\n".join(result.outlines))
+
     gas_header_line_index = None
     for index, line in enumerate(result.outlines):
         if "Gas Profile" in line:

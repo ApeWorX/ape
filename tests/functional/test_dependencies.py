@@ -670,12 +670,23 @@ class TestPythonDependency:
         assert actual[0].isnumeric()
         assert "." in actual  # sep from minor / major / patch
 
+    def test_version_id_found_from_pypi(self):
+        name = "xxthisnameisnotarealpythonpackagexx"
+        dependency = PythonDependency.model_validate({"site_package": name})
+        dependency.__dict__["package_data"] = {"info": {"version": "4.5.6"}}
+        assert dependency.version_id == "4.5.6"
+
     def test_version_id_not_found(self):
         name = "xxthisnameisnotarealpythonpackagexx"
         dependency = PythonDependency.model_validate({"site_package": name})
         expected = f"Dependency '{name}' not installed."
         with pytest.raises(ProjectError, match=expected):
             _ = dependency.version_id
+
+    def test_version_id_configured(self):
+        name = "xxthisnameisnotarealpythonpackagexx"
+        dependency = PythonDependency.model_validate({"site_package": name, "version": "3.1.2"})
+        assert dependency.version == "3.1.2"
 
     def test_fetch(self, python_dependency):
         with create_tempdir() as temp_dir:
