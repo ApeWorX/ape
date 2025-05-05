@@ -72,13 +72,12 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         """
         return None
 
-    # TODO: In 0.9, make this an @abstactmetod
     @property
-    @raises_not_implemented
-    def public_key(self):
+    def public_key(self) -> Optional[HexBytes]:
         """
         The public key for the account.
         """
+        return None
 
     def sign_raw_msghash(self, msghash: "HexBytes") -> Optional[MessageSignature]:
         """

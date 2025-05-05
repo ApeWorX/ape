@@ -108,7 +108,7 @@ class KeyfileAccount(AccountAPI):
         return key
 
     @property
-    def public_key(self) -> HexBytes:
+    def public_key(self) -> Optional[HexBytes]:
         keyfile_data = self.keyfile
         if "public_key" in keyfile_data:
             return HexBytes(bytes.fromhex(keyfile_data["public_key"]))
