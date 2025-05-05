@@ -132,11 +132,12 @@ def test_name_from_config(project):
         assert project.name == "foo-bar"
 
 
-def test_repr(project):
-    actual = repr(project)
-    # NOTE: tmp path is NOT relative to home.
-    expected_project_path = str(project.path).replace(str(Path.home()), "$HOME")
-    expected = f"<ProjectManager {expected_project_path}>"
+def test_repr():
+    with create_tempdir() as tmpdir:
+        project = Project(tmpdir)
+        actual = repr(project)
+
+    expected = f"<ProjectManager {tmpdir}>"
     assert actual == expected
 
 
@@ -275,8 +276,10 @@ def test_getattr_ipython(tmp_project, iypthon_attr_name):
 
 
 def test_getattr_ipython_canary_check(tmp_project):
+    tmp_project.manifest.contract_types = {}
+
     with pytest.raises(AttributeError):
-        tmp_project._ipython_canary_method_should_not_exist_
+        _ = tmp_project._ipython_canary_method_should_not_exist_
 
     # Prove it did not compile looking for this.
     assert not tmp_project.manifest.contract_types
@@ -538,15 +541,14 @@ def test_unpack(project_with_source_files_contract):
 
 
 def test_unpack_includes_build_file(project_with_contracts):
-    build_path = project_with_contracts.path / ".build" / "__local__.json"
-    if not build_path.is_file():
-        build_path.parent.mkdir(parents=True)
-        build_path.write_text("{}", encoding="utf8")
+    with project_with_contracts.isolate_in_tempdir() as tmp_project:
+        buildfile = tmp_project.path / ".build" / "__local__.json"
+        buildfile.parent.mkdir(parents=True, exist_ok=True)
+        buildfile.write_text("{}", encoding="utf8")
 
-    with create_tempdir() as path:
-        expected = path / ".build" / "__local__.json"
-        project_with_contracts.unpack(path)
-        assert expected.is_file()
+        with create_tempdir() as path:
+            tmp_project.unpack(path)
+            assert (path / ".build" / "__local__.json").is_file()
 
 
 def test_unpack_includes_interfaces():

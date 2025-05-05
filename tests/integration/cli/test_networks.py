@@ -152,6 +152,7 @@ def test_list_geth(ape_cli, runner, networks, project):
     assert actual_uri.startswith("http")
 
 
+@geth_process_test
 @skip_projects_except("geth")
 def test_list_running(ape_cli, runner, geth_provider):
     result = runner.invoke(ape_cli, ("networks", "list", "--running"))

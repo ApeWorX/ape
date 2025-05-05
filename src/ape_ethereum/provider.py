@@ -1045,7 +1045,7 @@ class Web3Provider(ProviderAPI, ABC):
         last_hash = fake_last_block.hash or HexBytes(0)
         last: YieldAction = YieldAction(number=last_num, hash=last_hash, time=time.time())
 
-        # A helper method for various points of ensuring we didn't timeout.
+        # A helper method for various points of ensuring we didn't receive a timeout.
         def assert_chain_activity():
             time_waiting = time.time() - last.time
             if time_waiting > timeout:
@@ -1059,10 +1059,12 @@ class Web3Provider(ProviderAPI, ABC):
             try:
                 if head.number is None or head.hash is None:
                     raise ProviderError("Head block has no number or hash.")
+
                 # Use an "adjusted" head, based on the required confirmations.
                 adjusted_head = self.get_block(head.number - required_confirmations)
                 if adjusted_head.number is None or adjusted_head.hash is None:
                     raise ProviderError("Adjusted head block has no number or hash.")
+
             except Exception:
                 # TODO: I did encounter this sometimes in a re-org, needs better handling
                 # and maybe bubbling up the block number/hash exceptions above.
@@ -1086,7 +1088,8 @@ class Web3Provider(ProviderAPI, ABC):
                 # Catch up the chain by setting the "next" to this tiny head.
                 next_block = adjusted_head.number
 
-                # NOTE: Drop down to code outside of switch-of-ifs
+                last.time = time.time()
+                # NOTE: Drop down to code outside switch-of-ifs
 
             elif adjusted_head.number < next_block:
                 # Wait for the next block.
@@ -1101,15 +1104,16 @@ class Web3Provider(ProviderAPI, ABC):
                 block = self.get_block(block_idx)
                 if block.number is None or block.hash is None:
                     raise ProviderError("Block has no number or hash.")
-                yield block
-
-                # This is the point at which the daemon will end,
-                # provider the user passes in a `stop_block` arg.
-                if stop_block is not None and block.number >= stop_block:
-                    return
 
                 # Set the last action, used for checking timeouts and re-orgs.
                 last = YieldAction(number=block.number, hash=block.hash, time=time.time())
+
+                yield block
+
+                # This is the point at which the daemon will end,
+                # provided the user passes in a `stop_block` arg.
+                if stop_block is not None and block.number >= stop_block:
+                    return
 
     def poll_logs(
         self,

@@ -12,7 +12,7 @@ def mock_geth_sepolia(ethereum, geth_provider, geth_contract):
     network.
     """
     # Ensuring contract exists before hack.
-    # This allow the network to be past genesis which is more realistic.
+    # This allows the network to be past genesis which is more realistic.
     _ = geth_contract
     geth_provider.network.name = "sepolia"
     yield geth_provider.network
