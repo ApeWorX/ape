@@ -541,15 +541,14 @@ def test_unpack(project_with_source_files_contract):
 
 
 def test_unpack_includes_build_file(project_with_contracts):
-    build_path = project_with_contracts.path / ".build" / "__local__.json"
-    if not build_path.is_file():
-        build_path.parent.mkdir(parents=True, exist_ok=True)
-        build_path.write_text("{}", encoding="utf8")
+    with project_with_contracts.isolate_in_tempdir() as tmp_project:
+        buildfile = tmp_project.path / ".build" / "__local__.json"
+        buildfile.parent.mkdir(parents=True, exist_ok=True)
+        buildfile.write_text("{}", encoding="utf8")
 
-    with create_tempdir() as path:
-        expected = path / ".build" / "__local__.json"
-        project_with_contracts.unpack(path)
-        assert expected.is_file()
+        with create_tempdir() as path:
+            tmp_project.unpack(path)
+            assert (path / ".build" / "__local__.json").is_file()
 
 
 def test_unpack_includes_interfaces():
