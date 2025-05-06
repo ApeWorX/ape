@@ -1356,6 +1356,7 @@ class DependencyManager(BaseManager):
         between this and uninstalled dependencies Ape still nows about
         but require an extra install step, such as fetching from GitHub.
         """
+        yield from self.all
 
     @property
     def uri_map(self) -> dict[str, Url]:

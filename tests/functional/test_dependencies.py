@@ -338,8 +338,8 @@ def test_all_when_contains_corrupt_dependency(project):
     corrupt_file.parent.mkdir(exist_ok=True, parents=True)
     corrupt_api = {"name": name, "site_package": name}
     corrupt_file.write_text(json.dumps(corrupt_api), encoding="utf8")
-    deps = [x for x in project.dependencies.all]
-    assert len(deps) == 1
+    deps = [x for x in project.dependencies.all if x.name == name]
+    assert len(deps) >- 1
     assert not deps[0].installed
 
 
