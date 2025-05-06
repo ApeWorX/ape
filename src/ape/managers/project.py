@@ -740,14 +740,15 @@ class Dependency(BaseManager, ExtraAttributesMixin):
         project = None
         did_fetch = False
 
-        # Check and used already installed project if we can.
         if self._installation is not None and use_cache:
+            # Already has a cached installation.
             if config_override:
                 self._installation.reconfigure(**config_override)
 
             return self._installation
 
         elif not self._project_cache_exists or not use_cache:
+            # Project does not yet exist in the cache. We have to fetch the sources.
             unpacked = False
             if use_cache and self.manifest_path.is_file():
                 # Attempt using sources from manifest. This may happen
@@ -1438,6 +1439,13 @@ class DependencyManager(BaseManager):
                 return name_matches[0]
 
         if name_matches:
+            # If one of the matches is in the `.specified` dependencies, use that one.
+            specified = [d.package_id for d in self.specified]
+            for dep_match in name_matches:
+                if dep_match.package_id in specified:
+                    return dep_match
+
+            # Just use the first one and hope it is ok.
             return name_matches[0]
 
         # Was not found in this project's dependencies.
