@@ -1206,7 +1206,7 @@ class DependencyManager(BaseManager):
         return result
 
     def __contains__(self, name: str) -> bool:
-        for dependency in self.installed:
+        for dependency in self.all:
             if name == dependency.name:
                 return True
 
@@ -1214,17 +1214,17 @@ class DependencyManager(BaseManager):
 
     def keys(self) -> Iterator[str]:
         _ = [x for x in self.specified]  # Install specified if needed.
-        for dependency in self.installed:
+        for dependency in self.all:
             yield dependency.name
 
     def items(self) -> Iterator[tuple[str, dict[str, "ProjectManager"]]]:
         _ = [x for x in self.specified]  # Install specified if needed.
-        for dependency in self.installed:
+        for dependency in self.all:
             yield dependency.name, {dependency.version: dependency.project}
 
     def values(self) -> Iterator[dict[str, "ProjectManager"]]:
         _ = [x for x in self.specified]  # Install specified if needed.
-        for dependency in self.installed:
+        for dependency in self.all:
             yield {dependency.version: dependency.project}
 
     @property
@@ -1319,12 +1319,10 @@ class DependencyManager(BaseManager):
         for data in self.config.dependencies:
             yield self.decode_dependency(**data)
 
-    # TODO: We may want to discern between dependencies where their API files are known
-    #   versus dependencies where their projects are cached, as there is a difference.
     @property
-    def installed(self) -> Iterator[Dependency]:
+    def all(self) -> Iterator[Dependency]:
         """
-        All installed dependencies, regardless of their project
+        All dependencies known by Ape, regardless of their project
         affiliation. NOTE: By "installed" here, we simply
         mean the API files are cached and known by Ape.
         However, it does not guarantee the project is
@@ -1341,7 +1339,7 @@ class DependencyManager(BaseManager):
                 if not api_file.is_file():
                     continue
 
-                data = json.loads(api_file.read_text())
+                data = json.loads(api_file.read_text(encoding="utf-8"))
                 api = self.decode_dependency(**data)
                 if api.name == self.project.name:
                     # Don't include self as a dependency
@@ -1349,6 +1347,15 @@ class DependencyManager(BaseManager):
                     continue
 
                 yield self._create_dependency(api)
+
+    # TODO: Remove this in 0.9.
+    @property
+    def installed(self) -> Iterator[Dependency]:
+        """
+        DEPRECATED: Use ``.all``. Deprecated because of confusion
+        between this and uninstalled dependencies Ape still nows about
+        but require an extra install step, such as fetching from GitHub.
+        """
 
     @property
     def uri_map(self) -> dict[str, Url]:
@@ -1415,7 +1422,7 @@ class DependencyManager(BaseManager):
 
         # Check already-installed first to prevent having to install anything.
         name_matches = []
-        for dependency in self.installed:
+        for dependency in self.all:
             if dependency.package_id == name and dependency.version == version:
                 # If matching package-id, use that no matter what.
                 return dependency
@@ -1435,7 +1442,7 @@ class DependencyManager(BaseManager):
         # Was not found in this project's dependencies.
         checked.add(self.project.project_id)
 
-        deps = [*self.installed]
+        deps = [*self.all]
         if allow_install:
             deps.extend([*self.specified])
 
@@ -1481,7 +1488,7 @@ class DependencyManager(BaseManager):
 
         # Yield any remaining installed.
         using_package_id = False
-        for dependency in self.installed:
+        for dependency in self.all:
             if dependency.package_id != name:
                 continue
 
@@ -1497,7 +1504,7 @@ class DependencyManager(BaseManager):
             return
 
         # Never yield. Check if using short-name.
-        for dependency in self.installed:
+        for dependency in self.all:
             if dependency.name != name:
                 continue
 
@@ -1508,19 +1515,25 @@ class DependencyManager(BaseManager):
             versions_yielded.add(dependency.version)
 
     def _create_dependency(self, api: DependencyAPI) -> Dependency:
+        attempt_cache = True
         try:
             is_cached = self._cache.__contains__(api)
         except ProjectError:
             # Certain kinds of dependencies have no version ID
             # when uninstalled, and it will cause the hash error.
             is_cached = False
+            attempt_cache = False
 
         if is_cached:
             return self._cache[api]
 
         # Create new instance.
         dependency = Dependency(api, project=self.project)
-        self._cache[api] = dependency
+
+        # Only attempt cache if we are not getting an error hitting it.
+        if attempt_cache:
+            self._cache[api] = dependency
+
         return dependency
 
     def get_dependency(

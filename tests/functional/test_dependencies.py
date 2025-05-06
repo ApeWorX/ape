@@ -281,7 +281,7 @@ def test_uninstall(name, project_with_downloaded_dependencies):
     dependency = dm.get_dependency(name, version)
     dependency.uninstall()
     assert not any(
-        (d.name == name or d.package_id == name) and d.version == version for d in dm.installed
+        (d.name == name or d.package_id == name) and d.version == version for d in dm.all
     )
 
 
@@ -312,6 +312,35 @@ def test_unpack_no_contracts_folder(project, with_dependencies_project_path):
         list(dep.unpack(tempdir))
         subdirs = [x.name for x in tempdir.iterdir() if x.is_dir()]
         assert "empty-dependency" in subdirs
+
+
+def test_all(project):
+    # Set up an installed dependency.
+    packages_cache = project.dependencies.packages_cache
+    corrupt_file = packages_cache.api_folder / "dep" / "0_4_0.json"
+    corrupt_file.parent.mkdir(exist_ok=True, parents=True)
+    corrupt_api = {"name": "dep", "local": "."}
+    corrupt_file.write_text(json.dumps(corrupt_api), encoding="utf8")
+
+    # Iterate through the installed list.
+    deps = [x for x in project.dependencies.all]
+
+    # Show it is there.
+    assert len(deps) == 1
+    assert deps[0].name == "dep"
+    assert not deps[0].installed
+
+
+def test_all_when_contains_corrupt_dependency(project):
+    packages_cache = project.dependencies.packages_cache
+    name = "anothermissingpackagefromanapietest"
+    corrupt_file = packages_cache.api_folder / name / "0_1_0.json"
+    corrupt_file.parent.mkdir(exist_ok=True, parents=True)
+    corrupt_api = {"name": name, "site_package": name}
+    corrupt_file.write_text(json.dumps(corrupt_api), encoding="utf8")
+    deps = [x for x in project.dependencies.all]
+    assert len(deps) == 1
+    assert not deps[0].installed
 
 
 class TestPackagesCache:
