@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Optional, Union
 
 import requests
-from pydantic import model_validator
+from pydantic import model_validator, field_validator
 
 from ape.api.projects import DependencyAPI
 from ape.exceptions import ProjectError
@@ -52,7 +52,8 @@ class LocalDependency(DependencyAPI):
     def validate_local_path(cls, model):
         # Resolves the relative path so if the dependency API
         # data moves, it will still work.
-        path = Path(model["local"])
+        path = Path(model["local"]).expanduser().resolve()
+        model["local"] = f"{path}"
 
         # Automatically include `"name"`.
         if "name" not in model:

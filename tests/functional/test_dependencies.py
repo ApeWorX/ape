@@ -500,6 +500,11 @@ class TestLocalDependency:
     def test_uri(self, dependency):
         assert dependency.uri == self.PATH.as_uri()
 
+    def test_local_expands_user(self):
+        path = "~/path/to/dep"
+        dependency = LocalDependency(local=path, name=self.NAME, version=self.VERSION)
+        assert "~" not in f"{dependency.local}"
+
 
 class TestNpmDependency:
     NAME = "@gnosis.pm"
