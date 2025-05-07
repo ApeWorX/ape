@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Optional, Union
 
 import requests
-from pydantic import model_validator, field_validator
+from pydantic import model_validator
 
 from ape.api.projects import DependencyAPI
 from ape.exceptions import ProjectError
