@@ -160,6 +160,27 @@ def test_get_dependency_by_name(project_with_downloaded_dependencies):
     assert actual.package_id == "OpenZeppelin/openzeppelin-contracts"
 
 
+def test_get_dependency_returns_latest_updates(project, project_with_contracts):
+    """
+    Integration test showing how to utilize the changes to dependencies from the config.
+    """
+    cfg = [{"name": "dep", "version": "10.1.10", "local": f"{project_with_contracts.path}"}]
+    with project.temp_config(dependencies=cfg):
+        project.dependencies.install()
+
+        dep = project.dependencies.get_dependency("dep", "10.1.10")
+        assert dep.package_id == f"{project_with_contracts.path}"
+        assert dep.api.local == project_with_contracts.path
+
+        # Changing the version in the config and force re-installing should change the package data.
+        project.config["dependencies"][0]["local"] = f"{Path(__file__).parent}"
+        project.dependencies.install(use_cache=False)
+
+        # Show `.get_dependency()` will return the updated version when given name alone.
+        dep = project.dependencies.get_dependency("dep", "10.1.10")
+        assert dep.api.local == Path(__file__).parent
+
+
 def test_get_versions_using_package_id(project_with_downloaded_dependencies):
     dm = project_with_downloaded_dependencies.dependencies
     package_id = "OpenZeppelin/openzeppelin-contracts"
@@ -479,6 +500,11 @@ class TestLocalDependency:
     def test_uri(self, dependency):
         assert dependency.uri == self.PATH.as_uri()
 
+    def test_local_expands_user(self):
+        path = "~/path/to/dep"
+        dependency = LocalDependency(local=path, name=self.NAME, version=self.VERSION)
+        assert "~" not in f"{dependency.local}"
+
 
 class TestNpmDependency:
     NAME = "@gnosis.pm"
@@ -722,6 +748,15 @@ class TestPythonDependency:
             python_dependency.fetch(temp_dir)
             files = [x for x in temp_dir.iterdir()]
             assert len(files) > 0
+
+
+def test_specified(project, project_with_contracts):
+    cfg = [{"name": "dep", "version": "0.1.0", "local": f"{project_with_contracts}"}]
+    with project.temp_config(dependencies=cfg):
+        actual = [x for x in project.dependencies.specified]
+        assert len(actual) == 1
+        assert actual[0].name == "dep"
+        assert actual[0].version == "0.1.0"
 
 
 class TestDependency:
