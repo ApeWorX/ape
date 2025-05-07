@@ -385,6 +385,7 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#ape.managers.project.DependencyManager"><code class="docutils literal notranslate"><span class="pre">DependencyManager</span></code></a><ul>
 <li><a class="reference internal" href="#ape.managers.project.DependencyManager.__repr__"><code class="docutils literal notranslate">__repr__()</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.project.DependencyManager.add"><code class="docutils literal notranslate">add()</span></code></a></li>
+<li><a class="reference internal" href="#ape.managers.project.DependencyManager.all"><code class="docutils literal notranslate">all</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.project.DependencyManager.decode_dependency"><code class="docutils literal notranslate">decode_dependency()</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.project.DependencyManager.get_dependency"><code class="docutils literal notranslate">get_dependency()</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.project.DependencyManager.get_dependency_api"><code class="docutils literal notranslate">get_dependency_api()</span></code></a></li>
@@ -3088,6 +3089,16 @@ API data necessary for fetching the dependency.</p>
 </dl>
 </dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.managers.project.DependencyManager.all">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">all</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape.managers.project.Dependency" title="ape.managers.project.Dependency"><span class="pre">Dependency</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.managers.project.DependencyManager.all" title="Link to this definition"></a></dt>
+<dd><p>All dependencies known by Ape, regardless of their project
+affiliation. NOTE: By “installed” here, we simply
+mean the API files are cached and known by Ape.
+However, it does not guarantee the project is
+installed.</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.managers.project.DependencyManager.decode_dependency">
 <span class="sig-name descname"><span class="pre">decode_dependency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">item</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="api.html#ape.api.projects.DependencyAPI" title="ape.api.projects.DependencyAPI"><span class="pre">DependencyAPI</span></a></span></span><a class="headerlink" href="#ape.managers.project.DependencyManager.decode_dependency" title="Link to this definition"></a></dt>
@@ -3210,11 +3221,14 @@ of them, one for each specified.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="ape.managers.project.DependencyManager.installed">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">installed</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape.managers.project.Dependency" title="ape.managers.project.Dependency"><span class="pre">Dependency</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.managers.project.DependencyManager.installed" title="Link to this definition"></a></dt>
-<dd><p>All installed dependencies, regardless of their project
-affiliation. NOTE: By “installed” here, we simply
-mean the API files are cached and known by Ape.
-However, it does not guarantee the project is
-installed.</p>
+<dd><p>Use <code class="docutils literal notranslate"><span class="pre">.all</span></code>. Deprecated because of confusion
+between this and uninstalled dependencies Ape still nows about
+but require an extra install step, such as fetching from GitHub.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>DEPRECATED</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py property">
