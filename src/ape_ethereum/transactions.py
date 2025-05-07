@@ -9,8 +9,9 @@ from eth_account._utils.legacy_transactions import (
     encode_transaction,
     serializable_unsigned_transaction_from_dict,
 )
+from eth_account.typed_transactions.set_code_transaction import Authorization as EthAcctAuth
 from eth_pydantic_types import HexBytes
-from eth_utils import decode_hex, encode_hex, keccak, to_hex, to_int
+from eth_utils import decode_hex, encode_hex, keccak, to_canonical_address, to_hex, to_int
 from ethpm_types.abi import EventABI, MethodABI
 from pydantic import BaseModel, Field, field_validator, model_validator
 
@@ -20,6 +21,7 @@ from ape.logging import logger
 from ape.types.address import AddressType
 from ape.types.basic import HexInt
 from ape.types.events import ContractLog, ContractLogContainer
+from ape.types.signatures import MessageSignature
 from ape.types.trace import SourceTraceback
 from ape.utils.misc import ZERO_ADDRESS
 from ape_ethereum.trace import Trace, _events_to_trees
@@ -55,6 +57,7 @@ class TransactionType(Enum):
     ACCESS_LIST = 1  # EIP-2930
     DYNAMIC = 2  # EIP-1559
     SHARED_BLOB = 3  # EIP-4844
+    SET_CODE = 4  # EIP-7702
 
 
 class AccessList(BaseModel):
@@ -184,6 +187,40 @@ class SharedBlobTransaction(DynamicFeeTransaction):
     """
     Overridden because EIP-4844 states it cannot be nil.
     """
+
+
+class Authorization(BaseModel):
+    """
+    `EIP-7702 <https://eips.ethereum.org/EIPS/eip-7702>`__ authorization list item.
+    """
+
+    chain_id: HexInt = Field(alias="chainId")
+    address: AddressType
+    nonce: HexInt
+    v: HexInt = Field(alias="yParity")
+    r: HexBytes
+    s: HexBytes
+
+    @property
+    def signature(self) -> MessageSignature:
+        return MessageSignature(v=self.v, r=self.r, s=self.s)
+
+    @cached_property
+    def authority(self) -> AddressType:
+        msg = EthAcctAuth(
+            chainId=self.chain_id,
+            address=to_canonical_address(self.address),
+            nonce=self.nonce,
+        )
+        return EthAccount._recover_hash(msg.hash(), vrs=(self.v, self.r, self.s))
+
+
+class SetCodeTransaction(DynamicFeeTransaction):
+    """
+    `EIP-7702 <https://eips.ethereum.org/EIPS/eip-7702>`__ transactions.
+    """
+
+    authorizations: list[Authorization] = Field(alias="authorizationList")
 
 
 class Receipt(ReceiptAPI):
