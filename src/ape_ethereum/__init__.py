@@ -66,6 +66,7 @@ def __getattr__(name):
 
     elif name in (
         "AccessListTransaction",
+        "Authorization",
         "BaseTransaction",
         "DynamicFeeTransaction",
         "Receipt",
@@ -91,6 +92,7 @@ def __getattr__(name):
 
 __all__ = [
     "AccessListTransaction",
+    "Authorization",
     "BaseEthereumConfig",
     "BaseTransaction",
     "Block",
