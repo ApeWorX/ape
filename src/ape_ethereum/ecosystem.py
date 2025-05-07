@@ -70,6 +70,7 @@ from ape_ethereum.transactions import (
     BaseTransaction,
     DynamicFeeTransaction,
     Receipt,
+    SetCodeTransaction,
     SharedBlobReceipt,
     SharedBlobTransaction,
     StaticFeeTransaction,
@@ -435,8 +436,12 @@ class Ethereum(EcosystemAPI):
 
         if tx_type is TransactionType.STATIC:
             return StaticFeeTransaction
+
         elif tx_type is TransactionType.ACCESS_LIST:
             return AccessListTransaction
+
+        elif tx_type is TransactionType.SET_CODE:
+            return SetCodeTransaction
 
         return DynamicFeeTransaction
 
@@ -898,6 +903,7 @@ class Ethereum(EcosystemAPI):
             TransactionType.ACCESS_LIST: AccessListTransaction,
             TransactionType.DYNAMIC: DynamicFeeTransaction,
             TransactionType.SHARED_BLOB: SharedBlobTransaction,
+            TransactionType.SET_CODE: SetCodeTransaction,
         }
         if "type" in tx_data:
             # May be None in data.
