@@ -52,7 +52,7 @@ class LocalDependency(DependencyAPI):
     def validate_local_path(cls, model):
         # Resolves the relative path so if the dependency API
         # data moves, it will still work.
-        path = Path(model["local"]).expanduser().resolve()
+        path = Path(model["local"]).expanduser()
         model["local"] = f"{path}"
 
         # Automatically include `"name"`.
