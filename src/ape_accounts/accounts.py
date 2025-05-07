@@ -12,16 +12,19 @@ from eth_account.hdaccount import ETHEREUM_DEFAULT_PATH
 from eth_account.messages import encode_defunct
 from eth_pydantic_types import HexBytes
 from eth_typing import HexStr
-from eth_utils import remove_0x_prefix, to_bytes, to_hex
+from eth_utils import remove_0x_prefix, to_bytes, to_hex, to_checksum_address
 
 from ape.api.accounts import AccountAPI, AccountContainerAPI
+from ape.contracts.base import ContractInstance
 from ape.exceptions import AccountsError
 from ape.logging import logger
 from ape.types.signatures import MessageSignature, SignableMessage, TransactionSignature
 from ape.utils._web3_compat import sign_hash
 from ape.utils.basemodel import ManagerAccessMixin
-from ape.utils.misc import derive_public_key, log_instead_of_fail
+from ape.utils.misc import ZERO_ADDRESS, derive_public_key, log_instead_of_fail
 from ape.utils.validators import _validate_account_alias, _validate_account_passphrase
+from ape_ethereum import Authorization
+from ape_ethereum.transactions import TransactionType
 
 if TYPE_CHECKING:
     from eth_account.signers.local import LocalAccount
@@ -165,6 +168,24 @@ class KeyfileAccount(AccountAPI):
         self.__decrypt_keyfile(passphrase)
         self.keyfile_path.unlink()
 
+    def sign_authorization(
+        self,
+        address: "AddressType",
+        chain_id: Optional[int] = None,
+    ) -> Optional[MessageSignature]:
+        if chain_id is None:
+            chain_id = self.provider.chain_id
+
+        display_msg = f"Allow **full root access** to '{address}' on {chain_id or 'any chain'}?"
+        if not click.confirm(click.style(f"{display_msg}\n\nSign: ", fg="yellow")):
+            return None
+
+        signed_authorization = EthAccount.sign_authorization(
+            dict(address=address, chainId=chain_id, nonce=self.nonce),
+            self.__key,
+        )
+        return MessageSignature.from_rsv(signed_authorization.signature)
+
     def sign_message(self, msg: Any, **signer_options) -> Optional[MessageSignature]:
         display_msg, msg = _get_signing_message_with_display(msg)
         if display_msg is None:
@@ -255,6 +276,46 @@ class KeyfileAccount(AccountAPI):
             return EthAccount.decrypt(self.keyfile, passphrase)
         except ValueError as err:
             raise InvalidPasswordError() from err
+
+    @property
+    def delegate(self) -> Optional[ContractInstance]:
+        if (code := self.code)[:3] == HexBytes("0xef0100"):
+            address = to_checksum_address(code[3:])
+            return self.chain_manager.contracts.instance_at(address)
+
+        return None
+
+    def set_delegate(self, contract: ContractInstance, **txn_kwargs):
+        sig = self.sign_authorization(contract.address)
+        auth = Authorization.from_signature(
+            address=contract.address,
+            chain_id=self.provider.chain_id,
+            nonce=self.nonce,
+            signature=sig,
+        )
+        tx = self.provider.network.ecosystem.create_transaction(
+            type=TransactionType.SET_CODE,
+            authorizations=[auth],
+            sender=self,
+            **txn_kwargs,
+        )
+        return self.call(tx)
+
+    def remove_delegate(self, **txn_kwargs):
+        sig = self.sign_authorization(ZERO_ADDRESS)
+        auth = Authorization.from_signature(
+            chain_id=self.provider.chain_id,
+            address=ZERO_ADDRESS,
+            nonce=self.nonce,
+            signature=sig,
+        )
+        tx = self.provider.network.ecosystem.create_transaction(
+            type=TransactionType.SET_CODE,
+            authorizations=[auth],
+            sender=self,
+            **txn_kwargs,
+        )
+        return self.call(tx)
 
 
 def _write_and_return_account(
