@@ -221,7 +221,7 @@ class SetCodeTransaction(DynamicFeeTransaction):
     """
 
     type: HexInt = TransactionType.SET_CODE.value
-    authorizations: list[Authorization] = Field(alias="authorizationList")
+    authorizations: list[Authorization] = Field(default_factory=list, alias="authorizationList")
 
 
 class Receipt(ReceiptAPI):
