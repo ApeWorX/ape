@@ -199,20 +199,11 @@ def install(cli_ctx, package, name, version, ref, force, config_override, no_rec
         if version:
             cli_ctx.abort("Cannot specify version when installing from config.")
 
-        # Print out all the dependencies being installed.
-        if deps_to_install := [d for d in pm.dependencies.specified if force or not d.installed]:
-            click.echo(
-                "\n".join(
-                    f"Installing {d.package_id.replace(f'{Path.home()}', '$HOME')}"
-                    for d in deps_to_install
-                )
-            )
-
         pm.dependencies.install(use_cache=not force, recurse=not no_recurse)
         message = "All project packages installed."
 
         # In the case the user didn't realize --force is required to re-install.
-        if not deps_to_install and not force:
+        if not force:
             message = f"{message} Use `--force` to re-install."
 
         cli_ctx.logger.success(message)
