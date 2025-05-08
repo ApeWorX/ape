@@ -760,7 +760,9 @@ class Dependency(BaseManager, ExtraAttributesMixin):
             if use_cache and self.manifest_path.is_file():
                 # Attempt using sources from manifest. This may happen
                 # if having deleted dependencies but not their manifests.
-                man = PackageManifest.model_validate_json(self.manifest_path.read_text(encoding="utf8"))
+                man = PackageManifest.model_validate_json(
+                    self.manifest_path.read_text(encoding="utf8")
+                )
                 if man.sources:
                     self.project_path.mkdir(parents=True, exist_ok=True)
                     man.unpack_sources(self.project_path)
@@ -800,7 +802,9 @@ class Dependency(BaseManager, ExtraAttributesMixin):
                 if suffix == ".json":
                     path = paths[0]
                     try:
-                        manifest = PackageManifest.model_validate_json(path.read_text(encoding="utf8"))
+                        manifest = PackageManifest.model_validate_json(
+                            path.read_text(encoding="utf8")
+                        )
                     except Exception:
                         # False alarm.
                         pass
@@ -1316,7 +1320,9 @@ class DependencyManager(BaseManager):
 
             if allow_install:
                 try:
-                    dependency.install(use_cache=use_cache, config_override=config_override, recurse=recurse)
+                    dependency.install(
+                        use_cache=use_cache, config_override=config_override, recurse=recurse
+                    )
                 except ProjectError as err:
                     if strict:
                         raise  # This error.
@@ -1686,7 +1692,9 @@ class DependencyManager(BaseManager):
         # Install all project's.
         result: list[Dependency] = []
 
-        for dep in self.get_project_dependencies(use_cache=use_cache, allow_install=True, recurse=recurse):
+        for dep in self.get_project_dependencies(
+            use_cache=use_cache, allow_install=True, recurse=recurse
+        ):
             result.append(dep)
 
         return result
