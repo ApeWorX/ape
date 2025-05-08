@@ -1657,15 +1657,17 @@ class DependencyManager(BaseManager):
         Args:
             **dependency: Dependency data, same to what you put in `dependencies:` config.
               When excluded, installs all project-specified dependencies. Also, use
-              ``use_cache=False`` to force re-installing.
+              ``use_cache=False`` to force re-installing and ``recurse=False`` to avoid
+              installing dependencies of dependencies.
 
         Returns:
             :class:`~ape.managers.project.Dependency` when given data else a list
             of them, one for each specified.
         """
         use_cache: bool = dependency.pop("use_cache", True)
+        recurse: bool = dependency.pop("recurse", True)
         if dependency:
-            return self.install_dependency(dependency, use_cache=use_cache)
+            return self.install_dependency(dependency, use_cache=use_cache, recurse=recurse)
 
         # Install all project's.
         result: list[Dependency] = []
@@ -1681,9 +1683,10 @@ class DependencyManager(BaseManager):
         dependency_data: Union[dict, DependencyAPI],
         use_cache: bool = True,
         config_override: Optional[dict] = None,
+        recurse: bool = True,
     ) -> Dependency:
         dependency = self.add(dependency_data)
-        dependency.install(use_cache=use_cache, config_override=config_override)
+        dependency.install(use_cache=use_cache, config_override=config_override, recurse=recurse)
         return dependency
 
     def unpack(self, base_path: Path, cache_name: str = ".cache"):
