@@ -27,6 +27,8 @@ from ape.utils.misc import ZERO_ADDRESS
 from ape_ethereum.trace import Trace, _events_to_trees
 
 if TYPE_CHECKING:
+    from typing import Self
+
     from ethpm_types import ContractType
 
     from ape.contracts import ContractEvent
@@ -200,6 +202,23 @@ class Authorization(BaseModel):
     v: HexInt = Field(alias="yParity")
     r: HexBytes
     s: HexBytes
+
+    @classmethod
+    def from_signature(
+        cls,
+        chain_id: int,
+        address: AddressType,
+        nonce: int,
+        signature: MessageSignature,
+    ) -> "Self":
+        return cls(
+            chainId=chain_id,
+            address=address,
+            nonce=nonce,
+            yParity=signature.v,
+            r=signature.r,
+            s=signature.s,
+        )
 
     @property
     def signature(self) -> MessageSignature:
