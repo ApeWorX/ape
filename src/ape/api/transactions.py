@@ -207,8 +207,8 @@ class TransactionAPI(BaseInterfaceModel):
         # (4 bytes for function selector and trailing 4 bytes).
         calldata = HexBytes(data['data'])
         data["data"] = (
-            calldata[:4].to_0x_hex() + "..." + calldata[-4:].hex() 
-            if calldata_repr == "abridged" and len(calldata) > 8 
+            calldata[:4].to_0x_hex() + "..." + calldata[-4:].hex()
+            if calldata_repr == "abridged" and len(calldata) > 8
             else calldata.to_0x_hex()
         )
 
