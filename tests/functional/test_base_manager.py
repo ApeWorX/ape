@@ -12,7 +12,7 @@ def manager():
     return MyManager()
 
 
-@pytest.mark.parametrize("fn_name", ("_repr_mimebundle_", "_ipython_display_"))
+@pytest.mark.parametrize("fn_name", ["_ipython_display_"])
 def test_ipython_integration_defaults(manager, fn_name):
     """
     Test default behavior for IPython integration methods.

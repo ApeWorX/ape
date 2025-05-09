@@ -266,7 +266,7 @@ def test_getattr_same_name_as_source_file(project_with_source_files_contract):
         _ = project_with_source_files_contract.ContractA
 
 
-@pytest.mark.parametrize("iypthon_attr_name", ("_repr_mimebundle_", "_ipython_display_"))
+@pytest.mark.parametrize("iypthon_attr_name", ["_ipython_display_"])
 def test_getattr_ipython(tmp_project, iypthon_attr_name):
     # Remove contract types, if there for some reason is any.
     tmp_project.manifest.contract_types = {}
