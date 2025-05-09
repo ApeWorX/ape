@@ -203,25 +203,14 @@ class TransactionAPI(BaseInterfaceModel):
             # If was not specified, use the default value from the config.
             calldata_repr = self.local_project.config.display.calldata
 
-        if calldata_repr == "full" or len(data["data"]) <= 9:
-            data["data"] = (
-                to_hex(bytes(data["data"], encoding="utf8"))
-                if isinstance(data["data"], str)
-                else to_hex(bytes(data["data"]))
-            )
-
-        else:
-            # Only want to specify encoding if data["data"] is a string
-            data["data"] = (
-                (
-                    "0x"
-                    + bytes(data["data"][:4], encoding="utf8").hex()
-                    + "..."
-                    + bytes(data["data"][-4:], encoding="utf8").hex()
-                )
-                if isinstance(data["data"], str)
-                else to_hex(bytes(data["data"][:4])) + "..." + to_hex(bytes(data["data"][-4:]))
-            )
+        # Ellide the transaction calldata for abridged representations if the length exceeds 8
+        # (4 bytes for function selector and trailing 4 bytes).
+        calldata = HexBytes(data['data'])
+        data["data"] = (
+            calldata[:4].to_0x_hex() + "..." + calldata[-4:].hex() 
+            if calldata_repr == "abridged" and len(calldata) > 8 
+            else calldata.to_0x_hex()
+        )
 
         params = "\n  ".join(f"{k}: {v}" for k, v in data.items())
         cls_name = getattr(type(self), "__name__", TransactionAPI.__name__)
