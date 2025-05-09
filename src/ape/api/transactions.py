@@ -205,7 +205,7 @@ class TransactionAPI(BaseInterfaceModel):
 
         if calldata_repr == "full" or len(data["data"]) <= 9:
             data["data"] = (
-                to_hex(bytes(data["data"], encoding="utf8"))
+                (data["data"] if is_hex(data["data"]) else to_hex(bytes(data["data"], encoding="utf8")))
                 if isinstance(data["data"], str)
                 else to_hex(bytes(data["data"]))
             )
