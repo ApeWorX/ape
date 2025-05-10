@@ -220,7 +220,6 @@ class SetCodeTransaction(DynamicFeeTransaction):
     `EIP-7702 <https://eips.ethereum.org/EIPS/eip-7702>`__ transactions.
     """
 
-    type: HexInt = TransactionType.SET_CODE.value
     authorizations: list[Authorization] = Field(default_factory=list, alias="authorizationList")
 
 
