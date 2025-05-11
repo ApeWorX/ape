@@ -926,6 +926,8 @@ class Ethereum(EcosystemAPI):
             version = TransactionType.ACCESS_LIST
         elif "maxFeePerBlobGas" in tx_data or "blobVersionedHashes" in tx_data:
             version = TransactionType.SHARED_BLOB
+        elif "authorizationList" in tx_data:
+            version = TransactionType.SET_CODE
         else:
             version = self.default_transaction_type
 
