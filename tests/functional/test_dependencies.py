@@ -282,9 +282,9 @@ def test_install(project, mocker):
         assert isinstance(project, ProjectManager)
         assert dependency.project_path.is_dir()  # Was re-created from manifest sources.
 
-        # Force install and prove it actually does the re-install.
+        # Force install and prove it actually does the re-installation.
         tmp_project.dependencies.install(use_cache=False)
-        get_spec_spy.assert_called_once_with(use_cache=False)
+        get_spec_spy.assert_called_once_with(use_cache=False, allow_install=True, recurse=True)
 
 
 def test_install_dependencies_of_dependencies(project, with_dependencies_project_path):

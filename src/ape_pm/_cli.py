@@ -188,7 +188,8 @@ def _package_callback(ctx, param, value):
 )
 @click.option("--force", "-f", help="Force a re-install", is_flag=True)
 @config_override_option()
-def install(cli_ctx, package, name, version, ref, force, config_override):
+@click.option("--no-recurse", is_flag=True, help="Avoids installing dependencies of dependencies")
+def install(cli_ctx, package, name, version, ref, force, config_override, no_recurse):
     """
     Download and cache packages
     """
@@ -198,8 +199,10 @@ def install(cli_ctx, package, name, version, ref, force, config_override):
         if version:
             cli_ctx.abort("Cannot specify version when installing from config.")
 
-        pm.dependencies.install(use_cache=not force)
+        pm.dependencies.install(use_cache=not force, recurse=not no_recurse)
         message = "All project packages installed."
+
+        # In the case the user didn't realize --force is required to re-install.
         if not force:
             message = f"{message} Use `--force` to re-install."
 
@@ -221,7 +224,7 @@ def install(cli_ctx, package, name, version, ref, force, config_override):
         package["config_override"] = config_override
 
     try:
-        dependency = pm.dependencies.install(**package, use_cache=not force)
+        dependency = pm.dependencies.install(**package, use_cache=not force, recurse=not no_recurse)
     except Exception as err:
         cli_ctx.logger.log_error(err)
         sys.exit(1)

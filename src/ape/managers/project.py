@@ -628,6 +628,13 @@ class Dependency(BaseManager, ExtraAttributesMixin):
         return self.api.package_id
 
     @property
+    def clean_package_id(self) -> str:
+        """
+        The package ID hiding the user information.
+        """
+        return self.api.package_id.replace(f"{Path.home()}", "$HOME")
+
+    @property
     def version(self) -> str:
         """
         The version of the dependency. Combined with the
@@ -753,7 +760,9 @@ class Dependency(BaseManager, ExtraAttributesMixin):
             if use_cache and self.manifest_path.is_file():
                 # Attempt using sources from manifest. This may happen
                 # if having deleted dependencies but not their manifests.
-                man = PackageManifest.model_validate_json(self.manifest_path.read_text())
+                man = PackageManifest.model_validate_json(
+                    self.manifest_path.read_text(encoding="utf8")
+                )
                 if man.sources:
                     self.project_path.mkdir(parents=True, exist_ok=True)
                     man.unpack_sources(self.project_path)
@@ -767,6 +776,7 @@ class Dependency(BaseManager, ExtraAttributesMixin):
                 self.project_path.parent.mkdir(parents=True, exist_ok=True)
                 self._tried_fetch = True
 
+                logger.info(f"Installing {self.clean_package_id} {self.api.version_id}")
                 try:
                     self.api.fetch(self.project_path)
                 except Exception as err:
@@ -792,7 +802,9 @@ class Dependency(BaseManager, ExtraAttributesMixin):
                 if suffix == ".json":
                     path = paths[0]
                     try:
-                        manifest = PackageManifest.model_validate_json(path.read_text())
+                        manifest = PackageManifest.model_validate_json(
+                            path.read_text(encoding="utf8")
+                        )
                     except Exception:
                         # False alarm.
                         pass
@@ -1268,6 +1280,8 @@ class DependencyManager(BaseManager):
         name: Optional[str] = None,
         version: Optional[str] = None,
         allow_install: bool = True,
+        strict: bool = False,
+        recurse: bool = True,
     ) -> Iterator[Dependency]:
         """
         Get dependencies specified in the project's ``ape-config.yaml`` file.
@@ -1278,8 +1292,9 @@ class DependencyManager(BaseManager):
             config_override (Optional[dict]): Override shared configuration for each dependency.
             name (Optional[str]): Optionally only get dependencies with a certain name.
             version (Optional[str]): Optionally only get dependencies with certain version.
-            allow_install (bool): Set to ``False`` to not allow installing uninstalled
-              specified dependencies.
+            allow_install (bool): Set to ``False`` to not allow installing uninstalled specified dependencies.
+            strict (bool): ``True`` requires the dependency to either be installed or install properly.
+            recurse (bool): Set to ``False`` to not recursively install dependencies of dependencies.
 
         Returns:
             Iterator[:class:`~ape.managers.project.Dependency`]
@@ -1305,8 +1320,13 @@ class DependencyManager(BaseManager):
 
             if allow_install:
                 try:
-                    dependency.install(use_cache=use_cache, config_override=config_override)
+                    dependency.install(
+                        use_cache=use_cache, config_override=config_override, recurse=recurse
+                    )
                 except ProjectError as err:
+                    if strict:
+                        raise  # This error.
+
                     # This dependency has issues. Let's wait to until the user
                     # actually requests something before failing, and
                     # yield an uninstalled version of the specified dependency for
@@ -1657,21 +1677,24 @@ class DependencyManager(BaseManager):
         Args:
             **dependency: Dependency data, same to what you put in `dependencies:` config.
               When excluded, installs all project-specified dependencies. Also, use
-              ``use_cache=False`` to force re-installing.
+              ``use_cache=False`` to force re-installing and ``recurse=False`` to avoid
+              installing dependencies of dependencies.
 
         Returns:
             :class:`~ape.managers.project.Dependency` when given data else a list
             of them, one for each specified.
         """
         use_cache: bool = dependency.pop("use_cache", True)
+        recurse: bool = dependency.pop("recurse", True)
         if dependency:
-            return self.install_dependency(dependency, use_cache=use_cache)
+            return self.install_dependency(dependency, use_cache=use_cache, recurse=recurse)
 
         # Install all project's.
         result: list[Dependency] = []
 
-        # Log the errors as they happen but don't crash the full installation.
-        for dep in self.get_project_dependencies(use_cache=use_cache):
+        for dep in self.get_project_dependencies(
+            use_cache=use_cache, allow_install=True, recurse=recurse
+        ):
             result.append(dep)
 
         return result
@@ -1681,9 +1704,10 @@ class DependencyManager(BaseManager):
         dependency_data: Union[dict, DependencyAPI],
         use_cache: bool = True,
         config_override: Optional[dict] = None,
+        recurse: bool = True,
     ) -> Dependency:
         dependency = self.add(dependency_data)
-        dependency.install(use_cache=use_cache, config_override=config_override)
+        dependency.install(use_cache=use_cache, config_override=config_override, recurse=recurse)
         return dependency
 
     def unpack(self, base_path: Path, cache_name: str = ".cache"):

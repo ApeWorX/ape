@@ -150,6 +150,14 @@ def test_install_name_with_version_flag(pm_runner, integ_project):
     assert f"Package '{dependency.name}@{dependency.version}' installed." in result.output
 
 
+@skip_projects_except("with-dependencies")
+def test_install_no_recurse(pm_runner, integ_project):
+    pm_runner.project = integ_project
+    result = pm_runner.invoke("install", "--no-recurse")
+    assert result.exit_code == 0, result.output
+    assert "containing_sub_dependencies/sub_dependency" not in result.output
+
+
 @run_once
 def test_compile_package_not_exists(pm_runner, integ_project):
     pm_runner.project = integ_project
