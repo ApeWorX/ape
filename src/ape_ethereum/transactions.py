@@ -221,6 +221,10 @@ class SetCodeTransaction(DynamicFeeTransaction):
     """
 
     authorizations: list[Authorization] = Field(default_factory=list, alias="authorizationList")
+    receiver: AddressType = Field(default=ZERO_ADDRESS, alias="to")
+    """
+    Overridden because EIP-7702 states it cannot be nil.
+    """
 
 
 class Receipt(ReceiptAPI):
