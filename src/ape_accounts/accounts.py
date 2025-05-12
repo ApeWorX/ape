@@ -12,7 +12,7 @@ from eth_account.hdaccount import ETHEREUM_DEFAULT_PATH
 from eth_account.messages import encode_defunct
 from eth_pydantic_types import HexBytes
 from eth_typing import HexStr
-from eth_utils import remove_0x_prefix, to_bytes, to_hex, to_checksum_address
+from eth_utils import remove_0x_prefix, to_bytes, to_checksum_address, to_hex
 
 from ape.api.accounts import AccountAPI, AccountContainerAPI
 from ape.contracts.base import ContractInstance
