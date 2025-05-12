@@ -710,6 +710,7 @@ def test_dir(core_account):
         "nonce",
         "prepare_transaction",
         "provider",
+        "sign_authorization",
         "sign_message",
         "sign_transaction",
         "transfer",
