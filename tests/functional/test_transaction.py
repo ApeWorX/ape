@@ -323,9 +323,7 @@ def test_str_when_data_is_long_and_configured_full_calldata(project, vyper_contr
     with project.temp_config(display={"calldata": "full"}):
         actual = str(txn)
 
-    expected = (
-        "data: 0x3fb5c1cb000000000000000000000000000000000000000000000000000000000000007b"
-    )
+    expected = "data: 0x3fb5c1cb000000000000000000000000000000000000000000000000000000000000007b"
     assert isinstance(actual, str)
     assert expected in actual
 
