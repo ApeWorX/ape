@@ -315,7 +315,7 @@ def test_str_when_data_is_long_shows_first_4_bytes(vyper_contract_instance):
     txn = vyper_contract_instance.setNumber.as_transaction(123)
     actual = str(txn)
     assert isinstance(actual, str)
-    assert "data: 0x30783366..." in actual
+    assert "data: 0x3fb5c1cb..." in actual
 
 
 def test_str_when_data_is_long_and_configured_full_calldata(project, vyper_contract_instance):
@@ -324,8 +324,7 @@ def test_str_when_data_is_long_and_configured_full_calldata(project, vyper_contr
         actual = str(txn)
 
     expected = (
-        "data: 0x3078336662356331636230303030303030303030303030303030303030303030303030"
-        "303030303030303030303030303030303030303030303030303030303030303030303030303762"
+        "data: 0x3fb5c1cb000000000000000000000000000000000000000000000000000000000000007b"
     )
     assert isinstance(actual, str)
     assert expected in actual
