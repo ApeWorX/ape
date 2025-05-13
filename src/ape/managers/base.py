@@ -8,11 +8,6 @@ class BaseManager(ManagerAccessMixin):
     """
 
     @raises_not_implemented
-    def _repr_mimebundle_(self, include=None, exclude=None):
-        # This works better than AttributeError for Ape.
-        pass
-
-    @raises_not_implemented
     def _ipython_display_(self, include=None, exclude=None):
         # This works better than AttributeError for Ape.
         pass
