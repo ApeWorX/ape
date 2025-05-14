@@ -11,7 +11,7 @@ from eth_abi.encoding import UnsignedIntegerEncoder
 from eth_abi.exceptions import DecodingError, InsufficientDataBytes
 from eth_abi.registry import BaseEquals, registry
 from eth_pydantic_types import HexBytes, HexStr
-from eth_pydantic_types.validators import validate_bytes_size
+from eth_pydantic_types.utils import validate_bytes_size
 from eth_utils import decode_hex
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, EventABIType, MethodABI
 

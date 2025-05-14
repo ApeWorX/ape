@@ -3,8 +3,7 @@ from queue import Queue
 from typing import TYPE_CHECKING, Optional
 
 import pytest
-from eth_pydantic_types import HexBytes
-from eth_pydantic_types.hash import HashBytes20
+from eth_pydantic_types import HexBytes, HexBytes20
 from eth_utils import to_hex
 from ethpm_types import ContractType
 
@@ -474,7 +473,7 @@ def test_model_dump(solidity_contract_container, owner):
 def test_model_dump_hexbytes(mode):
     # NOTE: There was an issue when using HexBytes for Any.
     event_arguments = {"key": 123, "validators": [HexBytes(123)]}
-    txn_hash = HashBytes20.__eth_pydantic_validate__(347374237412374174)
+    txn_hash = HexBytes20.__eth_pydantic_validate__(347374237412374174)
     event = ContractLog(
         block_number=123,
         block_hash="block-hash",
@@ -497,7 +496,7 @@ def test_model_dump_json():
         event_arguments=event_arguments,
         event_name="MyEvent",
         log_index=0,
-        transaction_hash=HashBytes20.__eth_pydantic_validate__(347374237412374174),
+        transaction_hash=HexBytes20.__eth_pydantic_validate__(347374237412374174),
     )
     actual = event.model_dump_json()
     assert actual == (
