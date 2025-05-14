@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Optional, cast
 
 import pytest
-from eth_pydantic_types import HashBytes32
+from eth_pydantic_types import HexBytes32
 from eth_typing import HexStr
 from eth_utils import keccak, to_hex
 from hexbytes import HexBytes
@@ -556,7 +556,7 @@ def test_send_transaction_when_no_error_and_receipt_fails(
     geth_provider._web3 = mock_web3
     # Getting a receipt "works", but you get a failed one.
     # NOTE: Value is meaningless.
-    tx_hash = HashBytes32.__eth_pydantic_validate__(123**36)
+    tx_hash = HexBytes32.__eth_pydantic_validate__(123**36)
     receipt_data = {
         "failed": True,
         "blockNumber": 0,
