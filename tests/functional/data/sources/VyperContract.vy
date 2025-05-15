@@ -67,6 +67,7 @@ balances: public(HashMap[address, uint256])
 dynArray: public(DynArray[uint256, 3][3])
 mixedArray: public(DynArray[DynArray[uint256, 3][3], 3][5])
 arraysLoaded: bool
+myStruct: public(MyStruct)
 
 MAX_FOO : constant(uint256) = 5
 
@@ -285,10 +286,9 @@ def functionWithUniqueAmountOfArguments(
 def functionWithCalldata(data: Bytes[1_024]=b""):
     pass
 
-@pure
 @external
 def setStruct(_my_struct: MyStruct):
-    pass
+    self.myStruct= _my_struct
 
 @pure
 @external

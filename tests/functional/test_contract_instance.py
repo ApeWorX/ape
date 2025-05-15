@@ -752,28 +752,61 @@ def test_is_contract_when_code_is_str(mock_provider, owner):
     assert not owner.is_contract
 
 
-def test_obj_as_struct_input(contract_instance, owner, data_object):
-    assert contract_instance.setStruct(data_object) is None
+def test_struct_input_obj(contract_instance, owner, data_object):
+    assert not contract_instance.setStruct(data_object, sender=owner).failed
+    actual = contract_instance.myStruct()
+
+    assert actual.a == data_object.a
+
+    # B is automatically left-padded.
+    expected_b = HexBytes("0x000000000000000000000000000000000000000000000000000000000000007b")
+    assert actual.b == expected_b
+
+    assert actual.c == data_object.c
 
 
-def test_dict_as_struct_input(contract_instance, owner):
+def test_struct_input_dict(contract_instance, owner):
     # NOTE: Also showing extra keys like "extra_key" don't matter and are ignored.
     data = {"a": owner, "b": HexBytes(123), "c": 999, "extra_key": "GETS_IGNORED"}
-    assert contract_instance.setStruct(data) is None
+    assert not contract_instance.setStruct(data, sender=owner).failed
+    actual = contract_instance.myStruct()
+    assert actual.a == data["a"].address
+
+    # B is automatically left-padded.
+    expected_b = HexBytes("0x000000000000000000000000000000000000000000000000000000000000007b")
+    assert actual.b == expected_b
+
+    assert actual.c == data["c"]
 
 
-def test_tuple_as_struct_input(contract_instance, owner):
+def test_struct_input_tuple(contract_instance, owner):
     # NOTE: Also showing extra keys like "extra_key" don't matter and are ignored.
     data = (owner, HexBytes(123), 999, "GES_IGNORED")
-    assert contract_instance.setStruct(data) is None
+    assert not contract_instance.setStruct(data, sender=owner).failed
+    actual = contract_instance.myStruct()
+    assert actual.a == data[0].address
+
+    # B is automatically left-padded.
+    expected_b = HexBytes("0x000000000000000000000000000000000000000000000000000000000000007b")
+    assert actual.b == expected_b
+
+    assert actual.c == data[2]
 
 
-def test_named_tuple_as_struct_input(contract_instance, owner):
+def test_struct_input_namedtuple(contract_instance, owner):
     # NOTE: Also showing extra keys like "extra_key" don't matter and are ignored.
     values = {"a": AddressType, "b": HexBytes, "c": int, "extra_key": int}
     MyStruct = namedtuple("MyStruct", values)  # type: ignore
     data = MyStruct(owner, HexBytes(123), 999, 0)  # type: ignore
-    assert contract_instance.setStruct(data) is None
+    assert not contract_instance.setStruct(data, sender=owner).failed
+    actual = contract_instance.myStruct()
+    assert actual.a == owner.address
+
+    # B is automatically left-padded.
+    expected_b = HexBytes("0x000000000000000000000000000000000000000000000000000000000000007b")
+    assert actual.b == expected_b
+
+    assert actual.c == data.c
 
 
 def test_web3_named_tuple_as_struct_input(solidity_contract_instance, owner):

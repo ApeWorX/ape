@@ -113,7 +113,6 @@ class StructParser:
         Returns:
             Any: The same input values only decoded into structs when applicable.
         """
-
         return [self._encode(ipt, v) for ipt, v in zip(self.abi.inputs, values)]
 
     def decode_input(self, values: Union[Sequence, dict[str, Any]]) -> Any:
@@ -124,14 +123,9 @@ class StructParser:
         )
 
     def _encode(self, _type: ABIType, value: Any):
-        if (
-            _type.type == "tuple"
-            and _type.components
-            and all(m.name for m in _type.components)
-            and not isinstance(value, tuple)
-        ):
+        if _type.type == "tuple" and _type.components and all(m.name for m in _type.components):
             if isinstance(value, dict):
-                return tuple(
+                result = tuple(
                     (
                         self._encode(m, value[m.name])
                         if isinstance(value[m.name], dict)
@@ -142,11 +136,13 @@ class StructParser:
 
             elif isinstance(value, (list, tuple)):
                 # NOTE: Args must be passed in correct order.
-                return tuple(value)
+                result = tuple(value)
 
             else:
                 arg = [getattr(value, m.name) for m in _type.components if m.name]
-                return tuple(arg)
+                result = tuple(arg)
+
+            return self._pad_bytes_values(_type, result)
 
         elif (
             str(_type.type).startswith("tuple[")
@@ -156,9 +152,29 @@ class StructParser:
             non_array_type_data = _type.model_dump()
             non_array_type_data["type"] = "tuple"
             non_array_type = ABIType(**non_array_type_data)
-            return [self._encode(non_array_type, v) for v in value]
+            return self._pad_bytes_values(_type, [self._encode(non_array_type, v) for v in value])
 
         return value
+
+    def _pad_bytes_values(self, _type: ABIType, result):
+        padded_result = []
+        for comp, val in zip(_type.components or [], result):
+            if isinstance(comp.type, str):
+                fixed_val = val
+
+                if comp.type.startswith("bytes"):
+                    if size_suffix := comp.type.lstrip("bytes"):
+                        if size_suffix.isnumeric():
+                            # Left pad the bytes value to this size.
+                            size = int(size_suffix)
+                            fixed_val = validate_bytes_size(val, size)
+            else:
+                # Struct of struct.
+                fixed_val = self._pad_bytes_values(comp.type, val)
+
+            padded_result.append(fixed_val)
+
+        return tuple(padded_result)
 
     def decode_output(self, values: Union[list, tuple]) -> Any:
         """
