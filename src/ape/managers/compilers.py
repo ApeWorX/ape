@@ -187,7 +187,7 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
         Usage example::
 
             code = '[{"name":"foo","type":"fallback", "stateMutability":"nonpayable"}]'
-            contract_type = compilers.compile_source(
+            contract_container = compilers.compile_source(
                 "ethpm",
                 code,
                 contractName="MyContract",

@@ -10,6 +10,7 @@ contract SolidityContract {
     uint256[][3] dynArray;
     uint256[][3][][5] mixedArray;
     bool arraysLoaded = false;
+    MyStruct public myStruct;
 
     uint256 constant MAX_FOO = 5;
 
@@ -306,8 +307,8 @@ contract SolidityContract {
 
     }
 
-    function setStruct(MyStruct memory _my_struct) public pure {
-
+    function setStruct(MyStruct memory _my_struct) public {
+        myStruct = _my_struct;
     }
 
     function setStructArray(MyStruct[2] memory _my_struct_array) public pure {
