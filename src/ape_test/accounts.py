@@ -8,14 +8,17 @@ from eth_account._utils.signing import sign_transaction_dict
 from eth_account.messages import SignableMessage, encode_defunct
 from eth_keys.datatypes import PrivateKey  # type: ignore
 from eth_pydantic_types import HexBytes
-from eth_utils import to_bytes, to_hex
+from eth_utils import to_bytes, to_checksum_address, to_hex
 
 from ape.api.accounts import TestAccountAPI, TestAccountContainerAPI
+from ape.contracts.base import ContractInstance
 from ape.exceptions import ProviderNotConnectedError, SignatureError
 from ape.types.signatures import MessageSignature, TransactionSignature
 from ape.utils._web3_compat import sign_hash
-from ape.utils.misc import derive_public_key, log_instead_of_fail
+from ape.utils.misc import ZERO_ADDRESS, derive_public_key, log_instead_of_fail
 from ape.utils.testing import generate_dev_accounts
+from ape_ethereum import Authorization
+from ape_ethereum.transactions import TransactionType
 
 if TYPE_CHECKING:
     from ape.api.transactions import TransactionAPI
@@ -126,6 +129,20 @@ class TestAccount(TestAccountAPI):
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__}_{self.index} {self.address_str}>"
 
+    def sign_authorization(
+        self,
+        address: "AddressType",
+        chain_id: Optional[int] = None,
+    ) -> Optional[MessageSignature]:
+        if chain_id is None:
+            chain_id = self.provider.chain_id
+
+        signed_authorization = EthAccount.sign_authorization(
+            dict(address=address, chainId=chain_id, nonce=self.nonce),
+            self.private_key,
+        )
+        return MessageSignature.from_rsv(signed_authorization.signature)
+
     def sign_message(self, msg: Any, **signer_options) -> Optional[MessageSignature]:
         # Convert str and int to SignableMessage if needed
         if isinstance(msg, str):
@@ -187,3 +204,43 @@ class TestAccount(TestAccountAPI):
             r=to_bytes(signed_msg.r),
             s=to_bytes(signed_msg.s),
         )
+
+    @property
+    def delegate(self) -> Optional[ContractInstance]:
+        if (code := self.code)[:3] == HexBytes("0xef0100"):
+            address = to_checksum_address(code[3:])
+            return self.chain_manager.contracts.instance_at(address)
+
+        return None
+
+    def set_delegate(self, contract: ContractInstance, **txn_kwargs):
+        sig = self.sign_authorization(contract.address)
+        auth = Authorization.from_signature(
+            address=contract.address,
+            chain_id=self.provider.chain_id,
+            nonce=self.nonce,
+            signature=sig,
+        )
+        tx = self.provider.network.ecosystem.create_transaction(
+            type=TransactionType.SET_CODE,
+            authorizations=[auth],
+            sender=self,
+            **txn_kwargs,
+        )
+        return self.call(tx)
+
+    def remove_delegate(self, **txn_kwargs):
+        sig = self.sign_authorization(ZERO_ADDRESS)
+        auth = Authorization.from_signature(
+            chain_id=self.provider.chain_id,
+            address=ZERO_ADDRESS,
+            nonce=self.nonce,
+            signature=sig,
+        )
+        tx = self.provider.network.ecosystem.create_transaction(
+            type=TransactionType.SET_CODE,
+            authorizations=[auth],
+            sender=self,
+            **txn_kwargs,
+        )
+        return self.call(tx)
