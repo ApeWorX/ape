@@ -164,7 +164,7 @@ class StructParser:
 
                 if comp.type.startswith("bytes"):
                     if size_suffix := comp.type.lstrip("bytes"):
-                        if size_suffix.isnumeric():
+                        if size_suffix.isnumeric() and isinstance(val, bytes):
                             # Left pad the bytes value to this size.
                             size = int(size_suffix)
                             fixed_val = validate_bytes_size(val, size)
