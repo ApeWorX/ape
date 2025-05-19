@@ -135,7 +135,7 @@ def test_encode_calldata(ethereum, address):
         ],
     )
     byte_array = ["0x456", "0x678"]
-    values = ("0x123", address, HexBytes(55), byte_array)
+    values = ("0x0123", address, HexBytes(55), byte_array)
 
     actual = ethereum.encode_calldata(abi, *values)
     expected = HexBytes(
@@ -147,8 +147,11 @@ def test_encode_calldata(ethereum, address):
         "0000000000000000000000000000000000000000000000000000000000000037"
         # byte_array
         "0000000000000000000000000000000000000000000000000000000000000080"
+        # length
         "0000000000000000000000000000000000000000000000000000000000000002"
+        # first bytes4
         "0456000000000000000000000000000000000000000000000000000000000000"
+        # second bytes4
         "0678000000000000000000000000000000000000000000000000000000000000"
     )
     assert actual == expected

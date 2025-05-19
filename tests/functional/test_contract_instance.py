@@ -758,8 +758,8 @@ def test_struct_input_obj(contract_instance, owner, data_object):
 
     assert actual.a == data_object.a
 
-    # B is automatically left-padded.
-    expected_b = HexBytes("0x000000000000000000000000000000000000000000000000000000000000007b")
+    # B is automatically right-padded.
+    expected_b = HexBytes("0x7b00000000000000000000000000000000000000000000000000000000000000")
     assert actual.b == expected_b
 
     assert actual.c == data_object.c
@@ -772,8 +772,8 @@ def test_struct_input_dict(contract_instance, owner):
     actual = contract_instance.myStruct()
     assert actual.a == data["a"].address
 
-    # B is automatically left-padded.
-    expected_b = HexBytes("0x000000000000000000000000000000000000000000000000000000000000007b")
+    # B is automatically right-padded.
+    expected_b = HexBytes("0x7b00000000000000000000000000000000000000000000000000000000000000")
     assert actual.b == expected_b
 
     assert actual.c == data["c"]
@@ -786,8 +786,8 @@ def test_struct_input_tuple(contract_instance, owner):
     actual = contract_instance.myStruct()
     assert actual.a == data[0].address
 
-    # B is automatically left-padded.
-    expected_b = HexBytes("0x000000000000000000000000000000000000000000000000000000000000007b")
+    # B is automatically right-padded.
+    expected_b = HexBytes("0x7b00000000000000000000000000000000000000000000000000000000000000")
     assert actual.b == expected_b
 
     assert actual.c == data[2]
@@ -802,8 +802,8 @@ def test_struct_input_namedtuple(contract_instance, owner):
     actual = contract_instance.myStruct()
     assert actual.a == owner.address
 
-    # B is automatically left-padded.
-    expected_b = HexBytes("0x000000000000000000000000000000000000000000000000000000000000007b")
+    # B is automatically right-padded.
+    expected_b = HexBytes("0x7b00000000000000000000000000000000000000000000000000000000000000")
     assert actual.b == expected_b
 
     assert actual.c == data.c  # type: ignore
@@ -820,8 +820,8 @@ def test_struct_input_web3_named_tuple(solidity_contract_instance, owner):
     actual = solidity_contract_instance.myStruct()
     assert actual.a == solidity_contract_instance.address
 
-    # B is automatically left-padded.
-    expected_b = HexBytes("0x000000000000000000000000000000000000000000000000000000000000007b")
+    # B is automatically right-padded.
+    expected_b = HexBytes("0x7b00000000000000000000000000000000000000000000000000000000000000")
     assert actual.b == expected_b
 
     assert actual.c == data["c"]

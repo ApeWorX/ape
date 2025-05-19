@@ -142,7 +142,7 @@ class StructParser:
                 arg = [getattr(value, m.name) for m in _type.components if m.name]
                 result = tuple(arg)
 
-            return self._pad_bytes_values(_type, result)
+            return result
 
         elif (
             str(_type.type).startswith("tuple[")
@@ -152,29 +152,9 @@ class StructParser:
             non_array_type_data = _type.model_dump()
             non_array_type_data["type"] = "tuple"
             non_array_type = ABIType(**non_array_type_data)
-            return self._pad_bytes_values(_type, [self._encode(non_array_type, v) for v in value])
+            return [self._encode(non_array_type, v) for v in value]
 
         return value
-
-    def _pad_bytes_values(self, _type: ABIType, result):
-        padded_result = []
-        for comp, val in zip(_type.components or [], result):
-            if isinstance(comp.type, str):
-                fixed_val = val
-
-                if comp.type.startswith("bytes"):
-                    if size_suffix := comp.type.lstrip("bytes"):
-                        if size_suffix.isnumeric() and isinstance(val, bytes):
-                            # Left pad the bytes value to this size.
-                            size = int(size_suffix)
-                            fixed_val = validate_bytes_size(val, size)
-            else:
-                # Struct of struct.
-                fixed_val = self._pad_bytes_values(comp.type, val)
-
-            padded_result.append(fixed_val)
-
-        return tuple(padded_result)
 
     def decode_output(self, values: Union[list, tuple]) -> Any:
         """
