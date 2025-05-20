@@ -66,6 +66,10 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
             self.__class__.sign_message.__name__,
             self.__class__.sign_transaction.__name__,
             self.__class__.transfer.__name__,
+            self.__class__.delegate.fget.__name__,  # type: ignore[attr-defined]
+            self.__class__.set_delegate.__name__,
+            self.__class__.remove_delegate.__name__,
+            self.__class__.delegate_to.__name__,
         ]
 
     @property
