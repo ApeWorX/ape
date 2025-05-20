@@ -123,9 +123,14 @@ class StructParser:
         )
 
     def _encode(self, _type: ABIType, value: Any):
-        if _type.type == "tuple" and _type.components and all(m.name for m in _type.components):
+        if (
+            _type.type == "tuple"
+            and _type.components
+            and all(m.name for m in _type.components)
+            and not isinstance(value, tuple)
+        ):
             if isinstance(value, dict):
-                result = tuple(
+                return tuple(
                     (
                         self._encode(m, value[m.name])
                         if isinstance(value[m.name], dict)
@@ -136,13 +141,11 @@ class StructParser:
 
             elif isinstance(value, (list, tuple)):
                 # NOTE: Args must be passed in correct order.
-                result = tuple(value)
+                return tuple(value)
 
             else:
                 arg = [getattr(value, m.name) for m in _type.components if m.name]
-                result = tuple(arg)
-
-            return result
+                return tuple(arg)
 
         elif (
             str(_type.type).startswith("tuple[")
