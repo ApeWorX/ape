@@ -20,17 +20,18 @@ def _contract_callback(ctx, param, val):
 
 @click.command()
 @ape_cli_context()
-@click.argument("contract", callback=_contract_callback)
-def cli(cli_ctx, contract):
+@click.argument("contract_path", callback=_contract_callback)
+def cli(cli_ctx, contract_path):
     cm = cli_ctx.compiler_manager
-    compiler = "vyper" if contract.suffix == ".vy" else "solidity"
-    code = contract.read_text(encoding="utf-8")
-    destination = ARTIFACTS_PATH / f"{contract.stem}.json"
-    contract_type = cm.compile_source(compiler, code, contractName=contract.stem)
+    compiler = "vyper" if contract_path.suffix == ".vy" else "solidity"
+    code = contract_path.read_text(encoding="utf-8")
+    destination = ARTIFACTS_PATH / f"{contract_path.stem}.json"
+    contract_type = cm.compile_source(compiler, code, contractName=contract_path.stem).contract_type
 
-    if contract.source_id is None:
-        contract.source_id = f"{contract}"
+    if contract_type.source_id is None:
+        contract_type.source_id = f"{contract_path.stem}.json"
 
+    json_text = contract_type.model_dump_json()
     destination.unlink()
-    destination.write_text(contract_type.model_dump_json())
+    destination.write_text(json_text, encoding="utf-8")
     click.echo("Done!")

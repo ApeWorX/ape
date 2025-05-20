@@ -113,7 +113,6 @@ class StructParser:
         Returns:
             Any: The same input values only decoded into structs when applicable.
         """
-
         return [self._encode(ipt, v) for ipt, v in zip(self.abi.inputs, values)]
 
     def decode_input(self, values: Union[Sequence, dict[str, Any]]) -> Any:
