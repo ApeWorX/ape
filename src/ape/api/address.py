@@ -1,8 +1,6 @@
 from abc import abstractmethod
 from functools import cached_property
-from typing import TYPE_CHECKING, Any
-
-from eth_pydantic_types import HexBytes
+from typing import TYPE_CHECKING, Any, Optional
 
 from ape.exceptions import AccountsError, ConversionError
 from ape.types.address import AddressType
@@ -12,6 +10,7 @@ from ape.utils.misc import log_instead_of_fail
 
 if TYPE_CHECKING:
     from ape.api.transactions import ReceiptAPI, TransactionAPI
+    from ape.contracts import ContractInstance
     from ape.managers.chain import AccountHistory
     from ape.types.vm import ContractCode
 
@@ -179,7 +178,24 @@ class BaseAddress(BaseInterface):
         ``True`` when there is code associated with the address.
         """
 
-        return len(HexBytes(self.code)) > 0
+        return self.codesize > 0
+
+    @property
+    def delegate(self) -> Optional["ContractInstance"]:
+        """
+        Check and see if Account has a "delegate" contract, which is a contract that this account
+        delegates functionality to. This could be from many contexts, such as a Smart Wallet like
+        Safe (https://github.com/ApeWorX/ape-safe) which has a Singleton class it forwards to, or
+        an EOA using a EIP7702-style delegate. Returning `None` means that the account does not
+        have a delegate avaiable, which should be overrided in plugins that support ecosystems
+        where such methods are possible natively (e.g. EIP7702 context), or plugins such as smart
+        wallets which have this functionality. The default implementation is to return `None`.
+
+        Returns:
+            Optional[`:class:~ape.contracts.ContractInstance`]:
+                The contract instance of the delegate contract (if available).
+        """
+        return self.chain_manager.get_delegate(self.address)
 
     @cached_property
     def history(self) -> "AccountHistory":
