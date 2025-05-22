@@ -918,16 +918,17 @@ class Ethereum(EcosystemAPI):
                 # Using hex values or alike.
                 version = TransactionType(self.conversion_manager.convert(tx_data["type"], int))
 
-        elif "gas_price" in tx_data:
-            version = TransactionType.STATIC
+        # NOTE: Determine these in reverse order
+        elif "authorizationList" in tx_data:
+            version = TransactionType.SET_CODE
+        elif "maxFeePerBlobGas" in tx_data or "blobVersionedHashes" in tx_data:
+            version = TransactionType.SHARED_BLOB
         elif "max_fee" in tx_data or "max_priority_fee" in tx_data:
             version = TransactionType.DYNAMIC
         elif "access_list" in tx_data or "accessList" in tx_data:
             version = TransactionType.ACCESS_LIST
-        elif "maxFeePerBlobGas" in tx_data or "blobVersionedHashes" in tx_data:
-            version = TransactionType.SHARED_BLOB
-        elif "authorizationList" in tx_data:
-            version = TransactionType.SET_CODE
+        elif "gas_price" in tx_data:
+            version = TransactionType.STATIC
         else:
             version = self.default_transaction_type
 
