@@ -520,26 +520,26 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
     @contextmanager
     def delegate_to(
         self,
-        contract: ContractInstance,
+        new_delegate: ContractInstance,
         set_txn_kwargs: Optional[dict] = None,
-        remove_txn_kwargs: Optional[dict] = None,
+        reset_txn_kwargs: Optional[dict] = None,
         **txn_kwargs,
     ) -> Iterator[ContractInstance]:
         """
         Temporarily overrides the value of `delegate` for the account inside of a context manager,
-        and yields a contract instance object whose interface matches that of `contract`. This is
-        useful for ensuring that delegation is only temporarily extended to an account when doing a
-        critical action temporarily, such as using an EIP7702 delegate module.
+        and yields a contract instance object whose interface matches that of `new_delegate`. This
+        is useful for ensuring that delegation is only temporarily extended to an account when
+        doing a critical action temporarily, such as using an EIP7702 delegate module.
 
         Args:
-            contract (`:class:~ape.contracts.ContractInstance`):
+            new_delegate (`:class:~ape.contracts.ContractInstance`):
                 The contract instance to override the `delegate` with.
             set_txn_kwargs (dict | None): Additional transaction kwargs passed to
               :meth:`~ape.api.networks.EcosystemAPI.create_transaction` for the
               :meth:`AccountAPI.set_delegate` method, such as ``gas``, ``max_fee``, or
               ``max_priority_fee``. Overrides the values provided via ``txn_kwargs``. For a list of
               available transaction kwargs, see :class:`~ape.api.transactions.TransactionAPI`.
-            remove_txn_kwargs (dict | None): Additional transaction kwargs passed to
+            reset_txn_kwargs (dict | None): Additional transaction kwargs passed to
               :meth:`~ape.api.networks.EcosystemAPI.create_transaction` for the
               :meth:`AccountAPI.remove_delegate` method, such as ``gas``, ``max_fee``, or
               ``max_priority_fee``. Overrides the values provided via ``txn_kwargs``. For a list of
@@ -550,16 +550,26 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
               kwargs, see :class:`~ape.api.transactions.TransactionAPI`.
 
         Returns:
-            Optional[`:class:~ape.contracts.ContractInstance`]:
+            `:class:~ape.contracts.ContractInstance`:
                 The contract instance of this account with the interface of `contract`.
         """
-        self.set_delegate(contract, **{**txn_kwargs, **(set_txn_kwargs or {})})
+        set_txn_kwargs = {**txn_kwargs, **(set_txn_kwargs or {})}
+        existing_delegate = self.delegate
 
+        self.set_delegate(new_delegate, **set_txn_kwargs)
+
+        # NOTE: Do not cache this type as it is temporary
+        from ape.contracts import ContractInstance
+
+        # This is helpful for using it immediately to send things as self
         with self.account_manager.use_sender(self):
-            # yield `self` with contract type of `contract`
-            yield ContractInstance(self.address, contract_type=contract.contract_type)
+            yield ContractInstance(self.address, contract_type=new_delegate.contract_type)
 
-        self.remove_delegate(**{**txn_kwargs, **(remove_txn_kwargs or {})})
+        reset_txn_kwargs = {**txn_kwargs, **(reset_txn_kwargs or {})}
+        if existing_delegate:
+            self.set_delegate(existing_delegate, **reset_txn_kwargs)
+        else:
+            self.remove_delegate(**reset_txn_kwargs)
 
 
 class AccountContainerAPI(BaseInterfaceModel):
