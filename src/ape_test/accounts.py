@@ -8,7 +8,7 @@ from eth_account._utils.signing import sign_transaction_dict
 from eth_account.messages import SignableMessage, encode_defunct
 from eth_keys.datatypes import PrivateKey  # type: ignore
 from eth_pydantic_types import HexBytes
-from eth_utils import to_bytes, to_checksum_address, to_hex
+from eth_utils import to_bytes, to_canonical_address, to_checksum_address, to_hex
 
 from ape.api.accounts import TestAccountAPI, TestAccountContainerAPI
 from ape.contracts.base import ContractInstance
@@ -133,12 +133,17 @@ class TestAccount(TestAccountAPI):
         self,
         address: "AddressType",
         chain_id: Optional[int] = None,
+        nonce: Optional[int] = None,
     ) -> Optional[MessageSignature]:
         if chain_id is None:
             chain_id = self.provider.chain_id
 
         signed_authorization = EthAccount.sign_authorization(
-            dict(address=address, chainId=chain_id, nonce=self.nonce),
+            dict(
+                address=to_canonical_address(address),
+                chainId=chain_id,
+                nonce=nonce or self.nonce,
+            ),
             self.private_key,
         )
         return MessageSignature.from_rsv(signed_authorization.signature)

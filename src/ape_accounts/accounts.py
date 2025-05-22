@@ -12,7 +12,7 @@ from eth_account.hdaccount import ETHEREUM_DEFAULT_PATH
 from eth_account.messages import encode_defunct
 from eth_pydantic_types import HexBytes
 from eth_typing import HexStr
-from eth_utils import remove_0x_prefix, to_bytes, to_checksum_address, to_hex
+from eth_utils import remove_0x_prefix, to_bytes, to_canonical_address, to_checksum_address, to_hex
 
 from ape.api.accounts import AccountAPI, AccountContainerAPI
 from ape.contracts.base import ContractInstance
@@ -172,6 +172,7 @@ class KeyfileAccount(AccountAPI):
         self,
         address: "AddressType",
         chain_id: Optional[int] = None,
+        nonce: Optional[int] = None,
     ) -> Optional[MessageSignature]:
         if chain_id is None:
             chain_id = self.provider.chain_id
@@ -181,7 +182,11 @@ class KeyfileAccount(AccountAPI):
             return None
 
         signed_authorization = EthAccount.sign_authorization(
-            dict(address=address, chainId=chain_id, nonce=self.nonce),
+            dict(
+                chainId=chain_id,
+                address=to_canonical_address(address),
+                nonce=nonce or self.nonce,
+            ),
             self.__key,
         )
         return MessageSignature.from_rsv(signed_authorization.signature)
