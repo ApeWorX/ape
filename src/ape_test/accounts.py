@@ -235,6 +235,8 @@ class TestAccount(TestAccountAPI):
             type=TransactionType.SET_CODE,
             authorizations=[auth],
             sender=self,
+            # NOTE: Cannot target `ZERO_ADDRESS`
+            receiver=self,
             **txn_kwargs,
         )
         return self.call(tx)
@@ -252,6 +254,8 @@ class TestAccount(TestAccountAPI):
             type=TransactionType.SET_CODE,
             authorizations=[auth],
             sender=self,
+            # NOTE: Cannot target `ZERO_ADDRESS`
+            receiver=self,
             **txn_kwargs,
         )
         return self.call(tx)
