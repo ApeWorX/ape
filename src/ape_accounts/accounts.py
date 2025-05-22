@@ -178,7 +178,7 @@ class KeyfileAccount(AccountAPI):
             chain_id = self.provider.chain_id
 
         display_msg = f"Allow **full root access** to '{address}' on {chain_id or 'any chain'}?"
-        if not click.confirm(click.style(f"{display_msg}\n\nSign: ", fg="yellow")):
+        if not click.confirm(click.style(f"{display_msg}\n\nAcknowledge: ", fg="yellow")):
             return None
 
         signed_authorization = EthAccount.sign_authorization(
