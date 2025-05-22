@@ -744,7 +744,7 @@ def test_is_contract_when_code_is_str(mock_provider, owner):
     Tests the cases when an ecosystem uses str for ContractCode.
     """
     # Set up the provider to return str instead of HexBytes for code.
-    mock_provider._web3.eth.get_code.return_value = "0x123"
+    mock_provider._web3.eth.get_code.return_value = "0x1234"
     assert owner.is_contract
 
     # When the return value is the string "0x", it should not code as having code.
