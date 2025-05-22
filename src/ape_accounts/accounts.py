@@ -307,6 +307,8 @@ class KeyfileAccount(AccountAPI):
             type=TransactionType.SET_CODE,
             authorizations=[auth],
             sender=self,
+            # NOTE: Cannot target `ZERO_ADDRESS`
+            receiver=self,
             **txn_kwargs,
         )
         return self.call(tx)
@@ -324,6 +326,8 @@ class KeyfileAccount(AccountAPI):
             type=TransactionType.SET_CODE,
             authorizations=[auth],
             sender=self,
+            # NOTE: Cannot target `ZERO_ADDRESS`
+            receiver=self,
             **txn_kwargs,
         )
         return self.call(tx)
