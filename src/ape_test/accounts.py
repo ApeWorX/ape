@@ -146,7 +146,11 @@ class TestAccount(TestAccountAPI):
             ),
             self.private_key,
         )
-        return MessageSignature.from_rsv(signed_authorization.signature)
+        return MessageSignature(
+            v=signed_authorization.y_parity,
+            r=to_bytes(signed_authorization.r),
+            s=to_bytes(signed_authorization.s),
+        )
 
     def sign_message(self, msg: Any, **signer_options) -> Optional[MessageSignature]:
         # Convert str and int to SignableMessage if needed
@@ -219,11 +223,12 @@ class TestAccount(TestAccountAPI):
         return None
 
     def set_delegate(self, contract: ContractInstance, **txn_kwargs):
-        sig = self.sign_authorization(contract.address)
+        sig = self.sign_authorization(contract.address, nonce=self.nonce + 1)
         auth = Authorization.from_signature(
             address=contract.address,
             chain_id=self.provider.chain_id,
-            nonce=self.nonce,
+            # NOTE: `tx` uses `self.nonce`
+            nonce=self.nonce + 1,
             signature=sig,
         )
         tx = self.provider.network.ecosystem.create_transaction(
@@ -235,11 +240,12 @@ class TestAccount(TestAccountAPI):
         return self.call(tx)
 
     def remove_delegate(self, **txn_kwargs):
-        sig = self.sign_authorization(ZERO_ADDRESS)
+        sig = self.sign_authorization(ZERO_ADDRESS, nonce=self.nonce + 1)
         auth = Authorization.from_signature(
             chain_id=self.provider.chain_id,
             address=ZERO_ADDRESS,
-            nonce=self.nonce,
+            # NOTE: `tx` uses `self.nonce`
+            nonce=self.nonce + 1,
             signature=sig,
         )
         tx = self.provider.network.ecosystem.create_transaction(
