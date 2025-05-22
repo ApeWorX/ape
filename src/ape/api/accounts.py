@@ -1,6 +1,7 @@
 import os
 from abc import abstractmethod
 from collections.abc import Iterator
+from contextlib import contextmanager
 from functools import cached_property
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional, Union
@@ -15,6 +16,7 @@ from ethpm_types import ContractType
 
 from ape.api.address import BaseAddress
 from ape.api.transactions import ReceiptAPI, TransactionAPI
+from ape.contracts import ContractInstance
 from ape.exceptions import (
     AccountsError,
     AliasAlreadyInUseError,
@@ -38,7 +40,7 @@ from ape.utils.testing import (
 if TYPE_CHECKING:
     from eth_pydantic_types import HexBytes
 
-    from ape.contracts import ContractContainer, ContractInstance
+    from ape.contracts import ContractContainer
 
 
 class AccountAPI(BaseInterfaceModel, BaseAddress):
@@ -60,9 +62,14 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
             self.__class__.call.__name__,
             self.__class__.deploy.__name__,
             self.__class__.prepare_transaction.__name__,
+            self.__class__.sign_authorization.__name__,
             self.__class__.sign_message.__name__,
             self.__class__.sign_transaction.__name__,
             self.__class__.transfer.__name__,
+            self.__class__.delegate.fget.__name__,  # type: ignore[attr-defined]
+            self.__class__.set_delegate.__name__,
+            self.__class__.remove_delegate.__name__,
+            self.__class__.delegate_to.__name__,
         ]
 
     @property
@@ -98,6 +105,39 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         """
         raise NotImplementedError(
             f"Raw message signing is not supported by '{self.__class__.__name__}'"
+        )
+
+    def sign_authorization(
+        self,
+        address: Any,
+        chain_id: Optional[int] = None,
+        nonce: Optional[int] = None,
+    ) -> Optional[MessageSignature]:
+        """
+        Sign an `EIP-7702 <https://eips.ethereum.org/EIPS/eip-7702>`__ Authorization.
+
+        Args:
+          address (Any): A delegate address to sign the authorization for.
+          chain_id (Optional[int]):
+            The chain ID that the authorization should be valid for.
+            A value of ``0`` means that the authorization is valid for **any chain**.
+            Default tells implementation to use the currently connected network's ``chain_id``.
+          nonce (Optional[int]):
+            The nonce to use to sign authorization with. Defaults to account's current nonce.
+
+        Returns:
+          :class:`~ape.types.signatures.MessageSignature` (optional):
+            The signature corresponding to the message.
+
+        ```{caution}
+        This action has the capability to be extremely destructive to the signer, and might lead to
+        full account compromise. All implementations are recommended to ensure that the signer be
+        made aware of the severity and impact of this action through some callout.
+        ```
+        """
+
+        raise NotImplementedError(
+            f"Authorization signing is not supported by '{self.__class__.__name__}'"
         )
 
     @abstractmethod
@@ -432,6 +472,102 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         )
         nonce = self.nonce if nonce is None else nonce
         return ecosystem.get_deployment_address(self.address, nonce)
+
+    def set_delegate(self, contract: ContractInstance, **txn_kwargs):
+        """
+        Have the account class override the value of it's `delegate`. For plugins that support this
+        feature, the way they choose to handle it can vary. For example, it could be a call to up-
+        grade itself using some built-in method for a smart wallet (with default txn args) e.g. the
+        Safe smart wallet (https://github.com/ApeWorX/ape-safe), or it could be to use an EIP7702-
+        like feature available on the network to set a delegate for that account. However it a
+        plugin chooses to handle it, the resulting action (if successful) should make sure that the
+        value that `self.delegate` returns is the same as `contract` after it is completed.
+
+        By default, this method raises `NotImplementedError` signaling that support is not available
+        for this feature. Calling this may result in other errors if implemented.
+
+        Args:
+            contract (`:class:~ape.contracts.ContractInstance`):
+                The contract instance to override the delegate with.
+            **txn_kwargs: Additional transaction kwargs passed to
+              :meth:`~ape.api.networks.EcosystemAPI.create_transaction`, such as ``gas``
+              ``max_fee``, or ``max_priority_fee``. For a list of available transaction
+              kwargs, see :class:`~ape.api.transactions.TransactionAPI`.
+        """
+        raise NotImplementedError
+
+    def remove_delegate(self, **txn_kwargs):
+        """
+        Has the account class remove the override for the value of it's `delegate`. For plugins
+        that support this feature, the way they choose to handle it can vary. For example, on a
+        network using an EIP7702-like feature available it will reset the delegate to empty.
+        However it a plugin chooses to handle it, the resulting action (if successful) should
+        make sure that the value that `self.delegate` returns `None` after it is completed.
+
+        By default, this method raises `NotImplementedError` signaling that support is not available
+        for this feature. Calling this may result in other errors if implemented.
+
+        Args:
+            **txn_kwargs: Additional transaction kwargs passed to
+              :meth:`~ape.api.networks.EcosystemAPI.create_transaction`, such as ``gas``
+              ``max_fee``, or ``max_priority_fee``. For a list of available transaction
+              kwargs, see :class:`~ape.api.transactions.TransactionAPI`.
+        """
+        raise NotImplementedError
+
+    @contextmanager
+    def delegate_to(
+        self,
+        new_delegate: ContractInstance,
+        set_txn_kwargs: Optional[dict] = None,
+        reset_txn_kwargs: Optional[dict] = None,
+        **txn_kwargs,
+    ) -> Iterator[ContractInstance]:
+        """
+        Temporarily overrides the value of `delegate` for the account inside of a context manager,
+        and yields a contract instance object whose interface matches that of `new_delegate`. This
+        is useful for ensuring that delegation is only temporarily extended to an account when
+        doing a critical action temporarily, such as using an EIP7702 delegate module.
+
+        Args:
+            new_delegate (`:class:~ape.contracts.ContractInstance`):
+                The contract instance to override the `delegate` with.
+            set_txn_kwargs (dict | None): Additional transaction kwargs passed to
+              :meth:`~ape.api.networks.EcosystemAPI.create_transaction` for the
+              :meth:`AccountAPI.set_delegate` method, such as ``gas``, ``max_fee``, or
+              ``max_priority_fee``. Overrides the values provided via ``txn_kwargs``. For a list of
+              available transaction kwargs, see :class:`~ape.api.transactions.TransactionAPI`.
+            reset_txn_kwargs (dict | None): Additional transaction kwargs passed to
+              :meth:`~ape.api.networks.EcosystemAPI.create_transaction` for the
+              :meth:`AccountAPI.remove_delegate` method, such as ``gas``, ``max_fee``, or
+              ``max_priority_fee``. Overrides the values provided via ``txn_kwargs``. For a list of
+              available transaction kwargs, see :class:`~ape.api.transactions.TransactionAPI`.
+            **txn_kwargs: Additional transaction kwargs passed to
+              :meth:`~ape.api.networks.EcosystemAPI.create_transaction`, such as ``gas``
+              ``max_fee``, or ``max_priority_fee``. For a list of available transaction
+              kwargs, see :class:`~ape.api.transactions.TransactionAPI`.
+
+        Returns:
+            `:class:~ape.contracts.ContractInstance`:
+                The contract instance of this account with the interface of `contract`.
+        """
+        set_txn_kwargs = {**txn_kwargs, **(set_txn_kwargs or {})}
+        existing_delegate = self.delegate
+
+        self.set_delegate(new_delegate, **set_txn_kwargs)
+
+        # NOTE: Do not cache this type as it is temporary
+        from ape.contracts import ContractInstance
+
+        # This is helpful for using it immediately to send things as self
+        with self.account_manager.use_sender(self):
+            yield ContractInstance(self.address, contract_type=new_delegate.contract_type)
+
+        reset_txn_kwargs = {**txn_kwargs, **(reset_txn_kwargs or {})}
+        if existing_delegate:
+            self.set_delegate(existing_delegate, **reset_txn_kwargs)
+        else:
+            self.remove_delegate(**reset_txn_kwargs)
 
 
 class AccountContainerAPI(BaseInterfaceModel):

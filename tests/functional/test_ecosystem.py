@@ -19,6 +19,7 @@ from ape_ethereum.trace import TransactionTrace
 from ape_ethereum.transactions import (
     DynamicFeeTransaction,
     Receipt,
+    SetCodeTransaction,
     SharedBlobReceipt,
     SharedBlobTransaction,
     StaticFeeTransaction,
@@ -919,6 +920,16 @@ def test_create_transaction_blob_versioned_hashed(kwarg_name, value, ethereum):
     tx = ethereum.create_transaction(**{kwarg_name: [value]})
     assert isinstance(tx, SharedBlobTransaction)
     assert tx.blob_versioned_hashes == [HexBytes(value)]
+
+
+@pytest.mark.parametrize(
+    "tx_kwargs",
+    [{"type": 4}, {"authorizationList": []}],
+)
+def test_create_transaction_set_code(tx_kwargs, ethereum):
+    tx = ethereum.create_transaction(**tx_kwargs)
+    assert isinstance(tx, SetCodeTransaction)
+    assert tx.type == TransactionType.SET_CODE.value
 
 
 @pytest.mark.parametrize("tx_type", TransactionType)
