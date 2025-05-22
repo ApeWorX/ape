@@ -116,6 +116,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         self,
         address: Any,
         chain_id: Optional[int] = None,
+        nonce: Optional[int] = None,
     ) -> Optional[MessageSignature]:
         """
         Sign an `EIP-7702 <https://eips.ethereum.org/EIPS/eip-7702>`__ Authorization.
@@ -126,6 +127,8 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
             The chain ID that the authorization should be valid for.
             A value of ``0`` means that the authorization is valid for **any chain**.
             Default tells implementation to use the currently connected network's ``chain_id``.
+          nonce (Optional[int]):
+            The nonce to use to sign authorization with. Defaults to account's current nonce.
 
         Returns:
           :class:`~ape.types.signatures.MessageSignature` (optional):
