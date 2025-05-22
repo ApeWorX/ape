@@ -100,6 +100,17 @@ class BaseTransaction(TransactionAPI):
 
             txn_data["accessList"] = adjusted_access_list
 
+        if "authorizationList" in txn_data:
+            adjusted_auth_list = []
+
+            for item in txn_data["authorizationList"]:
+                adjusted_item = {
+                    k: to_hex(v) if isinstance(v, bytes) else v for k, v in item.items()
+                }
+                adjusted_auth_list.append(adjusted_item)
+
+            txn_data["authorizationList"] = adjusted_auth_list
+
         unsigned_txn = serializable_unsigned_transaction_from_dict(txn_data)
         signature = (self.signature.v, to_int(self.signature.r), to_int(self.signature.s))
         signed_txn = encode_transaction(unsigned_txn, signature)
@@ -207,12 +218,11 @@ class Authorization(BaseModel):
 
     @cached_property
     def authority(self) -> AddressType:
-        msg = EthAcctAuth(
-            chainId=self.chain_id,
-            address=to_canonical_address(self.address),
-            nonce=self.nonce,
+        auth = EthAcctAuth(self.chain_id, to_canonical_address(self.address), self.nonce)
+        return EthAccount._recover_hash(
+            auth.hash(),
+            vrs=(self.signature.v, to_int(self.r), to_int(self.s)),
         )
-        return EthAccount._recover_hash(msg.hash(), vrs=(self.v, self.r, self.s))
 
 
 class SetCodeTransaction(DynamicFeeTransaction):
