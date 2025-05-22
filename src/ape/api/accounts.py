@@ -475,23 +475,6 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         nonce = self.nonce if nonce is None else nonce
         return ecosystem.get_deployment_address(self.address, nonce)
 
-    @property
-    def delegate(self) -> Optional[ContractInstance]:
-        """
-        Check and see if Account has a "delegate" contract, which is a contract that this account
-        delegates functionality to. This could be from many contexts, such as a Smart Wallet like
-        Safe (https://github.com/ApeWorX/ape-safe) which has a Singleton class it forwards to, or
-        an EOA using a EIP7702-style delegate. Returning `None` means that the account does not
-        have a delegate avaiable, which should be overrided in plugins that support ecosystems
-        where such methods are possible natively (e.g. EIP7702 context), or plugins such as smart
-        wallets which have this functionality. The default implementation is to return `None`.
-
-        Returns:
-            Optional[`:class:~ape.contracts.ContractInstance`]:
-                The contract instance of the delegate contract (if available).
-        """
-        return None
-
     def set_delegate(self, contract: ContractInstance, **txn_kwargs):
         """
         Have the account class override the value of it's `delegate`. For plugins that support this
