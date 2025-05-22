@@ -13,7 +13,7 @@ from eth_account.typed_transactions.set_code_transaction import Authorization as
 from eth_pydantic_types import HexBytes
 from eth_utils import decode_hex, encode_hex, keccak, to_canonical_address, to_hex, to_int
 from ethpm_types.abi import EventABI, MethodABI
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, Field, field_serializer, field_validator, model_validator
 
 from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.exceptions import OutOfGasError, SignatureError, TransactionError
@@ -101,6 +101,17 @@ class BaseTransaction(TransactionAPI):
                 adjusted_access_list.append(adjusted_item)
 
             txn_data["accessList"] = adjusted_access_list
+
+        if "authorizationList" in txn_data:
+            adjusted_auth_list = []
+
+            for item in txn_data["authorizationList"]:
+                adjusted_item = {
+                    k: to_hex(v) if isinstance(v, bytes) else v for k, v in item.items()
+                }
+                adjusted_auth_list.append(adjusted_item)
+
+            txn_data["authorizationList"] = adjusted_auth_list
 
         unsigned_txn = serializable_unsigned_transaction_from_dict(txn_data)
         signature = (self.signature.v, to_int(self.signature.r), to_int(self.signature.s))
@@ -203,6 +214,10 @@ class Authorization(BaseModel):
     r: HexBytes
     s: HexBytes
 
+    @field_serializer("chain_id", "nonce", "v")
+    def convert_int_to_hex(self, value: int) -> str:
+        return to_hex(value)
+
     @classmethod
     def from_signature(
         cls,
@@ -226,12 +241,11 @@ class Authorization(BaseModel):
 
     @cached_property
     def authority(self) -> AddressType:
-        msg = EthAcctAuth(
-            chainId=self.chain_id,
-            address=to_canonical_address(self.address),
-            nonce=self.nonce,
+        auth = EthAcctAuth(self.chain_id, to_canonical_address(self.address), self.nonce)
+        return EthAccount._recover_hash(
+            auth.hash(),
+            vrs=(self.signature.v, to_int(self.r), to_int(self.s)),
         )
-        return EthAccount._recover_hash(msg.hash(), vrs=(self.v, self.r, self.s))
 
 
 class SetCodeTransaction(DynamicFeeTransaction):
