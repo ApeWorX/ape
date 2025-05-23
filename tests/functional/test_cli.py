@@ -913,9 +913,9 @@ class TestNetworkChoice:
 
     def test_bad_network(self, network_choice):
         # NOTE: "local" is spelled wrong.
-        expected = r"No network in 'ethereum' named 'lokal'\. Did you mean 'local'\?"
+        expected = r"No network in 'ethereum' named 'local'\. Did you mean 'local'\?"
         with pytest.raises(BadParameter, match=expected):
-            network_choice.convert("ethereum:lokal:test", None, None)
+            network_choice.convert("ethereum:local:test", None, None)
 
     def test_bad_provider(self, network_choice):
         # NOTE: "test" is spelled wrong.
