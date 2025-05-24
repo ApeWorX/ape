@@ -1,24 +1,30 @@
 from abc import abstractmethod
 from collections.abc import Iterator, Sequence
 from functools import cache, cached_property
-from typing import Any, Optional, Union
+from typing import TYPE_CHECKING, Any, ClassVar, Generic, Optional, TypeVar, Union
 
+import narwhals as nw
 from ethpm_types.abi import EventABI, MethodABI
-from pydantic import NonNegativeInt, PositiveInt, model_validator
+from pydantic import NonNegativeInt, PositiveInt, field_validator, model_validator
 
-from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.logging import logger
+from ape.types import ContractLog
 from ape.types.address import AddressType
 from ape.utils.basemodel import BaseInterface, BaseInterfaceModel, BaseModel
 
-QueryType = Union[
-    "BlockQuery",
-    "BlockTransactionQuery",
-    "AccountTransactionQuery",
-    "ContractCreationQuery",
-    "ContractEventQuery",
-    "ContractMethodQuery",
-]
+from .providers import BlockAPI
+from .transactions import ReceiptAPI, TransactionAPI
+
+if TYPE_CHECKING:
+    from narwhals.typing import Frame
+
+    from ape.managers.query import QueryResult
+
+    try:
+        # Only on Python 3.11
+        from typing import Self  # type: ignore
+    except ImportError:
+        from typing_extensions import Self  # type: ignore
 
 
 @cache
@@ -93,13 +99,58 @@ def extract_fields(item: BaseInterfaceModel, columns: Sequence[str]) -> list[Any
     return [getattr(item, col, None) for col in columns]
 
 
-class _BaseQuery(BaseModel):
-    columns: Sequence[str]
+ModelType = TypeVar("ModelType", bound=BaseInterfaceModel)
 
-    # TODO: Support "*" from getting the EcosystemAPI fields
+
+class _BaseQuery(BaseModel, Generic[ModelType]):
+    Model: ClassVar[Optional[type[BaseInterfaceModel]]] = None
+
+    columns: set[str]
+
+    @field_validator("columns", mode="before")
+    def expand_wildcard(cls, value: Any) -> Any:
+        if cls.Model:
+            return validate_and_expand_columns(value, cls.Model)
+
+        return value
+
+    # Methods for determining query "coverage" and constraining search
+    @property
+    def start_index(self) -> int:
+        raise NotImplementedError()
+
+    @property
+    def end_index(self) -> int:
+        raise NotImplementedError()
+
+    def __len__(self) -> int:
+        return self.end_index - self.start_index
+
+    def __contains__(self, other: Any) -> bool:
+        if not isinstance(other, _BaseQuery):
+            raise ValueError()
+
+        # NOTE: Return True if `other` is "covered by" `self`
+        return other.start_index >= self.start_index and other.end_index <= self.end_index
+
+    # Methods for determining query "ordering"
+    def __lt__(self, other: Any) -> bool:
+        if not isinstance(other, _BaseQuery):
+            raise ValueError()
+
+        if self.start_index < other.start_index:
+            return True
+
+        elif self.start_index == other.start_index:
+            # NOTE: If start matches, return True for smaller range covered
+            return self.end_index < other.end_index
+
+        else:
+            return False
 
 
 class _BaseBlockQuery(_BaseQuery):
+    Model = BlockAPI
     start_block: NonNegativeInt = 0
     stop_block: NonNegativeInt
     step: PositiveInt = 1
@@ -121,35 +172,55 @@ class _BaseBlockQuery(_BaseQuery):
 
         return values
 
+    @property
+    def start_index(self) -> int:
+        return self.start_block
 
-class BlockQuery(_BaseBlockQuery):
+    @property
+    def end_index(self) -> int:
+        return self.stop_block
+
+
+class BlockQuery(_BaseBlockQuery, _BaseQuery[BlockAPI]):
     """
     A ``QueryType`` that collects properties of ``BlockAPI`` over a range of
     blocks between ``start_block`` and ``stop_block``.
     """
 
 
-class BlockTransactionQuery(_BaseQuery):
+class BlockTransactionQuery(_BaseQuery[TransactionAPI]):
     """
     A ``QueryType`` that collects properties of ``TransactionAPI`` over a range of
     transactions collected inside the ``BlockAPI` object represented by ``block_id``.
     """
 
+    Model = TransactionAPI
+
     block_id: Any
+    num_transactions: NonNegativeInt
+
+    @property
+    def start_index(self) -> int:
+        return 0
+
+    @property
+    def end_index(self) -> int:
+        return self.num_transactions - 1
 
 
-class AccountTransactionQuery(_BaseQuery):
+class AccountTransactionQuery(_BaseQuery[TransactionAPI]):
     """
     A ``QueryType`` that collects properties of ``TransactionAPI`` over a range
     of transactions made by ``account`` between ``start_nonce`` and ``stop_nonce``.
     """
+
+    Model = TransactionAPI
 
     account: AddressType
     start_nonce: NonNegativeInt = 0
     stop_nonce: NonNegativeInt
 
     @model_validator(mode="before")
-    @classmethod
     def check_start_nonce_before_stop_nonce(cls, values: dict) -> dict:
         if values["stop_nonce"] < values["start_nonce"]:
             raise ValueError(
@@ -159,17 +230,16 @@ class AccountTransactionQuery(_BaseQuery):
 
         return values
 
+    @property
+    def start_index(self) -> int:
+        return self.start_nonce
 
-class ContractCreationQuery(_BaseQuery):
-    """
-    A ``QueryType`` that obtains information about contract deployment.
-    Returns ``ContractCreation(txn_hash, block, deployer, factory)``.
-    """
-
-    contract: AddressType
+    @property
+    def end_index(self) -> int:
+        return self.stop_nonce
 
 
-class ContractCreation(BaseModel, BaseInterface):
+class ContractCreation(BaseInterfaceModel):
     """
     Contract-creation metadata, such as the transaction
     and deployer. Useful for contract-verification,
@@ -228,18 +298,40 @@ class ContractCreation(BaseModel, BaseInterface):
         )
 
 
-class ContractEventQuery(_BaseBlockQuery):
+class ContractCreationQuery(_BaseQuery[ContractCreation]):
+    """
+    A ``QueryType`` that obtains information about contract deployment.
+    Returns ``ContractCreation(txn_hash, block, deployer, factory)``.
+    """
+
+    Model = ContractCreation
+
+    contract: AddressType
+
+    @property
+    def start_index(self) -> int:
+        return 0
+
+    @property
+    def end_index(self) -> int:
+        # TODO: Can this support multiple instances? Do we care anymore?
+        return 1
+
+
+class ContractEventQuery(_BaseBlockQuery, _BaseQuery[ContractLog]):
     """
     A ``QueryType`` that collects members from ``event`` over a range of
     logs emitted by ``contract`` between ``start_block`` and ``stop_block``.
     """
+
+    Model = ContractLog
 
     contract: Union[list[AddressType], AddressType]
     event: EventABI
     search_topics: Optional[dict[str, Any]] = None
 
 
-class ContractMethodQuery(_BaseBlockQuery):
+class ContractMethodQuery(_BaseBlockQuery, _BaseQuery[Any]):
     """
     A ``QueryType`` that collects return values from calling ``method`` in ``contract``
     over a range of blocks between ``start_block`` and ``stop_block``.
@@ -250,7 +342,162 @@ class ContractMethodQuery(_BaseBlockQuery):
     method_args: dict[str, Any]
 
 
-class QueryAPI(BaseInterface):
+class CursorAPI(BaseInterfaceModel, Generic[ModelType]):
+    query: _BaseQuery[ModelType]
+
+    def shrink(
+        self,
+        start_index: Optional[int] = None,
+        end_index: Optional[int] = None,
+    ) -> "Self":
+        """
+        Create a copy of this object with the query window shrunk inwards to `start_index` and/or
+        `end_index`. Note that `.shrink` should always be called with strictly less coverage than
+        original query window of this cursor model for use in the `QueryManager`'s solver algorithm.
+
+        Args:
+            start_index (Optional[int]): The new `start_index` that this cursor should start at.
+            end_index (Optional[int]): The new `end_index` that this cursor should start at.
+
+        Returns:
+            Self: a copy of itself, only with the smaller query window applied.
+        """
+        raise NotImplementedError
+
+    @property
+    def total_time(self) -> float:
+        """
+        The estimated total time that this cursor would take to execute. Note that this is only an
+        approximation, but should be relatively accurate for the `QueryManager`'s solver algorithm
+        to work well. Is used for printing metrics to the user.
+
+        Default implementation of this property is the span of this cursor times `.time_per_row`.
+
+        Returns:
+            float: Time (in seconds) that the query should take to execute fully.
+        """
+        return (self.query.end_index - self.query.start_index) * (self.time_per_row)
+
+    @property
+    @abstractmethod
+    def time_per_row(self) -> float:
+        """
+        The estimated average time spent (per row) that this cursor would take to execute. Note
+        that this is only an approximation, but should be relatively accurate for the
+        `QueryManager`'s solver algorithm to work well. Is used for determining the correct
+        ordering of cursor's within the solver algorithm.
+
+        Returns:
+            float: Average time (in seconds) that the query should take to execute a single row.
+        """
+
+    # Conversion out to fulfill user query requirements
+    def as_dataframe(self, backend: nw.Implementation) -> "Frame":
+        """
+        Execute and return this Cursor as a `~narwhals.v1.DataFrame` or `~narwhals.v1.LazyFrame`
+        object. The use of `backend is exactly as it is mentioned in the `narwhals` documentation:
+        https://narwhals-dev.github.io/narwhals/api-reference/typing/#narwhals.typing.Frame
+
+        It is recommended to use whatever method of conversion makes sense within your query
+        plugin, for example you can use `~narwhals.from_dict` to convert results into a Frame:
+        https://narwhals-dev.github.io/narwhals/api-reference/narwhals/#narwhals.from_dict
+
+        Default implementation of this method uses `.as_model_iter()` to fulfill this requirement.
+
+        Args:
+            backend (:object:`~narwhals.Implementation): A Narwhals-compatible backend specifier.
+                See: https://narwhals-dev.github.io/narwhals/api-reference/implementation/
+
+        Returns:
+            (`~narwhals.v1.DataFrame` | `~narwhals.v1.LazyFrame`): A narwhals dataframe.
+        """
+        data: dict[str, list] = {column: [] for column in self.query.columns}
+
+        for item in self.as_model_iter():
+            for column in data:
+                data[column].append(getattr(item, column))
+
+        return nw.from_dict(data, backend=backend)
+
+    @abstractmethod
+    def as_model_iter(self) -> Iterator[ModelType]:
+        """
+        Execute and return this Cursor as an iterated sequence of `ModelType` objects. This will
+        be used for Ape's internal APIs in order to fulfill certain higher-level use cases within
+        Ape. Note that a plugin is expected to assemble this iterated sequence in the most
+        efficient manner possible.
+
+        Returns:
+            `Iterator[ModelType]`: A sequence of Ape API models.
+        """
+
+
+QueryType = Union[
+    AccountTransactionQuery,
+    BlockQuery,
+    BlockTransactionQuery,
+    ContractCreationQuery,
+    ContractEventQuery,
+    ContractMethodQuery,
+]
+
+
+class QueryEngineAPI(BaseInterface):
+    def exec(self, query: QueryType) -> Iterator[CursorAPI]:
+        """
+        Obtain `CursorAPI` object(s) that may covers (subset of) `query`. A plugin should yield
+        one or more cursor(s) that covers some subset of the length of `query`'s row-space, as
+        indicated by `QueryType.start_index` and `QueryType.end_index`. These query types will
+        either be fed into an algorithm to determine the cheapest possible coverage of the query,
+        or be sourced directly from the provider in response to a user-specified query.
+
+        Note that this method encourages the use of `@singledispatchmethod` decorator to make it
+        possible to specify only certain types of queries that your plugin might be able to handle,
+        which will cause it to skip using this plugin for non-overriden queries by default, as this
+        method yields an empty iterator which will indicate that your plugin can be skipped.
+
+        Add `exec = functools.singledispatchmethod(QueryEngineAPI.exec)` to your subclass, and then
+        `@exec.register` as a decorator on your method in order to support particular query types.
+
+        Args:
+            query (`~QueryType`): The query being handled by this method.
+
+        Returns:
+            Iterator[`~CursorAPI`]: Zero (or more) cursor(s) that provide data for a portion of
+                `query`'s range. Defaults to not providing any coverage.
+
+        Usage example::
+
+            >>> from functools import singledispatchmethod
+            >>> from ape.api import CursorAPI, QueryEngineAPI
+            >>> class PluginCursor(CursorAPI):
+            ...     ...  # See `CursorAPI`'s documentation for methods to implement
+            >>> class PluginQueryEngine(QueryEngineAPI):
+            ...     # NOTE: Do this if you want to define multiple dispatch handlers easily
+            ...     exec = singledispatchmethod(QueryEngineAPI.exec)
+            ...     # NOTE: Do *not* use the name `exec` for the dispatch method's name!
+            ...     @exec.register
+            ...     def exec_queryX(self, query: SomethingQuery) -> Iterator[PluginCursor]:
+            ...         yield PluginCursor(query=query, ...)
+            ...         # NOTE: Can yield more cursors if plugin does not have full coverage,
+            ...         #       or has piece-wise coverage of the query space
+
+        """
+        return iter([])  # Will avoid using any cursors from this plugin for querying this type
+
+    def cache(self, result: "QueryResult"):
+        """
+        Once a query is solved, this method will be called on every query plugin as a callback for
+        whatever application logic you might want to perform using the final `QueryResult` cursor.
+        By default, this method does nothing, so only override if it is needed to perform specific
+        application logic for your plugin (caching, pre-indexing, etc.)
+
+        Args:
+            result (`~ape.managers.query.QueryResult`): the final solved Cursor representing all
+                the data that most efficiently covers the original `~QueryType`.
+        """
+
+    # TODO: Deprecate below in v0.9
     @abstractmethod
     def estimate_query(self, query: QueryType) -> Optional[int]:
         """
@@ -287,3 +534,7 @@ class QueryAPI(BaseInterface):
             query (``QueryType``): query that was executed
             result (``Iterator``): the result of the query
         """
+
+
+# TODO: Remove in v0.9
+QueryAPI = QueryEngineAPI
