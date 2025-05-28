@@ -2139,8 +2139,15 @@ class Project(ProjectManager):
             # Delete cached property.
             del self.__dict__["config"]
 
+        original_override = self._config_override
         self._config_override = overrides
-        _ = self.config
+        try:
+            _ = self.config
+        except Exception:
+            # Ensure changes don't persist.
+            self._config_override = original_override
+            raise  # Whatever error it is
+
         self._invalidate_project_dependent_caches()
 
     def extract_manifest(self) -> PackageManifest:
@@ -2437,7 +2444,7 @@ class LocalProject(Project):
 
     @cached_property
     def _deduced_contracts_folder(self) -> Path:
-        # NOTE: This helper is only called if not configured and not ordinary or not set to False/None.
+        # NOTE: This helper is only called if not configured and not ordinary.
         return self._deduce_contracts_folder()
 
     def _deduce_contracts_folder(self) -> Path:

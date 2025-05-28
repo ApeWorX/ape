@@ -586,6 +586,9 @@ def test_contracts_folder_invalid(project):
         with project.temp_config(**{"contracts_folder": {}}):
             _ = project.contracts_folder
 
+    # Ensure config is fine _after_ something invalid.
+    assert project.contracts_folder
+
 
 def test_custom_network():
     chain_id = 11191919191991918223773
