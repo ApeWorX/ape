@@ -555,11 +555,12 @@ def get_attribute_with_extras(obj: Any, name: str, coerce_attr_error: bool = Tru
     if message and message[-1] not in (".", "?", "!"):
         message = f"{message}."
 
-    if not coerce_attr_error:
-        raise base_err
-
     # Coerce whatever error to automatically be an AttributeError
     # (required for __getattr__ or must handle independently).
+
+    if base_err and not coerce_attr_error:
+        raise base_err
+
     attr_err = ApeAttributeError(message)
     if base_err:
         raise attr_err from base_err
