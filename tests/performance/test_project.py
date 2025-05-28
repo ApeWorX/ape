@@ -12,4 +12,4 @@ def test_get_contract(benchmark, project_with_contracts):
     # NOTE: At one point, this was average '0.0007'.
     # When I run locally, I tend to get 0.0001.
     # In CI, when very busy, it can get slower
-    assert median < 0.00030
+    assert median < 0.00070

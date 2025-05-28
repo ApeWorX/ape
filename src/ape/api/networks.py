@@ -391,19 +391,20 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
             # Was set programmatically.
             return network
 
-        elif network := self.config.get("default_network"):
+        networks = self.networks
+        if network := self.config.get("default_network"):
             # Default found in config. Ensure is an installed network.
-            if network in self.networks:
+            if network in networks:
                 return network
 
-        if LOCAL_NETWORK_NAME in self.networks:
+        if LOCAL_NETWORK_NAME in networks:
             # Default to the LOCAL_NETWORK_NAME, at last resort.
             return LOCAL_NETWORK_NAME
 
-        elif len(self.networks) >= 1:
+        elif len(networks) >= 1:
             # Use the first network.
-            key = next(iter(self.networks.keys()))
-            return self.networks[key].name
+            key = next(iter(networks.keys()))
+            return networks[key].name
 
         # Very unlikely scenario.
         raise NetworkError("No networks found.")

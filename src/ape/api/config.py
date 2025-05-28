@@ -472,7 +472,7 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
         except ValidationError as err:
             if path.suffix == ".json":
                 # TODO: Support JSON configs here.
-                raise  # The validation error as-is
+                raise ConfigError(err.messages) from err
 
             if final_msg := _get_problem_with_config(err.errors(), path):
                 raise ConfigError(final_msg)

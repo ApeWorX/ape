@@ -2437,7 +2437,10 @@ class LocalProject(Project):
 
     @cached_property
     def _deduced_contracts_folder(self) -> Path:
-        # NOTE: This helper is only called if not configured and not ordinary.
+        # NOTE: This helper is only called if not configured and not ordinary or not set to False/None.
+        return self._deduce_contracts_folder()
+
+    def _deduce_contracts_folder(self) -> Path:
         if not self.path.is_dir():
             # Not even able to try.
             return self.path

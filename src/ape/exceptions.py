@@ -495,6 +495,10 @@ class ApeAttributeError(ProjectError, AttributeError):
     Raised when trying to access items via ``.`` access.
     """
 
+    def __init__(self, msg: str, base_err: Optional[Exception] = None):
+        self.base_err = base_err
+        super().__init__(msg)
+
 
 class UnknownVersionError(ProjectError):
     """

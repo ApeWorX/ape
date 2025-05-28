@@ -1136,7 +1136,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
             }
         except Exception as err:
             # NOTE: Must raise AttributeError for __attr__ method or will seg fault
-            raise ApeAttributeError(str(err)) from err
+            raise ApeAttributeError(str(err), base_err=err) from err
 
     @cached_property
     def _mutable_methods_(self) -> dict[str, ContractTransactionHandler]:
@@ -1155,7 +1155,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
             }
         except Exception as err:
             # NOTE: Must raise AttributeError for __attr__ method or will seg fault
-            raise ApeAttributeError(str(err)) from err
+            raise ApeAttributeError(str(err), base_err=err) from err
 
     def call_view_method(self, method_name: str, *args, **kwargs) -> Any:
         """
@@ -1295,7 +1295,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
             }
         except Exception as err:
             # NOTE: Must raise AttributeError for __attr__ method or will seg fault
-            raise ApeAttributeError(str(err)) from err
+            raise ApeAttributeError(str(err), base_err=err) from err
 
     @cached_property
     def _errors_(self) -> dict[str, list[type[CustomError]]]:
@@ -1337,7 +1337,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
 
         except Exception as err:
             # NOTE: Must raise AttributeError for __attr__ method or will seg fault
-            raise ApeAttributeError(str(err)) from err
+            raise ApeAttributeError(str(err), base_err=err) from err
 
     def __dir__(self) -> list[str]:
         """

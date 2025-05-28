@@ -123,7 +123,7 @@ def only_raise_attribute_error(fn: Callable) -> Any:
         except Exception as err:
             # Wrap the exception in AttributeError
             logger.log_debug_stack_trace()
-            raise ApeAttributeError(f"{err}") from err
+            raise ApeAttributeError(f"{err}", base_err=err) from err
 
     return wrapper
 
@@ -478,7 +478,7 @@ class ExtraAttributesMixin:
         return get_item_with_extras(self, name)
 
 
-def get_attribute_with_extras(obj: Any, name: str) -> Any:
+def get_attribute_with_extras(obj: Any, name: str, coerce_attr_error: bool = True) -> Any:
     _assert_not_ipython_check(name)
     if _recursion_checker.check(name):
         # Prevent segfaults.
@@ -530,7 +530,7 @@ def get_attribute_with_extras(obj: Any, name: str) -> Any:
 
         except Exception as err:
             _recursion_checker.reset(name)
-            raise ApeAttributeError(f"{name} - {err}") from err
+            raise ApeAttributeError(f"{name} - {err}", base_err=err) from err
 
     # The error message mentions the alternative mappings,
     # such as a contract-type map.
@@ -548,12 +548,18 @@ def get_attribute_with_extras(obj: Any, name: str) -> Any:
         if suffix not in message:
             if message and message[-1] not in (".", "?", "!"):
                 message = f"{message}."
+
             message = f"{message} {suffix}"
 
     _recursion_checker.reset(name)
     if message and message[-1] not in (".", "?", "!"):
         message = f"{message}."
 
+    if not coerce_attr_error:
+        raise base_err
+
+    # Coerce whatever error to automatically be an AttributeError
+    # (required for __getattr__ or must handle independently).
     attr_err = ApeAttributeError(message)
     if base_err:
         raise attr_err from base_err
