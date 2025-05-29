@@ -96,6 +96,10 @@ def create_genesis_data(alloc: Alloc, chain_id: int) -> "GenesisDataTypedDict":
     }
 
 
+def get_node_name_from_executable(executable: str) -> str:
+    return executable.split(os.path.sep)[-1] or "geth"
+
+
 class GethDevProcess(BaseGethProcess):
     """
     A developer-configured geth that only exists until disconnected.
@@ -114,7 +118,7 @@ class GethDevProcess(BaseGethProcess):
         number_of_accounts: int = DEFAULT_NUMBER_OF_TEST_ACCOUNTS,
         chain_id: int = DEFAULT_TEST_CHAIN_ID,
         initial_balance: Union[str, int] = DEFAULT_TEST_ACCOUNT_BALANCE,
-        executable: Optional[list[str]] = None,
+        executable: Optional[Union[list[str], str]] = None,
         auto_disconnect: bool = True,
         extra_funded_accounts: Optional[list[str]] = None,
         hd_path: Optional[str] = DEFAULT_TEST_HD_PATH,
@@ -123,7 +127,15 @@ class GethDevProcess(BaseGethProcess):
         initialize_chain: bool = True,
         background: bool = False,
     ):
-        if not executable:
+        if isinstance(executable, str):
+            # Legacy.
+            executable = [executable]
+
+        if executable:
+            if not Path(executable[0]).exists() and not shutil.which(executable[0]):
+                raise NodeSoftwareNotInstalledError()
+
+        else:
             # Executable not specified: attempt to find one in $PATH.
             if shutil.which("geth"):
                 executable = ["geth"]
@@ -215,11 +227,13 @@ class GethDevProcess(BaseGethProcess):
         if isinstance(block_time, int):
             block_time = f"{block_time}"
 
+        executable = kwargs.get("executable")
+
         process_kwargs = {
             "auto_disconnect": kwargs.get("auto_disconnect", True),
             "background": kwargs.get("background", False),
             "block_time": block_time,
-            "executable": kwargs.get("executable"),
+            "executable": executable,
             "extra_funded_accounts": extra_accounts,
             "hd_path": kwargs.get("hd_path", DEFAULT_TEST_HD_PATH),
             "initial_balance": balance,
@@ -239,8 +253,9 @@ class GethDevProcess(BaseGethProcess):
 
         elif hostname := parsed_uri.hostname:
             if hostname not in ("localhost", "127.0.0.1"):
+                name = get_node_name_from_executable(executable) if executable else "geth"
                 raise ConnectionError(
-                    f"Unable to start Geth on non-local host {parsed_uri.hostname}."
+                    f"Unable to start {name} on non-local host {parsed_uri.hostname}."
                 )
 
             if parsed_uri.scheme.startswith("ws"):
@@ -260,7 +275,7 @@ class GethDevProcess(BaseGethProcess):
 
     @property
     def process_name(self) -> str:
-        return self.executable[0].split(os.path.sep)[-1] or "geth"
+        return get_node_name_from_executable(self.executable[0])
 
     @property
     def is_rpc_ready(self) -> bool:
