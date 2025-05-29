@@ -1,10 +1,13 @@
 import atexit
+import os.path
 import re
 import shutil
 from pathlib import Path
 from subprocess import DEVNULL, PIPE, Popen
 from typing import TYPE_CHECKING, Any, Optional, Union
+from urllib.error import URLError
 from urllib.parse import urlparse
+from urllib.request import urlopen
 
 from eth_utils import add_0x_prefix, to_hex
 from geth.chain import initialize_chain as initialize_gethdev_chain
@@ -111,7 +114,7 @@ class GethDevProcess(BaseGethProcess):
         number_of_accounts: int = DEFAULT_NUMBER_OF_TEST_ACCOUNTS,
         chain_id: int = DEFAULT_TEST_CHAIN_ID,
         initial_balance: Union[str, int] = DEFAULT_TEST_ACCOUNT_BALANCE,
-        executable: Optional[str] = None,
+        executable: Optional[list[str]] = None,
         auto_disconnect: bool = True,
         extra_funded_accounts: Optional[list[str]] = None,
         hd_path: Optional[str] = DEFAULT_TEST_HD_PATH,
@@ -120,18 +123,31 @@ class GethDevProcess(BaseGethProcess):
         initialize_chain: bool = True,
         background: bool = False,
     ):
-        executable = executable or "geth"
-        if not shutil.which(executable):
-            raise NodeSoftwareNotInstalledError()
+        if not executable:
+            # Executable not specified: attempt to find one in $PATH.
+            if shutil.which("geth"):
+                executable = ["geth"]
+            elif shutil.which("reth"):
+                executable = ["reth", "node"]
+            else:
+                # TODO: Add support for more nodes, such as erigon.
+                raise NodeSoftwareNotInstalledError()
 
+        self.executable = executable or ["geth"]
         self._data_dir = data_dir
         self.is_running = False
         self._auto_disconnect = auto_disconnect
         self.background = background
 
+        is_reth = executable[0].endswith("reth")
+
+        if is_reth and hostname == "localhost":
+            # Reth only supports IP format.
+            hostname = "127.0.0.1"
+
         kwargs_ctor: dict = {
             "data_dir": self.data_dir,
-            "geth_executable": executable,
+            "geth_executable": executable[0],
             "network_id": f"{chain_id}",
         }
         if hostname is not None:
@@ -151,10 +167,16 @@ class GethDevProcess(BaseGethProcess):
             kwargs_ctor["ws_enabled"] = False
             kwargs_ctor["ws_addr"] = None
             kwargs_ctor["ws_port"] = None
-        if block_time is not None:
+        if block_time is not None and not is_reth:
             kwargs_ctor["dev_period"] = f"{block_time}"
 
         geth_kwargs = construct_test_chain_kwargs(**kwargs_ctor)
+        if is_reth:
+            geth_kwargs.pop("max_peers", None)
+            geth_kwargs.pop("network_id", None)
+            geth_kwargs.pop("no_discover", None)
+            geth_kwargs.pop("verbosity", None)
+            geth_kwargs.pop("password", None)
 
         # Ensure a clean data-dir.
         self._clean()
@@ -178,6 +200,10 @@ class GethDevProcess(BaseGethProcess):
             initialize_gethdev_chain(genesis, self.data_dir)
 
         super().__init__(geth_kwargs)
+
+        # Correct multi-word executable.
+        idx = self.command.index(executable[0])
+        self.command = self.command[:idx] + executable + self.command[idx+1:]
 
     @classmethod
     def from_uri(cls, uri: str, data_folder: Path, **kwargs):
@@ -233,6 +259,25 @@ class GethDevProcess(BaseGethProcess):
         return f"{self._data_dir}"
 
     @property
+    def process_name(self) -> str:
+        return self.executable[0].split(os.path.sep)[-1] or "geth"
+
+    @property
+    def is_rpc_ready(self) -> bool:
+        # Overridden: This is overridden to work with other nodes besides `geth`.
+        #   Otherwise, the RPC is never declared as ready even though it is.
+        try:
+            urlopen(f"http://{self.rpc_host}:{self.rpc_port}")
+        except URLError as err:
+            if "method not allowed" in f"{err}".lower():
+                # Reth.
+                return True
+
+            return False
+        else:
+            return True
+
+    @property
     def _hostname(self) -> Optional[str]:
         return self.geth_kwargs.get("rpc_addr")
 
@@ -276,8 +321,7 @@ class GethDevProcess(BaseGethProcess):
                 ws_log = f"{ws_log}:{port}"
 
         connection_logs = ", ".join(x for x in (http_log, ipc_log, ws_log) if x)
-
-        logger.info(f"Starting geth ({connection_logs}).")
+        logger.info(f"Starting {self.process_name} ({connection_logs}).")
 
     def start(self):
         if self.is_running:
@@ -299,7 +343,7 @@ class GethDevProcess(BaseGethProcess):
 
     def disconnect(self):
         if self.is_running:
-            logger.info("Stopping 'geth' process.")
+            logger.info(f"Stopping '{self.process_name}' process.")
             self.stop()
 
         self._clean()
@@ -362,7 +406,7 @@ class EthereumNodeConfig(PluginConfig):
     such as which URIs to use for each network.
     """
 
-    executable: Optional[str] = None
+    executable: Optional[list[str]] = None
     """
     For starting nodes, select the executable. Defaults to using
     ``shutil.which("geth")``.
@@ -398,6 +442,17 @@ class EthereumNodeConfig(PluginConfig):
     def validate_trace_approach(cls, value):
         # This handles nicer config values.
         return None if value is None else TraceApproach.from_key(value)
+
+    @field_validator("executable", mode="before")
+    @classmethod
+    def validate_executable(cls, value):
+        if not value:
+            return None
+
+        elif isinstance(value, str):
+            return value.split(" ")
+
+        return value
 
 
 class NodeSoftwareNotInstalledError(ConnectionError):
@@ -471,7 +526,8 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
         geth_dev.connect(timeout=timeout)
         if not self.web3.is_connected():
             geth_dev.disconnect()
-            raise ConnectionError("Unable to connect to locally running geth.")
+
+            raise ConnectionError(f"Unable to connect to locally running {geth_dev.process_name}.")
         else:
             self.web3.middleware_onion.inject(ExtraDataToPOAMiddleware, layer=0)
 

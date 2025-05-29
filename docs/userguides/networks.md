@@ -435,11 +435,32 @@ Out-of-the-box, Ape ships with two development providers you can use for the `lo
 - An Ephemeral Node (defaults to Geth) process
 
 ```bash
-ape test --network ::test
-ape test --network ::node  # Launch a local development node (geth) process
+ape test --network ::test  # Launch an Ethereum Tester in-process node.
+ape test --network ::node  # Launch a local development node (e.g. geth) process.
 ```
 
 To learn more about testing in ape, follow [this guide](./testing.html).
+
+### Ethereum Tester
+
+`ethereum:local:test` is an in-process Pythonic Ethereum tester node, which is fast but limited in its feature-set.
+It is the default tester node in Ape because it doesn't require any additional dependencies, such as `geth`.
+
+### Local Node
+
+Using `ethereum:local:node`, you are telling Ape to use node software in `--dev` mode e.g. `geth --dev` or `reth --dev`.
+By default, Ape will use `geth --dev` unless geth is not installed, than it will search for others.
+
+To use specific node software, configure it directly in Ape.
+Here is an `ape-config.yaml` example for how to do that:
+
+```yaml
+node:
+  executable: $HOME/RustProjects/reth/target/release/reth node
+```
+
+In this case, `reth` was built locally is in the repository's `target` directory.
+Link to the `reth` binary so `ape` launches and uses your local `reth` node.
 
 ## Live Networks
 
