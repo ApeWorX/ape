@@ -7,7 +7,7 @@ from _pytest._code.code import Traceback as PytestTraceback
 from rich import print as rich_print
 
 from ape.exceptions import ConfigError, ProviderNotConnectedError
-from ape.logging import LogLevel
+from ape.logging import LogLevel, logger
 from ape.pytest.utils import Scope
 from ape.utils.basemodel import ManagerAccessMixin
 
@@ -361,8 +361,12 @@ class PytestApeRunner(ManagerAccessMixin):
 
     def pytest_unconfigure(self):
         if self._provider_is_connected and self.config_wrapper.disconnect_providers_after:
-            self._provider_context.disconnect_all()
-            self._provider_is_connected = False
+            try:
+                self._provider_context.disconnect_all()
+            except Exception as err:
+                logger.error(f"Failed to disconnect {self}: {err}")
+            else:
+                self._provider_is_connected = False
 
         # NOTE: Clearing the state is helpful for pytester-based tests,
         #  which may run pytest many times in-process.

@@ -568,9 +568,26 @@ def test_config_enum():
     assert actual.my_enum == MyEnum.FOO
 
 
+def test_contracts_folder(project):
+    with project.temp_config(**{"contracts_folder": "src"}):
+        assert project.contracts_folder.name == "src"
+
+
 def test_contracts_folder_with_hyphen(project):
     with project.temp_config(**{"contracts-folder": "src"}):
         assert project.contracts_folder.name == "src"
+
+
+def test_contracts_folder_invalid(project):
+    """
+    Show that we can still attempt to use `.get_config()` when config is invalid.
+    """
+    with pytest.raises(ConfigError):
+        with project.temp_config(**{"contracts_folder": {}}):
+            _ = project.contracts_folder
+
+    # Ensure config is fine _after_ something invalid.
+    assert project.contracts_folder
 
 
 def test_custom_network():

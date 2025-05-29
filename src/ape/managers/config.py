@@ -89,6 +89,9 @@ class ConfigManager(ExtraAttributesMixin, BaseManager):
         """
         return self.load_global_config()
 
+    def get_config(self, name: str) -> ApeConfig:
+        return self.local_project.config.get_config(name)
+
     def load_global_config(self) -> ApeConfig:
         path = self.DATA_FOLDER / CONFIG_FILE_NAME
         return ApeConfig.validate_file(path) if path.is_file() else ApeConfig.model_validate({})

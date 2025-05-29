@@ -1082,7 +1082,10 @@ class SubprocessProvider(ProviderAPI):
         if self.background:
             return
 
-        self.disconnect()
+        try:
+            self.disconnect()
+        except Exception as err:
+            logger.error(f"Error while disconnecting: {err}")
 
     def disconnect(self):
         """

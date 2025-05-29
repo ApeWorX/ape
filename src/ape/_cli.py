@@ -13,7 +13,7 @@ import click
 import yaml
 
 from ape.cli.options import ape_cli_context
-from ape.exceptions import Abort, ApeException, handle_ape_exception
+from ape.exceptions import Abort, ApeAttributeError, ApeException, handle_ape_exception
 from ape.logging import logger
 
 _DIFFLIB_CUT_OFF = 0.6
@@ -84,10 +84,24 @@ class ApeCLI(click.MultiCommand):
     def invoke(self, ctx) -> Any:
         try:
             return super().invoke(ctx)
+
         except click.UsageError as err:
             self._suggest_cmd(err)
+
         except ApeException as err:
             path = ctx.obj.local_project.path
+
+            # Extract more interesting ApeException.
+            err_to_show = err
+            while isinstance(err_to_show, ApeException):
+                if (
+                    not isinstance(err_to_show, ApeAttributeError)
+                    or err_to_show.base_err is None
+                    or not isinstance(err_to_show.base_err, ApeException)
+                ):
+                    break
+
+                err_to_show = err_to_show.base_err
 
             # NOTE: isinstance check for type-checkers.
             if isinstance(path, Path) and handle_ape_exception(err, (path,)):
