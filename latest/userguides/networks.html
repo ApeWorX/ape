@@ -147,7 +147,11 @@ data-aria-dark="Switch to auto color mode">
 </li>
 <li><a class="reference internal" href="#configuring-networks">Configuring Networks</a></li>
 <li><a class="reference internal" href="#request-headers">Request Headers</a></li>
-<li><a class="reference internal" href="#local-network">Local Network</a></li>
+<li><a class="reference internal" href="#local-network">Local Network</a><ul>
+<li><a class="reference internal" href="#ethereum-tester">Ethereum Tester</a></li>
+<li><a class="reference internal" href="#local-node">Local Node</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#live-networks">Live Networks</a></li>
 <li><a class="reference internal" href="#network-config">Network Config</a></li>
 <li><a class="reference internal" href="#running-a-network-process">Running a Network Process</a></li>
@@ -621,11 +625,29 @@ Out-of-the-box, Ape ships with two development providers you can use for the <co
 <li><p><a class="reference external" href="https://github.com/ethereum/eth-tester">EthTester</a></p></li>
 <li><p>An Ephemeral Node (defaults to Geth) process</p></li>
 </ul>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--network<span class="w"> </span>::test
-</span><span data-line="2">ape<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--network<span class="w"> </span>::node<span class="w">  </span><span class="c1"># Launch a local development node (geth) process</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--network<span class="w"> </span>::test<span class="w">  </span><span class="c1"># Launch an Ethereum Tester in-process node.</span>
+</span><span data-line="2">ape<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--network<span class="w"> </span>::node<span class="w">  </span><span class="c1"># Launch a local development node (e.g. geth) process.</span>
 </span></pre></div>
 </div>
 <p>To learn more about testing in ape, follow <a class="reference external" href="./testing.html">this guide</a>.</p>
+<section id="ethereum-tester">
+<h3>Ethereum Tester<a class="headerlink" href="#ethereum-tester" title="Link to this heading"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">ethereum:local:test</span></code> is an in-process Pythonic Ethereum tester node, which is fast but limited in its feature-set.
+It is the default tester node in Ape because it doesn’t require any additional dependencies, such as <code class="docutils literal notranslate"><span class="pre">geth</span></code>.</p>
+</section>
+<section id="local-node">
+<h3>Local Node<a class="headerlink" href="#local-node" title="Link to this heading"></a></h3>
+<p>Using <code class="docutils literal notranslate"><span class="pre">ethereum:local:node</span></code>, you are telling Ape to use node software in <code class="docutils literal notranslate"><span class="pre">--dev</span></code> mode e.g. <code class="docutils literal notranslate"><span class="pre">geth</span> <span class="pre">--dev</span></code> or <code class="docutils literal notranslate"><span class="pre">reth</span> <span class="pre">--dev</span></code>.
+By default, Ape will use <code class="docutils literal notranslate"><span class="pre">geth</span> <span class="pre">--dev</span></code> unless geth is not installed, than it will search for others.</p>
+<p>To use specific node software, configure it directly in Ape.
+Here is an <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> example for how to do that:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">node</span><span class="p">:</span>
+</span><span data-line="2"><span class="w">  </span><span class="nt">executable</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">$HOME/RustProjects/reth/target/release/reth node</span>
+</span></pre></div>
+</div>
+<p>In this case, <code class="docutils literal notranslate"><span class="pre">reth</span></code> was built locally is in the repository’s <code class="docutils literal notranslate"><span class="pre">target</span></code> directory.
+Link to the <code class="docutils literal notranslate"><span class="pre">reth</span></code> binary so <code class="docutils literal notranslate"><span class="pre">ape</span></code> launches and uses your local <code class="docutils literal notranslate"><span class="pre">reth</span></code> node.</p>
+</section>
 </section>
 <section id="live-networks">
 <h2>Live Networks<a class="headerlink" href="#live-networks" title="Link to this heading"></a></h2>
