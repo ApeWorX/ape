@@ -5,7 +5,7 @@ import shutil
 from pathlib import Path
 from subprocess import DEVNULL, PIPE, Popen
 from typing import TYPE_CHECKING, Any, Optional, Union
-from urllib.error import URLError
+from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse
 from urllib.request import urlopen
 
@@ -126,13 +126,16 @@ class GethDevProcess(BaseGethProcess):
         generate_accounts: bool = True,
         initialize_chain: bool = True,
         background: bool = False,
+        verify_bin: bool = True,
     ):
         if isinstance(executable, str):
             # Legacy.
             executable = [executable]
 
         if executable:
-            if not Path(executable[0]).exists() and not shutil.which(executable[0]):
+            if verify_bin and (
+                not Path(executable[0]).exists() and not shutil.which(executable[0])
+            ):
                 raise NodeSoftwareNotInstalledError()
 
         else:
@@ -141,9 +144,12 @@ class GethDevProcess(BaseGethProcess):
                 executable = ["geth"]
             elif shutil.which("reth"):
                 executable = ["reth", "node"]
-            else:
+            elif verify_bin:
                 # TODO: Add support for more nodes, such as erigon.
                 raise NodeSoftwareNotInstalledError()
+            else:
+                # This probably won't work if started, but the user knows that.
+                executable = ["geth"]
 
         self.executable = executable or ["geth"]
         self._data_dir = data_dir
@@ -187,7 +193,11 @@ class GethDevProcess(BaseGethProcess):
             geth_kwargs.pop("max_peers", None)
             geth_kwargs.pop("network_id", None)
             geth_kwargs.pop("no_discover", None)
+
+            # NOTE: --verbosity _is_ available in reth, but it is a different type (flag only).
+            #   It isn't really needed anyway (I don't think).
             geth_kwargs.pop("verbosity", None)
+
             geth_kwargs.pop("password", None)
 
         # Ensure a clean data-dir.
@@ -239,6 +249,7 @@ class GethDevProcess(BaseGethProcess):
             "initial_balance": balance,
             "mnemonic": mnemonic,
             "number_of_accounts": number_of_accounts,
+            "verify_bin": kwargs.get("verify_bin", True),
         }
 
         parsed_uri = urlparse(uri)
@@ -283,13 +294,18 @@ class GethDevProcess(BaseGethProcess):
         #   Otherwise, the RPC is never declared as ready even though it is.
         try:
             urlopen(f"http://{self.rpc_host}:{self.rpc_port}")
-        except URLError as err:
-            if "method not allowed" in f"{err}".lower():
-                # Reth.
-                return True
 
+        except HTTPError:
+            # Reth nodes (and maybe others) might throw an HTTP error here, like "method not found".
+            # This means the RPC is ready.
+            return True
+
+        except URLError:
+            # Nothing found at all yet, most likely.
             return False
+
         else:
+            # No error occurs on Geth nodes when the RPC is ready.
             return True
 
     @property
