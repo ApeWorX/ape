@@ -1753,6 +1753,14 @@ def _create_web3(
         providers.append(lambda: WebsocketProvider(endpoint_uri=ws))
 
     provider = AutoProvider(potential_providers=providers)
+
+    # TODO: Getting attribute error without this. Figure out why and do proper fix.
+    class MockBatchingContext:
+        def get(self, *args, **kwargs):
+            return None
+
+    provider._batching_context = MockBatchingContext()
+
     return Web3(provider, middleware=[])
 
 

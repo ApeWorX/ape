@@ -126,6 +126,16 @@ class ApeTester(EthereumTesterProvider):
         self._backend = value.backend
 
     @property
+    def _batching_context(self) -> bool:
+        # TODO: Figure out correct way; remove this hack
+
+        class MockBatchingContext:
+            def get(self, *args, **kwargs):
+                return None
+
+        return MockBatchingContext()
+
+    @property
     def backend(self) -> "ApeEVMBackend":
         if self._backend is None:
             self._backend = ApeEVMBackend(self.config)
