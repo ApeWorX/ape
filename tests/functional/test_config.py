@@ -161,7 +161,7 @@ def test_model_validate_handles_environment_variables():
         NetworkConfig, "required_confirmations", "APE_ETHEREUM_REQUIRED_CONFIRMATIONS", "6498", 6498
     )
     run_test(EthereumNetworkConfig, "mainnet", "APE_NODE_MAINNET", '{"a":"b"}', {"a": "b"})
-    run_test(EthereumNodeConfig, "executable", "APE_NODE_EXECUTABLE", "40613177e494")
+    run_test(EthereumNodeConfig, "executable", "APE_NODE_EXECUTABLE", "geth", expected=["geth"])
     run_test(CoverageReportsConfig, "terminal", "APE_TEST_TERMINAL", "false", False)
     run_test(GasConfig, "reports", "APE_TEST_REPORTS", '["terminal"]', ["terminal"])
     run_test(GasExclusion, "method_name", "APE_TEST_METHOD_NAME", "32aa54e3c5d2")
