@@ -1759,7 +1759,7 @@ def _create_web3(
         def get(self, *args, **kwargs):
             return None
 
-    provider._batching_context = MockBatchingContext()
+    provider._batching_context = MockBatchingContext()  # type: ignore
 
     return Web3(provider, middleware=[])
 
