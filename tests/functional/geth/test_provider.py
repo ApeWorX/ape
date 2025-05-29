@@ -1020,7 +1020,7 @@ class TestGethDevProcess:
         Reth raises HTTPError("Method not found") when the RPC is ready.
         """
         urlopen_patch = mocker.patch("ape_node.provider.urlopen")
-        urlopen_patch.side_effect = HTTPError("127.0.0.1", "404", "method not found", "", "")
+        urlopen_patch.side_effect = HTTPError("127.0.0.1", 404, "method not found", 0, 0)  # type: ignore
         geth_dev = GethDevProcess.from_uri("path/to/geth.ipc", data_folder)
         assert geth_dev.is_rpc_ready
 
