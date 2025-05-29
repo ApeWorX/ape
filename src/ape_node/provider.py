@@ -505,7 +505,10 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
 
     @property
     def process_name(self) -> str:
-        return self.name
+        if self._process:
+            return self._process.process_name
+
+        return "geth"
 
     @property
     def chain_id(self) -> int:
@@ -541,6 +544,20 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
     @auto_mine.setter
     def auto_mine(self, value):
         raise NotImplementedError("'auto_mine' setter not implemented.")
+
+    @property
+    def ipc_path(self) -> Optional[Path]:
+        if rpc := self._configured_ipc_path:
+            # "ipc_path" found in config/settings
+            return Path(rpc)
+
+        elif rpc := self._configured_uri:
+            if f"{rpc}".endswith(".ipc"):
+                # "uri" found in config/settings and is IPC.
+                return Path(rpc)
+
+        # Default (used by geth-process).
+        return self.data_dir / f"{self.process_name}.ipc"
 
     def connect(self):
         self._set_web3()
