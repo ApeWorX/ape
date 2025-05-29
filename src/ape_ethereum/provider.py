@@ -182,12 +182,16 @@ class Web3Provider(ProviderAPI, ABC):
 
         # Patching the provider to call a post send_transaction() hook
         def post_tx_hook(send_tx):
+            if getattr(send_tx, "_is_post_tx_wrapped", False):
+                return send_tx
+
             @wraps(send_tx)
             def send_tx_wrapper(self, txn: TransactionAPI) -> ReceiptAPI:
                 receipt = send_tx(self, txn)
                 _post_send_transaction(txn, receipt)
                 return receipt
 
+            send_tx_wrapper._is_post_tx_wrapped = True  # type: ignore
             return send_tx_wrapper
 
         send_tx_wrapper = post_tx_hook(cls.send_transaction)
