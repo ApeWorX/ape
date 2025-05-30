@@ -200,6 +200,9 @@ class GethDevProcess(BaseGethProcess):
 
             geth_kwargs.pop("password", None)
 
+            if "ipc_path" in geth_kwargs and geth_kwargs["ipc_path"].endswith("geth.ipc"):
+                geth_kwargs["ipc_path"] = geth_kwargs["ipc_path"].replace("geth.ipc", "reth.ipc")
+
         # Ensure a clean data-dir.
         self._clean()
 
@@ -287,6 +290,18 @@ class GethDevProcess(BaseGethProcess):
     @property
     def process_name(self) -> str:
         return get_node_name_from_executable(self.executable[0])
+
+    @property
+    def ipc_path(self) -> str:
+        # Overridden: so we can use a custom IPC path name (e.g. reth.ipc).
+        return self.geth_kwargs.get("ipc_path") or os.path.abspath(
+            os.path.expanduser(
+                os.path.join(
+                    self.data_dir,
+                    f"{self.process_name}.ipc",
+                )
+            )
+        )
 
     @property
     def is_rpc_ready(self) -> bool:
@@ -507,6 +522,9 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
     def process_name(self) -> str:
         if self._process:
             return self._process.process_name
+
+        elif exec_cfg := self.config.executable:
+            return get_node_name_from_executable(exec_cfg[0])
 
         return "geth"
 
