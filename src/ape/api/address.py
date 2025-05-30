@@ -189,10 +189,17 @@ class BaseAddress(BaseInterface):
         return self.chain_manager.history[self.address]
 
     def as_transaction(self, **kwargs) -> "TransactionAPI":
+        sign = kwargs.pop("sign", False)
         converted_kwargs = self.conversion_manager.convert_method_kwargs(kwargs)
-        return self.provider.network.ecosystem.create_transaction(
+        tx = self.provider.network.ecosystem.create_transaction(
             receiver=self.address, **converted_kwargs
         )
+        if sender := kwargs.get("sender"):
+            if hasattr(sender, "prepare_transaction"):
+                prepared = sender.prepare_transaction(tx)
+                return sender.sign(prepared) if sign else prepared
+
+        return tx
 
     def estimate_gas_cost(self, **kwargs) -> int:
         txn = self.as_transaction(**kwargs)
