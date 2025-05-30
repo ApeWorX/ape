@@ -12,7 +12,7 @@ from urllib.request import urlopen
 from eth_utils import add_0x_prefix, to_hex
 from geth.chain import initialize_chain as initialize_gethdev_chain
 from geth.process import BaseGethProcess
-from geth.wrapper import construct_test_chain_kwargs
+from geth.wrapper import construct_test_chain_kwargs, ALL_APIS
 from pydantic import field_validator
 from pydantic_settings import SettingsConfigDict
 from requests.exceptions import ConnectionError
@@ -127,6 +127,7 @@ class GethDevProcess(BaseGethProcess):
         initialize_chain: bool = True,
         background: bool = False,
         verify_bin: bool = True,
+        rpc_api: Optional[list[str]] = None,
     ):
         if isinstance(executable, str):
             # Legacy.
@@ -187,6 +188,13 @@ class GethDevProcess(BaseGethProcess):
             kwargs_ctor["ws_port"] = None
         if block_time is not None and not is_reth:
             kwargs_ctor["dev_period"] = f"{block_time}"
+
+        if rpc_api is None:
+            if is_reth:
+                # Reth also has MEV API support.
+                rpc_api = [*ALL_APIS, "mev"]
+            else:
+                rpc_api = ALL_APIS
 
         geth_kwargs = construct_test_chain_kwargs(**kwargs_ctor)
         if is_reth:
@@ -476,6 +484,11 @@ class EthereumNodeConfig(PluginConfig):
     request_headers: dict = {}
     """
     Optionally specify request headers to use whenever using this provider.
+    """
+
+    rpc_api: Optional[list[str]] = None
+    """
+    RPC APIs to enable. Defaults to all geth APIs.
     """
 
     model_config = SettingsConfigDict(extra="allow", env_prefix="APE_NODE_")
