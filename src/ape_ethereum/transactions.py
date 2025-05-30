@@ -13,7 +13,7 @@ from eth_account.typed_transactions.set_code_transaction import Authorization as
 from eth_pydantic_types import HexBytes
 from eth_utils import decode_hex, encode_hex, keccak, to_canonical_address, to_hex, to_int
 from ethpm_types.abi import EventABI, MethodABI
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, Field, field_serializer, field_validator, model_validator
 
 from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.exceptions import OutOfGasError, SignatureError, TransactionError
@@ -211,6 +211,10 @@ class Authorization(BaseModel):
     v: HexInt = Field(alias="yParity")
     r: HexBytes
     s: HexBytes
+
+    @field_serializer("chain_id", "nonce", "v")
+    def convert_int_to_hex(self, value: int) -> str:
+        return to_hex(value)
 
     @property
     def signature(self) -> MessageSignature:
