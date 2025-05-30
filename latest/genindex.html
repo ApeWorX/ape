@@ -7,7 +7,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="_static/pygments.css?v=397bb51e" />
-    <link rel="stylesheet" type="text/css" href="_static/shibuya.css?v=c516b45e" />
+    <link rel="stylesheet" type="text/css" href="_static/shibuya.css?v=d0008d65" />
     <link media="print" rel="stylesheet" type="text/css" href="_static/print.css?v=20ff2c19" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1254,8 +1254,6 @@ data-aria-dark="Switch to auto color mode">
         <li><a href="methoddocs/ape.html#ape.convert">built-in function</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     ape.exceptions
 
@@ -1263,6 +1261,8 @@ data-aria-dark="Switch to auto color mode">
         <li><a href="methoddocs/exceptions.html#module-ape.exceptions">module</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     ape.managers.accounts
 
@@ -1653,6 +1653,8 @@ data-aria-dark="Switch to auto color mode">
       <li><a href="methoddocs/contracts.html#ape.contracts.base.ContractContainer.at">at() (ape.contracts.base.ContractContainer method)</a>
 </li>
       <li><a href="methoddocs/utils.html#ape.utils.basemodel.ExtraModelAttributes.attributes">attributes (ape.utils.basemodel.ExtraModelAttributes attribute)</a>
+</li>
+      <li><a href="methoddocs/ape_ethereum.html#ape_ethereum.transactions.Authorization">Authorization (class in ape_ethereum.transactions)</a>
 </li>
       <li><a href="methoddocs/api.html#ape.api.networks.NetworkAPI.auto_gas_multiplier">auto_gas_multiplier (ape.api.networks.NetworkAPI property)</a>
 </li>
@@ -4205,8 +4207,12 @@ data-aria-dark="Switch to auto color mode">
 </li>
       <li><a href="methoddocs/api.html#ape.api.transactions.ReceiptAPI">ReceiptAPI (class in ape.api.transactions)</a>
 </li>
-      <li><a href="methoddocs/ape_ethereum.html#ape_ethereum.transactions.SharedBlobTransaction.receiver">receiver (ape_ethereum.transactions.SharedBlobTransaction attribute)</a>
+      <li><a href="methoddocs/ape_ethereum.html#ape_ethereum.transactions.SetCodeTransaction.receiver">receiver (ape_ethereum.transactions.SetCodeTransaction attribute)</a>
+
+      <ul>
+        <li><a href="methoddocs/ape_ethereum.html#ape_ethereum.transactions.SharedBlobTransaction.receiver">(ape_ethereum.transactions.SharedBlobTransaction attribute)</a>
 </li>
+      </ul></li>
       <li><a href="methoddocs/managers.html#ape.managers.project.Project.reconfigure">reconfigure() (ape.managers.project.Project method)</a>
 </li>
       <li><a href="methoddocs/types.html#ape.types.signatures.recover_signer">recover_signer() (ape.types.signatures method)</a>
@@ -4404,6 +4410,8 @@ data-aria-dark="Switch to auto color mode">
         <li><a href="methoddocs/ape_test.html#ape_test.provider.LocalProvider.set_timestamp">(ape_test.provider.LocalProvider method)</a>
 </li>
       </ul></li>
+      <li><a href="methoddocs/ape_ethereum.html#ape_ethereum.transactions.SetCodeTransaction">SetCodeTransaction (class in ape_ethereum.transactions)</a>
+</li>
       <li><a href="methoddocs/api.html#ape.api.providers.ProviderAPI.settings">settings (ape.api.providers.ProviderAPI property)</a>
 
       <ul>
@@ -4984,5 +4992,5 @@ data-aria-dark="Switch to auto color mode">
       <script src="_static/doctools.js?v=9a2dae69"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
       <script data-domain="docs.apeworx.io" defer="defer" src="https://plausible.io/js/script.js"></script>
-      <script src="_static/shibuya.js?v=e2230717"></script></body>
+      <script src="_static/shibuya.js?v=1d2088d1"></script></body>
 </html>
