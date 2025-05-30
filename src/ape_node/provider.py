@@ -191,9 +191,11 @@ class GethDevProcess(BaseGethProcess):
 
         if rpc_api is None:
             # Reth also has MEV API support.
-            rpc_api = f"{ALL_APIS},mev" if is_reth else ALL_APIS
+            rpc_api_str = f"{ALL_APIS},mev" if is_reth else ALL_APIS
+        else:
+            rpc_api_str = ",".join(rpc_api)
 
-        kwargs_ctor["rpc_api"] = rpc_api
+        kwargs_ctor["rpc_api"] = rpc_api_str
         geth_kwargs = construct_test_chain_kwargs(**kwargs_ctor)
         if is_reth:
             geth_kwargs.pop("max_peers", None)
@@ -582,9 +584,9 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
                 # "uri" found in config/settings and is IPC.
                 return Path(rpc)
 
-        elif proc := self._configured_proc:
+        elif proc := self._process:
             # Connected.
-            return proc.ipc_path
+            return Path(proc.ipc_path)
 
         # Default (used by geth-process).
         return self.data_dir / self.process_name / f"{self.process_name}.ipc"
