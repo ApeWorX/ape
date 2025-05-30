@@ -774,6 +774,20 @@ def test_declare(contract_container, sender):
     assert not receipt.failed
 
 
+def test_prepare_transaction(ethereum, sender):
+    tx = ethereum.create_transaction()
+    prepared_tx = sender.prepare_transaction(tx)
+    assert prepared_tx.sender == sender.address
+    assert prepared_tx.signature is None
+
+
+def test_prepare_transaction_sign(sender, ethereum):
+    tx = ethereum.create_transaction()
+    prepared_tx = sender.prepare_transaction(tx, sign=True)
+    assert prepared_tx.sender == sender.address
+    assert prepared_tx.signature is not None
+
+
 @pytest.mark.parametrize("tx_type", (TransactionType.STATIC, TransactionType.DYNAMIC))
 def test_prepare_transaction_using_auto_gas(sender, ethereum, tx_type):
     params = (

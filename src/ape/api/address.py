@@ -198,7 +198,7 @@ class BaseAddress(BaseInterface):
         txn = self.as_transaction(**kwargs)
         return self.provider.estimate_gas_cost(txn)
 
-    def prepare_transaction(self, txn: "TransactionAPI") -> "TransactionAPI":
+    def prepare_transaction(self, txn: "TransactionAPI", **kwargs) -> "TransactionAPI":
         """
         Set default values on a transaction.
 
@@ -209,6 +209,7 @@ class BaseAddress(BaseInterface):
 
         Args:
             txn (:class:`~ape.api.transactions.TransactionAPI`): The transaction to prepare.
+            **kwargs: Sub-classes, such as :class:`~ape.api.accounts.AccountAPI`, use additional kwargs.
 
         Returns:
             :class:`~ape.api.transactions.TransactionAPI`
@@ -234,6 +235,7 @@ class BaseAddress(BaseInterface):
                 f"(transfer_value={txn.total_transfer_value}, balance={self.balance})."
             )
 
+        txn.sender = txn.sender or self.address
         return txn
 
 
