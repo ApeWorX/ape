@@ -70,6 +70,7 @@ from ape_ethereum.transactions import (
     BaseTransaction,
     DynamicFeeTransaction,
     Receipt,
+    SetCodeTransaction,
     SharedBlobReceipt,
     SharedBlobTransaction,
     StaticFeeTransaction,
@@ -435,8 +436,12 @@ class Ethereum(EcosystemAPI):
 
         if tx_type is TransactionType.STATIC:
             return StaticFeeTransaction
+
         elif tx_type is TransactionType.ACCESS_LIST:
             return AccessListTransaction
+
+        elif tx_type is TransactionType.SET_CODE:
+            return SetCodeTransaction
 
         return DynamicFeeTransaction
 
@@ -898,6 +903,7 @@ class Ethereum(EcosystemAPI):
             TransactionType.ACCESS_LIST: AccessListTransaction,
             TransactionType.DYNAMIC: DynamicFeeTransaction,
             TransactionType.SHARED_BLOB: SharedBlobTransaction,
+            TransactionType.SET_CODE: SetCodeTransaction,
         }
         if "type" in tx_data:
             # May be None in data.
@@ -912,14 +918,17 @@ class Ethereum(EcosystemAPI):
                 # Using hex values or alike.
                 version = TransactionType(self.conversion_manager.convert(tx_data["type"], int))
 
-        elif "gas_price" in tx_data:
-            version = TransactionType.STATIC
+        # NOTE: Determine these in reverse order
+        elif "authorizationList" in tx_data:
+            version = TransactionType.SET_CODE
+        elif "maxFeePerBlobGas" in tx_data or "blobVersionedHashes" in tx_data:
+            version = TransactionType.SHARED_BLOB
         elif "max_fee" in tx_data or "max_priority_fee" in tx_data:
             version = TransactionType.DYNAMIC
         elif "access_list" in tx_data or "accessList" in tx_data:
             version = TransactionType.ACCESS_LIST
-        elif "maxFeePerBlobGas" in tx_data or "blobVersionedHashes" in tx_data:
-            version = TransactionType.SHARED_BLOB
+        elif "gas_price" in tx_data:
+            version = TransactionType.STATIC
         else:
             version = self.default_transaction_type
 

@@ -1197,7 +1197,11 @@ class Web3Provider(ProviderAPI, ABC):
             and txn.gas_price is None
         ):
             txn.gas_price = self.gas_price
-        elif txn_type in (TransactionType.DYNAMIC, TransactionType.SHARED_BLOB):
+        elif txn_type in (
+            TransactionType.DYNAMIC,
+            TransactionType.SHARED_BLOB,
+            TransactionType.SET_CODE,
+        ):
             if txn.max_priority_fee is None:
                 txn.max_priority_fee = self.priority_fee
 

@@ -187,6 +187,15 @@ def test_type_3_transactions(ethereum, tx_kwargs):
 
 
 @pytest.mark.parametrize(
+    "tx_kwargs",
+    [{"type": 4}, {"authorizationList": []}],
+)
+def test_type_4_transactions(ethereum, tx_kwargs):
+    txn = ethereum.create_transaction(**tx_kwargs)
+    assert txn.type == 4
+
+
+@pytest.mark.parametrize(
     "fee_kwargs",
     (
         {"max_fee": "100 gwei"},
