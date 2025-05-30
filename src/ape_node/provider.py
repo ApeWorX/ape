@@ -226,6 +226,7 @@ class GethDevProcess(BaseGethProcess):
             bal_dict = {"balance": str(initial_balance)}
             alloc = dict.fromkeys(addresses, bal_dict)
             genesis = create_genesis_data(alloc, chain_id)
+            self._data_dir.mkdir(parents=True, exist_ok=True)
             initialize_gethdev_chain(genesis, self.data_dir)
 
         super().__init__(geth_kwargs)
@@ -400,15 +401,7 @@ class GethDevProcess(BaseGethProcess):
 
     def _clean(self):
         if self._data_dir.is_dir():
-            # In case data-dir is being used for something else,
-            # only delete geth-dev node related stuff.
-            (self._data_dir / "genesis.json").unlink(missing_ok=True)
-            shutil.rmtree((self._data_dir / "geth").as_posix(), ignore_errors=True)
-            shutil.rmtree((self._data_dir / "keystore").as_posix(), ignore_errors=True)
-            shutil.rmtree((self._data_dir / "subprocess_output").as_posix(), ignore_errors=True)
-
-        # dir must exist when initializing chain.
-        self._data_dir.mkdir(parents=True, exist_ok=True)
+            shutil.rmtree(self._data_dir)
 
     def wait(self, *args, **kwargs):
         if self.proc is None:
@@ -641,10 +634,10 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
         test_config["initial_balance"] = self.test_config.balance
         test_config["background"] = self.background
         uri = self.ws_uri or self.uri
-
+        proc_data_dir = self.data_dir / f"{self.process_name}"
         return GethDevProcess.from_uri(
             uri,
-            self.data_dir,
+            proc_data_dir,
             block_time=self.block_time,
             **test_config,
         )
@@ -682,7 +675,15 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
             ):
                 # Changed, possibly due to other transactions (x-dist?).
                 # Retry using block gas limit.
-                txn.gas_limit = self.chain_manager.blocks.head.gas_limit
+                block_gas_limit = self.chain_manager.blocks.head.gas_limit
+                if txn.gas_limit > block_gas_limit:
+                    txn.gas_limit = block_gas_limit
+                elif txn.gas_limit == block_gas_limit:
+                    txn.gas_limit -= 1
+                else:
+                    # Raise whatever error it is. I am not sure how this is possible!
+                    raise
+
                 account = self.account_manager.test_accounts[txn.sender]
                 signed_transaction = account.sign_transaction(txn)
                 logger.debug("Gas-limit exceeds block gas limit. Retrying using block gas limit.")
