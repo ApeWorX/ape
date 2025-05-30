@@ -298,12 +298,20 @@ class ContractCallHandler(ContractMethodHandler):
         """
         return self.transact.as_transaction(*args, **kwargs)
 
+    def as_transaction_bytes(self, *args, **txn_kwargs) -> HexBytes:
+        """
+        Get a signed serialized transaction.
+
+        Returns:
+            HexBytes: The serialized transaction
+        """
+        return self.transact.as_transaction_bytes(**txn_kwargs)
+
     @property
     def transact(self) -> "ContractTransactionHandler":
         """
         Send the call as a transaction.
         """
-
         return ContractTransactionHandler(self.contract, self.abis)
 
     def estimate_gas_cost(self, *args, **kwargs) -> int:
@@ -403,6 +411,17 @@ class ContractTransactionHandler(ContractMethodHandler):
                 return sender.sign_transaction(prepped_tx) if sign else prepped_tx
 
         return transaction
+
+    def as_transaction_bytes(self, *args, **txn_kwargs) -> HexBytes:
+        """
+        Get a signed serialized transaction.
+
+        Returns:
+            HexBytes: The serialized transaction
+        """
+        txn_kwargs["sign"] = True
+        tx = self.as_transaction(*args, **txn_kwargs)
+        return tx.serialize_transaction()
 
     def estimate_gas_cost(self, *args, **kwargs) -> int:
         """

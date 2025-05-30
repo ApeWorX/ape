@@ -1067,6 +1067,11 @@ def test_as_transaction_sign(vyper_contract_instance, owner, eth_tester_provider
     assert tx.signature is not None
 
 
+def test_as_transaction_bytes(vyper_contract_instance, owner, eth_tester_provider):
+    signed_tx = vyper_contract_instance.setNumber.as_transaction_bytes(987, sender=owner, sign=True)
+    assert isinstance(signed_tx, bytes)
+
+
 @pytest.mark.parametrize(
     "calldata,expected",
     (
