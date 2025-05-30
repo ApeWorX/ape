@@ -1075,3 +1075,19 @@ class TestGethDevProcess:
         )
         assert reth_dev.ipc_path.endswith("reth.ipc")
         assert reth_dev.geth_kwargs["ipc_path"].endswith("reth.ipc")
+
+    @geth_process_test
+    def test_rpc_api_geth(self, data_folder):
+        geth_dev = GethDevProcess.from_uri("path/to/geth.ipc", data_folder)
+        actual = set(geth_dev.geth_kwargs["rpc_api"].split(","))
+        expected = {"admin", "debug", "eth", "net", "txpool", "web3"}
+        assert actual == expected
+
+    @geth_process_test
+    def test_rpc_api_reth(self, data_folder, ignore_bin_check):
+        reth_dev = GethDevProcess.from_uri(
+            "path/to/reth.ipc", data_folder, executable=["reth", "node"], verify_bin=False
+        )
+        actual = set(reth_dev.geth_kwargs["rpc_api"].split(","))
+        expected = {"admin", "debug", "eth", "net", "txpool", "web3", "mev"}
+        assert actual == expected

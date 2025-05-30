@@ -12,7 +12,7 @@ from urllib.request import urlopen
 from eth_utils import add_0x_prefix, to_hex
 from geth.chain import initialize_chain as initialize_gethdev_chain
 from geth.process import BaseGethProcess
-from geth.wrapper import construct_test_chain_kwargs, ALL_APIS
+from geth.wrapper import ALL_APIS, construct_test_chain_kwargs
 from pydantic import field_validator
 from pydantic_settings import SettingsConfigDict
 from requests.exceptions import ConnectionError
@@ -190,12 +190,10 @@ class GethDevProcess(BaseGethProcess):
             kwargs_ctor["dev_period"] = f"{block_time}"
 
         if rpc_api is None:
-            if is_reth:
-                # Reth also has MEV API support.
-                rpc_api = [*ALL_APIS, "mev"]
-            else:
-                rpc_api = ALL_APIS
+            # Reth also has MEV API support.
+            rpc_api = f"{ALL_APIS},mev" if is_reth else ALL_APIS
 
+        kwargs_ctor["rpc_api"] = rpc_api
         geth_kwargs = construct_test_chain_kwargs(**kwargs_ctor)
         if is_reth:
             geth_kwargs.pop("max_peers", None)
