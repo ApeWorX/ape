@@ -1394,6 +1394,7 @@ class Web3Provider(ProviderAPI, ABC):
                 or re.match(r"[m|M]ethod .*?not found", message)
                 or message.startswith("Unknown RPC Endpoint")
                 or "RPC Endpoint has not been implemented" in message
+                or message == "unimplemented"
             ):
                 raise APINotImplementedError(
                     f"RPC method '{rpc}' is not implemented by this node instance."

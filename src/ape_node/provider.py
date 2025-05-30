@@ -12,7 +12,7 @@ from urllib.request import urlopen
 from eth_utils import add_0x_prefix, to_hex
 from geth.chain import initialize_chain as initialize_gethdev_chain
 from geth.process import BaseGethProcess
-from geth.wrapper import construct_test_chain_kwargs
+from geth.wrapper import ALL_APIS, construct_test_chain_kwargs
 from pydantic import field_validator
 from pydantic_settings import SettingsConfigDict
 from requests.exceptions import ConnectionError
@@ -127,6 +127,7 @@ class GethDevProcess(BaseGethProcess):
         initialize_chain: bool = True,
         background: bool = False,
         verify_bin: bool = True,
+        rpc_api: Optional[list[str]] = None,
     ):
         if isinstance(executable, str):
             # Legacy.
@@ -188,6 +189,13 @@ class GethDevProcess(BaseGethProcess):
         if block_time is not None and not is_reth:
             kwargs_ctor["dev_period"] = f"{block_time}"
 
+        if rpc_api is None:
+            # Reth also has MEV API support.
+            rpc_api_str = f"{ALL_APIS},mev" if is_reth else ALL_APIS
+        else:
+            rpc_api_str = ",".join(rpc_api)
+
+        kwargs_ctor["rpc_api"] = rpc_api_str
         geth_kwargs = construct_test_chain_kwargs(**kwargs_ctor)
         if is_reth:
             geth_kwargs.pop("max_peers", None)
@@ -199,6 +207,13 @@ class GethDevProcess(BaseGethProcess):
             geth_kwargs.pop("verbosity", None)
 
             geth_kwargs.pop("password", None)
+
+        # Ensure IPC path has correct name.
+        if ipc_path_kwarg := geth_kwargs.get("ipc_path"):
+            if ipc_path_kwarg.endswith("geth.ipc"):
+                geth_kwargs["ipc_path"] = ipc_path_kwarg.replace(
+                    "geth.ipc", f"{self.process_name}.ipc"
+                )
 
         # Ensure a clean data-dir.
         self._clean()
@@ -219,6 +234,7 @@ class GethDevProcess(BaseGethProcess):
             bal_dict = {"balance": str(initial_balance)}
             alloc = dict.fromkeys(addresses, bal_dict)
             genesis = create_genesis_data(alloc, chain_id)
+            self._data_dir.mkdir(parents=True, exist_ok=True)
             initialize_gethdev_chain(genesis, self.data_dir)
 
         super().__init__(geth_kwargs)
@@ -287,6 +303,18 @@ class GethDevProcess(BaseGethProcess):
     @property
     def process_name(self) -> str:
         return get_node_name_from_executable(self.executable[0])
+
+    @property
+    def ipc_path(self) -> str:
+        # Overridden: so we can use a custom IPC path name (e.g. reth.ipc).
+        return self.geth_kwargs.get("ipc_path") or os.path.abspath(
+            os.path.expanduser(
+                os.path.join(
+                    self.data_dir,
+                    f"{self.process_name}.ipc",
+                )
+            )
+        )
 
     @property
     def is_rpc_ready(self) -> bool:
@@ -381,15 +409,7 @@ class GethDevProcess(BaseGethProcess):
 
     def _clean(self):
         if self._data_dir.is_dir():
-            # In case data-dir is being used for something else,
-            # only delete geth-dev node related stuff.
-            (self._data_dir / "genesis.json").unlink(missing_ok=True)
-            shutil.rmtree((self._data_dir / "geth").as_posix(), ignore_errors=True)
-            shutil.rmtree((self._data_dir / "keystore").as_posix(), ignore_errors=True)
-            shutil.rmtree((self._data_dir / "subprocess_output").as_posix(), ignore_errors=True)
-
-        # dir must exist when initializing chain.
-        self._data_dir.mkdir(parents=True, exist_ok=True)
+            shutil.rmtree(self._data_dir)
 
     def wait(self, *args, **kwargs):
         if self.proc is None:
@@ -466,6 +486,11 @@ class EthereumNodeConfig(PluginConfig):
     Optionally specify request headers to use whenever using this provider.
     """
 
+    rpc_api: Optional[list[str]] = None
+    """
+    RPC APIs to enable. Defaults to all geth APIs.
+    """
+
     model_config = SettingsConfigDict(extra="allow", env_prefix="APE_NODE_")
 
     @field_validator("call_trace_approach", mode="before")
@@ -507,6 +532,9 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
     def process_name(self) -> str:
         if self._process:
             return self._process.process_name
+
+        elif exec_cfg := self.config.executable:
+            return get_node_name_from_executable(exec_cfg[0])
 
         return "geth"
 
@@ -556,8 +584,12 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
                 # "uri" found in config/settings and is IPC.
                 return Path(rpc)
 
+        elif proc := self._process:
+            # Connected.
+            return Path(proc.ipc_path)
+
         # Default (used by geth-process).
-        return self.data_dir / f"{self.process_name}.ipc"
+        return self.data_dir / self.process_name / f"{self.process_name}.ipc"
 
     def connect(self):
         self._set_web3()
@@ -619,10 +651,10 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
         test_config["initial_balance"] = self.test_config.balance
         test_config["background"] = self.background
         uri = self.ws_uri or self.uri
-
+        proc_data_dir = self.data_dir / f"{self.process_name}"
         return GethDevProcess.from_uri(
             uri,
-            self.data_dir,
+            proc_data_dir,
             block_time=self.block_time,
             **test_config,
         )
@@ -660,7 +692,15 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
             ):
                 # Changed, possibly due to other transactions (x-dist?).
                 # Retry using block gas limit.
-                txn.gas_limit = self.chain_manager.blocks.head.gas_limit
+                block_gas_limit = self.chain_manager.blocks.head.gas_limit
+                if txn.gas_limit > block_gas_limit:
+                    txn.gas_limit = block_gas_limit
+                elif txn.gas_limit == block_gas_limit:
+                    txn.gas_limit -= 1
+                else:
+                    # Raise whatever error it is. I am not sure how this is possible!
+                    raise
+
                 account = self.account_manager.test_accounts[txn.sender]
                 signed_transaction = account.sign_transaction(txn)
                 logger.debug("Gas-limit exceeds block gas limit. Retrying using block gas limit.")

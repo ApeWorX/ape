@@ -73,7 +73,10 @@ def test_parse_network_choice_pid(geth_provider, networks):
         pid = proc.pid  # Still potentially None.
 
     if pid is None:
-        pid = next(networks.running_nodes.lookup_processes(geth_provider))
+        pid = next(iter(networks.running_nodes.lookup_processes(geth_provider)), None)
+
+    if pid is None:
+        pytest.fail("Cannot find Geth process - might be running _before_ tests.")
 
     # Show we are able to connect to providers via PID URL.
     with networks.parse_network_choice(f"pid://{pid}") as provider:
