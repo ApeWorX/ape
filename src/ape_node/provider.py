@@ -200,8 +200,12 @@ class GethDevProcess(BaseGethProcess):
 
             geth_kwargs.pop("password", None)
 
-            if "ipc_path" in geth_kwargs and geth_kwargs["ipc_path"].endswith("geth.ipc"):
-                geth_kwargs["ipc_path"] = geth_kwargs["ipc_path"].replace("geth.ipc", "reth.ipc")
+        # Ensure IPC path has correct name.
+        if ipc_path_kwarg := geth_kwargs.get("ipc_path"):
+            if ipc_path_kwarg.endswith("geth.ipc"):
+                geth_kwargs["ipc_path"] = ipc_path_kwarg.replace(
+                    "geth.ipc", f"{self.process_name}.ipc"
+                )
 
         # Ensure a clean data-dir.
         self._clean()

@@ -936,6 +936,12 @@ class TestGethDevProcess:
     Tests targeting the process-starter directly.
     """
 
+    @pytest.fixture
+    def ignore_bin_check(self, mocker):
+        # Trick py- into thinking reth is available even when it isn't.
+        is_exec_check_patch = mocker.patch("geth.wrapper.is_executable_available")
+        is_exec_check_patch.return_value = True
+
     @geth_process_test
     def test_from_uri_http(self, data_folder):
         geth_dev = GethDevProcess.from_uri("http://localhost:6799", data_folder)
@@ -1024,16 +1030,12 @@ class TestGethDevProcess:
         geth_dev = GethDevProcess.from_uri("path/to/geth.ipc", data_folder)
         assert geth_dev.is_rpc_ready
 
-    def test_command_reth(self, mocker, data_folder):
+    def test_command_reth(self, mocker, data_folder, ignore_bin_check):
         """
         Showing we get usable kwargs for a reth --dev node.
         """
-        # Trick py-geth into thinking reth is available even when it isn't.
-        is_exec_check_patch = mocker.patch("geth.wrapper.is_executable_available")
-        is_exec_check_patch.return_value = True
-
         reth_dev = GethDevProcess.from_uri(
-            "path/to/geth.ipc", data_folder, executable=["reth", "node"], verify_bin=False
+            "path/to/reth.ipc", data_folder, executable=["reth", "node"], verify_bin=False
         )
         actual = reth_dev.command
         assert "reth" in actual
@@ -1047,3 +1049,15 @@ class TestGethDevProcess:
         assert "--password" not in actual
         assert "--nodiscover" not in actual
         assert "--networkid" not in actual
+
+    def test_ipc_path_geth(self, data_folder):
+        geth_dev = GethDevProcess.from_uri("path/to/geth.ipc", data_folder)
+        assert geth_dev.ipc_path.endswith("geth.ipc")
+        assert geth_dev.geth_kwargs["ipc_path"].endswith("geth.ipc")
+
+    def test_ipc_path_reth(self, data_folder, ignore_bin_check):
+        reth_dev = GethDevProcess.from_uri(
+            "path/to/reth.ipc", data_folder, executable=["reth", "node"], verify_bin=False
+        )
+        assert reth_dev.ipc_path.endswith("reth.ipc")
+        assert reth_dev.geth_kwargs["ipc_path"].endswith("reth.ipc")
