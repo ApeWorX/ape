@@ -86,7 +86,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
     def prepare_transaction(self, txn: "TransactionAPI", **kwargs) -> "TransactionAPI":
         sign = kwargs.pop("sign", False)
         prepared_tx = super().prepare_transaction(txn, **kwargs)
-        return self.sign_transaction(prepared_tx) if sign else prepared_tx
+        return (self.sign_transaction(prepared_tx) or prepared_tx) if sign else prepared_tx
 
     def sign_raw_msghash(self, msghash: "HexBytes") -> Optional[MessageSignature]:
         """

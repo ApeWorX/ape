@@ -197,7 +197,7 @@ class BaseAddress(BaseInterface):
         if sender := kwargs.get("sender"):
             if hasattr(sender, "prepare_transaction"):
                 prepared = sender.prepare_transaction(tx)
-                return sender.sign(prepared) if sign else prepared
+                return (sender.sign_transaction(prepared) or prepared) if sign else prepared
 
         return tx
 

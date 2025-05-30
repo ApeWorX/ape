@@ -408,7 +408,7 @@ class ContractTransactionHandler(ContractMethodHandler):
         if sender := kwargs.get("sender"):
             if isinstance(sender, AccountAPI):
                 prepped_tx = sender.prepare_transaction(transaction)
-                return sender.sign_transaction(prepped_tx) if sign else prepped_tx
+                return (sender.sign_transaction(prepped_tx) or prepped_tx) if sign else prepped_tx
 
         return transaction
 
