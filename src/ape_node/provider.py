@@ -571,8 +571,12 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
                 # "uri" found in config/settings and is IPC.
                 return Path(rpc)
 
+        elif proc := self._configured_proc:
+            # Connected.
+            return proc.ipc_path
+
         # Default (used by geth-process).
-        return self.data_dir / f"{self.process_name}.ipc"
+        return self.data_dir / self.process_name / f"{self.process_name}.ipc"
 
     def connect(self):
         self._set_web3()

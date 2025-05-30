@@ -40,7 +40,7 @@ from ape_ethereum.transactions import (
     TransactionStatusEnum,
     TransactionType,
 )
-from ape_node.provider import GethDevProcess, Node, NodeSoftwareNotInstalledError
+from ape_node.provider import GethDev, GethDevProcess, Node, NodeSoftwareNotInstalledError
 from tests.conftest import GETH_URI, geth_process_test
 
 
@@ -931,6 +931,35 @@ def test_auto_mine(geth_provider, geth_account, geth_contract):
     assert not receipt.confirmed
 
 
+def test_disconnect_does_not_delete_unrelated_files_in_given_data_dir(networks):
+    """
+    One time, I used a data-dir containing other files I didn't want to lose. GethDev
+    deleted the entire folder during `.disconnect()`, and it was tragic. Ensure this does
+    not happen to anyone else.
+    """
+    with create_tempdir() as temp_dir:
+        file = temp_dir / "dont_delete_me_plz.txt"
+        file.write_text("Please don't delete me.")
+
+        geth_dev = GethDev(network=networks.ethereum.local)
+        geth_dev_proc = GethDevProcess.from_uri(
+            "path/to/geth.ipc",
+            temp_dir / "geth",
+            block_time=1,
+            generate_accounts=False,
+            initialize_chain=False,
+        )
+        geth_dev._process = geth_dev_proc
+        geth_dev.disconnect()
+        assert file.is_file()
+        assert not (temp_dir / "geth" / "genesis.json").is_file()
+
+
+@geth_process_test
+def test_ipc_path(geth_provider):
+    assert geth_provider.ipc_path.as_posix().endswith("geth.ipc")
+
+
 class TestGethDevProcess:
     """
     Tests targeting the process-starter directly.
@@ -982,27 +1011,7 @@ class TestGethDevProcess:
         )
         assert geth_dev.geth_kwargs["dev_period"] == "1"
 
-    def test_disconnect_does_not_delete_unrelated_files_in_given_data_dir(self):
-        """
-        One time, I used a data-dir containing other files I didn't want to lose. GethDevProcess
-        deleted the entire folder during `.disconnect()`, and it was tragic. Ensure this does
-        not happen to anyone else.
-        """
-        with create_tempdir() as temp_dir:
-            file = temp_dir / "dont_delete_me_plz.txt"
-            file.write_text("Please don't delete me.")
-
-            geth_dev = GethDevProcess.from_uri(
-                "path/to/geth.ipc",
-                temp_dir,
-                block_time=1,
-                generate_accounts=False,
-                initialize_chain=False,
-            )
-            geth_dev.disconnect()
-            assert file.is_file()
-            assert not (temp_dir / "genesis.json").is_file()
-
+    @geth_process_test
     def test_is_rpc_ready_false(self, mocker, data_folder):
         """
         Both Geth and Reth nodes raise simple URLError when the node is not running.
@@ -1012,6 +1021,7 @@ class TestGethDevProcess:
         geth_dev = GethDevProcess.from_uri("path/to/geth.ipc", data_folder)
         assert not geth_dev.is_rpc_ready
 
+    @geth_process_test
     def test_is_rpc_ready_true_geth(self, mocker, data_folder):
         """
         Geth has no error when the RPC is ready.
@@ -1021,6 +1031,7 @@ class TestGethDevProcess:
         geth_dev = GethDevProcess.from_uri("path/to/geth.ipc", data_folder)
         assert geth_dev.is_rpc_ready
 
+    @geth_process_test
     def test_is_rpc_ready_true_reth(self, mocker, data_folder):
         """
         Reth raises HTTPError("Method not found") when the RPC is ready.
@@ -1030,6 +1041,7 @@ class TestGethDevProcess:
         geth_dev = GethDevProcess.from_uri("path/to/geth.ipc", data_folder)
         assert geth_dev.is_rpc_ready
 
+    @geth_process_test
     def test_command_reth(self, mocker, data_folder, ignore_bin_check):
         """
         Showing we get usable kwargs for a reth --dev node.
@@ -1050,11 +1062,13 @@ class TestGethDevProcess:
         assert "--nodiscover" not in actual
         assert "--networkid" not in actual
 
+    @geth_process_test
     def test_ipc_path_geth(self, data_folder):
         geth_dev = GethDevProcess.from_uri("path/to/geth.ipc", data_folder)
         assert geth_dev.ipc_path.endswith("geth.ipc")
         assert geth_dev.geth_kwargs["ipc_path"].endswith("geth.ipc")
 
+    @geth_process_test
     def test_ipc_path_reth(self, data_folder, ignore_bin_check):
         reth_dev = GethDevProcess.from_uri(
             "path/to/reth.ipc", data_folder, executable=["reth", "node"], verify_bin=False
