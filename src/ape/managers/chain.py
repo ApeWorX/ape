@@ -37,6 +37,7 @@ from ape.utils.misc import ZERO_ADDRESS, is_evm_precompile, is_zero_hex, log_ins
 if TYPE_CHECKING:
     from rich.console import Console as RichConsole
 
+    from ape.contracts import ContractInstance
     from ape.types import BlockID, ContractCode, GasReport, SnapshotID, SourceTraceback
 
 
@@ -1016,3 +1017,13 @@ class ChainManager(BaseManager):
         code = self.provider.get_code(address)
         self._code[network.ecosystem.name][network.name][address] = code
         return code
+
+    def get_delegate(self, address: AddressType) -> Optional["ContractInstance"]:
+        ecosystem = self.provider.network.ecosystem
+
+        if not (proxy_info := ecosystem.get_proxy_info(address)):
+            return None
+
+        # NOTE: Do this every time because it can change?
+        self.contracts.cache_proxy_info(address, proxy_info)
+        return self.contracts.instance_at(proxy_info.target)
