@@ -277,8 +277,10 @@ def test_install(project, mocker):
 
         # Delete project path (but not manifest) and install again.
         shutil.rmtree(dependency.project_path)
+        installation = dependency._installation
         dependency._installation = None
         project = dependency.install()
+        dependency._installation = installation
         assert isinstance(project, ProjectManager)
         assert dependency.project_path.is_dir()  # Was re-created from manifest sources.
 
@@ -307,6 +309,7 @@ def test_install_already_installed(mocker, project, with_dependencies_project_pa
     dep = dm.install(local=with_dependencies_project_path, name="wdep")
 
     # Set up a spy on the fetch API, which can be costly and require internet.
+    real_api = dep.api
     mock_api = mocker.MagicMock()
     dep.api = mock_api
 
@@ -316,6 +319,8 @@ def test_install_already_installed(mocker, project, with_dependencies_project_pa
     # Install again.
     with pytest.raises(ProjectError):
         dep.install()
+
+    dep.api = real_api
 
     # Ensure it doesn't need to re-fetch
     assert mock_api.call_count == 0
