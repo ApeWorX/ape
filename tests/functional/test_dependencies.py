@@ -291,8 +291,11 @@ def test_install_dependencies_of_dependencies(project, with_dependencies_project
     dm = project.dependencies
     actual = dm.install(local=with_dependencies_project_path, name="wdep")
     assert actual.name == "wdep"
-    # TODO: Check deps of deps also installed
-    # deps_of_deps = [x for x in actual.project.dependencies.specified]
+
+    # Ensure dependencies of dependencies also installed.
+    dep_with_deps = actual.project.dependencies["containing-sub-dependencies"]["local"]
+    dep_of_dep = dep_with_deps.dependencies.get_dependency("sub-dependency", "local")
+    assert dep_of_dep.installed
 
 
 @pytest.mark.parametrize("name", ("openzeppelin", "OpenZeppelin/openzeppelin-contracts"))
