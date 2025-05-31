@@ -298,6 +298,29 @@ def test_install_dependencies_of_dependencies(project, with_dependencies_project
     assert dep_of_dep.installed
 
 
+def test_install_already_installed(mocker, project, with_dependencies_project_path):
+    """
+    Some dependencies never produce sources because of default compiler extension behavior
+    (example: a16z_erc4626-tests repo).
+    """
+    dm = project.dependencies
+    dep = dm.install(local=with_dependencies_project_path, name="wdep")
+
+    # Set up a spy on the fetch API, which can be costly and require internet.
+    mock_api = mocker.MagicMock()
+    dep.api = mock_api
+
+    # Remove in-memory cache.
+    dep._installation = None
+
+    # Install again.
+    with pytest.raises(ProjectError):
+        dep.install()
+
+    # Ensure it doesn't need to re-fetch
+    assert mock_api.call_count == 0
+
+
 @pytest.mark.parametrize("name", ("openzeppelin", "OpenZeppelin/openzeppelin-contracts"))
 def test_uninstall(name, project_with_downloaded_dependencies):
     version = "4.4.2"
