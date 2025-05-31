@@ -73,7 +73,7 @@ class LocalDependency(DependencyAPI):
 
     def __repr__(self) -> str:
         path = clean_path(self.local)
-        return f"<LocalDependency local={path}, version={self.version}>"
+        return f"<LocalDependency local={path}, version={self.version_id}>"
 
     @property
     def package_id(self) -> str:

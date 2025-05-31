@@ -277,8 +277,10 @@ def test_install(project, mocker):
 
         # Delete project path (but not manifest) and install again.
         shutil.rmtree(dependency.project_path)
+        installation = dependency._installation
         dependency._installation = None
         project = dependency.install()
+        dependency._installation = installation
         assert isinstance(project, ProjectManager)
         assert dependency.project_path.is_dir()  # Was re-created from manifest sources.
 
@@ -291,8 +293,37 @@ def test_install_dependencies_of_dependencies(project, with_dependencies_project
     dm = project.dependencies
     actual = dm.install(local=with_dependencies_project_path, name="wdep")
     assert actual.name == "wdep"
-    # TODO: Check deps of deps also installed
-    # deps_of_deps = [x for x in actual.project.dependencies.specified]
+
+    # Ensure dependencies of dependencies also installed.
+    dep_with_deps = actual.project.dependencies["containing-sub-dependencies"]["local"]
+    dep_of_dep = dep_with_deps.dependencies.get_dependency("sub-dependency", "local")
+    assert dep_of_dep.installed
+
+
+def test_install_already_installed(mocker, project, with_dependencies_project_path):
+    """
+    Some dependencies never produce sources because of default compiler extension behavior
+    (example: a16z_erc4626-tests repo).
+    """
+    dm = project.dependencies
+    dep = dm.install(local=with_dependencies_project_path, name="wdep")
+
+    # Set up a spy on the fetch API, which can be costly and require internet.
+    real_api = dep.api
+    mock_api = mocker.MagicMock()
+    dep.api = mock_api
+
+    # Remove in-memory cache.
+    dep._installation = None
+
+    # Install again.
+    with pytest.raises(ProjectError):
+        dep.install()
+
+    dep.api = real_api
+
+    # Ensure it doesn't need to re-fetch
+    assert mock_api.call_count == 0
 
 
 @pytest.mark.parametrize("name", ("openzeppelin", "OpenZeppelin/openzeppelin-contracts"))

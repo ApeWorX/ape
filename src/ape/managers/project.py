@@ -663,10 +663,7 @@ class Dependency(BaseManager, ExtraAttributesMixin):
         return self._cache.get_project_path(self.package_id, self.version)
 
     @property
-    def _project_cache_exists(self) -> bool:
-        if self._installation is None:
-            return False
-
+    def _project_disk_cache_exists(self) -> bool:
         path = self._cache.get_project_path(self.package_id, self.version)
         if not path.is_dir():
             return False
@@ -754,7 +751,7 @@ class Dependency(BaseManager, ExtraAttributesMixin):
 
             return self._installation
 
-        elif not self._project_cache_exists or not use_cache:
+        elif not self._project_disk_cache_exists or not use_cache:
             # Project does not yet exist in the cache. We have to fetch the sources.
             unpacked = False
             if use_cache and self.manifest_path.is_file():
