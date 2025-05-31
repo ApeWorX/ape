@@ -184,6 +184,7 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#ape_ethereum.provider.EthereumNodeProvider.connection_id"><code class="docutils literal notranslate">.connection_id</span></code></a></li>
 <li><a class="reference internal" href="#ape_ethereum.provider.EthereumNodeProvider.connection_str"><code class="docutils literal notranslate">.connection_str</span></code></a></li>
 <li><a class="reference internal" href="#ape_ethereum.provider.EthereumNodeProvider.disconnect"><code class="docutils literal notranslate">.disconnect()</span></code></a></li>
+<li><a class="reference internal" href="#ape_ethereum.provider.EthereumNodeProvider.has_poa_history"><code class="docutils literal notranslate">.has_poa_history</span></code></a></li>
 <li><a class="reference internal" href="#ape_ethereum.provider.EthereumNodeProvider.ipc_path"><code class="docutils literal notranslate">.ipc_path</span></code></a></li>
 <li><a class="reference internal" href="#ape_ethereum.provider.EthereumNodeProvider.name"><code class="docutils literal notranslate">.name</span></code></a></li>
 <li><a class="reference internal" href="#ape_ethereum.provider.EthereumNodeProvider.request_header"><code class="docutils literal notranslate">.request_header</span></code></a></li>
@@ -881,6 +882,14 @@ or an IPC path.</p>
 <dt class="sig sig-object py" id="ape_ethereum.provider.EthereumNodeProvider.disconnect">
 <span class="sig-name descname"><span class="pre">disconnect</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ape_ethereum.provider.EthereumNodeProvider.disconnect" title="Link to this definition"></a></dt>
 <dd><p>Disconnect from a provider, such as tear-down a process or quit an HTTP session.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape_ethereum.provider.EthereumNodeProvider.has_poa_history">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">has_poa_history</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#ape_ethereum.provider.EthereumNodeProvider.has_poa_history" title="Link to this definition"></a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if detected any PoA history. If the chain was _ever_ PoA, the special
+middleware is needed for web3.py. Provider plugins use this property when
+creating Web3 instances.</p>
 </dd></dl>
 
 <dl class="py property">
