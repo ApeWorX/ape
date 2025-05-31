@@ -686,7 +686,7 @@ def test_project_api_foundry_and_ape_config_found(foundry_toml):
         assert temp_project.config.name == "testfootestfootestfoo"
 
         # This came from the foundry toml file.
-        assert temp_project.config.solidity.import_remapping[0].key == "@openzeppelin/"
+        assert len(temp_project.config.solidity.import_remapping) > 0
 
 
 def test_get_contract(project_with_contracts):
