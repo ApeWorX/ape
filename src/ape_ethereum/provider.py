@@ -1605,6 +1605,37 @@ class EthereumNodeProvider(Web3Provider, ABC):
         return self.data_dir / "geth.ipc"
 
     @cached_property
+    def has_poa_history(self) -> bool:
+        """
+        ``True`` if detected any PoA history. If the chain was _ever_ PoA, the special
+        middleware is needed for web3.py. Provider plugins use this property when
+        creating Web3 instances.
+        """
+        findings = False
+        for option in ("earliest", "latest"):
+            try:
+                block = self.web3.eth.get_block(option)  # type: ignore[arg-type]
+
+            except ExtraDataLengthError:
+                findings = True
+                break
+
+            except Exception:
+                # Some chains are "light" and we may not be able to detect
+                # if it needs PoA middleware.
+                continue
+
+            else:
+                findings = (
+                    "proofOfAuthorityData" in block
+                    or len(block.get("extraData", "")) > MAX_EXTRADATA_LENGTH
+                )
+                if findings:
+                    break
+
+        return findings
+
+    @cached_property
     def _ots_api_level(self) -> Optional[int]:
         # NOTE: Returns None when OTS namespace is not enabled.
         try:
@@ -1654,36 +1685,10 @@ class EthereumNodeProvider(Web3Provider, ABC):
         if not self.network.is_dev:
             self.web3.eth.set_gas_price_strategy(rpc_gas_price_strategy)
 
-        chain_id = self.chain_id
-
-        # NOTE: We have to check both earliest and latest
-        #   because if the chain was _ever_ PoA, we need
-        #   this middleware.
-        is_likely_poa = False
-        for option in ("earliest", "latest"):
-            try:
-                block = self.web3.eth.get_block(option)  # type: ignore[arg-type]
-
-            except ExtraDataLengthError:
-                is_likely_poa = True
-                break
-
-            except Exception:
-                # Some chains are "light" and we may not be able to detect
-                # if it needs PoA middleware.
-                continue
-
-            else:
-                is_likely_poa = (
-                    "proofOfAuthorityData" in block
-                    or len(block.get("extraData", "")) > MAX_EXTRADATA_LENGTH
-                )
-                if is_likely_poa:
-                    break
-
-        if is_likely_poa and ExtraDataToPOAMiddleware not in self.web3.middleware_onion:
+        if self.has_poa_history and ExtraDataToPOAMiddleware not in self.web3.middleware_onion:
             self.web3.middleware_onion.inject(ExtraDataToPOAMiddleware, layer=0)
 
+        chain_id = self.chain_id
         self.network.verify_chain_id(chain_id)
 
         # Correct network name, if using custom-URL approach.
