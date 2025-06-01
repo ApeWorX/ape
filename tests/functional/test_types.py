@@ -293,3 +293,21 @@ class TestSimulationReport:
         }
         report = SimulationReport.model_validate(data)
         assert report.success
+
+        event = EventABI.model_validate(
+            {
+                "anonymous": False,
+                "inputs": [
+                    {"indexed": True, "name": "from", "type": "address"},
+                    {"indexed": True, "name": "to", "type": "address"},
+                    {"indexed": False, "name": "value", "type": "uint256"},
+                ],
+                "name": "Transfer",
+                "type": "event",
+            }
+        )
+
+        events = list(report.decode_logs(event))
+        assert len(events) == 2
+        assert events[0].event_name == "Transfer"
+        assert events[1].event_name == "Transfer"

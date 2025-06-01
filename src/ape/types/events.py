@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any, Optional, Union
 from eth_pydantic_types import HexBytes, HexStr
 from eth_utils import encode_hex, is_hex, keccak, to_hex
 from ethpm_types.abi import EventABI
-from pydantic import BaseModel, Field, field_serializer, field_validator, model_validator
+from pydantic import BaseModel, field_serializer, field_validator, model_validator
 from web3.types import FilterParams
 
 from ape.exceptions import ContractNotFoundError
@@ -91,7 +91,7 @@ class BaseContractLog(BaseInterfaceModel):
     Base class representing information relevant to an event instance.
     """
 
-    event_name: Optional[str] = None
+    event_name: str
     """The name of the event."""
 
     contract_address: AddressType = ZERO_ADDRESS
@@ -142,6 +142,7 @@ class BaseContractLog(BaseInterfaceModel):
         return value
 
 
+# TODO: In 0.9, make this correctly serialize back to log data you get from RPCs.
 class ContractLog(ExtraAttributesMixin, BaseContractLog):
     """
     An instance of a log from a contract.
@@ -155,19 +156,19 @@ class ContractLog(ExtraAttributesMixin, BaseContractLog):
 
         self._abi = abi
 
-    transaction_hash: Any = Field(alias="transactionHash")
+    transaction_hash: Any
     """The hash of the transaction containing this log."""
 
-    block_number: Optional[HexInt] = Field(None, alias="blockNumber")
+    block_number: HexInt
     """The number of the block containing the transaction that produced this log."""
 
-    block_hash: Optional[Any] = Field(None, alias="blockHash")
+    block_hash: Any
     """The hash of the block containing the transaction that produced this log."""
 
-    log_index: HexInt = Field(alias="logIndex")
+    log_index: HexInt
     """The index of the log on the transaction."""
 
-    transaction_index: Optional[HexInt] = Field(None, alias="transactionIndex")
+    transaction_index: Optional[HexInt] = None
     """
     The index of the transaction's position when the log was created.
     Is `None` when from the pending block.
@@ -253,11 +254,11 @@ class ContractLog(ExtraAttributesMixin, BaseContractLog):
     def __repr__(self) -> str:
         event_arg_str = self._event_args_str
         suffix = f" {event_arg_str}" if event_arg_str else ""
-        return f"<{self.event_name}{suffix}>"
+        return f"<{self.event_name or 'Event'}{suffix}>"
 
     def __ape_extra_attributes__(self) -> Iterator[ExtraModelAttributes]:
         yield ExtraModelAttributes(
-            name=self.event_name,
+            name=self.event_name or "event",
             attributes=lambda: self.event_arguments or {},
             include_getattr=True,
             include_getitem=True,

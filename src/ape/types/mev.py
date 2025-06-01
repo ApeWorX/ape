@@ -3,15 +3,17 @@ Much of the models here are heavily inspired from the rust Alloy crate ``alloy-r
 https://github.com/alloy-rs/alloy
 """
 
+from collections.abc import Iterator
 from enum import Enum
 from typing import Optional, Union
 
 from eth_pydantic_types.hex import HexBytes, HexBytes32, HexInt
+from ethpm_types.abi import EventABI
 from pydantic import Field
 
+from ape.exceptions import ProviderNotConnectedError
 from ape.types import AddressType
-from ape.types.events import ContractLog
-from ape.utils.basemodel import BaseModel
+from ape.utils.basemodel import BaseModel, ManagerAccessMixin
 
 
 class ProtocolVersion(str, Enum):
@@ -237,7 +239,7 @@ class Bundle(BaseModel):
         )
 
     def add_tx(self, tx: HexBytes, can_revert: bool) -> "Bundle":
-        self.body.append(BundleTxItem(tx=tx, canRevert=can_revert))
+        self.body.append(BundleTxItem(tx=tx, can_revert=can_revert))
         return self
 
     def add_hash(self, hash: HexBytes32) -> "Bundle":
@@ -253,7 +255,7 @@ class SimBundleLogs(BaseModel):
     Logs returned by `mev_simBundle`.
     """
 
-    tx_logs: Optional[list[ContractLog]] = Field(None, alias="txLogs")
+    tx_logs: Optional[list[dict]] = Field(None, alias="txLogs")
     """
     Logs for transactions in bundle.
     """
@@ -318,3 +320,22 @@ class SimulationReport(BaseModel):
     """
     Contains the return data if the transaction reverted
     """
+
+    def decode_logs(self, *events: EventABI):
+        try:
+            ecosystem = ManagerAccessMixin.provider.network.ecosystem
+        except ProviderNotConnectedError:
+            # Assume Ethereum (since we are in ape-ethereum after all).
+            ecosystem = ManagerAccessMixin.network_manager.ethereum
+
+        return ecosystem.decode_logs(list(self.transaction_logs), *events)
+
+    @property
+    def transaction_logs(self, *events: EventABI) -> Iterator[dict]:
+        yield from _get_transaction_logs_from_sim_logs(self.logs or [])
+
+
+def _get_transaction_logs_from_sim_logs(logs: list[SimBundleLogs]) -> Iterator[dict]:
+    for bundle_log in logs:
+        yield from (bundle_log.tx_logs or [])
+        yield from _get_transaction_logs_from_sim_logs(bundle_log.bundle_logs or [])
