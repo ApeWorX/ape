@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any, Optional, Union
 from eth_pydantic_types import HexBytes, HexStr
 from eth_utils import encode_hex, is_hex, keccak, to_hex
 from ethpm_types.abi import EventABI
-from pydantic import BaseModel, field_serializer, field_validator, model_validator
+from pydantic import BaseModel, Field, field_serializer, field_validator, model_validator
 from web3.types import FilterParams
 
 from ape.exceptions import ContractNotFoundError
@@ -91,7 +91,7 @@ class BaseContractLog(BaseInterfaceModel):
     Base class representing information relevant to an event instance.
     """
 
-    event_name: str
+    event_name: Optional[str] = None
     """The name of the event."""
 
     contract_address: AddressType = ZERO_ADDRESS
@@ -155,19 +155,19 @@ class ContractLog(ExtraAttributesMixin, BaseContractLog):
 
         self._abi = abi
 
-    transaction_hash: Any
+    transaction_hash: Any = Field(alias="transactionHash")
     """The hash of the transaction containing this log."""
 
-    block_number: HexInt
+    block_number: Optional[HexInt] = Field(None, alias="blockNumber")
     """The number of the block containing the transaction that produced this log."""
 
-    block_hash: Any
+    block_hash: Optional[Any] = Field(None, alias="blockHash")
     """The hash of the block containing the transaction that produced this log."""
 
-    log_index: HexInt
+    log_index: HexInt = Field(alias="logIndex")
     """The index of the log on the transaction."""
 
-    transaction_index: Optional[HexInt] = None
+    transaction_index: Optional[HexInt] = Field(None, alias="transactionIndex")
     """
     The index of the transaction's position when the log was created.
     Is `None` when from the pending block.

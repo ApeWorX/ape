@@ -29,7 +29,7 @@ from web3.exceptions import (
     TransactionNotFound,
 )
 
-from ape_ethereum.mev.providers import MEVNodeAPI
+from ape_ethereum.mev import MEVNodeAPI
 
 try:
     from web3.exceptions import Web3RPCError  # type: ignore

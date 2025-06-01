@@ -1,8 +1,12 @@
 from enum import Enum
-from typing import Optional
+from typing import Optional, Union
 
-from eth_mev_models.basemodel import BaseModel
-from eth_pydantic_types.hex.int import HexInt
+from eth_pydantic_types.hex import HexBytes, HexBytes32, HexInt
+from pydantic import Field
+
+from ape.types import AddressType
+from ape.types.events import ContractLog
+from ape.utils.basemodel import BaseModel
 
 
 class ProtocolVersion(str, Enum):
@@ -150,7 +154,7 @@ class RefundConfig(BaseModel):
     if it is enveloped by another bundle (e.g. a searcher backrun).
     """
 
-    address: Address
+    address: AddressType
     """
     The address to refund.
     """
@@ -229,9 +233,11 @@ class Bundle(BaseModel):
 
     def add_tx(self, tx: HexBytes, can_revert: bool) -> "Bundle":
         self.body.append(BundleTxItem(tx=tx, canRevert=can_revert))
+        return self
 
-    def add_hash(self, hash: HexBytes32):
+    def add_hash(self, hash: HexBytes32) -> "Bundle":
         self.body.append(BundleHashItem(hash=hash))
+        return self
 
     def add_bundle(self, bundle: "Bundle"):
         self.body.append(BundleNestedItem(bundle=bundle))
@@ -242,7 +248,15 @@ class SimBundleLogs(BaseModel):
     Logs returned by `mev_simBundle`.
     """
 
-    tx_logs: Optional[list[HexBytes]] = None
+    tx_logs: Optional[list[ContractLog]] = Field(None, alias="txLogs")
+    """
+    Logs for transactions in bundle.
+    """
+
+    bundle_logs: Optional[list["SimBundleLogs"]] = Field(None, alias="bundleLogs")
+    """
+    Logs for bundles in bundle.
+    """
 
 
 class SimulationReport(BaseModel):
@@ -260,7 +274,7 @@ class SimulationReport(BaseModel):
     Error message if the simulation failed.
     """
 
-    state_blick: HexInt
+    state_block: Optional[HexInt] = Field(None, alias="stateBlock")
     """
     The block number of the simulated block.
     """
@@ -275,17 +289,17 @@ class SimulationReport(BaseModel):
     The profit of the simulated block.
     """
 
-    refundable_value: int = Field(alias="refundableValue")
+    refundable_value: Optional[HexInt] = Field(None, alias="refundableValue")
     """
     The refundable value of the simulated block.
     """
 
-    gas_used: int = Field(alias="gasUsed")
+    gas_used: Optional[HexInt] = Field(None, alias="gasUsed")
     """
     The gas used by the simulated block.
     """
 
-    logs: Optional[list[ContractLog]] = None
+    logs: Optional[list[SimBundleLogs]] = None
     """
     Logs returned by `mev_simBundle`.
     """
