@@ -324,7 +324,8 @@ def test_gas_flag_set_in_config(
     with integ_project.temp_config(**cfg):
         passed, failed = setup_pytester(integ_project)
         result = pytester.runpytest_subprocess("--network", "ethereum:local:node", "-n", "0")
-        run_gas_test(result, passed, failed)
+
+    run_gas_test(result, passed, failed)
 
 
 @geth_process_test

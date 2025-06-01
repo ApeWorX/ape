@@ -55,10 +55,11 @@ def test_two_contracts_with_same_symbol(accounts, project):
     receiver = accounts[-1]
     sender = accounts[-2]
     token_a = project.TokenA.deploy(sender=sender)
-    token_b = project.TokenB.deploy(sender=sender)
     token_a.transfer(receiver, 5, sender=sender)
-    token_b.transfer(receiver, 6, sender=sender)
     assert token_a.balanceOf(receiver) == 5
+
+    token_b = project.TokenB.deploy(sender=sender)
+    token_b.transfer(receiver, 6, sender=sender)
     assert token_b.balanceOf(receiver) == 6
 
 
