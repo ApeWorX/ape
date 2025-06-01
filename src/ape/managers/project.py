@@ -2318,9 +2318,9 @@ class MultiProject(ProjectAPI):
     def extract_config(self, **overrides) -> "ApeConfig":
         cfgs = []
 
-        # Gather all valid APIS, in order.
+        # Gather all valid APIs, in order.
         for api in self.apis:
-            cfgs.append(api.extract_config().model_dump())
+            cfgs.append(api.extract_config().model_dump(exclude_defaults=True, exclude_unset=True))
 
         merged_cfg = merge_configs(*cfgs)
         return ApeConfig(**merged_cfg)
