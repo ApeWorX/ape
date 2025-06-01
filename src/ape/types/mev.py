@@ -1,3 +1,8 @@
+"""
+Much of the models here are heavily inspired from the rust Alloy crate ``alloy-rpc-types-mev``.
+https://github.com/alloy-rs/alloy
+"""
+
 from enum import Enum
 from typing import Optional, Union
 
