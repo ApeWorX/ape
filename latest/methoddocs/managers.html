@@ -437,6 +437,16 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#ape.managers.project.LocalProject.within_project_path"><code class="docutils literal notranslate">within_project_path()</span></code></a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#ape.managers.project.MultiProject"><code class="docutils literal notranslate"><span class="pre">MultiProject</span></code></a><ul>
+<li><a class="reference internal" href="#ape.managers.project.MultiProject.__pydantic_computed_fields__"><code class="docutils literal notranslate">__pydantic_computed_fields__</span></code></a></li>
+<li><a class="reference internal" href="#ape.managers.project.MultiProject.__pydantic_fields__"><code class="docutils literal notranslate">__pydantic_fields__</span></code></a></li>
+<li><a class="reference internal" href="#ape.managers.project.MultiProject.__pydantic_setattr_handlers__"><code class="docutils literal notranslate">__pydantic_setattr_handlers__</span></code></a></li>
+<li><a class="reference internal" href="#ape.managers.project.MultiProject.__signature__"><code class="docutils literal notranslate">__signature__</span></code></a></li>
+<li><a class="reference internal" href="#ape.managers.project.MultiProject.apis"><code class="docutils literal notranslate">apis</span></code></a></li>
+<li><a class="reference internal" href="#ape.managers.project.MultiProject.extract_config"><code class="docutils literal notranslate">extract_config()</span></code></a></li>
+<li><a class="reference internal" href="#ape.managers.project.MultiProject.is_valid"><code class="docutils literal notranslate">is_valid</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#ape.managers.project.PackagesCache"><code class="docutils literal notranslate"><span class="pre">PackagesCache</span></code></a><ul>
 <li><a class="reference internal" href="#ape.managers.project.PackagesCache.cache_api"><code class="docutils literal notranslate">cache_api()</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.project.PackagesCache.get_api_path"><code class="docutils literal notranslate">get_api_path()</span></code></a></li>
@@ -3530,6 +3540,65 @@ to a local one.</p>
 <dd><p>A context-manager for changing the current working directory to the
 project’s <code class="docutils literal notranslate"><span class="pre">.path</span></code>. Then, switching back to whatever the current
 directory was before calling this method.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.managers.project.MultiProject">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.managers.project.</span></span><span class="sig-name descname"><span class="pre">MultiProject</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.projects.ProjectAPI" title="ape.api.projects.ProjectAPI"><span class="pre">ProjectAPI</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.project.MultiProject" title="Link to this definition"></a></dt>
+<dd><p>A project with more than 1 valid project API configs, such as a Foundry project
+containing an <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.managers.project.MultiProject.__pydantic_computed_fields__">
+<span class="sig-name descname"><span class="pre">__pydantic_computed_fields__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#ape.managers.project.MultiProject.__pydantic_computed_fields__" title="Link to this definition"></a></dt>
+<dd><p>A dictionary of computed field names and their corresponding [<cite>ComputedFieldInfo</cite>][pydantic.fields.ComputedFieldInfo] objects.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.managers.project.MultiProject.__pydantic_fields__">
+<span class="sig-name descname"><span class="pre">__pydantic_fields__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">FieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'apis':</span> <span class="pre">FieldInfo(annotation=list[ProjectAPI],</span> <span class="pre">required=False,</span> <span class="pre">default=[]),</span> <span class="pre">'path':</span> <span class="pre">FieldInfo(annotation=Path,</span> <span class="pre">required=True)}</span></em><a class="headerlink" href="#ape.managers.project.MultiProject.__pydantic_fields__" title="Link to this definition"></a></dt>
+<dd><p>A dictionary of field names and their corresponding [<cite>FieldInfo</cite>][pydantic.fields.FieldInfo] objects.
+This replaces <cite>Model.__fields__</cite> from Pydantic V1.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.managers.project.MultiProject.__pydantic_setattr_handlers__">
+<span class="sig-name descname"><span class="pre">__pydantic_setattr_handlers__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="utils.html#ape.utils.basemodel.BaseModel" title="ape.utils.basemodel.BaseModel"><span class="pre">BaseModel</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#ape.managers.project.MultiProject.__pydantic_setattr_handlers__" title="Link to this definition"></a></dt>
+<dd><p><cite>__setattr__</cite> handlers. Memoizing the handlers leads to a dramatic performance improvement in <cite>__setattr__</cite></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.managers.project.MultiProject.__signature__">
+<span class="sig-name descname"><span class="pre">__signature__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">Signature</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;Signature</span> <span class="pre">(*,</span> <span class="pre">path:</span> <span class="pre">pathlib.Path,</span> <span class="pre">apis:</span> <span class="pre">list[ape.api.projects.ProjectAPI]</span> <span class="pre">=</span> <span class="pre">[])</span> <span class="pre">-&gt;</span> <span class="pre">None&gt;</span></em><a class="headerlink" href="#ape.managers.project.MultiProject.__signature__" title="Link to this definition"></a></dt>
+<dd><p>The synthesized <cite>__init__</cite> [<cite>Signature</cite>][inspect.Signature] of the model.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.managers.project.MultiProject.apis">
+<span class="sig-name descname"><span class="pre">apis</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.projects.ProjectAPI" title="ape.api.projects.ProjectAPI"><span class="pre">ProjectAPI</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.managers.project.MultiProject.apis" title="Link to this definition"></a></dt>
+<dd><p>An ordered list of APIs to use. The last items take precedence as their configs merge.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.project.MultiProject.extract_config">
+<span class="sig-name descname"><span class="pre">extract_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">overrides</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="api.html#ape.api.config.ApeConfig" title="ape.api.config.ApeConfig"><span class="pre">ApeConfig</span></a></span></span><a class="headerlink" href="#ape.managers.project.MultiProject.extract_config" title="Link to this definition"></a></dt>
+<dd><p>Extra configuration from the project so that
+Ape understands the dependencies and how to compile everything.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>**overrides</strong> – Config overrides.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ApeConfig</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.managers.project.MultiProject.is_valid">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_valid</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#ape.managers.project.MultiProject.is_valid" title="Link to this definition"></a></dt>
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> when detecting a project of this type.</p>
 </dd></dl>
 
 </dd></dl>
