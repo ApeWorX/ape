@@ -9,12 +9,11 @@ from eth_utils import to_hex
 from ethpm_types import Compiler, ContractType, PackageManifest, Source
 from ethpm_types.manifest import PackageName
 
-import ape
 from ape import Project
-from ape.api.projects import ApeProject
 from ape.contracts import ContractContainer
 from ape.exceptions import ConfigError, ProjectError
 from ape.logging import LogLevel
+from ape.managers.project import MultiProject
 from ape.utils import create_tempdir
 from ape_pm.project import BrownieProject, FoundryProject
 from tests.conftest import skip_if_plugin_installed
@@ -671,18 +670,23 @@ def test_add_compiler_data(project_with_dependency_config):
 def test_project_api_foundry_and_ape_config_found(foundry_toml):
     """
     If a project is both a Foundry project and an Ape project,
-    ensure Ape treats it as an Ape project.
+    ensure both configs are honored.
     """
-    with ape.Project.create_temporary_project() as temp_project:
-        foundry_cfg_file = temp_project.path / "foundry.toml"
+    with create_tempdir() as tmpdir:
+        foundry_cfg_file = tmpdir / "foundry.toml"
         foundry_cfg_file.write_text(foundry_toml, encoding="utf8")
 
-        ape_cfg_file = temp_project.path / "ape-config.yaml"
+        ape_cfg_file = tmpdir / "ape-config.yaml"
         ape_cfg_file.write_text("name: testfootestfootestfoo", encoding="utf8")
 
-        actual = temp_project.project_api
-        assert isinstance(actual, ApeProject)
-        assert not isinstance(actual, FoundryProject)
+        temp_project = Project(tmpdir)
+        assert isinstance(temp_project.project_api, MultiProject)
+
+        # This came from the ape config file.
+        assert temp_project.config.name == "testfootestfootestfoo"
+
+        # This came from the foundry toml file.
+        assert len(temp_project.config.solidity.import_remapping) > 0
 
 
 def test_get_contract(project_with_contracts):

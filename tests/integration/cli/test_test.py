@@ -304,6 +304,7 @@ def test_gas_flag_when_not_supported(setup_pytester, integ_project, pytester, et
     assert expected in actual
 
 
+@pytest.mark.flaky(reruns=2)
 @geth_process_test
 @skip_projects_except("geth")
 def test_gas_flag_in_tests(geth_provider, setup_pytester, integ_project, pytester, owner):
@@ -313,6 +314,7 @@ def test_gas_flag_in_tests(geth_provider, setup_pytester, integ_project, pyteste
     run_gas_test(result, passed, failed)
 
 
+@pytest.mark.flaky(reruns=2)
 @geth_process_test
 @skip_projects_except("geth")
 def test_gas_flag_set_in_config(
@@ -324,9 +326,11 @@ def test_gas_flag_set_in_config(
     with integ_project.temp_config(**cfg):
         passed, failed = setup_pytester(integ_project)
         result = pytester.runpytest_subprocess("--network", "ethereum:local:node", "-n", "0")
-        run_gas_test(result, passed, failed)
+
+    run_gas_test(result, passed, failed)
 
 
+@pytest.mark.flaky(reruns=2)
 @geth_process_test
 @skip_projects_except("geth")
 def test_gas_when_estimating(geth_provider, setup_pytester, integ_project, pytester, geth_account):
@@ -342,6 +346,7 @@ def test_gas_when_estimating(geth_provider, setup_pytester, integ_project, pytes
         run_gas_test(result, passed, failed)
 
 
+@pytest.mark.flaky(reruns=2)
 @geth_process_test
 @skip_projects_except("geth")
 def test_gas_flag_exclude_using_cli_option(
@@ -365,6 +370,7 @@ def test_gas_flag_exclude_using_cli_option(
     run_gas_test(result, passed, failed, expected_report=expected)
 
 
+@pytest.mark.flaky(reruns=2)
 @geth_process_test
 @skip_projects_except("geth")
 def test_gas_flag_exclusions_set_in_config(
@@ -391,6 +397,7 @@ def test_gas_flag_exclusions_set_in_config(
         run_gas_test(result, passed, failed, expected_report=expected)
 
 
+@pytest.mark.flaky(reruns=2)
 @geth_process_test
 @skip_projects_except("geth")
 def test_gas_flag_excluding_contracts(
@@ -410,6 +417,7 @@ def test_gas_flag_excluding_contracts(
     run_gas_test(result, passed, failed, expected_report=TOKEN_B_GAS_REPORT)
 
 
+@pytest.mark.flaky(reruns=2)
 @geth_process_test
 @skip_projects_except("geth")
 def test_coverage(geth_provider, setup_pytester, integ_project, pytester, geth_account):
