@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field, ValidationError
 from ape.types.address import AddressType
 from ape.types.basic import HexInt
 from ape.types.events import ContractLog, LogFilter
-from ape.types.mev import SimulationReport
+from ape.types.private_mempool import SimulationReport
 from ape.types.units import CurrencyValueComparable
 from ape.utils.misc import ZERO_ADDRESS
 

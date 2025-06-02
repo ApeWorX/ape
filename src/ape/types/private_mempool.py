@@ -9,7 +9,7 @@ from typing import Optional, Union
 
 from eth_pydantic_types.hex import HexBytes, HexBytes32, HexInt
 from ethpm_types.abi import EventABI
-from pydantic import Field
+from pydantic import ConfigDict, Field
 
 from ape.exceptions import ProviderNotConnectedError
 from ape.types import AddressType
@@ -132,6 +132,8 @@ class BundleTxItem(BaseModel):
     """
     A new signed transaction.
     """
+
+    model_config = ConfigDict(populate_by_name=True)
 
     tx: HexBytes
     """

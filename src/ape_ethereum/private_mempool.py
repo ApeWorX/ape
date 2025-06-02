@@ -1,10 +1,10 @@
 from typing import Optional
 
-from ape.types.mev import Bundle, SimulationReport
+from ape.types.private_mempool import Bundle, SimulationReport
 from ape.utils.basemodel import ManagerAccessMixin
 
 
-class MEVNodeAPI(ManagerAccessMixin):
+class PrivateMempoolAPI(ManagerAccessMixin):
     """
     A wrapper around MEV APIs available through flashbots or reth.
     """

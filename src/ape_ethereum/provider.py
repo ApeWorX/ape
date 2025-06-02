@@ -29,7 +29,7 @@ from web3.exceptions import (
     TransactionNotFound,
 )
 
-from ape_ethereum.mev import MEVNodeAPI
+from ape_ethereum.private_mempool import PrivateMempoolAPI
 
 try:
     from web3.exceptions import Web3RPCError  # type: ignore
@@ -1607,11 +1607,11 @@ class EthereumNodeProvider(Web3Provider, ABC):
         return self.data_dir / "geth.ipc"
 
     @cached_property
-    def mev(self) -> MEVNodeAPI:
+    def private_mempool(self) -> PrivateMempoolAPI:
         """
         APIs in the ``mev_`` namespace.
         """
-        return MEVNodeAPI()
+        return PrivateMempoolAPI()
 
     @cached_property
     def has_poa_history(self) -> bool:
