@@ -256,6 +256,6 @@ def authorize_delegate(cli_ctx, account, contract):
 @auth.command(name="rm", cls=ConnectedProviderCommand)
 @network_option()
 @account_option()
-def remove_delegate(account, contract):
+def remove_delegate(account):
     """Remove delegate for account"""
     account.remove_delegate()
