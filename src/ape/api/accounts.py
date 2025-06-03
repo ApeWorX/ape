@@ -19,6 +19,7 @@ from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.exceptions import (
     AccountsError,
     AliasAlreadyInUseError,
+    APINotImplementedError,
     ConversionError,
     MethodNonPayableError,
     MissingDeploymentBytecodeError,
@@ -101,13 +102,13 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         Args:
           msghash (:class:`~eth_pydantic_types.HexBytes`):
             The message hash to sign. Plugins may or may not support this operation.
-            Default implementation is to raise ``NotImplementedError``.
+            Default implementation is to raise ``APINotImplementedError``.
 
         Returns:
           :class:`~ape.types.signatures.MessageSignature` (optional):
             The signature corresponding to the message.
         """
-        raise NotImplementedError(
+        raise APINotImplementedError(
             f"Raw message signing is not supported by '{self.__class__.__name__}'"
         )
 
@@ -140,7 +141,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         ```
         """
 
-        raise NotImplementedError(
+        raise APINotImplementedError(
             f"Authorization signing is not supported by '{self.__class__.__name__}'"
         )
 
@@ -487,8 +488,8 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         plugin chooses to handle it, the resulting action (if successful) should make sure that the
         value that `self.delegate` returns is the same as `contract` after it is completed.
 
-        By default, this method raises `NotImplementedError` signaling that support is not available
-        for this feature. Calling this may result in other errors if implemented.
+        By default, this method raises ``APINotImplementedError`` signaling that support is not
+        available for this feature. Calling this may result in other errors if implemented.
 
         Args:
             contract (`:class:~ape.contracts.ContractInstance`):
@@ -498,7 +499,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
               ``max_fee``, or ``max_priority_fee``. For a list of available transaction
               kwargs, see :class:`~ape.api.transactions.TransactionAPI`.
         """
-        raise NotImplementedError
+        raise APINotImplementedError
 
     def remove_delegate(self, **txn_kwargs):
         """
@@ -508,8 +509,8 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         However it a plugin chooses to handle it, the resulting action (if successful) should
         make sure that the value that `self.delegate` returns `None` after it is completed.
 
-        By default, this method raises `NotImplementedError` signaling that support is not available
-        for this feature. Calling this may result in other errors if implemented.
+        By default, this method raises ``APINotImplementedError`` signaling that support is not
+        available for this feature. Calling this may result in other errors if implemented.
 
         Args:
             **txn_kwargs: Additional transaction kwargs passed to
@@ -517,7 +518,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
               ``max_fee``, or ``max_priority_fee``. For a list of available transaction
               kwargs, see :class:`~ape.api.transactions.TransactionAPI`.
         """
-        raise NotImplementedError
+        raise APINotImplementedError
 
     @contextmanager
     def delegate_to(
@@ -669,7 +670,7 @@ class AccountContainerAPI(BaseInterfaceModel):
         self.__setitem__(account.address, account)
 
     def __setitem__(self, address: AddressType, account: AccountAPI):
-        raise NotImplementedError("Must define this method to use `container.append(acct)`.")
+        raise APINotImplementedError("Must define this method to use `container.append(acct)`.")
 
     def remove(self, account: AccountAPI):
         """
@@ -698,7 +699,7 @@ class AccountContainerAPI(BaseInterfaceModel):
         Args:
             address (:class:`~ape.types.address.AddressType`): The address of the account to delete.
         """
-        raise NotImplementedError("Must define this method to use `container.remove(acct)`.")
+        raise APINotImplementedError("Must define this method to use `container.remove(acct)`.")
 
     def __contains__(self, address: AddressType) -> bool:
         """
@@ -824,7 +825,7 @@ class ImpersonatedAccount(AccountAPI):
         return self.raw_address
 
     def sign_message(self, msg: Any, **signer_options) -> Optional[MessageSignature]:
-        raise NotImplementedError("This account cannot sign messages")
+        raise APINotImplementedError("This account cannot sign messages")
 
     def sign_transaction(self, txn: TransactionAPI, **signer_options) -> Optional[TransactionAPI]:
         # Returns input transaction unsigned (since it doesn't have access to the key)
