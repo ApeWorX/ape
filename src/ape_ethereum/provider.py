@@ -29,6 +29,8 @@ from web3.exceptions import (
     TransactionNotFound,
 )
 
+from ape.types.private_mempool import Bundle, SimulationReport
+
 try:
     from web3.exceptions import Web3RPCError  # type: ignore
 except ImportError:
@@ -1744,6 +1746,23 @@ class EthereumNodeProvider(Web3Provider, ABC):
             raise ProviderError(message)
 
         self._complete_connect()
+
+    def simulate_transaction_bundle(
+        self, bundle: Bundle, sim_overrides: Optional[dict] = None
+    ) -> SimulationReport:
+        """
+        Submit a bundle and get the simulation result.
+
+        Args:
+            bundle (:class:`~ape.types.private_mempool.Bundle`) A bundle of transactions to send to the matchmaker.
+            sim_overrides (dict | None) Optional fields to override simulation state.
+
+        Returns:
+            :class:`~ape.types.private_mempool.SimulationReport`
+        """
+        bundle_request = {"bundle": bundle.model_dump(), "simOverrides": sim_overrides or {}}
+        result = self.provider.make_request("mev_simBundle", bundle_request)
+        return SimulationReport.model_validate(result)
 
 
 def _create_web3(
