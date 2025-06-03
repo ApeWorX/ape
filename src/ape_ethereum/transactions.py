@@ -27,9 +27,8 @@ from ape.utils.misc import ZERO_ADDRESS
 from ape_ethereum.trace import Trace, _events_to_trees
 
 if TYPE_CHECKING:
-    from typing import Self
-
     from ethpm_types import ContractType
+    from typing_extensions import Self
 
     from ape.contracts import ContractEvent
 
