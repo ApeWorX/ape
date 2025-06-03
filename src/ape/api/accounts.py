@@ -480,13 +480,13 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
 
     def set_delegate(self, contract: "ContractInstance", **txn_kwargs):
         """
-        Have the account class override the value of it's `delegate`. For plugins that support this
-        feature, the way they choose to handle it can vary. For example, it could be a call to up-
-        grade itself using some built-in method for a smart wallet (with default txn args) e.g. the
-        Safe smart wallet (https://github.com/ApeWorX/ape-safe), or it could be to use an EIP7702-
-        like feature available on the network to set a delegate for that account. However it a
+        Have the account class override the value of its ``delegate``. For plugins that support
+        this feature, the way they choose to handle it can vary. For example, it could be a call to
+        upgrade itself using some built-in method for a smart wallet (with default txn args) e.g.
+        the Safe smart wallet (https://github.com/ApeWorX/ape-safe), or it could be to use an EIP-
+        7702-like feature available on the network to set a delegate for that account. However if a
         plugin chooses to handle it, the resulting action (if successful) should make sure that the
-        value that `self.delegate` returns is the same as `contract` after it is completed.
+        value that ``self.delegate`` returns is the same as ``contract`` after it is completed.
 
         By default, this method raises ``APINotImplementedError`` signaling that support is not
         available for this feature. Calling this may result in other errors if implemented.
@@ -503,11 +503,11 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
 
     def remove_delegate(self, **txn_kwargs):
         """
-        Has the account class remove the override for the value of it's `delegate`. For plugins
+        Has the account class remove the override for the value of its ``delegate``. For plugins
         that support this feature, the way they choose to handle it can vary. For example, on a
         network using an EIP7702-like feature available it will reset the delegate to empty.
-        However it a plugin chooses to handle it, the resulting action (if successful) should
-        make sure that the value that `self.delegate` returns `None` after it is completed.
+        However, if a plugin chooses to handle it, the resulting action (if successful) should
+        make sure that the value that ``self.delegate`` returns ``None`` after it is completed.
 
         By default, this method raises ``APINotImplementedError`` signaling that support is not
         available for this feature. Calling this may result in other errors if implemented.
@@ -529,9 +529,9 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         **txn_kwargs,
     ) -> Iterator["ContractInstance"]:
         """
-        Temporarily overrides the value of `delegate` for the account inside of a context manager,
-        and yields a contract instance object whose interface matches that of `new_delegate`. This
-        is useful for ensuring that delegation is only temporarily extended to an account when
+        Temporarily override the value of ``delegate`` for the account inside of a context manager,
+        and yields a contract instance object whose interface matches that of ``new_delegate``.
+        This is useful for ensuring that delegation is only temporarily extended to an account when
         doing a critical action temporarily, such as using an EIP7702 delegate module.
 
         Args:
