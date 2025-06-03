@@ -12,7 +12,7 @@ from eth_utils import to_bytes, to_canonical_address, to_checksum_address, to_he
 
 from ape.api.accounts import TestAccountAPI, TestAccountContainerAPI
 from ape.contracts.base import ContractInstance
-from ape.exceptions import ProviderNotConnectedError, SignatureError
+from ape.exceptions import APINotImplementedError, ProviderNotConnectedError, SignatureError
 from ape.types.signatures import MessageSignature, TransactionSignature
 from ape.utils._web3_compat import sign_hash
 from ape.utils.misc import ZERO_ADDRESS, derive_public_key, log_instead_of_fail
@@ -138,14 +138,19 @@ class TestAccount(TestAccountAPI):
         if chain_id is None:
             chain_id = self.provider.chain_id
 
-        signed_authorization = EthAccount.sign_authorization(
-            dict(
-                address=to_canonical_address(address),
-                chainId=chain_id,
-                nonce=nonce or self.nonce,
-            ),
-            self.private_key,
-        )
+        try:
+            signed_authorization = EthAccount.sign_authorization(
+                dict(
+                    chainId=chain_id,
+                    address=to_canonical_address(address),
+                    nonce=nonce or self.nonce,
+                ),
+                self.private_key,
+            )
+        except AttributeError as e:
+            # TODO: Remove `try..except` once web3 pinned `>=7`
+            raise APINotImplementedError from e
+
         return MessageSignature(
             v=signed_authorization.y_parity,
             r=to_bytes(signed_authorization.r),

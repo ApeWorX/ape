@@ -9,7 +9,6 @@ from eth_account._utils.legacy_transactions import (
     encode_transaction,
     serializable_unsigned_transaction_from_dict,
 )
-from eth_account.typed_transactions.set_code_transaction import Authorization as EthAcctAuth
 from eth_pydantic_types import HexBytes
 from eth_utils import decode_hex, encode_hex, keccak, to_canonical_address, to_hex, to_int
 from ethpm_types.abi import EventABI, MethodABI
@@ -240,6 +239,9 @@ class Authorization(BaseModel):
 
     @cached_property
     def authority(self) -> AddressType:
+        # TODO: Move above when `web3` pin is `>7`
+        from eth_account.typed_transactions.set_code_transaction import Authorization as EthAcctAuth
+
         auth = EthAcctAuth(self.chain_id, to_canonical_address(self.address), self.nonce)
         return EthAccount._recover_hash(
             auth.hash(),

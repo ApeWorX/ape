@@ -16,7 +16,7 @@ from eth_utils import remove_0x_prefix, to_bytes, to_canonical_address, to_check
 
 from ape.api.accounts import AccountAPI, AccountContainerAPI
 from ape.contracts.base import ContractInstance
-from ape.exceptions import AccountsError
+from ape.exceptions import AccountsError, APINotImplementedError
 from ape.logging import logger
 from ape.types.signatures import MessageSignature, SignableMessage, TransactionSignature
 from ape.utils._web3_compat import sign_hash
@@ -181,14 +181,19 @@ class KeyfileAccount(AccountAPI):
         if not click.confirm(click.style(f"{display_msg}\n\nAcknowledge: ", fg="yellow")):
             return None
 
-        signed_authorization = EthAccount.sign_authorization(
-            dict(
-                chainId=chain_id,
-                address=to_canonical_address(address),
-                nonce=nonce or self.nonce,
-            ),
-            self.__key,
-        )
+        try:
+            signed_authorization = EthAccount.sign_authorization(
+                dict(
+                    chainId=chain_id,
+                    address=to_canonical_address(address),
+                    nonce=nonce or self.nonce,
+                ),
+                self.__key,
+            )
+        except AttributeError as e:
+            # TODO: Remove `try..except` once web3 pinned `>=7`
+            raise APINotImplementedError from e
+
         return MessageSignature(
             v=signed_authorization.y_parity,
             r=to_bytes(signed_authorization.r),
