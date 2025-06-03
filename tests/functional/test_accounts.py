@@ -862,6 +862,17 @@ def test_prepare_transaction_and_call_using_max_gas(tx_type, ethereum, sender, e
     assert not actual.failed
 
 
+def test_authorizations_transaction(sender, vyper_contract_instance):
+    assert not sender.delegate
+
+    with sender.delegate_to(vyper_contract_instance) as delegate:
+        assert sender.delegate == vyper_contract_instance
+        delegate.setNumber(5991, sender=sender)
+
+    sender.remove_delegate()
+    assert not sender.delegate
+
+
 def test_public_key(runner, keyfile_account, owner):
     with runner.isolation(input=f"{PASSPHRASE}\ny\n"):
         pub_key = keyfile_account.public_key
