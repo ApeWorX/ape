@@ -188,6 +188,7 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#ape_ethereum.provider.EthereumNodeProvider.ipc_path"><code class="docutils literal notranslate">.ipc_path</span></code></a></li>
 <li><a class="reference internal" href="#ape_ethereum.provider.EthereumNodeProvider.name"><code class="docutils literal notranslate">.name</span></code></a></li>
 <li><a class="reference internal" href="#ape_ethereum.provider.EthereumNodeProvider.request_header"><code class="docutils literal notranslate">.request_header</span></code></a></li>
+<li><a class="reference internal" href="#ape_ethereum.provider.EthereumNodeProvider.simulate_transaction_bundle"><code class="docutils literal notranslate">.simulate_transaction_bundle()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#ape_ethereum.provider.Web3Provider"><code class="docutils literal notranslate"><span class="pre">Web3Provider</span></code></a><ul>
@@ -913,6 +914,23 @@ creating Web3 instances.</p>
 <dt class="sig sig-object py" id="ape_ethereum.provider.EthereumNodeProvider.request_header">
 <span class="sig-name descname"><span class="pre">request_header</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span></em><a class="headerlink" href="#ape_ethereum.provider.EthereumNodeProvider.request_header" title="Link to this definition"></a></dt>
 <dd><p>A header to set on HTTP/RPC requests.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape_ethereum.provider.EthereumNodeProvider.simulate_transaction_bundle">
+<span class="sig-name descname"><span class="pre">simulate_transaction_bundle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bundle</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Bundle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sim_overrides</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">SimulationReport</span></span></span><a class="headerlink" href="#ape_ethereum.provider.EthereumNodeProvider.simulate_transaction_bundle" title="Link to this definition"></a></dt>
+<dd><p>Submit a bundle and get the simulation result.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bundle</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Bundle</span></code>)</p></li>
+<li><p><strong>sim_overrides</strong> (<em>dict</em><em> | </em><em>None</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">SimulationReport</span></code></p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
