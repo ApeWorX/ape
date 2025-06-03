@@ -368,13 +368,14 @@ Authorizations are **extremely dangerous** and can lead to full account compromi
 **DO NOT SIGN** an authorization unless you know what you are doing.
 ```
 
-```{notice}
+```{note}
 Not all account plugins support signing Authorizations.
 For instance, most hardware wallets may reject signing EIP-7702 Authorizations unless the delegate has been previously whitelisted in their firmware.
 Also, smart contract wallets (such as Safe) cannot sign these message types as only EOAs can sign them.
 ```
 
 Once set, you can see if a delegate contract has been set for your EOA account via `account.delegate`.
+Ape exposes a [convienence subcommand](../commands/accounts.html#accounts-auth) group under `ape accounts` for use in managing your delegations.
 
 Ape also exposes the following convienent higher-level API for working with authorizations in a scripting or testing context:
 
