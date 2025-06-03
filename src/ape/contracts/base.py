@@ -11,6 +11,7 @@ from eth_pydantic_types import HexBytes
 from eth_utils import to_hex
 from ethpm_types.abi import EventABI
 
+from ape.api.accounts import AccountAPI
 from ape.api.address import Address, BaseAddress
 from ape.api.query import (
     ContractCreation,
@@ -297,12 +298,20 @@ class ContractCallHandler(ContractMethodHandler):
         """
         return self.transact.as_transaction(*args, **kwargs)
 
+    def as_transaction_bytes(self, *args, **txn_kwargs) -> HexBytes:
+        """
+        Get a signed serialized transaction.
+
+        Returns:
+            HexBytes: The serialized transaction
+        """
+        return self.transact.as_transaction_bytes(**txn_kwargs)
+
     @property
     def transact(self) -> "ContractTransactionHandler":
         """
         Send the call as a transaction.
         """
-
         return ContractTransactionHandler(self.contract, self.abis)
 
     def estimate_gas_cost(self, *args, **kwargs) -> int:
@@ -391,11 +400,28 @@ class ContractTransactionHandler(ContractMethodHandler):
         Returns:
             :class:`~ape.api.transactions.TransactionAPI`
         """
-
+        sign = kwargs.pop("sign", False)
         contract_transaction = self._as_transaction(*args)
         transaction = contract_transaction.serialize_transaction(*args, **kwargs)
         self.provider.prepare_transaction(transaction)
+
+        if sender := kwargs.get("sender"):
+            if isinstance(sender, AccountAPI):
+                prepped_tx = sender.prepare_transaction(transaction)
+                return (sender.sign_transaction(prepped_tx) or prepped_tx) if sign else prepped_tx
+
         return transaction
+
+    def as_transaction_bytes(self, *args, **txn_kwargs) -> HexBytes:
+        """
+        Get a signed serialized transaction.
+
+        Returns:
+            HexBytes: The serialized transaction
+        """
+        txn_kwargs["sign"] = True
+        tx = self.as_transaction(*args, **txn_kwargs)
+        return tx.serialize_transaction()
 
     def estimate_gas_cost(self, *args, **kwargs) -> int:
         """

@@ -189,16 +189,23 @@ class BaseAddress(BaseInterface):
         return self.chain_manager.history[self.address]
 
     def as_transaction(self, **kwargs) -> "TransactionAPI":
+        sign = kwargs.pop("sign", False)
         converted_kwargs = self.conversion_manager.convert_method_kwargs(kwargs)
-        return self.provider.network.ecosystem.create_transaction(
+        tx = self.provider.network.ecosystem.create_transaction(
             receiver=self.address, **converted_kwargs
         )
+        if sender := kwargs.get("sender"):
+            if hasattr(sender, "prepare_transaction"):
+                prepared = sender.prepare_transaction(tx)
+                return (sender.sign_transaction(prepared) or prepared) if sign else prepared
+
+        return tx
 
     def estimate_gas_cost(self, **kwargs) -> int:
         txn = self.as_transaction(**kwargs)
         return self.provider.estimate_gas_cost(txn)
 
-    def prepare_transaction(self, txn: "TransactionAPI") -> "TransactionAPI":
+    def prepare_transaction(self, txn: "TransactionAPI", **kwargs) -> "TransactionAPI":
         """
         Set default values on a transaction.
 
@@ -209,6 +216,7 @@ class BaseAddress(BaseInterface):
 
         Args:
             txn (:class:`~ape.api.transactions.TransactionAPI`): The transaction to prepare.
+            **kwargs: Sub-classes, such as :class:`~ape.api.accounts.AccountAPI`, use additional kwargs.
 
         Returns:
             :class:`~ape.api.transactions.TransactionAPI`
@@ -234,6 +242,7 @@ class BaseAddress(BaseInterface):
                 f"(transfer_value={txn.total_transfer_value}, balance={self.balance})."
             )
 
+        txn.sender = txn.sender or self.address
         return txn
 
 

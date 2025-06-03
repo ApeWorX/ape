@@ -142,6 +142,7 @@ class BaseContractLog(BaseInterfaceModel):
         return value
 
 
+# TODO: In 0.9, make this correctly serialize back to log data you get from RPCs.
 class ContractLog(ExtraAttributesMixin, BaseContractLog):
     """
     An instance of a log from a contract.
@@ -253,11 +254,11 @@ class ContractLog(ExtraAttributesMixin, BaseContractLog):
     def __repr__(self) -> str:
         event_arg_str = self._event_args_str
         suffix = f" {event_arg_str}" if event_arg_str else ""
-        return f"<{self.event_name}{suffix}>"
+        return f"<{self.event_name or 'Event'}{suffix}>"
 
     def __ape_extra_attributes__(self) -> Iterator[ExtraModelAttributes]:
         yield ExtraModelAttributes(
-            name=self.event_name,
+            name=self.event_name or "event",
             attributes=lambda: self.event_arguments or {},
             include_getattr=True,
             include_getitem=True,

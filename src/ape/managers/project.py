@@ -21,7 +21,7 @@ from ape.contracts import ContractContainer, ContractInstance
 from ape.exceptions import APINotImplementedError, ChainError, CompilerError, ProjectError
 from ape.logging import logger
 from ape.managers.base import BaseManager
-from ape.managers.config import ApeConfig
+from ape.managers.config import ApeConfig, merge_configs
 from ape.utils.basemodel import (
     ExtraAttributesMixin,
     ExtraModelAttributes,
@@ -2300,6 +2300,32 @@ class DeploymentManager(ManagerAccessMixin):
         )
 
 
+class MultiProject(ProjectAPI):
+    """
+    A project with more than 1 valid project API configs, such as a Foundry project
+    containing an ``ape-config.yaml`` file.
+    """
+
+    apis: list[ProjectAPI] = []
+    """
+    An ordered list of APIs to use. The last items take precedence as their configs merge.
+    """
+
+    @property
+    def is_valid(self) -> bool:
+        return any(api.is_valid for api in self.apis)
+
+    def extract_config(self, **overrides) -> "ApeConfig":
+        cfgs = []
+
+        # Gather all valid APIs, in order.
+        for api in self.apis:
+            cfgs.append(api.extract_config().model_dump(exclude_defaults=True, exclude_unset=True))
+
+        merged_cfg = merge_configs(*cfgs)
+        return ApeConfig(**merged_cfg)
+
+
 class LocalProject(Project):
     """
     Manage project(s).
@@ -2485,10 +2511,7 @@ class LocalProject(Project):
         or a Brownie project (or something else).
         """
         default_project = self._get_ape_project_api()
-
-        # If an ape-config.yaml file, exists stop now.
-        if default_project and default_project.config_file.is_file():
-            return default_project
+        valid_apis: list[ProjectAPI] = [default_project] if default_project else []
 
         # ape-config.yaml does no exist. Check for another ProjectAPI type.
         project_classes: Iterator[type[ProjectAPI]] = (
@@ -2498,16 +2521,33 @@ class LocalProject(Project):
         plugins = (t for t in project_classes if not issubclass(t, ApeProject))
         for api in plugins:
             if instance := api.attempt_validate(path=self._base_path):
-                return instance
+                valid_apis.append(instance)
 
-        # If no other APIs worked but we have a default Ape project, use that!
-        # It should work in most cases (hopefully!).
-        if default_project:
-            return default_project
+        num_apis = len(valid_apis)
+        if num_apis == 1:
+            # Only 1 valid API- we can proceed from here.
+            return valid_apis[0]
 
-        # For some reason we were just not able to create a project here.
-        # I am not sure this is even possible.
-        raise ProjectError(f"'{self._base_path.name}' is not recognized as a project.")
+        elif num_apis == 0:
+            # Invalid project: not a likely scenario, as ApeProject should always work.
+            raise ProjectError(f"'{self._base_path.name}' is not recognized as a project.")
+
+        # More than 1 valid API. Remove default unless its config exists.
+        if valid_apis[0] == default_project:
+            if default_project.config_file.is_file():
+                # If Ape is configured for real, we want these changes at the end of the list,
+                # since they are most final.
+                valid_apis = [*valid_apis[1:], valid_apis[0]]
+            else:
+                # Remove, as we have others that are _actually_ valid, and the default is not needed.
+                valid_apis = valid_apis[1:]
+
+        if len(valid_apis) == 1:
+            # After removing the unnecessary default project type, there is only 1 valid project type left.
+            return valid_apis[0]
+
+        # If we get here, there are more than 1 project types we should use.
+        return MultiProject(apis=valid_apis, path=self._base_path)
 
     def _get_ape_project_api(self) -> Optional[ApeProject]:
         if instance := ApeProject.attempt_validate(path=self._base_path):
