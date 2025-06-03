@@ -16,7 +16,6 @@ from ethpm_types import ContractType
 
 from ape.api.address import BaseAddress
 from ape.api.transactions import ReceiptAPI, TransactionAPI
-from ape.contracts import ContractInstance
 from ape.exceptions import (
     AccountsError,
     AliasAlreadyInUseError,
@@ -40,7 +39,7 @@ from ape.utils.testing import (
 if TYPE_CHECKING:
     from eth_pydantic_types import HexBytes
 
-    from ape.contracts import ContractContainer
+    from ape.contracts import ContractContainer, ContractInstance
 
 
 class AccountAPI(BaseInterfaceModel, BaseAddress):
@@ -478,7 +477,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         nonce = self.nonce if nonce is None else nonce
         return ecosystem.get_deployment_address(self.address, nonce)
 
-    def set_delegate(self, contract: ContractInstance, **txn_kwargs):
+    def set_delegate(self, contract: "ContractInstance", **txn_kwargs):
         """
         Have the account class override the value of it's `delegate`. For plugins that support this
         feature, the way they choose to handle it can vary. For example, it could be a call to up-
@@ -523,11 +522,11 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
     @contextmanager
     def delegate_to(
         self,
-        new_delegate: ContractInstance,
+        new_delegate: "ContractInstance",
         set_txn_kwargs: Optional[dict] = None,
         reset_txn_kwargs: Optional[dict] = None,
         **txn_kwargs,
-    ) -> Iterator[ContractInstance]:
+    ) -> Iterator["ContractInstance"]:
         """
         Temporarily overrides the value of `delegate` for the account inside of a context manager,
         and yields a contract instance object whose interface matches that of `new_delegate`. This
