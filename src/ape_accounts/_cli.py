@@ -6,9 +6,11 @@ import click
 from cchecksum import to_checksum_address
 from eth_utils import to_hex
 
+from ape.cli import ConnectedProviderCommand
 from ape.cli.arguments import existing_alias_argument, non_existing_alias_argument
-from ape.cli.options import ape_cli_context
+from ape.cli.options import account_option, ape_cli_context, network_option
 from ape.logging import HIDDEN_MESSAGE
+from ape.types.address import AddressType
 
 if TYPE_CHECKING:
     from ape.api.accounts import AccountAPI
@@ -222,3 +224,38 @@ def delete(cli_ctx, alias):
     account = cli_ctx.account_manager.load(alias)
     account.delete()
     cli_ctx.logger.success(f"Account '{alias}' has been deleted")
+
+
+@cli.group()
+def auth():
+    """Manage `EIP-7702` Authorizations for account"""
+
+
+@auth.command(name="show", cls=ConnectedProviderCommand)
+@network_option()
+@account_option()
+def show_delegate(account):
+    """Show if an existing delegate is authorized for account"""
+    if contract := account.delegate:
+        click.echo(f"{account.address} is delegated to {contract.address}")
+
+    else:
+        click.secho(f"{account.address} has no delegate", fg="red")
+
+
+@auth.command(name="set", cls=ConnectedProviderCommand)
+@ape_cli_context()
+@network_option()
+@account_option()
+@click.argument("contract", type=AddressType)
+def authorize_delegate(cli_ctx, account, contract):
+    """Authorize and set delegate for account"""
+    account.set_delegate(cli_ctx.chain_manager.contracts.instance_at(contract))
+
+
+@auth.command(name="rm", cls=ConnectedProviderCommand)
+@network_option()
+@account_option()
+def remove_delegate(account, contract):
+    """Remove delegate for account"""
+    account.remove_delegate()
