@@ -187,10 +187,11 @@ class BaseAddress(BaseInterface):
         Check and see if Account has a "delegate" contract, which is a contract that this account
         delegates functionality to. This could be from many contexts, such as a Smart Wallet like
         Safe (https://github.com/ApeWorX/ape-safe) which has a Singleton class it forwards to, or
-        an EOA using a EIP7702-style delegate. Returning `None` means that the account does not
-        have a delegate avaiable, which should be overrided in plugins that support ecosystems
-        where such methods are possible natively (e.g. EIP7702 context), or plugins such as smart
-        wallets which have this functionality. The default implementation is to return `None`.
+        an EOA using an EIP7702-style delegate. Returning ``None`` means that the account does not
+        have a delegate.
+
+        The default behavior is to use `:class:~ape.managers.ChainManager.get_delegate` to check if
+        the account has a proxy, such as ``SafeProxy`` for ``ape-safe`` or an EIP7702 delegate.
 
         Returns:
             Optional[`:class:~ape.contracts.ContractInstance`]:
