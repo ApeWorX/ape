@@ -392,9 +392,10 @@ assert not account.delegate
 
 # Temporarily use `contract` as `delegate` (and reset upon exiting context)
 # NOTE: Calls `.set_delegate(contract)` when entering context
-with account.delegate_to(contract) as delegate:
-    assert account.delegate == delegate
-    delegate.methodWithAuth(..., sender=account)
+with account.delegate_to(contract) as proxy:
+    # NOTE: `proxy` is `Contract(account, contract_type=contract.contract_type)`
+    assert contract.contract_type == proxy.contract_type
+    proxy.methodWithAuth(..., sender=account)
 # NOTE: calls `remove_delegate()` when exiting context
 assert not account.delegate
 ```
