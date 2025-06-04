@@ -53,10 +53,11 @@ class ApeEVMBackend(PyEVMBackend):
     A lazier version of PyEVMBackend for the Ape framework.
     """
 
-    def __init__(self, config: "ApeTestConfig"):
+    def __init__(self, config: "ApeTestConfig", chain_id: int):
         self.config = config
         # Lazily set.
         self._chain = None
+        self.chain_id = chain_id
 
     @property
     def hd_path(self) -> str:
@@ -95,27 +96,29 @@ class ApeEVMBackend(PyEVMBackend):
         if self._chain is None:
             # Initial chain.
             self._chain = self._setup_tester_chain[1]
+            # HACK: Make sure PyEVM's chain ID is the same as ours
+            self._chain.chain_id = self.chain_id  # type: ignore[attr-defined]
 
         return self._chain
 
     @chain.setter
     def chain(self, value):
         self._chain = value  # Changes during snapshot reverting.
+        # HACK: Make sure PyEVM's chain ID is the same as ours
+        self._chain.chain_id = self.chain_id  # type: ignore[attr-defined]
 
 
 class ApeTester(EthereumTesterProvider):
-    def __init__(
-        self, config: "ApeTestConfig", chain_id: int, backend: Optional[ApeEVMBackend] = None
-    ):
+    def __init__(self, config: "ApeTestConfig", chain_id: int):
         self.config = config
         self.chain_id = chain_id
-        self._backend = backend
-        self._ethereum_tester = None if backend is None else EthereumTester(backend)
+        self._backend: Optional[ApeEVMBackend] = None
+        self._ethereum_tester: Optional[EthereumTester] = None
 
     @property
     def ethereum_tester(self) -> EthereumTester:
         if self._ethereum_tester is None:
-            self._backend = ApeEVMBackend(self.config)
+            self._backend = ApeEVMBackend(self.config, self.chain_id)
             self._ethereum_tester = EthereumTester(self._backend)
 
         return self._ethereum_tester
@@ -138,7 +141,7 @@ class ApeTester(EthereumTesterProvider):
     @property
     def backend(self) -> "ApeEVMBackend":
         if self._backend is None:
-            self._backend = ApeEVMBackend(self.config)
+            self._backend = ApeEVMBackend(self.config, self.chain_id)
             self._ethereum_tester = EthereumTester(self._backend)
 
         return self._backend
