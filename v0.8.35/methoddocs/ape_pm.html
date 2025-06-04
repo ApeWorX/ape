@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en" data-accent-color="lime" data-content_root="../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>ape-pm - ape documentation</title><link rel="shortcut icon" href="../_static/favicon.ico"/><link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="ape-test" href="ape_test.html" /><link rel="prev" title="ape-node" href="ape_node.html" />
+      <link rel="canonical" href="ape/methoddocs/ape_pm.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=397bb51e" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=d0008d65" />
+    <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    <meta property="og:type" content="website"/>
+<meta property="og:url" content="ape/methoddocs/ape_pm.html"/>
+<meta property="og:title" content="ape-pm"/>
+<meta name="twitter:card" content="summary"/>
+  </head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="../index.html">
+      <img class="light-logo" src="../_static/logo_grey.svg" alt="ape" height="28" loading="lazy" />
+      <img class="dark-logo" src="../_static/logo_green.svg" alt="ape" height="28" loading="lazy" />
+      <strong>ape</strong>
+    </a>
+    <div class="sy-head-nav" id="HeadNav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials"></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="HeadNav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2 -translate-x-2"></span>
+          <span class="hamburger_3 -translate-x-1"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading" aria-level="3"><span class="caption-text">User Guides</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/quickstart.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/projects.html">Developing Projects with Ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/config.html">Configure Ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/installing_plugins.html">Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/accounts.html">Accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/compile.html">Compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/contracts.html">Contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/testing.html">Testing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/reverts.html">Reverts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/networks.html">Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/forking_networks.html">Forking Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/publishing.html">Publishing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/proxy.html">Proxy Contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/contract_metadata.html">Contract Creation Metadata</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/console.html">Console</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/scripts.html">Scripting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/transactions.html">Transactions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/trace.html">Traces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/logging.html">Logging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/data.html">Querying Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/clis.html">CLIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/developing_plugins.html">Developing Plugins</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">CLI Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../commands/accounts.html">accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/compile.html">compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/console.html">console</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/init.html">init</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/networks.html">networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/plugins.html">plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/pm.html">pm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/run.html">run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/test.html">test</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Core Python Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="ape.html">ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">ape.api</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">ape.cli</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contracts.html">ape.contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="exceptions.html">ape.exceptions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="managers.html">ape.managers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugins.html">ape.plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="types.html">ape.types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">ape.utils</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Plugin Python Reference</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="ape_accounts.html">ape-accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ape_compile.html">ape-compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ape_ethereum.html">ape-ethereum</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ape_ethereum.html#module-ape_ethereum.multicall">ape-ethereum.multicall</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ape_node.html">ape-node</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">ape-pm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ape_test.html">ape-test</a></li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#ape_pm.compiler.InterfaceCompiler"><code class="docutils literal notranslate"><span class="pre">InterfaceCompiler</span></code></a><ul>
+<li><a class="reference internal" href="#ape_pm.compiler.InterfaceCompiler.compile"><code class="docutils literal notranslate">compile()</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.compiler.InterfaceCompiler.compile_code"><code class="docutils literal notranslate">compile_code()</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.compiler.InterfaceCompiler.enrich_error"><code class="docutils literal notranslate">enrich_error()</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.compiler.InterfaceCompiler.get_versions"><code class="docutils literal notranslate">get_versions()</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.compiler.InterfaceCompiler.name"><code class="docutils literal notranslate">name</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ape_pm.dependency.GithubDependency"><code class="docutils literal notranslate"><span class="pre">GithubDependency</span></code></a><ul>
+<li><a class="reference internal" href="#ape_pm.dependency.GithubDependency.fetch"><code class="docutils literal notranslate">fetch()</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.GithubDependency.github"><code class="docutils literal notranslate">github</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.GithubDependency.package_id"><code class="docutils literal notranslate">package_id</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.GithubDependency.ref"><code class="docutils literal notranslate">ref</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.GithubDependency.scheme"><code class="docutils literal notranslate">scheme</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.GithubDependency.uri"><code class="docutils literal notranslate">uri</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.GithubDependency.version"><code class="docutils literal notranslate">version</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.GithubDependency.version_id"><code class="docutils literal notranslate">version_id</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ape_pm.dependency.LocalDependency"><code class="docutils literal notranslate"><span class="pre">LocalDependency</span></code></a><ul>
+<li><a class="reference internal" href="#ape_pm.dependency.LocalDependency.fetch"><code class="docutils literal notranslate">fetch()</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.LocalDependency.local"><code class="docutils literal notranslate">local</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.LocalDependency.package_id"><code class="docutils literal notranslate">package_id</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.LocalDependency.uri"><code class="docutils literal notranslate">uri</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.LocalDependency.version"><code class="docutils literal notranslate">version</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.LocalDependency.version_id"><code class="docutils literal notranslate">version_id</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ape_pm.dependency.NpmDependency"><code class="docutils literal notranslate"><span class="pre">NpmDependency</span></code></a><ul>
+<li><a class="reference internal" href="#ape_pm.dependency.NpmDependency.fetch"><code class="docutils literal notranslate">fetch()</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.NpmDependency.npm"><code class="docutils literal notranslate">npm</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.NpmDependency.package_id"><code class="docutils literal notranslate">package_id</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.NpmDependency.uri"><code class="docutils literal notranslate">uri</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.NpmDependency.version"><code class="docutils literal notranslate">version</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.NpmDependency.version_from_installed_package_json"><code class="docutils literal notranslate">version_from_installed_package_json</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.NpmDependency.version_from_project_package_json"><code class="docutils literal notranslate">version_from_project_package_json</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.NpmDependency.version_id"><code class="docutils literal notranslate">version_id</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ape_pm.dependency.PythonDependency"><code class="docutils literal notranslate"><span class="pre">PythonDependency</span></code></a><ul>
+<li><a class="reference internal" href="#ape_pm.dependency.PythonDependency.fetch"><code class="docutils literal notranslate">fetch()</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.PythonDependency.package_id"><code class="docutils literal notranslate">package_id</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.PythonDependency.pypi"><code class="docutils literal notranslate">pypi</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.PythonDependency.site_package"><code class="docutils literal notranslate">site_package</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.PythonDependency.uri"><code class="docutils literal notranslate">uri</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.PythonDependency.version"><code class="docutils literal notranslate">version</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.PythonDependency.version_id"><code class="docutils literal notranslate">version_id</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ape_pm.project.BrownieProject"><code class="docutils literal notranslate"><span class="pre">BrownieProject</span></code></a><ul>
+<li><a class="reference internal" href="#ape_pm.project.BrownieProject.extract_config"><code class="docutils literal notranslate">extract_config()</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.project.BrownieProject.is_valid"><code class="docutils literal notranslate">is_valid</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ape_pm.project.FoundryProject"><code class="docutils literal notranslate"><span class="pre">FoundryProject</span></code></a><ul>
+<li><a class="reference internal" href="#ape_pm.project.FoundryProject.extract_config"><code class="docutils literal notranslate">extract_config()</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.project.FoundryProject.is_valid"><code class="docutils literal notranslate">is_valid</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6">
+<div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../index.html"><span itemprop="name">ape</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">ape-pm</strong>
+        <meta itemprop="position" content="2" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+        <article class="yue" role="main">
+          <section id="module-ape_pm.compiler">
+<span id="ape-pm"></span><h1>ape-pm<a class="headerlink" href="#module-ape_pm.compiler" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="ape_pm.compiler.InterfaceCompiler">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape_pm.compiler.</span></span><span class="sig-name descname"><span class="pre">InterfaceCompiler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compiler_settings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_pm.compiler.InterfaceCompiler" title="Link to this definition"></a></dt>
+<dd><p>A compiler plugin for interface JSONs (ABIs). Also, this
+compiler can “compile” already-compiled <code class="docutils literal notranslate"><span class="pre">ContractType</span></code>
+JSON files.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ape_pm.compiler.InterfaceCompiler.compile">
+<span class="sig-name descname"><span class="pre">compile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contract_filepaths</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">Path</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="managers.html#ape.managers.project.ProjectManager" title="ape.managers.project.ProjectManager"><span class="pre">ProjectManager</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">settings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">ContractType</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape_pm.compiler.InterfaceCompiler.compile" title="Link to this definition"></a></dt>
+<dd><p>Compile the given source files. All compiler plugins must implement this function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>contract_filepaths</strong> (<em>Iterable</em><em>[</em><em>pathlib.Path</em><em>]</em>) – A list of source file paths to compile.</p></li>
+<li><p><strong>project</strong> (Optional[<a class="reference internal" href="managers.html#ape.managers.project.ProjectManager" title="ape.managers.project.ProjectManager"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProjectManager</span></code></a>]) – Optionally provide
+the project containing the base paths and full source set. Defaults to the local
+project. Dependencies will change this value to their respective projects.</p></li>
+<li><p><strong>settings</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – Adhoc compiler settings.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>list[<code class="xref py py-class docutils literal notranslate"><span class="pre">ContractType</span></code>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape_pm.compiler.InterfaceCompiler.compile_code">
+<span class="sig-name descname"><span class="pre">compile_code</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="managers.html#ape.managers.project.ProjectManager" title="ape.managers.project.ProjectManager"><span class="pre">ProjectManager</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ContractType</span></span></span><a class="headerlink" href="#ape_pm.compiler.InterfaceCompiler.compile_code" title="Link to this definition"></a></dt>
+<dd><p>Compile a program.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>code</strong> (<em>str</em>) – The code to compile.</p></li>
+<li><p><strong>project</strong> (Optional[<a class="reference internal" href="managers.html#ape.managers.project.ProjectManager" title="ape.managers.project.ProjectManager"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProjectManager</span></code></a>]) – Optionally provide
+the project containing the base paths and full source set. Defaults to the local
+project. Dependencies will change this value to their respective projects.</p></li>
+<li><p><strong>settings</strong> (<em>Optional</em><em>[</em><em>Dict</em><em>]</em>) – Adhoc compiler settings.</p></li>
+<li><p><strong>**kwargs</strong> – Additional overrides for the <code class="docutils literal notranslate"><span class="pre">ethpm_types.ContractType</span></code> model.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A compiled contract artifact.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">ContractType</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape_pm.compiler.InterfaceCompiler.enrich_error">
+<span class="sig-name descname"><span class="pre">enrich_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">err</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="exceptions.html#ape.exceptions.ContractLogicError" title="ape.exceptions.ContractLogicError"><span class="pre">ContractLogicError</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="exceptions.html#ape.exceptions.ContractLogicError" title="ape.exceptions.ContractLogicError"><span class="pre">ContractLogicError</span></a></span></span><a class="headerlink" href="#ape_pm.compiler.InterfaceCompiler.enrich_error" title="Link to this definition"></a></dt>
+<dd><p>Enrich a contract logic error using compiler information, such as
+known PC locations for compiler runtime errors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>err</strong> (<a class="reference internal" href="exceptions.html#ape.exceptions.ContractLogicError" title="ape.exceptions.ContractLogicError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractLogicError</span></code></a>) – The exception
+to enrich.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The enriched exception.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="exceptions.html#ape.exceptions.ContractLogicError" title="ape.exceptions.ContractLogicError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractLogicError</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape_pm.compiler.InterfaceCompiler.get_versions">
+<span class="sig-name descname"><span class="pre">get_versions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">all_paths</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">Path</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape_pm.compiler.InterfaceCompiler.get_versions" title="Link to this definition"></a></dt>
+<dd><p>Retrieve the set of available compiler versions for this plugin to compile <code class="docutils literal notranslate"><span class="pre">all_paths</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>all_paths</strong> (<em>Iterable</em><em>[</em><em>pathlib.Path</em><em>]</em>) – The list of paths.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A set of available compiler versions.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>set[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape_pm.compiler.InterfaceCompiler.name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_pm.compiler.InterfaceCompiler.name" title="Link to this definition"></a></dt>
+<dd><p>The name of the compiler.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class" id="module-ape_pm.dependency">
+<dt class="sig sig-object py" id="ape_pm.dependency.GithubDependency">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape_pm.dependency.</span></span><span class="sig-name descname"><span class="pre">GithubDependency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name:</span> <span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_override:</span> <span class="pre">dict</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">github:</span> <span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheme:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'https'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_pm.dependency.GithubDependency" title="Link to this definition"></a></dt>
+<dd><p>A dependency from GitHub. Use the <code class="docutils literal notranslate"><span class="pre">github</span></code> key in your <code class="docutils literal notranslate"><span class="pre">dependencies:</span></code>
+section of your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file to declare a dependency from GitHub.</p>
+<p>Config example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">dependencies</span><span class="p">:</span>
+</span><span data-line="2">  <span class="o">-</span> <span class="n">name</span><span class="p">:</span> <span class="n">OpenZeppelin</span>
+</span><span data-line="3">    <span class="n">github</span><span class="p">:</span> <span class="n">OpenZeppelin</span><span class="o">/</span><span class="n">openzeppelin</span><span class="o">-</span><span class="n">contracts</span>
+</span><span data-line="4">    <span class="n">version</span><span class="p">:</span> <span class="mf">4.4.0</span>
+</span></pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="ape_pm.dependency.GithubDependency.fetch">
+<span class="sig-name descname"><span class="pre">fetch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">destination</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_pm.dependency.GithubDependency.fetch" title="Link to this definition"></a></dt>
+<dd><p>Fetch the dependency. E.g. for GitHub dependency,
+download the files to the destination.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>destination</strong> (<a class="reference internal" href="cli.html#ape.cli.paramtype.Path" title="ape.cli.paramtype.Path"><em>Path</em></a>) – The destination for the dependency
+files.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape_pm.dependency.GithubDependency.github">
+<span class="sig-name descname"><span class="pre">github</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_pm.dependency.GithubDependency.github" title="Link to this definition"></a></dt>
+<dd><p>The Github repo ID e.g. the organization name followed by the repo name,
+such as <code class="docutils literal notranslate"><span class="pre">dapphub/erc20</span></code>.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape_pm.dependency.GithubDependency.package_id">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">package_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_pm.dependency.GithubDependency.package_id" title="Link to this definition"></a></dt>
+<dd><p>The full name of the package, used for storage.
+Example: <code class="docutils literal notranslate"><span class="pre">OpenZeppelin/openzeppelin-contracts</span></code>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape_pm.dependency.GithubDependency.ref">
+<span class="sig-name descname"><span class="pre">ref</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape_pm.dependency.GithubDependency.ref" title="Link to this definition"></a></dt>
+<dd><p>The branch or tag to use. When using this field
+instead of the ‘release’ field, the repository
+gets cloned instead of downloaded via the
+official GitHub release API.</p>
+<p><strong>NOTE</strong>: Will be ignored if given a ‘release’.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape_pm.dependency.GithubDependency.scheme">
+<span class="sig-name descname"><span class="pre">scheme</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_pm.dependency.GithubDependency.scheme" title="Link to this definition"></a></dt>
+<dd><p><a href="#id1"><span class="problematic" id="id2">`</span></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Either HTTPS or SSH; only used with <a href="#id3"><span class="problematic" id="id4">`</span></a>ref</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape_pm.dependency.GithubDependency.uri">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">uri</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_pm.dependency.GithubDependency.uri" title="Link to this definition"></a></dt>
+<dd><p>The URI for the package.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape_pm.dependency.GithubDependency.version">
+<span class="sig-name descname"><span class="pre">version</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape_pm.dependency.GithubDependency.version" title="Link to this definition"></a></dt>
+<dd><p>The release version to use. When using this
+field instead of the ‘ref’ field, the GitHub
+release API is used to fetch instead of cloning.</p>
+<p><strong>NOTE</strong>: Will be ignored if given a ‘ref’.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape_pm.dependency.GithubDependency.version_id">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">version_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_pm.dependency.GithubDependency.version_id" title="Link to this definition"></a></dt>
+<dd><p>The ID to use as the sub-directory in the download cache.
+Most often, this is either a version number or a branch name.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape_pm.dependency.LocalDependency">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape_pm.dependency.</span></span><span class="sig-name descname"><span class="pre">LocalDependency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name:</span> <span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_override:</span> <span class="pre">dict</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">local:</span> <span class="pre">~pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_pm.dependency.LocalDependency" title="Link to this definition"></a></dt>
+<dd><p>A dependency located on the local machine.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ape_pm.dependency.LocalDependency.fetch">
+<span class="sig-name descname"><span class="pre">fetch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">destination</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_pm.dependency.LocalDependency.fetch" title="Link to this definition"></a></dt>
+<dd><p>Fetch the dependency. E.g. for GitHub dependency,
+download the files to the destination.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>destination</strong> (<a class="reference internal" href="cli.html#ape.cli.paramtype.Path" title="ape.cli.paramtype.Path"><em>Path</em></a>) – The destination for the dependency
+files.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape_pm.dependency.LocalDependency.local">
+<span class="sig-name descname"><span class="pre">local</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Path</span></em><a class="headerlink" href="#ape_pm.dependency.LocalDependency.local" title="Link to this definition"></a></dt>
+<dd><p>The root path (and API defining key) to the dependency files.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape_pm.dependency.LocalDependency.package_id">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">package_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_pm.dependency.LocalDependency.package_id" title="Link to this definition"></a></dt>
+<dd><p>The full name of the package, used for storage.
+Example: <code class="docutils literal notranslate"><span class="pre">OpenZeppelin/openzeppelin-contracts</span></code>.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape_pm.dependency.LocalDependency.uri">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">uri</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_pm.dependency.LocalDependency.uri" title="Link to this definition"></a></dt>
+<dd><p>The URI for the package.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape_pm.dependency.LocalDependency.version">
+<span class="sig-name descname"><span class="pre">version</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape_pm.dependency.LocalDependency.version" title="Link to this definition"></a></dt>
+<dd><p>Specified version.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape_pm.dependency.LocalDependency.version_id">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">version_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_pm.dependency.LocalDependency.version_id" title="Link to this definition"></a></dt>
+<dd><p>The ID to use as the sub-directory in the download cache.
+Most often, this is either a version number or a branch name.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape_pm.dependency.NpmDependency">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape_pm.dependency.</span></span><span class="sig-name descname"><span class="pre">NpmDependency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name:</span> <span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_override:</span> <span class="pre">dict</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">npm:</span> <span class="pre">~pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_pm.dependency.NpmDependency" title="Link to this definition"></a></dt>
+<dd><p>A dependency from the Node Package Manager (NPM).</p>
+<p>Config example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">dependencies</span><span class="p">:</span>
+</span><span data-line="2">  <span class="o">-</span> <span class="n">name</span><span class="p">:</span> <span class="n">safe</span><span class="o">-</span><span class="n">singleton</span><span class="o">-</span><span class="n">factory</span>
+</span><span data-line="3">    <span class="n">npm</span><span class="p">:</span> <span class="s2">&quot;@gnosis.pm/safe-singleton-factory&quot;</span>
+</span><span data-line="4">    <span class="n">version</span><span class="p">:</span> <span class="mf">1.0.14</span>
+</span></pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="ape_pm.dependency.NpmDependency.fetch">
+<span class="sig-name descname"><span class="pre">fetch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">destination</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_pm.dependency.NpmDependency.fetch" title="Link to this definition"></a></dt>
+<dd><p>Fetch the dependency. E.g. for GitHub dependency,
+download the files to the destination.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>destination</strong> (<a class="reference internal" href="cli.html#ape.cli.paramtype.Path" title="ape.cli.paramtype.Path"><em>Path</em></a>) – The destination for the dependency
+files.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape_pm.dependency.NpmDependency.npm">
+<span class="sig-name descname"><span class="pre">npm</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Path</span></em><a class="headerlink" href="#ape_pm.dependency.NpmDependency.npm" title="Link to this definition"></a></dt>
+<dd><p>The NPM repo ID e.g. the organization name followed by the repo name,
+such as <code class="docutils literal notranslate"><span class="pre">&quot;&#64;gnosis.pm/safe-singleton-factory&quot;</span></code>.
+Note: Resolves to a ‘path’ after serialization.
+The package must already be installed!</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape_pm.dependency.NpmDependency.package_id">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">package_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_pm.dependency.NpmDependency.package_id" title="Link to this definition"></a></dt>
+<dd><p>The full name of the package, used for storage.
+Example: <code class="docutils literal notranslate"><span class="pre">OpenZeppelin/openzeppelin-contracts</span></code>.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape_pm.dependency.NpmDependency.uri">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">uri</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_pm.dependency.NpmDependency.uri" title="Link to this definition"></a></dt>
+<dd><p>The URI for the package.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape_pm.dependency.NpmDependency.version">
+<span class="sig-name descname"><span class="pre">version</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape_pm.dependency.NpmDependency.version" title="Link to this definition"></a></dt>
+<dd><p>Specify the version, if not wanting to use discovered version
+from install.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape_pm.dependency.NpmDependency.version_from_installed_package_json">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">version_from_installed_package_json</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape_pm.dependency.NpmDependency.version_from_installed_package_json" title="Link to this definition"></a></dt>
+<dd><p>The version from package.json in the installed package.
+Requires having run <cite>npm install</cite>.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape_pm.dependency.NpmDependency.version_from_project_package_json">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">version_from_project_package_json</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape_pm.dependency.NpmDependency.version_from_project_package_json" title="Link to this definition"></a></dt>
+<dd><p>The version from your project’s package.json, if exists.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape_pm.dependency.NpmDependency.version_id">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">version_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_pm.dependency.NpmDependency.version_id" title="Link to this definition"></a></dt>
+<dd><p>The ID to use as the sub-directory in the download cache.
+Most often, this is either a version number or a branch name.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape_pm.dependency.PythonDependency">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape_pm.dependency.</span></span><span class="sig-name descname"><span class="pre">PythonDependency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name:</span> <span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_override:</span> <span class="pre">dict</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">site_package:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pypi:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_pm.dependency.PythonDependency" title="Link to this definition"></a></dt>
+<dd><p>A dependency installed from Python tooling, such as <cite>pip</cite>.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ape_pm.dependency.PythonDependency.fetch">
+<span class="sig-name descname"><span class="pre">fetch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">destination</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_pm.dependency.PythonDependency.fetch" title="Link to this definition"></a></dt>
+<dd><p>Fetch the dependency. E.g. for GitHub dependency,
+download the files to the destination.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>destination</strong> (<a class="reference internal" href="cli.html#ape.cli.paramtype.Path" title="ape.cli.paramtype.Path"><em>Path</em></a>) – The destination for the dependency
+files.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape_pm.dependency.PythonDependency.package_id">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">package_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_pm.dependency.PythonDependency.package_id" title="Link to this definition"></a></dt>
+<dd><p>The full name of the package, used for storage.
+Example: <code class="docutils literal notranslate"><span class="pre">OpenZeppelin/openzeppelin-contracts</span></code>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape_pm.dependency.PythonDependency.pypi">
+<span class="sig-name descname"><span class="pre">pypi</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape_pm.dependency.PythonDependency.pypi" title="Link to this definition"></a></dt>
+<dd><p>The <code class="docutils literal notranslate"><span class="pre">pypi</span></code> reference, such as <code class="docutils literal notranslate"><span class="pre">&quot;snekmate&quot;</span></code>. Cannot use with
+<code class="docutils literal notranslate"><span class="pre">python:</span></code>. When set, downloads the dependency from <code class="docutils literal notranslate"><span class="pre">pypi</span></code>
+using HTTP directly (not <code class="docutils literal notranslate"><span class="pre">pip</span></code>).</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape_pm.dependency.PythonDependency.site_package">
+<span class="sig-name descname"><span class="pre">site_package</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape_pm.dependency.PythonDependency.site_package" title="Link to this definition"></a></dt>
+<dd><p>The Python site-package name, such as <code class="docutils literal notranslate"><span class="pre">&quot;snekmate&quot;</span></code>. Cannot use
+with <code class="docutils literal notranslate"><span class="pre">pypi:</span></code>. Requires the dependency to have been installed
+either via <code class="docutils literal notranslate"><span class="pre">pip</span></code> or something alike.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape_pm.dependency.PythonDependency.uri">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">uri</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_pm.dependency.PythonDependency.uri" title="Link to this definition"></a></dt>
+<dd><p>The URI for the package.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape_pm.dependency.PythonDependency.version">
+<span class="sig-name descname"><span class="pre">version</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape_pm.dependency.PythonDependency.version" title="Link to this definition"></a></dt>
+<dd><p>Optionally specify the version expected to be installed.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape_pm.dependency.PythonDependency.version_id">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">version_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_pm.dependency.PythonDependency.version_id" title="Link to this definition"></a></dt>
+<dd><p>The ID to use as the sub-directory in the download cache.
+Most often, this is either a version number or a branch name.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class" id="module-ape_pm.project">
+<dt class="sig sig-object py" id="ape_pm.project.BrownieProject">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape_pm.project.</span></span><span class="sig-name descname"><span class="pre">BrownieProject</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_pm.project.BrownieProject" title="Link to this definition"></a></dt>
+<dd><p>Allows traditional Brownie projects to work with Ape.
+This class implements the necessary methods in order
+to detect config settings in a Brownie project and
+treat it like an Ape project.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ape_pm.project.BrownieProject.extract_config">
+<span class="sig-name descname"><span class="pre">extract_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">overrides</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="api.html#ape.api.config.ApeConfig" title="ape.api.config.ApeConfig"><span class="pre">ApeConfig</span></a></span></span><a class="headerlink" href="#ape_pm.project.BrownieProject.extract_config" title="Link to this definition"></a></dt>
+<dd><p>Extra configuration from the project so that
+Ape understands the dependencies and how to compile everything.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>**overrides</strong> – Config overrides.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ApeConfig</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape_pm.project.BrownieProject.is_valid">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_valid</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#ape_pm.project.BrownieProject.is_valid" title="Link to this definition"></a></dt>
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> when detecting a project of this type.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape_pm.project.FoundryProject">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape_pm.project.</span></span><span class="sig-name descname"><span class="pre">FoundryProject</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_pm.project.FoundryProject" title="Link to this definition"></a></dt>
+<dd><p>Helps Ape read configurations from foundry projects
+and lessens the need of specifying <code class="docutils literal notranslate"><span class="pre">config_override:</span></code>
+for foundry-based dependencies.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ape_pm.project.FoundryProject.extract_config">
+<span class="sig-name descname"><span class="pre">extract_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">overrides</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="api.html#ape.api.config.ApeConfig" title="ape.api.config.ApeConfig"><span class="pre">ApeConfig</span></a></span></span><a class="headerlink" href="#ape_pm.project.FoundryProject.extract_config" title="Link to this definition"></a></dt>
+<dd><p>Extra configuration from the project so that
+Ape understands the dependencies and how to compile everything.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>**overrides</strong> – Config overrides.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ApeConfig</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape_pm.project.FoundryProject.is_valid">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_valid</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#ape_pm.project.FoundryProject.is_valid" title="Link to this definition"></a></dt>
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> when detecting a project of this type.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"><div class="navigation-prev">
+    <a href="ape_node.html">
+      <i class="i-lucide chevron-left"></i>
+      <div class="page-info">
+        <span>Previous</span><div class="title">ape-node</div></div>
+    </a>
+  </div><div class="navigation-next">
+    <a href="ape_test.html">
+      <div class="page-info">
+        <span>Next</span>
+        <div class="title">ape-test</div>
+      </div>
+      <i class="i-lucide chevron-right"></i>
+    </a>
+  </div></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2024, ApeWorX LTD</p>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials"></div>
+    </div>
+  </div>
+</footer>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script data-domain="docs.apeworx.io" defer="defer" src="https://plausible.io/js/script.js"></script>
+      <script src="../_static/shibuya.js?v=1d2088d1"></script></body>
+</html>
