@@ -435,3 +435,34 @@ def test_authorizations_cli(ape_cli, runner, keyfile_account, geth_contract):
         catch_exceptions=False,
     )
     assert f"{keyfile_account.address} is delegated to {geth_contract.address}" in result.output
+
+    result = runner.invoke(
+        ape_cli,
+        (
+            "accounts",
+            "auth",
+            "rm",
+            "--account",
+            keyfile_account.alias,
+            "--network",
+            GETH_URI,
+        ),
+        catch_exceptions=False,
+        input="\n".join(["y", PASSWORD, "y", "y"]),
+    )
+    assert result.exit_code == 0, result.output
+
+    result = runner.invoke(
+        ape_cli,
+        (
+            "accounts",
+            "auth",
+            "show",
+            "--account",
+            keyfile_account.alias,
+            "--network",
+            GETH_URI,
+        ),
+        catch_exceptions=False,
+    )
+    assert f"{keyfile_account.address} has no delegate" in result.output
