@@ -865,9 +865,11 @@ def test_prepare_transaction_and_call_using_max_gas(tx_type, ethereum, sender, e
 def test_authorizations_transaction(sender, vyper_contract_instance):
     assert not sender.delegate
 
-    with sender.delegate_to(vyper_contract_instance) as delegate:
+    # NOTE: 0x23fd0e40 is method_id for `myNumber()`
+    # NOTE: Must call something, since `__default__` raises
+    with sender.delegate_to(vyper_contract_instance, data="0x23fd0e40") as delegate:
         assert sender.delegate == vyper_contract_instance
-        delegate.setNumber(5991, sender=sender)
+        assert delegate.myNumber() == 0
 
     sender.remove_delegate()
     assert not sender.delegate
