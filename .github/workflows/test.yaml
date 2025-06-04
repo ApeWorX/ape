@@ -95,7 +95,7 @@ jobs:
           run: ape test tests/functional -m "not fuzzing" -s --cov=src --cov-append -n auto --dist loadgroup
 
         - name: Run Integration Tests
-          run: ape test tests/integration/cli/test_test.py -m "not fuzzing" -s --cov=src --cov-append -n auto --dist loadgroup
+          run: ape test tests/integration -m "not fuzzing" -s --cov=src --cov-append -n auto --dist loadgroup
 
         - name: Run Performance Tests
           run: ape test tests/performance -s
