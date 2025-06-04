@@ -245,10 +245,14 @@ def show_delegate(account):
 @auth.command(name="set", cls=ConnectedProviderCommand)
 @network_option()
 @account_option()
+# NOTE: In case users need to override the defaults
+@click.option("--receiver", default=None)
+@click.option("--data", default=None)
+@click.option("--gas-limit", type=int, default=None)
 @click.argument("contract")
-def authorize_delegate(account, contract):
+def authorize_delegate(account, receiver, data, gas_limit, contract):
     """Authorize and set delegate for account"""
-    account.set_delegate(contract)
+    account.set_delegate(contract, receiver=receiver, data=data, gas_limit=gas_limit)
     click.echo(f"{account.address} is now delegated to {contract}")
 
 
