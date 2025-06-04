@@ -383,6 +383,7 @@ def test_delete(ape_cli, runner, temp_keyfile):
 
 @run_once
 @geth_process_test
+@pytest.mark.xfail(reason="https://github.com/ethereum/go-ethereum/issues/31967")
 def test_authorizations_cli(ape_cli, runner, keyfile_account, geth_contract):
     result = runner.invoke(
         ape_cli,
