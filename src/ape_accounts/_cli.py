@@ -10,7 +10,6 @@ from ape.cli import ConnectedProviderCommand
 from ape.cli.arguments import existing_alias_argument, non_existing_alias_argument
 from ape.cli.options import account_option, ape_cli_context, network_option
 from ape.logging import HIDDEN_MESSAGE
-from ape.types.address import AddressType
 
 if TYPE_CHECKING:
     from ape.api.accounts import AccountAPI
@@ -244,13 +243,13 @@ def show_delegate(account):
 
 
 @auth.command(name="set", cls=ConnectedProviderCommand)
-@ape_cli_context()
 @network_option()
 @account_option()
-@click.argument("contract", type=AddressType)
-def authorize_delegate(cli_ctx, account, contract):
+@click.argument("contract")
+def authorize_delegate(account, contract):
     """Authorize and set delegate for account"""
-    account.set_delegate(cli_ctx.chain_manager.contracts.instance_at(contract))
+    account.set_delegate(contract)
+    click.echo(f"{account.address} is now delegated to {contract}")
 
 
 @auth.command(name="rm", cls=ConnectedProviderCommand)

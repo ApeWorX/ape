@@ -10,7 +10,6 @@ from ape.utils.misc import log_instead_of_fail
 
 if TYPE_CHECKING:
     from ape.api.transactions import ReceiptAPI, TransactionAPI
-    from ape.contracts import ContractInstance
     from ape.managers.chain import AccountHistory
     from ape.types.vm import ContractCode
 
@@ -182,7 +181,7 @@ class BaseAddress(BaseInterface):
         return self.codesize > 0
 
     @property
-    def delegate(self) -> Optional["ContractInstance"]:
+    def delegate(self) -> Optional["BaseAddress"]:
         """
         Check and see if Account has a "delegate" contract, which is a contract that this account
         delegates functionality to. This could be from many contexts, such as a Smart Wallet like

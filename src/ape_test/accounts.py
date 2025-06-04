@@ -1,6 +1,6 @@
 import warnings
 from collections.abc import Iterator
-from typing import TYPE_CHECKING, Any, Optional, cast
+from typing import TYPE_CHECKING, Any, Optional, Union, cast
 
 from eip712.messages import EIP712Message
 from eth_account import Account as EthAccount
@@ -11,8 +11,9 @@ from eth_pydantic_types import HexBytes
 from eth_utils import to_bytes, to_canonical_address, to_hex
 
 from ape.api.accounts import TestAccountAPI, TestAccountContainerAPI
-from ape.contracts.base import ContractInstance
+from ape.api.address import BaseAddress
 from ape.exceptions import APINotImplementedError, ProviderNotConnectedError, SignatureError
+from ape.types import AddressType
 from ape.types.signatures import MessageSignature, TransactionSignature
 from ape.utils._web3_compat import sign_hash
 from ape.utils.misc import ZERO_ADDRESS, derive_public_key, log_instead_of_fail
@@ -22,7 +23,6 @@ from ape_ethereum.transactions import TransactionType
 
 if TYPE_CHECKING:
     from ape.api.transactions import TransactionAPI
-    from ape.types.address import AddressType
 
 
 class TestAccountContainer(TestAccountContainerAPI):
@@ -93,9 +93,7 @@ class TestAccountContainer(TestAccountContainerAPI):
         return account
 
     @classmethod
-    def init_test_account(
-        cls, index: int, address: "AddressType", private_key: str
-    ) -> "TestAccount":
+    def init_test_account(cls, index: int, address: AddressType, private_key: str) -> "TestAccount":
         return TestAccount(
             index=index,
             address_str=address,
@@ -118,7 +116,7 @@ class TestAccount(TestAccountAPI):
         return f"TEST::{self.index}"
 
     @property
-    def address(self) -> "AddressType":
+    def address(self) -> AddressType:
         return self.network_manager.ethereum.decode_address(self.address_str)
 
     @property
@@ -131,7 +129,7 @@ class TestAccount(TestAccountAPI):
 
     def sign_authorization(
         self,
-        address: "AddressType",
+        address: AddressType,
         chain_id: Optional[int] = None,
         nonce: Optional[int] = None,
     ) -> Optional[MessageSignature]:
@@ -219,10 +217,11 @@ class TestAccount(TestAccountAPI):
             s=to_bytes(signed_msg.s),
         )
 
-    def set_delegate(self, contract: ContractInstance, **txn_kwargs):
-        sig = self.sign_authorization(contract.address, nonce=self.nonce + 1)
+    def set_delegate(self, contract: Union[BaseAddress, AddressType, str], **txn_kwargs):
+        contract_address = self.conversion_manager.convert(contract, AddressType)
+        sig = self.sign_authorization(contract_address, nonce=self.nonce + 1)
         auth = Authorization.from_signature(
-            address=contract.address,
+            address=contract_address,
             chain_id=self.provider.chain_id,
             # NOTE: `tx` uses `self.nonce`
             nonce=self.nonce + 1,

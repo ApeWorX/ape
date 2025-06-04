@@ -3,7 +3,7 @@ import warnings
 from collections.abc import Iterator
 from os import environ
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any, Optional, Union
 
 import click
 from eip712.messages import EIP712Message, EIP712Type
@@ -15,9 +15,10 @@ from eth_typing import HexStr
 from eth_utils import remove_0x_prefix, to_bytes, to_canonical_address, to_hex
 
 from ape.api.accounts import AccountAPI, AccountContainerAPI
-from ape.contracts.base import ContractInstance
+from ape.api.address import BaseAddress
 from ape.exceptions import AccountsError, APINotImplementedError
 from ape.logging import logger
+from ape.types import AddressType
 from ape.types.signatures import MessageSignature, SignableMessage, TransactionSignature
 from ape.utils._web3_compat import sign_hash
 from ape.utils.basemodel import ManagerAccessMixin
@@ -30,7 +31,6 @@ if TYPE_CHECKING:
     from eth_account.signers.local import LocalAccount
 
     from ape.api.transactions import TransactionAPI
-    from ape.types.address import AddressType
 
 
 class InvalidPasswordError(AccountsError):
@@ -90,7 +90,7 @@ class KeyfileAccount(AccountAPI):
         return json.loads(self.keyfile_path.read_text())
 
     @property
-    def address(self) -> "AddressType":
+    def address(self) -> AddressType:
         return self.network_manager.ethereum.decode_address(self.keyfile["address"])
 
     @property
@@ -170,7 +170,7 @@ class KeyfileAccount(AccountAPI):
 
     def sign_authorization(
         self,
-        address: "AddressType",
+        address: AddressType,
         chain_id: Optional[int] = None,
         nonce: Optional[int] = None,
     ) -> Optional[MessageSignature]:
@@ -291,10 +291,11 @@ class KeyfileAccount(AccountAPI):
         except ValueError as err:
             raise InvalidPasswordError() from err
 
-    def set_delegate(self, contract: ContractInstance, **txn_kwargs):
-        sig = self.sign_authorization(contract.address, nonce=self.nonce + 1)
+    def set_delegate(self, contract: Union[BaseAddress, AddressType, str], **txn_kwargs):
+        contract_address = self.conversion_manager.convert(contract, AddressType)
+        sig = self.sign_authorization(contract_address, nonce=self.nonce + 1)
         auth = Authorization.from_signature(
-            address=contract.address,
+            address=contract_address,
             chain_id=self.provider.chain_id,
             # NOTE: `tx` uses `self.nonce`
             nonce=self.nonce + 1,
