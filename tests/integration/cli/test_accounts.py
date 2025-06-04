@@ -406,6 +406,10 @@ def test_authorizations_cli(ape_cli, runner, keyfile_account, geth_contract):
             "auth",
             "set",
             geth_contract.address,
+            # NOTE: 0x23fd0e40 is method_id for `myNumber()`
+            # NOTE: Must call something, since `__default__` raises
+            "--data",
+            "0x23fd0e40",
             "--account",
             keyfile_account.alias,
             "--network",
