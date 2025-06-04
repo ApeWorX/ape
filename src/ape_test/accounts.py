@@ -232,7 +232,7 @@ class TestAccount(TestAccountAPI):
             authorizations=[auth],
             sender=self,
             # NOTE: Cannot target `ZERO_ADDRESS`
-            receiver=self,
+            receiver=txn_kwargs.pop("receiver", None) or self,
             **txn_kwargs,
         )
         return self.call(tx)
@@ -251,7 +251,7 @@ class TestAccount(TestAccountAPI):
             authorizations=[auth],
             sender=self,
             # NOTE: Cannot target `ZERO_ADDRESS`
-            receiver=self,
+            receiver=txn_kwargs.pop("receiver", None) or self,
             **txn_kwargs,
         )
         return self.call(tx)
