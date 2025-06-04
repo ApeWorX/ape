@@ -396,7 +396,8 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         self.chain_manager.history.append(receipt)
 
         if receipt.failed:
-            txn_dict["nonce"] += 1
+            assert receipt.transaction.sender  # NOTE: mypy happy
+            txn_dict["nonce"] = self.get_nonce(receipt.transaction.sender)
             txn_params = cast(TxParams, txn_dict)
             txn_dict.pop("signature", None)
 
