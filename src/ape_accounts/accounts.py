@@ -12,7 +12,7 @@ from eth_account.hdaccount import ETHEREUM_DEFAULT_PATH
 from eth_account.messages import encode_defunct
 from eth_pydantic_types import HexBytes
 from eth_typing import HexStr
-from eth_utils import remove_0x_prefix, to_bytes, to_canonical_address, to_checksum_address, to_hex
+from eth_utils import remove_0x_prefix, to_bytes, to_canonical_address, to_hex
 
 from ape.api.accounts import AccountAPI, AccountContainerAPI
 from ape.contracts.base import ContractInstance
@@ -290,14 +290,6 @@ class KeyfileAccount(AccountAPI):
             return EthAccount.decrypt(self.keyfile, passphrase)
         except ValueError as err:
             raise InvalidPasswordError() from err
-
-    @property
-    def delegate(self) -> Optional[ContractInstance]:
-        if (code := self.code)[:3] == HexBytes("0xef0100"):
-            address = to_checksum_address(code[3:])
-            return self.chain_manager.contracts.instance_at(address)
-
-        return None
 
     def set_delegate(self, contract: ContractInstance, **txn_kwargs):
         sig = self.sign_authorization(contract.address, nonce=self.nonce + 1)

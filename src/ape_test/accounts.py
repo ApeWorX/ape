@@ -8,7 +8,7 @@ from eth_account._utils.signing import sign_transaction_dict
 from eth_account.messages import SignableMessage, encode_defunct
 from eth_keys.datatypes import PrivateKey  # type: ignore
 from eth_pydantic_types import HexBytes
-from eth_utils import to_bytes, to_canonical_address, to_checksum_address, to_hex
+from eth_utils import to_bytes, to_canonical_address, to_hex
 
 from ape.api.accounts import TestAccountAPI, TestAccountContainerAPI
 from ape.contracts.base import ContractInstance
@@ -218,14 +218,6 @@ class TestAccount(TestAccountAPI):
             r=to_bytes(signed_msg.r),
             s=to_bytes(signed_msg.s),
         )
-
-    @property
-    def delegate(self) -> Optional[ContractInstance]:
-        if (code := self.code)[:3] == HexBytes("0xef0100"):
-            address = to_checksum_address(code[3:])
-            return self.chain_manager.contracts.instance_at(address)
-
-        return None
 
     def set_delegate(self, contract: ContractInstance, **txn_kwargs):
         sig = self.sign_authorization(contract.address, nonce=self.nonce + 1)
