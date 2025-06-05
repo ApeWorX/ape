@@ -1,0 +1,26 @@
+.. dynamic-toc-tree::
+    :plugin-prefix: ape_
+    :userguides:
+        - quickstart
+        - projects
+        - config
+        - installing_plugins
+        - dependencies
+        - accounts
+        - compile
+        - contracts
+        - testing
+        - reverts
+        - networks
+        - forking_networks
+        - publishing
+        - proxy
+        - contract_metadata
+        - console
+        - scripts
+        - transactions
+        - trace
+        - logging
+        - data
+        - clis
+        - developing_plugins

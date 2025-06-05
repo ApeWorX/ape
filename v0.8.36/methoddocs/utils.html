@@ -1,0 +1,1414 @@
+<!DOCTYPE html>
+<html lang="en" data-accent-color="lime" data-content_root="../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>ape.utils - ape documentation</title><link rel="shortcut icon" href="../_static/favicon.ico"/><link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="ape-accounts" href="ape_accounts.html" /><link rel="prev" title="ape.types" href="types.html" />
+      <link rel="canonical" href="ape/methoddocs/utils.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=397bb51e" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=d0008d65" />
+    <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    <meta property="og:type" content="website"/>
+<meta property="og:url" content="ape/methoddocs/utils.html"/>
+<meta property="og:title" content="ape.utils"/>
+<meta name="twitter:card" content="summary"/>
+  </head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="../index.html">
+      <img class="light-logo" src="../_static/logo_grey.svg" alt="ape" height="28" loading="lazy" />
+      <img class="dark-logo" src="../_static/logo_green.svg" alt="ape" height="28" loading="lazy" />
+      <strong>ape</strong>
+    </a>
+    <div class="sy-head-nav" id="HeadNav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials"></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="HeadNav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2 -translate-x-2"></span>
+          <span class="hamburger_3 -translate-x-1"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading" aria-level="3"><span class="caption-text">User Guides</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/quickstart.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/projects.html">Developing Projects with Ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/config.html">Configure Ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/installing_plugins.html">Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/accounts.html">Accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/compile.html">Compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/contracts.html">Contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/testing.html">Testing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/reverts.html">Reverts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/networks.html">Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/forking_networks.html">Forking Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/publishing.html">Publishing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/proxy.html">Proxy Contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/contract_metadata.html">Contract Creation Metadata</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/console.html">Console</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/scripts.html">Scripting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/transactions.html">Transactions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/trace.html">Traces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/logging.html">Logging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/data.html">Querying Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/clis.html">CLIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/developing_plugins.html">Developing Plugins</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">CLI Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../commands/accounts.html">accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/compile.html">compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/console.html">console</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/init.html">init</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/networks.html">networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/plugins.html">plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/pm.html">pm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/run.html">run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/test.html">test</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Core Python Reference</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="ape.html">ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">ape.api</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">ape.cli</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contracts.html">ape.contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="exceptions.html">ape.exceptions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="managers.html">ape.managers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugins.html">ape.plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="types.html">ape.types</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">ape.utils</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Plugin Python Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="ape_accounts.html">ape-accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ape_compile.html">ape-compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ape_ethereum.html">ape-ethereum</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ape_ethereum.html#module-ape_ethereum.multicall">ape-ethereum.multicall</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ape_node.html">ape-node</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ape_pm.html">ape-pm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ape_test.html">ape-test</a></li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#module-ape.utils.abi">ABI</a><ul>
+<li><a class="reference internal" href="#ape.utils.abi.CalldataRepr"><code class="docutils literal notranslate"><span class="pre">CalldataRepr</span></code></a><ul>
+<li><a class="reference internal" href="#ape.utils.abi.CalldataRepr.abridged"><code class="docutils literal notranslate">abridged</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.abi.CalldataRepr.full"><code class="docutils literal notranslate">full</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ape.utils.abi.Struct"><code class="docutils literal notranslate"><span class="pre">Struct</span></code></a><ul>
+<li><a class="reference internal" href="#ape.utils.abi.Struct.items"><code class="docutils literal notranslate">items()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ape.utils.abi.StructParser"><code class="docutils literal notranslate"><span class="pre">StructParser</span></code></a><ul>
+<li><a class="reference internal" href="#ape.utils.abi.StructParser.decode_output"><code class="docutils literal notranslate">decode_output()</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.abi.StructParser.default_name"><code class="docutils literal notranslate">default_name</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.abi.StructParser.encode_input"><code class="docutils literal notranslate">encode_input()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ape.utils.abi.create_struct"><code class="docutils literal notranslate"><span class="pre">create_struct()</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.abi.encode_topics"><code class="docutils literal notranslate"><span class="pre">encode_topics()</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.abi.is_array"><code class="docutils literal notranslate"><span class="pre">is_array()</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.abi.is_named_tuple"><code class="docutils literal notranslate"><span class="pre">is_named_tuple()</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.abi.is_struct"><code class="docutils literal notranslate"><span class="pre">is_struct()</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.abi.returns_array"><code class="docutils literal notranslate"><span class="pre">returns_array()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-ape.utils.basemodel">Basemodel</a><ul>
+<li><a class="reference internal" href="#ape.utils.basemodel.BaseInterface"><code class="docutils literal notranslate"><span class="pre">BaseInterface</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.basemodel.BaseInterfaceModel"><code class="docutils literal notranslate"><span class="pre">BaseInterfaceModel</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.basemodel.BaseModel"><code class="docutils literal notranslate"><span class="pre">BaseModel</span></code></a><ul>
+<li><a class="reference internal" href="#ape.utils.basemodel.BaseModel.model_copy"><code class="docutils literal notranslate">model_copy()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ape.utils.basemodel.DiskCacheableModel"><code class="docutils literal notranslate"><span class="pre">DiskCacheableModel</span></code></a><ul>
+<li><a class="reference internal" href="#ape.utils.basemodel.DiskCacheableModel.model_dump_file"><code class="docutils literal notranslate">model_dump_file()</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.basemodel.DiskCacheableModel.model_read_file"><code class="docutils literal notranslate">model_read_file()</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.basemodel.DiskCacheableModel.model_validate_file"><code class="docutils literal notranslate">model_validate_file()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ape.utils.basemodel.ExtraAttributesMixin"><code class="docutils literal notranslate"><span class="pre">ExtraAttributesMixin</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.basemodel.ExtraModelAttributes"><code class="docutils literal notranslate"><span class="pre">ExtraModelAttributes</span></code></a><ul>
+<li><a class="reference internal" href="#ape.utils.basemodel.ExtraModelAttributes.additional_error_message"><code class="docutils literal notranslate">additional_error_message</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.basemodel.ExtraModelAttributes.attributes"><code class="docutils literal notranslate">attributes</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.basemodel.ExtraModelAttributes.get"><code class="docutils literal notranslate">get()</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.basemodel.ExtraModelAttributes.include_getattr"><code class="docutils literal notranslate">include_getattr</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.basemodel.ExtraModelAttributes.include_getitem"><code class="docutils literal notranslate">include_getitem</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.basemodel.ExtraModelAttributes.name"><code class="docutils literal notranslate">name</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ape.utils.basemodel.ManagerAccessMixin"><code class="docutils literal notranslate"><span class="pre">ManagerAccessMixin</span></code></a><ul>
+<li><a class="reference internal" href="#ape.utils.basemodel.ManagerAccessMixin.Project"><code class="docutils literal notranslate">Project</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ape.utils.basemodel.injected_before_use"><code class="docutils literal notranslate"><span class="pre">injected_before_use</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.basemodel.manager_access"><code class="docutils literal notranslate"><span class="pre">manager_access</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-ape.utils.misc">Miscellaneous</a><ul>
+<li><a class="reference internal" href="#ape.utils.misc.extract_nested_value"><code class="docutils literal notranslate"><span class="pre">extract_nested_value()</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.misc.gas_estimation_error_message"><code class="docutils literal notranslate"><span class="pre">gas_estimation_error_message()</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.misc.get_current_timestamp_ms"><code class="docutils literal notranslate"><span class="pre">get_current_timestamp_ms()</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.misc.get_package_version"><code class="docutils literal notranslate"><span class="pre">get_package_version()</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.misc.is_evm_precompile"><code class="docutils literal notranslate"><span class="pre">is_evm_precompile()</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.misc.is_zero_hex"><code class="docutils literal notranslate"><span class="pre">is_zero_hex()</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.misc.load_config"><code class="docutils literal notranslate"><span class="pre">load_config()</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.misc.log_instead_of_fail"><code class="docutils literal notranslate"><span class="pre">log_instead_of_fail()</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.misc.pragma_str_to_specifier_set"><code class="docutils literal notranslate"><span class="pre">pragma_str_to_specifier_set()</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.misc.raises_not_implemented"><code class="docutils literal notranslate"><span class="pre">raises_not_implemented()</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.misc.run_until_complete"><code class="docutils literal notranslate"><span class="pre">run_until_complete()</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.misc.singledispatchmethod"><code class="docutils literal notranslate"><span class="pre">singledispatchmethod</span></code></a><ul>
+<li><a class="reference internal" href="#ape.utils.misc.singledispatchmethod.register"><code class="docutils literal notranslate">register()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ape.utils.misc.to_int"><code class="docutils literal notranslate"><span class="pre">to_int()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-ape.utils.os">OS</a><ul>
+<li><a class="reference internal" href="#ape.utils.os.CacheDirectory"><code class="docutils literal notranslate"><span class="pre">CacheDirectory</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.os.ChangeDirectory"><code class="docutils literal notranslate"><span class="pre">ChangeDirectory</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.os.clean_path"><code class="docutils literal notranslate"><span class="pre">clean_path()</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.os.create_tempdir"><code class="docutils literal notranslate"><span class="pre">create_tempdir()</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.os.expand_environment_variables"><code class="docutils literal notranslate"><span class="pre">expand_environment_variables()</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.os.extract_archive"><code class="docutils literal notranslate"><span class="pre">extract_archive()</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.os.get_all_files_in_directory"><code class="docutils literal notranslate"><span class="pre">get_all_files_in_directory()</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.os.get_full_extension"><code class="docutils literal notranslate"><span class="pre">get_full_extension()</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.os.get_package_path"><code class="docutils literal notranslate"><span class="pre">get_package_path()</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.os.get_relative_path"><code class="docutils literal notranslate"><span class="pre">get_relative_path()</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.os.in_tempdir"><code class="docutils literal notranslate"><span class="pre">in_tempdir()</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.os.is_relative_to"><code class="docutils literal notranslate"><span class="pre">is_relative_to()</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.os.path_match"><code class="docutils literal notranslate"><span class="pre">path_match()</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.os.run_in_tempdir"><code class="docutils literal notranslate"><span class="pre">run_in_tempdir()</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.os.use_temp_sys_path"><code class="docutils literal notranslate"><span class="pre">use_temp_sys_path</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.os.within_directory"><code class="docutils literal notranslate"><span class="pre">within_directory()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-ape.utils.process">Process</a><ul>
+<li><a class="reference internal" href="#ape.utils.process.JoinableQueue"><code class="docutils literal notranslate"><span class="pre">JoinableQueue</span></code></a><ul>
+<li><a class="reference internal" href="#ape.utils.process.JoinableQueue.join"><code class="docutils literal notranslate">join()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ape.utils.process.spawn"><code class="docutils literal notranslate"><span class="pre">spawn()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-ape.utils.rpc">RPC</a><ul>
+<li><a class="reference internal" href="#ape.utils.rpc.RPCHeaders"><code class="docutils literal notranslate"><span class="pre">RPCHeaders</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.rpc.allow_disconnected"><code class="docutils literal notranslate"><span class="pre">allow_disconnected()</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.rpc.request_with_retry"><code class="docutils literal notranslate"><span class="pre">request_with_retry()</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.rpc.stream_response"><code class="docutils literal notranslate"><span class="pre">stream_response()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-ape.utils.testing">Testing</a><ul>
+<li><a class="reference internal" href="#ape.utils.testing.GeneratedDevAccount"><code class="docutils literal notranslate"><span class="pre">GeneratedDevAccount</span></code></a><ul>
+<li><a class="reference internal" href="#ape.utils.testing.GeneratedDevAccount.address"><code class="docutils literal notranslate">address</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.testing.GeneratedDevAccount.private_key"><code class="docutils literal notranslate">private_key</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ape.utils.testing.generate_dev_accounts"><code class="docutils literal notranslate"><span class="pre">generate_dev_accounts()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-ape.utils.trace">Trace</a><ul>
+<li><a class="reference internal" href="#ape.utils.trace.TraceStyles"><code class="docutils literal notranslate"><span class="pre">TraceStyles</span></code></a><ul>
+<li><a class="reference internal" href="#ape.utils.trace.TraceStyles.CONTRACTS"><code class="docutils literal notranslate">CONTRACTS</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.trace.TraceStyles.DELEGATE"><code class="docutils literal notranslate">DELEGATE</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.trace.TraceStyles.GAS_COST"><code class="docutils literal notranslate">GAS_COST</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.trace.TraceStyles.INPUTS"><code class="docutils literal notranslate">INPUTS</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.trace.TraceStyles.METHODS"><code class="docutils literal notranslate">METHODS</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.trace.TraceStyles.OUTPUTS"><code class="docutils literal notranslate">OUTPUTS</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.trace.TraceStyles.VALUE"><code class="docutils literal notranslate">VALUE</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6">
+<div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../index.html"><span itemprop="name">ape</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">ape.utils</strong>
+        <meta itemprop="position" content="2" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+        <article class="yue" role="main">
+          <section id="ape-utils">
+<h1>ape.utils<a class="headerlink" href="#ape-utils" title="Link to this heading"></a></h1>
+<section id="module-ape.utils.abi">
+<span id="abi"></span><h2>ABI<a class="headerlink" href="#module-ape.utils.abi" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.utils.abi.CalldataRepr">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.utils.abi.</span></span><span class="sig-name descname"><span class="pre">CalldataRepr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.abi.CalldataRepr" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<p>Control the display of calldata in Ape.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.utils.abi.CalldataRepr.abridged">
+<span class="sig-name descname"><span class="pre">abridged</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'abridged'</span></em><a class="headerlink" href="#ape.utils.abi.CalldataRepr.abridged" title="Link to this definition"></a></dt>
+<dd><p>Show the first and last 4-bytes of the calldata, enough
+to see the method ID.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.utils.abi.CalldataRepr.full">
+<span class="sig-name descname"><span class="pre">full</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'full'</span></em><a class="headerlink" href="#ape.utils.abi.CalldataRepr.full" title="Link to this definition"></a></dt>
+<dd><p>Show the full calldata.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.utils.abi.Struct">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.utils.abi.</span></span><span class="sig-name descname"><span class="pre">Struct</span></span><a class="headerlink" href="#ape.utils.abi.Struct" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class for contract return values using the struct data-structure.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.utils.abi.Struct.items">
+<span class="sig-name descname"><span class="pre">items</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#ape.utils.abi.Struct.items" title="Link to this definition"></a></dt>
+<dd><p>Override</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.utils.abi.StructParser">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.utils.abi.</span></span><span class="sig-name descname"><span class="pre">StructParser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method_abi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ConstructorABI</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">MethodABI</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">EventABI</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.abi.StructParser" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A utility class responsible for parsing structs out of values.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.utils.abi.StructParser.decode_output">
+<span class="sig-name descname"><span class="pre">decode_output</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">tuple</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#ape.utils.abi.StructParser.decode_output" title="Link to this definition"></a></dt>
+<dd><p>Parse a list of output types and values into structs.
+Values are only altered when they are a struct.
+This method also handles structs within structs as well as arrays of structs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>values</strong> (<em>Union</em><em>[</em><em>list</em><em>, </em><em>tuple</em><em>]</em>) – A list of output values.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The same input values only decoded into structs when applicable.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Any</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.utils.abi.StructParser.default_name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">default_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape.utils.abi.StructParser.default_name" title="Link to this definition"></a></dt>
+<dd><p>The default struct return name for unnamed structs.
+This value is also used for named tuples where the tuple does not have a name
+(but each item in the tuple does have a name).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.utils.abi.StructParser.encode_input">
+<span class="sig-name descname"><span class="pre">encode_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">tuple</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#ape.utils.abi.StructParser.encode_input" title="Link to this definition"></a></dt>
+<dd><p>Convert dicts and other objects to struct inputs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>values</strong> (<em>Union</em><em>[</em><em>list</em><em>, </em><em>tuple</em><em>]</em>) – A list of input values.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The same input values only decoded into structs when applicable.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Any</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ape.utils.abi.create_struct">
+<span class="sig-prename descclassname"><span class="pre">ape.utils.abi.</span></span><span class="sig-name descname"><span class="pre">create_struct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">ABIType</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#ape.utils.abi.create_struct" title="Link to this definition"></a></dt>
+<dd><p>Create a dataclass representing an ABI struct that can be used as inputs or outputs.
+The struct properties can be accessed via <code class="docutils literal notranslate"><span class="pre">.</span></code> notation, as keys in a dictionary, or
+numeric tuple access.</p>
+<p><strong>NOTE</strong>: This method assumes you already know the values to give to the struct
+properties.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – The name of the struct.</p></li>
+<li><p><strong>(</strong><strong>list</strong><strong>[</strong><strong>ABIType</strong><strong>]</strong> (<em>types</em>) – The types of values in the struct.</p></li>
+<li><p><strong>output_values</strong> (<em>list</em><em>[</em><em>Any</em><em>]</em>) – The struct property values.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The struct dataclass.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Any</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ape.utils.abi.encode_topics">
+<span class="sig-prename descclassname"><span class="pre">ape.utils.abi.</span></span><span class="sig-name descname"><span class="pre">encode_topics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">abi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">EventABI</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topics</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">HexStr</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.utils.abi.encode_topics" title="Link to this definition"></a></dt>
+<dd><p>Encode the given topics using the given ABI. Useful for searching logs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>abi</strong> (<em>EventABI</em>) – The event.</p></li>
+<li><p><strong>topics</strong> (<em>dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>] </em><em>} None</em>) – Topic inputs to encode.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Encoded topics.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ape.utils.abi.is_array">
+<span class="sig-prename descclassname"><span class="pre">ape.utils.abi.</span></span><span class="sig-name descname"><span class="pre">is_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">abi_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ABIType</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#ape.utils.abi.is_array" title="Link to this definition"></a></dt>
+<dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if the given type is a probably an array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>abi_type</strong> (<em>Union</em><em>[</em><em>str</em><em>, </em><em>ABIType</em><em>]</em>) – The type to check.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ape.utils.abi.is_named_tuple">
+<span class="sig-prename descclassname"><span class="pre">ape.utils.abi.</span></span><span class="sig-name descname"><span class="pre">is_named_tuple</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">outputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">ABIType</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#ape.utils.abi.is_named_tuple" title="Link to this definition"></a></dt>
+<dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if the given output is a tuple where every item is named.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ape.utils.abi.is_struct">
+<span class="sig-prename descclassname"><span class="pre">ape.utils.abi.</span></span><span class="sig-name descname"><span class="pre">is_struct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">outputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ABIType</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">ABIType</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#ape.utils.abi.is_struct" title="Link to this definition"></a></dt>
+<dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if the given output is a struct.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ape.utils.abi.returns_array">
+<span class="sig-prename descclassname"><span class="pre">ape.utils.abi.</span></span><span class="sig-name descname"><span class="pre">returns_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">abi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">MethodABI</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#ape.utils.abi.returns_array" title="Link to this definition"></a></dt>
+<dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if the given method ABI likely returns an array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>abi</strong> (<em>MethodABI</em>) – An ABI method.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-ape.utils.basemodel">
+<span id="basemodel"></span><h2>Basemodel<a class="headerlink" href="#module-ape.utils.basemodel" title="Link to this heading"></a></h2>
+<p>TODO: In 0.9, move this module to <cite>ape.types</cite>.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.utils.basemodel.BaseInterface">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.utils.basemodel.</span></span><span class="sig-name descname"><span class="pre">BaseInterface</span></span><a class="headerlink" href="#ape.utils.basemodel.BaseInterface" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ape.utils.basemodel.ManagerAccessMixin" title="ape.utils.basemodel.ManagerAccessMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">ManagerAccessMixin</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<p>Abstract class that has manager access.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.utils.basemodel.BaseInterfaceModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.utils.basemodel.</span></span><span class="sig-name descname"><span class="pre">BaseInterfaceModel</span></span><a class="headerlink" href="#ape.utils.basemodel.BaseInterfaceModel" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ape.utils.basemodel.BaseInterface" title="ape.utils.basemodel.BaseInterface"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseInterface</span></code></a>, <a class="reference internal" href="#ape.utils.basemodel.BaseModel" title="ape.utils.basemodel.BaseModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModel</span></code></a></p>
+<p>An abstract base-class with manager access on a pydantic base model.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.utils.basemodel.BaseModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.utils.basemodel.</span></span><span class="sig-name descname"><span class="pre">BaseModel</span></span><a class="headerlink" href="#ape.utils.basemodel.BaseModel" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModel</span></code></p>
+<p>An ape-pydantic BaseModel.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.utils.basemodel.BaseModel.model_copy">
+<span class="sig-name descname"><span class="pre">model_copy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">update</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deep</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_clear</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Model</span></span></span><a class="headerlink" href="#ape.utils.basemodel.BaseModel.model_copy" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>!!! abstract “Usage Documentation”</dt><dd><p>[<cite>model_copy</cite>](../concepts/serialization.md#model_copy)</p>
+</dd>
+</dl>
+<p>Returns a copy of the model.</p>
+<dl class="simple">
+<dt>!!! note</dt><dd><p>The underlying instance’s [<cite>__dict__</cite>][object.__dict__] attribute is copied. This
+might have unexpected side effects if you store anything in it, on top of the model
+fields (e.g. the value of [cached properties][functools.cached_property]).</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>update</strong> – Values to change/add in the new model. Note: the data is not validated
+before creating the new model. You should trust this data.</p></li>
+<li><p><strong>deep</strong> – Set to <cite>True</cite> to make a deep copy of the model.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>New model instance.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.utils.basemodel.DiskCacheableModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.utils.basemodel.</span></span><span class="sig-name descname"><span class="pre">DiskCacheableModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.basemodel.DiskCacheableModel" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ape.utils.basemodel.BaseModel" title="ape.utils.basemodel.BaseModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModel</span></code></a></p>
+<p>A model with extra utilities for caching to disk.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.utils.basemodel.DiskCacheableModel.model_dump_file">
+<span class="sig-name descname"><span class="pre">model_dump_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.basemodel.DiskCacheableModel.model_dump_file" title="Link to this definition"></a></dt>
+<dd><p>Save this model to disk.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="cli.html#ape.cli.paramtype.Path" title="ape.cli.paramtype.Path"><em>Path</em></a><em>]</em>) – Optionally provide the path now
+if one wasn’t declared at init time. If given a directory,
+saves the file in that dir with the name of class with a
+.json suffix.</p></li>
+<li><p><strong>**kwargs</strong> – Extra kwargs to pass to <code class="docutils literal notranslate"><span class="pre">.model_dump_json()</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.utils.basemodel.DiskCacheableModel.model_read_file">
+<span class="sig-name descname"><span class="pre">model_read_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#ape.utils.basemodel.DiskCacheableModel.model_read_file" title="Link to this definition"></a></dt>
+<dd><p>Get the file’s raw data. This is different from <code class="docutils literal notranslate"><span class="pre">model_dump()</span></code> because it
+reads directly from the file without validation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.utils.basemodel.DiskCacheableModel.model_validate_file">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">model_validate_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.basemodel.DiskCacheableModel.model_validate_file" title="Link to this definition"></a></dt>
+<dd><p>Validate a file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="cli.html#ape.cli.paramtype.Path" title="ape.cli.paramtype.Path"><em>Path</em></a><em>]</em>) – Optionally provide the path now
+if one wasn’t declared at init time.</p></li>
+<li><p><strong>**kwargs</strong> – Extra kwargs to pass to <code class="docutils literal notranslate"><span class="pre">.model_validate_json()</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.utils.basemodel.ExtraAttributesMixin">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.utils.basemodel.</span></span><span class="sig-name descname"><span class="pre">ExtraAttributesMixin</span></span><a class="headerlink" href="#ape.utils.basemodel.ExtraAttributesMixin" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A mixin to use on models that provide <code class="docutils literal notranslate"><span class="pre">ExtraModelAttributes</span></code>.
+<strong>NOTE</strong>: Must come _before_ your base-model class in subclass tuple to function.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.utils.basemodel.ExtraModelAttributes">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.utils.basemodel.</span></span><span class="sig-name descname"><span class="pre">ExtraModelAttributes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attributes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_getattr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_getitem</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">additional_error_message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.basemodel.ExtraModelAttributes" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModel</span></code></p>
+<p>A class for defining extra model attributes.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.utils.basemodel.ExtraModelAttributes.additional_error_message">
+<span class="sig-name descname"><span class="pre">additional_error_message</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.utils.basemodel.ExtraModelAttributes.additional_error_message" title="Link to this definition"></a></dt>
+<dd><p>An additional error message to include at the end of
+the normal IndexError message.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.utils.basemodel.ExtraModelAttributes.attributes">
+<span class="sig-name descname"><span class="pre">attributes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Any</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.utils.basemodel.ExtraModelAttributes.attributes" title="Link to this definition"></a></dt>
+<dd><p>The attributes. The following types are supported:</p>
+<ol class="arabic simple">
+<li><p>A model or dictionary to lookup attributes.</p></li>
+<li><p>A callable with no arguments, for lazily evaluating a model or dictionary
+for lookup.</p></li>
+<li><p>A callable with a single argument that is the attribute name. This style
+of lookup cannot be used for optionals.</p></li>
+</ol>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.utils.basemodel.ExtraModelAttributes.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#ape.utils.basemodel.ExtraModelAttributes.get" title="Link to this definition"></a></dt>
+<dd><p>Get an attribute.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>name</strong> (<em>str</em>) – The name of the attribute.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The attribute if it exists, else <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Optional[Any]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.utils.basemodel.ExtraModelAttributes.include_getattr">
+<span class="sig-name descname"><span class="pre">include_getattr</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#ape.utils.basemodel.ExtraModelAttributes.include_getattr" title="Link to this definition"></a></dt>
+<dd><p>Whether to use these in <code class="docutils literal notranslate"><span class="pre">__getattr__</span></code>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.utils.basemodel.ExtraModelAttributes.include_getitem">
+<span class="sig-name descname"><span class="pre">include_getitem</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#ape.utils.basemodel.ExtraModelAttributes.include_getitem" title="Link to this definition"></a></dt>
+<dd><p>Whether to use these in <code class="docutils literal notranslate"><span class="pre">__getitem__</span></code>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.utils.basemodel.ExtraModelAttributes.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape.utils.basemodel.ExtraModelAttributes.name" title="Link to this definition"></a></dt>
+<dd><p>The name of the attributes. This is important
+in instances such as when an attribute is missing,
+we can show a more accurate exception message.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.utils.basemodel.ManagerAccessMixin">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.utils.basemodel.</span></span><span class="sig-name descname"><span class="pre">ManagerAccessMixin</span></span><a class="headerlink" href="#ape.utils.basemodel.ManagerAccessMixin" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A mixin for accessing Ape’s manager at the class level.</p>
+<p>Usage example:</p>
+<blockquote>
+<div><p>from ape.utils import ManagerAccessMixin</p>
+<dl class="simple">
+<dt>class MyClass(ManagerAccessMixin):</dt><dd><dl class="simple">
+<dt>def my_function(self):</dt><dd><p>accounts = self.account_manager  # And so on!</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</div></blockquote>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.utils.basemodel.ManagerAccessMixin.Project">
+<span class="sig-name descname"><span class="pre">Project</span></span><a class="headerlink" href="#ape.utils.basemodel.ManagerAccessMixin.Project" title="Link to this definition"></a></dt>
+<dd><p>alias of <a class="reference internal" href="managers.html#ape.managers.project.ProjectManager" title="ape.managers.project.ProjectManager"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProjectManager</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.utils.basemodel.injected_before_use">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.utils.basemodel.</span></span><span class="sig-name descname"><span class="pre">injected_before_use</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fget</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fdel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">doc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.basemodel.injected_before_use" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">property</span></code></p>
+<p>Injected properties are injected class variables that must be set before use.</p>
+<p><strong>NOTE</strong>: do not appear in a Pydantic model’s set of properties.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.utils.basemodel.manager_access">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.utils.basemodel.</span></span><span class="sig-name descname"><span class="pre">manager_access</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fn</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.basemodel.manager_access" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">property</span></code></p>
+</dd></dl>
+
+</section>
+<section id="module-ape.utils.misc">
+<span id="miscellaneous"></span><h2>Miscellaneous<a class="headerlink" href="#module-ape.utils.misc" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="ape.utils.misc.extract_nested_value">
+<span class="sig-prename descclassname"><span class="pre">ape.utils.misc.</span></span><span class="sig-name descname"><span class="pre">extract_nested_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mapping</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#ape.utils.misc.extract_nested_value" title="Link to this definition"></a></dt>
+<dd><p>Dig through a nested <code class="docutils literal notranslate"><span class="pre">dict</span></code> using the given keys and return the
+last-found object.</p>
+<p>Usage example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">extract_nested_value</span><span class="p">({</span><span class="s2">&quot;foo&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;bar&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;test&quot;</span><span class="p">:</span> <span class="s2">&quot;VALUE&quot;</span><span class="p">}}},</span> <span class="s2">&quot;foo&quot;</span><span class="p">,</span> <span class="s2">&quot;bar&quot;</span><span class="p">,</span> <span class="s2">&quot;test&quot;</span><span class="p">)</span>
+</span><span data-line="2"><span class="go">&#39;VALUE&#39;</span>
+</span></pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>root</strong> (<em>dict</em>) – Nested keys to form arguments.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The final value if it exists
+else <code class="docutils literal notranslate"><span class="pre">None</span></code> if the tree ends at any point.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict, optional</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ape.utils.misc.gas_estimation_error_message">
+<span class="sig-prename descclassname"><span class="pre">ape.utils.misc.</span></span><span class="sig-name descname"><span class="pre">gas_estimation_error_message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tx_error</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Exception</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#ape.utils.misc.gas_estimation_error_message" title="Link to this definition"></a></dt>
+<dd><p>Get an error message containing the given error and an explanation of how the
+gas estimation failed, as in <a class="reference internal" href="api.html#ape.api.providers.ProviderAPI" title="ape.api.providers.ProviderAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ape.api.providers.ProviderAPI</span></code></a> implementations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>tx_error</strong> (<em>Exception</em>) – The error that occurred when trying to estimate gas.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>An error message explaining that the gas failed and that the transaction
+will likely revert.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ape.utils.misc.get_current_timestamp_ms">
+<span class="sig-prename descclassname"><span class="pre">ape.utils.misc.</span></span><span class="sig-name descname"><span class="pre">get_current_timestamp_ms</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#ape.utils.misc.get_current_timestamp_ms" title="Link to this definition"></a></dt>
+<dd><p>Get the current UNIX timestamp in milliseconds.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ape.utils.misc.get_package_version">
+<span class="sig-prename descclassname"><span class="pre">ape.utils.misc.</span></span><span class="sig-name descname"><span class="pre">get_package_version</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#ape.utils.misc.get_package_version" title="Link to this definition"></a></dt>
+<dd><p>Get the version of a single package.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>obj</strong> – object to search inside for <code class="docutils literal notranslate"><span class="pre">__version__</span></code>.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>version string.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ape.utils.misc.is_evm_precompile">
+<span class="sig-prename descclassname"><span class="pre">ape.utils.misc.</span></span><span class="sig-name descname"><span class="pre">is_evm_precompile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#ape.utils.misc.is_evm_precompile" title="Link to this definition"></a></dt>
+<dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if the given address string is a known
+Ethereum pre-compile address.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>address</strong> (<em>str</em>)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ape.utils.misc.is_zero_hex">
+<span class="sig-prename descclassname"><span class="pre">ape.utils.misc.</span></span><span class="sig-name descname"><span class="pre">is_zero_hex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#ape.utils.misc.is_zero_hex" title="Link to this definition"></a></dt>
+<dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if the hex str is only zero.
+<strong>NOTE</strong>: Empty hexes like <code class="docutils literal notranslate"><span class="pre">&quot;0x&quot;</span></code> are considered zero.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>address</strong> (<em>str</em>) – The address to check.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ape.utils.misc.load_config">
+<span class="sig-prename descclassname"><span class="pre">ape.utils.misc.</span></span><span class="sig-name descname"><span class="pre">load_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expand_envars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">must_exist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#ape.utils.misc.load_config" title="Link to this definition"></a></dt>
+<dd><p>Load a configuration file into memory.
+A file at the given path must exist or else it will throw <code class="docutils literal notranslate"><span class="pre">OSError</span></code>.
+The configuration file must be a <cite>.json</cite> or <cite>.yaml</cite> or else it will throw <code class="docutils literal notranslate"><span class="pre">TypeError</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<em>str</em>) – path to filesystem to find.</p></li>
+<li><p><strong>expand_envars</strong> (<em>bool</em>) – <code class="docutils literal notranslate"><span class="pre">True</span></code> the variables in path
+are able to expand to show full path.</p></li>
+<li><p><strong>must_exist</strong> (<em>bool</em>) – <code class="docutils literal notranslate"><span class="pre">True</span></code> will be set if the configuration file exist
+and is able to be load.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Configured settings parsed from a config file.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ape.utils.misc.log_instead_of_fail">
+<span class="sig-prename descclassname"><span class="pre">ape.utils.misc.</span></span><span class="sig-name descname"><span class="pre">log_instead_of_fail</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.misc.log_instead_of_fail" title="Link to this definition"></a></dt>
+<dd><p>A decorator for logging errors instead of raising.
+This is useful for methods like __repr__ which shouldn’t fail.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ape.utils.misc.pragma_str_to_specifier_set">
+<span class="sig-prename descclassname"><span class="pre">ape.utils.misc.</span></span><span class="sig-name descname"><span class="pre">pragma_str_to_specifier_set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pragma_str</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">SpecifierSet</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#ape.utils.misc.pragma_str_to_specifier_set" title="Link to this definition"></a></dt>
+<dd><p>Convert the given pragma str to a <code class="docutils literal notranslate"><span class="pre">packaging.version.SpecifierSet</span></code>
+if possible.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pragma_str</strong> (<em>str</em>) – The str to convert.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">Optional[packaging.version.SpecifierSet]</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ape.utils.misc.raises_not_implemented">
+<span class="sig-prename descclassname"><span class="pre">ape.utils.misc.</span></span><span class="sig-name descname"><span class="pre">raises_not_implemented</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fn</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.misc.raises_not_implemented" title="Link to this definition"></a></dt>
+<dd><p>Decorator for raising helpful not implemented error.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ape.utils.misc.run_until_complete">
+<span class="sig-prename descclassname"><span class="pre">ape.utils.misc.</span></span><span class="sig-name descname"><span class="pre">run_until_complete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">item</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#ape.utils.misc.run_until_complete" title="Link to this definition"></a></dt>
+<dd><p>Completes the given coroutine and returns its value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>*item</strong> (<em>Any</em>) – A coroutine or any return value from an async method. If
+not given a coroutine, returns the given item. Provide multiple
+coroutines to run tasks in parallel.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The value that results in awaiting the coroutine.
+Else, <code class="docutils literal notranslate"><span class="pre">item</span></code> if <code class="docutils literal notranslate"><span class="pre">item</span></code> is not a coroutine. If given multiple coroutines,
+returns the result from <code class="docutils literal notranslate"><span class="pre">asyncio.gather</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(Any)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.utils.misc.singledispatchmethod">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.utils.misc.</span></span><span class="sig-name descname"><span class="pre">singledispatchmethod</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.misc.singledispatchmethod" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Single-dispatch generic method descriptor.</p>
+<p>Supports wrapping existing descriptors and handles non-descriptor
+callables as instance methods.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.utils.misc.singledispatchmethod.register">
+<span class="sig-name descname"><span class="pre">register</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">func</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">func</span></span></span><a class="headerlink" href="#ape.utils.misc.singledispatchmethod.register" title="Link to this definition"></a></dt>
+<dd><p>Registers a new implementation for the given <em>cls</em> on a <em>generic_method</em>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ape.utils.misc.to_int">
+<span class="sig-prename descclassname"><span class="pre">ape.utils.misc.</span></span><span class="sig-name descname"><span class="pre">to_int</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#ape.utils.misc.to_int" title="Link to this definition"></a></dt>
+<dd><p>Convert the given value, such as hex-strs or hex-bytes, to an integer.</p>
+</dd></dl>
+
+</section>
+<section id="module-ape.utils.os">
+<span id="os"></span><h2>OS<a class="headerlink" href="#module-ape.utils.os" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.utils.os.CacheDirectory">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.utils.os.</span></span><span class="sig-name descname"><span class="pre">CacheDirectory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.os.CacheDirectory" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A directory for caching data where each data item is named
+<code class="docutils literal notranslate"><span class="pre">&lt;key&gt;.json</span></code> and is in the directory. You can access the
+items by their key like a dictionary. This type is used
+in Ape’s contract-caching for ContractTypes, ProxyInfoAPI,
+and other model types.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.utils.os.ChangeDirectory">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.utils.os.</span></span><span class="sig-name descname"><span class="pre">ChangeDirectory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">original_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chdir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">Path</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on_push</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">Path</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on_pop</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.os.ChangeDirectory" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A context-manager for changing a directory. Initializing it
+will still change the directory, but you can optionally exit
+out of it to restore back to the original directory. Additionally,
+provides hooks to run when each of these events occur.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ape.utils.os.clean_path">
+<span class="sig-prename descclassname"><span class="pre">ape.utils.os.</span></span><span class="sig-name descname"><span class="pre">clean_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#ape.utils.os.clean_path" title="Link to this definition"></a></dt>
+<dd><p>Replace the home directory with key <code class="docutils literal notranslate"><span class="pre">$HOME</span></code> and return
+the path as a str. This is used for outputting paths
+with less doxxing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> (<a class="reference internal" href="cli.html#ape.cli.paramtype.Path" title="ape.cli.paramtype.Path"><em>Path</em></a>) – The path to sanitize.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A sanitized path-str.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ape.utils.os.create_tempdir">
+<span class="sig-prename descclassname"><span class="pre">ape.utils.os.</span></span><span class="sig-name descname"><span class="pre">create_tempdir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">Path</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.utils.os.create_tempdir" title="Link to this definition"></a></dt>
+<dd><p>Create a temporary directory. Differs from <code class="docutils literal notranslate"><span class="pre">TemporaryDirectory()</span></code>
+context-call alone because it automatically resolves the path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>name</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – Optional provide a name of  the directory.
+Else, defaults to root of <code class="docutils literal notranslate"><span class="pre">tempfile.TemporaryDirectory()</span></code>
+(resolved).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Context managing the temporary directory.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Iterator[<a class="reference internal" href="cli.html#ape.cli.paramtype.Path" title="ape.cli.paramtype.Path">Path</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ape.utils.os.expand_environment_variables">
+<span class="sig-prename descclassname"><span class="pre">ape.utils.os.</span></span><span class="sig-name descname"><span class="pre">expand_environment_variables</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contents</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#ape.utils.os.expand_environment_variables" title="Link to this definition"></a></dt>
+<dd><p>Replace substrings of the form <code class="docutils literal notranslate"><span class="pre">$name</span></code> or <code class="docutils literal notranslate"><span class="pre">${name}</span></code> in the given path
+with the value of environment variable name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>contents</strong> (<em>str</em>) – A path-like object representing a file system.
+A path-like object is either a string or bytes object
+representing a path.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The given content with all environment variables replaced with their values.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ape.utils.os.extract_archive">
+<span class="sig-prename descclassname"><span class="pre">ape.utils.os.</span></span><span class="sig-name descname"><span class="pre">extract_archive</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">archive_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">destination</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.os.extract_archive" title="Link to this definition"></a></dt>
+<dd><p>Extract an archive file. Supports <code class="docutils literal notranslate"><span class="pre">.zip</span></code> or <code class="docutils literal notranslate"><span class="pre">.tar.gz</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>archive_file</strong> (<a class="reference internal" href="cli.html#ape.cli.paramtype.Path" title="ape.cli.paramtype.Path"><em>Path</em></a>) – The file-path to the archive.</p></li>
+<li><p><strong>destination</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="cli.html#ape.cli.paramtype.Path" title="ape.cli.paramtype.Path"><em>Path</em></a><em>]</em>) – Optionally provide a destination.
+Defaults to the parent directory of the archive file.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ape.utils.os.get_all_files_in_directory">
+<span class="sig-prename descclassname"><span class="pre">ape.utils.os.</span></span><span class="sig-name descname"><span class="pre">get_all_files_in_directory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pattern</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Pattern</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_files</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">Path</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.utils.os.get_all_files_in_directory" title="Link to this definition"></a></dt>
+<dd><p>Returns all the files in a directory structure (recursive).</p>
+<p>For example, given a directory structure like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">dir_a</span><span class="p">:</span> <span class="n">dir_b</span><span class="p">,</span> <span class="n">file_a</span><span class="p">,</span> <span class="n">file_b</span>
+</span><span data-line="2"><span class="n">dir_b</span><span class="p">:</span> <span class="n">file_c</span>
+</span></pre></div>
+</div>
+<p>and you provide the path to <code class="docutils literal notranslate"><span class="pre">dir_a</span></code>, it will return a list containing
+the paths to <code class="docutils literal notranslate"><span class="pre">file_a</span></code>, <code class="docutils literal notranslate"><span class="pre">file_b</span></code> and <code class="docutils literal notranslate"><span class="pre">file_c</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<em>pathlib.Path</em>) – A directory containing files of interest.</p></li>
+<li><p><strong>pattern</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>Pattern</em><em>, </em><em>str</em><em>]</em><em>]</em>) – Optionally provide a regex
+pattern to match.</p></li>
+<li><p><strong>max_files</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – Optionally set a max file count. This is useful
+because huge file structures will be very slow.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of files in the given directory.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[pathlib.Path]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ape.utils.os.get_full_extension">
+<span class="sig-prename descclassname"><span class="pre">ape.utils.os.</span></span><span class="sig-name descname"><span class="pre">get_full_extension</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#ape.utils.os.get_full_extension" title="Link to this definition"></a></dt>
+<dd><p>For a path like <code class="docutils literal notranslate"><span class="pre">Path(&quot;Contract.t.sol&quot;)</span></code>,
+returns <code class="docutils literal notranslate"><span class="pre">.t.sol</span></code>, unlike the regular Path
+property <code class="docutils literal notranslate"><span class="pre">.suffix</span></code> which returns <code class="docutils literal notranslate"><span class="pre">.sol</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> (<a class="reference internal" href="cli.html#ape.cli.paramtype.Path" title="ape.cli.paramtype.Path"><em>Path</em></a><em> | </em><em>str</em>) – The path with an extension.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The full suffix</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ape.utils.os.get_package_path">
+<span class="sig-prename descclassname"><span class="pre">ape.utils.os.</span></span><span class="sig-name descname"><span class="pre">get_package_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">package_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Path</span></span></span><a class="headerlink" href="#ape.utils.os.get_package_path" title="Link to this definition"></a></dt>
+<dd><p>Get the path to a package from site-packages.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>package_name</strong> (<em>str</em>) – The name of the package.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Path</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ape.utils.os.get_relative_path">
+<span class="sig-prename descclassname"><span class="pre">ape.utils.os.</span></span><span class="sig-name descname"><span class="pre">get_relative_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anchor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Path</span></span></span><a class="headerlink" href="#ape.utils.os.get_relative_path" title="Link to this definition"></a></dt>
+<dd><p>Compute the relative path of <code class="docutils literal notranslate"><span class="pre">target</span></code> relative to <code class="docutils literal notranslate"><span class="pre">anchor</span></code>,
+which may or may not share a common ancestor.</p>
+<p><strong>NOTE ON PERFORMANCE</strong>: Both paths must be absolute to
+use this method. If you know both methods are absolute,
+this method is a performance boost. If you have to first
+call <cite>.absolute()</cite> on the paths, use
+<cite>target.relative_to(anchor)</cite> instead; as it will be
+faster in that case.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>target</strong> (<em>pathlib.Path</em>) – The path we are interested in.</p></li>
+<li><p><strong>anchor</strong> (<em>pathlib.Path</em>) – The path we are starting from.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The new path to the target path from the anchor path.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pathlib.Path</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ape.utils.os.in_tempdir">
+<span class="sig-prename descclassname"><span class="pre">ape.utils.os.</span></span><span class="sig-name descname"><span class="pre">in_tempdir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#ape.utils.os.in_tempdir" title="Link to this definition"></a></dt>
+<dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> when the given path is in a temporary directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> (<a class="reference internal" href="cli.html#ape.cli.paramtype.Path" title="ape.cli.paramtype.Path"><em>Path</em></a>) – The path to check.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ape.utils.os.is_relative_to">
+<span class="sig-prename descclassname"><span class="pre">ape.utils.os.</span></span><span class="sig-name descname"><span class="pre">is_relative_to</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#ape.utils.os.is_relative_to" title="Link to this definition"></a></dt>
+<dd><p>Search a path and determine its relevancy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<em>str</em>) – Path represents a filesystem to find.</p></li>
+<li><p><strong>target</strong> (<em>str</em>) – Path represents a filesystem to match.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if the path is relative to the target path or <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ape.utils.os.path_match">
+<span class="sig-prename descclassname"><span class="pre">ape.utils.os.</span></span><span class="sig-name descname"><span class="pre">path_match</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">exclusions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#ape.utils.os.path_match" title="Link to this definition"></a></dt>
+<dd><p>A better glob-matching function. For example:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">p</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;test/to/.build/me/2/file.json&quot;</span><span class="p">)</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;**/.build/**&quot;</span><span class="p">)</span>
+</span><span data-line="4"><span class="go">False</span>
+</span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">ape.utils.os</span><span class="w"> </span><span class="kn">import</span> <span class="n">path_match</span>
+</span><span data-line="6"><span class="gp">&gt;&gt;&gt; </span><span class="n">path_match</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="s2">&quot;**/.build/**&quot;</span><span class="p">)</span>
+</span><span data-line="7"><span class="go">True</span>
+</span></pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ape.utils.os.run_in_tempdir">
+<span class="sig-prename descclassname"><span class="pre">ape.utils.os.</span></span><span class="sig-name descname"><span class="pre">run_in_tempdir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">Path</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.os.run_in_tempdir" title="Link to this definition"></a></dt>
+<dd><p>Run the given function in a temporary directory with its path
+resolved.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fn</strong> (<em>Callable</em>) – A function that takes a path. It gets called
+with the resolved path to the temporary directory.</p></li>
+<li><p><strong>name</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – Optionally name the temporary directory.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The result of the function call.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Any</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.utils.os.use_temp_sys_path">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.utils.os.</span></span><span class="sig-name descname"><span class="pre">use_temp_sys_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">Path</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.os.use_temp_sys_path" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A context manager to manage injecting and removing paths from
+a user’s sys paths without permanently modifying it.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ape.utils.os.within_directory">
+<span class="sig-prename descclassname"><span class="pre">ape.utils.os.</span></span><span class="sig-name descname"><span class="pre">within_directory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.os.within_directory" title="Link to this definition"></a></dt>
+<dd><p>A context-manager for changing the cwd to the given path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>directory</strong> (<a class="reference internal" href="cli.html#ape.cli.paramtype.Path" title="ape.cli.paramtype.Path"><em>Path</em></a>) – The directory to change.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-ape.utils.process">
+<span id="process"></span><h2>Process<a class="headerlink" href="#module-ape.utils.process" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.utils.process.JoinableQueue">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.utils.process.</span></span><span class="sig-name descname"><span class="pre">JoinableQueue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">maxsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.process.JoinableQueue" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Queue</span></code></p>
+<p>A queue that can be joined, useful for multi-processing.
+Borrowed from the <code class="docutils literal notranslate"><span class="pre">py-geth</span></code> library.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.utils.process.JoinableQueue.join">
+<span class="sig-name descname"><span class="pre">join</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.process.JoinableQueue.join" title="Link to this definition"></a></dt>
+<dd><p>Blocks until all items in the Queue have been gotten and processed.</p>
+<p>The count of unfinished tasks goes up whenever an item is added to the
+queue. The count goes down whenever a consumer thread calls task_done()
+to indicate the item was retrieved and all work on it is complete.</p>
+<p>When the count of unfinished tasks drops to zero, join() unblocks.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ape.utils.process.spawn">
+<span class="sig-prename descclassname"><span class="pre">ape.utils.process.</span></span><span class="sig-name descname"><span class="pre">spawn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.process.spawn" title="Link to this definition"></a></dt>
+<dd><p>Spawn a new daemon thread. Borrowed from the <code class="docutils literal notranslate"><span class="pre">py-geth</span></code> library.</p>
+</dd></dl>
+
+</section>
+<section id="module-ape.utils.rpc">
+<span id="rpc"></span><h2>RPC<a class="headerlink" href="#module-ape.utils.rpc" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.utils.rpc.RPCHeaders">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.utils.rpc.</span></span><span class="sig-name descname"><span class="pre">RPCHeaders</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.rpc.RPCHeaders" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">CaseInsensitiveDict</span></code></p>
+<p>A dict-like data-structure for HTTP-headers.
+It is case-insensitive and appends user-agent strings
+rather than overrides.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ape.utils.rpc.allow_disconnected">
+<span class="sig-prename descclassname"><span class="pre">ape.utils.rpc.</span></span><span class="sig-name descname"><span class="pre">allow_disconnected</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.rpc.allow_disconnected" title="Link to this definition"></a></dt>
+<dd><p>A decorator that instead of raising <a class="reference internal" href="exceptions.html#ape.exceptions.ProviderNotConnectedError" title="ape.exceptions.ProviderNotConnectedError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProviderNotConnectedError</span></code></a>
+warns and returns <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+<p>Usage example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
+</span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">SnapshotID</span>
+</span><span data-line="3"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">return_none_when_disconnected</span>
+</span><span data-line="4">
+</span><span data-line="5">
+</span><span data-line="6"><span class="nd">@allow_disconnected</span>
+</span><span data-line="7"><span class="k">def</span><span class="w"> </span><span class="nf">try_snapshot</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">SnapshotID</span><span class="p">]:</span>
+</span><span data-line="8">    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">chain</span><span class="o">.</span><span class="n">snapshot</span><span class="p">()</span>
+</span></pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ape.utils.rpc.request_with_retry">
+<span class="sig-prename descclassname"><span class="pre">ape.utils.rpc.</span></span><span class="sig-name descname"><span class="pre">request_with_retry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_retry_delay</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">retry_backoff_factor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_retry_delay</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">30000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_retries</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">retry_jitter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">250</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_rate_limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">Exception</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.rpc.request_with_retry" title="Link to this definition"></a></dt>
+<dd><p>Make a request with 429/rate-limit retry logic.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>func</strong> (<em>Callable</em>) – The function to run with rate-limit handling logic.</p></li>
+<li><p><strong>min_retry_delay</strong> (<em>int</em>) – The amount of milliseconds to wait before
+retrying the request. Defaults to <code class="docutils literal notranslate"><span class="pre">1_000</span></code> (one second).</p></li>
+<li><p><strong>retry_backoff_factor</strong> (<em>int</em>) – The multiplier applied to the retry delay
+after each failed attempt. Defaults to <code class="docutils literal notranslate"><span class="pre">2</span></code>.</p></li>
+<li><p><strong>max_retry_delay</strong> (<em>int</em>) – The maximum length of the retry delay.
+Defaults to <code class="docutils literal notranslate"><span class="pre">30_000</span></code> (30 seconds).</p></li>
+<li><p><strong>max_retries</strong> (<em>int</em>) – The maximum number of retries.
+Defaults to <code class="docutils literal notranslate"><span class="pre">10</span></code>.</p></li>
+<li><p><strong>retry_jitter</strong> (<em>int</em>) – A random number of milliseconds up to this limit
+is added to each retry delay. Defaults to <code class="docutils literal notranslate"><span class="pre">250</span></code> milliseconds.</p></li>
+<li><p><strong>is_rate_limit</strong> (<em>Callable</em><em>[</em><em>[</em><em>Exception</em><em>]</em><em>, </em><em>bool</em><em>] </em><em>| </em><em>None</em>) – A custom handler
+for detecting rate-limits. Defaults to checking for a 429 status
+code on an HTTPError.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ape.utils.rpc.stream_response">
+<span class="sig-prename descclassname"><span class="pre">ape.utils.rpc.</span></span><span class="sig-name descname"><span class="pre">stream_response</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">download_url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress_bar_description</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'Downloading'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bytes</span></span></span><a class="headerlink" href="#ape.utils.rpc.stream_response" title="Link to this definition"></a></dt>
+<dd><p>Download HTTP content by streaming and returning the bytes.
+Progress bar will be displayed in the CLI.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>download_url</strong> (<em>str</em>) – String to get files to download.</p></li>
+<li><p><strong>progress_bar_description</strong> (<em>str</em>) – Downloading word.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Content in bytes to show the progress.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bytes</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-ape.utils.testing">
+<span id="testing"></span><h2>Testing<a class="headerlink" href="#module-ape.utils.testing" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.utils.testing.GeneratedDevAccount">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.utils.testing.</span></span><span class="sig-name descname"><span class="pre">GeneratedDevAccount</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">private_key</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.testing.GeneratedDevAccount" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></p>
+<p>An account key-pair generated from the test mnemonic. Set the test mnemonic
+in your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file under the <code class="docutils literal notranslate"><span class="pre">test</span></code> section. Access your test
+accounts using the <a class="reference internal" href="managers.html#ape.managers.accounts.AccountManager.test_accounts" title="ape.managers.accounts.AccountManager.test_accounts"><code class="xref py py-attr docutils literal notranslate"><span class="pre">test_accounts</span></code></a> property.</p>
+<p>Config example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">test</span><span class="p">:</span>
+</span><span data-line="2">  <span class="n">mnemonic</span><span class="p">:</span> <span class="n">test</span> <span class="n">test</span> <span class="n">test</span> <span class="n">test</span> <span class="n">test</span> <span class="n">test</span> <span class="n">test</span> <span class="n">test</span> <span class="n">test</span> <span class="n">test</span> <span class="n">test</span> <span class="n">junk</span>
+</span><span data-line="3">  <span class="n">number_of_accounts</span><span class="p">:</span> <span class="mi">10</span>
+</span></pre></div>
+</div>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.utils.testing.GeneratedDevAccount.address">
+<span class="sig-name descname"><span class="pre">address</span></span><a class="headerlink" href="#ape.utils.testing.GeneratedDevAccount.address" title="Link to this definition"></a></dt>
+<dd><p>Alias for field number 0</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.utils.testing.GeneratedDevAccount.private_key">
+<span class="sig-name descname"><span class="pre">private_key</span></span><a class="headerlink" href="#ape.utils.testing.GeneratedDevAccount.private_key" title="Link to this definition"></a></dt>
+<dd><p>Alias for field number 1</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ape.utils.testing.generate_dev_accounts">
+<span class="sig-prename descclassname"><span class="pre">ape.utils.testing.</span></span><span class="sig-name descname"><span class="pre">generate_dev_accounts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mnemonic</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'test</span> <span class="pre">test</span> <span class="pre">test</span> <span class="pre">test</span> <span class="pre">test</span> <span class="pre">test</span> <span class="pre">test</span> <span class="pre">test</span> <span class="pre">test</span> <span class="pre">test</span> <span class="pre">test</span> <span class="pre">junk'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_accounts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hd_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">&quot;m/44'/60'/0'/0&quot;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape.utils.testing.GeneratedDevAccount" title="ape.utils.testing.GeneratedDevAccount"><span class="pre">GeneratedDevAccount</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.utils.testing.generate_dev_accounts" title="Link to this definition"></a></dt>
+<dd><p>Create accounts from the given test mnemonic.
+Use these accounts (or the mnemonic) in chain-genesis
+for testing providers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mnemonic</strong> (<em>str</em>) – mnemonic phrase or seed words.</p></li>
+<li><p><strong>number_of_accounts</strong> (<em>int</em>) – Number of accounts. Defaults to <code class="docutils literal notranslate"><span class="pre">10</span></code>.</p></li>
+<li><p><strong>hd_path</strong> (<em>str</em>) – Hard Wallets/HD Keys derivation path format.
+Defaults to <code class="docutils literal notranslate"><span class="pre">&quot;m/44'/60'/0'/0&quot;</span></code>.</p></li>
+<li><p><strong>start_index</strong> (<em>int</em>) – The index to start from in the path. Defaults
+to 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of development accounts.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[<code class="xref py py-class docutils literal notranslate"><span class="pre">GeneratedDevAccount</span></code>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-ape.utils.trace">
+<span id="trace"></span><h2>Trace<a class="headerlink" href="#module-ape.utils.trace" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.utils.trace.TraceStyles">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.utils.trace.</span></span><span class="sig-name descname"><span class="pre">TraceStyles</span></span><a class="headerlink" href="#ape.utils.trace.TraceStyles" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Colors to use when displaying a call trace.
+Each item in the class points to the part of
+the trace it colors.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.utils.trace.TraceStyles.CONTRACTS">
+<span class="sig-name descname"><span class="pre">CONTRACTS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'#ff8c00'</span></em><a class="headerlink" href="#ape.utils.trace.TraceStyles.CONTRACTS" title="Link to this definition"></a></dt>
+<dd><p>Contract type names.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.utils.trace.TraceStyles.DELEGATE">
+<span class="sig-name descname"><span class="pre">DELEGATE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'#d75f00'</span></em><a class="headerlink" href="#ape.utils.trace.TraceStyles.DELEGATE" title="Link to this definition"></a></dt>
+<dd><p>The part ‘(delegate)’ that appears before delegate calls.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.utils.trace.TraceStyles.GAS_COST">
+<span class="sig-name descname"><span class="pre">GAS_COST</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'dim'</span></em><a class="headerlink" href="#ape.utils.trace.TraceStyles.GAS_COST" title="Link to this definition"></a></dt>
+<dd><p>The gas used of the call.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.utils.trace.TraceStyles.INPUTS">
+<span class="sig-name descname"><span class="pre">INPUTS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'bright_magenta'</span></em><a class="headerlink" href="#ape.utils.trace.TraceStyles.INPUTS" title="Link to this definition"></a></dt>
+<dd><p>Method arguments.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.utils.trace.TraceStyles.METHODS">
+<span class="sig-name descname"><span class="pre">METHODS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'bright_green'</span></em><a class="headerlink" href="#ape.utils.trace.TraceStyles.METHODS" title="Link to this definition"></a></dt>
+<dd><p>Method names; not including arguments or return values.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.utils.trace.TraceStyles.OUTPUTS">
+<span class="sig-name descname"><span class="pre">OUTPUTS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'bright_blue'</span></em><a class="headerlink" href="#ape.utils.trace.TraceStyles.OUTPUTS" title="Link to this definition"></a></dt>
+<dd><p>Method return values.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.utils.trace.TraceStyles.VALUE">
+<span class="sig-name descname"><span class="pre">VALUE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'#00afd7'</span></em><a class="headerlink" href="#ape.utils.trace.TraceStyles.VALUE" title="Link to this definition"></a></dt>
+<dd><p>The transaction value, when it’s &gt; 0.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"><div class="navigation-prev">
+    <a href="types.html">
+      <i class="i-lucide chevron-left"></i>
+      <div class="page-info">
+        <span>Previous</span><div class="title">ape.types</div></div>
+    </a>
+  </div><div class="navigation-next">
+    <a href="ape_accounts.html">
+      <div class="page-info">
+        <span>Next</span>
+        <div class="title">ape-accounts</div>
+      </div>
+      <i class="i-lucide chevron-right"></i>
+    </a>
+  </div></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2024, ApeWorX LTD</p>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials"></div>
+    </div>
+  </div>
+</footer>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script data-domain="docs.apeworx.io" defer="defer" src="https://plausible.io/js/script.js"></script>
+      <script src="../_static/shibuya.js?v=1d2088d1"></script></body>
+</html>
