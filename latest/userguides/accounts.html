@@ -148,6 +148,7 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#signing-messages">Signing Messages</a><ul>
 <li><a class="reference internal" href="#eip-712">EIP-712</a></li>
 <li><a class="reference internal" href="#verifying-signature">Verifying Signature</a></li>
+<li><a class="reference internal" href="#signing-authorizations-eip-7702">Signing Authorizations (EIP-7702)</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#automation">Automation</a></li>
@@ -473,6 +474,58 @@ Here is an example with custom EIP-712 classes:</p>
 </span><span data-line="12">
 </span><span data-line="13"><span class="c1"># NOTE: You can also use the `check_signature` method on an account, which returns a bool.</span>
 </span><span data-line="14"><span class="k">assert</span> <span class="n">account</span><span class="o">.</span><span class="n">check_signature</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">signature</span><span class="p">)</span>
+</span></pre></div>
+</div>
+</section>
+<section id="signing-authorizations-eip-7702">
+<h3>Signing Authorizations (EIP-7702)<a class="headerlink" href="#signing-authorizations-eip-7702" title="Link to this heading"></a></h3>
+<p>If supported by your current ecosystem and account plugins, Ape exposes the capability to set delegate contracts for EOAs via <a class="reference external" href="https://eips.ethereum.org/EIPS/eip-7702">EIP-7702</a> signed <code class="docutils literal notranslate"><span class="pre">SetCode</span></code> Authorizations.
+To sign an Authorization, use <code class="docutils literal notranslate"><span class="pre">account.sign_authorization</span></code> as follows:</p>
+<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape_ethereum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Authorization</span>
+</span><span data-line="2"><span class="n">sig</span> <span class="o">=</span> <span class="n">account</span><span class="o">.</span><span class="n">sign_authorization</span><span class="p">(</span><span class="n">contract</span><span class="p">)</span>
+</span><span data-line="3"><span class="n">auth</span> <span class="o">=</span> <span class="n">Authorization</span><span class="o">.</span><span class="n">from_signature</span><span class="p">(</span>
+</span><span data-line="4">    <span class="n">address</span><span class="o">=</span><span class="n">contract</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
+</span><span data-line="5">    <span class="n">chain_id</span><span class="o">=&lt;</span><span class="n">chain</span> <span class="n">ID</span><span class="o">&gt;</span><span class="p">,</span>
+</span><span data-line="6">    <span class="n">nonce</span><span class="o">=</span><span class="n">account</span><span class="o">.</span><span class="n">nonce</span><span class="p">,</span>
+</span><span data-line="7">    <span class="n">signature</span><span class="o">=</span><span class="n">sig</span><span class="p">,</span>
+</span><span data-line="8"><span class="p">)</span>
+</span><span data-line="9"><span class="c1"># NOTE: Will execute `methodWithAuth` from `contract` *after* executing authorization</span>
+</span><span data-line="10"><span class="c1"># NOTE: Make sure to increment the `nonce=` kwarg, as the authorization consumes current nonce</span>
+</span><span data-line="11"><span class="n">contract</span><span class="o">.</span><span class="n">methodWithAuth</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">authorizations</span><span class="o">=</span><span class="p">[</span><span class="n">auth</span><span class="p">],</span> <span class="n">sender</span><span class="o">=</span><span class="n">account</span><span class="p">,</span> <span class="n">nonce</span><span class="o">=</span><span class="n">account</span><span class="o">.</span><span class="n">nonce</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+</span></pre></div>
+</div>
+<div class="admonition caution">
+<p class="admonition-title">Caution</p>
+<p>Authorizations are <strong>extremely dangerous</strong> and can lead to full account compromise via signature.
+<strong>DO NOT SIGN</strong> an authorization unless you know what you are doing.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Not all account plugins support signing Authorizations.
+For instance, most hardware wallets may reject signing EIP-7702 Authorizations unless the delegate has been previously whitelisted in their firmware.
+Also, smart contract wallets (such as Safe) cannot sign these message types as only EOAs can sign them.</p>
+</div>
+<p>Once set, you can see if a delegate contract has been set for your EOA account via <code class="docutils literal notranslate"><span class="pre">account.delegate</span></code>.
+Ape exposes a <a class="reference external" href="../commands/accounts.html#accounts-auth">convienence subcommand</a> group under <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">accounts</span></code> for use in managing your delegations.</p>
+<p>Ape also exposes the following convienent higher-level API for working with authorizations in a scripting or testing context:</p>
+<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">assert</span> <span class="ow">not</span> <span class="n">account</span><span class="o">.</span><span class="n">delegate</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="c1"># Set `account`&#39;s `.delegate` to `contract`</span>
+</span><span data-line="4"><span class="n">account</span><span class="o">.</span><span class="n">set_delegate</span><span class="p">(</span><span class="n">contract</span><span class="p">)</span>
+</span><span data-line="5"><span class="k">assert</span> <span class="n">account</span><span class="o">.</span><span class="n">delegate</span> <span class="o">==</span> <span class="n">contract</span>
+</span><span data-line="6">
+</span><span data-line="7"><span class="c1"># Remove `account`&#39;s `.delegate`</span>
+</span><span data-line="8"><span class="n">account</span><span class="o">.</span><span class="n">remove_delegate</span><span class="p">()</span>
+</span><span data-line="9"><span class="k">assert</span> <span class="ow">not</span> <span class="n">account</span><span class="o">.</span><span class="n">delegate</span>
+</span><span data-line="10">
+</span><span data-line="11"><span class="c1"># Temporarily use `contract` as `delegate` (and reset upon exiting context)</span>
+</span><span data-line="12"><span class="c1"># NOTE: Calls `.set_delegate(contract)` when entering context</span>
+</span><span data-line="13"><span class="k">with</span> <span class="n">account</span><span class="o">.</span><span class="n">delegate_to</span><span class="p">(</span><span class="n">contract</span><span class="p">)</span> <span class="k">as</span> <span class="n">proxy</span><span class="p">:</span>
+</span><span data-line="14">    <span class="c1"># NOTE: `proxy` is `Contract(account, contract_type=contract.contract_type)`</span>
+</span><span data-line="15">    <span class="k">assert</span> <span class="n">contract</span><span class="o">.</span><span class="n">contract_type</span> <span class="o">==</span> <span class="n">proxy</span><span class="o">.</span><span class="n">contract_type</span>
+</span><span data-line="16">    <span class="n">proxy</span><span class="o">.</span><span class="n">methodWithAuth</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">account</span><span class="p">)</span>
+</span><span data-line="17"><span class="c1"># NOTE: calls `remove_delegate()` when exiting context</span>
+</span><span data-line="18"><span class="k">assert</span> <span class="ow">not</span> <span class="n">account</span><span class="o">.</span><span class="n">delegate</span>
 </span></pre></div>
 </div>
 </section>

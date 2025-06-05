@@ -138,10 +138,14 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#ape.api.accounts.AccountAPI.call"><code class="docutils literal notranslate">call()</span></code></a></li>
 <li><a class="reference internal" href="#ape.api.accounts.AccountAPI.check_signature"><code class="docutils literal notranslate">check_signature()</span></code></a></li>
 <li><a class="reference internal" href="#ape.api.accounts.AccountAPI.declare"><code class="docutils literal notranslate">declare()</span></code></a></li>
+<li><a class="reference internal" href="#ape.api.accounts.AccountAPI.delegate_to"><code class="docutils literal notranslate">delegate_to()</span></code></a></li>
 <li><a class="reference internal" href="#ape.api.accounts.AccountAPI.deploy"><code class="docutils literal notranslate">deploy()</span></code></a></li>
 <li><a class="reference internal" href="#ape.api.accounts.AccountAPI.get_deployment_address"><code class="docutils literal notranslate">get_deployment_address()</span></code></a></li>
 <li><a class="reference internal" href="#ape.api.accounts.AccountAPI.prepare_transaction"><code class="docutils literal notranslate">prepare_transaction()</span></code></a></li>
 <li><a class="reference internal" href="#ape.api.accounts.AccountAPI.public_key"><code class="docutils literal notranslate">public_key</span></code></a></li>
+<li><a class="reference internal" href="#ape.api.accounts.AccountAPI.remove_delegate"><code class="docutils literal notranslate">remove_delegate()</span></code></a></li>
+<li><a class="reference internal" href="#ape.api.accounts.AccountAPI.set_delegate"><code class="docutils literal notranslate">set_delegate()</span></code></a></li>
+<li><a class="reference internal" href="#ape.api.accounts.AccountAPI.sign_authorization"><code class="docutils literal notranslate">sign_authorization()</span></code></a></li>
 <li><a class="reference internal" href="#ape.api.accounts.AccountAPI.sign_message"><code class="docutils literal notranslate">sign_message()</span></code></a></li>
 <li><a class="reference internal" href="#ape.api.accounts.AccountAPI.sign_raw_msghash"><code class="docutils literal notranslate">sign_raw_msghash()</span></code></a></li>
 <li><a class="reference internal" href="#ape.api.accounts.AccountAPI.sign_transaction"><code class="docutils literal notranslate">sign_transaction()</span></code></a></li>
@@ -208,6 +212,7 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#ape.api.address.BaseAddress.balance"><code class="docutils literal notranslate">balance</span></code></a></li>
 <li><a class="reference internal" href="#ape.api.address.BaseAddress.code"><code class="docutils literal notranslate">code</span></code></a></li>
 <li><a class="reference internal" href="#ape.api.address.BaseAddress.codesize"><code class="docutils literal notranslate">codesize</span></code></a></li>
+<li><a class="reference internal" href="#ape.api.address.BaseAddress.delegate"><code class="docutils literal notranslate">delegate</span></code></a></li>
 <li><a class="reference internal" href="#ape.api.address.BaseAddress.history"><code class="docutils literal notranslate">history</span></code></a></li>
 <li><a class="reference internal" href="#ape.api.address.BaseAddress.is_contract"><code class="docutils literal notranslate">is_contract</span></code></a></li>
 <li><a class="reference internal" href="#ape.api.address.BaseAddress.nonce"><code class="docutils literal notranslate">nonce</span></code></a></li>
@@ -824,6 +829,48 @@ to declare.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="ape.api.accounts.AccountAPI.delegate_to">
+<span class="sig-name descname"><span class="pre">delegate_to</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_delegate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ape.api.address.BaseAddress" title="ape.api.address.BaseAddress"><span class="pre">BaseAddress</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><span class="pre">ChecksumAddress</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_AddressValidator</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">set_txn_kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reset_txn_kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">txn_kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape.api.address.BaseAddress" title="ape.api.address.BaseAddress"><span class="pre">BaseAddress</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.api.accounts.AccountAPI.delegate_to" title="Link to this definition"></a></dt>
+<dd><p>Temporarily override the value of <code class="docutils literal notranslate"><span class="pre">delegate</span></code> for the account inside of a context manager,
+and yields a contract instance object whose interface matches that of <code class="docutils literal notranslate"><span class="pre">new_delegate</span></code>.
+This is useful for ensuring that delegation is only temporarily extended to an account when
+doing a critical action temporarily, such as using an EIP7702 delegate module.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>(</strong><strong>`</strong> (<em>new_delegate</em>) – class:~ape.contracts.ContractInstance`):
+The contract instance to override the <cite>delegate</cite> with.</p></li>
+<li><p><strong>set_txn_kwargs</strong> (<em>dict</em><em> | </em><em>None</em>) – Additional transaction kwargs passed to
+<a class="reference internal" href="#ape.api.networks.EcosystemAPI.create_transaction" title="ape.api.networks.EcosystemAPI.create_transaction"><code class="xref py py-meth docutils literal notranslate"><span class="pre">create_transaction()</span></code></a> for the
+<a class="reference internal" href="#ape.api.accounts.AccountAPI.set_delegate" title="ape.api.accounts.AccountAPI.set_delegate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">AccountAPI.set_delegate()</span></code></a> method, such as <code class="docutils literal notranslate"><span class="pre">gas</span></code>, <code class="docutils literal notranslate"><span class="pre">max_fee</span></code>, or
+<code class="docutils literal notranslate"><span class="pre">max_priority_fee</span></code>. Overrides the values provided via <code class="docutils literal notranslate"><span class="pre">txn_kwargs</span></code>. For a list of
+available transaction kwargs, see <a class="reference internal" href="#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransactionAPI</span></code></a>.</p></li>
+<li><p><strong>reset_txn_kwargs</strong> (<em>dict</em><em> | </em><em>None</em>) – Additional transaction kwargs passed to
+<a class="reference internal" href="#ape.api.networks.EcosystemAPI.create_transaction" title="ape.api.networks.EcosystemAPI.create_transaction"><code class="xref py py-meth docutils literal notranslate"><span class="pre">create_transaction()</span></code></a> for the
+<a class="reference internal" href="#ape.api.accounts.AccountAPI.remove_delegate" title="ape.api.accounts.AccountAPI.remove_delegate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">AccountAPI.remove_delegate()</span></code></a> method, such as <code class="docutils literal notranslate"><span class="pre">gas</span></code>, <code class="docutils literal notranslate"><span class="pre">max_fee</span></code>, or
+<code class="docutils literal notranslate"><span class="pre">max_priority_fee</span></code>. Overrides the values provided via <code class="docutils literal notranslate"><span class="pre">txn_kwargs</span></code>. For a list of
+available transaction kwargs, see <a class="reference internal" href="#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransactionAPI</span></code></a>.</p></li>
+<li><p><strong>**txn_kwargs</strong> – Additional transaction kwargs passed to
+<a class="reference internal" href="#ape.api.networks.EcosystemAPI.create_transaction" title="ape.api.networks.EcosystemAPI.create_transaction"><code class="xref py py-meth docutils literal notranslate"><span class="pre">create_transaction()</span></code></a>, such as <code class="docutils literal notranslate"><span class="pre">gas</span></code>
+<code class="docutils literal notranslate"><span class="pre">max_fee</span></code>, or <code class="docutils literal notranslate"><span class="pre">max_priority_fee</span></code>. For a list of available transaction
+kwargs, see <a class="reference internal" href="#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransactionAPI</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>class:~ape.contracts.ContractInstance`:</dt><dd><p>The contract instance of this account with the interface of <cite>contract</cite>.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><p><a href="#id1"><span class="problematic" id="id2">`</span></a></p>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="ape.api.accounts.AccountAPI.deploy">
 <span class="sig-name descname"><span class="pre">deploy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contract</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="contracts.html#ape.contracts.base.ContractContainer" title="ape.contracts.base.ContractContainer"><span class="pre">ContractContainer</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">publish</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="contracts.html#ape.contracts.base.ContractInstance" title="ape.contracts.base.ContractInstance"><span class="pre">ContractInstance</span></a></span></span><a class="headerlink" href="#ape.api.accounts.AccountAPI.deploy" title="Link to this definition"></a></dt>
 <dd><p>Create a smart contract on the blockchain. The smart contract must compile before
@@ -900,6 +947,80 @@ the account’s current nonce.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="ape.api.accounts.AccountAPI.remove_delegate">
+<span class="sig-name descname"><span class="pre">remove_delegate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">txn_kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.accounts.AccountAPI.remove_delegate" title="Link to this definition"></a></dt>
+<dd><p>Has the account class remove the override for the value of its <code class="docutils literal notranslate"><span class="pre">delegate</span></code>. For plugins
+that support this feature, the way they choose to handle it can vary. For example, on a
+network using an EIP7702-like feature available it will reset the delegate to empty.
+However, if a plugin chooses to handle it, the resulting action (if successful) should
+make sure that the value that <code class="docutils literal notranslate"><span class="pre">self.delegate</span></code> returns <code class="docutils literal notranslate"><span class="pre">None</span></code> after it is completed.</p>
+<p>By default, this method raises <code class="docutils literal notranslate"><span class="pre">APINotImplementedError</span></code> signaling that support is not
+available for this feature. Calling this may result in other errors if implemented.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>**txn_kwargs</strong> – Additional transaction kwargs passed to
+<a class="reference internal" href="#ape.api.networks.EcosystemAPI.create_transaction" title="ape.api.networks.EcosystemAPI.create_transaction"><code class="xref py py-meth docutils literal notranslate"><span class="pre">create_transaction()</span></code></a>, such as <code class="docutils literal notranslate"><span class="pre">gas</span></code>
+<code class="docutils literal notranslate"><span class="pre">max_fee</span></code>, or <code class="docutils literal notranslate"><span class="pre">max_priority_fee</span></code>. For a list of available transaction
+kwargs, see <a class="reference internal" href="#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransactionAPI</span></code></a>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.api.accounts.AccountAPI.set_delegate">
+<span class="sig-name descname"><span class="pre">set_delegate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contract</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ape.api.address.BaseAddress" title="ape.api.address.BaseAddress"><span class="pre">BaseAddress</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><span class="pre">ChecksumAddress</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_AddressValidator</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">txn_kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.accounts.AccountAPI.set_delegate" title="Link to this definition"></a></dt>
+<dd><p>Have the account class override the value of its <code class="docutils literal notranslate"><span class="pre">delegate</span></code>. For plugins that support
+this feature, the way they choose to handle it can vary. For example, it could be a call to
+upgrade itself using some built-in method for a smart wallet (with default txn args) e.g.
+the Safe smart wallet (<a class="reference external" href="https://github.com/ApeWorX/ape-safe">https://github.com/ApeWorX/ape-safe</a>), or it could be to use an EIP-
+7702-like feature available on the network to set a delegate for that account. However if a
+plugin chooses to handle it, the resulting action (if successful) should make sure that the
+value that <code class="docutils literal notranslate"><span class="pre">self.delegate</span></code> returns is the same as <code class="docutils literal notranslate"><span class="pre">contract</span></code> after it is completed.</p>
+<p>By default, this method raises <code class="docutils literal notranslate"><span class="pre">APINotImplementedError</span></code> signaling that support is not
+available for this feature. Calling this may result in other errors if implemented.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>(</strong><strong>`</strong> (<em>contract</em>) – class:~ape.contracts.ContractInstance`):
+The contract instance to override the delegate with.</p></li>
+<li><p><strong>**txn_kwargs</strong> – Additional transaction kwargs passed to
+<a class="reference internal" href="#ape.api.networks.EcosystemAPI.create_transaction" title="ape.api.networks.EcosystemAPI.create_transaction"><code class="xref py py-meth docutils literal notranslate"><span class="pre">create_transaction()</span></code></a>, such as <code class="docutils literal notranslate"><span class="pre">gas</span></code>
+<code class="docutils literal notranslate"><span class="pre">max_fee</span></code>, or <code class="docutils literal notranslate"><span class="pre">max_priority_fee</span></code>. For a list of available transaction
+kwargs, see <a class="reference internal" href="#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransactionAPI</span></code></a>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.api.accounts.AccountAPI.sign_authorization">
+<span class="sig-name descname"><span class="pre">sign_authorization</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chain_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nonce</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="types.html#ape.types.signatures.MessageSignature" title="ape.types.signatures.MessageSignature"><span class="pre">MessageSignature</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#ape.api.accounts.AccountAPI.sign_authorization" title="Link to this definition"></a></dt>
+<dd><p>Sign an <a class="reference external" href="https://eips.ethereum.org/EIPS/eip-7702">EIP-7702</a> Authorization.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>address</strong> (<em>Any</em>) – A delegate address to sign the authorization for.</p></li>
+<li><p><strong>chain_id</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The chain ID that the authorization should be valid for.
+A value of <code class="docutils literal notranslate"><span class="pre">0</span></code> means that the authorization is valid for <strong>any chain</strong>.
+Default tells implementation to use the currently connected network’s <code class="docutils literal notranslate"><span class="pre">chain_id</span></code>.</p></li>
+<li><p><strong>nonce</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The nonce to use to sign authorization with. Defaults to account’s current nonce.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The signature corresponding to the message.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="types.html#ape.types.signatures.MessageSignature" title="ape.types.signatures.MessageSignature"><code class="xref py py-class docutils literal notranslate"><span class="pre">MessageSignature</span></code></a> (optional)</p>
+</dd>
+</dl>
+<p><code class="docutils literal notranslate"><span class="pre">`{caution}</span>
+<span class="pre">This</span> <span class="pre">action</span> <span class="pre">has</span> <span class="pre">the</span> <span class="pre">capability</span> <span class="pre">to</span> <span class="pre">be</span> <span class="pre">extremely</span> <span class="pre">destructive</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">signer,</span> <span class="pre">and</span> <span class="pre">might</span> <span class="pre">lead</span> <span class="pre">to</span>
+<span class="pre">full</span> <span class="pre">account</span> <span class="pre">compromise.</span> <span class="pre">All</span> <span class="pre">implementations</span> <span class="pre">are</span> <span class="pre">recommended</span> <span class="pre">to</span> <span class="pre">ensure</span> <span class="pre">that</span> <span class="pre">the</span> <span class="pre">signer</span> <span class="pre">be</span>
+<span class="pre">made</span> <span class="pre">aware</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">severity</span> <span class="pre">and</span> <span class="pre">impact</span> <span class="pre">of</span> <span class="pre">this</span> <span class="pre">action</span> <span class="pre">through</span> <span class="pre">some</span> <span class="pre">callout.</span>
+<span class="pre">`</span></code></p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="ape.api.accounts.AccountAPI.sign_message">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sign_message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">signer_options</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="types.html#ape.types.signatures.MessageSignature" title="ape.types.signatures.MessageSignature"><span class="pre">MessageSignature</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#ape.api.accounts.AccountAPI.sign_message" title="Link to this definition"></a></dt>
 <dd><p>Sign a message.</p>
@@ -931,7 +1052,7 @@ for more type information on the <a class="reference internal" href="types.html#
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>msghash</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">HexBytes</span></code>) – The message hash to sign. Plugins may or may not support this operation.
-Default implementation is to raise <code class="docutils literal notranslate"><span class="pre">NotImplementedError</span></code>.</p>
+Default implementation is to raise <code class="docutils literal notranslate"><span class="pre">APINotImplementedError</span></code>.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The signature corresponding to the message.</p>
@@ -1453,6 +1574,30 @@ or to refer to an EOA the user doesn’t personally control.</p>
 <dt class="sig sig-object py" id="ape.api.address.BaseAddress.codesize">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">codesize</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ape.api.address.BaseAddress.codesize" title="Link to this definition"></a></dt>
 <dd><p>The number of bytes in the smart contract.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.api.address.BaseAddress.delegate">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">delegate</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ape.api.address.BaseAddress" title="ape.api.address.BaseAddress"><span class="pre">BaseAddress</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.address.BaseAddress.delegate" title="Link to this definition"></a></dt>
+<dd><p>Check and see if Account has a “delegate” contract, which is a contract that this account
+delegates functionality to. This could be from many contexts, such as a Smart Wallet like
+Safe (<a class="reference external" href="https://github.com/ApeWorX/ape-safe">https://github.com/ApeWorX/ape-safe</a>) which has a Singleton class it forwards to, or
+an EOA using an EIP7702-style delegate. Returning <code class="docutils literal notranslate"><span class="pre">None</span></code> means that the account does not
+have a delegate.</p>
+<p>The default behavior is to use <cite>:class:~ape.managers.ChainManager.get_delegate</cite> to check if
+the account has a proxy, such as <code class="docutils literal notranslate"><span class="pre">SafeProxy</span></code> for <code class="docutils literal notranslate"><span class="pre">ape-safe</span></code> or an EIP7702 delegate.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>class:~ape.contracts.ContractInstance`]:</dt><dd><p>The contract instance of the delegate contract (if available).</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Optional[`</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py property">
