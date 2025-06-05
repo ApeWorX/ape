@@ -3,7 +3,7 @@ import warnings
 from collections.abc import Iterator
 from os import environ
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any, Optional, Union
 
 import click
 from eip712.messages import EIP712Message, EIP712Type
@@ -12,22 +12,25 @@ from eth_account.hdaccount import ETHEREUM_DEFAULT_PATH
 from eth_account.messages import encode_defunct
 from eth_pydantic_types import HexBytes
 from eth_typing import HexStr
-from eth_utils import remove_0x_prefix, to_bytes, to_hex
+from eth_utils import remove_0x_prefix, to_bytes, to_canonical_address, to_hex
 
 from ape.api.accounts import AccountAPI, AccountContainerAPI
-from ape.exceptions import AccountsError
+from ape.api.address import BaseAddress
+from ape.exceptions import AccountsError, APINotImplementedError
 from ape.logging import logger
+from ape.types import AddressType
 from ape.types.signatures import MessageSignature, SignableMessage, TransactionSignature
 from ape.utils._web3_compat import sign_hash
 from ape.utils.basemodel import ManagerAccessMixin
-from ape.utils.misc import derive_public_key, log_instead_of_fail
+from ape.utils.misc import ZERO_ADDRESS, derive_public_key, log_instead_of_fail
 from ape.utils.validators import _validate_account_alias, _validate_account_passphrase
+from ape_ethereum import Authorization
+from ape_ethereum.transactions import TransactionType
 
 if TYPE_CHECKING:
     from eth_account.signers.local import LocalAccount
 
     from ape.api.transactions import TransactionAPI
-    from ape.types.address import AddressType
 
 
 class InvalidPasswordError(AccountsError):
@@ -87,7 +90,7 @@ class KeyfileAccount(AccountAPI):
         return json.loads(self.keyfile_path.read_text())
 
     @property
-    def address(self) -> "AddressType":
+    def address(self) -> AddressType:
         return self.network_manager.ethereum.decode_address(self.keyfile["address"])
 
     @property
@@ -164,6 +167,38 @@ class KeyfileAccount(AccountAPI):
         )
         self.__decrypt_keyfile(passphrase)
         self.keyfile_path.unlink()
+
+    def sign_authorization(
+        self,
+        address: AddressType,
+        chain_id: Optional[int] = None,
+        nonce: Optional[int] = None,
+    ) -> Optional[MessageSignature]:
+        if chain_id is None:
+            chain_id = self.provider.chain_id
+
+        display_msg = f"Allow **full root access** to '{address}' on {chain_id or 'any chain'}?"
+        if not click.confirm(click.style(f"{display_msg}\n\nAcknowledge: ", fg="yellow")):
+            return None
+
+        try:
+            signed_authorization = EthAccount.sign_authorization(
+                dict(
+                    chainId=chain_id,
+                    address=to_canonical_address(address),
+                    nonce=nonce or self.nonce,
+                ),
+                self.__key,
+            )
+        except AttributeError as e:
+            # TODO: Remove `try..except` once web3 pinned `>=7`
+            raise APINotImplementedError from e
+
+        return MessageSignature(
+            v=signed_authorization.y_parity,
+            r=to_bytes(signed_authorization.r),
+            s=to_bytes(signed_authorization.s),
+        )
 
     def sign_message(self, msg: Any, **signer_options) -> Optional[MessageSignature]:
         display_msg, msg = _get_signing_message_with_display(msg)
@@ -255,6 +290,45 @@ class KeyfileAccount(AccountAPI):
             return EthAccount.decrypt(self.keyfile, passphrase)
         except ValueError as err:
             raise InvalidPasswordError() from err
+
+    def set_delegate(self, contract: Union[BaseAddress, AddressType, str], **txn_kwargs):
+        contract_address = self.conversion_manager.convert(contract, AddressType)
+        sig = self.sign_authorization(contract_address, nonce=self.nonce + 1)
+        auth = Authorization.from_signature(
+            address=contract_address,
+            chain_id=self.provider.chain_id,
+            # NOTE: `tx` uses `self.nonce`
+            nonce=self.nonce + 1,
+            signature=sig,
+        )
+        tx = self.provider.network.ecosystem.create_transaction(
+            type=TransactionType.SET_CODE,
+            authorizations=[auth],
+            sender=self,
+            # NOTE: Cannot target `ZERO_ADDRESS`
+            receiver=txn_kwargs.pop("receiver", None) or self,
+            **txn_kwargs,
+        )
+        return self.call(tx)
+
+    def remove_delegate(self, **txn_kwargs):
+        sig = self.sign_authorization(ZERO_ADDRESS, nonce=self.nonce + 1)
+        auth = Authorization.from_signature(
+            chain_id=self.provider.chain_id,
+            address=ZERO_ADDRESS,
+            # NOTE: `tx` uses `self.nonce`
+            nonce=self.nonce + 1,
+            signature=sig,
+        )
+        tx = self.provider.network.ecosystem.create_transaction(
+            type=TransactionType.SET_CODE,
+            authorizations=[auth],
+            sender=self,
+            # NOTE: Cannot target `ZERO_ADDRESS`
+            receiver=txn_kwargs.pop("receiver", None) or self,
+            **txn_kwargs,
+        )
+        return self.call(tx)
 
 
 def _write_and_return_account(

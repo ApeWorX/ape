@@ -1,8 +1,6 @@
 from abc import abstractmethod
 from functools import cached_property
-from typing import TYPE_CHECKING, Any
-
-from eth_pydantic_types import HexBytes
+from typing import TYPE_CHECKING, Any, Optional
 
 from ape.exceptions import AccountsError, ConversionError
 from ape.types.address import AddressType
@@ -171,7 +169,8 @@ class BaseAddress(BaseInterface):
         The number of bytes in the smart contract.
         """
 
-        return len(self.code)
+        code = self.code
+        return len(code) if isinstance(code, bytes) else len(bytes.fromhex(code.lstrip("0x")))
 
     @property
     def is_contract(self) -> bool:
@@ -179,7 +178,25 @@ class BaseAddress(BaseInterface):
         ``True`` when there is code associated with the address.
         """
 
-        return len(HexBytes(self.code)) > 0
+        return self.codesize > 0
+
+    @property
+    def delegate(self) -> Optional["BaseAddress"]:
+        """
+        Check and see if Account has a "delegate" contract, which is a contract that this account
+        delegates functionality to. This could be from many contexts, such as a Smart Wallet like
+        Safe (https://github.com/ApeWorX/ape-safe) which has a Singleton class it forwards to, or
+        an EOA using an EIP7702-style delegate. Returning ``None`` means that the account does not
+        have a delegate.
+
+        The default behavior is to use `:class:~ape.managers.ChainManager.get_delegate` to check if
+        the account has a proxy, such as ``SafeProxy`` for ``ape-safe`` or an EIP7702 delegate.
+
+        Returns:
+            Optional[`:class:~ape.contracts.ContractInstance`]:
+                The contract instance of the delegate contract (if available).
+        """
+        return self.chain_manager.get_delegate(self.address)
 
     @cached_property
     def history(self) -> "AccountHistory":

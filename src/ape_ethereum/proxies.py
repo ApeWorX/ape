@@ -65,6 +65,9 @@ class ProxyType(IntEnum):
     # https://github.com/0xsequence/wallet-contracts/blob/master/contracts/Wallet.sol
     Sequence = auto()
 
+    # https://eips.ethereum.org/EIPS/eip-7702
+    SetCode = auto()  # eip-7702 delegate (special EOA state)
+
 
 class ProxyInfo(ProxyInfoAPI):
     type: ProxyType

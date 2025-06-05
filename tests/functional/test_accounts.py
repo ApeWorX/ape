@@ -706,10 +706,15 @@ def test_dir(core_account):
         "alias",
         "balance",
         "call",
+        "delegate",
+        "delegate_to",
         "deploy",
         "nonce",
         "prepare_transaction",
         "provider",
+        "remove_delegate",
+        "set_delegate",
+        "sign_authorization",
         "sign_message",
         "sign_transaction",
         "transfer",
@@ -855,6 +860,19 @@ def test_prepare_transaction_and_call_using_max_gas(tx_type, ethereum, sender, e
 
     actual = sender.call(tx)
     assert not actual.failed
+
+
+def test_authorizations_transaction(sender, vyper_contract_instance):
+    assert not sender.delegate
+
+    # NOTE: 0x23fd0e40 is method_id for `myNumber()`
+    # NOTE: Must call something, since `__default__` raises
+    with sender.delegate_to(vyper_contract_instance, data="0x23fd0e40") as delegate:
+        assert sender.delegate == vyper_contract_instance
+        assert delegate.myNumber() == 0
+
+    sender.remove_delegate()
+    assert not sender.delegate
 
 
 def test_public_key(runner, keyfile_account, owner):

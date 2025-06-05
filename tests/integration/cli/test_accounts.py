@@ -7,6 +7,7 @@ from eth_account import Account
 from eth_account.hdaccount import ETHEREUM_DEFAULT_PATH
 
 from ape.logging import HIDDEN_MESSAGE
+from tests.conftest import GETH_URI, geth_process_test
 from tests.integration.cli.utils import assert_failure, run_once
 
 ALIAS = "test"
@@ -378,3 +379,90 @@ def test_delete(ape_cli, runner, temp_keyfile):
     result = runner.invoke(ape_cli, ("accounts", "delete", ALIAS), input=f"{PASSWORD}\n")
     assert result.exit_code == 0, result.output
     assert not temp_keyfile.is_file()
+
+
+@run_once
+@geth_process_test
+@pytest.mark.xfail(reason="https://github.com/ethereum/go-ethereum/issues/31967")
+def test_authorizations_cli(ape_cli, runner, keyfile_account, geth_contract):
+    result = runner.invoke(
+        ape_cli,
+        (
+            "accounts",
+            "auth",
+            "show",
+            "--account",
+            keyfile_account.alias,
+            "--network",
+            GETH_URI,
+        ),
+        catch_exceptions=False,
+    )
+    assert f"{keyfile_account.address} has no delegate" in result.output
+
+    result = runner.invoke(
+        ape_cli,
+        (
+            "accounts",
+            "auth",
+            "set",
+            geth_contract.address,
+            # NOTE: 0x23fd0e40 is method_id for `myNumber()`
+            # NOTE: Must call something, since `__default__` raises
+            "--data",
+            "0x23fd0e40",
+            "--account",
+            keyfile_account.alias,
+            "--network",
+            GETH_URI,
+        ),
+        catch_exceptions=False,
+        input="\n".join(["y", PASSWORD, "y", "y"]),
+    )
+    assert result.exit_code == 0, result.output
+
+    result = runner.invoke(
+        ape_cli,
+        (
+            "accounts",
+            "auth",
+            "show",
+            "--account",
+            keyfile_account.alias,
+            "--network",
+            GETH_URI,
+        ),
+        catch_exceptions=False,
+    )
+    assert f"{keyfile_account.address} is delegated to {geth_contract.address}" in result.output
+
+    result = runner.invoke(
+        ape_cli,
+        (
+            "accounts",
+            "auth",
+            "rm",
+            "--account",
+            keyfile_account.alias,
+            "--network",
+            GETH_URI,
+        ),
+        catch_exceptions=False,
+        input="\n".join(["y", PASSWORD, "y", "y"]),
+    )
+    assert result.exit_code == 0, result.output
+
+    result = runner.invoke(
+        ape_cli,
+        (
+            "accounts",
+            "auth",
+            "show",
+            "--account",
+            keyfile_account.alias,
+            "--network",
+            GETH_URI,
+        ),
+        catch_exceptions=False,
+    )
+    assert f"{keyfile_account.address} has no delegate" in result.output

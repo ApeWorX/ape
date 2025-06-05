@@ -9,7 +9,6 @@ from eth_account._utils.legacy_transactions import (
     encode_transaction,
     serializable_unsigned_transaction_from_dict,
 )
-from eth_account.typed_transactions.set_code_transaction import Authorization as EthAcctAuth
 from eth_pydantic_types import HexBytes
 from eth_utils import decode_hex, encode_hex, keccak, to_canonical_address, to_hex, to_int
 from ethpm_types.abi import EventABI, MethodABI
@@ -28,6 +27,7 @@ from ape_ethereum.trace import Trace, _events_to_trees
 
 if TYPE_CHECKING:
     from ethpm_types import ContractType
+    from typing_extensions import Self
 
     from ape.contracts import ContractEvent
 
@@ -216,12 +216,32 @@ class Authorization(BaseModel):
     def convert_int_to_hex(self, value: int) -> str:
         return to_hex(value)
 
+    @classmethod
+    def from_signature(
+        cls,
+        chain_id: int,
+        address: AddressType,
+        nonce: int,
+        signature: MessageSignature,
+    ) -> "Self":
+        return cls(
+            chainId=chain_id,
+            address=address,
+            nonce=nonce,
+            yParity=signature.v,
+            r=signature.r,
+            s=signature.s,
+        )
+
     @property
     def signature(self) -> MessageSignature:
         return MessageSignature(v=self.v, r=self.r, s=self.s)
 
     @cached_property
     def authority(self) -> AddressType:
+        # TODO: Move above when `web3` pin is `>7`
+        from eth_account.typed_transactions.set_code_transaction import Authorization as EthAcctAuth
+
         auth = EthAcctAuth(self.chain_id, to_canonical_address(self.address), self.nonce)
         return EthAccount._recover_hash(
             auth.hash(),
