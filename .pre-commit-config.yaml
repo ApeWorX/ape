@@ -4,30 +4,20 @@ repos:
     hooks:
     -   id: check-yaml
 
--   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.10.0  # Latest ruff version
+-   repo: https://github.com/psf/black
+    rev: 24.10.0
     hooks:
-    -   id: ruff
-        args: [--fix, --exit-non-zero-on-fix]
-    -   id: ruff-format
+    -   id: black
+        name: black
 
 -   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.15.0
+    rev: v1.13.0
     hooks:
     -   id: mypy
-        additional_dependencies: [
-                pydantic,
-                pandas-stubs,
-                types-python-dateutil,
-                types-PyYAML,
-                types-requests,
-                types-setuptools,
-                types-SQLAlchemy,
-                types-toml
-        ]
+        additional_dependencies: [types-PyYAML, types-requests, pydantic, types-setuptools]
 
 -   repo: https://github.com/executablebooks/mdformat
-    rev: 0.7.22
+    rev: 0.7.18
     hooks:
     -   id: mdformat
         additional_dependencies: [mdformat-gfm, mdformat-frontmatter, mdformat-pyproject]
