@@ -1287,5 +1287,5 @@ def _linux_set_death_signal():
 
 
 def popen(cmd: list[str], **kwargs):
-    # Abstracted for testing purporses.
+    # Abstracted for testing purposes.
     return Popen(cmd, **kwargs)
