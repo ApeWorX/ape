@@ -511,7 +511,7 @@ For example, EVM providers likely will use the <code class="docutils literal not
 <h2>Events<a class="headerlink" href="#events" title="Link to this heading"></a></h2>
 <p>Smart Contracts on many blockchains support a feature called Events,
 which are user-defined hooks created in smart contract code that can trigger off-chain callbacks to clients configured to receive them.
-This feature can be extremely useful for purposes such as triggering real-time responses to smart contract transactons in client-side scripts.</p>
+This feature can be extremely useful for purposes such as triggering real-time responses to smart contract transactions in client-side scripts.</p>
 <p>Ape provides many features for working with contract event logs.
 If your contract instance has an Event called <code class="docutils literal notranslate"><span class="pre">MyEvent</span></code> in it’s ABI, you can access these features by calling <code class="docutils literal notranslate"><span class="pre">contract_instance.MyEvent</span></code>.
 For example, if you want to create a script that listens to new event logs from your contract where the indexed argument <code class="docutils literal notranslate"><span class="pre">arg</span></code> is a specific value,
