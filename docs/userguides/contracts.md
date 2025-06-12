@@ -389,7 +389,7 @@ The `private=True` is available on all contract interactions.
 
 Smart Contracts on many blockchains support a feature called Events,
 which are user-defined hooks created in smart contract code that can trigger off-chain callbacks to clients configured to receive them.
-This feature can be extremely useful for purposes such as triggering real-time responses to smart contract transactons in client-side scripts.
+This feature can be extremely useful for purposes such as triggering real-time responses to smart contract transactions in client-side scripts.
 
 Ape provides many features for working with contract event logs.
 If your contract instance has an Event called `MyEvent` in it's ABI, you can access these features by calling `contract_instance.MyEvent`.
