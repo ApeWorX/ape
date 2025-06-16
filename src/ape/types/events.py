@@ -220,7 +220,7 @@ class ContractLog(ExtraAttributesMixin, BaseContractLog):
         if abi is None:
             # Last case scenario, try to calculate it.
             # NOTE: This is a rare edge case that shouldn't really happen,
-            #   so this is a lower priorty.
+            #   so this is a lower priority.
             # TODO: Handle inputs here.
             abi = EventABI(name=self.event_name)
 
