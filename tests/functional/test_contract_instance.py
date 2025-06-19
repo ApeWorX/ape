@@ -234,9 +234,19 @@ def test_transact_revert_handles_compiler_panic(owner, contract_instance):
         contract_instance.setBalance(owner, 1, sender=owner)
 
 
-def test_call_revert(owner, contract_instance):
+def test_call_revert(contract_instance):
     with pytest.raises(ContractLogicError, match="call revert"):
         contract_instance.callThatReverts()
+
+
+def test_call_revert_allow(contract_instance):
+    revert = contract_instance.callThatReverts(raise_on_revert=False)
+    assert revert == "call revert"
+
+
+def test_call_revert_allow_and_no_decode(contract_instance):
+    revert = contract_instance.callThatReverts(raise_on_revert=False, decode=False)
+    assert revert == HexBytes(0x63616C6C20726576657274)
 
 
 def test_call_using_block_id(vyper_contract_instance, owner, chain, networks_connected_to_tester):

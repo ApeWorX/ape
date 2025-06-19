@@ -43,7 +43,7 @@ from web3.providers.auto import load_provider_from_environment
 from web3.types import FeeHistory, RPCEndpoint, TxParams
 
 from ape.api.address import Address
-from ape.api.providers import BlockAPI, ProviderAPI
+from ape.api.providers import BlockAPI, CallResult, ProviderAPI
 from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.exceptions import (
     _SOURCE_TRACEBACK_ARG,
@@ -815,8 +815,9 @@ class Web3Provider(ProviderAPI, ABC):
                 raise vm_err.with_ape_traceback() from err
 
             else:
+                # Return the failed call result.
                 logger.error(vm_err)
-                result = "0x"
+                return CallResult.from_revert(vm_err)
 
         if "error" in result:
             raise ProviderError(result["error"]["message"])

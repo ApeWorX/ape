@@ -20,7 +20,7 @@ from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.providers.eth_tester.defaults import API_ENDPOINTS, static_return
 from web3.types import TxParams
 
-from ape.api.providers import BlockAPI, TestProviderAPI
+from ape.api.providers import BlockAPI, CallResult, TestProviderAPI
 from ape.exceptions import (
     APINotImplementedError,
     ContractLogicError,
@@ -337,6 +337,11 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             vm_err = VirtualMachineError(base_err=err)
             if raise_on_revert:
                 raise vm_err from err
+
+            elif isinstance(vm_err, ContractLogicError):
+                # Convert revert reason back to bytes and use that as the return.
+                return CallResult.from_revert(vm_err)
+
             else:
                 result = HexBytes("0x")
 
@@ -344,6 +349,11 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             vm_err = self.get_virtual_machine_error(err, txn=txn, set_ape_traceback=False)
             if raise_on_revert:
                 raise vm_err from err
+
+            elif isinstance(vm_err, ContractLogicError):
+                # Convert revert reason back to bytes and use that as the return.
+                return CallResult.from_revert(vm_err)
+
             else:
                 result = HexBytes("0x")
 
