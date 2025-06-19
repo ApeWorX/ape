@@ -477,6 +477,15 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#ape.api.providers.BlockAPI.validate_size"><code class="docutils literal notranslate">validate_size()</span></code></a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#ape.api.providers.CallResult"><code class="docutils literal notranslate"><span class="pre">CallResult</span></code></a><ul>
+<li><a class="reference internal" href="#ape.api.providers.CallResult.decode"><code class="docutils literal notranslate">decode()</span></code></a></li>
+<li><a class="reference internal" href="#ape.api.providers.CallResult.from_revert"><code class="docutils literal notranslate">from_revert()</span></code></a></li>
+<li><a class="reference internal" href="#ape.api.providers.CallResult.returndata"><code class="docutils literal notranslate">returndata</span></code></a></li>
+<li><a class="reference internal" href="#ape.api.providers.CallResult.revert"><code class="docutils literal notranslate">revert</span></code></a></li>
+<li><a class="reference internal" href="#ape.api.providers.CallResult.revert_message"><code class="docutils literal notranslate">revert_message</span></code></a></li>
+<li><a class="reference internal" href="#ape.api.providers.CallResult.reverted"><code class="docutils literal notranslate">reverted</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#ape.api.providers.ProviderAPI"><code class="docutils literal notranslate"><span class="pre">ProviderAPI</span></code></a><ul>
 <li><a class="reference internal" href="#ape.api.providers.ProviderAPI.base_fee"><code class="docutils literal notranslate">base_fee</span></code></a></li>
 <li><a class="reference internal" href="#ape.api.providers.ProviderAPI.block_page_size"><code class="docutils literal notranslate">block_page_size</span></code></a></li>
@@ -3740,6 +3749,66 @@ gets returned in computed field “size”.</p>
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="ape.api.providers.CallResult">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.api.providers.</span></span><span class="sig-name descname"><span class="pre">CallResult</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">revert</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="exceptions.html#ape.exceptions.ContractLogicError" title="ape.exceptions.ContractLogicError"><span class="pre">ContractLogicError</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">returndata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">HexBytes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.providers.CallResult" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="utils.html#ape.utils.basemodel.BaseModel" title="ape.utils.basemodel.BaseModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModel</span></code></a>, <a class="reference internal" href="utils.html#ape.utils.basemodel.ManagerAccessMixin" title="ape.utils.basemodel.ManagerAccessMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">ManagerAccessMixin</span></code></a></p>
+<p>The result of a call.
+NOTE: Currently, you only get this for reverted calls from <code class="docutils literal notranslate"><span class="pre">ProviderAPI</span></code>.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.api.providers.CallResult.decode">
+<span class="sig-name descname"><span class="pre">decode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method_abi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">MethodABI</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#ape.api.providers.CallResult.decode" title="Link to this definition"></a></dt>
+<dd><p>Decode a Pythonic return value from the call.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>method_abi</strong> (<code class="docutils literal notranslate"><span class="pre">MethodABI</span></code>) – The method ABI to decode.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The decoded result.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.api.providers.CallResult.from_revert">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_revert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">revert</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="exceptions.html#ape.exceptions.ContractLogicError" title="ape.exceptions.ContractLogicError"><span class="pre">ContractLogicError</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ape.api.providers.CallResult" title="ape.api.providers.CallResult"><span class="pre">CallResult</span></a></span></span><a class="headerlink" href="#ape.api.providers.CallResult.from_revert" title="Link to this definition"></a></dt>
+<dd><p>Factory helper for easily creating a CallResult from a revert error.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>revert</strong> (<a class="reference internal" href="exceptions.html#ape.exceptions.ContractLogicError" title="ape.exceptions.ContractLogicError"><em>ContractLogicError</em></a>) – The revert error.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new <code class="docutils literal notranslate"><span class="pre">CallResult</span></code> instance.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.api.providers.CallResult.returndata">
+<span class="sig-name descname"><span class="pre">returndata</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">HexBytes</span></em><a class="headerlink" href="#ape.api.providers.CallResult.returndata" title="Link to this definition"></a></dt>
+<dd><p>The raw returndata.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape.api.providers.CallResult.revert">
+<span class="sig-name descname"><span class="pre">revert</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="exceptions.html#ape.exceptions.ContractLogicError" title="ape.exceptions.ContractLogicError"><span class="pre">ContractLogicError</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.providers.CallResult.revert" title="Link to this definition"></a></dt>
+<dd><p>The revert, if the call reverted.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.api.providers.CallResult.revert_message">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">revert_message</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.providers.CallResult.revert_message" title="Link to this definition"></a></dt>
+<dd><p>The revert message, if the call reverted.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.api.providers.CallResult.reverted">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">reverted</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#ape.api.providers.CallResult.reverted" title="Link to this definition"></a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if the call <cite>reverted</cite> (failed).</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="ape.api.providers.ProviderAPI">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.api.providers.</span></span><span class="sig-name descname"><span class="pre">ProviderAPI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">network</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ape.api.networks.NetworkAPI" title="ape.api.networks.NetworkAPI"><span class="pre">NetworkAPI</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">provider_settings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">request_header</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_page_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">concurrency</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.providers.ProviderAPI" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="utils.html#ape.utils.basemodel.BaseInterfaceModel" title="ape.utils.basemodel.BaseInterfaceModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseInterfaceModel</span></code></a></p>
@@ -4280,7 +4349,7 @@ networks.</p></li>
 <dt class="sig sig-object py" id="ape.api.providers.ProviderAPI.send_call">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">send_call</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">txn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><span class="pre">TransactionAPI</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BlockID</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">HexBytes</span></span></span><a class="headerlink" href="#ape.api.providers.ProviderAPI.send_call" title="Link to this definition"></a></dt>
 <dd><p>Execute a new transaction call immediately without creating a
-transaction on the block chain.</p>
+transaction on the blockchain.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -4294,10 +4363,12 @@ prior to sending the call, for testing purposes.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The result of the transaction call.</p>
+<dd class="field-even"><p>The returndata of the transaction call. Even though it isn’t
+mentioned in the type, you can also return a <code class="docutils literal notranslate"><span class="pre">:class:`~ape.api.providers.CallResult</span></code>
+here and Ape will handle it. In 0.9, it will be the primary return type.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>str</p>
+<dd class="field-odd"><p>HexBytes</p>
 </dd>
 </dl>
 </dd></dl>
