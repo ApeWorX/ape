@@ -162,7 +162,7 @@ def test_call_use_block_id(contract_instance, owner, chain):
     assert actual == 3
 
 
-def test_revert(not_owner, contract_instance):
+def test_transact_revert(not_owner, contract_instance):
     # 'sender' is not the owner so it will revert (with a message)
     with pytest.raises(ContractLogicError, match="!authorized") as err:
         contract_instance.setNumber(5, sender=not_owner)
@@ -170,7 +170,7 @@ def test_revert(not_owner, contract_instance):
     assert err.value.txn is not None
 
 
-def test_revert_no_message(owner, contract_instance):
+def test_transact_revert_no_message(owner, contract_instance):
     # The Contract raises empty revert when setting number to 5.
     expected = "Transaction failed."  # Default message
     with pytest.raises(ContractLogicError, match=expected) as err:
@@ -180,14 +180,14 @@ def test_revert_no_message(owner, contract_instance):
 
 
 @pytest.mark.parametrize("gas", ("200000", 200000, "max", "auto", "0x235426"))
-def test_revert_specify_gas(not_owner, contract_instance, gas):
+def test_transact_revert_specify_gas(not_owner, contract_instance, gas):
     with pytest.raises(ContractLogicError, match="!authorized") as err:
         contract_instance.setNumber(5, sender=not_owner, gas=gas)
 
     assert err.value.txn is not None
 
 
-def test_revert_no_message_specify_gas(owner, contract_instance):
+def test_transact_revert_no_message_specify_gas(owner, contract_instance):
     expected = "Transaction failed."  # Default message
     with pytest.raises(ContractLogicError, match=expected) as err:
         contract_instance.setNumber(5, sender=owner, gas=200000)
@@ -195,14 +195,14 @@ def test_revert_no_message_specify_gas(owner, contract_instance):
     assert err.value.txn is not None
 
 
-def test_revert_static_fee_type(not_owner, contract_instance):
+def test_transact_revert_static_fee_type(not_owner, contract_instance):
     with pytest.raises(ContractLogicError, match="!authorized") as err:
         contract_instance.setNumber(5, sender=not_owner, type=0)
 
     assert err.value.txn is not None
 
 
-def test_revert_custom_exception(not_owner, error_contract):
+def test_transact_revert_custom_exception(not_owner, error_contract):
     with pytest.raises(ContractLogicError) as err_info:
         error_contract.withdraw(sender=not_owner)
 
@@ -215,7 +215,7 @@ def test_revert_custom_exception(not_owner, error_contract):
     assert custom_err.inputs == {"addr": addr, "counter": 123}  # type: ignore
 
 
-def test_revert_allow(not_owner, contract_instance):
+def test_transact_revert_allow(not_owner, contract_instance):
     # 'sender' is not the owner so it will revert (with a message)
     receipt = contract_instance.setNumber(5, sender=not_owner, raise_on_revert=False)
     assert receipt.error is not None
@@ -225,13 +225,28 @@ def test_revert_allow(not_owner, contract_instance):
     contract_instance.setNumber.call(5, raise_on_revert=False)
 
 
-def test_revert_handles_compiler_panic(owner, contract_instance):
+def test_transact_revert_handles_compiler_panic(owner, contract_instance):
     # note: setBalance is a weird name - it actually adjusts the balance.
     # first, set it to be 1 less than an overflow.
     contract_instance.setBalance(owner, 2**256 - 1, sender=owner)
     # then, add 1 more, so it should no overflow and cause a compiler panic.
     with pytest.raises(ContractLogicError):
         contract_instance.setBalance(owner, 1, sender=owner)
+
+
+def test_call_revert(contract_instance):
+    with pytest.raises(ContractLogicError, match="call revert"):
+        contract_instance.callThatReverts()
+
+
+def test_call_revert_allow(contract_instance):
+    revert = contract_instance.callThatReverts(raise_on_revert=False)
+    assert revert == "call revert"
+
+
+def test_call_revert_allow_and_no_decode(contract_instance):
+    revert = contract_instance.callThatReverts(raise_on_revert=False, decode=False)
+    assert revert == HexBytes(0x63616C6C20726576657274)
 
 
 def test_call_using_block_id(vyper_contract_instance, owner, chain, networks_connected_to_tester):

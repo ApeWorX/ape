@@ -50,6 +50,7 @@ if TYPE_CHECKING:
     from pandas import DataFrame
 
     from ape.api.networks import ProxyInfoAPI
+    from ape.api.providers import CallResult
     from ape.api.transactions import ReceiptAPI, TransactionAPI
     from ape.types.address import AddressType
 
@@ -123,25 +124,42 @@ class ContractCall(ManagerAccessMixin):
         decode_output = kwargs.pop("decode", True)
         txn = self.serialize_transaction(*args, **kwargs)
         txn.chain_id = self.provider.network.chain_id
-        raw_output = self.provider.send_call(txn, **kwargs)
+
+        result = self.provider.send_call(txn, **kwargs)
+
+        # If the result is raw bytes, handle it directly.
+        if isinstance(result, HexBytes):
+            return self._decode_returndata(result) if decode_output else result
+
+        # At this point, result must be a CallResult.
+        # Note: type hinting here is for clarity only.
+        call_result: CallResult = result  # type: ignore
 
         if not decode_output:
-            return raw_output
+            return call_result.returndata
 
+        elif call_result.revert:
+            return call_result.revert.revert_message
+
+        return call_result.decode(self.abi)
+
+    def _decode_returndata(self, returndata: HexBytes) -> Any:
+        # The current and main way of decoding call-results (HexBytes) before
+        # the wider adoption of the `CallResult` class.
         # Decode the output bytes into Python types.
-        output = self.provider.network.ecosystem.decode_returndata(
+        decoded_output = self.provider.network.ecosystem.decode_returndata(
             self.abi,
-            raw_output,
+            returndata,
         )
 
-        if not isinstance(output, (list, tuple)):
-            return output
+        if not isinstance(decoded_output, (list, tuple)):
+            return decoded_output
 
         # NOTE: Returns a tuple, so make sure to handle all the cases
-        elif len(output) < 2:
-            return output[0] if len(output) == 1 else None
+        elif len(decoded_output) < 2:
+            return decoded_output[0] if len(decoded_output) == 1 else None
 
-        return output
+        return decoded_output
 
 
 class ContractMethodHandler(ManagerAccessMixin):

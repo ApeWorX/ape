@@ -327,3 +327,8 @@ def loadArrays():
         self.mixedArray[1].append(self.dynArray)
         self.mixedArray[1].append(self.dynArray)
         self.arraysLoaded = True
+
+@view
+@external
+def callThatReverts():
+    assert False, "call revert"

@@ -346,4 +346,8 @@ contract SolidityContract {
             arraysLoaded = true;
         }
     }
+
+    function callThatReverts() public view {
+        require(false, "call revert");
+    }
 }
