@@ -817,7 +817,11 @@ class Web3Provider(ProviderAPI, ABC):
             else:
                 # Return the failed call result.
                 logger.error(vm_err)
-                return CallResult.from_revert(vm_err)
+                return (
+                    CallResult.from_revert(vm_err)
+                    if isinstance(vm_err, ContractLogicError)
+                    else "0x"
+                )
 
         if "error" in result:
             raise ProviderError(result["error"]["message"])
