@@ -5,6 +5,7 @@ from ape import Contract
 from ape.contracts import ContractContainer, ContractInstance
 from ape.exceptions import (
     ArgumentsLengthError,
+    MethodNonPayableError,
     MissingDeploymentBytecodeError,
     NetworkError,
     ProjectError,
@@ -95,6 +96,14 @@ def test_deploy_no_deployment_bytecode(owner, bytecode):
     contract = ContractContainer(contract_type)
     with pytest.raises(MissingDeploymentBytecodeError, match=expected):
         contract.deploy(sender=owner)
+
+
+def test_deploy_sending_funds_to_non_payable_constructor(solidity_contract_container, owner):
+    with pytest.raises(
+        MethodNonPayableError,
+        match=r"Sending funds to a non-payable constructor\.",
+    ):
+        solidity_contract_container.deploy(1, sender=owner, value="1 ether")
 
 
 def test_deployments(owner, eth_tester_provider, vyper_contract_container):
