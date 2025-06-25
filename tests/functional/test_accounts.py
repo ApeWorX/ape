@@ -14,6 +14,7 @@ from ape.contracts import ContractContainer
 from ape.exceptions import (
     AccountsError,
     AliasAlreadyInUseError,
+    MethodNonPayableError,
     MissingDeploymentBytecodeError,
     NetworkError,
     ProjectError,
@@ -420,6 +421,14 @@ def test_deploy_contract_type(owner, vyper_contract_type, clean_contract_caches)
     contract = owner.deploy(vyper_contract_type, 0)
     assert contract.address
     assert contract.txn_hash
+
+
+def test_deploy_sending_funds_to_non_payable_constructor(solidity_contract_container, owner):
+    with pytest.raises(
+        MethodNonPayableError,
+        match=r"Sending funds to a non-payable constructor\.",
+    ):
+        owner.deploy(solidity_contract_container, 1, value="1 ether")
 
 
 def test_send_transaction_with_bad_nonce(sender, receiver):

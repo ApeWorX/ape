@@ -136,14 +136,14 @@ def test_chain_id_from_ethereum_base_provider_is_cached(mock_web3, ethereum, eth
 
 
 def test_chain_id_when_disconnected(eth_tester_provider):
+    expected = DEFAULT_TEST_CHAIN_ID
     eth_tester_provider.disconnect()
     try:
         actual = eth_tester_provider.chain_id
-        expected = DEFAULT_TEST_CHAIN_ID
-        assert actual == expected
-
     finally:
         eth_tester_provider.connect()
+
+    assert actual == expected
 
 
 def test_chain_id_adhoc_http(networks):

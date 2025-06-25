@@ -422,7 +422,7 @@ class ContractCache(BaseManager):
         if chain_id is None and self.network_manager.active_provider is not None:
             chain_id = self.provider.chain_id
         elif chain_id is None:
-            raise ValueError("Missing chain ID.")
+            return set()
 
         if chain_id not in self._custom_error_types:
             return set()
@@ -439,7 +439,7 @@ class ContractCache(BaseManager):
         if chain_id is None and self.network_manager.active_provider is not None:
             chain_id = self.provider.chain_id
         elif chain_id is None:
-            raise ValueError("Missing chain ID.")
+            return
 
         if chain_id not in self._custom_error_types:
             self._custom_error_types[chain_id] = {address: set()}
