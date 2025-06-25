@@ -68,6 +68,7 @@ dynArray: public(DynArray[uint256, 3][3])
 mixedArray: public(DynArray[DynArray[uint256, 3][3], 3][5])
 arraysLoaded: bool
 myStruct: public(MyStruct)
+myBytes32: public(bytes32)
 
 MAX_FOO : constant(uint256) = 5
 
@@ -102,6 +103,10 @@ def setNumber(num: uint256):
 def setAddress(_address: address):
     self.theAddress = _address
     log AddressChange(_address)
+
+@external
+def setBytes32(val: bytes32):
+    self.myBytes32 = val
 
 @external
 def setBalance(_address: address, bal: uint256):

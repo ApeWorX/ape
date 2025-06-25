@@ -11,6 +11,7 @@ contract SolidityContract {
     uint256[][3][][5] mixedArray;
     bool arraysLoaded = false;
     MyStruct public myStruct;
+    bytes32 public myBytes32;
 
     uint256 constant MAX_FOO = 5;
 
@@ -136,6 +137,10 @@ contract SolidityContract {
     function setAddress(address _address) public {
         theAddress = _address;
         emit AddressChange(_address);
+    }
+
+    function setBytes32(bytes32 val) public {
+        myBytes32 = val;
     }
 
     function setBalance(address _address, uint256 bal) public {
