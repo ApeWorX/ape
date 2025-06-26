@@ -341,7 +341,9 @@ class Receipt(ReceiptAPI):
             txn_hash = self.txn_hash
             err = TransactionError(f"Transaction '{txn_hash}' failed.", txn=self)
 
-        self.error = err
+        if err:
+            self.error = err
+
         if err and self.transaction.raise_on_revert:
             raise err
 

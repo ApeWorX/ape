@@ -33,7 +33,7 @@ class HexConverter(ConverterAPI):
 
     def is_convertible(self, value: Any) -> bool:
         return (
-            (isinstance(value, str) and is_hex(value) and is_0x_prefixed(value))
+            (isinstance(value, str) and is_hex(value))
             or isinstance(value, bytes)
             or isinstance(value, int)
         )
@@ -60,7 +60,8 @@ class HexIntConverter(ConverterAPI):
     """
 
     def is_convertible(self, value: Any) -> bool:
-        return (isinstance(value, str) and is_hex(value) and is_0x_prefixed(value)) or isinstance(
+        # NOTE: Hex int conversion requires 0x prefix to know if it is base 16 or base 10.
+        return (isinstance(value, str) and is_hex(value) and value.startswith("0x")) or isinstance(
             value, bytes
         )
 

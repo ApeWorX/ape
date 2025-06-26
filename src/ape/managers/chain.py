@@ -799,7 +799,7 @@ class ChainManager(BaseManager):
         return self.provider.get_block("pending").timestamp
 
     @pending_timestamp.setter
-    def pending_timestamp(self, new_value: str):
+    def pending_timestamp(self, new_value: Union[int, str]):
         self.provider.set_timestamp(self.conversion_manager.convert(new_value, int))
 
     @log_instead_of_fail(default="<ChainManager>")

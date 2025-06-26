@@ -22,8 +22,8 @@ extras_require = {
         "hypothesis-jsonschema==0.19.0",  # JSON Schema fuzzer extension
     ],
     "lint": [
-        "ruff>=0.10.0",  # Unified linter and formatter
-        "mypy>=1.15.0,<1.16.0",  # Static type analyzer
+        "ruff>=0.12.0",  # Unified linter and formatter
+        "mypy>=1.16.1,<1.17.0",  # Static type analyzer
         "types-PyYAML",  # Needed due to mypy typeshed
         "types-requests",  # Needed due to mypy typeshed
         "types-setuptools",  # Needed due to mypy typeshed
@@ -121,8 +121,8 @@ setup(
         "web3[tester]>=6.20.1,<8",
         # ** Dependencies maintained by ApeWorX **
         "eip712>=0.2.10,<0.3",
-        "ethpm-types>=0.6.26,<0.7",
-        "eth_pydantic_types>=0.2.0,<0.3",
+        "ethpm-types>=0.6.27,<0.7",
+        "eth_pydantic_types>=0.2.1,<0.3",
         "evmchains>=0.1.0,<0.2",
         "evm-trace>=0.2.6,<0.3",
     ],
