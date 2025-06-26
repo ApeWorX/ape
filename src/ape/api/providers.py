@@ -1013,7 +1013,7 @@ class TestProviderAPI(ProviderAPI):
 
     @auto_mine.setter
     @abstractmethod
-    def auto_mine(self) -> bool:
+    def auto_mine(self, value) -> bool:
         """
         Enable or disable automine.
         """

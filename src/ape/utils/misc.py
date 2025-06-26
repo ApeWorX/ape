@@ -500,7 +500,7 @@ def log_instead_of_fail(default: Optional[Any] = None):
 _MOD_T = TypeVar("_MOD_T")
 
 
-def as_our_module(cls_or_def: _MOD_T, doc_str: Optional[str] = None) -> _MOD_T:
+def as_our_module(cls_or_def: _MOD_T, doc_str: Optional[str] = None) -> Optional[_MOD_T]:
     """
     Ape sometimes reclaims definitions from other packages, such as
     class:`~ape.types.signatures.SignableMessage`). When doing so, the doc str

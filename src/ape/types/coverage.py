@@ -669,7 +669,8 @@ class CoverageReport(BaseModel):
             raise ValueError("Failed to get XML DOM.")
 
         xml_out = impl.createDocument(None, "coverage", None)
-        xcoverage = xml_out.documentElement
+        if not (xcoverage := xml_out.documentElement):
+            return xml_out
 
         # Unable to use too exotic of a version.
         xversion = ape_version.split(".dev")[0].strip()
