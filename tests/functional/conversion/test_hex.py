@@ -7,8 +7,12 @@ from ape.managers.converters import HexIterableConverter
 
 @pytest.mark.parametrize("val", ("0xA100", "0x0A100", "0x00a100", "00a100"))
 def test_hex_str(convert, val):
-    assert convert(val, int) == 0xA100
     assert int(to_hex(convert(val, bytes)), 16) == int(to_hex(0xA100), 16)
+
+
+@pytest.mark.parametrize("val", ("0xA100", "0x0A100", "0x00a100"))
+def test_hex_int(convert, val):
+    assert convert(val, int) == 0xA100
 
 
 @pytest.mark.parametrize(

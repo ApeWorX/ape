@@ -742,13 +742,13 @@ def test_address_given_int(contract_instance, owner):
     assert contract_instance.theAddress() == owner
 
 
-@pytest.mark.parametrize("value", ["2", "0x02", HexBytes(2)])
+@pytest.mark.parametrize("value", ["10", "0x0a", HexBytes(10)])
 def test_uint256_converts_inputs(value, owner, contract_instance):
     contract_instance.setNumber(value, sender=owner)
-    assert contract_instance.myNumber() == 2
+    assert contract_instance.myNumber() == 10
 
 
-@pytest.mark.parametrize("value", ["0a", "0x0a", HexBytes("0x0a"), AddressType("0x0a≠")])
+@pytest.mark.parametrize("value", ["0a", "0x0a", HexBytes("0x0a"), AddressType("0x0a")])
 def test_bytes32_converts_inputs(value, contract_instance, owner):
     contract_instance.setBytes32(value, sender=owner)
 

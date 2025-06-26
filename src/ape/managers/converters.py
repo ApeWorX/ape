@@ -60,7 +60,10 @@ class HexIntConverter(ConverterAPI):
     """
 
     def is_convertible(self, value: Any) -> bool:
-        return (isinstance(value, str) and is_hex(value)) or isinstance(value, bytes)
+        # NOTE: Hex int conversion requires 0x prefix to know if it is base 16 or base 10.
+        return (isinstance(value, str) and is_hex(value) and value.startswith("0x")) or isinstance(
+            value, bytes
+        )
 
     def convert(self, value: Any) -> int:
         return to_int(HexBytes(value))
