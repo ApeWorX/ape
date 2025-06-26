@@ -7,7 +7,8 @@ from typing import Any, Optional, TypeVar, cast
 
 import yaml
 from ethpm_types import PackageManifest, PackageMeta, Source
-from pydantic import ConfigDict, Field, ValidationError, model_validator
+from narwhals.stable.v1 import Implementation as DataframeImplementation
+from pydantic import ConfigDict, Field, ValidationError, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from ape.exceptions import ConfigError
@@ -202,6 +203,17 @@ class DeploymentConfig(PluginConfig):
     """
 
 
+class QueryConfig(PluginConfig):
+    """Add 'query:' key to your config."""
+
+    backend: DataframeImplementation = DataframeImplementation.PANDAS
+    """Which Narwhals backend implementation to use."""
+
+    @field_validator("backend", mode="before")
+    def convert_backend_str(cls, value: Any) -> DataframeImplementation:
+        return DataframeImplementation.from_backend(value)
+
+
 def _get_problem_with_config(errors: list, path: Path) -> Optional[str]:
     # Attempt to find line numbers in the config matching.
     cfg_content = Source(content=path.read_text(encoding="utf8")).content
@@ -367,6 +379,8 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
     """
     The version of the project.
     """
+
+    query: QueryConfig = QueryConfig()
 
     # NOTE: Plugin configs are technically "extras".
     model_config = SettingsConfigDict(extra="allow", env_prefix="APE_")

@@ -1,24 +1,20 @@
 import difflib
 import types
 from collections.abc import Callable, Iterator
-from functools import cached_property, partial, singledispatchmethod
+from functools import cached_property, singledispatchmethod
 from itertools import islice
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import TYPE_CHECKING, Any, Optional, Union, cast
 
 import click
+import narwhals.stable.v1 as nw
 from eth_pydantic_types import HexBytes
 from eth_utils import to_hex
 from ethpm_types.abi import EventABI
 
 from ape.api.accounts import AccountAPI
 from ape.api.address import Address, BaseAddress
-from ape.api.query import (
-    ContractCreation,
-    ContractEventQuery,
-    extract_fields,
-    validate_and_expand_columns,
-)
+from ape.api.query import ContractCreation, ContractEventQuery, validate_and_expand_columns
 from ape.exceptions import (
     ApeAttributeError,
     ArgumentsLengthError,
@@ -47,7 +43,7 @@ from ape.utils.misc import log_instead_of_fail
 if TYPE_CHECKING:
     from ethpm_types.abi import ConstructorABI, ErrorABI, MethodABI
     from ethpm_types.contract_type import ABI_W_SELECTOR_T, ContractType
-    from pandas import DataFrame
+    from narwhals.typing import Frame
 
     from ape.api.networks import ProxyInfoAPI
     from ape.api.providers import CallResult
@@ -676,7 +672,8 @@ class ContractEvent(BaseInterfaceModel):
         stop_block: Optional[int] = None,
         step: int = 1,
         engine_to_use: Optional[str] = None,
-    ) -> "DataFrame":
+        backend: Union[str, nw.Implementation, None] = None,
+    ) -> "Frame":
         """
         Iterate through blocks for log events
 
@@ -691,13 +688,12 @@ class ContractEvent(BaseInterfaceModel):
               Defaults to ``1``.
             engine_to_use (Optional[str]): query engine to use, bypasses query
               engine selection algorithm.
+            backend (Union[:object:`~narwhals.Implementation, str None]): A Narwhals-compatible
+                backend. See: https://narwhals-dev.github.io/narwhals/api-reference/implementation
 
         Returns:
-            pd.DataFrame
+            :class:`~narwhals.typing.Frame`
         """
-        # perf: pandas import is really slow. Avoid importing at module level.
-        import pandas as pd
-
         HEAD = self.chain_manager.blocks.height
         if start_block < 0:
             start_block = HEAD + start_block
@@ -723,13 +719,25 @@ class ContractEvent(BaseInterfaceModel):
             # Only query for a specific contract when checking an instance.
             query["contract"] = self.contract.address
 
+        # TODO: In v0.9, just use `result.as_dataframe(backend=backend)` API
         contract_event_query = ContractEventQuery(**query)
         contract_events = self.query_manager.query(
             contract_event_query, engine_to_use=engine_to_use
         )
         columns_ls = validate_and_expand_columns(columns, ContractLog)
-        data = map(partial(extract_fields, columns=columns_ls), contract_events)
-        return pd.DataFrame(columns=columns_ls, data=data)
+
+        data: dict[str, list] = {column: [] for column in columns_ls}
+        for log in contract_events:
+            for column in data:
+                data[column].append(getattr(log, column))
+
+        if backend is None:
+            backend = cast(nw.Implementation, self.config_manager.query.backend)
+
+        elif isinstance(backend, str):
+            backend = nw.Implementation.from_backend(backend)
+
+        return nw.from_dict(data=data, backend=backend)
 
     def range(
         self,

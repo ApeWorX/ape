@@ -20,6 +20,7 @@ extras_require = {
         "pytest-timeout>=2.2.0,<3",  # For avoiding timing out during tests
         "hypothesis>=6.2.0,<7.0",  # Strategy-based fuzzer
         "hypothesis-jsonschema==0.19.0",  # JSON Schema fuzzer extension
+        "pandas",  # Needed to test w/ narwhals
     ],
     "lint": [
         "ruff>=0.12.0",  # Unified linter and formatter
@@ -92,10 +93,9 @@ setup(
         "lazyasd>=0.1.4",
         "asttokens>=2.4.1,<3",  # Peer dependency; w/o pin container build fails.
         "cchecksum>=0.0.3,<1",
-        # Pandas peer-dep: Numpy 2.0 causes issues for some users.
-        "numpy<2",
+        "more-itertools; python_version<'3.10'",  # backport for `itertools.pairwise`
+        "narwhals>=1.29,<2",
         "packaging>=23.0,<24",
-        "pandas>=2.2.2,<3",
         "pluggy>=1.3,<2",
         "pydantic>=2.10.0,<3",
         "pydantic-settings>=2.5.2,<3",
