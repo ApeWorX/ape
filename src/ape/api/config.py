@@ -176,7 +176,7 @@ class PluginConfig(BaseSettings):
 
     def get(self, key: str, default: Optional[ConfigItemType] = None) -> ConfigItemType:
         extra: dict = self.__pydantic_extra__ or {}
-        return self.__dict__.get(key, extra.get(key, default)) or {}  # type: ignore
+        return self.__dict__.get(key, extra.get(key, default))  # type: ignore
 
 
 class GenericConfig(ConfigDict):
