@@ -290,14 +290,14 @@ def test_transaction_validated_from_dict(ethereum, owner, deploy_receipt):
     assert receipt.transaction.data == b"hello"
 
 
-def test_return_value(owner, vyper_contract_instance):
+def test_return_value(owner, solidity_contract_instance):
     """
     ``.return_value`` still works when using EthTester provider!
     It works by using eth_call to get the result rather than
     tracing-RPCs.
     """
-    vyper_contract_instance.loadArrays(sender=owner)
-    receipt = vyper_contract_instance.getNestedArrayMixedDynamic.transact(sender=owner)
+    solidity_contract_instance.loadArrays(sender=owner)
+    receipt = solidity_contract_instance.getNestedArrayMixedDynamic.transact(sender=owner)
     actual = receipt.return_value
     assert len(actual) == 5
     assert actual[1][1] == [[0], [0, 1], [0, 1, 2]]

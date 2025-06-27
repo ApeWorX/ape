@@ -15,6 +15,8 @@ jobs:
 
         steps:
         - uses: actions/checkout@v4
+          with:
+            fetch-depth: 0
 
         - name: Setup Python
           uses: actions/setup-python@v5
@@ -40,6 +42,8 @@ jobs:
 
         steps:
         - uses: actions/checkout@v4
+          with:
+            fetch-depth: 0
 
         - name: Setup Python
           uses: actions/setup-python@v5
@@ -85,20 +89,26 @@ jobs:
           with:
             version: 1.15.6
 
+        - name: Setup Ape
+          uses: ApeWorX/github-action@v3
+
         - name: Install Dependencies
           run: |
             python -m pip install --upgrade pip
             pip uninstall eth-ape --yes
             pip install .[test]
 
+        - name: Install Ape Dependencies
+          run: ape pm install
+
         - name: Run Functional Tests
-          run: ape test tests/functional -m "not fuzzing" -s --cov=src --cov-append -n auto --dist loadgroup
+          run: ape test tests/functional -m "not fuzzing" -s --cov=src --cov-append -v ERROR -n auto --dist loadgroup
 
         - name: Run Integration Tests
-          run: ape test tests/integration -m "not fuzzing" -s --cov=src --cov-append -n auto --dist loadgroup
+          run: ape test tests/integration -m "not fuzzing" -s --cov=src --cov-append -v ERROR -n auto --dist loadgroup
 
         - name: Run Performance Tests
-          run: ape test tests/performance -s
+          run: ape test tests/performance -s -v ERROR
 
     fuzzing:
         runs-on: ubuntu-latest
@@ -108,6 +118,8 @@ jobs:
 
         steps:
         - uses: actions/checkout@v4
+          with:
+            fetch-depth: 0
 
         - name: Setup Python
           uses: actions/setup-python@v5

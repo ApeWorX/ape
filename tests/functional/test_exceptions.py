@@ -70,10 +70,8 @@ class TestTransactionError:
         err = TransactionError(txn=tx)
         assert err.address == owner.address
 
-    def test_deploy_address_as_address(
-        self, owner, ethereum, vyper_contract_container, zero_address
-    ):
-        contract = vyper_contract_container.deploy(629, sender=owner)
+    def test_deploy_address_as_address(self, owner, ethereum, project, zero_address):
+        contract = project.VyperContract.deploy(629, sender=owner)
 
         receipt = contract.creation_metadata.receipt
         data = receipt.model_dump(exclude={"transaction"})

@@ -2,7 +2,6 @@ from typing import TYPE_CHECKING, Optional
 
 from eth_pydantic_types import HexBytes
 
-from ape.contracts.base import ContractContainer
 from ape_ethereum.proxies import ProxyType
 from ape_test.provider import LocalProvider
 
@@ -36,7 +35,7 @@ def test_minimal_proxy(ethereum, minimal_proxy_container, chain, owner):
 
 
 def test_provider_not_supports_get_storage(
-    get_contract_type, owner, vyper_contract_instance, ethereum, chain, networks
+    project, owner, vyper_contract_instance, ethereum, chain, networks
 ):
     """
     The get storage slot RPC is required to detect this proxy, so it won't work
@@ -56,15 +55,11 @@ def test_provider_not_supports_get_storage(
     my_provider = MyProvider(name="test", network=ethereum.local)
     my_provider._web3 = chain.provider._web3
 
-    _type = get_contract_type("beacon")
-    beacon_contract = ContractContainer(_type)
     target = vyper_contract_instance.address
-    beacon_instance = owner.deploy(beacon_contract, target)
+    beacon_instance = owner.deploy(project.beacon, target)
     beacon = beacon_instance.address
 
-    _type = get_contract_type("BeaconProxy")
-    contract = ContractContainer(_type)
-    contract_instance = owner.deploy(contract, beacon, HexBytes(""))
+    contract_instance = owner.deploy(project.BeaconProxy, beacon, HexBytes(""))
 
     # Ensure not already cached.
     if contract_instance.address in chain.contracts.proxy_infos:

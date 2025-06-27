@@ -91,10 +91,9 @@ def cli(
             if use_cache and dependency.compiled:
                 continue
 
-            # Even if compiling we failed, we at least tried,
+            # Even if compiling failed, we at least tried,
             # and so we don't need to warn "Nothing to compile".
             compiled = True
-
             try:
                 contract_types: dict[str, ContractType] = {
                     c.contract_type.name: c.contract_type

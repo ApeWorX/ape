@@ -331,7 +331,7 @@ def test_poll_logs_timeout(vyper_contract_instance, eth_tester_provider, owner, 
 def test_contract_two_events_with_same_name(
     owner, chain, networks_connected_to_tester, shared_contracts_folder
 ):
-    interface_path = shared_contracts_folder / "Interface.json"
+    interface_path = shared_contracts_folder / "interfaces" / "Interface.json"
     impl_path = shared_contracts_folder / "InterfaceImplementation.json"
     interface_text = interface_path.read_text(encoding="utf8")
     impl_text = impl_path.read_text(encoding="utf8")
@@ -450,9 +450,9 @@ def test_info(solidity_contract_instance):
     assert actual == expected
 
 
-def test_model_dump(solidity_contract_container, owner):
+def test_model_dump(project, owner):
     # NOTE: deploying a new contract with a new number to lessen x-dist conflicts.
-    contract = owner.deploy(solidity_contract_container, 29620000000003)
+    contract = owner.deploy(project.SolidityContract, 29620000000003)
 
     # First, get an event (a normal way).
     number = int(10e18)

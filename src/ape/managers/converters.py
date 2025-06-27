@@ -426,7 +426,7 @@ class ConversionManager(BaseManager):
 
     def convert_method_args(
         self,
-        abi: Union["MethodABI", "ConstructorABI", "EventABI"],
+        abi: Union["MethodABI", "ConstructorABI", "EventABI", "ConstructorABI"],
         arguments: Sequence[Any],
     ):
         input_types = [i.canonical_type for i in abi.inputs]

@@ -2,7 +2,6 @@ import threading
 import time
 from contextlib import contextmanager
 from pathlib import Path
-from shutil import copytree
 from typing import TYPE_CHECKING, Optional, cast
 
 import pytest
@@ -12,7 +11,6 @@ from ethpm_types import ContractType, ErrorABI, MethodABI
 from ethpm_types.abi import ABIType
 
 import ape
-from ape.contracts import ContractContainer, ContractInstance
 from ape.contracts.base import ContractCallHandler
 from ape.exceptions import ChainError, ContractLogicError, ProviderError
 from ape.logging import LogLevel
@@ -22,6 +20,7 @@ from ape.utils.misc import LOCAL_NETWORK_NAME
 from ape_ethereum.proxies import minimal_proxy as _minimal_proxy_container
 
 if TYPE_CHECKING:
+    from ape.contracts import ContractInstance
     from ape.types.events import ContractLog
 
 
@@ -30,7 +29,6 @@ TEST_ADDRESS = cast(AddressType, "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045")
 BASE_PROJECTS_DIRECTORY = (Path(__file__).parent / "data" / "projects").absolute()
 PROJECT_WITH_LONG_CONTRACTS_FOLDER = BASE_PROJECTS_DIRECTORY / "LongContractsFolder"
 APE_PROJECT_FOLDER = BASE_PROJECTS_DIRECTORY / "ApeProject"
-BASE_SOURCES_DIRECTORY = (Path(__file__).parent / "data/sources").absolute()
 
 CALL_WITH_STRUCT_INPUT = MethodABI.model_validate(
     {
@@ -167,83 +165,37 @@ def second_keyfile_account(sender, keyparams, temp_keyfile_account_ctx):
 
 
 @pytest.fixture
-def solidity_contract_instance(
-    owner, solidity_contract_container, networks_connected_to_tester
-) -> ContractInstance:
-    return owner.deploy(solidity_contract_container, 0)
-
-
-@pytest.fixture(scope="session")
-def solidity_fallback_contract_type(get_contract_type) -> ContractType:
-    return get_contract_type("SolFallbackAndReceive")
-
-
-@pytest.fixture(scope="session")
-def vyper_fallback_contract_type(get_contract_type) -> ContractType:
-    return get_contract_type("VyDefault")
-
-
-@pytest.fixture(scope="session")
-def solidity_fallback_container(solidity_fallback_contract_type) -> ContractContainer:
-    return ContractContainer(contract_type=solidity_fallback_contract_type)
-
-
-@pytest.fixture(scope="session")
-def vyper_fallback_container(vyper_fallback_contract_type) -> ContractContainer:
-    return ContractContainer(contract_type=vyper_fallback_contract_type)
+def solidity_contract_instance(owner, project, networks_connected_to_tester) -> "ContractInstance":
+    return owner.deploy(project.SolidityContract, 0)
 
 
 @pytest.fixture
-def vyper_contract_instance(
-    owner, vyper_contract_container, networks_connected_to_tester
-) -> ContractInstance:
-    return owner.deploy(vyper_contract_container, 0, required_confirmations=0)
+def vyper_contract_instance(owner, project, networks_connected_to_tester) -> "ContractInstance":
+    return owner.deploy(project.VyperContract, 0, required_confirmations=0)
 
 
 @pytest.fixture
-def solidity_fallback_contract(owner, solidity_fallback_container):
-    return owner.deploy(solidity_fallback_container)
+def solidity_fallback_contract(owner, project):
+    return owner.deploy(project.SolFallbackAndReceive)
 
 
 @pytest.fixture
-def vyper_fallback_contract(owner, vyper_fallback_container):
-    return owner.deploy(vyper_fallback_container)
-
-
-@pytest.fixture(scope="session")
-def reverts_contract_type(get_contract_type) -> ContractType:
-    return get_contract_type("RevertsContract")
-
-
-@pytest.fixture(scope="session")
-def sub_reverts_contract_type(get_contract_type) -> ContractType:
-    return get_contract_type("SubReverts")
-
-
-@pytest.fixture(scope="session")
-def reverts_contract_container(reverts_contract_type) -> ContractContainer:
-    return ContractContainer(contract_type=reverts_contract_type)
-
-
-@pytest.fixture(scope="session")
-def sub_reverts_contract_container(sub_reverts_contract_type) -> ContractContainer:
-    return ContractContainer(contract_type=sub_reverts_contract_type)
+def vyper_fallback_contract(owner, project):
+    return owner.deploy(project.VyDefault)
 
 
 @pytest.fixture
 def reverts_contract_instance(
-    owner, reverts_contract_container, sub_reverts_contract_instance, eth_tester_provider
-) -> ContractInstance:
+    owner, project, sub_reverts_contract_instance, eth_tester_provider
+) -> "ContractInstance":
     return owner.deploy(
-        reverts_contract_container, sub_reverts_contract_instance, required_confirmations=0
+        project.RevertsContract, sub_reverts_contract_instance, required_confirmations=0
     )
 
 
 @pytest.fixture(params=("solidity", "vyper"))
-def contract_container(
-    request, solidity_contract_container, vyper_contract_container, networks_connected_to_tester
-):
-    return solidity_contract_container if request.param == "solidity" else vyper_contract_container
+def contract_container(request, project, networks_connected_to_tester):
+    return project.SolidityContract if request.param == "solidity" else project.VyperContract
 
 
 @pytest.fixture(params=("solidity", "vyper"))
@@ -261,27 +213,14 @@ def fallback_contract(
 
 
 @pytest.fixture
-def ds_note_test_contract(eth_tester_provider, vyper_contract_type, owner, get_contract_type):
-    contract_type = get_contract_type("DsNoteTest")
-    contract_container = ContractContainer(contract_type=contract_type)
-    return contract_container.deploy(sender=owner)
+def ds_note_test_contract(project, eth_tester_provider, owner):
+    return project.DSNoteTest.deploy(sender=owner)
 
 
 @pytest.fixture(scope="session")
 def project_with_contract():
     with ape.Project(APE_PROJECT_FOLDER).isolate_in_tempdir() as project:
         yield project
-
-
-@pytest.fixture(scope="session")
-def project_with_source_files_contract(project_with_contract):
-    bases_source_dir = BASE_SOURCES_DIRECTORY
-    project_source_dir = project_with_contract.path
-
-    with ape.Project.create_temporary_project() as tmp_project:
-        copytree(project_source_dir, str(tmp_project.path), dirs_exist_ok=True)
-        copytree(bases_source_dir, tmp_project.path / "contracts", dirs_exist_ok=True)
-        yield tmp_project
 
 
 @pytest.fixture
@@ -291,7 +230,7 @@ def clean_contract_caches(chain):
 
 
 @pytest.fixture
-def project_with_dependency_config(project):
+def project_with_dependency_config(empty_project):
     dependencies_config = {
         "contracts_folder": "functional/data/contracts/local",
         "dependencies": [
@@ -305,8 +244,10 @@ def project_with_dependency_config(project):
             }
         ],
     }
-    project.clean()
-    with project.isolate_in_tempdir(**dependencies_config) as tmp_project:
+    empty_project.clean()
+
+    # NOTE: Use empty project because it is faster to compile.
+    with empty_project.isolate_in_tempdir(**dependencies_config) as tmp_project:
         yield tmp_project
 
 
@@ -480,11 +421,6 @@ def dummy_live_network_with_explorer(dummy_live_network, mock_explorer):
 
 
 @pytest.fixture(scope="session")
-def proxy_contract_container(get_contract_type):
-    return ContractContainer(get_contract_type("proxy"))
-
-
-@pytest.fixture(scope="session")
 def calldata():
     return HexBytes(
         "0x3fb5c1cb00000000000000000000000000000000000000000000000000000000000000de"
@@ -517,55 +453,43 @@ def unique_calldata():
 
 
 @pytest.fixture
-def leaf_contract(eth_tester_provider, owner, get_contract_type):
-    ct = get_contract_type("ContractC")
-    return owner.deploy(ContractContainer(ct))
+def leaf_contract(eth_tester_provider, owner, project):
+    return owner.deploy(project.ContractC)
 
 
 @pytest.fixture
-def middle_contract(eth_tester_provider, owner, get_contract_type, leaf_contract):
-    ct = get_contract_type("ContractB")
-    return owner.deploy(ContractContainer(ct), leaf_contract)
+def middle_contract(eth_tester_provider, owner, project, leaf_contract):
+    return owner.deploy(project.ContractB, leaf_contract)
 
 
 @pytest.fixture
-def contract_with_call_depth(
-    owner, eth_tester_provider, get_contract_type, leaf_contract, middle_contract
-):
-    contract = ContractContainer(get_contract_type("ContractA"))
-    return owner.deploy(contract, middle_contract, leaf_contract)
+def contract_with_call_depth(owner, eth_tester_provider, project, leaf_contract, middle_contract):
+    return owner.deploy(project.ContractA, middle_contract, leaf_contract)
 
 
 @pytest.fixture
-def sub_reverts_contract_instance(owner, sub_reverts_contract_container, eth_tester_provider):
-    return owner.deploy(sub_reverts_contract_container, required_confirmations=0)
-
-
-@pytest.fixture(scope="session")
-def error_contract_container(get_contract_type):
-    ct = get_contract_type("HasError")
-    return ContractContainer(ct)
+def sub_reverts_contract_instance(owner, project, eth_tester_provider):
+    return owner.deploy(project.SubRevertsVy, required_confirmations=0)
 
 
 @pytest.fixture
-def error_contract(owner, error_contract_container, eth_tester_provider):
-    _ = eth_tester_provider  # Ensure uses eth tester
-    return owner.deploy(error_contract_container, 1)
+def error_contract(owner, project):
+    return owner.deploy(project.HasError, 1)
 
 
 @pytest.fixture
-def vyper_factory(owner, get_contract_type):
-    return owner.deploy(ContractContainer(get_contract_type("VyperFactory")))
+def vyper_factory(owner, project):
+    return owner.deploy(project.VyperFactory)
 
 
 @pytest.fixture
-def vyper_printing(owner, get_contract_type):
-    return owner.deploy(ContractContainer(get_contract_type("printing")))
+def vyper_printing(owner, project):
+    return owner.deploy(project.printing)
 
 
 @pytest.fixture
-def vyper_blueprint(owner, vyper_contract_container):
-    receipt = owner.declare(vyper_contract_container)
+def vyper_blueprint(owner, project):
+    receipt = owner.declare(project.VyDefault)
     return receipt.contract_address
 
 

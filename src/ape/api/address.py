@@ -168,7 +168,6 @@ class BaseAddress(BaseInterface):
         """
         The number of bytes in the smart contract.
         """
-
         code = self.code
         return len(code) if isinstance(code, bytes) else len(bytes.fromhex(code.lstrip("0x")))
 
@@ -177,7 +176,6 @@ class BaseAddress(BaseInterface):
         """
         ``True`` when there is code associated with the address.
         """
-
         return self.codesize > 0
 
     @property

@@ -18,7 +18,12 @@ from pydantic_core import Url
 
 from ape.api.projects import ApeProject, DependencyAPI, ProjectAPI
 from ape.contracts import ContractContainer, ContractInstance
-from ape.exceptions import APINotImplementedError, ChainError, CompilerError, ProjectError
+from ape.exceptions import (
+    APINotImplementedError,
+    ChainError,
+    CompilerError,
+    ProjectError,
+)
 from ape.logging import logger
 from ape.managers.base import BaseManager
 from ape.managers.config import ApeConfig, merge_configs
@@ -731,7 +736,7 @@ class Dependency(BaseManager, ExtraAttributesMixin):
         Install this dependency.
 
         Args:
-            use_cache (bool): To force a reinstalling, like a refresh, set this
+            use_cache (bool): To force reinstalling, like a refresh, set this
               to ``False``.
             config_override (dict): Optionally change the configuration during install.
             recurse (bool): Set to ``False`` to avoid installing dependency of dependencies.
@@ -740,10 +745,14 @@ class Dependency(BaseManager, ExtraAttributesMixin):
             :class:`~ape.managers.project.ProjectManager`: The resulting project, ready
             for compiling.
         """
-        config_override = {**(self.api.config_override or {}), **(config_override or {})}
+        config_override = {
+            **(self.api.config_override or {}),
+            **(config_override or {}),
+        }
         project = None
         did_fetch = False
 
+        # Check and used already installed project if we can.
         if self._installation is not None and use_cache:
             # Already has a cached installation.
             if config_override:
@@ -1296,7 +1305,6 @@ class DependencyManager(BaseManager):
         Returns:
             Iterator[:class:`~ape.managers.project.Dependency`]
         """
-
         for api in self.config_apis:
             try:
                 api_version_id = api.version_id
@@ -1337,10 +1345,12 @@ class DependencyManager(BaseManager):
         for data in self.config.dependencies:
             yield self.decode_dependency(**data)
 
+    # TODO: We may want to discern between dependencies where their API files are known
+    #   versus dependencies where their projects are cached, as there is a difference.
     @property
     def all(self) -> Iterator[Dependency]:
         """
-        All dependencies known by Ape, regardless of their project
+        All installed dependencies, regardless of their project
         affiliation. NOTE: By "installed" here, we simply
         mean the API files are cached and known by Ape.
         However, it does not guarantee the project is
@@ -1435,7 +1445,11 @@ class DependencyManager(BaseManager):
         return sorted(matching, key=lambda d: d.version_id)[-1] if matching else None
 
     def _get(
-        self, name: str, version: str, allow_install: bool = True, checked: Optional[set] = None
+        self,
+        name: str,
+        version: str,
+        allow_install: bool = True,
+        checked: Optional[set] = None,
     ) -> Optional[Dependency]:
         checked = checked or set()
 
@@ -1770,7 +1784,9 @@ class ProjectManager(ExtraAttributesMixin, BaseManager):
 
     @classmethod
     def from_manifest(
-        cls, manifest: Union[PackageManifest, Path, str], config_override: Optional[dict] = None
+        cls,
+        manifest: Union[PackageManifest, Path, str],
+        config_override: Optional[dict] = None,
     ) -> "Project":
         """
         Create an Ape project using only a manifest.
@@ -2290,7 +2306,9 @@ class DeploymentManager(ManagerAccessMixin):
                 if not self._is_deployment(deployment):
                     continue
 
-                yield EthPMContractInstance.model_validate_json(deployment.read_text())
+                yield EthPMContractInstance.model_validate_json(
+                    deployment.read_text(encoding="utf8")
+                )
 
     def _is_deployment(self, path: Path) -> bool:
         return (

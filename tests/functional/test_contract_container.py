@@ -98,26 +98,24 @@ def test_deploy_no_deployment_bytecode(owner, bytecode):
         contract.deploy(sender=owner)
 
 
-def test_deploy_sending_funds_to_non_payable_constructor(solidity_contract_container, owner):
+def test_deploy_sending_funds_to_non_payable_constructor(project, owner):
     with pytest.raises(
         MethodNonPayableError,
         match=r"Sending funds to a non-payable constructor\.",
     ):
-        solidity_contract_container.deploy(1, sender=owner, value="1 ether")
+        project.SolidityContract.deploy(1, sender=owner, value="1 ether")
 
 
-def test_deployments(owner, eth_tester_provider, vyper_contract_container):
-    initial_deployed_contract = vyper_contract_container.deploy(10000000, sender=owner)
-    actual = vyper_contract_container.deployments[-1].address
+def test_deployments(owner, eth_tester_provider, project):
+    initial_deployed_contract = project.VyperContract.deploy(10000000, sender=owner)
+    actual = project.VyperContract.deployments[-1].address
     expected = initial_deployed_contract.address
     assert actual == expected
 
 
-def test_deploy_proxy(
-    owner, vyper_contract_instance, proxy_contract_container, chain, eth_tester_provider
-):
+def test_deploy_proxy(owner, vyper_contract_instance, project, chain, eth_tester_provider):
     target = vyper_contract_instance.address
-    proxy = proxy_contract_container.deploy(target, sender=owner)
+    proxy = project.SimpleProxy.deploy(target, sender=owner)
 
     # Ensure we can call both proxy and target methods on it.
     assert proxy.implementation  # No attr err
@@ -190,8 +188,8 @@ def test_source_id(contract_container):
     assert actual == expected
 
 
-def test_at(vyper_contract_instance, vyper_contract_container):
-    instance = vyper_contract_container.at(vyper_contract_instance.address)
+def test_at(vyper_contract_instance, project):
+    instance = project.VyperContract.at(vyper_contract_instance.address)
     assert instance == vyper_contract_instance
 
 

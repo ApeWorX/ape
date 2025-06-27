@@ -11,7 +11,7 @@ pragma solidity ^0.4.24;
  * It defines a fallback function that delegates all calls to the address
  * returned by the abstract _implementation() internal function.
  */
-contract Proxy {
+contract BaseProxy {
   /**
    * @dev Fallback function.
    * Implemented entirely in `_fallback`.
@@ -104,7 +104,7 @@ library AddressUtils {
  * implementation address to which it will delegate.
  * Such a change is called an implementation upgrade.
  */
-contract UpgradeabilityProxy is Proxy {
+contract UpgradeabilityProxy is BaseProxy {
   /**
    * @dev Emitted when the implementation is upgraded.
    * @param implementation Address of the new implementation.

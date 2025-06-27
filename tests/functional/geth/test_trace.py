@@ -196,7 +196,7 @@ def test_str_multiline(geth_contract, geth_account):
     tx = geth_contract.getNestedAddressArray.transact(sender=geth_account)
     actual = f"{tx.trace}"
     expected = r"""
-VyperContract\.getNestedAddressArray\(\) -> \[
+SolidityContract\.getNestedAddressArray\(\) -> \[
     \['tx\.origin', 'tx\.origin', 'tx\.origin'\],
     \['ZERO_ADDRESS', 'ZERO_ADDRESS', 'ZERO_ADDRESS'\]
 \] \[\d+ gas\]
@@ -210,7 +210,7 @@ def test_str_list_of_lists(geth_contract, geth_account):
     tx = geth_contract.getNestedArrayMixedDynamic.transact(sender=geth_account)
     actual = f"{tx.trace}"
     expected = r"""
-VyperContract\.getNestedArrayMixedDynamic\(\) -> \[
+SolidityContract\.getNestedArrayMixedDynamic\(\) -> \[
     \[\[\[0\], \[0, 1\], \[0, 1, 2\]\]\],
     \[
         \[\[0\], \[0, 1\], \[0, 1, 2\]\],
@@ -219,7 +219,7 @@ VyperContract\.getNestedArrayMixedDynamic\(\) -> \[
     \[\],
     \[\],
     \[\]
-\] \[\d+ gas\]
+\] \[\d* gas\]
 """
     assert re.match(expected.strip(), actual.strip())
 
@@ -230,7 +230,7 @@ def test_get_gas_report(gas_tracker, geth_account, geth_contract):
     trace = tx.trace
     actual = trace.get_gas_report()
     contract_name = geth_contract.contract_type.name
-    expected = {contract_name: {"setNumber": [tx.gas_used]}}
+    expected = {contract_name: {"setNumber(uint256)": [tx.gas_used]}}
     assert actual == expected
 
 

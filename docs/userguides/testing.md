@@ -512,12 +512,12 @@ Similarly, if you require dev assertions for non-reentrant functions you must be
 
 ```python
 @internal
-@nonreentrant('lock')
+@nonreentrant
 def _foo_internal():  # dev: correct location
     pass
 
 @external
-@nonreentrant('lock')
+@nonreentrant
 def foo():
     self._foo_internal()  # dev: incorrect location
 ```
