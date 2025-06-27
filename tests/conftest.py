@@ -279,7 +279,8 @@ def empty_data_folder():
 
         shutil.rmtree(DATA_FOLDER, ignore_errors=True)
         DATA_FOLDER.mkdir(parents=True, exist_ok=True)
-        shutil.copytree(temp_packages, DATA_FOLDER / "packages")
+        if temp_packages.is_dir():
+            shutil.copytree(temp_packages, DATA_FOLDER / "packages")
 
     shutil.rmtree(temp_packages, ignore_errors=True)
 
