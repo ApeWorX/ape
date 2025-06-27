@@ -949,13 +949,13 @@ def test_custom_error(error_contract, not_owner):
     assert err.value.inputs == {"addr": not_owner.address, "counter": 123}
 
 
-def test_custom_error_info(solidity_contract_type, owner, error_contract):
+def test_custom_error_info(project, owner, error_contract):
     missing_doc_err = error_contract.Unauthorized
     empty_info = missing_doc_err.info
     assert empty_info == ""
 
     # NOTE: deploying a new contract to eliminate clashing with other tests.
-    new_sol_contract = owner.deploy(solidity_contract_type, 26262626262)
+    new_sol_contract = owner.deploy(project.SolidityContract, 26262626262)
     error_with_doc = new_sol_contract.ACustomError
     actual = error_with_doc.info
     expected = """
@@ -1025,13 +1025,13 @@ def test_fallback_transaction_kwargs(fallback_contract, owner):
     assert not receipt.failed
 
 
-def test_fallback_value_no_receive(vyper_fallback_contract, owner, vyper_fallback_contract_type):
+def test_fallback_value_no_receive(vyper_fallback_contract, owner, project):
     """
     Test that shows when fallback is non-payable and there is no receive,
     and you try to send a value, it fails.
     """
     # Hack to set fallback as non-payable.
-    contract_type_data = vyper_fallback_contract_type.model_dump()
+    contract_type_data = project.VyDefault.contract_type.model_dump()
     for abi in contract_type_data["abi"]:
         if abi.get("type") == "fallback":
             abi["stateMutability"] = "non-payable"
@@ -1117,9 +1117,7 @@ def test_fallback_contract_as_sender(fallback_contract, owner, vyper_contract_in
     assert transaction.nonce is not None  # Proves it was prepared.
 
 
-def test_contract_declared_from_blueprint(
-    vyper_blueprint, vyper_factory, vyper_contract_container, owner
-):
+def test_contract_declared_from_blueprint(vyper_blueprint, vyper_factory, project, owner):
     """
     Integration test showing how to get a contract instance from a contract deployed from
     a blueprint transaction.
@@ -1127,15 +1125,15 @@ def test_contract_declared_from_blueprint(
 
     # Call the factory method that calls `create_from_blueprint()` and logs an events
     # with the resulting address. The first arg is necessary calldata.
-    receipt = vyper_factory.create_contract(vyper_blueprint, 321, sender=owner)
+    receipt = vyper_factory.create_contract(vyper_blueprint, sender=owner)
 
     # Create a contract instance at this new address using the contract type
     # from the blueprint.
     address = receipt.events[-1].target
-    instance = vyper_contract_container.at(address)
+    instance = project.VyDefault.at(address)
 
     # Ensure we can invoke a method on that contract.
-    receipt = instance.setAddress(owner, sender=owner)
+    receipt = instance(value=1, sender=owner)
     assert not receipt.failed
 
 

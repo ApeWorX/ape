@@ -729,9 +729,9 @@ def test_gas_limit_live_networks(ethereum):
     assert network.gas_limit == "auto"
 
 
-def test_encode_blueprint_contract(ethereum, vyper_contract_type):
-    actual = ethereum.encode_contract_blueprint(vyper_contract_type)
-    ct_bytes = vyper_contract_type.deployment_bytecode.to_bytes()
+def test_encode_blueprint_contract(ethereum, project):
+    actual = ethereum.encode_contract_blueprint(project.VyperContract.contract_type)
+    ct_bytes = project.VyperContract.contract_type.deployment_bytecode.to_bytes()
 
     # EIP-5202
     expected = (
@@ -1238,7 +1238,7 @@ def test_enrich_trace_avoids_using_wrong_contract_type(
     assert ct == vyper_contract_instance.contract_type
 
 
-def test_get_deployment_address(ethereum, owner, vyper_contract_container):
+def test_get_deployment_address(ethereum, owner, project):
     actual = ethereum.get_deployment_address(owner.address, owner.nonce)
-    expected = owner.deploy(vyper_contract_container, 490)
+    expected = owner.deploy(project.VyperContract, 490)
     assert actual == expected

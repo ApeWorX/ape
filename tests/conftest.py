@@ -11,18 +11,17 @@ from typing import Any, Optional, Union
 
 import pytest
 from click.testing import CliRunner
-from ethpm_types import ContractType
 
 import ape
-from ape.contracts import ContractContainer
 from ape.logging import LogLevel, logger
-from ape.managers.project import Project
+from ape.managers.project import LocalProject, Project
 from ape.pytest.config import ConfigWrapper
 from ape.pytest.gas import GasTracker
 from ape.types.address import AddressType
 from ape.types.units import CurrencyValue
 from ape.utils.basemodel import only_raise_attribute_error
 from ape.utils.misc import ZERO_ADDRESS
+from ape.utils.os import create_tempdir
 from ape.utils.testing import DEFAULT_TEST_CHAIN_ID
 
 # Needed to test tracing support in core `ape test` command.
@@ -34,12 +33,11 @@ explorer_test = pytest.mark.xdist_group(name="explorer-tests")
 
 # Ensure we don't persist any .ape data or using existing.
 
-_DATA_FOLDER_CTX = ape.config.isolate_data_folder()
+_DATA_FOLDER_CTX = ape.config.isolate_data_folder(keep="packages")
 DATA_FOLDER = _DATA_FOLDER_CTX.__enter__()
-ape.config.DATA_FOLDER = DATA_FOLDER
-SHARED_CONTRACTS_FOLDER = (
-    Path(__file__).parent / "functional" / "data" / "contracts" / "ethereum" / "local"
-)
+TESTS_FOLDER = Path(__file__).parent
+FUNCTIONAL_TESTS_FOLDER = TESTS_FOLDER / "functional"
+SHARED_CONTRACTS_FOLDER = FUNCTIONAL_TESTS_FOLDER / "data" / "contracts"
 
 
 EXPECTED_MYSTRUCT_C = 244
@@ -89,15 +87,6 @@ def validate_cwd(start_dir):
     except Exception:
         # Change back to project root, hopefully.
         os.chdir(start_dir)
-
-
-@pytest.fixture
-def example_project():
-    path = "tests/functional/data/contracts/ethereum/local"
-    with ape.project.temp_config(contracts_folder=path):
-        ape.project.clean()
-        yield ape.project
-        ape.project.clean()
 
 
 @pytest.fixture(scope="session")
@@ -282,8 +271,18 @@ def empty_data_folder():
     if "global_config" in (ape.config.__dict__ or {}):
         del ape.config.__dict__["global_config"]
 
-    shutil.rmtree(DATA_FOLDER, ignore_errors=True)
-    DATA_FOLDER.mkdir(parents=True, exist_ok=True)
+    packages = DATA_FOLDER / "packages"
+    with create_tempdir() as temp_dir:
+        temp_packages = temp_dir / "packages"
+        if packages.is_dir():
+            shutil.copytree(packages, temp_packages)
+
+        shutil.rmtree(DATA_FOLDER, ignore_errors=True)
+        DATA_FOLDER.mkdir(parents=True, exist_ok=True)
+        if temp_packages.is_dir():
+            shutil.copytree(temp_packages, DATA_FOLDER / "packages")
+
+    shutil.rmtree(temp_packages, ignore_errors=True)
 
 
 @pytest.fixture
@@ -617,44 +616,36 @@ def gas_tracker(config_wrapper):
 
 
 @pytest.fixture(scope="session")
-def solidity_contract_type(get_contract_type) -> ContractType:
-    return get_contract_type("SolidityContract")
-
-
-@pytest.fixture(scope="session")
-def get_contract_type():
-    def fn(name: str) -> ContractType:
-        content = (SHARED_CONTRACTS_FOLDER / f"{name}.json").read_text(encoding="utf8")
-        return ContractType.model_validate_json(content)
-
-    return fn
-
-
-@pytest.fixture(scope="session")
-def solidity_contract_container(solidity_contract_type) -> ContractContainer:
-    return ContractContainer(contract_type=solidity_contract_type)
-
-
-@pytest.fixture(scope="session")
-def vyper_contract_type(get_contract_type) -> ContractType:
-    return get_contract_type("VyperContract")
-
-
-@pytest.fixture(scope="session")
-def vyper_contract_container(vyper_contract_type) -> ContractContainer:
-    return ContractContainer(contract_type=vyper_contract_type)
-
-
-@pytest.fixture(scope="session")
 def shared_contracts_folder():
     return SHARED_CONTRACTS_FOLDER
 
 
 @pytest.fixture
-def project_with_contracts(with_dependencies_project_path):
+def smaller_project(with_dependencies_project_path):
+    """
+    Useful to avoid compiling the massive main test contracts.
+    """
     return Project(with_dependencies_project_path)
 
 
 @pytest.fixture
-def geth_contract(geth_account, vyper_contract_container, geth_provider):
-    return geth_account.deploy(vyper_contract_container, 0)
+def small_temp_project(smaller_project):
+    with smaller_project.isolate_in_tempdir() as temp_project:
+        yield temp_project
+
+
+@pytest.fixture
+def temp_project(project):
+    with project.isolate_in_tempdir() as temp_project:
+        yield temp_project
+
+
+@pytest.fixture
+def empty_project():
+    with create_tempdir() as empty:
+        yield LocalProject(empty)
+
+
+@pytest.fixture
+def geth_contract(geth_account, project, geth_provider):
+    return geth_account.deploy(project.SolidityContract, 0)

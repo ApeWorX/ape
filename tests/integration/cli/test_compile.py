@@ -19,29 +19,19 @@ skip_non_compilable_projects = skip_projects(
 )
 
 
-@skip_projects(
-    "geth",
-    "multiple-interfaces",
-    "only-dependencies",
-    "test",
-    "bad-contracts",
-    "script",
-    "with-dependencies",
-    "with-contracts",
-)
-def test_compile_missing_contracts_dir(ape_cli, runner, project):
+@skip_projects_except("no-config")
+def test_compile_missing_contracts_dir(ape_cli, runner, integ_project):
     arg_lists = [["compile"], ["compile", "--include-dependencies"]]
     for arg_list in arg_lists:
-        arg_list.extend(("--project", f"{project.path}"))
+        arg_list.extend(("--project", f"{integ_project.path}"))
         result = runner.invoke(ape_cli, arg_list)
         assert result.exit_code == 0, result.output
 
 
 @skip_non_compilable_projects
-def test_compile(ape_cli, runner, integ_project, clean_cache):
+def test_compile(ape_cli, runner, integ_project):
     integ_project.clean()
-
-    cmd = ("compile", "--project", f"{integ_project.path}")
+    cmd = ("compile", "--project", f"{integ_project.path}", "-v", "INFO")
     result = runner.invoke(ape_cli, cmd, catch_exceptions=False)
     assert result.exit_code == 0, result.output
 
@@ -121,7 +111,9 @@ def test_compile_when_sources_change(ape_cli, runner, integ_project, clean_cache
     assert "bar" in content, "Test setup failed - unexpected content"
 
     result = runner.invoke(
-        ape_cli, ("compile", "--project", f"{integ_project.path}"), catch_exceptions=False
+        ape_cli,
+        ("compile", "--project", f"{integ_project.path}", "-v", "info"),
+        catch_exceptions=False,
     )
     assert result.exit_code == 0, result.output
     assert "contracts/Interface.json" in result.output
@@ -135,7 +127,9 @@ def test_compile_when_sources_change(ape_cli, runner, integ_project, clean_cache
     source_path.touch()
     source_path.write_text(modified_source_text, encoding="utf8")
     result = runner.invoke(
-        ape_cli, ("compile", "--project", f"{integ_project.path}"), catch_exceptions=False
+        ape_cli,
+        ("compile", "--project", f"{integ_project.path}", "-v", "INFO"),
+        catch_exceptions=False,
     )
     assert result.exit_code == 0, result.output
     assert "contracts/Interface.json" in result.output
@@ -144,7 +138,9 @@ def test_compile_when_sources_change(ape_cli, runner, integ_project, clean_cache
 
     # Verify that the next time, it does not need to recompile (no changes)
     result = runner.invoke(
-        ape_cli, ("compile", "--project", f"{integ_project.path}"), catch_exceptions=False
+        ape_cli,
+        ("compile", "--project", f"{integ_project.path}", "-v", "INFO"),
+        catch_exceptions=False,
     )
     assert result.exit_code == 0, result.output
     assert "contracts/Interface.json" not in result.output
@@ -153,7 +149,7 @@ def test_compile_when_sources_change(ape_cli, runner, integ_project, clean_cache
 @skip_projects_except("multiple-interfaces")
 def test_compile_when_sources_change_problematically(ape_cli, runner, integ_project, clean_cache):
     """
-    There was a bug when sources changes but had errors, that the old sources continued
+    There was a bug when contracts changes but had errors, that the old contracts continued
     to be used and the errors were swallowed.
     """
     source_path = integ_project.contracts_folder / "Interface.json"
@@ -161,7 +157,9 @@ def test_compile_when_sources_change_problematically(ape_cli, runner, integ_proj
     assert "bar" in content, "Test setup failed - unexpected content"
 
     result = runner.invoke(
-        ape_cli, ("compile", "--project", f"{integ_project.path}"), catch_exceptions=False
+        ape_cli,
+        ("compile", "--project", f"{integ_project.path}", "-v", "INFO"),
+        catch_exceptions=False,
     )
     assert result.exit_code == 0, result.output
 
@@ -226,7 +224,7 @@ def test_compile_when_source_contains_return_characters(
     source_path.unlink()
     source_path.touch()
     source_path.write_text(modified_source_text, encoding="utf8")
-    arguments = ("compile", "--project", f"{integ_project.path}")
+    arguments = ("compile", "--project", f"{integ_project.path}", "-v", "INFO")
     result = runner.invoke(ape_cli, arguments, catch_exceptions=False)
     assert result.exit_code == 0, result.output
     assert "contracts/Interface.json" in result.output
@@ -252,7 +250,7 @@ def test_can_access_contracts(integ_project, clean_cache):
 def test_compile_specified_contracts(clean_cache, ape_cli, runner, integ_project, contract_path):
     assert integ_project.path.is_dir(), "Setup failed - project missing."
 
-    arguments = ("compile", contract_path, "--project", f"{integ_project.path}")
+    arguments = ("compile", contract_path, "--project", f"{integ_project.path}", "-v", "INFO")
     result = runner.invoke(ape_cli, arguments, catch_exceptions=False)
     assert result.exit_code == 0, result.output
     assert "contracts/Interface.json" in result.output
@@ -325,7 +323,7 @@ def test_compile_non_ape_project_deletes_ape_config_file(ape_cli, runner, integ_
 
 @skip_projects_except("only-dependencies")
 def test_compile_only_dependency(ape_cli, runner, integ_project, clean_cache, ape_caplog):
-    expected_log_message = "Compiling sources/DependencyInProjectOnly.json"
+    expected_log_message = "'dependency-in-project-only' compiled."
 
     # Compile w/o --include-dependencies flag (nothing happens, but it doesn't fail).
     arguments: tuple[str, ...] = ("compile", "--force", "--project", f"{integ_project.path}")
@@ -340,6 +338,8 @@ def test_compile_only_dependency(ape_cli, runner, integ_project, clean_cache, ap
         "--project",
         f"{integ_project.path}",
         "--include-dependencies",
+        "-v",
+        "INFO",
     )
     result = runner.invoke(ape_cli, arguments, catch_exceptions=False)
     assert expected_log_message in result.output
@@ -362,6 +362,8 @@ def test_compile_only_dependency(ape_cli, runner, integ_project, clean_cache, ap
         "--project",
         f"{integ_project.path}",
         "--include-dependencies",
+        "-v",
+        "INFO",
     )
     result = runner.invoke(ape_cli, arguments, catch_exceptions=False)
     assert result.exit_code == 1, result.output  # exit_code=1 because 1 dependency is bad.
@@ -379,7 +381,7 @@ def test_raw_compiler_output_bytecode(integ_project):
 
 @skip_projects_except("with-contracts")
 def test_compile_exclude(ape_cli, runner):
-    result = runner.invoke(ape_cli, ("compile", "--force"), catch_exceptions=False)
+    result = runner.invoke(ape_cli, ("compile", "--force", "-v", "INFO"), catch_exceptions=False)
     assert "Compiling 'contracts/Exclude.json'" not in result.output
     assert "Compiling 'contracts/IgnoreUsingRegex.json'" not in result.output
     assert "Compiling 'contracts/exclude_dir/UnwantedContract.json'" not in result.output
@@ -392,6 +394,8 @@ def test_compile_config_override(ape_cli, runner):
         "--force",
         "--config-override",
         '{"compile": {"exclude": ["*ContractA*"]}}',
+        "-v",
+        "INFO",
     )
     result = runner.invoke(ape_cli, arguments, catch_exceptions=False)
     assert "Compiling 'contracts/ContractA.json'" not in result.output

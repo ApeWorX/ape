@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 
 import click
 
+from ape.cli import ape_cli_context
 from ape.cli.commands import ConnectedProviderCommand
 from ape.cli.options import network_option
 from ape.logging import logger
@@ -25,8 +26,9 @@ def cli():
 
 
 @cli.command(short_help="Initialize a new cache database")
+@ape_cli_context()
 @network_option(required=True)
-def init(ecosystem, network):
+def init(cli_ctx, ecosystem, network):
     """
     Initializes an SQLite database and creates a file to store data
     from the provider.
@@ -63,8 +65,9 @@ def query(query_str):
 
 
 @cli.command(short_help="Purges entire database")
+@ape_cli_context()
 @network_option(required=True)
-def purge(ecosystem, network):
+def purge(cli_ctx, ecosystem, network):
     """
     Purges data from the selected database instance.
 
@@ -76,7 +79,5 @@ def purge(ecosystem, network):
     purge the database of choice.
     """
 
-    ecosystem_name = network.ecosystem.name
-    network_name = network.name
-    get_engine().purge_database(ecosystem_name, network_name)
-    logger.success(f"Caching database purged for {ecosystem_name}:{network_name}.")
+    get_engine().purge_database(ecosystem.name, network.name)
+    logger.success(f"Caching database purged for {ecosystem.name}:{network.name}.")

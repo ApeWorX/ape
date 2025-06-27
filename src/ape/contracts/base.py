@@ -974,7 +974,7 @@ class ContractTypeWrapper(ManagerAccessMixin):
     def source_path(self) -> Optional[Path]:
         """
         Returns the path to the local contract if determined that this container
-        belongs to the active project by cross checking source_id.
+        belongs to the active project by cross-checking source_id.
         """
         if not (source_id := self.contract_type.source_id):
             return None

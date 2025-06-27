@@ -86,7 +86,7 @@ def test_decode_data_missing_trailing_zeroes(
     assert actual == expected
 
 
-def test_decode_topics_missing_leading_zeroes(vyper_contract_type):
+def test_decode_topics_missing_leading_zeroes(project):
     # The second value here was the problem before... It has no leading zeroes
     # and eth-abi is very strict about that.
     topics = [
@@ -107,7 +107,7 @@ def test_decode_topics_missing_leading_zeroes(vyper_contract_type):
         b"Dynamic\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
         b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
     )
-    abi = vyper_contract_type.events["NumberChange"]
+    abi = project.VyperContract.contract_type.events["NumberChange"]
     collection = LogInputABICollection(abi)
 
     actual = collection.decode(topics, data)

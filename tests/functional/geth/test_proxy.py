@@ -1,16 +1,13 @@
 from eth_pydantic_types import HexBytes
 
-from ape.contracts import ContractContainer
 from ape_ethereum.proxies import ProxyType
 from tests.conftest import geth_process_test
 
 
 @geth_process_test
-def test_standard_proxy(get_contract_type, owner, geth_contract, ethereum):
-    _type = get_contract_type("eip1967")
-    contract = ContractContainer(_type)
+def test_standard_proxy(project, owner, geth_contract, ethereum):
     target = geth_contract.address
-    contract_instance = owner.deploy(contract, target, HexBytes(""))
+    contract_instance = owner.deploy(project.ERC1967Proxy, target, HexBytes(""))
     actual = ethereum.get_proxy_info(contract_instance.address)
     assert actual is not None
     assert actual.type == ProxyType.Standard
@@ -18,16 +15,12 @@ def test_standard_proxy(get_contract_type, owner, geth_contract, ethereum):
 
 
 @geth_process_test
-def test_beacon_proxy(get_contract_type, geth_contract, owner, ethereum):
-    _type = get_contract_type("beacon")
-    beacon_contract = ContractContainer(_type)
+def test_beacon_proxy(project, geth_contract, owner, ethereum):
     target = geth_contract.address
-    beacon_instance = owner.deploy(beacon_contract, target)
+    beacon_instance = owner.deploy(project.beacon, target)
     beacon = beacon_instance.address
 
-    _type = get_contract_type("BeaconProxy")
-    contract = ContractContainer(_type)
-    contract_instance = owner.deploy(contract, beacon, HexBytes(""))
+    contract_instance = owner.deploy(project.BeaconProxy, beacon, HexBytes(""))
 
     actual = ethereum.get_proxy_info(contract_instance.address)
     assert actual is not None
@@ -36,14 +29,9 @@ def test_beacon_proxy(get_contract_type, geth_contract, owner, ethereum):
 
 
 @geth_process_test
-def test_uups_proxy(get_contract_type, geth_contract, owner, ethereum):
-    _type = get_contract_type("Uups")
-    contract = ContractContainer(_type)
-
+def test_uups_proxy(project, geth_contract, owner, ethereum):
     target = geth_contract.address
-
-    contract_instance = owner.deploy(contract, HexBytes("0x2beb1711"), target)
-
+    contract_instance = owner.deploy(project.Uups, HexBytes("0x2beb1711"), target)
     actual = ethereum.get_proxy_info(contract_instance.address)
     assert actual is not None
     assert actual.type == ProxyType.UUPS
@@ -51,10 +39,10 @@ def test_uups_proxy(get_contract_type, geth_contract, owner, ethereum):
 
 
 @geth_process_test
-def test_gnosis_safe(safe_proxy_container, geth_contract, owner, ethereum, chain):
+def test_gnosis_safe(project, geth_contract, owner, ethereum, chain):
     # Setup a proxy contract.
     target = geth_contract.address
-    proxy_instance = owner.deploy(safe_proxy_container, target)
+    proxy_instance = owner.deploy(project.SafeProxy, target)
 
     # (test)
     actual = ethereum.get_proxy_info(proxy_instance.address)
@@ -75,17 +63,12 @@ def test_gnosis_safe(safe_proxy_container, geth_contract, owner, ethereum, chain
 
 
 @geth_process_test
-def test_openzeppelin(get_contract_type, geth_contract, owner, ethereum, sender):
-    _type = get_contract_type("UpgradeabilityProxy")
-    contract = ContractContainer(_type)
-
+def test_openzeppelin(project, geth_contract, owner, ethereum, sender):
+    constructor_contract = owner.deploy(project.SolFallbackAndReceive)
     target = geth_contract.address
-    _type = get_contract_type("SolFallbackAndReceive")
-    constructor_container = ContractContainer(_type)
-    constructor_contract = owner.deploy(constructor_container)
-
-    contract_instance = owner.deploy(contract, constructor_contract.address, target)
-
+    contract_instance = owner.deploy(
+        project.UpgradeabilityProxy, constructor_contract.address, target
+    )
     actual = ethereum.get_proxy_info(contract_instance.address)
     assert actual is not None
     assert actual.type == ProxyType.OpenZeppelin
@@ -93,16 +76,10 @@ def test_openzeppelin(get_contract_type, geth_contract, owner, ethereum, sender)
 
 
 @geth_process_test
-def test_delegate(get_contract_type, geth_contract, owner, ethereum):
-    _type = get_contract_type("ERCProxy")
-    contract = ContractContainer(_type)
-
+def test_delegate(project, geth_contract, owner, ethereum):
     target = geth_contract.address
-
-    contract_instance = owner.deploy(contract, target)
-
+    contract_instance = owner.deploy(project.ERCProxy, target)
     actual = ethereum.get_proxy_info(contract_instance.address)
-
     assert actual is not None
     assert actual.type == ProxyType.Delegate
     assert actual.target == target

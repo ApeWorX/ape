@@ -71,8 +71,8 @@ def test_import_valid_private_key(ape_cli, runner, temp_account, temp_keyfile_pa
     # Add account from valid private key
     result = runner.invoke(
         ape_cli,
-        ("accounts", "import", ALIAS),
-        input="\n".join([f"0x{PRIVATE_KEY}", PASSWORD, PASSWORD]),
+        ("accounts", "import", ALIAS, "-v", "INFO"),
+        input="\n".join([f"0x{PRIVATE_KEY}", PASSWORD, PASSWORD]) + "\n",
     )
     assert result.exit_code == 0, result.output
     assert temp_account.address in result.output
@@ -158,7 +158,7 @@ def test_import_mnemonic_default_hdpath(
     # Add account from mnemonic with default hdpath of ETHEREUM_DEFAULT_PATH
     result = runner.invoke(
         ape_cli,
-        ("accounts", "import", "--use-mnemonic", ALIAS),
+        ("accounts", "import", "--use-mnemonic", ALIAS, "-v", "INFO"),
         input="\n".join([MNEMONIC, PASSWORD, PASSWORD]),
     )
     assert result.exit_code == 0, result.output
@@ -175,7 +175,7 @@ def test_import_mnemonic_custom_hdpath(
     # Add account from mnemonic with custom hdpath
     result = runner.invoke(
         ape_cli,
-        ("accounts", "import", ALIAS, "--use-mnemonic", "--hd-path", CUSTOM_HDPATH),
+        ("accounts", "import", ALIAS, "--use-mnemonic", "--hd-path", CUSTOM_HDPATH, "-v", "INFO"),
         input="\n".join([MNEMONIC, PASSWORD, PASSWORD]),
     )
     assert result.exit_code == 0, result.output
@@ -189,7 +189,7 @@ def test_export(ape_cli, runner, temp_keyfile, keyfile_account, accounts):
     # export key
     result = runner.invoke(
         ape_cli,
-        ("accounts", "export", ALIAS),
+        ("accounts", "export", ALIAS, "-v", "INFO"),
         input="\n".join([PASSWORD, PASSWORD]),
     )
     assert result.exit_code == 0, result.output
@@ -221,7 +221,7 @@ def test_generate_default(ape_cli, runner, temp_keyfile_path):
     show_mnemonic = ""
     result = runner.invoke(
         ape_cli,
-        ("accounts", "generate", ALIAS),
+        ("accounts", "generate", ALIAS, "-v", "INFO"),
         input="\n".join(["random entropy", show_mnemonic, PASSWORD, PASSWORD]),
     )
     assert result.exit_code == 0, result.output
@@ -241,7 +241,7 @@ def test_generate_hide_mnemonic_prompt(ape_cli, runner, temp_keyfile_path):
     show_mnemonic = "n"
     result = runner.invoke(
         ape_cli,
-        ("accounts", "generate", ALIAS),
+        ("accounts", "generate", ALIAS, "-v", "INFO"),
         input="\n".join(["random entropy", show_mnemonic, PASSWORD, PASSWORD]),
     )
     assert result.exit_code == 0, result.output
@@ -257,7 +257,7 @@ def test_generate_hide_mnemonic_option(ape_cli, runner, temp_keyfile_path):
     # Generate new private key
     result = runner.invoke(
         ape_cli,
-        ("accounts", "generate", ALIAS, "--hide-mnemonic"),
+        ("accounts", "generate", ALIAS, "--hide-mnemonic", "-v", "INFO"),
         input="\n".join(["random entropy", PASSWORD, PASSWORD]),
     )
     assert result.exit_code == 0, result.output
@@ -275,7 +275,7 @@ def test_generate_24_words(ape_cli, runner, temp_keyfile_path):
     word_count = 24
     result = runner.invoke(
         ape_cli,
-        ("accounts", "generate", ALIAS, "--word-count", word_count),
+        ("accounts", "generate", ALIAS, "--word-count", word_count, "-v", "INFO"),
         input="\n".join(["random entropy", show_mnemonic, PASSWORD, PASSWORD]),
     )
     assert result.exit_code == 0, result.output
@@ -295,7 +295,7 @@ def test_generate_custom_hdpath(ape_cli, runner, temp_keyfile_path):
     show_mnemonic = ""
     result = runner.invoke(
         ape_cli,
-        ("accounts", "generate", ALIAS, "--hd-path", CUSTOM_HDPATH),
+        ("accounts", "generate", ALIAS, "--hd-path", CUSTOM_HDPATH, "-v", "INFO"),
         input="\n".join(["random entropy", show_mnemonic, PASSWORD, PASSWORD]),
     )
     assert result.exit_code == 0, result.output
@@ -316,7 +316,17 @@ def test_generate_24_words_and_custom_hdpath(ape_cli, runner, temp_keyfile_path)
     word_count = 24
     result = runner.invoke(
         ape_cli,
-        ("accounts", "generate", ALIAS, "--word-count", word_count, "--hd-path", CUSTOM_HDPATH),
+        (
+            "accounts",
+            "generate",
+            ALIAS,
+            "--word-count",
+            word_count,
+            "--hd-path",
+            CUSTOM_HDPATH,
+            "-v",
+            "INFO",
+        ),
         input="\n".join(["random entropy", show_mnemonic, PASSWORD, PASSWORD]),
     )
     assert result.exit_code == 0, result.output

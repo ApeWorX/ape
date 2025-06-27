@@ -24,13 +24,13 @@ The following section highlights how to use each of them and what their differen
 
 You can use dependencies from GitHub.
 For example, a common dependency for Solidity projects is [Open Zeppelin](https://github.com/OpenZeppelin/openzeppelin-contracts).
-To use Open Zeppelin version 4.4.2 in your Ape Solidity project, add the following to your `ape-config.yaml` file:
+To use Open Zeppelin version 4.9.6 in your Ape Solidity project, add the following to your `ape-config.yaml` file:
 
 ```yaml
 dependencies:
   - name: OpenZeppelin
     github: OpenZeppelin/openzeppelin-contracts
-    version: 4.4.2
+    version: 4.9.6
 ```
 
 Then, follow the guide below about `remappings` to use the dependency.
@@ -209,7 +209,7 @@ You can also use Python to install dependencies, using `**kwargs` as the same fi
 from ape import project
 
 project.dependencies.install(
-   github="OpenZeppelin/openzeppelin-contracts", name="openzeppelin", version="4.4.2"
+   github="OpenZeppelin/openzeppelin-contracts", name="openzeppelin", version="4.9.6"
 )
 ```
 
@@ -336,7 +336,7 @@ For example, if you are using dependencies like:
 dependencies:
   - name: OpenZeppelin
     github: OpenZeppelin/openzeppelin-contracts
-    version: 4.4.2
+    version: 4.9.6
 ```
 
 And your source files import from `openzeppelin` this way:

@@ -393,7 +393,6 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         Returns:
             :class:`~ape.api.transactions.ReceiptAPI`: The receipt of the declare transaction.
         """
-
         transaction = self.provider.network.ecosystem.encode_contract_blueprint(
             contract.contract_type, *args, **kwargs
         )

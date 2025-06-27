@@ -71,11 +71,9 @@ def test_transact_revert_custom_error(error_contract_geth, geth_second_account):
 
 
 @geth_process_test
-def test_transact_revert_custom_error_deploy(
-    error_contract_container, geth_account, chain, geth_provider
-):
+def test_transact_revert_custom_error_deploy(project, geth_account, chain, geth_provider):
     with pytest.raises(Exception) as err:
-        geth_account.deploy(error_contract_container, 0)
+        geth_account.deploy(project.HasError, 0)
 
     err_cls = err.value
     assert isinstance(err_cls, ContractLogicError)

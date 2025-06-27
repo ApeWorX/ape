@@ -153,7 +153,7 @@ class PytestApeRunner(ManagerAccessMixin):
 
     def pytest_runtest_setup(self, item):
         """
-        By default insert isolation fixtures into each test cases list of fixtures
+        By default, insert isolation fixtures into each test cases list of fixtures
         prior to actually executing the test case.
 
         https://docs.pytest.org/en/6.2.x/reference.html#pytest.hookspec.pytest_runtest_setup

@@ -278,11 +278,11 @@ def test_validate_file_uses_project_name():
         assert cfg.name == name
 
 
-def test_deployments(networks_connected_to_tester, owner, vyper_contract_container, project):
+def test_deployments(networks_connected_to_tester, owner, project):
     _ = networks_connected_to_tester  # Connection needs to lookup config.
 
     # First, obtain a "previously-deployed" contract.
-    instance = vyper_contract_container.deploy(1000200000, sender=owner)
+    instance = project.VyperContract.deploy(1000200000, sender=owner)
     address = instance.address
 
     # Create a config using this new contract for a "later time".
@@ -292,7 +292,7 @@ def test_deployments(networks_connected_to_tester, owner, vyper_contract_contain
     with project.temp_config(deployments=deploys):
         deploy_config = project.config.deployments
         assert deploy_config["ethereum"]["local"][0]["address"] == address
-        deployment = vyper_contract_container.deployments[0]
+        deployment = project.VyperContract.deployments[0]
 
     assert deployment.address == instance.address
 

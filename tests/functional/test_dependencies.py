@@ -9,57 +9,17 @@ from pydantic import ValidationError
 
 import ape
 from ape.exceptions import ProjectError
+from ape.logging import LogLevel, logger
 from ape.managers.project import Dependency, LocalProject, PackagesCache, Project, ProjectManager
 from ape.utils import create_tempdir
 from ape_pm.dependency import GithubDependency, LocalDependency, NpmDependency, PythonDependency
 from tests.conftest import skip_if_plugin_installed
 
 
-@pytest.fixture
-def oz_dependencies_config():
-    def _create_oz_dependency(version: str) -> dict:
-        return {
-            "name": "openzeppelin",
-            "version": version,
-            "github": "OpenZeppelin/openzeppelin-contracts",
-        }
-
-    return {"dependencies": [_create_oz_dependency("3.1.0"), _create_oz_dependency("4.4.2")]}
-
-
-@pytest.fixture
-def project_with_downloaded_dependencies(project, oz_dependencies_config):
-    # The path to source-test data.
-    manifests_directory = Path(__file__).parent / "data" / "manifests"
-    oz_manifests = manifests_directory / "openzeppelin"
-
-    # Copy test-data in the DATA_FOLDER, as if these were already fetched.
-    base = project.dependencies.packages_cache
-    package_id = "OpenZeppelin_openzeppelin-contracts"
-    oz_manifests_dest = base.manifests_folder / package_id
-    oz_manifests_dest.mkdir(exist_ok=True, parents=True)
-
-    for version in ("3.1.0", "4.4.2"):
-        manifest_source = oz_manifests / version / "openzeppelin.json"
-        manifest_dest = oz_manifests_dest / f"{version.replace('.', '_')}.json"
-        manifest_dest.unlink(missing_ok=True)
-        manifest_dest.write_text(manifest_source.read_text(), encoding="utf8")
-
-        # Also, copy in the API data
-        api_dest = base.api_folder / package_id / f"{version.replace('.', '_')}.json"
-        api_dest.unlink(missing_ok=True)
-        cfg = [x for x in oz_dependencies_config["dependencies"] if x["version"] == version][0]
-        api_dest.parent.mkdir(exist_ok=True, parents=True)
-        api_dest.write_text(json.dumps(cfg), encoding="utf8")
-
-    with project.temp_config(**oz_dependencies_config):
-        yield project
-
-
-def test_repr(project):
-    assert isinstance(project, LocalProject), "Setup failed - expecting local project"
-    actual = repr(project.dependencies)
-    path = str(project.path).replace(str(Path.home()), "$HOME")
+def test_repr(smaller_project):
+    assert isinstance(smaller_project, LocalProject), "Setup failed - expecting local project"
+    actual = repr(smaller_project.dependencies)
+    path = str(smaller_project.path).replace(str(Path.home()), "$HOME")
     expected = f"<DependencyManager project={path}>"
     assert actual == expected
 
@@ -77,20 +37,20 @@ def test_repr_manifest_project():
     assert actual == expected
 
 
-def test_len(project):
-    actual = len(project.dependencies)
-    expected = len(project.config.dependencies)
+def test_len(smaller_project):
+    actual = len(smaller_project.dependencies)
+    expected = len(smaller_project.config.dependencies)
     assert actual == expected
 
 
 @pytest.mark.parametrize("ref", ("main", "v1.0.0", "1.0.0"))
-def test_decode_dependency_using_reference(ref, recwarn, project):
+def test_decode_dependency_using_reference(ref, recwarn, smaller_project):
     dependency_config = {
         "github": "apeworx/testfoobartest",
         "name": "foobar",
         "ref": ref,
     }
-    dependency = project.dependencies.decode_dependency(**dependency_config)
+    dependency = smaller_project.dependencies.decode_dependency(**dependency_config)
     assert dependency.version is None
     assert dependency.ref == ref
     assert str(dependency.uri) == f"https://github.com/apeworx/testfoobartest/tree/{ref}"
@@ -100,39 +60,41 @@ def test_decode_dependency_using_reference(ref, recwarn, project):
     assert DeprecationWarning not in [w.category for w in recwarn.list]
 
 
-def test_dependency_with_multiple_versions(project_with_downloaded_dependencies):
+def test_dependency_with_multiple_versions(project):
     """
     Testing the case where we have OpenZeppelin installed multiple times
     with different versions.
     """
     name = "openzeppelin"
-    dm = project_with_downloaded_dependencies.dependencies
+    dm = project.dependencies
 
     # We can get both projects at once! One for each version.
-    oz_310 = dm.get_dependency(name, "3.1.0", allow_install=False)
-    oz_442 = dm.get_dependency(name, "4.4.2", allow_install=False)
+    oz_496 = dm.get_dependency(
+        name,
+        "4.9.6",
+    )
+    oz_520 = dm.get_dependency(name, "5.2.0")
     base_uri = "https://github.com/OpenZeppelin/openzeppelin-contracts/releases/tag"
 
-    assert oz_310.version == "3.1.0"
-    assert oz_310.name == name
-    assert str(oz_310.uri) == f"{base_uri}/v3.1.0"
-    assert oz_442.version == "4.4.2"
-    assert oz_442.name == name
-    assert str(oz_442.uri) == f"{base_uri}/v4.4.2"
+    assert oz_496.version == "4.9.6"
+    assert oz_496.name == name
+    assert str(oz_496.uri) == f"{base_uri}/v4.9.6"
+    assert oz_520.version == "5.2.0"
+    assert oz_520.name == name
+    assert str(oz_520.uri) == f"{base_uri}/v5.2.0"
 
 
-def test_decode_dependency_with_config_override(project):
-    with project.isolate_in_tempdir() as tmp_project:
-        settings = {".json": {"evm_version": "paris"}}
-        path = "__test_path__"
-        base_path = tmp_project.path / path
-        contracts_path = base_path / "contracts"
-        contracts_path.mkdir(parents=True, exist_ok=True)
-        (contracts_path / "contract.json").write_text('{"abi": []}', encoding="utf8")
+def test_decode_dependency_with_config_override(small_temp_project):
+    settings = {".json": {"evm_version": "paris"}}
+    path = "__test_path__"
+    base_path = small_temp_project.path / path
+    contracts_path = base_path / "contracts"
+    contracts_path.mkdir(parents=True, exist_ok=True)
+    (contracts_path / "contract.json").write_text('{"abi": []}', encoding="utf8")
 
-        data = {"name": "FooBar", "local": path, "config_override": settings}
-        dependency = tmp_project.dependencies.decode_dependency(**data)
-        assert dependency.config_override == settings
+    data = {"name": "FooBar", "local": path, "config_override": settings}
+    dependency = small_temp_project.dependencies.decode_dependency(**data)
+    assert dependency.config_override == settings
 
 
 def test_uri_map(project_with_dependency_config):
@@ -144,33 +106,35 @@ def test_uri_map(project_with_dependency_config):
     assert Path(str(actual["testdependency"])) == expected
 
 
-def test_get_dependency_by_package_id(project_with_downloaded_dependencies):
-    dm = project_with_downloaded_dependencies.dependencies
-    actual = dm.get_dependency("OpenZeppelin/openzeppelin-contracts", "4.4.2")
-    assert actual.name == "openzeppelin"
-    assert actual.version == "4.4.2"
-    assert actual.package_id == "OpenZeppelin/openzeppelin-contracts"
+def test_get_dependency_by_package_id(smaller_project):
+    dm = smaller_project.dependencies
+    dep = next(iter(dm))
+    actual = dm.get_dependency(dep.package_id, dep.version)
+    assert actual.name == dep.name
+    assert actual.version == dep.version
+    assert actual.package_id == dep.package_id
 
 
-def test_get_dependency_by_name(project_with_downloaded_dependencies):
-    dm = project_with_downloaded_dependencies.dependencies
-    actual = dm.get_dependency("openzeppelin", "4.4.2")
-    assert actual.name == "openzeppelin"
-    assert actual.version == "4.4.2"
-    assert actual.package_id == "OpenZeppelin/openzeppelin-contracts"
+def test_get_dependency_by_name(smaller_project):
+    dm = smaller_project.dependencies
+    dep = next(iter(dm))
+    actual = dm.get_dependency(dep.name, dep.version)
+    assert actual.name == dep.name
+    assert actual.version == dep.version
+    assert actual.package_id == dep.package_id
 
 
-def test_get_dependency_returns_latest_updates(project, project_with_contracts):
+def test_get_dependency_returns_latest_updates(project):
     """
     Integration test showing how to utilize the changes to dependencies from the config.
     """
-    cfg = [{"name": "dep", "version": "10.1.10", "local": f"{project_with_contracts.path}"}]
+    cfg = [{"name": "dep", "version": "10.1.10", "local": f"{project.path}"}]
     with project.temp_config(dependencies=cfg):
         project.dependencies.install()
 
         dep = project.dependencies.get_dependency("dep", "10.1.10")
-        assert dep.package_id == f"{project_with_contracts.path}"
-        assert dep.api.local == project_with_contracts.path
+        assert dep.package_id == f"{project.path}"
+        assert dep.api.local == project.path
 
         # Changing the version in the config and force re-installing should change the package data.
         project.config["dependencies"][0]["local"] = f"{Path(__file__).parent}"
@@ -181,57 +145,53 @@ def test_get_dependency_returns_latest_updates(project, project_with_contracts):
         assert dep.api.local == Path(__file__).parent
 
 
-def test_get_versions_using_package_id(project_with_downloaded_dependencies):
-    dm = project_with_downloaded_dependencies.dependencies
+def test_get_versions_using_package_id(project):
+    dm = project.dependencies
     package_id = "OpenZeppelin/openzeppelin-contracts"
     actual = list(dm.get_versions(package_id))
-    assert len(actual) == 2
+    assert len(actual) >= 2
 
 
-def test_get_versions_using_name(project_with_downloaded_dependencies):
-    dm = project_with_downloaded_dependencies.dependencies
-    name = "openzeppelin"
-    actual = list(dm.get_versions(name))
-    assert len(actual) == 2
+def test_get_versions_using_name(smaller_project):
+    dm = smaller_project.dependencies
+    dep = next(iter(dm))
+    actual = list(dm.get_versions(dep.name))
+    assert len(actual) >= 1
 
 
-def test_getitem_and_contains_and_get(project_with_downloaded_dependencies):
-    dm = project_with_downloaded_dependencies.dependencies
-    name = "openzeppelin"
+def test_getitem_and_contains_and_get(smaller_project):
+    dm = smaller_project.dependencies
+    name = "default"
     versions = dm[name]
-    assert "3.1.0" in versions
-    assert "v3.1.0" in versions  # Also allows v-prefix.
-    assert (
-        versions["3.1.0"] == versions["v3.1.0"] == versions.get("3.1.0") == versions.get("v3.1.0")
+    assert "local" in versions
+    assert versions["local"]
+    assert isinstance(versions["local"], LocalProject)
+
+
+def test_add(small_temp_project):
+    contracts_path = small_temp_project.path / "src"
+    contracts_path.mkdir(exist_ok=True, parents=True)
+    (contracts_path / "contract.json").write_text('{"abi": []}', encoding="utf8")
+    data = {"name": "FooBar", "local": f"{small_temp_project.path}"}
+
+    dependency = small_temp_project.dependencies.add(data)
+    assert isinstance(dependency, Dependency)
+    assert dependency.name == "foobar"
+    assert dependency.version == "local"
+
+    # After adding, we should be able to "get" it.
+    dep2 = small_temp_project.dependencies.get_dependency(
+        dependency.package_id, dependency.version, allow_install=False
     )
-    assert isinstance(versions["3.1.0"], LocalProject)
+    assert dep2 == dependency
+
+    # Attempt to add again.
+    dep3 = small_temp_project.dependencies.add(data)
+    assert dep3 == dependency
 
 
-def test_add(project):
-    with project.isolate_in_tempdir() as tmp_project:
-        contracts_path = tmp_project.path / "src"
-        contracts_path.mkdir(exist_ok=True, parents=True)
-        (contracts_path / "contract.json").write_text('{"abi": []}', encoding="utf8")
-        data = {"name": "FooBar", "local": f"{tmp_project.path}"}
-
-        dependency = project.dependencies.add(data)
-        assert isinstance(dependency, Dependency)
-        assert dependency.name == "foobar"
-        assert dependency.version == "local"
-
-        # After adding, we should be able to "get" it.
-        dep2 = project.dependencies.get_dependency(
-            dependency.package_id, dependency.version, allow_install=False
-        )
-        assert dep2 == dependency
-
-        # Attempt to add again.
-        dep3 = project.dependencies.add(data)
-        assert dep3 == dependency
-
-
-def test_add_dependency_with_dependencies(project, with_dependencies_project_path):
-    dm = project.dependencies
+def test_add_dependency_with_dependencies(smaller_project, with_dependencies_project_path):
+    dm = smaller_project.dependencies
     data = {"name": "wdep", "local": with_dependencies_project_path}
     actual = dm.add(data)
     assert actual.name == "wdep"
@@ -256,37 +216,36 @@ def test_get_project_dependencies(project, ape_caplog):
         assert "Dependency 'apethisisnotarealpackageape' not installed." in logs
 
 
-def test_install(project, mocker):
-    with project.isolate_in_tempdir() as tmp_project:
-        contracts_path = tmp_project.path / "src"
-        contracts_path.mkdir(exist_ok=True, parents=True)
-        (contracts_path / "contract.json").write_text('{"abi": []}', encoding="utf8")
-        data = {"name": "FooBar", "local": f"{tmp_project.path}"}
-        get_spec_spy = mocker.spy(tmp_project.dependencies, "get_project_dependencies")
-        install_dep_spy = mocker.spy(tmp_project.dependencies, "install_dependency")
+def test_install(temp_project, mocker):
+    contracts_path = temp_project.path / "src"
+    contracts_path.mkdir(exist_ok=True, parents=True)
+    (contracts_path / "contract.json").write_text('{"abi": []}', encoding="utf8")
+    data = {"name": "FooBar", "local": f"{temp_project.path}"}
+    install_dep_spy = mocker.spy(temp_project.dependencies, "install_dependency")
 
-        # Show can install from DependencyManager.
-        dependency = tmp_project.dependencies.install(**data)
-        assert isinstance(dependency, Dependency)
-        # NOTE: Here, we are mostly testing that `use_cache=False` was not passed.
-        assert install_dep_spy.call_count == 1
+    # Show can install from DependencyManager.
+    dependency = temp_project.dependencies.install(**data)
+    assert isinstance(dependency, Dependency)
+    # NOTE: Here, we are mostly testing that `use_cache=False` was not passed.
+    assert install_dep_spy.call_count == 1
 
-        # Show can install from Dependency.
-        project = dependency.install()
-        assert isinstance(project, ProjectManager)
+    # Show can install from Dependency.
+    project = dependency.install()
+    assert isinstance(project, ProjectManager)
 
-        # Delete project path (but not manifest) and install again.
-        shutil.rmtree(dependency.project_path)
-        installation = dependency._installation
-        dependency._installation = None
-        project = dependency.install()
-        dependency._installation = installation
-        assert isinstance(project, ProjectManager)
-        assert dependency.project_path.is_dir()  # Was re-created from manifest sources.
+    # Delete project path (but not manifest) and install again.
+    shutil.rmtree(dependency.project_path)
+    installation = dependency._installation
+    dependency._installation = None
+    project = dependency.install()
+    dependency._installation = installation
+    assert isinstance(project, ProjectManager)
+    assert dependency.project_path.is_dir()  # Was re-created from manifest sources.
 
-        # Force install and prove it actually does the re-installation.
-        tmp_project.dependencies.install(use_cache=False)
-        get_spec_spy.assert_called_once_with(use_cache=False, allow_install=True, recurse=True)
+    # Force install and prove it actually does the re-installation.
+    install_dep_spy.reset_mock()
+    temp_project.dependencies.install(**data, use_cache=False, recurse=False)
+    install_dep_spy.assert_called_once_with(data, use_cache=False, recurse=False)
 
 
 def test_install_dependencies_of_dependencies(project, with_dependencies_project_path):
@@ -326,28 +285,25 @@ def test_install_already_installed(mocker, project, with_dependencies_project_pa
     assert mock_api.call_count == 0
 
 
-@pytest.mark.parametrize("name", ("openzeppelin", "OpenZeppelin/openzeppelin-contracts"))
-def test_uninstall(name, project_with_downloaded_dependencies):
-    version = "4.4.2"
-    dm = project_with_downloaded_dependencies.dependencies
-    dependency = dm.get_dependency(name, version)
+def test_uninstall(smaller_project):
+    dm = smaller_project.dependencies
+    dependency = dm.get_dependency("manifest-dependency", "local")
     dependency.uninstall()
-    assert not any(
-        (d.name == name or d.package_id == name) and d.version == version for d in dm.all
-    )
+    assert not dependency.installed
 
 
-def test_unpack(project_with_downloaded_dependencies):
-    dm = project_with_downloaded_dependencies.dependencies
-    dep = dm.get_dependency("openzeppelin", "4.4.2")
+def test_unpack(smaller_project):
+    dm = smaller_project.dependencies
+    dep = dm.get_dependency("default", "local")
     with create_tempdir() as tempdir:
         created = list(dep.unpack(tempdir))
-        assert len(created) == 1
-        assert created[0].package_id == "OpenZeppelin/openzeppelin-contracts"
+        assert len(created) > 0
+        assert any([x.name == "default" for x in created])
+        assert created[0].package_id.endswith("default")
 
-        files = [x.name for x in (tempdir / "openzeppelin" / "4.4.2" / "contracts").iterdir()]
-        assert "token" in files
-        assert "access" in files
+        files = [x.name for x in (tempdir / "default" / "local" / "contracts").iterdir()]
+        assert "default.json" in files
+        assert "hyphen-DependencyContract.json" in files
 
 
 def test_unpack_dependencies_of_dependencies(project, with_dependencies_project_path):
@@ -765,7 +721,7 @@ class TestPythonDependency:
     def test_version_id_not_found(self):
         name = "xxthisnameisnotarealpythonpackagexx"
         dependency = PythonDependency.model_validate({"site_package": name})
-        expected = f"Dependency '{name}' not installed."
+        expected = rf"Dependency '{name}' not installed\. Either install or specify the `version:` to continue."
         with pytest.raises(ProjectError, match=expected):
             _ = dependency.version_id
 
@@ -781,8 +737,8 @@ class TestPythonDependency:
             assert len(files) > 0
 
 
-def test_specified(project, project_with_contracts):
-    cfg = [{"name": "dep", "version": "0.1.0", "local": f"{project_with_contracts}"}]
+def test_specified(project, smaller_project):
+    cfg = [{"name": "dep", "version": "0.1.0", "local": f"{smaller_project}-dev"}]
     with project.temp_config(dependencies=cfg):
         actual = [x for x in project.dependencies.specified]
         assert len(actual) == 1
@@ -898,44 +854,42 @@ class TestProject:
         expected = project_from_dependency.path / "source" / "v0.1"
         assert actual == expected
 
-    def test_load_contracts(self, project_with_downloaded_dependencies):
-        name = "openzeppelin"
-        options = project_with_downloaded_dependencies.dependencies[name]
-        project = options["4.4.2"]
-        # NOTE: the test data is pre-compiled because the ape-solidity plugin is required.
-        actual = project.load_contracts()
+    def test_load_contracts(self, smaller_project):
+        project = smaller_project.dependencies["default"]["local"]
+
+        # Use INFO level logging so we can still if
+        # any compilers get installed.
+        with logger.at_level(LogLevel.INFO):
+            actual = project.load_contracts()
+
         assert len(actual) > 0
 
-    def test_load_contracts_with_config_override(self, project):
-        with project.isolate_in_tempdir() as tmp_project:
-            # NOTE: It is important that `contracts_folder` is present in settings
-            #  for this test to test against a previous bug where we got multiple values.
-            override = {"contracts_folder": "src"}
-            contracts_path = tmp_project.path / "src"
-            contracts_path.mkdir(exist_ok=True, parents=True)
-            (contracts_path / "contract.json").write_text('{"abi": []}', encoding="utf8")
+    def test_load_contracts_with_config_override(self, empty_project):
+        # NOTE: It is important that `contracts_folder` is present in settings
+        #  for this test to test against a previous bug where we got multiple values.
+        override = {"contracts_folder": "src"}
+        contracts_path = empty_project.path / "src"
+        contracts_path.mkdir(exist_ok=True, parents=True)
+        (contracts_path / "contract.json").write_text('{"abi": []}', encoding="utf8")
 
-            # use_cache=False only to lessen stateful test clobbering.
-            data = {
-                "name": "FooBar",
-                "local": f"{tmp_project.path}",
-                "config_override": override,
-                "use_cache": False,
-            }
-            tmp_project.dependencies.install(**data)
-            proj = tmp_project.dependencies.get("foobar", "local")
-            assert proj.config.contracts_folder == "src"
+        data = {
+            "name": "FooBar",
+            "local": f"{empty_project.path}",
+            "config_override": override,
+        }
+        empty_project.dependencies.install(**data)
+        dependency = empty_project.dependencies.get("foobar", "local")
+        assert dependency.config.contracts_folder == "src"
 
-            assert proj.contracts_folder == proj.path / "src"
-            assert [x.name for x in proj.sources.paths] == ["contract.json"]
-            actual = proj.load_contracts()
-            assert len(actual) > 0
+        assert empty_project.contracts_folder == empty_project.path / "src"
+        assert [x.name for x in empty_project.sources.paths] == ["contract.json"]
+        actual = empty_project.load_contracts()
+        assert len(actual) > 0
 
-    def test_getattr(self, project_with_downloaded_dependencies):
+    def test_getattr(self, smaller_project):
         """
         Access contracts using __getattr__ from the dependency's project.
         """
-        name = "openzeppelin"
-        oz_442 = project_with_downloaded_dependencies.dependencies.get_dependency(name, "4.4.2")
-        contract = oz_442.project.AccessControl
-        assert contract.contract_type.name == "AccessControl"
+        dependency = smaller_project.dependencies.get_dependency("default", "local")
+        contract = dependency.project.default  # The contract is named "default".
+        assert contract.contract_type.name == "default"

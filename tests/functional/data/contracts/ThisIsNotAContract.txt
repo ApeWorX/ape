@@ -1,0 +1,1 @@
+A simple file that is **not** a contract but is in the contracts folder for testing purposes.
