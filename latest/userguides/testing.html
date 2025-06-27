@@ -629,12 +629,12 @@ These can be helpful in optimizing for gas usage and keeping revert reason strin
 <h4>Non-reentrant Functions<a class="headerlink" href="#non-reentrant-functions" title="Link to this heading"></a></h4>
 <p>Similarly, if you require dev assertions for non-reentrant functions you must be sure to leave the comment on the function that should not have reentry:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nd">@internal</span>
-</span><span data-line="2"><span class="nd">@nonreentrant</span><span class="p">(</span><span class="s1">&#39;lock&#39;</span><span class="p">)</span>
+</span><span data-line="2"><span class="nd">@nonreentrant</span>
 </span><span data-line="3"><span class="k">def</span><span class="w"> </span><span class="nf">_foo_internal</span><span class="p">():</span>  <span class="c1"># dev: correct location</span>
 </span><span data-line="4">    <span class="k">pass</span>
 </span><span data-line="5">
 </span><span data-line="6"><span class="nd">@external</span>
-</span><span data-line="7"><span class="nd">@nonreentrant</span><span class="p">(</span><span class="s1">&#39;lock&#39;</span><span class="p">)</span>
+</span><span data-line="7"><span class="nd">@nonreentrant</span>
 </span><span data-line="8"><span class="k">def</span><span class="w"> </span><span class="nf">foo</span><span class="p">():</span>
 </span><span data-line="9">    <span class="bp">self</span><span class="o">.</span><span class="n">_foo_internal</span><span class="p">()</span>  <span class="c1"># dev: incorrect location</span>
 </span></pre></div>

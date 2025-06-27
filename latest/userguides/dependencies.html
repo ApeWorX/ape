@@ -205,11 +205,11 @@ The following section highlights how to use each of them and what their differen
 <h3>GitHub<a class="headerlink" href="#github" title="Link to this heading"></a></h3>
 <p>You can use dependencies from GitHub.
 For example, a common dependency for Solidity projects is <a class="reference external" href="https://github.com/OpenZeppelin/openzeppelin-contracts">Open Zeppelin</a>.
-To use Open Zeppelin version 4.4.2 in your Ape Solidity project, add the following to your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file:</p>
+To use Open Zeppelin version 4.9.6 in your Ape Solidity project, add the following to your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">dependencies</span><span class="p">:</span>
 </span><span data-line="2"><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">OpenZeppelin</span>
 </span><span data-line="3"><span class="w">    </span><span class="nt">github</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">OpenZeppelin/openzeppelin-contracts</span>
-</span><span data-line="4"><span class="w">    </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4.4.2</span>
+</span><span data-line="4"><span class="w">    </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4.9.6</span>
 </span></pre></div>
 </div>
 <p>Then, follow the guide below about <code class="docutils literal notranslate"><span class="pre">remappings</span></code> to use the dependency.</p>
@@ -355,7 +355,7 @@ For local dependencies, you give it a path to the local dependency.
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">project</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="n">project</span><span class="o">.</span><span class="n">dependencies</span><span class="o">.</span><span class="n">install</span><span class="p">(</span>
-</span><span data-line="4">   <span class="n">github</span><span class="o">=</span><span class="s2">&quot;OpenZeppelin/openzeppelin-contracts&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;openzeppelin&quot;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s2">&quot;4.4.2&quot;</span>
+</span><span data-line="4">   <span class="n">github</span><span class="o">=</span><span class="s2">&quot;OpenZeppelin/openzeppelin-contracts&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;openzeppelin&quot;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s2">&quot;4.9.6&quot;</span>
 </span><span data-line="5"><span class="p">)</span>
 </span></pre></div>
 </div>
@@ -464,7 +464,7 @@ For example, if you are using dependencies like:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">dependencies</span><span class="p">:</span>
 </span><span data-line="2"><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">OpenZeppelin</span>
 </span><span data-line="3"><span class="w">    </span><span class="nt">github</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">OpenZeppelin/openzeppelin-contracts</span>
-</span><span data-line="4"><span class="w">    </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4.4.2</span>
+</span><span data-line="4"><span class="w">    </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4.9.6</span>
 </span></pre></div>
 </div>
 <p>And your source files import from <code class="docutils literal notranslate"><span class="pre">openzeppelin</span></code> this way:</p>

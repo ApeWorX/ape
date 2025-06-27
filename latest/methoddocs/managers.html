@@ -2986,7 +2986,7 @@ which may be needed for compiling.</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>use_cache</strong> (<em>bool</em>) – To force a reinstalling, like a refresh, set this
+<li><p><strong>use_cache</strong> (<em>bool</em>) – To force reinstalling, like a refresh, set this
 to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
 <li><p><strong>config_override</strong> (<em>dict</em>) – Optionally change the configuration during install.</p></li>
 <li><p><strong>recurse</strong> (<em>bool</em>) – Set to <code class="docutils literal notranslate"><span class="pre">False</span></code> to avoid installing dependency of dependencies.</p></li>
@@ -3110,7 +3110,7 @@ API data necessary for fetching the dependency.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="ape.managers.project.DependencyManager.all">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">all</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape.managers.project.Dependency" title="ape.managers.project.Dependency"><span class="pre">Dependency</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.managers.project.DependencyManager.all" title="Link to this definition"></a></dt>
-<dd><p>All dependencies known by Ape, regardless of their project
+<dd><p>All installed dependencies, regardless of their project
 affiliation. NOTE: By “installed” here, we simply
 mean the API files are cached and known by Ape.
 However, it does not guarantee the project is
