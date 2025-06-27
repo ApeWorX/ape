@@ -287,7 +287,7 @@ def test_install_already_installed(mocker, project, with_dependencies_project_pa
 
 def test_uninstall(smaller_project):
     dm = smaller_project.dependencies
-    dependency = dm.get_dependency("default", "local")
+    dependency = dm.get_dependency("manifest-dependency", "local")
     dependency.uninstall()
     assert not dependency.installed
 
