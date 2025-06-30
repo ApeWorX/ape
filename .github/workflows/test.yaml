@@ -90,7 +90,7 @@ jobs:
             version: 1.15.6
 
         - name: Setup Ape
-          uses: ApeWorX/github-action@feat/path-extras
+          uses: ApeWorX/github-action@v3
           with:
             ape-version-pin: .[test]
 
