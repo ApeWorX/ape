@@ -91,11 +91,8 @@ jobs:
 
         - name: Setup Ape
           uses: ApeWorX/github-action@v3
-
-        - name: Install Dependencies
-          run: |
-            python -m pip install --upgrade pip
-            pip install .[test]
+          with:
+            ape-version-pin: .[test]
 
         - name: Run Functional Tests
           run: ape test tests/functional -m "not fuzzing" -s --cov=src --cov-append -v ERROR -n auto --dist loadgroup
