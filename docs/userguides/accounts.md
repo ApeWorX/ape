@@ -46,6 +46,16 @@ test:
   number_of_accounts: 5
 ```
 
+You can also change settings at run-time, such as the mnemonic:
+
+```python
+from ape import accounts
+
+accounts.test_accounts.mnemonic = "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat"
+print(accounts.test_accounts[0])
+# 0x627306090abaB3A6e1400e9345bC60c78a8BEf57
+```
+
 ```{warning}
 NEVER put a seed phrase with real funds here.
 ```
@@ -332,6 +342,62 @@ assert recovered_signer == account.address
 
 # NOTE: You can also use the `check_signature` method on an account, which returns a bool.
 assert account.check_signature(message, signature)
+```
+
+### Signing Authorizations (EIP-7702)
+
+If supported by your current ecosystem and account plugins, Ape exposes the capability to set delegate contracts for EOAs via [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) signed `SetCode` Authorizations.
+To sign an Authorization, use `account.sign_authorization` as follows:
+
+```py
+from ape_ethereum import Authorization
+sig = account.sign_authorization(contract)
+auth = Authorization.from_signature(
+    address=contract.address,
+    chain_id=<chain ID>,
+    nonce=account.nonce,
+    signature=sig,
+)
+# NOTE: Will execute `methodWithAuth` from `contract` *after* executing authorization
+# NOTE: Make sure to increment the `nonce=` kwarg, as the authorization consumes current nonce
+contract.methodWithAuth(..., authorizations=[auth], sender=account, nonce=account.nonce + 1)
+```
+
+```{caution}
+Authorizations are **extremely dangerous** and can lead to full account compromise via signature.
+**DO NOT SIGN** an authorization unless you know what you are doing.
+```
+
+```{note}
+Not all account plugins support signing Authorizations.
+For instance, most hardware wallets may reject signing EIP-7702 Authorizations unless the delegate has been previously whitelisted in their firmware.
+Also, smart contract wallets (such as Safe) cannot sign these message types as only EOAs can sign them.
+```
+
+Once set, you can see if a delegate contract has been set for your EOA account via `account.delegate`.
+Ape exposes a [convienence subcommand](../commands/accounts.html#accounts-auth) group under `ape accounts` for use in managing your delegations.
+
+Ape also exposes the following convienent higher-level API for working with authorizations in a scripting or testing context:
+
+```py
+assert not account.delegate
+
+# Set `account`'s `.delegate` to `contract`
+account.set_delegate(contract)
+assert account.delegate == contract
+
+# Remove `account`'s `.delegate`
+account.remove_delegate()
+assert not account.delegate
+
+# Temporarily use `contract` as `delegate` (and reset upon exiting context)
+# NOTE: Calls `.set_delegate(contract)` when entering context
+with account.delegate_to(contract) as proxy:
+    # NOTE: `proxy` is `Contract(account, contract_type=contract.contract_type)`
+    assert contract.contract_type == proxy.contract_type
+    proxy.methodWithAuth(..., sender=account)
+# NOTE: calls `remove_delegate()` when exiting context
+assert not account.delegate
 ```
 
 ## Automation

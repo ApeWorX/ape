@@ -3,7 +3,6 @@ import os
 import shutil
 from collections.abc import Iterable
 from functools import cached_property
-from importlib import metadata
 from pathlib import Path
 from typing import Optional, Union
 
@@ -16,7 +15,7 @@ from ape.logging import logger
 from ape.managers.project import _version_to_options
 from ape.utils._github import _GithubClient, github_client
 from ape.utils.basemodel import ManagerAccessMixin
-from ape.utils.os import clean_path, extract_archive, get_package_path, in_tempdir
+from ape.utils.os import _remove_readonly, clean_path, extract_archive, get_package_path, in_tempdir
 
 
 def _fetch_local(src: Path, destination: Path, config_override: Optional[dict] = None):
@@ -53,7 +52,8 @@ class LocalDependency(DependencyAPI):
     def validate_local_path(cls, model):
         # Resolves the relative path so if the dependency API
         # data moves, it will still work.
-        path = Path(model["local"])
+        path = Path(model["local"]).expanduser()
+        model["local"] = f"{path}"
 
         # Automatically include `"name"`.
         if "name" not in model:
@@ -73,7 +73,7 @@ class LocalDependency(DependencyAPI):
 
     def __repr__(self) -> str:
         path = clean_path(self.local)
-        return f"<LocalDependency local={path}, version={self.version}>"
+        return f"<LocalDependency local={path}, version={self.version_id}>"
 
     @property
     def package_id(self) -> str:
@@ -102,7 +102,7 @@ class LocalDependency(DependencyAPI):
 
 class GithubDependency(DependencyAPI):
     """
-    A dependency from Github. Use the ``github`` key in your ``dependencies:``
+    A dependency from GitHub. Use the ``github`` key in your ``dependencies:``
     section of your ``ape-config.yaml`` file to declare a dependency from GitHub.
 
     Config example::
@@ -136,6 +136,11 @@ class GithubDependency(DependencyAPI):
     release API is used to fetch instead of cloning.
 
     **NOTE**: Will be ignored if given a 'ref'.
+    """
+
+    scheme: str = "https"
+    """
+    Either HTTPS or SSH; only used with `ref:`.
     """
 
     # Exists as property so can be changed for testing.
@@ -204,8 +209,12 @@ class GithubDependency(DependencyAPI):
     def fetch(self, destination: Path):
         destination.parent.mkdir(exist_ok=True, parents=True)
         if ref := self.ref:
+            # NOTE: destination path should not exist at this point,
+            #   so delete it in case it's left over from a failure.
+            if destination.is_dir():
+                shutil.rmtree(destination)
+
             # Fetch using git-clone approach (by git-reference).
-            # NOTE: destination path does not exist at this point.
             self._fetch_ref(ref, destination)
         else:
             # Fetch using Version API from GitHub.
@@ -222,7 +231,8 @@ class GithubDependency(DependencyAPI):
                 # NOTE: When using ref-from-a-version, ensure
                 #   it didn't create the destination along the way;
                 #   else, the ref is cloned in the wrong spot.
-                shutil.rmtree(destination, ignore_errors=True)
+                if destination.is_dir():
+                    shutil.rmtree(destination, onerror=_remove_readonly)
                 try:
                     self._fetch_ref(version, destination)
                 except Exception:
@@ -237,7 +247,11 @@ class GithubDependency(DependencyAPI):
             attempt += 1
             try:
                 self._github_client.clone_repo(
-                    self.org_name, self.repo_name, destination, branch=ref
+                    self.org_name,
+                    self.repo_name,
+                    destination,
+                    branch=ref,
+                    scheme=self.scheme,
                 )
             except Exception:
                 if attempt == num_attempts:
@@ -476,24 +490,25 @@ class PythonDependency(DependencyAPI):
 
     @property
     def version_id(self) -> str:
-        if self.pypi:
+        if self.version:
+            # It is helpful to just return the cfg version here
+            # so uninstalled dependencies can attempt to set up their caches.
+            return self.version
+
+        elif self.pypi:
             # Version available in package data.
-            if not (vers := self.version_from_package_data or ""):
-                # I doubt this is a possible condition, but just in case.
-                raise ProjectError(f"Missing version from PyPI for package '{self.package_id}'.")
+            vers = self._get_version_from_package_data()
 
         elif self.site_package:
-            try:
-                vers = f"{metadata.version(self.package_id)}"
-            except metadata.PackageNotFoundError as err:
-                raise ProjectError(f"Dependency '{self.package_id}' not installed.") from err
+            # Python dependency not installed; attempt to use latest from pypi.
+            if pkg_vers := self.version_from_package_data:
+                return pkg_vers
 
-            if spec_vers := self.version:
-                if spec_vers != vers:
-                    raise ProjectError(
-                        "Dependency installed with mismatched version. "
-                        f"Expecting '{self.version}' but has '{vers}'"
-                    )
+            # Force the user to specify the version, as it is not installed and not
+            # available on PyPI.
+            raise ProjectError(
+                f"Dependency '{self.name}' not installed. Either install or specify the `version:` to continue."
+            )
 
         else:
             raise ProjectError(
@@ -525,12 +540,11 @@ class PythonDependency(DependencyAPI):
             response.raise_for_status()
         except requests.HTTPError as err:
             if err.response.status_code == 404:
-                raise ProjectError(
-                    f"Unknown dependency '{self.package_id}'. "
-                    "Is it spelled correctly and available on PyPI? "
-                    "For local Python packages, use the `python:` key."
-                )
+                # There is no available package data on PyPI; use empty dict.
+                return {}
+
             else:
+                # It should have worked in this case, so it is good to raise an error.
                 raise ProjectError(
                     f"Problem downloading package data for '{self.package_id}': {err}"
                 )
@@ -545,7 +559,7 @@ class PythonDependency(DependencyAPI):
     def download_archive_url(self) -> str:
         if not (version := self.version):
             if not (version := self.version_from_package_data):
-                # Not sure this is possible, but just in case API data changes or something.
+                # Not sure if this is possible, but just in case API data changes or something.
                 raise ProjectError(f"Unable to find version for package '{self.package_id}'.")
 
         releases = self.package_data.get("releases", {})
@@ -588,3 +602,10 @@ class PythonDependency(DependencyAPI):
                     file.write(chunk)
 
         return archive_destination
+
+    def _get_version_from_package_data(self) -> str:
+        if vers := self.version_from_package_data:
+            return vers
+
+        # I doubt this is a possible condition, but just in case.
+        raise ProjectError(f"Missing version from PyPI for package '{self.package_id}'.")

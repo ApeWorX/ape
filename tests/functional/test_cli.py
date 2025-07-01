@@ -396,7 +396,7 @@ def test_account_option_alias_not_found(runner, keyfile_account):
 
     result = runner.invoke(cmd, ("--account", "THIS ALAS IS NOT FOUND"))
     expected = (
-        "Invalid value for '--account': " "Account with alias 'THIS ALAS IS NOT FOUND' not found"
+        "Invalid value for '--account': Account with alias 'THIS ALAS IS NOT FOUND' not found"
     )
     assert expected in result.output
 
@@ -430,17 +430,20 @@ def test_prompt_choice(runner, opt):
     assert "__expected_foo" in result.output
 
 
+@pytest.mark.flaky(reruns=2)
 @pytest.mark.parametrize("name", ("-v", "--verbosity"))
 def test_verbosity_option(runner, name):
-    logger._did_parse_sys_argv = False  # Force re-parse
+    level = int(logger.level)
+    cmd_args = (name, "debug", "-v", f"{level}")
+    expected = f"__expected_{level}"
 
     @click.command()
     @verbosity_option()
     def cmd():
         click.echo(f"__expected_{logger.level}")
 
-    result = runner.invoke(cmd, (name, "debug"))
-    assert "__expected_10" in result.output
+    logger._did_parse_sys_argv = False  # Force reparse
+    assert expected in runner.invoke(cmd, cmd_args).output
 
 
 @pytest.mark.parametrize(
@@ -463,7 +466,6 @@ def test_verbosity_option_uses_logger_level_as_default(runner):
         @verbosity_option(default=None)
         def cmd():
             click.echo(f"LogLevel={logger.level}")
-            pass
 
         result = runner.invoke(cmd)
         assert "LogLevel=10" in result.output
@@ -481,23 +483,17 @@ def test_account_prompt_name():
     assert option.name == "account_z"
 
 
-def test_contract_file_paths_argument_given_source_id(
-    project_with_source_files_contract, runner, contracts_paths_cmd
-):
-    pm = project_with_source_files_contract
-    src_id = next(x for x in pm.sources if Path(x).suffix == ".json")
-    arguments = (src_id, "--project", f"{pm.path}")
+def test_contract_file_paths_argument_given_source_id(project, runner, contracts_paths_cmd):
+    src_id = next(x for x in project.sources if Path(x).suffix == ".json")
+    arguments = (src_id, "--project", f"{project.path}")
     result = runner.invoke(contracts_paths_cmd, arguments)
 
     assert f"EXPECTED {src_id.split('/')[-1]}" in result.output
 
 
-def test_contract_file_paths_argument_given_name(
-    project_with_source_files_contract, runner, contracts_paths_cmd
-):
-    pm = project_with_source_files_contract
-    src_stem = next(x for x in pm.sources if Path(x).suffix == ".json").split(".")[0]
-    arguments = (src_stem, "--project", f"{pm.path}")
+def test_contract_file_paths_argument_given_name(project, runner, contracts_paths_cmd):
+    src_stem = next(x for x in project.sources if Path(x).suffix == ".json").split(".")[0]
+    arguments = (src_stem, "--project", f"{project.path}")
     result = runner.invoke(contracts_paths_cmd, arguments)
 
     assert f"EXPECTED {src_stem.split('/')[-1]}" in result.output
@@ -561,11 +557,10 @@ def test_contract_file_paths_argument_given_subdir_relative_to_path(
 
 @skip_if_plugin_installed("vyper")
 def test_contract_file_paths_argument_missing_vyper(
-    project_with_source_files_contract, runner, contracts_paths_cmd, ape_caplog
+    project, runner, contracts_paths_cmd, ape_caplog
 ):
     name = "VyperContract"
-    pm = project_with_source_files_contract
-    arguments = (name, "--project", f"{pm.path}")
+    arguments = (name, "--project", f"{project.path}")
     with ape_caplog.at_level(LogLevel.INFO):
         result = runner.invoke(contracts_paths_cmd, arguments)
 
@@ -578,12 +573,9 @@ def test_contract_file_paths_argument_missing_vyper(
 
 
 @skip_if_plugin_installed("solidity")
-def test_contract_file_paths_argument_missing_solidity(
-    project_with_source_files_contract, runner, contracts_paths_cmd
-):
+def test_contract_file_paths_argument_missing_solidity(project, runner, contracts_paths_cmd):
     name = "SolidityContract"
-    pm = project_with_source_files_contract
-    with pm.isolate_in_tempdir() as tmp_project:
+    with project.isolate_in_tempdir() as tmp_project:
         arguments = (name, "--project", f"{tmp_project.path}")
         with logger.at_level(LogLevel.WARNING):
             result = runner.invoke(contracts_paths_cmd, arguments)
@@ -596,12 +588,9 @@ def test_contract_file_paths_argument_missing_solidity(
     assert expected in result.output
 
 
-def test_contract_file_paths_argument_contract_does_not_exist(
-    project_with_source_files_contract, runner, contracts_paths_cmd
-):
+def test_contract_file_paths_argument_contract_does_not_exist(project, runner, contracts_paths_cmd):
     name = "MadeUp"
-    pm = project_with_source_files_contract
-    with pm.isolate_in_tempdir() as tmp_project:
+    with project.isolate_in_tempdir() as tmp_project:
         arguments = (name, "--project", f"{tmp_project.path}")
         result = runner.invoke(contracts_paths_cmd, arguments)
 

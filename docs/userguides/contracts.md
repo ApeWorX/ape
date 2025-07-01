@@ -69,9 +69,9 @@ To learn more about contract interaction via transactions, see the [Contract Int
 
 ### Deploy Scripts
 
-Often time, the deployment process may be unique or complex.
+Oftentime, the deployment process may be unique or complex.
 Or possibly, you need to run the deploy-logic from CI or in a repeatable fashion.
-Or perhaps, you just want to avoid having to invoking Python directly.
+Or perhaps, you just want to avoid having to invoke Python directly.
 In those cases, you can use Ape's scripting system to save time and store your deployment logic.
 Simply copy your Python logic into an Ape script and run it via:
 
@@ -99,7 +99,10 @@ You can also use the [at() method](../methoddocs/contracts.html#ape.contracts.ba
 from ape import project
 
 contract = project.MyContract.at("0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45")
+
 ```
+
+By default, Ape will detect if the contract is a proxy and use the implementation contract's interface. See the [Proxy Contracts guide](./proxy.html) for more details on proxy handling.
 
 ## From Any Address
 
@@ -191,7 +194,7 @@ def main():
 Then, after you have a contract instance, you can call methods on the contract.
 For example, let's say you have a Vyper contract containing some functions:
 
-```python
+```vyper
 wdAmount: public(uint256)
 
 @pure
@@ -291,9 +294,26 @@ contract = Contract("0x...")
 assert contract.get_static_list() == [1, 2, 3]
 ```
 
+By default, Ape decodes returndata into Python types.
+Use `decode=False` to get the raw returndata bytes from a call instead:
+
+```python
+from ape import accounts, Contract
+from eth_pydantic_types import HexBytes
+
+account = accounts.load("<ALIAS>")
+contract = Contract("0x...")
+
+assert contract.get_static_list() == HexBytes(
+    "0x0000000000000000000000000000000000000000000000000000000000000001"
+    "0000000000000000000000000000000000000000000000000000000000000002"
+    "0000000000000000000000000000000000000000000000000000000000000003"
+)
+```
+
 ### Calling Transactions and Transacting Calls
 
-You can treat transactions as calls and vice-versa.
+You can treat transactions as calls and vice versa.
 
 For example, let's say we have a Solidity function:
 
@@ -364,6 +384,26 @@ receipt = contract.set_number(sender=dev, private=True)
 ```
 
 The `private=True` is available on all contract interactions.
+
+## Events
+
+Smart Contracts on many blockchains support a feature called Events,
+which are user-defined hooks created in smart contract code that can trigger off-chain callbacks to clients configured to receive them.
+This feature can be extremely useful for purposes such as triggering real-time responses to smart contract transactions in client-side scripts.
+
+Ape provides many features for working with contract event logs.
+If your contract instance has an Event called `MyEvent` in it's ABI, you can access these features by calling `contract_instance.MyEvent`.
+For example, if you want to create a script that listens to new event logs from your contract where the indexed argument `arg` is a specific value,
+you can do:
+
+```python
+for log in contract_instance.MyEvent.poll_logs(argname=1):
+    assert log.argname == 1  # NOTE: we only filter on logs where `log.argname=1`
+    print("New log received:", log)
+```
+
+Ape also provides features for collecting historical event logs through it's data system.
+To learn more about Ape's data query capabilities with events, visit [Querying Data](./data#getting-contract-event-data).
 
 ## Decoding and Encoding Inputs
 
@@ -453,16 +493,26 @@ def main():
     # Use multi-call.
     call = multicall.Call()
     for pool in POOLS:
+        # By default allowFailure=True, so the multicall continues even if one call fails
         call.add(pool.getReserves)
+
+        # To require a call to succeed (revert entire multicall if this call fails)
+        call.add(pool.anotherMethod, allowFailure=False)
 
     print(list(call()))
 
     # Use multi-transaction.
     tx = multicall.Transaction()
     for pool in POOLS:
-        tx.add(pool.ApplyDiscount, 123)
+        # Same allowFailure option for transactions
+        tx.add(pool.ApplyDiscount, 123, allowFailure=True)
+
+        # For payable functions, you can also specify value
+        tx.add(pool.deposit, value=1000)
 
     acct = ape.accounts.load("signer")
     for result in tx(sender=acct):
         print(result)
 ```
+
+When using `allowFailure=True` (the default), if a specific call in the multicall fails, the overall multicall will still succeed and the result for the failed call will be `None`. This is useful when you want to batch multiple calls together and don't want the entire batch to fail if just one call fails.

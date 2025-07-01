@@ -49,12 +49,17 @@ This is an example of how that test may look:
 ```python
 import ape
 import pytest
+import re
 
 # SETUP PHASE
 # NOTE: More on fixtures is discussed in later sections of this guide!
 @pytest.fixture
 def owner(accounts):
     return accounts[0]
+
+@pytest.fixture
+def not_owner(accounts):
+    return accounts[1]
 
 @pytest.fixture
 def my_contract(owner, project):
@@ -67,6 +72,14 @@ def test_authorization(my_contract, owner, not_owner):
 
     # ASSERTION PHASE
     with ape.reverts("!authorized"):
+        my_contract.authorized_method(sender=not_owner)
+        
+    # You can also test against custom error types
+    with ape.reverts(my_contract.Unauthorized):
+        my_contract.authorized_method(sender=not_owner)
+        
+    # Or match error patterns with regex
+    with ape.reverts(re.compile(r"^!auth.*")):
         my_contract.authorized_method(sender=not_owner)
 ```
 
@@ -436,7 +449,7 @@ assert x != 0  # dev: invalid value
 Take for example:
 
 ```python
-# @version 0.3.7
+# @version 0.4.3
 
 @external
 def check_value(_value: uint256) -> bool:
@@ -499,12 +512,12 @@ Similarly, if you require dev assertions for non-reentrant functions you must be
 
 ```python
 @internal
-@nonreentrant('lock')
+@nonreentrant
 def _foo_internal():  # dev: correct location
     pass
 
 @external
-@nonreentrant('lock')
+@nonreentrant
 def foo():
     self._foo_internal()  # dev: incorrect location
 ```

@@ -150,12 +150,28 @@ def _package_callback(ctx, param, value):
     except Exception:
         pass
     else:
-        return _handle_package_path(path, original_value=value)
+        if path.exists():
+            return _handle_package_path(path, original_value=value)
 
     if isinstance(value, str) and ":" in value:
         # Catch-all for unknown dependency types that may exist.
         parts = value.split(":")
         return {parts[0]: parts[1]}
+
+    elif isinstance(value, str):
+        from ape import project
+
+        version = ctx.params.get("version")
+        name = value
+        if not version and "@" in value:
+            name, version = value.split("@")
+
+        try:
+            dependency = project.dependencies.get_dependency_api(name, version=version)
+        except ProjectError:
+            pass
+        else:
+            return dependency
 
     raise click.BadArgumentUsage(f"Unknown package '{value}'.")
 
@@ -172,7 +188,8 @@ def _package_callback(ctx, param, value):
 )
 @click.option("--force", "-f", help="Force a re-install", is_flag=True)
 @config_override_option()
-def install(cli_ctx, package, name, version, ref, force, config_override):
+@click.option("--no-recurse", is_flag=True, help="Avoids installing dependencies of dependencies")
+def install(cli_ctx, package, name, version, ref, force, config_override, no_recurse):
     """
     Download and cache packages
     """
@@ -182,13 +199,20 @@ def install(cli_ctx, package, name, version, ref, force, config_override):
         if version:
             cli_ctx.abort("Cannot specify version when installing from config.")
 
-        pm.dependencies.install(use_cache=not force)
+        pm.dependencies.install(use_cache=not force, recurse=not no_recurse)
         message = "All project packages installed."
+
+        # In the case the user didn't realize --force is required to re-install.
         if not force:
             message = f"{message} Use `--force` to re-install."
 
         cli_ctx.logger.success(message)
         return
+
+    from ape.api.projects import DependencyAPI
+
+    if isinstance(package, DependencyAPI):
+        package = package.model_dump()
 
     if name:
         package["name"] = name
@@ -200,11 +224,12 @@ def install(cli_ctx, package, name, version, ref, force, config_override):
         package["config_override"] = config_override
 
     try:
-        dependency = pm.dependencies.install(**package, use_cache=not force)
+        dependency = pm.dependencies.install(**package, use_cache=not force, recurse=not no_recurse)
     except Exception as err:
         cli_ctx.logger.log_error(err)
-    else:
-        cli_ctx.logger.success(f"Package '{dependency.name}@{dependency.version}' installed.")
+        sys.exit(1)
+
+    cli_ctx.logger.success(f"Package '{dependency.name}@{dependency.version}' installed.")
 
 
 @cli.command()

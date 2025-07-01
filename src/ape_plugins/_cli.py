@@ -90,6 +90,29 @@ def upgrade_option(help: str = "", **kwargs):
     return click.option("-U", "--upgrade", default=False, is_flag=True, help=help, **kwargs)
 
 
+def validate_python_path(ctx, param, value):
+    if value is None:
+        return None
+
+    path = Path(value).expanduser().resolve()
+    if not path.exists():
+        ctx.fail(f"Python path does not exist: {value}")
+
+    return f"{path}"
+
+
+def python_location_option(help: str = "", **kwargs):
+    default_help = "Specify path to Python interpreter or virtualenv to use for installation"
+    return click.option(
+        "--python",
+        type=str,
+        default=None,
+        callback=validate_python_path,
+        help=help or default_help,
+        **kwargs,
+    )
+
+
 def _display_all_callback(ctx, param, value):
     from ape.plugins._utils import PluginType
 
@@ -111,12 +134,21 @@ def _display_all_callback(ctx, param, value):
     callback=_display_all_callback,
     help="Display all plugins installed and available (including Core)",
 )
-def _list(cli_ctx, to_display):
+@click.option(
+    "--format",
+    "output_format",
+    type=click.Choice(["default", "prefixed", "freeze"]),
+    default="default",
+)
+@click.option("--exclude-version", is_flag=True, help="Do not include plugin versions in output")
+def _list(cli_ctx, to_display, output_format, exclude_version):
     from ape.plugins._utils import PluginMetadataList, PluginType
 
     include_available = PluginType.AVAILABLE in to_display
     metadata = PluginMetadataList.load(cli_ctx.plugin_manager, include_available=include_available)
-    if output := metadata.to_str(include=to_display):
+    if output := metadata.to_str(
+        include=to_display, include_version=not exclude_version, output_format=output_format
+    ):
         click.echo(output)
         if not metadata.installed and not metadata.third_party:
             click.echo("No plugins installed (besides core plugins).")
@@ -130,7 +162,10 @@ def _list(cli_ctx, to_display):
 @plugins_argument()
 @skip_confirmation_option("Don't ask for confirmation to install the plugins")
 @upgrade_option(help="Upgrade the plugin to the newest available version")
-def install(cli_ctx, plugins: list["PluginMetadata"], skip_confirmation: bool, upgrade: bool):
+@python_location_option(help="Specify the virtualenv location")
+def install(
+    cli_ctx, plugins: list["PluginMetadata"], skip_confirmation: bool, upgrade: bool, python: str
+):
     """Install plugins"""
 
     failures_occurred = False
@@ -140,7 +175,9 @@ def install(cli_ctx, plugins: list["PluginMetadata"], skip_confirmation: bool, u
     install_list: list[dict[str, Any]] = []
 
     for plugin in plugins:
-        result = plugin._prepare_install(upgrade=upgrade, skip_confirmation=skip_confirmation)
+        result = plugin._prepare_install(
+            upgrade=upgrade, skip_confirmation=skip_confirmation, python_location=python
+        )
         if result:
             install_list.append(result)
         else:
@@ -170,7 +207,8 @@ def install(cli_ctx, plugins: list["PluginMetadata"], skip_confirmation: bool, u
 @ape_cli_context()
 @plugins_argument()
 @skip_confirmation_option("Don't ask for confirmation to install the plugins")
-def uninstall(cli_ctx, plugins, skip_confirmation):
+@python_location_option(help="Specify the virtualenv location")
+def uninstall(cli_ctx, plugins, skip_confirmation, python: str):
     """Uninstall plugins"""
     from ape.plugins._utils import ModifyPluginResultHandler
 
@@ -203,7 +241,7 @@ def uninstall(cli_ctx, plugins, skip_confirmation):
             skip_confirmation or click.confirm(f"Remove plugin '{plugin}'?")
         ):
             cli_ctx.logger.info(f"Uninstalling '{plugin.name}'...")
-            arguments = plugin._get_uninstall_args()
+            arguments = plugin._get_uninstall_args(python_location=python)
 
             # NOTE: Be *extremely careful* with this command, as it modifies the user's
             #       installed packages, to potentially catastrophic results
@@ -225,14 +263,14 @@ def update():
     _change_version(ape_version.next_version_range)
 
 
-def _version_callack(ctx, param, value):
+def _version_callback(ctx, param, value):
     obj = Version(value)
     version_str = f"0.{obj.minor}.0" if obj.major == 0 else f"{obj.major}.0.0"
     return f"=={version_str}"
 
 
 @cli.command()
-@click.argument("version", callback=_version_callack)
+@click.argument("version", callback=_version_callback)
 def change_version(version):
     """
     Change ape and all plugins version
@@ -308,5 +346,5 @@ def _change_version(spec: str):
 
         logger.success(f"{prefix} have successfully upgraded.")
     # else: _install logs errors already.
-
-    sys.exit(ape_retcode | plugin_retcode)
+    exit_code = ape_retcode if ape_retcode != 0 else plugin_retcode
+    sys.exit(exit_code)

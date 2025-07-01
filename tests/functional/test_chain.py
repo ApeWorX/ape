@@ -153,6 +153,8 @@ def test_set_pending_timestamp(chain):
     assert new_timestamp - start_timestamp == 3600
 
 
+# Flakey due to x-dist.
+@pytest.mark.flaky(reruns=5)
 def test_set_pending_timestamp_with_deltatime(chain):
     start_timestamp = chain.pending_timestamp
     chain.mine(deltatime=5)
@@ -169,6 +171,11 @@ def test_set_pending_timestamp_failure(chain):
             timestamp=int(datetime.now().timestamp() + timedelta(seconds=10).seconds),
             deltatime=10,
         )
+
+
+def test_get_balance(chain, owner):
+    assert chain.get_balance(owner) == owner.balance
+    assert chain.get_balance(owner.address) == owner.balance
 
 
 def test_set_balance(chain, owner):

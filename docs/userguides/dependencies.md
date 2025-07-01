@@ -24,13 +24,13 @@ The following section highlights how to use each of them and what their differen
 
 You can use dependencies from GitHub.
 For example, a common dependency for Solidity projects is [Open Zeppelin](https://github.com/OpenZeppelin/openzeppelin-contracts).
-To use Open Zeppelin version 4.4.2 in your Ape Solidity project, add the following to your `ape-config.yaml` file:
+To use Open Zeppelin version 4.9.6 in your Ape Solidity project, add the following to your `ape-config.yaml` file:
 
 ```yaml
 dependencies:
   - name: OpenZeppelin
     github: OpenZeppelin/openzeppelin-contracts
-    version: 4.4.2
+    version: 4.9.6
 ```
 
 Then, follow the guide below about `remappings` to use the dependency.
@@ -53,11 +53,21 @@ dependencies:
 ```
 
 The `ref:` config installs the code from that reference; the `version:` config uses the official GitHub release API, and then only if that fails will it check the `git` references.
-Often times, the `v` prefix is required when using tags.
+Oftentimes, the `v` prefix is required when using tags.
 However, if cloning the tag fails, `ape` will retry with a `v` prefix.
 Bypass the original failing attempt by including a `v` in your dependency config.
 
 **By knowing if the release is from the version API or only available via tag, and whether the version is v-prefixed or not, you save Ape some time and complexity when installing dependencies.**
+
+When using ref, you can also specify the scheme for the `git` tool to use when cloning, such as `https` (default) or `ssh`.
+
+```yaml
+dependencies:
+  - name: Uniswap
+    github: Uniswap/v3-core
+    ref: v1.0.0
+    scheme: ssh
+```
 
 ### PyPI
 
@@ -165,6 +175,12 @@ If the dependencies are already cached and you want to re-install them, use the 
 ape pm install --force
 ```
 
+To install a specific dependency by ID that is listed in a config file, use the ID or name as the package argument:
+
+```shell
+ape pm install OpenZeppelin/openzeppelin-contracts
+```
+
 To install a dependency that is not in your config, you can specify it directly along with `--name` and `--version`:
 
 ```shell
@@ -193,7 +209,7 @@ You can also use Python to install dependencies, using `**kwargs` as the same fi
 from ape import project
 
 project.dependencies.install(
-   github="OpenZeppelin/openzeppelin-contracts", name="openzeppelin", version="4.4.2"
+   github="OpenZeppelin/openzeppelin-contracts", name="openzeppelin", version="4.9.6"
 )
 ```
 
@@ -276,7 +292,7 @@ dependencies:
 
 This is the same as if these values were in an `ape-config.yaml` file in the project directly.
 
-You can also specify `--config-override` in the `ape pm install` command to try different settings more adhoc:
+You can also specify `--config-override` in the `ape pm install` command to try different settings more ad hoc:
 
 ```shell
 ape pm install --config-override '{"solidity": {"evm_version": "paris"}}'
@@ -320,7 +336,7 @@ For example, if you are using dependencies like:
 dependencies:
   - name: OpenZeppelin
     github: OpenZeppelin/openzeppelin-contracts
-    version: 4.4.2
+    version: 4.9.6
 ```
 
 And your source files import from `openzeppelin` this way:

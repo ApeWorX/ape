@@ -33,7 +33,7 @@ class HexConverter(ConverterAPI):
 
     def is_convertible(self, value: Any) -> bool:
         return (
-            (isinstance(value, str) and is_hex(value) and is_0x_prefixed(value))
+            (isinstance(value, str) and is_hex(value))
             or isinstance(value, bytes)
             or isinstance(value, int)
         )
@@ -60,7 +60,8 @@ class HexIntConverter(ConverterAPI):
     """
 
     def is_convertible(self, value: Any) -> bool:
-        return (isinstance(value, str) and is_hex(value) and is_0x_prefixed(value)) or isinstance(
+        # NOTE: Hex int conversion requires 0x prefix to know if it is base 16 or base 10.
+        return (isinstance(value, str) and is_hex(value) and value.startswith("0x")) or isinstance(
             value, bytes
         )
 
@@ -394,9 +395,38 @@ class ConversionManager(BaseManager):
 
         raise ConversionError(f"No conversion registered to handle '{value}'.")
 
+    def get_converters_by_type(self, converter_type: type) -> list[ConverterAPI]:
+        """
+        Get all the converters for the given type.
+
+        Args:
+            converter_type (type): The type to get converters for.
+
+        Returns:
+            list[ConverterAPI]: All registered converters for the given type.
+        """
+        return self._converters.get(converter_type, [])
+
+    def get_converter(self, name: str) -> ConverterAPI:
+        """
+        Get a converter plugin by name.
+
+        Args:
+            name (str): The name of the converter.
+
+        Returns:
+            :class:`~ape.api.converters.ConverterAPI`: The converter.
+        """
+        for converter_ls in self._converters.values():
+            for converter in converter_ls:
+                if converter.name == name.lower():
+                    return converter
+
+        raise ConversionError("No converters with name '{name}'.'")
+
     def convert_method_args(
         self,
-        abi: Union["MethodABI", "ConstructorABI", "EventABI"],
+        abi: Union["MethodABI", "ConstructorABI", "EventABI", "ConstructorABI"],
         arguments: Sequence[Any],
     ):
         input_types = [i.canonical_type for i in abi.inputs]

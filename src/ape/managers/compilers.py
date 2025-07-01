@@ -99,6 +99,7 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
         contract_filepaths: Union[Path, str, Iterable[Union[Path, str]]],
         project: Optional["ProjectManager"] = None,
         settings: Optional[dict] = None,
+        excluded_compilers: Optional[list[str]] = None,
     ) -> Iterator["ContractType"]:
         """
         Invoke :meth:`ape.ape.compiler.CompilerAPI.compile` for each of the given files.
@@ -137,6 +138,8 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
 
         for next_ext, path_set in files_by_ext.items():
             compiler = self.registered_compilers[next_ext]
+            if excluded_compilers and compiler.name.lower() in excluded_compilers:
+                continue
             try:
                 compiler_settings = settings.get(compiler.name, {})
                 for contract in compiler.compile(path_set, project=pm, settings=compiler_settings):
@@ -152,7 +155,7 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
 
                     yield contract
 
-            except CompilerError as err:
+            except Exception as err:
                 # One of the compilers failed. Show the error but carry on.
                 logger.log_debug_stack_trace()
                 errors.append(err)
@@ -184,7 +187,7 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
         Usage example::
 
             code = '[{"name":"foo","type":"fallback", "stateMutability":"nonpayable"}]'
-            contract_type = compilers.compile_source(
+            contract_container = compilers.compile_source(
                 "ethpm",
                 code,
                 contractName="MyContract",

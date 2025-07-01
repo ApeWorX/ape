@@ -15,6 +15,8 @@ jobs:
 
         steps:
         - uses: actions/checkout@v4
+          with:
+            fetch-depth: 0
 
         - name: Setup Python
           uses: actions/setup-python@v5
@@ -26,14 +28,11 @@ jobs:
             python -m pip install --upgrade pip
             pip install .[lint]
 
-        - name: Run Black
-          run: black --check .
+        - name: Run Ruff Lint
+          run: ruff check .
 
-        - name: Run isort
-          run: isort --check-only .
-
-        - name: Run flake8
-          run: flake8 .
+        - name: Run Ruff Format
+          run: ruff format --check .
 
         - name: Run mdformat
           run: mdformat . --check
@@ -43,6 +42,8 @@ jobs:
 
         steps:
         - uses: actions/checkout@v4
+          with:
+            fetch-depth: 0
 
         - name: Setup Python
           uses: actions/setup-python@v5
@@ -63,7 +64,7 @@ jobs:
         strategy:
             matrix:
                 os: [ubuntu-latest, macos-latest]   # eventually add `windows-latest`
-                python-version: [3.9, "3.10", "3.11", "3.12", "3.13"]
+                python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
 
         env:
           GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -86,22 +87,21 @@ jobs:
         - name: Install Geth
           uses: gacts/install-geth-tools@v1
           with:
-            version: 1.14.12
+            version: 1.15.6
 
-        - name: Install Dependencies
-          run: |
-            python -m pip install --upgrade pip
-            pip uninstall eth-ape --yes
-            pip install .[test]
+        - name: Setup Ape
+          uses: ApeWorX/github-action@v3
+          with:
+            ape-version-pin: .[test]
 
         - name: Run Functional Tests
-          run: ape test tests/functional -m "not fuzzing" -s --cov=src --cov-append -n auto --dist loadgroup
+          run: ape test tests/functional -m "not fuzzing" -s --cov=src --cov-append -v ERROR -n auto --dist loadgroup
 
         - name: Run Integration Tests
-          run: ape test tests/integration -m "not fuzzing" -s --cov=src --cov-append -n auto --dist loadgroup
+          run: ape test tests/integration -m "not fuzzing" -s --cov=src --cov-append -v ERROR -n auto --dist loadgroup
 
         - name: Run Performance Tests
-          run: ape test tests/performance -s
+          run: ape test tests/performance -s -v ERROR
 
     fuzzing:
         runs-on: ubuntu-latest
@@ -111,6 +111,8 @@ jobs:
 
         steps:
         - uses: actions/checkout@v4
+          with:
+            fetch-depth: 0
 
         - name: Setup Python
           uses: actions/setup-python@v5

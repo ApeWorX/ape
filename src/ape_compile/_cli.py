@@ -5,7 +5,12 @@ from typing import TYPE_CHECKING
 import click
 
 from ape.cli.arguments import contract_file_paths_argument
-from ape.cli.options import ape_cli_context, config_override_option, project_option
+from ape.cli.options import (
+    ape_cli_context,
+    config_override_option,
+    excluded_compilers_option,
+    project_option,
+)
 
 if TYPE_CHECKING:
     from ethpm_types import ContractType
@@ -42,6 +47,7 @@ def _include_dependencies_callback(ctx, param, value):
     help="Also compile dependencies",
     callback=_include_dependencies_callback,
 )
+@excluded_compilers_option()
 @config_override_option()
 def cli(
     cli_ctx,
@@ -50,6 +56,7 @@ def cli(
     use_cache: bool,
     display_size: bool,
     include_dependencies,
+    excluded_compilers: list[str],
     config_override,
 ):
     """
@@ -68,7 +75,9 @@ def cli(
     if file_paths:
         contracts = {
             k: v.contract_type
-            for k, v in project.load_contracts(*file_paths, use_cache=use_cache).items()
+            for k, v in project.load_contracts(
+                *file_paths, use_cache=use_cache, excluded_compilers=excluded_compilers
+            ).items()
         }
         cli_ctx.logger.success("'local project' compiled.")
         compiled = True
@@ -79,14 +88,20 @@ def cli(
         project.dependencies
     ) > 0:
         for dependency in project.dependencies:
-            # Even if compiling we failed, we at least tried
+            if use_cache and dependency.compiled:
+                continue
+
+            # Even if compiling failed, we at least tried,
             # and so we don't need to warn "Nothing to compile".
             compiled = True
-
             try:
-                contract_types = dependency.project.load_contracts(use_cache=use_cache)
+                contract_types: dict[str, ContractType] = {
+                    c.contract_type.name: c.contract_type
+                    for c in dependency.compile(use_cache=use_cache, allow_install=True).values()
+                }
             except Exception as err:
-                cli_ctx.logger.log_error(err)
+                msg = f"Dependency '{dependency.name}' not installed. Reason: {err}"
+                cli_ctx.logger.error(msg)
                 errored = True
                 continue
 

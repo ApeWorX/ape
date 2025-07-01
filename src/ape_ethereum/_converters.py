@@ -23,13 +23,13 @@ NUMBER_PATTERN = re.compile(r"^-?\d{1,3}(?:[,_]?\d{3})*(?:\.\d+)?(?:[eE][+-]?\d+
 
 
 class WeiConversions(ConverterAPI):
-    """Converts units like `1 ether` to 1e18 wei"""
+    """Converts units like `1 ether` to 1e18 wei."""
 
     def is_convertible(self, value: str) -> bool:
         if not isinstance(value, str):
             return False
 
-        if " " not in value or len(value.split(" ")) > 2:
+        elif " " not in value or len(value.split(" ")) > 2:
             return False
 
         val, unit = value.split(" ")

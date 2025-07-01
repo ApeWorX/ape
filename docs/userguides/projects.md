@@ -7,9 +7,9 @@ A common project structure looks like this:
 project                             # The root project directory
 ├── contracts/                      # Project source files, such as '.sol' or '.vy' files
 │   └── smart_contract_example.sol  # Sample of a smart contract
-├── tests/                          # Project tests, ran using the 'ape test' command
+├── tests/                          # Project tests, run using the 'ape test' command
 │   └── test_sample.py              # Sample of a test to run against your sample contract
-├── scripts/                        # Project scripts, such as deploy scripts, ran using the 'ape run   <`name>' command
+├── scripts/                        # Project scripts, such as deploy scripts, run using the 'ape run <name>' command
 │   └── deploy.py                   # Sample script to automate a deployment of an ape project
 └── ape-config.yaml                 # The ape project configuration file
 ```

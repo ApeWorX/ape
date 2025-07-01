@@ -1,10 +1,8 @@
 from abc import abstractmethod
 from functools import cached_property
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Optional
 
-from eth_pydantic_types import HexBytes
-
-from ape.exceptions import ConversionError
+from ape.exceptions import AccountsError, ConversionError
 from ape.types.address import AddressType
 from ape.types.units import CurrencyValue
 from ape.utils.basemodel import BaseInterface
@@ -90,6 +88,10 @@ class BaseAddress(BaseInterface):
         """
         return self.address
 
+    def __hash__(self) -> int:
+        """Return consistent hash for all address representations with the same value."""
+        return hash(int(self.address, base=16))
+
     def __call__(self, **kwargs) -> "ReceiptAPI":
         """
         Call this address directly. For contracts, this may mean invoking their
@@ -103,9 +105,17 @@ class BaseAddress(BaseInterface):
         """
 
         txn = self.as_transaction(**kwargs)
-        if "sender" in kwargs and hasattr(kwargs["sender"], "call"):
-            sender = kwargs["sender"]
-            return sender.call(txn, **kwargs)
+        if "sender" in kwargs:
+            if hasattr(kwargs["sender"], "call"):
+                # AccountAPI
+                sender = kwargs["sender"]
+                return sender.call(txn, **kwargs)
+
+            elif hasattr(kwargs["sender"], "prepare_transaction"):
+                # BaseAddress (likely, a ContractInstance)
+                prepare_transaction = kwargs["sender"].prepare_transaction(txn)
+                return self.provider.send_transaction(prepare_transaction)
+
         elif "sender" not in kwargs and self.account_manager.default_sender is not None:
             return self.account_manager.default_sender.call(txn, **kwargs)
 
@@ -150,25 +160,41 @@ class BaseAddress(BaseInterface):
         """
         The raw bytes of the smart-contract code at the address.
         """
-
-        # TODO: Explore caching this (based on `self.provider.network` and examining code)
-        return self.provider.get_code(self.address)
+        # NOTE: Chain manager handles code caching.
+        return self.chain_manager.get_code(self.address)
 
     @property
     def codesize(self) -> int:
         """
         The number of bytes in the smart contract.
         """
-
-        return len(self.code)
+        code = self.code
+        return len(code) if isinstance(code, bytes) else len(bytes.fromhex(code.lstrip("0x")))
 
     @property
     def is_contract(self) -> bool:
         """
         ``True`` when there is code associated with the address.
         """
+        return self.codesize > 0
 
-        return len(HexBytes(self.code)) > 0
+    @property
+    def delegate(self) -> Optional["BaseAddress"]:
+        """
+        Check and see if Account has a "delegate" contract, which is a contract that this account
+        delegates functionality to. This could be from many contexts, such as a Smart Wallet like
+        Safe (https://github.com/ApeWorX/ape-safe) which has a Singleton class it forwards to, or
+        an EOA using an EIP7702-style delegate. Returning ``None`` means that the account does not
+        have a delegate.
+
+        The default behavior is to use `:class:~ape.managers.ChainManager.get_delegate` to check if
+        the account has a proxy, such as ``SafeProxy`` for ``ape-safe`` or an EIP7702 delegate.
+
+        Returns:
+            Optional[`:class:~ape.contracts.ContractInstance`]:
+                The contract instance of the delegate contract (if available).
+        """
+        return self.chain_manager.get_delegate(self.address)
 
     @cached_property
     def history(self) -> "AccountHistory":
@@ -178,14 +204,61 @@ class BaseAddress(BaseInterface):
         return self.chain_manager.history[self.address]
 
     def as_transaction(self, **kwargs) -> "TransactionAPI":
+        sign = kwargs.pop("sign", False)
         converted_kwargs = self.conversion_manager.convert_method_kwargs(kwargs)
-        return self.provider.network.ecosystem.create_transaction(
+        tx = self.provider.network.ecosystem.create_transaction(
             receiver=self.address, **converted_kwargs
         )
+        if sender := kwargs.get("sender"):
+            if hasattr(sender, "prepare_transaction"):
+                prepared = sender.prepare_transaction(tx)
+                return (sender.sign_transaction(prepared) or prepared) if sign else prepared
+
+        return tx
 
     def estimate_gas_cost(self, **kwargs) -> int:
         txn = self.as_transaction(**kwargs)
         return self.provider.estimate_gas_cost(txn)
+
+    def prepare_transaction(self, txn: "TransactionAPI", **kwargs) -> "TransactionAPI":
+        """
+        Set default values on a transaction.
+
+        Raises:
+            :class:`~ape.exceptions.AccountsError`: When the account cannot afford the transaction
+              or the nonce is invalid.
+            :class:`~ape.exceptions.TransactionError`: When given negative required confirmations.
+
+        Args:
+            txn (:class:`~ape.api.transactions.TransactionAPI`): The transaction to prepare.
+            **kwargs: Sub-classes, such as :class:`~ape.api.accounts.AccountAPI`, use additional kwargs.
+
+        Returns:
+            :class:`~ape.api.transactions.TransactionAPI`
+        """
+
+        # NOTE: Allow overriding nonce, assume user understands what this does
+        if txn.nonce is None:
+            txn.nonce = self.nonce
+        elif txn.nonce < self.nonce:
+            raise AccountsError("Invalid nonce, will not publish.")
+
+        txn = self.provider.prepare_transaction(txn)
+
+        if (
+            txn.sender not in self.account_manager.test_accounts._impersonated_accounts
+            and txn.total_transfer_value > self.balance
+        ):
+            raise AccountsError(
+                f"Transfer value meets or exceeds account balance "
+                f"for account '{self.address}' on chain '{self.provider.chain_id}' "
+                f"using provider '{self.provider.name}'.\n"
+                "Are you using the correct account / chain / provider combination?\n"
+                f"(transfer_value={txn.total_transfer_value}, balance={self.balance})."
+            )
+
+        txn.sender = txn.sender or self.address
+        return txn
 
 
 class Address(BaseAddress):

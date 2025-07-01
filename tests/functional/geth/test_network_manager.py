@@ -12,7 +12,7 @@ def mock_geth_sepolia(ethereum, geth_provider, geth_contract):
     network.
     """
     # Ensuring contract exists before hack.
-    # This allow the network to be past genesis which is more realistic.
+    # This allows the network to be past genesis which is more realistic.
     _ = geth_contract
     geth_provider.network.name = "sepolia"
     yield geth_provider.network
@@ -64,3 +64,21 @@ def test_parse_network_choice_evmchains(networks, connection_str):
             else f"{connection_str}:node"
         )
         assert moon_provider.network_choice == expected_network_choice
+
+
+@geth_process_test
+def test_parse_network_choice_pid(geth_provider, networks):
+    pid = None
+    if proc := geth_provider.process:
+        pid = proc.pid  # Still potentially None.
+
+    if pid is None:
+        pid = next(iter(networks.running_nodes.lookup_processes(geth_provider)), None)
+
+    if pid is None:
+        pytest.fail("Cannot find Geth process - might be running _before_ tests.")
+
+    # Show we are able to connect to providers via PID URL.
+    with networks.parse_network_choice(f"pid://{pid}") as provider:
+        assert provider.is_connected
+        assert provider.network_choice == f"ethereum:local:{geth_provider.ipc_path}"

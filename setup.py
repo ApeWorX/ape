@@ -20,10 +20,13 @@ extras_require = {
         "pytest-timeout>=2.2.0,<3",  # For avoiding timing out during tests
         "hypothesis>=6.2.0,<7.0",  # Strategy-based fuzzer
         "hypothesis-jsonschema==0.19.0",  # JSON Schema fuzzer extension
+        "ape-vyper>=0.8.9,<0.9",  # Needed for compiling test contracts
+        "vyper>=0.4.3,<0.5",  # Avoid having to download Vyper binaries
+        "ape-solidity>=0.8.5,<0.9",  # Needed for compiling test contracts
     ],
     "lint": [
-        "black>=24.10.0,<25",  # Auto-formatter and linter
-        "mypy>=1.13.0,<2",  # Static type analyzer
+        "ruff>=0.12.0",  # Unified linter and formatter
+        "mypy>=1.16.1,<1.17.0",  # Static type analyzer
         "types-PyYAML",  # Needed due to mypy typeshed
         "types-requests",  # Needed due to mypy typeshed
         "types-setuptools",  # Needed due to mypy typeshed
@@ -31,13 +34,7 @@ extras_require = {
         "types-toml",  # Needed due to mypy typeshed
         "types-SQLAlchemy>=1.4.49",  # Needed due to mypy typeshed
         "types-python-dateutil",  # Needed due to mypy typeshed
-        "flake8>=7.1.1,<8",  # Style linter
-        "flake8-breakpoint>=1.1.0,<2",  # Detect breakpoints left in code
-        "flake8-print>=4.0.1,<5",  # Detect print statements left in code
-        "flake8-pydantic",  # For detecting issues with Pydantic models
-        "flake8-type-checking",  # Detect imports to move in/out of type-checking blocks
-        "isort>=5.13.2,<6",  # Import sorting linter
-        "mdformat>=0.7.19",  # Auto-formatter for markdown
+        "mdformat>=0.7.22",  # Auto-formatter for markdown
         "mdformat-gfm>=0.3.5",  # Needed for formatting GitHub-flavored markdown
         "mdformat-frontmatter>=0.4.1",  # Needed for frontmatters-style headers in issue templates
         "mdformat-pyproject>=0.0.2",  # Allows configuring in pyproject.toml
@@ -49,8 +46,7 @@ extras_require = {
         "twine==3.8.0",  # Package upload tool
     ],
     "dev": [
-        # commitizen: Manage commits and publishing releases
-        (_HERE / "cz-requirement.txt").read_text().strip(),
+        "commitizen>=2.40,<2.41",  # Semantic commit linting
         "pre-commit",  # Ensure that linters are run prior to committing
         "pytest-watch",  # `ptw` test watcher/runner
         "ipdb",  # Debugger (Must use `export PYTHONBREAKPOINT=ipdb.set_trace`)
@@ -71,8 +67,7 @@ extras_require["dev"] = (
     # NOTE: Do *not* install `recommended-plugins` w/ dev
 )
 
-with open("./README.md") as readme:
-    long_description = readme.read()
+long_description = Path("./README.md").read_text()
 
 
 setup(
@@ -94,7 +89,7 @@ setup(
     },
     include_package_data=True,
     install_requires=[
-        "click>=8.1.6,<9",
+        "click>=8.1.6,<8.2",
         "ijson>=3.1.4,<4",
         "ipython>=8.18.1,<9",
         "lazyasd>=0.1.4",
@@ -109,14 +104,14 @@ setup(
         "pydantic-settings>=2.5.2,<3",
         "pytest>=8.0,<9.0",
         "python-dateutil>=2.8.2,<3",
-        "PyYAML>=5.0,<7",
+        "PyYAML>=5.1,<7",
         "requests>=2.28.1,<3",
-        "rich>=12.5.1,<14",
+        "rich>=13.9,<14",
         "SQLAlchemy>=1.4.35",
         "toml; python_version<'3.11'",
-        "tqdm>=4.62.3,<5.0",
+        "tqdm>=4.67,<5.0",
         "traitlets>=5.3.0",
-        "urllib3>=2.0.0,<3",
+        "urllib3>=2.3,<3",
         "watchdog>=3.0,<4",
         # ** Dependencies maintained by Ethereum Foundation **
         "eth-abi>=5.1.0,<6",
@@ -124,15 +119,15 @@ setup(
         "eth-typing>=3.5.2,<6",
         "eth-utils>=2.1.0,<6",
         "hexbytes>=0.3.1,<2",
-        "py-geth>=5.1.0,<6",
+        "py-geth>=5.4.0,<6",
         "trie>=3.0.1,<4",  # Peer: stricter pin needed for uv support.
         "web3[tester]>=6.20.1,<8",
         # ** Dependencies maintained by ApeWorX **
         "eip712>=0.2.10,<0.3",
-        "ethpm-types>=0.6.19,<0.7",
-        "eth_pydantic_types>=0.1.3,<0.2",
+        "ethpm-types>=0.6.27,<0.7",
+        "eth_pydantic_types>=0.2.1,<0.3",
         "evmchains>=0.1.0,<0.2",
-        "evm-trace>=0.2.3,<0.3",
+        "evm-trace>=0.2.6,<0.3",
     ],
     entry_points={
         "console_scripts": ["ape=ape._cli:cli"],

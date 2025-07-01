@@ -5,11 +5,13 @@ from ape import Contract
 from ape.contracts import ContractContainer, ContractInstance
 from ape.exceptions import (
     ArgumentsLengthError,
+    MethodNonPayableError,
     MissingDeploymentBytecodeError,
     NetworkError,
     ProjectError,
 )
 from ape_ethereum.ecosystem import ProxyType
+from tests.conftest import explorer_test
 
 
 def test_deploy(
@@ -55,18 +57,20 @@ def test_deploy_and_publish_live_network_no_explorer(owner, contract_container, 
         contract_container.deploy(0, sender=owner, publish=True, required_confirmations=0)
 
 
-def test_deploy_and_publish(owner, contract_container, dummy_live_network, mock_explorer):
-    dummy_live_network.__dict__["explorer"] = mock_explorer
+@explorer_test
+def test_deploy_and_publish(
+    owner, contract_container, dummy_live_network_with_explorer, mock_explorer
+):
     contract = contract_container.deploy(0, sender=owner, publish=True, required_confirmations=0)
     mock_explorer.publish_contract.assert_called_once_with(contract.address)
-    dummy_live_network.__dict__["explorer"] = None
 
 
-def test_deploy_and_not_publish(owner, contract_container, dummy_live_network, mock_explorer):
-    dummy_live_network.__dict__["explorer"] = mock_explorer
+@explorer_test
+def test_deploy_and_not_publish(
+    owner, contract_container, dummy_live_network_with_explorer, mock_explorer
+):
     contract_container.deploy(0, sender=owner, publish=False, required_confirmations=0)
     assert not mock_explorer.call_count
-    dummy_live_network.__dict__["explorer"] = None
 
 
 def test_deploy_privately(owner, contract_container):
@@ -94,18 +98,24 @@ def test_deploy_no_deployment_bytecode(owner, bytecode):
         contract.deploy(sender=owner)
 
 
-def test_deployments(owner, eth_tester_provider, vyper_contract_container):
-    initial_deployed_contract = vyper_contract_container.deploy(10000000, sender=owner)
-    actual = vyper_contract_container.deployments[-1].address
+def test_deploy_sending_funds_to_non_payable_constructor(project, owner):
+    with pytest.raises(
+        MethodNonPayableError,
+        match=r"Sending funds to a non-payable constructor\.",
+    ):
+        project.SolidityContract.deploy(1, sender=owner, value="1 ether")
+
+
+def test_deployments(owner, eth_tester_provider, project):
+    initial_deployed_contract = project.VyperContract.deploy(10000000, sender=owner)
+    actual = project.VyperContract.deployments[-1].address
     expected = initial_deployed_contract.address
     assert actual == expected
 
 
-def test_deploy_proxy(
-    owner, vyper_contract_instance, proxy_contract_container, chain, eth_tester_provider
-):
+def test_deploy_proxy(owner, vyper_contract_instance, project, chain, eth_tester_provider):
     target = vyper_contract_instance.address
-    proxy = proxy_contract_container.deploy(target, sender=owner)
+    proxy = project.SimpleProxy.deploy(target, sender=owner)
 
     # Ensure we can call both proxy and target methods on it.
     assert proxy.implementation  # No attr err
@@ -139,8 +149,10 @@ def test_source_path_in_project(project_with_contract):
     assert contract_container.source_path == expected
 
 
-def test_source_path_out_of_project(contract_container, project_with_contract):
-    assert not contract_container.source_path
+def test_source_path_out_of_project(solidity_contract_instance, project):
+    solidity_contract_instance.base_path = None
+    with project.isolate_in_tempdir(chdir=True):
+        assert not solidity_contract_instance.source_path
 
 
 def test_encode_constructor_input(contract_container, calldata):
@@ -176,8 +188,8 @@ def test_source_id(contract_container):
     assert actual == expected
 
 
-def test_at(vyper_contract_instance, vyper_contract_container):
-    instance = vyper_contract_container.at(vyper_contract_instance.address)
+def test_at(vyper_contract_instance, project):
+    instance = project.VyperContract.at(vyper_contract_instance.address)
     assert instance == vyper_contract_instance
 
 

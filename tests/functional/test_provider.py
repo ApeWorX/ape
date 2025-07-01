@@ -3,15 +3,16 @@ from pathlib import Path
 from unittest import mock
 
 import pytest
-from eth_pydantic_types import HashBytes32
+from eth_pydantic_types import HexBytes32
 from eth_tester.exceptions import TransactionFailed  # type: ignore
 from eth_typing import HexStr
 from eth_utils import ValidationError, to_hex
 from hexbytes import HexBytes
 from requests import HTTPError
-from web3.exceptions import ContractPanicError, TimeExhausted
+from web3.exceptions import ContractPanicError, ExtraDataLengthError, TimeExhausted
 
 from ape import convert
+from ape.api.providers import SubprocessProvider
 from ape.exceptions import (
     APINotImplementedError,
     BlockNotFoundError,
@@ -135,14 +136,19 @@ def test_chain_id_from_ethereum_base_provider_is_cached(mock_web3, ethereum, eth
 
 
 def test_chain_id_when_disconnected(eth_tester_provider):
+    expected = DEFAULT_TEST_CHAIN_ID
     eth_tester_provider.disconnect()
     try:
         actual = eth_tester_provider.chain_id
-        expected = DEFAULT_TEST_CHAIN_ID
-        assert actual == expected
-
     finally:
         eth_tester_provider.connect()
+
+    assert actual == expected
+
+
+def test_chain_id_adhoc_http(networks):
+    with networks.parse_network_choice("https://www.shibrpc.com") as bor:
+        assert bor.chain_id == 109
 
 
 def test_get_receipt_not_exists_with_timeout(eth_tester_provider):
@@ -237,6 +243,19 @@ def test_get_contract_logs_single_log(chain, contract_instance, owner, eth_teste
     logs = [log for log in eth_tester_provider.get_contract_logs(log_filter)]
     assert len(logs) == 1
     assert logs[0]["foo"] == 0
+    assert logs[0].abi == contract_instance.FooHappened.abi
+
+    # Show it looks up the ABI when not cached not anymore.
+    logs[0]._abi = None
+    assert logs[0].abi == contract_instance.FooHappened.abi
+
+    # Ensure topics are expected.
+    topics = logs[0].topics
+    expected_topics = [
+        "0x1a7c56fae0af54ebae73bc4699b9de9835e7bb86b050dff7e80695b633f17abd",
+        "0x0000000000000000000000000000000000000000000000000000000000000000",
+    ]
+    assert topics == expected_topics
 
 
 def test_get_contract_logs_single_log_query_multiple_values(
@@ -254,6 +273,27 @@ def test_get_contract_logs_single_log_query_multiple_values(
     logs = [log for log in eth_tester_provider.get_contract_logs(log_filter)]
     assert len(logs) >= 1
     assert logs[-1]["foo"] == 0
+
+
+def test_get_contract_logs_multiple_accounts_for_address(
+    chain, contract_instance, owner, eth_tester_provider
+):
+    """
+    Tests the condition when you pass in multiple AddressAPI objects
+    during an address-topic search.
+    """
+    contract_instance.logAddressArray(sender=owner)  # Create logs
+    block = chain.blocks.height
+    log_filter = LogFilter.from_event(
+        event=contract_instance.EventWithAddressArray,
+        search_topics={"some_address": [owner, contract_instance]},
+        addresses=[contract_instance, owner],
+        start_block=block,
+        stop_block=block,
+    )
+    logs = [log for log in eth_tester_provider.get_contract_logs(log_filter)]
+    assert len(logs) >= 1
+    assert logs[-1]["some_address"] == owner.address
 
 
 def test_get_contract_logs_single_log_unmatched(
@@ -328,7 +368,9 @@ def test_set_timestamp_handle_same_time_race_condition(mocker, eth_tester_provid
     eth_tester_provider.set_timestamp(123)
 
 
-def test_get_virtual_machine_error_when_txn_failed_includes_base_error(eth_tester_provider):
+def test_get_virtual_machine_error_when_txn_failed_includes_base_error(
+    eth_tester_provider,
+):
     txn_failed = TransactionFailed()
     actual = eth_tester_provider.get_virtual_machine_error(txn_failed)
     assert actual.base_err == txn_failed
@@ -377,7 +419,12 @@ def test_no_comma_in_rpc_url():
 
 
 def test_send_transaction_when_no_error_and_receipt_fails(
-    mocker, mock_web3, mock_transaction, eth_tester_provider, owner, vyper_contract_instance
+    mocker,
+    mock_web3,
+    mock_transaction,
+    eth_tester_provider,
+    owner,
+    vyper_contract_instance,
 ):
     start_web3 = eth_tester_provider._web3
     eth_tester_provider._web3 = mock_web3
@@ -387,7 +434,7 @@ def test_send_transaction_when_no_error_and_receipt_fails(
 
     try:
         # NOTE: Value is meaningless.
-        tx_hash = HashBytes32.__eth_pydantic_validate__(123**36)
+        tx_hash = HexBytes32.__eth_pydantic_validate__(123**36)
 
         # Sending tx "works" meaning no vm error.
         mock_eth_tester.ethereum_tester.send_raw_transaction.return_value = tx_hash
@@ -529,12 +576,64 @@ def test_make_request_rate_limiting(mocker, ethereum, mock_web3):
 
 def test_base_fee(eth_tester_provider):
     actual = eth_tester_provider.base_fee
-    assert actual > 0
+    assert actual >= eth_tester_provider.get_block("pending").base_fee
 
     # NOTE: Mostly doing this to ensure we are calling the fee history
     #   RPC correctly. There was a bug where we were not.
     actual = eth_tester_provider._get_fee_history(0)
     assert "baseFeePerGas" in actual
+
+
+def test_has_poa_history_block_data(mock_web3, ethereum, eth_tester_provider):
+    class PluginProvider(EthereumNodeProvider):
+        pass
+
+    provider = PluginProvider(name="prov", network=ethereum.sepolia)
+    provider._web3 = mock_web3
+
+    key = "proofOfAuthorityData"
+    mock_web3.eth.get_block.return_value = {key: 123}
+
+    assert provider.has_poa_history
+
+
+def test_has_poa_history_block_exception(mock_web3, ethereum, eth_tester_provider):
+    class PluginProvider(EthereumNodeProvider):
+        pass
+
+    provider = PluginProvider(name="prov", network=ethereum.sepolia)
+    provider._web3 = mock_web3
+    mock_web3.eth.get_block.side_effect = ExtraDataLengthError
+    assert provider.has_poa_history
+
+
+def test_has_poa_history_checks_earliest_and_latest_block(mock_web3, ethereum, eth_tester_provider):
+    class PluginProvider(EthereumNodeProvider):
+        pass
+
+    provider = PluginProvider(name="prov", network=ethereum.sepolia)
+    provider._web3 = mock_web3
+
+    def get_block_side_effect(block_id):
+        if block_id == "earliest":
+            return {"blockNumber": 0}
+        elif block_id == "latest":
+            return {"blockNumber": 1, "proofOfAuthorityData": 123}
+
+    mock_web3.eth.get_block.side_effect = get_block_side_effect
+    poa_detected = provider.has_poa_history
+    assert mock_web3.eth.get_block.call_count == 2
+    assert poa_detected
+
+
+def test_has_poa_history_false(mock_web3, ethereum, eth_tester_provider):
+    class PluginProvider(EthereumNodeProvider):
+        pass
+
+    provider = PluginProvider(name="prov", network=ethereum.sepolia)
+    provider._web3 = mock_web3
+    mock_web3.eth.get_block.return_value = {}
+    assert not provider.has_poa_history
 
 
 def test_create_access_list(eth_tester_provider, vyper_contract_instance, owner):
@@ -622,7 +721,11 @@ def test_account_balance_state(project, eth_tester_provider, owner):
 
 @pytest.mark.parametrize(
     "uri,key",
-    [("ws://example.com", "ws_uri"), ("wss://example.com", "ws_uri"), ("wss://example.com", "uri")],
+    [
+        ("ws://example.com", "ws_uri"),
+        ("wss://example.com", "ws_uri"),
+        ("wss://example.com", "uri"),
+    ],
 )
 def test_node_ws_uri(project, uri, key):
     node = project.network_manager.ethereum.sepolia.get_provider("node")
@@ -716,3 +819,55 @@ def test_connect_uses_cached_chain_id(mocker, mock_web3, ethereum, eth_tester_pr
     provider.connect()
     # It is still cached from the previous connection.
     assert chain_id_tracker.call_count == 1
+
+
+class TestSubprocessProvider:
+    FAKE_PID = 12345678901234567890
+
+    @pytest.fixture(autouse=True)
+    def mock_process(self, mocker):
+        mock_process = mocker.MagicMock()
+        mock_process.pid = self.FAKE_PID
+        return mock_process
+
+    @pytest.fixture(autouse=True)
+    def popen_patch(self, mocker, mock_process):
+        # Prevent actually creating new processes.
+        patch = mocker.patch("ape.api.providers.popen")
+        patch.return_value = mock_process
+        return patch
+
+    @pytest.fixture(autouse=True)
+    def spawn_patch(self, mocker):
+        # Prevent spawning process monitoring threads.
+        return mocker.patch("ape.api.providers.spawn")
+
+    @pytest.fixture
+    def subprocess_provider(self, popen_patch, eth_tester_provider):
+        class MockSubprocessProvider(SubprocessProvider):
+            @property
+            def is_connected(self):
+                # Once Popen is called once, we are "connected"
+                return popen_patch.call_count > 0
+
+            def build_command(self) -> list[str]:
+                return ["apemockprocess"]
+
+        # Hack to allow abstract methods anyway.
+        MockSubprocessProvider.__abstractmethods__ = set()  # type: ignore
+
+        return MockSubprocessProvider(name="apemockprocess", network=eth_tester_provider.network)  # type: ignore
+
+    def test_start(self, subprocess_provider):
+        assert not subprocess_provider.is_connected
+        subprocess_provider.start()
+        assert subprocess_provider.is_connected
+
+        # Show it gets tracked in network manager's managed nodes.
+        assert self.FAKE_PID in subprocess_provider.network_manager.running_nodes
+
+    def test_start_allow_start_false(self, subprocess_provider):
+        subprocess_provider.allow_start = False
+        expected = r"Process not started and cannot connect to existing process\."
+        with pytest.raises(ProviderError, match=expected):
+            subprocess_provider.start()

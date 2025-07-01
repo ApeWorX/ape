@@ -50,15 +50,45 @@ Next, we will talk about how to add additional networks to your Ape environment.
 
 ## L2 Networks
 
-Common L2 networks, such as Arbitrum, Polygon, Optimism, or Fantom, have ApeWorX-maintained (trusted) plugins that override the Ethereum ecosystem API class and change any defaults that are needed.
+Common L2 networks, such as Arbitrum, Polygon, Optimism, Fantom, or Base, have ApeWorX-maintained (trusted) plugins that override the Ethereum ecosystem API class and change any defaults that are needed.
 You can install these plugins by doing:
 
 ```shell
-ape plugins install arbitrum polygon optimism fantom
+ape plugins install arbitrum polygon optimism fantom base
 ```
 
+Ape supports many L2 networks with their own plugins that contain ecosystem-specific customizations:
+
+| Network   | Plugin Name     | Description                              |
+| --------- | --------------- | ---------------------------------------- |
+| Arbitrum  | `ape-arbitrum`  | Arbitrum One, Nova, and related networks |
+| Avalanche | `ape-avalanche` | Avalanche C-Chain and subnets            |
+| Base      | `ape-base`      | Base mainnet and testnet                 |
+| Blast     | `ape-blast`     | Blast L2 network                         |
+| Fantom    | `ape-fantom`    | Fantom Opera and testnet                 |
+| Gnosis    | `ape-gnosis`    | Gnosis Chain (formerly xDai)             |
+| Polygon   | `ape-polygon`   | Polygon PoS and zkEVM networks           |
+| Optimism  | `ape-optimism`  | Optimism and OP Stack networks           |
+
 Each plugin does different things.
-In general, L2 plugins are very small and override the Ethereum ecosystem class.
+In general, L2 plugins are very small and override the Ethereum ecosystem class to modify chain-specific behaviors.
+
+### Configuring L2 Networks
+
+Most L2 networks follow Ethereum's conventions but may have different transaction behavior. You can override specific settings:
+
+```yaml
+arbitrum:
+  # Configure network-specific settings
+  mainnet:
+    transaction_acceptance_timeout: 300  # 5 minutes
+    default_provider: alchemy
+    
+  # Configure provider-specific settings
+  sepolia:
+    gas_limit: 100000000  # Higher gas limit for Arbitrum testnet
+```
+
 Here are some examples of changes L2 plugins make that allow improved support for these networks:
 
 1. Networks that don't support EIP-1559 transactions use Static-fee transaction types by default whereas `ape-ethereum` will use EIP-1559 transactions by default.
@@ -128,7 +158,7 @@ The two ways to do this are:
 The most familiar way to use custom networks (non-plugin-based networks) in Ape is to use the `networks: custom` configuration.
 Generally, you want to use the global `ape-config.yaml`, which is located in your `$HOME/.ape/` directory.
 By configuring networks globally, you can share them across all your projects.
-More information about configuring Ape (in general) can be found [here](./contracts.html).
+More information about configuring Ape (in general) can be found [here](./config.html).
 
 To add custom networks to your `ape-config.yaml` file, follow this pattern:
 
@@ -140,6 +170,9 @@ networks:
        ecosystem: shibarium            # The ecosystem name, can either be new or an existing
        base_ecosystem_plugin: polygon  # The ecosystem base-class, defaults to the default ecosystem
        default_provider: node          # Default is the generic node provider
+       block_time: 2                   # Block time in seconds (optional)
+       transaction_type: 0             # Default transaction type (optional)
+       gas_limit: 30000000             # Default gas limit (optional)
 ```
 
 The following paragraphs explain the different parameters of the custom network config.
@@ -402,11 +435,32 @@ Out-of-the-box, Ape ships with two development providers you can use for the `lo
 - An Ephemeral Node (defaults to Geth) process
 
 ```bash
-ape test --network ::test
-ape test --network ::node  # Launch a local development node (geth) process
+ape test --network ::test  # Launch an Ethereum Tester in-process node.
+ape test --network ::node  # Launch a local development node (e.g. geth) process.
 ```
 
 To learn more about testing in ape, follow [this guide](./testing.html).
+
+### Ethereum Tester
+
+`ethereum:local:test` is an in-process Pythonic Ethereum tester node, which is fast but limited in its feature-set.
+It is the default tester node in Ape because it doesn't require any additional dependencies, such as `geth`.
+
+### Local Node
+
+Using `ethereum:local:node`, you are telling Ape to use node software in `--dev` mode e.g. `geth --dev` or `reth --dev`.
+By default, Ape will use `geth --dev` unless geth is not installed, than it will search for others.
+
+To use specific node software, configure it directly in Ape.
+Here is an `ape-config.yaml` example for how to do that:
+
+```yaml
+node:
+  executable: $HOME/RustProjects/reth/target/release/reth node
+```
+
+In this case, `reth` was built locally is in the repository's `target` directory.
+Link to the `reth` binary so `ape` launches and uses your local `reth` node.
 
 ## Live Networks
 
@@ -492,11 +546,38 @@ To run a network with a process, use the `ape networks run` command:
 ape networks run
 ```
 
+This launches a development node in the current working terminal session.
+To continue developing, you will have to launch a new terminal session.
+Alternatively, you can use the `--background` flag to background the process:
+
+```shell
+ape networks run --background
+```
+
 By default, `ape networks run` runs a development Node (geth) process.
 To use a different network, such as `hardhat` or Anvil nodes, use the `--network` flag:
 
 ```shell
 ape networks run --network ethereum:local:foundry
+```
+
+To configure the network's block time, use the `--block-time` option.
+
+```shell
+ape networks run --network ethereum:local:foundry --block-time 10
+```
+
+Once you are done with your node, you can simply exit the process to tear it down.
+Or, if you used `--background` or lost the process some other way, you can stop the node using the `kill` command:
+
+```shell
+ape networks kill --all
+```
+
+To list all running networks, use the `list --running` command:
+
+```shell
+ape networks list --running
 ```
 
 ## Provider Interaction

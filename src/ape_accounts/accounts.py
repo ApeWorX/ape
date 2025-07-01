@@ -3,31 +3,34 @@ import warnings
 from collections.abc import Iterator
 from os import environ
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any, Optional, Union
 
 import click
-from eip712.messages import EIP712Message
+from eip712.messages import EIP712Message, EIP712Type
 from eth_account import Account as EthAccount
 from eth_account.hdaccount import ETHEREUM_DEFAULT_PATH
 from eth_account.messages import encode_defunct
-from eth_keys import keys  # type: ignore
 from eth_pydantic_types import HexBytes
-from eth_utils import to_bytes, to_hex
+from eth_typing import HexStr
+from eth_utils import remove_0x_prefix, to_bytes, to_canonical_address, to_hex
 
 from ape.api.accounts import AccountAPI, AccountContainerAPI
-from ape.exceptions import AccountsError
+from ape.api.address import BaseAddress
+from ape.exceptions import AccountsError, APINotImplementedError
 from ape.logging import logger
+from ape.types import AddressType
 from ape.types.signatures import MessageSignature, SignableMessage, TransactionSignature
 from ape.utils._web3_compat import sign_hash
 from ape.utils.basemodel import ManagerAccessMixin
-from ape.utils.misc import log_instead_of_fail
+from ape.utils.misc import ZERO_ADDRESS, derive_public_key, log_instead_of_fail
 from ape.utils.validators import _validate_account_alias, _validate_account_passphrase
+from ape_ethereum import Authorization
+from ape_ethereum.transactions import TransactionType
 
 if TYPE_CHECKING:
     from eth_account.signers.local import LocalAccount
 
     from ape.api.transactions import TransactionAPI
-    from ape.types.address import AddressType
 
 
 class InvalidPasswordError(AccountsError):
@@ -87,7 +90,7 @@ class KeyfileAccount(AccountAPI):
         return json.loads(self.keyfile_path.read_text())
 
     @property
-    def address(self) -> "AddressType":
+    def address(self) -> AddressType:
         return self.network_manager.ethereum.decode_address(self.keyfile["address"])
 
     @property
@@ -108,22 +111,19 @@ class KeyfileAccount(AccountAPI):
         return key
 
     @property
-    def public_key(self) -> HexBytes:
-        if "public_key" in self.keyfile:
-            return HexBytes(bytes.fromhex(self.keyfile["public_key"]))
-        key = self.__key
+    def public_key(self) -> Optional[HexBytes]:
+        keyfile_data = self.keyfile
+        if "public_key" in keyfile_data:
+            return HexBytes(bytes.fromhex(keyfile_data["public_key"]))
 
         # Derive the public key from the private key
-        pk = keys.PrivateKey(key)
-        # convert from eth_keys.datatypes.PublicKey to str to make it HexBytes
-        publicKey = str(pk.public_key)
+        public_key = derive_public_key(self.__key)
+        keyfile_data["public_key"] = remove_0x_prefix(HexStr(public_key.hex()))
 
-        key_file_data = self.keyfile
-        key_file_data["public_key"] = publicKey[2:]
+        # Store the public key so we don't have to derive it again.
+        self.keyfile_path.write_text(json.dumps(keyfile_data), encoding="utf8")
 
-        self.keyfile_path.write_text(json.dumps(key_file_data), encoding="utf8")
-
-        return HexBytes(bytes.fromhex(publicKey[2:]))
+        return public_key
 
     def unlock(self, passphrase: Optional[str] = None):
         if not passphrase:
@@ -141,7 +141,10 @@ class KeyfileAccount(AccountAPI):
                 passphrase = self._prompt_for_passphrase(
                     f"Enter passphrase to permanently unlock '{self.alias}'"
                 )
-        assert passphrase is not None, "Passphrase can't be 'None'"
+
+        if passphrase is None:
+            raise AccountsError("Passphrase can't be 'None'")
+
         # Rest of the code to unlock the account using the passphrase
         self.__cached_key = self.__decrypt_keyfile(passphrase)
         self.locked = False
@@ -165,50 +168,41 @@ class KeyfileAccount(AccountAPI):
         self.__decrypt_keyfile(passphrase)
         self.keyfile_path.unlink()
 
+    def sign_authorization(
+        self,
+        address: AddressType,
+        chain_id: Optional[int] = None,
+        nonce: Optional[int] = None,
+    ) -> Optional[MessageSignature]:
+        if chain_id is None:
+            chain_id = self.provider.chain_id
+
+        display_msg = f"Allow **full root access** to '{address}' on {chain_id or 'any chain'}?"
+        if not click.confirm(click.style(f"{display_msg}\n\nAcknowledge: ", fg="yellow")):
+            return None
+
+        try:
+            signed_authorization = EthAccount.sign_authorization(
+                dict(
+                    chainId=chain_id,
+                    address=to_canonical_address(address),
+                    nonce=nonce or self.nonce,
+                ),
+                self.__key,
+            )
+        except AttributeError as e:
+            # TODO: Remove `try..except` once web3 pinned `>=7`
+            raise APINotImplementedError from e
+
+        return MessageSignature(
+            v=signed_authorization.y_parity,
+            r=to_bytes(signed_authorization.r),
+            s=to_bytes(signed_authorization.s),
+        )
+
     def sign_message(self, msg: Any, **signer_options) -> Optional[MessageSignature]:
-        if isinstance(msg, str):
-            display_msg = f"Signing raw string: '{msg}'"
-            msg = encode_defunct(text=msg)
-
-        elif isinstance(msg, int):
-            display_msg = f"Signing raw integer: {msg}"
-            msg = encode_defunct(hexstr=to_hex(msg))
-
-        elif isinstance(msg, bytes):
-            display_msg = f"Signing raw bytes: '{to_hex(msg)}'"
-            msg = encode_defunct(primitive=msg)
-
-        elif isinstance(msg, EIP712Message):
-            # Display message data to user
-            display_msg = "Signing EIP712 Message\n"
-
-            # Domain Data
-            display_msg += "Domain\n"
-            if msg._name_:
-                display_msg += f"\tName: {msg._name_}\n"
-            if msg._version_:
-                display_msg += f"\tVersion: {msg._version_}\n"
-            if msg._chainId_:
-                display_msg += f"\tChain ID: {msg._chainId_}\n"
-            if msg._verifyingContract_:
-                display_msg += f"\tContract: {msg._verifyingContract_}\n"
-            if msg._salt_:
-                display_msg += f"\tSalt: {to_hex(msg._salt_)}\n"
-
-            # Message Data
-            display_msg += "Message\n"
-            for field, value in msg._body_["message"].items():
-                if isinstance(value, bytes):
-                    value = to_hex(value)
-                display_msg += f"\t{field}: {value}\n"
-
-            # Convert EIP712Message to SignableMessage for handling below
-            msg = msg.signable_message
-
-        elif isinstance(msg, SignableMessage):
-            display_msg = str(msg)
-
-        else:
+        display_msg, msg = _get_signing_message_with_display(msg)
+        if display_msg is None:
             logger.warning("Unsupported message type, (type=%r, msg=%r)", type(msg), msg)
             return None
 
@@ -297,6 +291,45 @@ class KeyfileAccount(AccountAPI):
         except ValueError as err:
             raise InvalidPasswordError() from err
 
+    def set_delegate(self, contract: Union[BaseAddress, AddressType, str], **txn_kwargs):
+        contract_address = self.conversion_manager.convert(contract, AddressType)
+        sig = self.sign_authorization(contract_address, nonce=self.nonce + 1)
+        auth = Authorization.from_signature(
+            address=contract_address,
+            chain_id=self.provider.chain_id,
+            # NOTE: `tx` uses `self.nonce`
+            nonce=self.nonce + 1,
+            signature=sig,
+        )
+        tx = self.provider.network.ecosystem.create_transaction(
+            type=TransactionType.SET_CODE,
+            authorizations=[auth],
+            sender=self,
+            # NOTE: Cannot target `ZERO_ADDRESS`
+            receiver=txn_kwargs.pop("receiver", None) or self,
+            **txn_kwargs,
+        )
+        return self.call(tx)
+
+    def remove_delegate(self, **txn_kwargs):
+        sig = self.sign_authorization(ZERO_ADDRESS, nonce=self.nonce + 1)
+        auth = Authorization.from_signature(
+            chain_id=self.provider.chain_id,
+            address=ZERO_ADDRESS,
+            # NOTE: `tx` uses `self.nonce`
+            nonce=self.nonce + 1,
+            signature=sig,
+        )
+        tx = self.provider.network.ecosystem.create_transaction(
+            type=TransactionType.SET_CODE,
+            authorizations=[auth],
+            sender=self,
+            # NOTE: Cannot target `ZERO_ADDRESS`
+            receiver=txn_kwargs.pop("receiver", None) or self,
+            **txn_kwargs,
+        )
+        return self.call(tx)
+
 
 def _write_and_return_account(
     alias: str, passphrase: str, account: "LocalAccount"
@@ -319,7 +352,7 @@ def generate_account(
     Args:
         alias (str): The alias name of the account.
         passphrase (str): Passphrase used to encrypt the account storage file.
-        hd_path (str): The hierarchal deterministic path to use when generating the account.
+        hd_path (str): The hierarchical deterministic path to use when generating the account.
             Defaults to `m/44'/60'/0'/0/0`.
         word_count (int): The amount of words to use in the generated mnemonic.
 
@@ -347,7 +380,7 @@ def import_account_from_mnemonic(
         alias (str): The alias name of the account.
         passphrase (str): Passphrase used to encrypt the account storage file.
         mnemonic (str): List of space-separated words representing the mnemonic seed phrase.
-        hd_path (str): The hierarchal deterministic path to use when generating the account.
+        hd_path (str): The hierarchical deterministic path to use when generating the account.
             Defaults to `m/44'/60'/0'/0/0`.
 
     Returns:
@@ -383,3 +416,70 @@ def import_account_from_private_key(
     account = EthAccount.from_key(to_bytes(hexstr=private_key))
 
     return _write_and_return_account(alias, passphrase, account)
+
+
+# Abstracted to make testing easier.
+def _get_signing_message_with_display(msg) -> tuple[Optional[str], Any]:
+    display_msg = None
+
+    if isinstance(msg, str):
+        display_msg = f"Signing raw string: '{msg}'"
+        msg = encode_defunct(text=msg)
+
+    elif isinstance(msg, int):
+        display_msg = f"Signing raw integer: {msg}"
+        msg = encode_defunct(hexstr=to_hex(msg))
+
+    elif isinstance(msg, bytes):
+        display_msg = f"Signing raw bytes: '{to_hex(msg)}'"
+        msg = encode_defunct(primitive=msg)
+
+    elif isinstance(msg, EIP712Message):
+        # Display message data to user
+        display_msg = "Signing EIP712 Message\n"
+
+        # Domain Data
+        display_msg += "Domain\n"
+        if msg._name_:
+            display_msg += f"\tName: {msg._name_}\n"
+        if msg._version_:
+            display_msg += f"\tVersion: {msg._version_}\n"
+        if msg._chainId_:
+            display_msg += f"\tChain ID: {msg._chainId_}\n"
+        if msg._verifyingContract_:
+            display_msg += f"\tContract: {msg._verifyingContract_}\n"
+        if msg._salt_:
+            display_msg += f"\tSalt: {to_hex(msg._salt_)}\n"
+
+        # Message Data
+        display_msg += "Message\n"
+        for field, value in msg._body_["message"].items():
+            if isinstance(value, EIP712Type):
+                msg_fields = [x for x in dir(value) if not x.startswith("_")]
+                msg_value = ""
+                for msg_field in msg_fields:
+                    attr = getattr(value, msg_field)
+                    if isinstance(attr, bytes):
+                        attr = to_hex(attr)
+
+                    msg_value += f"\t\t{msg_field}: {attr}\n"
+
+                display_msg += f"\t{field}:\n{msg_value}\n"
+
+            else:
+                if isinstance(value, bytes):
+                    value = to_hex(value)
+
+                display_msg += f"\t{field}: {value}\n"
+
+        display_msg = display_msg.strip()
+        msg = msg.signable_message
+
+    elif isinstance(msg, SignableMessage):
+        display_msg = f"{msg}"
+
+    # Using 2 spaces is cleaner than a full tab.
+    if display_msg is not None:
+        display_msg = display_msg.replace("\t", "  ")
+
+    return (display_msg, msg)

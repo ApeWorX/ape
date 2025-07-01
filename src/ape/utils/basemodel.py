@@ -3,6 +3,7 @@ TODO: In 0.9, move this module to `ape.types`.
 """
 
 import inspect
+import json
 from abc import ABC
 from collections.abc import Callable, Iterator, Mapping, Sequence
 from importlib import import_module
@@ -34,7 +35,7 @@ if TYPE_CHECKING:
     from ape.pytest.runners import PytestApeRunner
 
 
-class classproperty(object):
+class classproperty:
     def __init__(self, fn: Callable):
         self.fn = fn
 
@@ -122,7 +123,7 @@ def only_raise_attribute_error(fn: Callable) -> Any:
         except Exception as err:
             # Wrap the exception in AttributeError
             logger.log_debug_stack_trace()
-            raise ApeAttributeError(f"{err}") from err
+            raise ApeAttributeError(f"{err}", base_err=err) from err
 
     return wrapper
 
@@ -477,7 +478,7 @@ class ExtraAttributesMixin:
         return get_item_with_extras(self, name)
 
 
-def get_attribute_with_extras(obj: Any, name: str) -> Any:
+def get_attribute_with_extras(obj: Any, name: str, coerce_attr_error: bool = True) -> Any:
     _assert_not_ipython_check(name)
     if _recursion_checker.check(name):
         # Prevent segfaults.
@@ -529,7 +530,7 @@ def get_attribute_with_extras(obj: Any, name: str) -> Any:
 
         except Exception as err:
             _recursion_checker.reset(name)
-            raise ApeAttributeError(f"{name} - {err}") from err
+            raise ApeAttributeError(f"{name} - {err}", base_err=err) from err
 
     # The error message mentions the alternative mappings,
     # such as a contract-type map.
@@ -539,7 +540,7 @@ def get_attribute_with_extras(obj: Any, name: str) -> Any:
         base_err = _recursion_checker.getattr_errors[name]
         message = str(base_err)
     else:
-        message = f"'{repr(obj)}' has no attribute '{name}'"
+        message = f"'{obj!r}' has no attribute '{name}'"
 
     if extras_checked:
         extras_str = ", ".join(sorted(extras_checked))
@@ -547,12 +548,18 @@ def get_attribute_with_extras(obj: Any, name: str) -> Any:
         if suffix not in message:
             if message and message[-1] not in (".", "?", "!"):
                 message = f"{message}."
+
             message = f"{message} {suffix}"
 
     _recursion_checker.reset(name)
     if message and message[-1] not in (".", "?", "!"):
         message = f"{message}."
 
+    if base_err and not coerce_attr_error:
+        raise base_err
+
+    # Coerce whatever error to automatically be an AttributeError
+    # (required for __getattr__ or must handle independently).
     attr_err = ApeAttributeError(message)
     if base_err:
         raise attr_err from base_err
@@ -626,6 +633,25 @@ class DiskCacheableModel(BaseModel):
         super().__init__(*args, **kwargs)
         self._path = path
 
+    def model_read_file(self, path: Optional[Path] = None) -> dict:
+        """
+        Get the file's raw data. This is different from ``model_dump()`` because it
+        reads directly from the file without validation.
+        """
+        path = self._get_path(path=path)
+        return self._model_read_file(path)
+
+    @classmethod
+    def _model_read_file(cls, path: Path) -> dict:
+        """
+        Get the file's raw data. This is different from ``model_dump()`` because it
+        reads directly from the file without validation.
+        """
+        if json_str := path.read_text(encoding="utf8") if path.is_file() else "":
+            return json.loads(json_str)
+
+        return {}
+
     def model_dump_file(self, path: Optional[Path] = None, **kwargs):
         """
         Save this model to disk.
@@ -640,6 +666,7 @@ class DiskCacheableModel(BaseModel):
         path = self._get_path(path=path)
         json_str = self.model_dump_json(**kwargs)
         path.unlink(missing_ok=True)
+        path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(json_str)
 
     @classmethod
@@ -652,11 +679,8 @@ class DiskCacheableModel(BaseModel):
               if one wasn't declared at init time.
             **kwargs: Extra kwargs to pass to ``.model_validate_json()``.
         """
-        if json_str := path.read_text(encoding="utf8") if path.is_file() else "":
-            model = cls.model_validate_json(json_str, **kwargs)
-        else:
-            model = cls.model_validate({})
-
+        data = cls._model_read_file(path)
+        model = cls.model_validate(data, **kwargs)
         model._path = path
         return model
 

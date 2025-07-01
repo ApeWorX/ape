@@ -9,7 +9,7 @@ import pandas as pd
 from rich.box import SIMPLE
 from rich.table import Table
 
-from ape.api.address import BaseAddress
+from ape.api.address import Address, BaseAddress
 from ape.api.providers import BlockAPI
 from ape.api.query import (
     AccountTransactionQuery,
@@ -22,6 +22,7 @@ from ape.exceptions import (
     APINotImplementedError,
     BlockNotFoundError,
     ChainError,
+    ContractNotFoundError,
     ProviderNotConnectedError,
     QueryEngineError,
     TransactionNotFoundError,
@@ -37,8 +38,7 @@ from ape.utils.misc import ZERO_ADDRESS, is_evm_precompile, is_zero_hex, log_ins
 if TYPE_CHECKING:
     from rich.console import Console as RichConsole
 
-    from ape.types.trace import GasReport, SourceTraceback
-    from ape.types.vm import SnapshotID
+    from ape.types import BlockID, ContractCode, GasReport, SnapshotID, SourceTraceback
 
 
 class BlockContainer(BaseManager):
@@ -337,14 +337,14 @@ class AccountHistory(BaseInterfaceModel):
 
             elif receipt.nonce > start_nonce:
                 # NOTE: There's a gap in our sessional history, so fetch from query engine
-                yield from iter(self[start_nonce : receipt.nonce + 1])  # noqa: E203
+                yield from iter(self[start_nonce : receipt.nonce + 1])
 
             yield receipt
             start_nonce = receipt.nonce + 1  # start next loop on the next item
 
         if start_nonce != stop_nonce:
             # NOTE: there is no more session history, so just return query engine iterator
-            yield from iter(self[start_nonce : stop_nonce + 1])  # noqa: E203
+            yield from iter(self[start_nonce : stop_nonce + 1])
 
     def query(
         self,
@@ -703,7 +703,7 @@ class ReportManager(BaseManager):
 class ChainManager(BaseManager):
     """
     A class for managing the state of the active blockchain.
-    Also handy for querying data about the chain and managing local caches.
+    Also, handy for querying data about the chain and managing local caches.
     Access the chain manager singleton from the root ``ape`` namespace.
 
     Usage example::
@@ -716,6 +716,7 @@ class ChainManager(BaseManager):
     _block_container_map: dict[int, BlockContainer] = {}
     _transaction_history_map: dict[int, TransactionHistory] = {}
     _reports: ReportManager = ReportManager()
+    _code: dict[str, dict[str, dict[AddressType, "ContractCode"]]] = {}
 
     @cached_property
     def contracts(self) -> ContractCache:
@@ -768,7 +769,6 @@ class ChainManager(BaseManager):
         """
         The price for what it costs to transact.
         """
-
         return self.provider.gas_price
 
     @property
@@ -782,7 +782,6 @@ class ChainManager(BaseManager):
             NotImplementedError: When this provider does not implement
               `EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__.
         """
-
         return self.provider.base_fee
 
     @property
@@ -794,12 +793,13 @@ class ChainManager(BaseManager):
         Usage example::
 
             from ape import chain
+
             chain.pending_timestamp += 3600
         """
         return self.provider.get_block("pending").timestamp
 
     @pending_timestamp.setter
-    def pending_timestamp(self, new_value: str):
+    def pending_timestamp(self, new_value: Union[int, str]):
         self.provider.set_timestamp(self.conversion_manager.convert(new_value, int))
 
     @log_instead_of_fail(default="<ChainManager>")
@@ -937,7 +937,36 @@ class ChainManager(BaseManager):
             self.pending_timestamp += deltatime
         self.provider.mine(num_blocks)
 
-    def set_balance(self, account: Union[BaseAddress, AddressType], amount: Union[int, str]):
+    def get_balance(
+        self, address: Union[BaseAddress, AddressType, str], block_id: Optional["BlockID"] = None
+    ) -> int:
+        """
+        Get the balance of the given address. If ``ape-ens`` is installed,
+        you can pass ENS names.
+
+        Args:
+            address (BaseAddress, AddressType | str): An address, ENS, or account/contract.
+            block_id (:class:`~ape.types.BlockID` | None): The block ID. Defaults to latest.
+
+        Returns:
+            int: The account balance.
+        """
+        if (isinstance(address, str) and not address.startswith("0x")) or not isinstance(
+            address, str
+        ):
+            # Handles accounts, ENS, integers, aliases, everything.
+            address = self.account_manager.resolve_address(address)
+
+        return self.provider.get_balance(address, block_id=block_id)
+
+    def set_balance(self, account: Union[BaseAddress, AddressType, str], amount: Union[int, str]):
+        """
+        Set an account balance, only works on development chains.
+
+        Args:
+            account (BaseAddress, AddressType | str): The account.
+            amount (int | str): The new balance.
+        """
         if isinstance(account, BaseAddress):
             account = account.address
 
@@ -965,3 +994,41 @@ class ChainManager(BaseManager):
             raise TransactionNotFoundError(transaction_hash=transaction_hash)
 
         return receipt
+
+    def get_code(
+        self, address: AddressType, block_id: Optional["BlockID"] = None
+    ) -> "ContractCode":
+        network = self.provider.network
+
+        # Two reasons to avoid caching:
+        #   1. dev networks - chain isolation makes this mess up
+        #   2. specifying block_id= kwarg - likely checking if code
+        #      exists at the time and shouldn't use cache.
+        skip_cache = network.is_dev or block_id is not None
+        if skip_cache:
+            return self.provider.get_code(address, block_id=block_id)
+
+        self._code.setdefault(network.ecosystem.name, {})
+        self._code[network.ecosystem.name].setdefault(network.name, {})
+        if address in self._code[network.ecosystem.name][network.name]:
+            return self._code[network.ecosystem.name][network.name][address]
+
+        # Get from RPC for the first time AND use cache.
+        code = self.provider.get_code(address)
+        self._code[network.ecosystem.name][network.name][address] = code
+        return code
+
+    def get_delegate(self, address: AddressType) -> Optional[BaseAddress]:
+        ecosystem = self.provider.network.ecosystem
+
+        if not (proxy_info := ecosystem.get_proxy_info(address)):
+            return None
+
+        # NOTE: Do this every time because it can change?
+        self.contracts.cache_proxy_info(address, proxy_info)
+
+        try:
+            return self.contracts.instance_at(proxy_info.target)
+
+        except ContractNotFoundError:
+            return Address(proxy_info.target)

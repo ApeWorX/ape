@@ -1,25 +1,165 @@
+import os
+import signal
 from collections.abc import Collection, Iterator
 from functools import cached_property
-from typing import TYPE_CHECKING, Optional, Union
+from pathlib import Path
+from typing import TYPE_CHECKING, Any, Optional, Union
 
 from evmchains import PUBLIC_CHAIN_META
+from pydantic import ValidationError
 
 from ape.api.networks import ProviderContextManager
 from ape.exceptions import EcosystemNotFoundError, NetworkError, NetworkNotFoundError
 from ape.managers.base import BaseManager
 from ape.utils.basemodel import (
+    BaseModel,
+    DiskCacheableModel,
     ExtraAttributesMixin,
     ExtraModelAttributes,
     get_attribute_with_extras,
     only_raise_attribute_error,
 )
 from ape.utils.misc import _dict_overlay, log_instead_of_fail
+from ape.utils.os import clean_path
 from ape_ethereum.provider import EthereumNodeProvider
 
 if TYPE_CHECKING:
     from ape.api.networks import EcosystemAPI, NetworkAPI
-    from ape.api.providers import ProviderAPI
+    from ape.api.providers import ProviderAPI, SubprocessProvider
     from ape.utils.rpc import RPCHeaders
+
+
+class NodeProcessData(BaseModel):
+    """
+    Cached data for node subprocesses managed by Ape.
+    """
+
+    network_choice: str
+    """
+    The network triple ``ecosystem:network:node``.
+    """
+
+    ipc_path: Optional[Path] = None
+    """
+    The IPC path this node process communicates on.
+    """
+
+    http_uri: Optional[str] = None
+    """
+    The HTTP URI this node process exposes.
+    """
+
+    ws_uri: Optional[str] = None
+    """
+    The websockets URI this node process exposes.
+    """
+
+    @log_instead_of_fail(default="<NodeProcessData>")
+    def __repr__(self) -> str:
+        if ipc := self.ipc_path:
+            return f"{self.network_choice} - {clean_path(ipc)}"
+
+        elif uri := (self.http_uri or self.ws_uri):
+            return f"{self.network_choice} - {uri}"
+
+        return self.network_choice
+
+    def matches_provider(self, provider: "SubprocessProvider") -> bool:
+        if self.network_choice != f"{provider.network.choice}:{provider.name}":
+            return False
+
+        # Skip if any of the connection paths (IPC, HTTP, WS) differ
+        for attr in ("ipc_path", "http_uri", "ws_uri"):
+            if getattr(provider, attr, None) != getattr(self, attr, None):
+                return False
+
+        return True
+
+
+class NodeProcessMap(DiskCacheableModel):
+    """
+    All managed running network subprocesses.
+    """
+
+    nodes: dict[int, NodeProcessData] = {}
+
+    @property
+    def path(self) -> Path:
+        return self._path
+
+    @property
+    def process_ids(self) -> tuple[int, ...]:
+        return tuple(self.nodes.keys())
+
+    def __bool__(self) -> bool:
+        """
+        True if there is at least one managed node process.
+        """
+        return bool(self.nodes)
+
+    def __contains__(self, pid_or_provider: Union[int, "SubprocessProvider"]) -> bool:
+        if isinstance(pid_or_provider, int):
+            return pid_or_provider in self.nodes
+
+        for data in self.nodes.values():
+            if data.matches_provider(pid_or_provider):
+                return True
+
+        return False
+
+    def get(self, pid: Union[int, str]) -> Optional[NodeProcessData]:
+        return self.nodes.get(int(pid))
+
+    def lookup_processes(self, provider: "SubprocessProvider") -> dict[int, NodeProcessData]:
+        return {pid: data for pid, data in self.nodes.items() if data.matches_provider(provider)}
+
+    def cache_provider(self, provider: "SubprocessProvider"):
+        # Don't use `provider.network_choice` here because we want to ensure the provider
+        # name is used and not the URI for the third part of the choice.
+        network_choice = f"{provider.network.choice}:{provider.name}"
+        data: dict[str, Any] = {
+            "network_choice": network_choice,
+            "ipc_path": provider.ipc_path,
+            "http_uri": provider.http_uri,
+            "ws_uri": provider.ws_uri,
+        }
+        data = {k: v for k, v in data.items() if v is not None}
+
+        if process := provider.process:
+            obj = NodeProcessData.model_validate(data)
+
+            # Ensure no duplicates (bad clean?)
+            self._delete_all_matching(obj)
+
+            self.nodes[process.pid] = obj
+            self.model_dump_file()
+
+        else:
+            raise NetworkError("Unable to cache subprocess-provider information: not connected.")
+
+    def _delete_all_matching(self, node: NodeProcessData):
+        pids_to_remove = set()
+        for pid, other_node in self.nodes.items():
+            if other_node == node:
+                # Exact match but different PID. Bad clean.
+                pids_to_remove.add(pid)
+
+        for pid in pids_to_remove:
+            del self.nodes[pid]
+
+    def remove_provider(self, provider: "SubprocessProvider"):
+        pids_to_remove = {
+            pid for pid, data in self.nodes.items() if data.matches_provider(provider)
+        }
+        self.nodes = {pid: node for pid, node in self.nodes.items() if pid not in pids_to_remove}
+        self.model_dump_file()
+
+    def remove_processes(self, *pids: int):
+        self.nodes = {k: v for k, v in self.nodes.items() if k not in pids}
+        self.model_dump_file()
+
+    def clean(self):
+        self._path.unlink(missing_ok=True)
 
 
 class NetworkManager(BaseManager, ExtraAttributesMixin):
@@ -34,7 +174,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
 
         # "networks" is the NetworkManager singleton
         with networks.ethereum.mainnet.use_provider("node"):
-           ...
+            ...
     """
 
     _active_provider: Optional["ProviderAPI"] = None
@@ -48,7 +188,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
     def __repr__(self) -> str:
         provider = self.active_provider
         class_name = NetworkManager.__name__
-        content = f"{class_name} active_provider={repr(provider)}" if provider else class_name
+        content = f"{class_name} active_provider={provider!r}" if provider else class_name
         return f"<{content}>"
 
     @property
@@ -96,6 +236,102 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
             :class:`~ape.api.providers.ProviderAPI`
         """
         return self.network.ecosystem
+
+    @cached_property
+    def running_nodes(self) -> NodeProcessMap:
+        """
+        All running development nodes managed by Ape.
+        """
+        path = self.config_manager.DATA_FOLDER / "processes" / "nodes.json"
+        try:
+            return NodeProcessMap.model_validate_file(path)
+        except ValidationError:
+            path.unlink(missing_ok=True)
+            return NodeProcessMap.model_validate_file(path)
+
+    def get_running_node(self, pid: int) -> "SubprocessProvider":
+        """
+        Get a running subprocess provider for the given ``pid``.
+
+        Args:
+            pid (int): The process ID.
+
+        Returns:
+            class:`~ape.api.providers.SubprocessProvider`
+        """
+        if not (data := self.running_nodes.get(pid)):
+            raise NetworkError(f"No running node for pid '{pid}'.")
+
+        uri: Optional[Union[str, Path]] = None
+        if ipc := data.ipc_path:
+            if ipc.exists():
+                uri = ipc
+
+        else:
+            uri = data.http_uri or data.ws_uri
+
+        if uri is None:
+            NetworkError(f"Cannot connect to node on PID '{pid}': Missing URI data.")
+
+        # In this case, we want the more connectable network choice.
+        network_parts = data.network_choice.split(":")
+        network_choice = f"{':'.join(network_parts[:2])}:{uri}"
+
+        provider_settings: dict = {
+            network_parts[0]: {
+                network_parts[1]: {
+                    "ipc_path": data.ipc_path,
+                    "http_uri": data.http_uri,
+                    "ws_uri": data.ws_uri,
+                    "uri": None,
+                }
+            }
+        }
+        provider = self.get_provider_from_choice(
+            network_choice=network_choice, provider_settings=provider_settings or None
+        )
+
+        # If this is not a subprocess provider, it may be ok to proceed.
+        # However, the rest of Ape will assume it is.
+        return provider  # type: ignore[return-value]
+
+    def kill_node_process(self, *process_ids: int) -> dict[int, NodeProcessData]:
+        """
+        Kill a node process managed by Ape.
+
+        Args:
+            *process_ids (int): The process ID to kill.
+
+        Returns:
+            dict[str, :class:`~ape.managers.networks.NodeProcessData`]: The process data
+            of all terminated processes.
+        """
+        if not self.running_nodes:
+            return {}
+
+        pids_killed = {}
+        for pid in process_ids:
+            if not (data := self.running_nodes.nodes.get(pid)):
+                continue
+
+            try:
+                provider = self.get_running_node(pid)
+            except Exception:
+                # Still try to kill the process (below).
+                pass
+            else:
+                # Gracefully disconnect _before_ killing process.
+                provider.disconnect()
+
+            try:
+                os.kill(pid, signal.SIGTERM)
+            except Exception:
+                pass
+            else:
+                pids_killed[pid] = data
+
+        self.running_nodes.remove_processes(*process_ids)
+        return pids_killed
 
     def get_request_headers(
         self, ecosystem_name: str, network_name: str, provider_name: str
@@ -169,7 +405,10 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
             {"fork": {self.ecosystem.name: {self.network.name: fork_settings}}},
         )
 
-        shared_kwargs: dict = {"provider_settings": provider_settings, "disconnect_after": True}
+        shared_kwargs: dict = {
+            "provider_settings": provider_settings,
+            "disconnect_after": True,
+        }
         return (
             forked_network.use_provider(provider_name, **shared_kwargs)
             if provider_name
@@ -241,7 +480,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         custom_networks: list = self.custom_networks
         plugin_ecosystems = self._plugin_ecosystems
         evm_chains = self._evmchains_ecosystems
-        custom_ecosystems: dict[str, "EcosystemAPI"] = {}
+        custom_ecosystems: dict[str, EcosystemAPI] = {}
         for custom_network in custom_networks:
             ecosystem_name = custom_network["ecosystem"]
             if (
@@ -278,7 +517,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
 
     @cached_property
     def _evmchains_ecosystems(self) -> dict[str, "EcosystemAPI"]:
-        ecosystems: dict[str, "EcosystemAPI"] = {}
+        ecosystems: dict[str, EcosystemAPI] = {}
         for name in PUBLIC_CHAIN_META:
             ecosystem_name = name.lower().replace(" ", "-")
             symbol = None
@@ -332,7 +571,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
             elif cls_name := getattr(provider_cls, "name", None):
                 name = cls_name
 
-            elif cls_name := getattr(provider_cls, "__name__"):
+            elif cls_name := provider_cls.__name__:
                 name = cls_name.lower()
 
             else:
@@ -557,6 +796,14 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
             default_network = self.default_ecosystem.default_network
             return default_network.get_provider(provider_settings=provider_settings)
 
+        elif network_choice.startswith("pid://"):
+            # Was given a process ID (already running node on local machine).
+            pid_str = network_choice[len("pid://") :]
+            if not pid_str.isdigit():
+                raise ValueError(f"Invalid PID: {pid_str}")
+
+            return self.get_running_node(int(pid_str))
+
         elif _is_adhoc_url(network_choice):
             # Custom network w/o ecosystem & network spec.
             return self.create_custom_provider(network_choice)
@@ -703,7 +950,9 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
                 continue
 
             ecosystem_data = self._get_ecosystem_data(
-                ecosystem_name, network_filter=network_filter, provider_filter=provider_filter
+                ecosystem_name,
+                network_filter=network_filter,
+                provider_filter=provider_filter,
             )
             data["ecosystems"].append(ecosystem_data)
 

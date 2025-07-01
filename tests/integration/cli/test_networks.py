@@ -152,6 +152,16 @@ def test_list_geth(ape_cli, runner, networks, project):
     assert actual_uri.startswith("http")
 
 
+@geth_process_test
+@skip_projects_except("geth")
+def test_list_running(ape_cli, runner, geth_provider):
+    result = runner.invoke(ape_cli, ("networks", "list", "--running"))
+    assert result.exit_code == 0
+    assert geth_provider.ipc_path is not None, "any uri is needed for test"
+    actual = "".join(result.output.split("\n"))
+    assert f"{geth_provider.ipc_path}" in actual or "Local node(s) not running." in actual
+
+
 @run_once
 def test_list_filter_networks(ape_cli, runner):
     result = runner.invoke(ape_cli, ("networks", "list", "--network", "sepolia"))
@@ -195,6 +205,22 @@ def test_run_not_subprocess_provider(networks_runner):
 @run_once
 def test_run_custom_network(ape_cli, runner):
     cmd = ("networks", "run", "--network", "ethereum:local:test")
+    result = runner.invoke(ape_cli, cmd)
+    expected = "`ape networks run` requires a provider that manages a process, not 'test'"
+    assert result.exit_code != 0
+    assert expected in result.output
+
+
+@run_once
+def test_run_block_time(ape_cli, runner):
+    cmd = (
+        "networks",
+        "run",
+        "--network",
+        "ethereum:local:test",
+        "--block-time",
+        "10",
+    )
     result = runner.invoke(ape_cli, cmd)
     expected = "`ape networks run` requires a provider that manages a process, not 'test'"
     assert result.exit_code != 0

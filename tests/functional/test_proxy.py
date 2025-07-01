@@ -1,8 +1,13 @@
-import pytest
-from eth_utils import to_checksum_address
+from typing import TYPE_CHECKING, Optional
 
-from ape.contracts import ContractContainer
+import pytest
+from eth_pydantic_types import HexBytes
+
 from ape_ethereum.proxies import ProxyType
+from ape_test.provider import LocalProvider
+
+if TYPE_CHECKING:
+    from ape.types import AddressType, BlockID
 
 """
 NOTE: Most proxy tests are in `geth/test_proxy.py`.
@@ -10,118 +15,133 @@ NOTE: Most proxy tests are in `geth/test_proxy.py`.
 
 
 @pytest.fixture
-def target(vyper_contract_container, owner):
-    vyper_contract = owner.deploy(vyper_contract_container, 0)
+def target(project, owner):
+    vyper_contract = owner.deploy(project.VyperContract, 0)
     return vyper_contract.address
 
 
 def test_minimal_proxy(ethereum, minimal_proxy, chain):
-    actual = ethereum.get_proxy_info(minimal_proxy.address)
-    assert actual is not None
-    assert actual.type == ProxyType.Minimal
-    # It is the placeholder value still.
-    assert actual.target == "0xBEbeBeBEbeBebeBeBEBEbebEBeBeBebeBeBebebe"
-    # Show getting the contract using the proxy address.
-    contract = chain.contracts.instance_at(minimal_proxy.address)
-    assert contract.contract_type.abi == []  # No target ABIs; no proxy ABIs either.
+    placeholder = "0xBEbeBeBEbeBebeBeBEBEbebEBeBeBebeBeBebebe"
+    if placeholder in chain.contracts:
+        del chain.contracts[placeholder]
+
+    chain.provider.network.__dict__["explorer"] = None  # Ensure no explorer, messes up test.
+    assert minimal_proxy.contract_type.abi == []  # No target ABIs; no proxy ABIs either.
 
 
-def test_clones(get_contract_type, owner, ethereum, target):
-    _type = get_contract_type("ClonesFactory")
-    contract = ContractContainer(_type)
-    factory = owner.deploy(contract)
-    clones_proxy = factory.deployClonesProxy(target, sender=owner)
-    proxy_address = to_checksum_address("0x" + (clones_proxy.logs[0]["data"].hex())[-40:])
+def test_clones(project, owner, ethereum, target):
+    factory = owner.deploy(project.ClonesFactory)
+    tx = factory.deployClonesProxy(target, sender=owner)
+    proxy_address = tx.events[0].addr
     actual = ethereum.get_proxy_info(proxy_address)
     assert actual is not None
     assert actual.type == ProxyType.Clones
     assert actual.target == target
 
 
-def test_CWIA(get_contract_type, owner, ethereum, target):
-    _type = get_contract_type("CWIA")
-    contract = ContractContainer(_type)
-    factory = owner.deploy(contract, target)
-    clones_proxy = factory.createClone(0, 0, 0, 0, sender=owner)
-    proxy_address = to_checksum_address("0x" + (clones_proxy.logs[0]["data"].hex())[-40:])
+def test_CWIA(project, owner, ethereum, target):
+    factory = owner.deploy(project.ExampleCloneFactory, target)
+    tx = factory.createClone(0, 0, 0, 0, sender=owner)
+    proxy_address = tx.events[0].addr
     actual = ethereum.get_proxy_info(proxy_address)
     assert actual is not None
     assert actual.type == ProxyType.CWIA
     assert actual.target == target
 
 
-def test_Solady(get_contract_type, owner, ethereum, target):
-    _type = get_contract_type("SoladyFactory")
-    contract = ContractContainer(_type)
-    factory = owner.deploy(contract)
+def test_Solady(project, owner, ethereum, target):
+    factory = owner.deploy(project.SoladyFactory)
 
     # test Solady Push proxy
-    clones_proxy = factory.deploySoladyPush(target, sender=owner)
-    proxy_address = to_checksum_address("0x" + (clones_proxy.logs[0]["data"].hex())[-40:])
+    tx = factory.deploySoladyPush(target, sender=owner)
+    proxy_address = tx.events[0].addr
     actual = ethereum.get_proxy_info(proxy_address)
     assert actual is not None
     assert actual.type == ProxyType.SoladyPush0
     assert actual.target == target
 
     # test Solady CWIA proxy
-    clones_proxy = factory.deploySoladyCWIA(target, sender=owner)
-    proxy_address = to_checksum_address("0x" + (clones_proxy.logs[0]["data"].hex())[-40:])
+    tx = factory.deploySoladyCWIA(target, sender=owner)
+    proxy_address = tx.events[0].addr
     actual = ethereum.get_proxy_info(proxy_address)
     assert actual is not None
-    assert actual.type == ProxyType.SoladyCWIA
+
+    # Solady proxies are basically ProxyType.Minimal (just an efficient route of doing so).
+    assert actual.type == ProxyType.Minimal
+
     assert actual.target == target
 
 
-def test_SplitsCWIA(get_contract_type, owner, ethereum, target):
-    _type = get_contract_type("SplitsCWIA")
-    contract = ContractContainer(_type)
-    factory = owner.deploy(contract, target)
-    clones_proxy = factory.createClone(0, 0, 0, 0, sender=owner)
-    proxy_address = to_checksum_address("0x" + (clones_proxy.logs[0]["data"].hex())[-40:])
-    actual = ethereum.get_proxy_info(proxy_address)
-    assert actual is not None
-    assert actual.type == ProxyType.SplitsCWIA
-    assert actual.target == target
-
-
-def test_OldCWIA(get_contract_type, owner, ethereum, target):
-    _type = get_contract_type("OldCWIA")
-    contract = ContractContainer(_type)
-    contract_instance = owner.deploy(contract)
-    clones_proxy = contract_instance.clone2(target, 0, sender=owner)
-    proxy_address = to_checksum_address("0x" + (clones_proxy.logs[0]["data"].hex())[-40:])
+def test_OldCWIA(project, owner, ethereum, target):
+    contract_instance = owner.deploy(project.Template)
+    tx = contract_instance.clone2(target, 0, sender=owner)
+    proxy_address = tx.events[0].addr
     actual = ethereum.get_proxy_info(proxy_address)
     assert actual is not None
     assert actual.type == ProxyType.OldCWIA
     assert actual.target == target
 
 
-def test_Vyper(get_contract_type, owner, ethereum, target):
-    _type = get_contract_type("VyperFactory")
-    contract = ContractContainer(_type)
-    factory = owner.deploy(contract)
-    clones_proxy = factory.create_proxy(target, sender=owner)
-    proxy_address = to_checksum_address("0x" + (clones_proxy.logs[0]["data"].hex())[-40:])
+def test_Vyper(project, owner, ethereum, target):
+    factory = owner.deploy(project.VyperFactory)
+    tx = factory.create_proxy(target, sender=owner)
+    proxy_address = tx.events[0].target
     actual = ethereum.get_proxy_info(proxy_address)
     assert actual is not None
-    assert actual.type == ProxyType.Vyper
+
+    # Vyper forwarder sproxies are basically ProxyType.Minimal (just an efficient route of doing so).
+    assert actual.type == ProxyType.Minimal
+
     assert actual.target == target
 
 
-def test_SudoswapCWIA(get_contract_type, owner, ethereum, target):
-    _type = get_contract_type("SudoswapCWIA")
-    contract = ContractContainer(_type)
-    contract_instance = owner.deploy(contract)
-    clones_proxy = contract_instance.deploycloneERC721ETHPair(target, 0, 0, 0, 0, 0, sender=owner)
-    proxy_address = to_checksum_address("0x" + (clones_proxy.logs[0]["data"].hex())[-40:])
-    actual = ethereum.get_proxy_info(proxy_address)
-    assert actual is not None
-    assert actual.type == ProxyType.SudoswapCWIA
-    assert actual.target == target
-
-    clones_proxy = contract_instance.deploycloneERC1155ETHPair(target, 0, 0, 0, 0, 0, sender=owner)
-    proxy_address = to_checksum_address("0x" + (clones_proxy.logs[0]["data"].hex())[-40:])
+def test_SudoswapCWIA(project, owner, ethereum, target):
+    contract_instance = owner.deploy(project.SudoswapCWIAFactory)
+    tx = contract_instance.deploycloneERC721ETHPair(target, 0, 0, 0, 0, 0, sender=owner)
+    proxy_address = tx.events[0].addr
     actual = ethereum.get_proxy_info(proxy_address)
     assert actual is not None
     assert actual.type == ProxyType.SudoswapCWIA
     assert actual.target == target
+
+
+def test_provider_not_supports_get_storage(
+    project, owner, vyper_contract_instance, ethereum, chain, networks
+):
+    """
+    The get storage slot RPC is required to detect this proxy, so it won't work
+    on EthTester provider. However, we can make sure that it doesn't try to
+    call `get_storage()` more than once.
+    """
+
+    class MyProvider(LocalProvider):
+        times_get_storage_was_called: int = 0
+
+        def get_storage(  # type: ignore[empty-body]
+            self, address: "AddressType", slot: int, block_id: Optional["BlockID"] = None
+        ) -> "HexBytes":
+            self.times_get_storage_was_called += 1
+            raise NotImplementedError()
+
+    my_provider = MyProvider(name="test", network=ethereum.local)
+    my_provider._web3 = chain.provider._web3
+
+    target = vyper_contract_instance.address
+    beacon_instance = owner.deploy(project.beacon, target)
+    beacon = beacon_instance.address
+
+    contract_instance = owner.deploy(project.BeaconProxy, beacon, HexBytes(""))
+
+    # Ensure not already cached.
+    if contract_instance.address in chain.contracts.proxy_infos:
+        del chain.contracts.proxy_infos[contract_instance.address]
+
+    init_provider = networks.active_provider
+    networks.active_provider = my_provider
+    try:
+        actual = ethereum.get_proxy_info(contract_instance.address)
+    finally:
+        networks.active_provider = init_provider
+
+    assert actual is None  # Because of provider.
+    assert my_provider.times_get_storage_was_called == 1

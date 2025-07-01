@@ -8,9 +8,8 @@ from tests.conftest import geth_process_test
 def test_get_proxy_from_explorer(
     mock_explorer,
     create_mock_sepolia,
-    safe_proxy_container,
+    project,
     geth_account,
-    vyper_contract_container,
     geth_provider,
     chain,
 ):
@@ -19,8 +18,8 @@ def test_get_proxy_from_explorer(
     but that contract is a proxy. We expect both proxy and target ABIs
     to be cached under the proxy's address.
     """
-    target_contract = geth_account.deploy(vyper_contract_container, 10011339315)
-    proxy_contract = geth_account.deploy(safe_proxy_container, target_contract.address)
+    target_contract = geth_account.deploy(project.VyperContract, 10011339315)
+    proxy_contract = geth_account.deploy(project.SafeProxy, target_contract.address)
 
     # Ensure both of these are not cached so we have to rely on our fake explorer.
     del chain.contracts[target_contract.address]
@@ -39,7 +38,7 @@ def test_get_proxy_from_explorer(
         raise ValueError("Fake explorer only knows about proxy and target contracts.")
 
     with create_mock_sepolia() as network:
-        # Setup our network to use our fake explorer.
+        # Set up our network to use our fake explorer.
         mock_explorer.get_contract_type.side_effect = get_contract_type
         network.__dict__["explorer"] = mock_explorer
 

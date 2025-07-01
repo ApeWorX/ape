@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field, ValidationError
 from ape.types.address import AddressType
 from ape.types.basic import HexInt
 from ape.types.events import ContractLog, LogFilter
+from ape.types.private_mempool import SimulationReport
 from ape.types.units import CurrencyValueComparable
 from ape.utils.misc import ZERO_ADDRESS
 
@@ -100,6 +101,17 @@ def test_contract_log_access(log):
     assert log.bar == log["bar"] == log.get("bar") == 1
 
 
+def test_contract_log_abi(log):
+    # The log fixture is very basic class usage.
+    assert log.abi.name == "MyEvent"
+
+
+def test_contract_log_topics(log):
+    actual = log.topics
+    expected = ["0x4dbfb68b43dddfa12b51ebe99ab8fded620f9a0ac23142879a4f192a1b7952d2"]
+    assert actual == expected
+
+
 def test_topic_filter_encoding():
     event_abi = EventABI.model_validate_json(RAW_EVENT_ABI)
     log_filter = LogFilter.from_event(
@@ -110,6 +122,16 @@ def test_topic_filter_encoding():
         None,
         "0x0000000000000000000000008c44cc5c0f5cd2f7f17b9aca85d456df25a61ae8",
     ]
+
+
+def test_log_filter_model_validate_coerces_nones():
+    log_filter = LogFilter.model_validate(
+        {"addresses": None, "events": None, "topic_filter": None, "selectors": None}
+    )
+    assert log_filter.addresses == []
+    assert log_filter.events == []
+    assert log_filter.topic_filter == []
+    assert log_filter.selectors == {}
 
 
 def test_address_type(owner):
@@ -217,3 +239,75 @@ class TestCurrencyValueComparable:
         key = CurrencyValueComparable(0)
         assert key in mapping
         assert mapping[key] == "0"
+
+
+class TestSimulationReport:
+    def test_model(self):
+        data = {
+            "success": True,
+            "stateBlock": "0xa",
+            "mevGasPrice": "0x399339e8",
+            "profit": "0x14537d8d4b310",
+            "refundableValue": "0x14537d8d4b310",
+            "gasUsed": "0x5a60a",
+            "logs": [
+                {
+                    "txLogs": [
+                        {
+                            "address": "0x5fbdb2315678afecb367f032d93f642f64180aa3",
+                            "topics": [
+                                "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+                                "0x0000000000000000000000009fe46736679d2d9a65f0992f2272de9f3c7fa6e0",
+                                "0x0000000000000000000000003c44cdddb6a900fa2b585dd299e03d12fa4293bc",
+                            ],
+                            "data": "0x00000000000000000000000000000000000000000000000000000000000186a0",
+                            "blockHash": None,
+                            "blockNumber": None,
+                            "transactionHash": "0x52a4d4f8e0411d06aa5b9bc6ab0a143716225ca8f16568739f80c22d31b8f450",
+                            "transactionIndex": "0x0",
+                            "logIndex": "0x0",
+                            "removed": False,
+                        }
+                    ]
+                },
+                {
+                    "txLogs": [
+                        {
+                            "address": "0xe7f1725e7734ce288f8367e1bb143e90bb3f0512",
+                            "topics": [
+                                "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+                                "0x0000000000000000000000003c44cdddb6a900fa2b585dd299e03d12fa4293bc",
+                                "0x0000000000000000000000009fe46736679d2d9a65f0992f2272de9f3c7fa6e0",
+                            ],
+                            "data": "0x00000000000000000000000000000000000000000000000000000000000186a0",
+                            "blockHash": None,
+                            "blockNumber": None,
+                            "transactionHash": "0xf678d62c462dc5a63504e1703822dc6740771a8cd4b57bf74f660e50792e3c40",
+                            "transactionIndex": "0x1",
+                            "logIndex": "0x1",
+                            "removed": False,
+                        }
+                    ]
+                },
+            ],
+        }
+        report = SimulationReport.model_validate(data)
+        assert report.success
+
+        event = EventABI.model_validate(
+            {
+                "anonymous": False,
+                "inputs": [
+                    {"indexed": True, "name": "from", "type": "address"},
+                    {"indexed": True, "name": "to", "type": "address"},
+                    {"indexed": False, "name": "value", "type": "uint256"},
+                ],
+                "name": "Transfer",
+                "type": "event",
+            }
+        )
+
+        events = list(report.decode_logs(event))
+        assert len(events) == 2
+        assert events[0].event_name == "Transfer"
+        assert events[1].event_name == "Transfer"

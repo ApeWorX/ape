@@ -34,9 +34,10 @@ body:
         - Linux
     validations:
       required: true
-  - type: markdown
+  - type: textarea
     attributes:
-      value: |
+      label: Ape Configuration
+      placeholder: |
         ### ape-config.yaml file
 
         Paste your ape-config.yaml content in the following section

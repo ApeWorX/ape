@@ -19,7 +19,7 @@ def pm_runner(config):
 
 
 @run_once
-def test_install_path_not_exists(pm_runner):
+def test_install_unknown_package(pm_runner):
     path = "path/to/nowhere"
     result = pm_runner.invoke("install", path)
     assert result.exit_code != 0, result.output
@@ -114,6 +114,48 @@ def test_install_config_override(pm_runner, integ_project):
     )
     actual = integ_project.dependencies["foodep2"]["local"].config.contracts_folder
     assert actual == "src"
+
+
+@skip_projects_except("with-contracts")
+def test_install_package_id(pm_runner, integ_project):
+    pm_runner.project = integ_project
+    package_id = [x for x in integ_project.dependencies][0].package_id
+    result = pm_runner.invoke("install", package_id)
+    assert result.exit_code == 0, result.output
+
+
+@skip_projects_except("with-contracts")
+def test_install_name(pm_runner, integ_project):
+    pm_runner.project = integ_project
+    name = [x for x in integ_project.dependencies][0].name
+    result = pm_runner.invoke("install", name)
+    assert result.exit_code == 0, result.output
+
+
+@skip_projects_except("with-contracts")
+def test_install_name_with_version_in_id(pm_runner, integ_project):
+    pm_runner.project = integ_project
+    dependency = [x for x in integ_project.dependencies][0]
+    result = pm_runner.invoke("install", f"{dependency.name}@{dependency.version}")
+    assert result.exit_code == 0, result.output
+    assert f"Package '{dependency.name}@{dependency.version}' installed." in result.output
+
+
+@skip_projects_except("with-contracts")
+def test_install_name_with_version_flag(pm_runner, integ_project):
+    pm_runner.project = integ_project
+    dependency = [x for x in integ_project.dependencies][0]
+    result = pm_runner.invoke("install", f"{dependency.name}", "--version", dependency.version)
+    assert result.exit_code == 0, result.output
+    assert f"Package '{dependency.name}@{dependency.version}' installed." in result.output
+
+
+@skip_projects_except("with-dependencies")
+def test_install_no_recurse(pm_runner, integ_project):
+    pm_runner.project = integ_project
+    result = pm_runner.invoke("install", "--no-recurse")
+    assert result.exit_code == 0, result.output
+    assert "containing_sub_dependencies/sub_dependency" not in result.output
 
 
 @run_once
@@ -309,7 +351,7 @@ def test_list(pm_runner, integ_project):
     # NOTE: Not using f-str here so we can see the spacing.
     expected = """
 NAME                                VERSION  INSTALLED  COMPILED
-apedependencythatisnotinstalledape  <error>  False      False
+apedependencythatisnotinstalledape  1.2.3    False      False
 dependency-in-project-only          local    False      False
     """.strip()
     assert expected in result.output
@@ -320,7 +362,7 @@ dependency-in-project-only          local    False      False
 
     expected = """
 NAME                                VERSION  INSTALLED  COMPILED
-apedependencythatisnotinstalledape  <error>  False      False
+apedependencythatisnotinstalledape  1.2.3    False      False
 dependency-in-project-only          local    True       False
     """.strip()
     result = pm_runner.invoke("list")

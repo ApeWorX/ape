@@ -190,12 +190,12 @@ def _parse_verbose_coverage(coverage: "CoverageReport", statement: bool = True) 
                     row = rows.pop()
                     if row[0] in [r[0] for r in rows]:
                         # Use full-name for all with same name.
-                        rows_corrected.append((row[1:]))
+                        rows_corrected.append(row[1:])
                         for subrow in rows:
                             if subrow[0] != row[0]:
                                 continue
 
-                            rows_corrected.append((subrow[1:]))
+                            rows_corrected.append(subrow[1:])
                             rows.remove(subrow)
 
                     else:

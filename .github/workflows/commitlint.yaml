@@ -1,28 +1,30 @@
-on: push
+name: Validate PR metadata
 
-name: Commit Message
+on:
+  pull_request:
+    types:
+      - opened
+      - edited
+      - synchronize
 
-# NOTE: Skip check on PR so as not to confuse contributors
-# NOTE: Also install a PR title checker so we don't mess up merges
+permissions:
+  pull-requests: read
+
 jobs:
-    commit-msg:
+  validate-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: amannn/action-semantic-pull-request@v5
+        name: Run conventional commit checker
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-        runs-on: ubuntu-latest
-
-        steps:
-        - uses: actions/checkout@v4
-          with:
-              fetch-depth: 0
-
-        - name: Setup Python
-          uses: actions/setup-python@v5
-          with:
-              python-version: "3.10"
-
-        - name: Install Dependencies
-          run: |
-            python -m pip install --upgrade pip
-            pip install -r cz-requirement.txt
-
-        - name: Check commit history
-          run: cz check --rev-range $(git rev-list --all --reverse | head -1)..HEAD
+        with:
+          types: |
+            feat
+            perf
+            fix
+            chore
+            refactor
+            docs
+            test

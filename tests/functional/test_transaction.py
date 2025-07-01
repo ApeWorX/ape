@@ -187,6 +187,15 @@ def test_type_3_transactions(ethereum, tx_kwargs):
 
 
 @pytest.mark.parametrize(
+    "tx_kwargs",
+    [{"type": 4}, {"authorizationList": []}],
+)
+def test_type_4_transactions(ethereum, tx_kwargs):
+    txn = ethereum.create_transaction(**tx_kwargs)
+    assert txn.type == 4
+
+
+@pytest.mark.parametrize(
     "fee_kwargs",
     (
         {"max_fee": "100 gwei"},
@@ -305,6 +314,27 @@ def test_str_when_data_is_bytes(ethereum):
     txn = ethereum.create_transaction(data=HexBytes("0x123"))
     actual = str(txn)
     assert isinstance(actual, str)
+
+
+def test_str_when_data_is_long_shows_first_4_bytes(vyper_contract_instance):
+    """
+    Tests against a condition that would cause transactions to
+    fail with string-encoding errors.
+    """
+    txn = vyper_contract_instance.setNumber.as_transaction(123)
+    actual = str(txn)
+    assert isinstance(actual, str)
+    assert "data: 0x3fb5c1cb..." in actual
+
+
+def test_str_when_data_is_long_and_configured_full_calldata(project, vyper_contract_instance):
+    txn = vyper_contract_instance.setNumber.as_transaction(123)
+    with project.temp_config(display={"calldata": "full"}):
+        actual = str(txn)
+
+    expected = "data: 0x3fb5c1cb000000000000000000000000000000000000000000000000000000000000007b"
+    assert isinstance(actual, str)
+    assert expected in actual
 
 
 def test_receipt_when_none(ethereum):

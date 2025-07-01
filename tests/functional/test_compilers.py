@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 from re import Pattern
 from typing import cast
@@ -12,8 +13,8 @@ from ape_compile.config import Config
 
 
 def test_get_imports(project, compilers):
-    # See ape-solidity for better tests
-    assert not compilers.get_imports(project.sources.paths)
+    actual = compilers.get_imports(project.sources.paths)
+    assert len(actual) > 0
 
 
 def test_get_compiler(compilers):
@@ -200,6 +201,45 @@ def test_compile_source(compilers):
     code = '[{"name":"foo","type":"fallback", "stateMutability":"nonpayable"}]'
     actual = compilers.compile_source("ethpm", code)
     assert isinstance(actual, ContractContainer)
+
+
+def test_compile_in_project_where_source_id_matches_local_project(project, compilers):
+    """
+    Tests against a bug where if you had two projects with the same source IDs but
+    different content, it always compiled the local project's source.
+    """
+    new_abi = {
+        "inputs": [],
+        "name": "retrieve",
+        "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+        "stateMutability": "view",
+        "type": "function",
+    }
+    content = json.dumps([new_abi])
+    with project.isolate_in_tempdir() as temp_project:
+        assert compilers.local_project.path != temp_project.path, (
+            "Cannot be same as local for this test"
+        )
+        contract = temp_project.load_contracts()["Interface"]
+        path = temp_project.sources.lookup(contract.source_id)
+        path.unlink(missing_ok=True)
+        path.write_text(content, encoding="utf8")
+
+        # NOTE: Another condition for this bug is that the given path
+        #   must be in source-ID form, meaning it relative to the project
+        #   (but not _necessarily_ a relative path, e.g. no `./` prefix).
+        argument = Path(contract.source_id)
+
+        # Compile the file with the same name but different content.
+        result = [
+            x
+            for x in compilers.compile([argument], project=temp_project)
+            if x.name == contract.name
+        ][0]
+
+        # It should reflect the new content and not the one with the same
+        # source ID from the local project.
+        assert "retrieve" in result.methods
 
 
 def test_enrich_error_custom_error(chain, compilers):

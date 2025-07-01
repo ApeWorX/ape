@@ -150,11 +150,16 @@ class _GithubClient:
             except Exception as err:
                 raise ProjectError(f"Unknown repository '{repo_path}'") from err
 
-        else:
-            return self._repo_cache[repo_path]
+        return self._repo_cache[repo_path]
 
     def _get_repo(self, org_name: str, repo_name: str) -> dict:
-        return self._get(f"repos/{org_name}/{repo_name}")
+        try:
+            return self._get(f"repos/{org_name}/{repo_name}")
+        except HTTPError as err:
+            if err.response.status_code == 404:
+                raise ProjectError(f"Unknown repository '{org_name}/{repo_name}'")
+
+            raise  # The original HTTPError
 
     def get_latest_release(self, org_name: str, repo_name: str) -> dict:
         return self._get(f"repos/{org_name}/{repo_name}/releases/latest")
@@ -168,7 +173,7 @@ class _GithubClient:
         repo_name: str,
         target_path: Union[str, Path],
         branch: Optional[str] = None,
-        scheme: str = "http",
+        scheme: str = "https",
     ):
         repo = self.get_repo(org_name, repo_name)
         branch = branch or repo["default_branch"]
@@ -249,9 +254,9 @@ class _GithubClient:
                     )
                     return response.json()
 
-        else:
-            # Successful response status code!
-            return response.json()
+            raise  # Raise the error.
+
+        return response.json()
 
 
 github_client = _GithubClient()

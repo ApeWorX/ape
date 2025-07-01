@@ -122,6 +122,7 @@ class ClickHandler(logging.Handler):
 class ApeLogger:
     _mentioned_verbosity_option = False
     _extra_loggers: dict[str, logging.Logger] = {}
+    DISABLE_LEVEL: int = 100_000
 
     def __init__(
         self,
@@ -216,11 +217,18 @@ class ApeLogger:
         Returns:
             Iterator
         """
-
         initial_level = self.level
         self.set_level(level)
         yield
         self.set_level(initial_level)
+
+    def disable(self):
+        self.set_level(self.DISABLE_LEVEL)
+
+    @contextmanager
+    def disabled(self):
+        with self.at_level(self.DISABLE_LEVEL):
+            yield
 
     def log_error(self, err: Exception):
         """
@@ -371,4 +379,19 @@ def get_rich_console(file: Optional[IO[str]] = None, **kwargs) -> "RichConsole":
     return _factory.get_console(file, **kwargs)
 
 
-__all__ = ["DEFAULT_LOG_LEVEL", "logger", "LogLevel", "ApeLogger", "get_rich_console"]
+def silenced(func: Callable):
+    """
+    A decorator for ensuring a function does not output any logs.
+
+    Args:
+        func (Callable): The function to call silently.
+    """
+
+    def wrapper(*args, **kwargs):
+        with logger.disabled():
+            return func(*args, **kwargs)
+
+    return wrapper
+
+
+__all__ = ["DEFAULT_LOG_LEVEL", "ApeLogger", "LogLevel", "get_rich_console", "logger", "silenced"]

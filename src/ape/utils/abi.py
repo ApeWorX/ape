@@ -1,6 +1,7 @@
 import re
 from collections.abc import Sequence
 from dataclasses import make_dataclass
+from enum import Enum
 from typing import Any, Optional, Union
 
 from eth_abi import grammar
@@ -9,12 +10,13 @@ from eth_abi.decoding import UnsignedIntegerDecoder
 from eth_abi.encoding import UnsignedIntegerEncoder
 from eth_abi.exceptions import DecodingError, InsufficientDataBytes
 from eth_abi.registry import BaseEquals, registry
-from eth_pydantic_types import HexBytes
-from eth_pydantic_types.validators import validate_bytes_size
+from eth_pydantic_types import HexBytes, HexStr
+from eth_pydantic_types.utils import validate_bytes_size
 from eth_utils import decode_hex
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, EventABIType, MethodABI
 
 from ape.logging import logger
+from ape.utils.basemodel import ManagerAccessMixin
 
 ARRAY_PATTERN = re.compile(r"[(*\w,? )]*\[\d*]")
 NATSPEC_KEY_PATTERN = re.compile(r"(@\w+)")
@@ -111,7 +113,6 @@ class StructParser:
         Returns:
             Any: The same input values only decoded into structs when applicable.
         """
-
         return [self._encode(ipt, v) for ipt, v in zip(self.abi.inputs, values)]
 
     def decode_input(self, values: Union[Sequence, dict[str, Any]]) -> Any:
@@ -316,7 +317,6 @@ class Struct:
 
     def __setitem__(self, key, value):
         """Override"""
-        pass
 
 
 def create_struct(name: str, types: Sequence[ABIType], output_values: Sequence) -> Any:
@@ -543,3 +543,75 @@ def _enrich_natspec(natspec: str) -> str:
     # Ensure the natspec @-words are highlighted.
     replacement = r"[bright_red]\1[/]"
     return re.sub(NATSPEC_KEY_PATTERN, replacement, natspec)
+
+
+def encode_topics(abi: EventABI, topics: Optional[dict[str, Any]] = None) -> list[HexStr]:
+    """
+    Encode the given topics using the given ABI. Useful for searching logs.
+
+    Args:
+        abi (EventABI): The event.
+        topics (dict[str, Any] } None): Topic inputs to encode.
+
+    Returns:
+        list[str]: Encoded topics.
+    """
+    topics = topics or {}
+    values = {}
+
+    unnamed_iter = 0
+    topic_inputs = {}
+    for abi_input in abi.inputs:
+        if not abi_input.indexed:
+            continue
+
+        if name := abi_input.name:
+            topic_inputs[name] = abi_input
+        else:
+            topic_inputs[f"_{unnamed_iter}"] = abi_input
+
+    for input_name, input_value in topics.items():
+        if input_name not in topic_inputs:
+            # Was trying to use data or is not part of search.
+            continue
+
+        input_type = topic_inputs[input_name].type
+        if input_type == "address":
+            convert = ManagerAccessMixin.conversion_manager.convert
+            if isinstance(input_value, (list, tuple)):
+                adjusted_value = []
+                for addr in input_value:
+                    if isinstance(addr, str):
+                        adjusted_value.append(convert(addr))
+                    else:
+                        from ape.types import AddressType
+
+                        adjusted_value.append(convert(addr, AddressType))
+
+                input_value = adjusted_value
+
+            elif not isinstance(input_value, str):
+                from ape.types import AddressType
+
+                input_value = convert(input_value, AddressType)
+
+        values[input_name] = input_value
+
+    return abi.encode_topics(values)  # type: ignore
+
+
+class CalldataRepr(str, Enum):
+    """
+    Control the display of calldata in Ape.
+    """
+
+    abridged = "abridged"
+    """
+    Show the first and last 4-bytes of the calldata, enough
+    to see the method ID.
+    """
+
+    full = "full"
+    """
+    Show the full calldata.
+    """

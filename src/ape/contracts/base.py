@@ -11,6 +11,7 @@ from eth_pydantic_types import HexBytes
 from eth_utils import to_hex
 from ethpm_types.abi import EventABI
 
+from ape.api.accounts import AccountAPI
 from ape.api.address import Address, BaseAddress
 from ape.api.query import (
     ContractCreation,
@@ -31,7 +32,7 @@ from ape.exceptions import (
 )
 from ape.logging import get_rich_console, logger
 from ape.types.events import ContractLog, LogFilter, MockContractLog
-from ape.utils.abi import StructParser, _enrich_natspec
+from ape.utils.abi import StructParser, _enrich_natspec, encode_topics
 from ape.utils.basemodel import (
     BaseInterfaceModel,
     ExtraAttributesMixin,
@@ -48,6 +49,8 @@ if TYPE_CHECKING:
     from ethpm_types.contract_type import ABI_W_SELECTOR_T, ContractType
     from pandas import DataFrame
 
+    from ape.api.networks import ProxyInfoAPI
+    from ape.api.providers import CallResult
     from ape.api.transactions import ReceiptAPI, TransactionAPI
     from ape.types.address import AddressType
 
@@ -118,22 +121,45 @@ class ContractCall(ManagerAccessMixin):
         )
 
     def __call__(self, *args, **kwargs) -> Any:
+        decode_output = kwargs.pop("decode", True)
         txn = self.serialize_transaction(*args, **kwargs)
         txn.chain_id = self.provider.network.chain_id
-        raw_output = self.provider.send_call(txn, **kwargs)
-        output = self.provider.network.ecosystem.decode_returndata(
+
+        result = self.provider.send_call(txn, **kwargs)
+
+        # If the result is raw bytes, handle it directly.
+        if isinstance(result, HexBytes):
+            return self._decode_returndata(result) if decode_output else result
+
+        # At this point, result must be a CallResult.
+        # Note: type hinting here is for clarity only.
+        call_result: CallResult = result  # type: ignore
+
+        if not decode_output:
+            return call_result.returndata
+
+        elif call_result.revert:
+            return call_result.revert.revert_message
+
+        return call_result.decode(self.abi)
+
+    def _decode_returndata(self, returndata: HexBytes) -> Any:
+        # The current and main way of decoding call-results (HexBytes) before
+        # the wider adoption of the `CallResult` class.
+        # Decode the output bytes into Python types.
+        decoded_output = self.provider.network.ecosystem.decode_returndata(
             self.abi,
-            raw_output,
+            returndata,
         )
 
-        if not isinstance(output, (list, tuple)):
-            return output
+        if not isinstance(decoded_output, (list, tuple)):
+            return decoded_output
 
         # NOTE: Returns a tuple, so make sure to handle all the cases
-        elif len(output) < 2:
-            return output[0] if len(output) == 1 else None
+        elif len(decoded_output) < 2:
+            return decoded_output[0] if len(decoded_output) == 1 else None
 
-        return output
+        return decoded_output
 
 
 class ContractMethodHandler(ManagerAccessMixin):
@@ -290,12 +316,20 @@ class ContractCallHandler(ContractMethodHandler):
         """
         return self.transact.as_transaction(*args, **kwargs)
 
+    def as_transaction_bytes(self, *args, **txn_kwargs) -> HexBytes:
+        """
+        Get a signed serialized transaction.
+
+        Returns:
+            HexBytes: The serialized transaction
+        """
+        return self.transact.as_transaction_bytes(**txn_kwargs)
+
     @property
     def transact(self) -> "ContractTransactionHandler":
         """
         Send the call as a transaction.
         """
-
         return ContractTransactionHandler(self.contract, self.abis)
 
     def estimate_gas_cost(self, *args, **kwargs) -> int:
@@ -335,8 +369,8 @@ def _select_method_abi(abis: list["MethodABI"], args: Union[tuple, list]) -> "Me
 class ContractTransaction(ManagerAccessMixin):
     def __init__(self, abi: "MethodABI", address: "AddressType") -> None:
         super().__init__()
-        self.abi: "MethodABI" = abi
-        self.address: "AddressType" = address
+        self.abi: MethodABI = abi
+        self.address: AddressType = address
 
     @log_instead_of_fail(default="<ContractTransaction>")
     def __repr__(self) -> str:
@@ -384,11 +418,28 @@ class ContractTransactionHandler(ContractMethodHandler):
         Returns:
             :class:`~ape.api.transactions.TransactionAPI`
         """
-
+        sign = kwargs.pop("sign", False)
         contract_transaction = self._as_transaction(*args)
         transaction = contract_transaction.serialize_transaction(*args, **kwargs)
         self.provider.prepare_transaction(transaction)
+
+        if sender := kwargs.get("sender"):
+            if isinstance(sender, AccountAPI):
+                prepped_tx = sender.prepare_transaction(transaction)
+                return (sender.sign_transaction(prepped_tx) or prepped_tx) if sign else prepped_tx
+
         return transaction
+
+    def as_transaction_bytes(self, *args, **txn_kwargs) -> HexBytes:
+        """
+        Get a signed serialized transaction.
+
+        Returns:
+            HexBytes: The serialized transaction
+        """
+        txn_kwargs["sign"] = True
+        tx = self.as_transaction(*args, **txn_kwargs)
+        return tx.serialize_transaction()
 
     def estimate_gas_cost(self, *args, **kwargs) -> int:
         """
@@ -608,7 +659,10 @@ class ContractEvent(BaseInterfaceModel):
             else:
                 converted_args[key] = self.conversion_manager.convert(value, py_type)
 
-        properties: dict = {"event_arguments": converted_args, "event_name": self.abi.name}
+        properties: dict = {
+            "event_arguments": converted_args,
+            "event_name": self.abi.name,
+        }
         if hasattr(self.contract, "address"):
             # Only address if this is off an instance.
             properties["contract_address"] = self.contract.address
@@ -659,7 +713,7 @@ class ContractEvent(BaseInterfaceModel):
                 f"'stop={stop_block}' cannot be greater than the chain length ({HEAD})."
             )
         query: dict = {
-            "columns": list(ContractLog.__pydantic_fields__) if columns[0] == "*" else columns,
+            "columns": (list(ContractLog.__pydantic_fields__) if columns[0] == "*" else columns),
             "event": self.abi,
             "start_block": start_block,
             "stop_block": stop_block,
@@ -782,7 +836,18 @@ class ContractEvent(BaseInterfaceModel):
         ecosystem = self.provider.network.ecosystem
 
         # NOTE: Safe to use a list because a receipt should never have too many logs.
-        return list(ecosystem.decode_logs(receipt.logs, self.abi))
+        return list(
+            ecosystem.decode_logs(
+                # NOTE: Filter out logs that do not match this address (if address available)
+                #       (okay to be empty list, since EcosystemAPI.decode_logs will return [])
+                [
+                    log
+                    for log in receipt.logs
+                    if log["address"] == getattr(self.contract, "address", log["address"])
+                ],
+                self.abi,
+            )
+        )
 
     def poll_logs(
         self,
@@ -790,15 +855,18 @@ class ContractEvent(BaseInterfaceModel):
         stop_block: Optional[int] = None,
         required_confirmations: Optional[int] = None,
         new_block_timeout: Optional[int] = None,
+        search_topics: Optional[dict[str, Any]] = None,
+        **search_topic_kwargs: dict[str, Any],
     ) -> Iterator[ContractLog]:
         """
-        Poll new blocks. Optionally set a start block to include historical blocks.
+        Poll new logs for this event. Can specify topic filters to use when setting up the filter.
+        Optionally set a start block to include historical blocks.
 
         **NOTE**: This is a daemon method; it does not terminate unless an exception occurs.
 
         Usage example::
 
-            for new_log in contract.MyEvent.poll_logs():
+            for new_log in contract.MyEvent.poll_logs(arg=1):
                 print(f"New event log found: block_number={new_log.block_number}")
 
         Args:
@@ -812,6 +880,10 @@ class ContractEvent(BaseInterfaceModel):
             new_block_timeout (Optional[int]): The amount of time to wait for a new block before
               quitting. Defaults to 10 seconds for local networks or ``50 * block_time`` for live
               networks.
+            search_topics (Optional[dict[str, Any]]): A dictionary of search topics to use when
+              constructing a polling filter. Overrides the value of `**search_topics_kwargs`.
+            search_topics_kwargs: Search topics to use when constructing a polling filter. Allows
+              easily specifying topic filters using kwarg syntax but can be used w/ `search_topics`
 
         Returns:
             Iterator[:class:`~ape.types.ContractLog`]
@@ -826,6 +898,11 @@ class ContractEvent(BaseInterfaceModel):
             yield from self.range(start_block, height)
             start_block = height + 1
 
+        if search_topics:
+            search_topic_kwargs.update(search_topics)
+
+        topics = encode_topics(self.abi, search_topic_kwargs)
+
         if address := getattr(self.contract, "address", None):
             # NOTE: Now we process the rest
             yield from self.provider.poll_logs(
@@ -834,6 +911,7 @@ class ContractEvent(BaseInterfaceModel):
                 required_confirmations=required_confirmations,
                 new_block_timeout=new_block_timeout,
                 events=[self.abi],
+                topics=topics,
             )
 
 
@@ -896,7 +974,7 @@ class ContractTypeWrapper(ManagerAccessMixin):
     def source_path(self) -> Optional[Path]:
         """
         Returns the path to the local contract if determined that this container
-        belongs to the active project by cross checking source_id.
+        belongs to the active project by cross-checking source_id.
         """
         if not (source_id := self.contract_type.source_id):
             return None
@@ -1087,7 +1165,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
 
     @cached_property
     def _view_methods_(self) -> dict[str, ContractCallHandler]:
-        view_methods: dict[str, list["MethodABI"]] = dict()
+        view_methods: dict[str, list[MethodABI]] = dict()
 
         for abi in self.contract_type.view_methods:
             if abi.name in view_methods:
@@ -1102,11 +1180,11 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
             }
         except Exception as err:
             # NOTE: Must raise AttributeError for __attr__ method or will seg fault
-            raise ApeAttributeError(str(err)) from err
+            raise ApeAttributeError(str(err), base_err=err) from err
 
     @cached_property
     def _mutable_methods_(self) -> dict[str, ContractTransactionHandler]:
-        mutable_methods: dict[str, list["MethodABI"]] = dict()
+        mutable_methods: dict[str, list[MethodABI]] = dict()
 
         for abi in self.contract_type.mutable_methods:
             if abi.name in mutable_methods:
@@ -1121,7 +1199,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
             }
         except Exception as err:
             # NOTE: Must raise AttributeError for __attr__ method or will seg fault
-            raise ApeAttributeError(str(err)) from err
+            raise ApeAttributeError(str(err), base_err=err) from err
 
     def call_view_method(self, method_name: str, *args, **kwargs) -> Any:
         """
@@ -1246,7 +1324,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
 
     @cached_property
     def _events_(self) -> dict[str, list[ContractEvent]]:
-        events: dict[str, list["EventABI"]] = {}
+        events: dict[str, list[EventABI]] = {}
 
         for abi in self.contract_type.events:
             if abi.name in events:
@@ -1261,11 +1339,11 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
             }
         except Exception as err:
             # NOTE: Must raise AttributeError for __attr__ method or will seg fault
-            raise ApeAttributeError(str(err)) from err
+            raise ApeAttributeError(str(err), base_err=err) from err
 
     @cached_property
     def _errors_(self) -> dict[str, list[type[CustomError]]]:
-        abis: dict[str, list["ErrorABI"]] = {}
+        abis: dict[str, list[ErrorABI]] = {}
 
         try:
             for abi in self.contract_type.errors:
@@ -1303,7 +1381,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
 
         except Exception as err:
             # NOTE: Must raise AttributeError for __attr__ method or will seg fault
-            raise ApeAttributeError(str(err)) from err
+            raise ApeAttributeError(str(err), base_err=err) from err
 
     def __dir__(self) -> list[str]:
         """
@@ -1483,6 +1561,8 @@ class ContractContainer(ContractTypeWrapper, ExtraAttributesMixin):
         address: "AddressType",
         txn_hash: Optional[Union[str, HexBytes]] = None,
         fetch_from_explorer: bool = True,
+        proxy_info: Optional["ProxyInfoAPI"] = None,
+        detect_proxy: bool = True,
     ) -> ContractInstance:
         """
         Get a contract at the given address.
@@ -1501,15 +1581,20 @@ class ContractContainer(ContractTypeWrapper, ExtraAttributesMixin):
             txn_hash (Union[str, HexBytes]): The hash of the transaction that deployed the
               contract, if available. Defaults to ``None``.
             fetch_from_explorer (bool): Set to ``False`` to avoid fetching from an explorer.
+            proxy_info (:class:`~ape.api.networks.ProxyInfoAPI` | None): Proxy info object to set
+              to avoid detection; defaults to ``None`` which will detect it if ``detect_proxy=True``.
+            detect_proxy (bool): Set to ``False`` to avoid detecting missing proxy info.
 
         Returns:
             :class:`~ape.contracts.ContractInstance`
         """
         return self.chain_manager.contracts.instance_at(
             address,
-            self.contract_type,
+            contract_type=self.contract_type,
             txn_hash=txn_hash,
             fetch_from_explorer=fetch_from_explorer,
+            proxy_info=proxy_info,
+            detect_proxy=detect_proxy,
         )
 
     @cached_property

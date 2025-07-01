@@ -5,13 +5,8 @@ from functools import cached_property, partial
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar, Optional, Union
 
-from eth_account import Account as EthAccount
-from eth_account._utils.signing import (
-    encode_transaction,
-    serializable_unsigned_transaction_from_dict,
-)
 from eth_pydantic_types import HexBytes
-from eth_utils import keccak, to_int
+from eth_utils import keccak
 from evmchains import PUBLIC_CHAIN_META
 from pydantic import model_validator
 
@@ -22,7 +17,6 @@ from ape.exceptions import (
     NetworkNotFoundError,
     ProviderNotConnectedError,
     ProviderNotFoundError,
-    SignatureError,
 )
 from ape.logging import logger
 from ape.types.address import AddressType
@@ -218,31 +212,6 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
             :class:`~ape.ape.transactions.TransactionAPI`
         """
 
-    def serialize_transaction(self) -> bytes:
-        """
-        Serialize a transaction to bytes.
-
-        Returns:
-            bytes
-        """
-        if not self.signature:
-            raise SignatureError("The transaction is not signed.")
-
-        txn_data = self.model_dump(exclude={"sender"})
-        unsigned_txn = serializable_unsigned_transaction_from_dict(txn_data)
-        signature = (
-            self.signature.v,
-            to_int(self.signature.r),
-            to_int(self.signature.s),
-        )
-
-        signed_txn = encode_transaction(unsigned_txn, signature)
-
-        if self.sender and EthAccount.recover_transaction(signed_txn) != self.sender:
-            raise SignatureError("Recovered signer doesn't match sender!")
-
-        return signed_txn
-
     @abstractmethod
     def decode_receipt(self, data: dict) -> "ReceiptAPI":
         """
@@ -332,7 +301,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         """
         Networks from config.
         """
-        networks: dict[str, "NetworkAPI"] = {}
+        networks: dict[str, NetworkAPI] = {}
         custom_networks: list[dict] = [
             n
             for n in self.network_manager.custom_networks
@@ -422,19 +391,20 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
             # Was set programmatically.
             return network
 
-        elif network := self.config.get("default_network"):
+        networks = self.networks
+        if network := self.config.get("default_network"):
             # Default found in config. Ensure is an installed network.
-            if network in self.networks:
+            if network in networks:
                 return network
 
-        if LOCAL_NETWORK_NAME in self.networks:
+        if LOCAL_NETWORK_NAME in networks:
             # Default to the LOCAL_NETWORK_NAME, at last resort.
             return LOCAL_NETWORK_NAME
 
-        elif len(self.networks) >= 1:
+        elif len(networks) >= 1:
             # Use the first network.
-            key = next(iter(self.networks.keys()))
-            return self.networks[key].name
+            key = next(iter(networks.keys()))
+            return networks[key].name
 
         # Very unlikely scenario.
         raise NetworkError("No networks found.")
@@ -680,6 +650,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
 
             from ape.api import EcosystemAPI
             from eth_pydantic_types import HexBytes
+
 
             class MyEcosystem(EcosystemAPI):
                 def get_method_selector(self, abi: MethodABI) -> HexBytes:
@@ -1004,7 +975,18 @@ class NetworkAPI(BaseInterfaceModel):
         **NOTE**: Unless overridden, returns same as
         :py:attr:`ape.api.providers.ProviderAPI.chain_id`.
         """
-        return self.provider.chain_id
+        if (
+            self.provider.network.name == self.name
+            and self.provider.network.ecosystem.name == self.ecosystem.name
+        ):
+            # Ensure 'active_provider' is actually (seemingly) connected
+            # to this network.
+            return self.provider.chain_id
+
+        raise NetworkError(
+            "Unable to reference provider to get `chain_id`: "
+            f"Network '{self.name}' is detached and information is missing."
+        )
 
     @property
     def network_id(self) -> int:
@@ -1038,7 +1020,6 @@ class NetworkAPI(BaseInterfaceModel):
               mainnet:
                 block_time: 15
         """
-
         return self.config.get("block_time", 0)
 
     @property
@@ -1373,6 +1354,7 @@ class NetworkAPI(BaseInterfaceModel):
         Usage example::
 
             from ape import networks
+
             mainnet = networks.ethereum.mainnet  # An instance of NetworkAPI
             with mainnet.use_default_provider():
                 ...
@@ -1502,11 +1484,11 @@ def create_network_type(chain_id: int, network_id: int, is_fork: bool = False) -
 
 # TODO: Can remove in 0.9 since `LOCAL_NETWORK_NAME` doesn't need to be here.
 __all__ = [
-    "create_network_type",
-    "EcosystemAPI",
     "LOCAL_NETWORK_NAME",  # Have to leave for backwards compat.
+    "EcosystemAPI",
     "ForkedNetworkAPI",
     "NetworkAPI",
     "ProviderContextManager",
     "ProxyInfoAPI",
+    "create_network_type",
 ]

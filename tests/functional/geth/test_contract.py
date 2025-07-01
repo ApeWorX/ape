@@ -1,4 +1,5 @@
 import pytest
+from eth_pydantic_types.hex.bytes import HexBytes
 
 from ape.exceptions import ContractLogicError, OutOfGasError
 from tests.conftest import geth_process_test
@@ -29,7 +30,7 @@ def test_contract_interaction(geth_provider, geth_account, geth_contract, mocker
 
 
 @geth_process_test
-def test_contract_call_show_trace(geth_contract, geth_account):
+def test_call_show_trace(geth_contract, geth_account):
     """
     Show the `show_trace=True` does not corrupt the value.
     Note: The provider uses `debug_traceCall` to get the result instead of
@@ -41,7 +42,7 @@ def test_contract_call_show_trace(geth_contract, geth_account):
 
 
 @geth_process_test
-def test_tx_revert(accounts, not_owner, geth_contract):
+def test_transact_revert(accounts, not_owner, geth_contract):
     # 'sender' is not the owner so it will revert (with a message)
     with pytest.raises(ContractLogicError, match="!authorized") as err:
         geth_contract.setNumber(5, sender=not_owner)
@@ -50,7 +51,7 @@ def test_tx_revert(accounts, not_owner, geth_contract):
 
 
 @geth_process_test
-def test_revert_no_message(accounts, geth_contract, geth_account):
+def test_transact_revert_no_message(accounts, geth_contract, geth_account):
     # The Contract raises empty revert when setting number to 5.
     expected = "Transaction failed."  # Default message
     with pytest.raises(ContractLogicError, match=expected) as err:
@@ -60,7 +61,7 @@ def test_revert_no_message(accounts, geth_contract, geth_account):
 
 
 @geth_process_test
-def test_revert_custom_error(error_contract_geth, geth_second_account):
+def test_transact_revert_custom_error(error_contract_geth, geth_second_account):
     contract = error_contract_geth
     with pytest.raises(contract.Unauthorized) as err:
         contract.withdraw(sender=geth_second_account)
@@ -70,9 +71,9 @@ def test_revert_custom_error(error_contract_geth, geth_second_account):
 
 
 @geth_process_test
-def test_revert_custom_error_deploy(error_contract_container, geth_account, chain, geth_provider):
+def test_transact_revert_custom_error_deploy(project, geth_account, chain, geth_provider):
     with pytest.raises(Exception) as err:
-        geth_account.deploy(error_contract_container, 0)
+        geth_account.deploy(project.HasError, 0)
 
     err_cls = err.value
     assert isinstance(err_cls, ContractLogicError)
@@ -88,7 +89,7 @@ def test_revert_custom_error_deploy(error_contract_container, geth_account, chai
 
 
 @geth_process_test
-def test_revert_out_of_gas_error(geth_account, geth_second_account, geth_provider):
+def test_transact_revert_out_of_gas_error(geth_account, geth_second_account, geth_provider):
     """
     Attempt to transact with not quite enough gas. We should get an error saying
     we ran out of gas.
@@ -100,14 +101,14 @@ def test_revert_out_of_gas_error(geth_account, geth_second_account, geth_provide
 
 
 @geth_process_test
-def test_revert_out_of_gas_error_allow(geth_account, geth_second_account, geth_provider):
+def test_transact_revert_out_of_gas_error_allow(geth_account, geth_second_account, geth_provider):
     tx = geth_account.transfer(geth_second_account, 1, gas_limit=1, raise_on_revert=False)
     assert tx.failed
     assert isinstance(tx.error, OutOfGasError)
 
 
 @geth_process_test
-def test_revert_allow(accounts, geth_contract):
+def test_transact_revert_allow(accounts, geth_contract):
     not_owner = accounts[0]
 
     # 'sender' is not the owner so it will revert (with a message)
@@ -117,3 +118,21 @@ def test_revert_allow(accounts, geth_contract):
 
     # Ensure this also works for calls.
     geth_contract.setNumber.call(5, raise_on_revert=False)
+
+
+@geth_process_test
+def test_call_revert(geth_contract):
+    with pytest.raises(ContractLogicError, match="call revert"):
+        geth_contract.callThatReverts()
+
+
+@geth_process_test
+def test_call_revert_allow(geth_contract):
+    revert = geth_contract.callThatReverts(raise_on_revert=False)
+    assert revert == "call revert"
+
+
+@geth_process_test
+def test_call_revert_allow_and_no_decode(geth_contract):
+    revert = geth_contract.callThatReverts(raise_on_revert=False, decode=False)
+    assert revert == HexBytes(0x63616C6C20726576657274)

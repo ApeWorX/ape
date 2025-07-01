@@ -1,9 +1,11 @@
 import re
+from abc import ABC
 from pathlib import Path
-from typing import cast
+from typing import Optional, cast
+from urllib.error import HTTPError, URLError
 
 import pytest
-from eth_pydantic_types import HashBytes32
+from eth_pydantic_types import HexBytes32
 from eth_typing import HexStr
 from eth_utils import keccak, to_hex
 from hexbytes import HexBytes
@@ -12,6 +14,7 @@ from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.exceptions import ExtraDataLengthError
 from web3.providers import HTTPProvider
 
+from ape.api import NetworkAPI
 from ape.exceptions import (
     APINotImplementedError,
     BlockNotFoundError,
@@ -19,14 +22,16 @@ from ape.exceptions import (
     ContractLogicError,
     NetworkMismatchError,
     ProviderError,
+    ProviderNotConnectedError,
     TransactionError,
     TransactionNotFoundError,
     VirtualMachineError,
 )
 from ape.utils import to_int
 from ape.utils._web3_compat import ExtraDataToPOAMiddleware
+from ape.utils.os import create_tempdir
 from ape_ethereum.ecosystem import Block
-from ape_ethereum.provider import DEFAULT_SETTINGS, EthereumNodeProvider
+from ape_ethereum.provider import DEFAULT_SETTINGS, EthereumNodeProvider, Web3Provider
 from ape_ethereum.trace import TraceApproach
 from ape_ethereum.transactions import (
     AccessList,
@@ -35,7 +40,7 @@ from ape_ethereum.transactions import (
     TransactionStatusEnum,
     TransactionType,
 )
-from ape_node.provider import GethDevProcess, Node, NodeSoftwareNotInstalledError
+from ape_node.provider import GethDev, GethDevProcess, Node, NodeSoftwareNotInstalledError
 from tests.conftest import GETH_URI, geth_process_test
 
 
@@ -115,7 +120,7 @@ def test_uri_non_dev_and_not_configured(mocker, ethereum):
         _ = provider.uri
 
     # Show that if an evm-chains _does_ exist, it will use that.
-    patch = mocker.patch("ape_ethereum.provider.get_random_rpc")
+    patch = mocker.patch("ape_ethereum.provider.Web3Provider._get_random_rpc")
 
     # The following URL is made up (please keep example.com).
     expected = "https://gorillas.example.com/v1/rpc"
@@ -141,6 +146,29 @@ def test_uri_invalid(geth_provider, project, ethereum):
 
     finally:
         geth_provider.provider_settings = settings
+
+
+def test_uri_missing(mock_sepolia):
+    class MyProvider(Web3Provider, ABC):
+        network: NetworkAPI = mock_sepolia
+        name: str = "devnode"
+        _connected_uri = None
+        _configured_rpc = None
+
+        @property
+        def _default_http_uri(self) -> Optional[str]:
+            # Doing this to get the error to occur.
+            return None
+
+        def connect(self):
+            pass
+
+        def disconnect(self):
+            pass
+
+    provider = MyProvider()
+    with pytest.raises(ProviderError, match="Missing URI for network 'sepolia' on 'ethereum'."):
+        _ = provider.uri
 
 
 @geth_process_test
@@ -208,6 +236,21 @@ def test_chain_id_live_network_connected_uses_web3_chain_id(mocker, geth_provide
 
     # Still use the connected chain ID instead network's
     assert actual == 1337
+
+
+@geth_process_test
+def test_chain_id_adhoc_ipc_not_connected(networks, geth_provider):
+    ipc_path = str(geth_provider.ipc_path)
+    provider = networks.get_provider_from_choice(ipc_path)
+
+    # Clear chain ID for this test.
+    provider.__dict__.pop("chain_id", None)
+    assert not provider.is_connected, "Provider cannot be connected for this test"
+
+    # We expect this error because this means it attempts RPC to get the chain ID
+    # and does not reference the "active" provider (which is different).
+    with pytest.raises(ProviderNotConnectedError):
+        _ = provider.chain_id
 
 
 @geth_process_test
@@ -330,6 +373,14 @@ def test_connect_request_headers(project, geth_provider, networks):
             assert "ETH/1.0" in actual["User-Agent"]
             assert "MyPrivateNetwork/0.0.1" in actual["User-Agent"]
             assert "custom-geth-client/v100" in actual["User-Agent"]
+
+
+@geth_process_test
+def test_connect_no_middleware(geth_provider):
+    actual = [x for x in geth_provider.web3.middleware_onion]
+    # NOTE: There is like 6 default, but for some reason, there is still 1
+    #  when not using any, not sure why, but at least we did what we can.
+    assert len(actual) <= 1
 
 
 @geth_process_test
@@ -506,7 +557,7 @@ def test_send_transaction_when_no_error_and_receipt_fails(
     geth_provider._web3 = mock_web3
     # Getting a receipt "works", but you get a failed one.
     # NOTE: Value is meaningless.
-    tx_hash = HashBytes32.__eth_pydantic_validate__(123**36)
+    tx_hash = HexBytes32.__eth_pydantic_validate__(123**36)
     receipt_data = {
         "failed": True,
         "blockNumber": 0,
@@ -688,7 +739,7 @@ def test_make_request_not_exists_different_messages(message, mock_web3, geth_pro
 def test_geth_bin_not_found():
     bin_name = "__NOT_A_REAL_EXECUTABLE_HOPEFULLY__"
     with pytest.raises(NodeSoftwareNotInstalledError):
-        _ = GethDevProcess(Path.cwd(), executable=bin_name)
+        _ = GethDevProcess(Path.cwd() / "notexists", executable=bin_name)
 
 
 @geth_process_test
@@ -880,33 +931,163 @@ def test_auto_mine(geth_provider, geth_account, geth_contract):
     assert not receipt.confirmed
 
 
-@geth_process_test
-def test_geth_dev_from_uri_http(data_folder):
-    geth_dev = GethDevProcess.from_uri("http://localhost:6799", data_folder)
-    kwargs = geth_dev.geth_kwargs
-    assert kwargs["rpc_addr"] == "localhost"
-    assert kwargs["rpc_port"] == "6799"
-    assert kwargs["ws_enabled"] is False
-    assert kwargs.get("ws_api") is None
-    assert kwargs.get("ws_addr") is None
-    assert kwargs.get("ws_port") is None
+def test_disconnect_does_not_delete_unrelated_files_in_given_data_dir(networks):
+    """
+    One time, I used a data-dir containing other files I didn't want to lose. GethDev
+    deleted the entire folder during `.disconnect()`, and it was tragic. Ensure this does
+    not happen to anyone else.
+    """
+    with create_tempdir() as temp_dir:
+        file = temp_dir / "dont_delete_me_plz.txt"
+        file.write_text("Please don't delete me.")
+
+        geth_dev = GethDev(network=networks.ethereum.local)
+        geth_dev_proc = GethDevProcess.from_uri(
+            "path/to/geth.ipc",
+            temp_dir / "geth",
+            block_time=1,
+            generate_accounts=False,
+            initialize_chain=False,
+        )
+        geth_dev._process = geth_dev_proc
+        geth_dev.disconnect()
+        assert file.is_file()
+        assert not (temp_dir / "geth" / "genesis.json").is_file()
 
 
 @geth_process_test
-def test_geth_dev_from_uri_ws(data_folder):
-    geth_dev = GethDevProcess.from_uri("ws://localhost:6799", data_folder)
-    kwargs = geth_dev.geth_kwargs
-    assert kwargs.get("rpc_addr") is None
-    assert kwargs["ws_enabled"] is True
-    assert kwargs["ws_addr"] == "localhost"
-    assert kwargs["ws_port"] == "6799"
+def test_ipc_path(geth_provider):
+    assert geth_provider.ipc_path.as_posix().endswith("geth.ipc")
 
 
-@geth_process_test
-def test_geth_dev_from_uri_ipc(data_folder):
-    geth_dev = GethDevProcess.from_uri("path/to/geth.ipc", data_folder)
-    kwargs = geth_dev.geth_kwargs
-    assert kwargs["ipc_path"] == "path/to/geth.ipc"
-    assert kwargs.get("ws_api") is None
-    assert kwargs.get("ws_addr") is None
-    assert kwargs.get("rpc_addr") is None
+class TestGethDevProcess:
+    """
+    Tests targeting the process-starter directly.
+    """
+
+    @pytest.fixture
+    def ignore_bin_check(self, mocker):
+        # Trick py- into thinking reth is available even when it isn't.
+        is_exec_check_patch = mocker.patch("geth.wrapper.is_executable_available")
+        is_exec_check_patch.return_value = True
+
+    @geth_process_test
+    def test_from_uri_http(self, data_folder):
+        geth_dev = GethDevProcess.from_uri("http://localhost:6799", data_folder)
+        kwargs = geth_dev.geth_kwargs
+        assert kwargs["rpc_addr"] == "localhost"
+        assert kwargs["rpc_port"] == "6799"
+        assert kwargs["ws_enabled"] is False
+        assert kwargs.get("ws_api") is None
+        assert kwargs.get("ws_addr") is None
+        assert kwargs.get("ws_port") is None
+
+    @geth_process_test
+    def test_from_uri_ws(self, data_folder):
+        geth_dev = GethDevProcess.from_uri("ws://localhost:6799", data_folder)
+        kwargs = geth_dev.geth_kwargs
+        assert kwargs.get("rpc_addr") is None
+        assert kwargs["ws_enabled"] is True
+        assert kwargs["ws_addr"] == "localhost"
+        assert kwargs["ws_port"] == "6799"
+
+    @geth_process_test
+    def test_from_uri_ipc(self, data_folder):
+        geth_dev = GethDevProcess.from_uri("path/to/geth.ipc", data_folder)
+        kwargs = geth_dev.geth_kwargs
+        assert kwargs["ipc_path"] == "path/to/geth.ipc"
+        assert kwargs.get("ws_api") is None
+        assert kwargs.get("ws_addr") is None
+        assert kwargs.get("rpc_addr") is None
+
+    @geth_process_test
+    def test_block_period(self, data_folder):
+        geth_dev = GethDevProcess.from_uri(
+            "path/to/geth.ipc",
+            data_folder,
+            block_time=1,
+            generate_accounts=False,
+            initialize_chain=False,
+        )
+        assert geth_dev.geth_kwargs["dev_period"] == "1"
+
+    @geth_process_test
+    def test_is_rpc_ready_false(self, mocker, data_folder):
+        """
+        Both Geth and Reth nodes raise simple URLError when the node is not running.
+        """
+        urlopen_patch = mocker.patch("ape_node.provider.urlopen")
+        urlopen_patch.side_effect = URLError("Unable to connect")
+        geth_dev = GethDevProcess.from_uri("path/to/geth.ipc", data_folder)
+        assert not geth_dev.is_rpc_ready
+
+    @geth_process_test
+    def test_is_rpc_ready_true_geth(self, mocker, data_folder):
+        """
+        Geth has no error when the RPC is ready.
+        """
+        urlopen_patch = mocker.patch("ape_node.provider.urlopen")
+        urlopen_patch.return_value = None
+        geth_dev = GethDevProcess.from_uri("path/to/geth.ipc", data_folder)
+        assert geth_dev.is_rpc_ready
+
+    @geth_process_test
+    def test_is_rpc_ready_true_reth(self, mocker, data_folder):
+        """
+        Reth raises HTTPError("Method not found") when the RPC is ready.
+        """
+        urlopen_patch = mocker.patch("ape_node.provider.urlopen")
+        urlopen_patch.side_effect = HTTPError("127.0.0.1", 404, "method not found", 0, 0)  # type: ignore
+        geth_dev = GethDevProcess.from_uri("path/to/geth.ipc", data_folder)
+        assert geth_dev.is_rpc_ready
+
+    @geth_process_test
+    def test_command_reth(self, mocker, data_folder, ignore_bin_check):
+        """
+        Showing we get usable kwargs for a reth --dev node.
+        """
+        reth_dev = GethDevProcess.from_uri(
+            "path/to/reth.ipc", data_folder, executable=["reth", "node"], verify_bin=False
+        )
+        actual = reth_dev.command
+        assert "reth" in actual
+        assert "node" in actual
+        assert "--http.port" in actual
+        assert "--dev" in actual
+
+        # Geth only
+        assert "localhost" not in actual
+        assert "--maxpeers" not in actual
+        assert "--password" not in actual
+        assert "--nodiscover" not in actual
+        assert "--networkid" not in actual
+
+    @geth_process_test
+    def test_ipc_path_geth(self, data_folder):
+        geth_dev = GethDevProcess.from_uri("path/to/geth.ipc", data_folder)
+        assert geth_dev.ipc_path.endswith("geth.ipc")
+        assert geth_dev.geth_kwargs["ipc_path"].endswith("geth.ipc")
+
+    @geth_process_test
+    def test_ipc_path_reth(self, data_folder, ignore_bin_check):
+        reth_dev = GethDevProcess.from_uri(
+            "path/to/reth.ipc", data_folder, executable=["reth", "node"], verify_bin=False
+        )
+        assert reth_dev.ipc_path.endswith("reth.ipc")
+        assert reth_dev.geth_kwargs["ipc_path"].endswith("reth.ipc")
+
+    @geth_process_test
+    def test_rpc_api_geth(self, data_folder):
+        geth_dev = GethDevProcess.from_uri("path/to/geth.ipc", data_folder)
+        actual = set(geth_dev.geth_kwargs["rpc_api"].split(","))
+        expected = {"admin", "debug", "eth", "net", "txpool", "web3"}
+        assert actual == expected
+
+    @geth_process_test
+    def test_rpc_api_reth(self, data_folder, ignore_bin_check):
+        reth_dev = GethDevProcess.from_uri(
+            "path/to/reth.ipc", data_folder, executable=["reth", "node"], verify_bin=False
+        )
+        actual = set(reth_dev.geth_kwargs["rpc_api"].split(","))
+        expected = {"admin", "debug", "eth", "net", "txpool", "web3", "mev"}
+        assert actual == expected

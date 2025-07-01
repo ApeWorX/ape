@@ -3,15 +3,8 @@ from pathlib import Path
 
 import pytest
 
-from ape.contracts import ContractContainer
 from ape_node.provider import Node
 from tests.functional.data.python import TRACE_RESPONSE
-
-
-@pytest.fixture(scope="session")
-def safe_proxy_container(get_contract_type):
-    proxy_type = get_contract_type("SafeProxy")
-    return ContractContainer(proxy_type)
 
 
 @pytest.fixture
@@ -21,39 +14,36 @@ def parity_trace_response():
 
 @pytest.fixture
 def contract_with_call_depth_geth(
-    owner, geth_provider, get_contract_type, leaf_contract_geth, middle_contract_geth
+    owner, geth_provider, project, leaf_contract_geth, middle_contract_geth
 ):
     """
     This contract has methods that make calls to other local contracts
     and is used for any testing that requires nested calls, such as
     call trees or event-name clashes.
     """
-    contract = ContractContainer(get_contract_type("ContractA"))
-    return owner.deploy(contract, middle_contract_geth, leaf_contract_geth)
+    return owner.deploy(project.ContractA, middle_contract_geth, leaf_contract_geth)
 
 
 @pytest.fixture
-def error_contract_geth(owner, error_contract_container, geth_provider):
+def error_contract_geth(owner, project, geth_provider):
     _ = geth_provider  # Ensure uses geth
-    return owner.deploy(error_contract_container, 1)
+    return owner.deploy(project.HasError, 1)
 
 
 @pytest.fixture
-def leaf_contract_geth(geth_provider, owner, get_contract_type):
+def leaf_contract_geth(project, geth_provider, owner):
     """
     The last contract called by `contract_with_call_depth`.
     """
-    ct = get_contract_type("ContractC")
-    return owner.deploy(ContractContainer(ct))
+    return owner.deploy(project.ContractC)
 
 
 @pytest.fixture
-def middle_contract_geth(geth_provider, owner, leaf_contract_geth, get_contract_type):
+def middle_contract_geth(project, geth_provider, owner, leaf_contract_geth):
     """
     The middle contract called by `contract_with_call_depth`.
     """
-    ct = get_contract_type("ContractB")
-    return owner.deploy(ContractContainer(ct), leaf_contract_geth)
+    return owner.deploy(project.ContractB, leaf_contract_geth)
 
 
 @pytest.fixture
@@ -62,7 +52,7 @@ def mock_geth(geth_provider, mock_web3):
         name="node",
         network=geth_provider.network,
         provider_settings={},
-        data_folder=Path("."),
+        data_folder=Path(),
     )
     original_web3 = provider._web3
     provider._web3 = mock_web3

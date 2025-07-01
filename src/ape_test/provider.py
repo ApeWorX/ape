@@ -20,7 +20,7 @@ from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.providers.eth_tester.defaults import API_ENDPOINTS, static_return
 from web3.types import TxParams
 
-from ape.api.providers import BlockAPI, TestProviderAPI
+from ape.api.providers import BlockAPI, CallResult, TestProviderAPI
 from ape.exceptions import (
     APINotImplementedError,
     ContractLogicError,
@@ -53,10 +53,11 @@ class ApeEVMBackend(PyEVMBackend):
     A lazier version of PyEVMBackend for the Ape framework.
     """
 
-    def __init__(self, config: "ApeTestConfig"):
+    def __init__(self, config: "ApeTestConfig", chain_id: int):
         self.config = config
         # Lazily set.
         self._chain = None
+        self.chain_id = chain_id
 
     @property
     def hd_path(self) -> str:
@@ -95,27 +96,29 @@ class ApeEVMBackend(PyEVMBackend):
         if self._chain is None:
             # Initial chain.
             self._chain = self._setup_tester_chain[1]
+            # HACK: Make sure PyEVM's chain ID is the same as ours
+            self._chain.chain_id = self.chain_id  # type: ignore[attr-defined]
 
         return self._chain
 
     @chain.setter
     def chain(self, value):
         self._chain = value  # Changes during snapshot reverting.
+        # HACK: Make sure PyEVM's chain ID is the same as ours
+        self._chain.chain_id = self.chain_id  # type: ignore[attr-defined]
 
 
 class ApeTester(EthereumTesterProvider):
-    def __init__(
-        self, config: "ApeTestConfig", chain_id: int, backend: Optional[ApeEVMBackend] = None
-    ):
+    def __init__(self, config: "ApeTestConfig", chain_id: int):
         self.config = config
         self.chain_id = chain_id
-        self._backend = backend
-        self._ethereum_tester = None if backend is None else EthereumTester(backend)
+        self._backend: Optional[ApeEVMBackend] = None
+        self._ethereum_tester: Optional[EthereumTester] = None
 
     @property
     def ethereum_tester(self) -> EthereumTester:
         if self._ethereum_tester is None:
-            self._backend = ApeEVMBackend(self.config)
+            self._backend = ApeEVMBackend(self.config, self.chain_id)
             self._ethereum_tester = EthereumTester(self._backend)
 
         return self._ethereum_tester
@@ -126,9 +129,19 @@ class ApeTester(EthereumTesterProvider):
         self._backend = value.backend
 
     @property
+    def _batching_context(self):  # type: ignore
+        # TODO: Figure out correct way; remove this hack
+
+        class MockBatchingContext:
+            def get(self, *args, **kwargs):
+                return None
+
+        return MockBatchingContext()
+
+    @property
     def backend(self) -> "ApeEVMBackend":
         if self._backend is None:
-            self._backend = ApeEVMBackend(self.config)
+            self._backend = ApeEVMBackend(self.config, self.chain_id)
             self._ethereum_tester = EthereumTester(self._backend)
 
         return self._backend
@@ -324,6 +337,11 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             vm_err = VirtualMachineError(base_err=err)
             if raise_on_revert:
                 raise vm_err from err
+
+            elif isinstance(vm_err, ContractLogicError):
+                # Convert revert reason back to bytes and use that as the return.
+                return CallResult.from_revert(vm_err)
+
             else:
                 result = HexBytes("0x")
 
@@ -331,6 +349,11 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             vm_err = self.get_virtual_machine_error(err, txn=txn, set_ape_traceback=False)
             if raise_on_revert:
                 raise vm_err from err
+
+            elif isinstance(vm_err, ContractLogicError):
+                # Convert revert reason back to bytes and use that as the return.
+                return CallResult.from_revert(vm_err)
+
             else:
                 result = HexBytes("0x")
 
@@ -383,7 +406,8 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         self.chain_manager.history.append(receipt)
 
         if receipt.failed:
-            txn_dict["nonce"] += 1
+            assert receipt.transaction.sender  # NOTE: mypy happy
+            txn_dict["nonce"] = self.get_nonce(receipt.transaction.sender)
             txn_params = cast(TxParams, txn_dict)
             txn_dict.pop("signature", None)
 
@@ -498,7 +522,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         self.evm_backend.add_account(private_key)
 
     def _get_last_base_fee(self) -> int:
-        base_fee = self._get_latest_block_rpc().get("base_fee_per_gas", None)
+        base_fee = self.evm_backend.get_block_by_number("pending").get("base_fee_per_gas", None)
         if base_fee is not None:
             return base_fee
 
@@ -515,7 +539,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             match = self._CANNOT_AFFORD_GAS_PATTERN.match(str(exception))
             if match:
                 txn_gas, bal = match.groups()
-                sender = getattr(kwargs["txn"], "sender")
+                sender = kwargs["txn"].sender
                 new_message = (
                     f"Sender '{sender}' cannot afford txn gas {txn_gas} with account balance {bal}."
                 )

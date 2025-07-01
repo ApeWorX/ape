@@ -1,7 +1,8 @@
 import os
 import re
+import shutil
 from pathlib import Path
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable, Optional, Union
 
 import pytest
 from pydantic import ValidationError
@@ -11,8 +12,12 @@ from ape.api.config import ApeConfig, ConfigEnum, PluginConfig
 from ape.exceptions import ConfigError
 from ape.managers.config import CONFIG_FILE_NAME, merge_configs
 from ape.utils.os import create_tempdir
-from ape_ethereum.ecosystem import EthereumConfig, NetworkConfig
-from ape_networks import CustomNetwork
+from ape_cache.config import CacheConfig
+from ape_compile.config import Config as CompileConfig
+from ape_ethereum.ecosystem import EthereumConfig, ForkedNetworkConfig, NetworkConfig
+from ape_networks.config import CustomNetwork
+from ape_node.provider import EthereumNetworkConfig, EthereumNodeConfig
+from ape_test.config import CoverageReportsConfig, GasConfig, GasExclusion
 from tests.functional.conftest import PROJECT_WITH_LONG_CONTRACTS_FOLDER
 
 if TYPE_CHECKING:
@@ -129,6 +134,73 @@ def test_model_validate_path_contracts_folder():
     assert cfg.contracts_folder == str(path)
 
 
+def test_model_validate_handles_environment_variables():
+    def run_test(cls: Callable, attr: str, name: str, value: str, expected: Any = None):
+        expected = expected if expected is not None else value
+        before: str | None = os.environ.get(name)
+        os.environ[name] = value
+        try:
+            instance = cls()
+            assert getattr(instance, attr) == expected
+        finally:
+            if before is not None:
+                os.environ[name] = before
+            else:
+                os.environ.pop(name, None)
+
+    # Test different config classes.
+    run_test(ApeConfig, "contracts_folder", "APE_CONTRACTS_FOLDER", "3465220869b2")
+    run_test(CacheConfig, "size", "APE_CACHE_SIZE", "8627", 8627)
+    run_test(
+        CompileConfig, "include_dependencies", "APE_COMPILE_INCLUDE_DEPENDENCIES", "true", True
+    )
+    run_test(
+        ForkedNetworkConfig, "upstream_provider", "APE_ETHEREUM_UPSTREAM_PROVIDER", "411236f13659"
+    )
+    run_test(
+        NetworkConfig, "required_confirmations", "APE_ETHEREUM_REQUIRED_CONFIRMATIONS", "6498", 6498
+    )
+    run_test(EthereumNetworkConfig, "mainnet", "APE_NODE_MAINNET", '{"a":"b"}', {"a": "b"})
+    run_test(EthereumNodeConfig, "executable", "APE_NODE_EXECUTABLE", "geth", expected=["geth"])
+    run_test(CoverageReportsConfig, "terminal", "APE_TEST_TERMINAL", "false", False)
+    run_test(GasConfig, "reports", "APE_TEST_REPORTS", '["terminal"]', ["terminal"])
+    run_test(GasExclusion, "method_name", "APE_TEST_METHOD_NAME", "32aa54e3c5d2")
+
+    # Assert that union types are handled.
+    run_test(NetworkConfig, "gas_limit", "APE_ETHEREUM_GAS_LIMIT", "0", 0)
+    run_test(NetworkConfig, "gas_limit", "APE_ETHEREUM_GAS_LIMIT", "0x100", 0x100)
+    run_test(NetworkConfig, "gas_limit", "APE_ETHEREUM_GAS_LIMIT", "auto")
+    run_test(NetworkConfig, "gas_limit", "APE_ETHEREUM_GAS_LIMIT", "max")
+    with pytest.raises(ValidationError, match=r"Value error, Invalid gas limit"):
+        run_test(NetworkConfig, "gas_limit", "APE_ETHEREUM_GAS_LIMIT", "something")
+
+    # Assert that various bool variants are parsed correctly.
+    for bool_val in ("0", "False", "fALSE", "FALSE"):
+        run_test(NetworkConfig, "is_mainnet", "APE_ETHEREUM_IS_MAINNET", bool_val, False)
+
+    for bool_val in ("1", "True", "tRUE", "TRUE"):
+        run_test(NetworkConfig, "is_mainnet", "APE_ETHEREUM_IS_MAINNET", bool_val, True)
+
+    # We expect a failure when there's a type mismatch.
+    with pytest.raises(
+        ValidationError,
+        match=r"Input should be a valid boolean, unable to interpret input",
+    ):
+        run_test(NetworkConfig, "is_mainnet", "APE_ETHEREUM_IS_MAINNET", "not a boolean", False)
+
+    with pytest.raises(
+        ValidationError,
+        match=r"Input should be a valid integer, unable to parse string as an integer",
+    ):
+        run_test(
+            NetworkConfig,
+            "required_confirmations",
+            "APE_ETHEREUM_REQUIRED_CONFIRMATIONS",
+            "not a number",
+            42,
+        )
+
+
 @pytest.mark.parametrize(
     "file", ("ape-config.yml", "ape-config.yaml", "ape-config.json", "pyproject.toml")
 )
@@ -152,7 +224,7 @@ def test_validate_file(file):
     assert "Excl*.json" in actual.compile.exclude
 
 
-def test_validate_file_expands_env_vars():
+def test_validate_file_expands_environment_variables():
     secret = "mycontractssecretfolder"
     env_var_name = "APE_TEST_CONFIG_SECRET_CONTRACTS_FOLDER"
     os.environ[env_var_name] = secret
@@ -206,21 +278,21 @@ def test_validate_file_uses_project_name():
         assert cfg.name == name
 
 
-def test_deployments(networks_connected_to_tester, owner, vyper_contract_container, project):
+def test_deployments(networks_connected_to_tester, owner, project):
     _ = networks_connected_to_tester  # Connection needs to lookup config.
 
     # First, obtain a "previously-deployed" contract.
-    instance = vyper_contract_container.deploy(1000200000, sender=owner)
+    instance = project.VyperContract.deploy(1000200000, sender=owner)
     address = instance.address
 
     # Create a config using this new contract for a "later time".
     deploys = {
         **_create_deployments(address=address, contract_name=instance.contract_type.name),
     }
-    with project.temp_config(**{"deployments": deploys}):
+    with project.temp_config(deployments=deploys):
         deploy_config = project.config.deployments
         assert deploy_config["ethereum"]["local"][0]["address"] == address
-        deployment = vyper_contract_container.deployments[0]
+        deployment = project.VyperContract.deployments[0]
 
     assert deployment.address == instance.address
 
@@ -229,7 +301,7 @@ def test_deployments_integer_type_addresses(networks, project):
     deploys = {
         **_create_deployments(address=0x0C25212C557D00024B7CA3DF3238683A35541354),
     }
-    with project.temp_config(**{"deployments": deploys}):
+    with project.temp_config(deployments=deploys):
         deploy_config = project.config.deployments
         assert (
             deploy_config["ethereum"]["local"][0]["address"]
@@ -496,9 +568,26 @@ def test_config_enum():
     assert actual.my_enum == MyEnum.FOO
 
 
+def test_contracts_folder(project):
+    with project.temp_config(**{"contracts_folder": "src"}):
+        assert project.contracts_folder.name == "src"
+
+
 def test_contracts_folder_with_hyphen(project):
     with project.temp_config(**{"contracts-folder": "src"}):
         assert project.contracts_folder.name == "src"
+
+
+def test_contracts_folder_invalid(project):
+    """
+    Show that we can still attempt to use `.get_config()` when config is invalid.
+    """
+    with pytest.raises(ConfigError):
+        with project.temp_config(**{"contracts_folder": {}}):
+            _ = project.contracts_folder
+
+    # Ensure config is fine _after_ something invalid.
+    assert project.contracts_folder
 
 
 def test_custom_network():
@@ -618,3 +707,44 @@ def test_project_level_settings(project):
         assert project.config.my_string == "my_string"
         assert project.config.my_int == 123
         assert project.config.my_bool is True
+
+
+def test_isolate_data_folder(config):
+    original_data_folder = config.DATA_FOLDER
+    madeup_path = Path.home() / ".ape" / "__madeup__"
+    config.DATA_FOLDER = madeup_path
+    try:
+        with config.isolate_data_folder():
+            assert original_data_folder != config.DATA_FOLDER
+    finally:
+        config.DATA_FOLDER = original_data_folder
+
+
+def test_isolate_data_folder_already_isolated(config):
+    data_folder = config.DATA_FOLDER
+    with config.isolate_data_folder():
+        # Already isolated, so there is no change.
+        assert data_folder == config.DATA_FOLDER
+
+
+def test_isolate_data_folder_keep(config):
+    original_data_folder = config.DATA_FOLDER
+    madeup_path = Path.home() / ".ape" / "__core_aoe_test__"
+    madeup_path.mkdir(parents=True, exist_ok=True)
+    sub_dir = madeup_path / "subdir"
+    file = sub_dir / "file.txt"
+    sub_dir.mkdir(parents=True, exist_ok=True)
+    file.write_text("search for 'test_isolate_data_folder_keep' ape's tests.")
+
+    config.DATA_FOLDER = madeup_path
+    try:
+        with config.isolate_data_folder(keep="subdir"):
+            assert original_data_folder != config.DATA_FOLDER
+
+        expected_file = config.DATA_FOLDER / "subdir" / "file.txt"
+        assert expected_file.is_file()
+
+    finally:
+        config.DATA_FOLDER = original_data_folder
+        if madeup_path.is_dir():
+            shutil.rmtree(str(madeup_path), ignore_errors=True)

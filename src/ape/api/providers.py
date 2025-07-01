@@ -16,7 +16,9 @@ from signal import SIGINT, SIGTERM, signal
 from subprocess import DEVNULL, PIPE, Popen
 from typing import TYPE_CHECKING, Any, ClassVar, Optional, Union, cast
 
+from eth_pydantic_types import HexBytes
 from eth_utils import to_hex
+from ethpm_types import MethodABI
 from pydantic import Field, computed_field, field_serializer, model_validator
 
 from ape.api.networks import NetworkAPI
@@ -24,6 +26,7 @@ from ape.api.query import BlockTransactionQuery
 from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.exceptions import (
     APINotImplementedError,
+    ContractLogicError,
     ProviderError,
     QueryEngineError,
     RPCTimeoutError,
@@ -33,7 +36,7 @@ from ape.exceptions import (
 )
 from ape.logging import LogLevel, logger
 from ape.types.basic import HexInt
-from ape.utils.basemodel import BaseInterfaceModel
+from ape.utils.basemodel import BaseInterfaceModel, BaseModel, ManagerAccessMixin
 from ape.utils.misc import (
     EMPTY_BYTES32,
     _create_raises_not_implemented_error,
@@ -45,7 +48,6 @@ from ape.utils.process import JoinableQueue, spawn
 from ape.utils.rpc import RPCHeaders
 
 if TYPE_CHECKING:
-    from eth_pydantic_types import HexBytes
     from ethpm_types.abi import EventABI
 
     from ape.api.accounts import TestAccountAPI
@@ -181,6 +183,62 @@ class BlockAPI(BaseInterfaceModel):
         raise APINotImplementedError()
 
 
+class CallResult(BaseModel, ManagerAccessMixin):
+    """
+    The result of a call.
+    NOTE: Currently, you only get this for reverted calls from ``ProviderAPI``.
+    """
+
+    revert: Optional[ContractLogicError] = None
+    """
+    The revert, if the call reverted.
+    """
+
+    returndata: HexBytes
+    """
+    The raw returndata.
+    """
+
+    @classmethod
+    def from_revert(cls, revert: ContractLogicError) -> "CallResult":
+        """
+        Factory helper for easily creating a CallResult from a revert error.
+
+        Args:
+            revert (ContractLogicError): The revert error.
+
+        Returns:
+            A new ``CallResult`` instance.
+        """
+        return cls(revert=revert, returndata=HexBytes(revert.revert_message.encode("utf8").hex()))
+
+    @property
+    def reverted(self) -> bool:
+        """
+        ``True`` if the call `reverted` (failed).
+        """
+        return self.revert is not None
+
+    @property
+    def revert_message(self) -> Optional[str]:
+        """
+        The revert message, if the call reverted.
+        """
+        return self.revert.revert_message if self.revert else None
+
+    def decode(self, method_abi: MethodABI) -> Any:
+        """
+        Decode a Pythonic return value from the call.
+
+        Args:
+            method_abi (``MethodABI``): The method ABI to decode.
+
+        Returns:
+            The decoded result.
+        """
+        return self.provider.network.ecosystem.decode_returndata(method_abi, self.returndata)
+
+
 class ProviderAPI(BaseInterfaceModel):
     """
     An abstraction of a connection to a network in an ecosystem. Example ``ProviderAPI``
@@ -252,6 +310,13 @@ class ProviderAPI(BaseInterfaceModel):
         """
         Disconnect from a provider, such as tear-down a process or quit an HTTP session.
         """
+
+    @property
+    def ipc_path(self) -> Optional[Path]:
+        """
+        Return the IPC path for the provider, if supported.
+        """
+        return None
 
     @property
     def http_uri(self) -> Optional[str]:
@@ -386,7 +451,7 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     # TODO: In 0.9, delete this method.
-    def get_storage_at(self, *args, **kwargs) -> "HexBytes":
+    def get_storage_at(self, *args, **kwargs) -> HexBytes:
         warnings.warn(
             "'provider.get_storage_at()' is deprecated. Use 'provider.get_storage()'.",
             DeprecationWarning,
@@ -396,7 +461,7 @@ class ProviderAPI(BaseInterfaceModel):
     @raises_not_implemented
     def get_storage(  # type: ignore[empty-body]
         self, address: "AddressType", slot: int, block_id: Optional["BlockID"] = None
-    ) -> "HexBytes":
+    ) -> HexBytes:
         """
         Gets the raw value of a storage slot of a contract.
 
@@ -514,6 +579,8 @@ class ProviderAPI(BaseInterfaceModel):
             :class:`~ape.types.BlockID`: The block for the given ID.
         """
 
+    # TODO: In 0.9, change the return value to be `CallResult`
+    #    (right now it does only when using raise_on_revert=False and it reverts).
     @abstractmethod
     def send_call(
         self,
@@ -521,10 +588,10 @@ class ProviderAPI(BaseInterfaceModel):
         block_id: Optional["BlockID"] = None,
         state: Optional[dict] = None,
         **kwargs,
-    ) -> "HexBytes":  # Return value of function
+    ) -> HexBytes:  # Return value of function
         """
         Execute a new transaction call immediately without creating a
-        transaction on the block chain.
+        transaction on the blockchain.
 
         Args:
             txn: :class:`~ape.api.transactions.TransactionAPI`
@@ -536,7 +603,9 @@ class ProviderAPI(BaseInterfaceModel):
             **kwargs: Provider-specific extra kwargs.
 
         Returns:
-            str: The result of the transaction call.
+            HexBytes: The returndata of the transaction call. Even though it isn't
+            mentioned in the type, you can also return a ``:class:`~ape.api.providers.CallResult``
+            here and Ape will handle it. In 0.9, it will be the primary return type.
         """
 
     @abstractmethod
@@ -722,7 +791,7 @@ class ProviderAPI(BaseInterfaceModel):
 
     @raises_not_implemented
     def set_storage(  # type: ignore[empty-body]
-        self, address: "AddressType", slot: int, value: "HexBytes"
+        self, address: "AddressType", slot: int, value: HexBytes
     ):
         """
         Sets the raw value of a storage slot of a contract.
@@ -762,7 +831,7 @@ class ProviderAPI(BaseInterfaceModel):
 
     @raises_not_implemented
     def get_transaction_trace(  # type: ignore[empty-body]
-        self, txn_hash: Union["HexBytes", str]
+        self, txn_hash: Union[HexBytes, str]
     ) -> "TraceAPI":
         """
         Provide a detailed description of opcodes.
@@ -944,7 +1013,7 @@ class TestProviderAPI(ProviderAPI):
 
     @auto_mine.setter
     @abstractmethod
-    def auto_mine(self) -> bool:
+    def auto_mine(self, value) -> bool:
         """
         Enable or disable automine.
         """
@@ -984,7 +1053,9 @@ class SubprocessProvider(ProviderAPI):
     """
 
     PROCESS_WAIT_TIMEOUT: int = 15
+    background: bool = False
     process: Optional[Popen] = None
+    allow_start: bool = True
     is_stopping: bool = False
 
     stdout_queue: Optional[JoinableQueue] = None
@@ -1059,7 +1130,7 @@ class SubprocessProvider(ProviderAPI):
             or self.config_manager.get_config("test").disconnect_providers_after
         )
         if disconnect_after:
-            atexit.register(self.disconnect)
+            atexit.register(self._disconnect_atexit)
 
         # Register handlers to ensure atexit handlers are called when Python dies.
         def _signal_handler(signum, frame):
@@ -1068,6 +1139,15 @@ class SubprocessProvider(ProviderAPI):
 
         signal(SIGINT, _signal_handler)
         signal(SIGTERM, _signal_handler)
+
+    def _disconnect_atexit(self):
+        if self.background:
+            return
+
+        try:
+            self.disconnect()
+        except Exception as err:
+            logger.error(f"Error while disconnecting: {err}")
 
     def disconnect(self):
         """
@@ -1078,24 +1158,37 @@ class SubprocessProvider(ProviderAPI):
         if self.process:
             self.stop()
 
+        # Delete entry from managed list of running nodes.
+        self.network_manager.running_nodes.remove_provider(self)
+
     def start(self, timeout: int = 20):
         """Start the process and wait for its RPC to be ready."""
 
         if self.is_connected:
             logger.info(f"Connecting to existing '{self.process_name}' process.")
             self.process = None  # Not managing the process.
-        else:
+
+        elif self.allow_start:
             logger.info(f"Starting '{self.process_name}' process.")
             pre_exec_fn = _linux_set_death_signal if platform.uname().system == "Linux" else None
             self.stderr_queue = JoinableQueue()
             self.stdout_queue = JoinableQueue()
-            out_file = PIPE if logger.level <= LogLevel.DEBUG else DEVNULL
+
+            if self.background or logger.level > LogLevel.DEBUG:
+                out_file = DEVNULL
+            else:
+                out_file = PIPE
+
             cmd = self.build_command()
-            self.process = Popen(cmd, preexec_fn=pre_exec_fn, stdout=out_file, stderr=out_file)
+            process = popen(cmd, preexec_fn=pre_exec_fn, stdout=out_file, stderr=out_file)
+            self.process = process
             spawn(self.produce_stdout_queue)
             spawn(self.produce_stderr_queue)
             spawn(self.consume_stdout_queue)
             spawn(self.consume_stderr_queue)
+
+            # Cache the process so we can manage it even if lost.
+            self.network_manager.running_nodes.cache_provider(self)
 
             with RPCTimeoutError(self, seconds=timeout) as _timeout:
                 while True:
@@ -1104,6 +1197,9 @@ class SubprocessProvider(ProviderAPI):
 
                     time.sleep(0.1)
                     _timeout.check()
+
+        else:
+            raise ProviderError("Process not started and cannot connect to existing process.")
 
     def produce_stdout_queue(self):
         process = self.process
@@ -1250,3 +1346,8 @@ def _linux_set_death_signal():
     # the second argument is what signal to send to child subprocesses
     libc = ctypes.CDLL("libc.so.6")
     return libc.prctl(1, SIGTERM)
+
+
+def popen(cmd: list[str], **kwargs):
+    # Abstracted for testing purposes.
+    return Popen(cmd, **kwargs)

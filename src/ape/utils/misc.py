@@ -14,13 +14,14 @@ else:
 from asyncio import gather
 from collections.abc import Coroutine, Mapping
 from datetime import datetime, timezone
-from functools import cached_property, lru_cache, singledispatchmethod, wraps
+from functools import cached_property, singledispatchmethod, wraps
 from importlib.metadata import PackageNotFoundError, distributions
 from importlib.metadata import version as version_metadata
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional, TypeVar, cast
 
 import yaml
+from eth_keys import keys  # type: ignore
 from eth_pydantic_types import HexBytes
 from eth_utils import is_0x_prefixed
 from packaging.specifiers import SpecifierSet
@@ -69,7 +70,7 @@ _python_version: str = (
 )
 
 
-@lru_cache(maxsize=None)
+@functools.cache
 def _get_distributions(pkg_name: Optional[str] = None) -> list:
     """
     Get a mapping of top-level packages to their distributions.
@@ -354,7 +355,7 @@ def to_int(value: Any) -> int:
     elif isinstance(value, bytes):
         return int.from_bytes(value, "big")
 
-    raise ValueError(f"cannot convert {repr(value)} to int")
+    raise ValueError(f"cannot convert {value!r} to int")
 
 
 def run_until_complete(*item: Any) -> Any:
@@ -499,7 +500,7 @@ def log_instead_of_fail(default: Optional[Any] = None):
 _MOD_T = TypeVar("_MOD_T")
 
 
-def as_our_module(cls_or_def: _MOD_T, doc_str: Optional[str] = None) -> _MOD_T:
+def as_our_module(cls_or_def: _MOD_T, doc_str: Optional[str] = None) -> Optional[_MOD_T]:
     """
     Ape sometimes reclaims definitions from other packages, such as
     class:`~ape.types.signatures.SignableMessage`). When doing so, the doc str
@@ -528,20 +529,35 @@ def as_our_module(cls_or_def: _MOD_T, doc_str: Optional[str] = None) -> _MOD_T:
     return cls_or_def
 
 
+def derive_public_key(private_key: bytes) -> HexBytes:
+    """
+    Derive the public key for the given private key.
+
+    Args:
+        private_key (bytes): The private key.
+
+    Returns:
+        HexBytes: The public key.
+    """
+    pk = keys.PrivateKey(private_key)
+    public_key = f"{pk.public_key}"[2:]
+    return HexBytes(bytes.fromhex(public_key))
+
+
 __all__ = [
-    "cached_property",
+    "LOCAL_NETWORK_NAME",
     "_dict_overlay",
+    "cached_property",
     "extract_nested_value",
     "gas_estimation_error_message",
     "get_current_timestamp_ms",
-    "pragma_str_to_specifier_set",
     "get_package_version",
     "is_evm_precompile",
     "is_zero_hex",
     "load_config",
-    "LOCAL_NETWORK_NAME",
     "log_instead_of_fail",
     "nonreentrant",
+    "pragma_str_to_specifier_set",
     "raises_not_implemented",
     "run_until_complete",
     "singledispatchmethod",

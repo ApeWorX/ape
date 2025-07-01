@@ -10,9 +10,9 @@ from eth_account._utils.legacy_transactions import (
     serializable_unsigned_transaction_from_dict,
 )
 from eth_pydantic_types import HexBytes
-from eth_utils import decode_hex, encode_hex, keccak, to_hex, to_int
+from eth_utils import decode_hex, encode_hex, keccak, to_canonical_address, to_hex, to_int
 from ethpm_types.abi import EventABI, MethodABI
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, Field, field_serializer, field_validator, model_validator
 
 from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.exceptions import OutOfGasError, SignatureError, TransactionError
@@ -20,12 +20,14 @@ from ape.logging import logger
 from ape.types.address import AddressType
 from ape.types.basic import HexInt
 from ape.types.events import ContractLog, ContractLogContainer
+from ape.types.signatures import MessageSignature
 from ape.types.trace import SourceTraceback
 from ape.utils.misc import ZERO_ADDRESS
 from ape_ethereum.trace import Trace, _events_to_trees
 
 if TYPE_CHECKING:
     from ethpm_types import ContractType
+    from typing_extensions import Self
 
     from ape.contracts import ContractEvent
 
@@ -55,6 +57,7 @@ class TransactionType(Enum):
     ACCESS_LIST = 1  # EIP-2930
     DYNAMIC = 2  # EIP-1559
     SHARED_BLOB = 3  # EIP-4844
+    SET_CODE = 4  # EIP-7702
 
 
 class AccessList(BaseModel):
@@ -72,7 +75,7 @@ class BaseTransaction(TransactionAPI):
                     "Did you forget to add the `sender=` kwarg to the transaction function call?"
                 )
 
-            raise SignatureError(message)
+            raise SignatureError(message, transaction=self)
 
         txn_data = self.model_dump(by_alias=True, exclude={"sender", "type"})
 
@@ -97,6 +100,17 @@ class BaseTransaction(TransactionAPI):
 
             txn_data["accessList"] = adjusted_access_list
 
+        if "authorizationList" in txn_data:
+            adjusted_auth_list = []
+
+            for item in txn_data["authorizationList"]:
+                adjusted_item = {
+                    k: to_hex(v) if isinstance(v, bytes) else v for k, v in item.items()
+                }
+                adjusted_auth_list.append(adjusted_item)
+
+            txn_data["authorizationList"] = adjusted_auth_list
+
         unsigned_txn = serializable_unsigned_transaction_from_dict(txn_data)
         signature = (self.signature.v, to_int(self.signature.r), to_int(self.signature.s))
         signed_txn = encode_transaction(unsigned_txn, signature)
@@ -107,7 +121,8 @@ class BaseTransaction(TransactionAPI):
             recovered_signer = EthAccount.recover_transaction(signed_txn)
             if recovered_signer != self.sender:
                 raise SignatureError(
-                    f"Recovered signer '{recovered_signer}' doesn't match sender {self.sender}!"
+                    f"Recovered signer '{recovered_signer}' doesn't match sender {self.sender}!",
+                    transaction=self,
                 )
 
         return signed_txn
@@ -185,6 +200,67 @@ class SharedBlobTransaction(DynamicFeeTransaction):
     """
 
 
+class Authorization(BaseModel):
+    """
+    `EIP-7702 <https://eips.ethereum.org/EIPS/eip-7702>`__ authorization list item.
+    """
+
+    chain_id: HexInt = Field(alias="chainId")
+    address: AddressType
+    nonce: HexInt
+    v: HexInt = Field(alias="yParity")
+    r: HexBytes
+    s: HexBytes
+
+    @field_serializer("chain_id", "nonce", "v")
+    def convert_int_to_hex(self, value: int) -> str:
+        return to_hex(value)
+
+    @classmethod
+    def from_signature(
+        cls,
+        chain_id: int,
+        address: AddressType,
+        nonce: int,
+        signature: MessageSignature,
+    ) -> "Self":
+        return cls(
+            chainId=chain_id,
+            address=address,
+            nonce=nonce,
+            yParity=signature.v,
+            r=signature.r,
+            s=signature.s,
+        )
+
+    @property
+    def signature(self) -> MessageSignature:
+        return MessageSignature(v=self.v, r=self.r, s=self.s)
+
+    @cached_property
+    def authority(self) -> AddressType:
+        # TODO: Move above when `web3` pin is `>7`
+        from eth_account.typed_transactions.set_code_transaction import Authorization as EthAcctAuth
+
+        auth = EthAcctAuth(self.chain_id, to_canonical_address(self.address), self.nonce)
+        return EthAccount._recover_hash(
+            auth.hash(),
+            vrs=(self.signature.v, to_int(self.r), to_int(self.s)),
+        )
+
+
+class SetCodeTransaction(DynamicFeeTransaction):
+    """
+    `EIP-7702 <https://eips.ethereum.org/EIPS/eip-7702>`__ transactions.
+    """
+
+    authorizations: list[Authorization] = Field(default_factory=list, alias="authorizationList")
+    receiver: AddressType = Field(default=ZERO_ADDRESS, alias="to")
+    """
+    Overridden because EIP-7702 states it cannot be nil.
+    """
+
+
 class Receipt(ReceiptAPI):
     gas_limit: HexInt
     gas_price: HexInt
@@ -253,7 +329,6 @@ class Receipt(ReceiptAPI):
                     # Failing to get a traceback should not halt an Ape application.
                     # Sometimes, a node crashes and we are left with nothing.
                     logger.error(f"Problem retrieving traceback: {err}")
-                    pass
 
         return SourceTraceback.model_validate([])
 
@@ -266,7 +341,9 @@ class Receipt(ReceiptAPI):
             txn_hash = self.txn_hash
             err = TransactionError(f"Transaction '{txn_hash}' failed.", txn=self)
 
-        self.error = err
+        if err:
+            self.error = err
+
         if err and self.transaction.raise_on_revert:
             raise err
 
@@ -383,6 +460,10 @@ class Receipt(ReceiptAPI):
             return decoded_logs
 
     def _decode_ds_note(self, log: dict) -> Optional[ContractLog]:
+        if len(log["topics"]) == 0:
+            # anon event log
+            return None
+
         # The first topic encodes the function selector
         selector, tail = log["topics"][0][:4], log["topics"][0][4:]
         if sum(tail):

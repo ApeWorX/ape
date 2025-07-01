@@ -13,6 +13,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from ape.exceptions import ConfigError
 from ape.logging import logger
 from ape.types.address import AddressType
+from ape.utils.abi import CalldataRepr
 from ape.utils.basemodel import (
     ExtraAttributesMixin,
     ExtraModelAttributes,
@@ -39,8 +40,10 @@ class ConfigEnum(str, Enum):
                 FOO = "FOO"
                 BAR = "BAR"
 
+
             class MyConfig(PluginConfig):
                 my_enum: MyEnum
+
 
             model = MyConfig(my_enum="FOO")
 
@@ -66,7 +69,7 @@ class PluginConfig(BaseSettings):
     a config API must register a subclass of this class.
     """
 
-    model_config = SettingsConfigDict(extra="allow")
+    model_config = SettingsConfigDict(extra="allow", env_prefix="APE_")
 
     @classmethod
     def from_overrides(
@@ -173,7 +176,7 @@ class PluginConfig(BaseSettings):
 
     def get(self, key: str, default: Optional[ConfigItemType] = None) -> ConfigItemType:
         extra: dict = self.__pydantic_extra__ or {}
-        return self.__dict__.get(key, extra.get(key, default))
+        return self.__dict__.get(key, extra.get(key, default))  # type: ignore
 
 
 class GenericConfig(ConfigDict):
@@ -278,6 +281,17 @@ def _get_problem_with_config(errors: list, path: Path) -> Optional[str]:
     return f"'{clean_path(path)}' is invalid!\n{final_msg}"
 
 
+class DisplayConfig(PluginConfig):
+    """
+    Configure display settings in Ape.
+    """
+
+    calldata: CalldataRepr = CalldataRepr.abridged
+    """
+    Dictates how the calldata displays when signing transactions.
+    """
+
+
 class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
     """
     The top-level config.
@@ -285,7 +299,7 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
 
     def __init__(self, *args, **kwargs):
         project_path = kwargs.get("project")
-        super(BaseSettings, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         # NOTE: Cannot reference `self` at all until after super init.
         self._project_path = project_path
 
@@ -315,6 +329,11 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
     )
     """
     Data for deployed contracts from the project.
+    """
+
+    display: DisplayConfig = DisplayConfig()
+    """
+    Configure display settings in Ape.
     """
 
     interfaces_folder: str = "interfaces"
@@ -350,7 +369,7 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
     """
 
     # NOTE: Plugin configs are technically "extras".
-    model_config = SettingsConfigDict(extra="allow")
+    model_config = SettingsConfigDict(extra="allow", env_prefix="APE_")
 
     @model_validator(mode="before")
     @classmethod
@@ -453,7 +472,7 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
         except ValidationError as err:
             if path.suffix == ".json":
                 # TODO: Support JSON configs here.
-                raise  # The validation error as-is
+                raise ConfigError(f"{err}") from err
 
             if final_msg := _get_problem_with_config(err.errors(), path):
                 raise ConfigError(final_msg)
@@ -488,7 +507,7 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
             exclude_unset=True,
             exclude_defaults=True,
         )
-        return yaml.dump(data)
+        return yaml.safe_dump(data)
 
     @only_raise_attribute_error
     def __getattr__(self, attr_name: str) -> Any:

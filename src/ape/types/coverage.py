@@ -669,7 +669,8 @@ class CoverageReport(BaseModel):
             raise ValueError("Failed to get XML DOM.")
 
         xml_out = impl.createDocument(None, "coverage", None)
-        xcoverage = xml_out.documentElement
+        if not (xcoverage := xml_out.documentElement):
+            return xml_out
 
         # Unable to use too exotic of a version.
         xversion = ape_version.split(".dev")[0].strip()
@@ -1040,7 +1041,7 @@ class _HTMLPrettfier(HTMLParser):
         This is a custom method not part of the HTMLParser spec
         that ingests a coverage HTML str, handles the formatting, returns it,
         and resets this formatter's instance, so that the operation
-        is more functionable.
+        is more functional.
         """
         self.feed(html_str)
         result = self.prettified_html

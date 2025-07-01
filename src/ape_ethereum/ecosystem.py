@@ -70,6 +70,7 @@ from ape_ethereum.transactions import (
     BaseTransaction,
     DynamicFeeTransaction,
     Receipt,
+    SetCodeTransaction,
     SharedBlobReceipt,
     SharedBlobTransaction,
     StaticFeeTransaction,
@@ -157,6 +158,8 @@ class NetworkConfig(PluginConfig):
     request_headers: dict = {}
     """Optionally config extra request headers whenever using this network."""
 
+    model_config = SettingsConfigDict(extra="allow", env_prefix="APE_ETHEREUM_")
+
     @field_validator("gas_limit", mode="before")
     @classmethod
     def validate_gas_limit(cls, value):
@@ -233,7 +236,7 @@ class BaseEthereumConfig(PluginConfig):
     # NOTE: This gets appended to Ape's root User-Agent string.
     request_headers: dict = {}
 
-    model_config = SettingsConfigDict(extra="allow")
+    model_config = SettingsConfigDict(extra="allow", env_prefix="APE_ETHEREUM_")
 
     @model_validator(mode="before")
     @classmethod
@@ -318,7 +321,7 @@ class BaseEthereumConfig(PluginConfig):
 
     def _get_forked_config(self, name: str) -> Optional[ForkedNetworkConfig]:
         live_key: str = name.replace("_fork", "")
-        if live_key in self._forked_configs and self._forked_configs[live_key]:
+        if self._forked_configs.get(live_key):
             return self._forked_configs[live_key]
 
         live_cfg: Any
@@ -433,8 +436,12 @@ class Ethereum(EcosystemAPI):
 
         if tx_type is TransactionType.STATIC:
             return StaticFeeTransaction
+
         elif tx_type is TransactionType.ACCESS_LIST:
             return AccessListTransaction
+
+        elif tx_type is TransactionType.SET_CODE:
+            return SetCodeTransaction
 
         return DynamicFeeTransaction
 
@@ -445,7 +452,7 @@ class Ethereum(EcosystemAPI):
         bytes_obj = contract_type.deployment_bytecode
         contract_bytes = (bytes_obj.to_bytes() or b"") if bytes_obj else b""
         header = kwargs.pop("header", BLUEPRINT_HEADER)
-        blueprint_bytecode = header + HexBytes(0) + contract_bytes
+        blueprint_bytecode = header + b"\x00" + contract_bytes
         len_bytes = len(blueprint_bytecode).to_bytes(2, "big")
         return_data_size = kwargs.pop("return_data_size", HexBytes("0x61"))
         return_instructions = kwargs.pop("return_instructions", HexBytes("0x3d81600a3d39f3"))
@@ -458,7 +465,7 @@ class Ethereum(EcosystemAPI):
         )
 
     def get_proxy_info(self, address: AddressType) -> Optional[ProxyInfo]:
-        contract_code = self.provider.get_code(address)
+        contract_code = self.chain_manager.get_code(address)
         if isinstance(contract_code, bytes):
             contract_code = to_hex(contract_code)
 
@@ -468,15 +475,16 @@ class Ethereum(EcosystemAPI):
         patterns = {
             ProxyType.Minimal: r"^363d3d373d3d3d363d73(.{40})5af43d82803e903d91602b57fd5bf3",
             ProxyType.ZeroAge: r"^3d3d3d3d363d3d37363d73(.{40})5af43d3d93803e602a57fd5bf3",
-            ProxyType.Clones: r"^36603057343d52307f830d2d700a97af574b186c80d40429385d24241565b08a7c559ba283a964d9b160203da23d3df35b3d3d3d3d363d3d37363d73(.{40})5af43d3d93803e605b57fd5bf3",  # noqa: E501
-            ProxyType.Vyper: r"^366000600037611000600036600073(.{40})5af4602c57600080fd5b6110006000f3",  # noqa: E501
+            ProxyType.Clones: r"^36603057343d52307f830d2d700a97af574b186c80d40429385d24241565b08a7c559ba283a964d9b160203da23d3df35b3d3d3d3d363d3d37363d73(.{40})5af43d3d93803e605b57fd5bf3",
+            ProxyType.Vyper: r"^366000600037611000600036600073(.{40})5af4602c57600080fd5b6110006000f3",
             ProxyType.VyperBeta: r"^366000600037611000600036600073(.{40})5af41558576110006000f3",
-            ProxyType.CWIA: r"^3d3d3d3d363d3d3761.{4}603736393661.{4}013d73(.{40})5af43d3d93803e603557fd5bf3.*",  # noqa: E501
-            ProxyType.OldCWIA: r"^363d3d3761.{4}603836393d3d3d3661.{4}013d73(.{40})5af43d82803e903d91603657fd5bf3.*",  # noqa: E501
-            ProxyType.SudoswapCWIA: r"^3d3d3d3d363d3d37605160353639366051013d73(.{40})5af43d3d93803e603357fd5bf3.*",  # noqa: E501
-            ProxyType.SoladyCWIA: r"36602c57343d527f9e4ac34f21c619cefc926c8bd93b54bf5a39c7ab2127a895af1cc0691d7e3dff593da1005b363d3d373d3d3d3d61.{4}806062363936013d73(.{40})5af43d3d93803e606057fd5bf3.*",  # noqa: E501
-            ProxyType.SplitsCWIA: r"36602f57343d527f9e4ac34f21c619cefc926c8bd93b54bf5a39c7ab2127a895af1cc0691d7e3dff60203da13d3df35b3d3d3d3d363d3d3761.{4}606736393661.{4}013d73(.{40})5af43d3d93803e606557fd5bf3.*",  # noqa: E501
+            ProxyType.CWIA: r"^3d3d3d3d363d3d3761.{4}603736393661.{4}013d73(.{40})5af43d3d93803e603557fd5bf3.*",
+            ProxyType.OldCWIA: r"^363d3d3761.{4}603836393d3d3d3661.{4}013d73(.{40})5af43d82803e903d91603657fd5bf3.*",
+            ProxyType.SudoswapCWIA: r"^3d3d3d3d363d3d37605160353639366051013d73(.{40})5af43d3d93803e603357fd5bf3.*",
+            ProxyType.SoladyCWIA: r"36602c57343d527f9e4ac34f21c619cefc926c8bd93b54bf5a39c7ab2127a895af1cc0691d7e3dff593da1005b363d3d373d3d3d3d61.{4}806062363936013d73(.{40})5af43d3d93803e606057fd5bf3.*",
+            ProxyType.SplitsCWIA: r"36602f57343d527f9e4ac34f21c619cefc926c8bd93b54bf5a39c7ab2127a895af1cc0691d7e3dff60203da13d3df35b3d3d3d3d363d3d3761.{4}606736393661.{4}013d73(.{40})5af43d3d93803e606557fd5bf3.*",
             ProxyType.SoladyPush0: r"^5f5f365f5f37365f73(.{40})5af43d5f5f3e6029573d5ffd5b3d5ff3",
+            ProxyType.SetCode: r"^ef0100(.{40})$",
         }
         for type_, pattern in patterns.items():
             if match := re.match(pattern, code):
@@ -503,8 +511,10 @@ class Ethereum(EcosystemAPI):
             try:
                 # TODO perf: use a batch call here when ape adds support
                 storage = self.provider.get_storage(address, slot)
-            except APINotImplementedError:
-                continue
+            except NotImplementedError:
+                # Break early on not-implemented error rather than attempting
+                # to try more proxy types.
+                break
 
             if sum(storage) == 0:
                 continue
@@ -889,11 +899,12 @@ class Ethereum(EcosystemAPI):
             tx_data["data"] = b""
 
         # Deduce the transaction type.
-        transaction_types: dict[TransactionType, type["TransactionAPI"]] = {
+        transaction_types: dict[TransactionType, type[TransactionAPI]] = {
             TransactionType.STATIC: StaticFeeTransaction,
             TransactionType.ACCESS_LIST: AccessListTransaction,
             TransactionType.DYNAMIC: DynamicFeeTransaction,
             TransactionType.SHARED_BLOB: SharedBlobTransaction,
+            TransactionType.SET_CODE: SetCodeTransaction,
         }
         if "type" in tx_data:
             # May be None in data.
@@ -908,14 +919,17 @@ class Ethereum(EcosystemAPI):
                 # Using hex values or alike.
                 version = TransactionType(self.conversion_manager.convert(tx_data["type"], int))
 
-        elif "gas_price" in tx_data:
-            version = TransactionType.STATIC
+        # NOTE: Determine these in reverse order
+        elif "authorizationList" in tx_data:
+            version = TransactionType.SET_CODE
+        elif "maxFeePerBlobGas" in tx_data or "blobVersionedHashes" in tx_data:
+            version = TransactionType.SHARED_BLOB
         elif "max_fee" in tx_data or "max_priority_fee" in tx_data:
             version = TransactionType.DYNAMIC
         elif "access_list" in tx_data or "accessList" in tx_data:
             version = TransactionType.ACCESS_LIST
-        elif "maxFeePerBlobGas" in tx_data or "blobVersionedHashes" in tx_data:
-            version = TransactionType.SHARED_BLOB
+        elif "gas_price" in tx_data:
+            version = TransactionType.STATIC
         else:
             version = self.default_transaction_type
 
@@ -1002,7 +1016,9 @@ class Ethereum(EcosystemAPI):
                         value[struct_key] = (
                             self.decode_address(struct_val)
                             if struct_type == "address"
-                            else HexBytes(struct_val) if "bytes" in struct_type else struct_val
+                            else HexBytes(struct_val)
+                            if "bytes" in struct_type
+                            else struct_val
                         )
                     converted_arguments[key] = value
 
@@ -1025,6 +1041,7 @@ class Ethereum(EcosystemAPI):
                     converted_arguments[key] = value
 
             yield ContractLog(
+                _abi=abi,
                 block_hash=log.get("blockHash") or log.get("block_hash") or "",
                 block_number=log.get("blockNumber") or log.get("block_number") or 0,
                 contract_address=self.decode_address(log["address"]),
@@ -1150,12 +1167,15 @@ class Ethereum(EcosystemAPI):
             except KeyError:
                 name = call["method_id"]
             else:
-                assert isinstance(method_abi, MethodABI)  # For mypy
-
-                # Check if method name duplicated. If that is the case, use selector.
-                times = len([x for x in contract_type.methods if x.name == method_abi.name])
-                name = (method_abi.name if times == 1 else method_abi.selector) or call["method_id"]
-                call = self._enrich_calldata(call, method_abi, **kwargs)
+                if isinstance(method_abi, MethodABI):
+                    # Check if method name duplicated. If that is the case, use selector.
+                    times = len([x for x in contract_type.methods if x.name == method_abi.name])
+                    name = (method_abi.name if times == 1 else method_abi.selector) or call[
+                        "method_id"
+                    ]
+                    call = self._enrich_calldata(call, method_abi, **kwargs)
+                else:
+                    name = call.get("method_id") or "0x"
         else:
             name = call.get("method_id") or "0x"
 
@@ -1180,6 +1200,12 @@ class Ethereum(EcosystemAPI):
         return call
 
     def _enrich_contract_id(self, address: AddressType, **kwargs) -> str:
+        # Defensively pop "contract_type" key from kwargs. `_get_contract_type_for_enrichment` will
+        # preferentially return a `contract_type` from kwargs without checking the contract cache.
+        # The contract_type may not match the contract address being enriched if this method was
+        # previously called for a different contract.
+        kwargs.pop("contract_type", None)
+
         if address and address == kwargs.get("sender"):
             return "tx.origin"
 
@@ -1193,9 +1219,7 @@ class Ethereum(EcosystemAPI):
         kwargs["contract_type"] = contract_type
         if kwargs.get("use_symbol_for_tokens") and "symbol" in contract_type.view_methods:
             # Use token symbol as name
-            contract = self.chain_manager.contracts.instance_at(
-                address, contract_type=contract_type
-            )
+            contract = self.chain_manager.contracts.instance_at(address)
 
             try:
                 symbol = contract.symbol(skip_trace=True)

@@ -71,7 +71,7 @@ TRUSTED_PLUGINS = [
     "notebook",
     "optimism",
     "polygon",
-    "polygon_zkevm",
+    "polygon-zkevm",
     "safe",
     "solidity",
     "template",
@@ -89,6 +89,12 @@ def clean_plugin_name(name: str) -> str:
 
 def get_plugin_dists():
     return _filter_plugins_from_dists(_get_distributions())
+
+
+class OutputFormat(str, Enum):
+    DEFAULT = "default"
+    PREFIXED = "prefixed"
+    FREEZE = "freeze"
 
 
 def _filter_plugins_from_dists(dists: Iterable) -> Iterator[str]:
@@ -161,8 +167,8 @@ class ApeVersion:
         for spec in spec_set:
             spec_version = Version(spec.version)
             if spec.operator in ("==", "<", "<=") and (
-                (self.is_pre_one and spec_version.major < ape_version.major)
-                or (self.is_pre_one and spec_version.minor < ape_version.minor)
+                (self.is_pre_one and spec_version.major < self.major)
+                or (self.is_pre_one and spec_version.minor < self.minor)
             ):
                 return True
 
@@ -214,7 +220,10 @@ class PluginMetadataList(BaseModel):
 
     @classmethod
     def from_package_names(
-        cls, packages: Iterable[str], include_available: bool = True
+        cls,
+        packages: Iterable[str],
+        include_available: bool = True,
+        trusted_list: Optional[Iterable] = None,
     ) -> "PluginMetadataList":
         PluginMetadataList.model_rebuild()
         core = PluginGroup(plugin_type=PluginType.CORE)
@@ -232,14 +241,15 @@ class PluginMetadataList(BaseModel):
 
             # perf: only check these once.
             is_installed = plugin.is_installed
+            is_trusted = plugin.check_trusted(use_web=False, trusted_list=trusted_list)
             is_available = include_available and plugin.is_available
 
             if include_available and is_available and not is_installed:
                 available.plugins[name] = plugin
-            elif is_installed and not plugin.in_core and not is_available:
-                third_party.plugins[name] = plugin
-            elif is_installed:
+            elif is_installed and not plugin.in_core and is_trusted:
                 installed.plugins[name] = plugin
+            elif is_installed:
+                third_party.plugins[name] = plugin
             else:
                 logger.error(f"'{plugin.name}' is not a plugin.")
 
@@ -248,8 +258,14 @@ class PluginMetadataList(BaseModel):
     def __str__(self) -> str:
         return self.to_str()
 
-    def to_str(self, include: Optional[Sequence[PluginType]] = None) -> str:
-        return str(ApePluginsRepr(self, include=include))
+    def to_str(
+        self,
+        include: Optional[Sequence[PluginType]] = None,
+        include_version: bool = True,
+        output_format: OutputFormat = OutputFormat.DEFAULT,
+    ) -> str:
+        representation = ApePluginsRepr(self, include=include, output_format=output_format)
+        return str(representation)
 
     @property
     def all_plugins(self) -> Iterator["PluginMetadata"]:
@@ -457,17 +473,48 @@ class PluginMetadata(BaseInterfaceModel):
 
         return any(n == self.package_name for n in get_plugin_dists())
 
-    def check_trusted(self, use_web: bool = True) -> bool:
+    def check_trusted(self, use_web: bool = True, trusted_list: Optional[Iterable] = None) -> bool:
         if use_web:
             return self.is_available
 
-        else:
-            # Sometimes (such as for --help commands), it is better
-            # to not check GitHub to see if the plugin is trusted.
-            return self.name in TRUSTED_PLUGINS
+        # Sometimes (such as for --help commands), it is better
+        # to not check GitHub to see if the plugin is trusted.
+        trusted_list = trusted_list or TRUSTED_PLUGINS
+        return self.name in trusted_list
+
+    def prepare_package_manager_args(
+        self,
+        verb: str,
+        python_location: Optional[str] = None,
+        extra_args: Optional[Iterable[str]] = None,
+    ) -> list[str]:
+        """
+        Build command arguments for pip or uv package managers.
+
+        Usage:
+            args = prepare_package_manager_args("install", "/path/to/python", ["--user"])
+        """
+        extra_args = list(extra_args) if extra_args else []
+        command = list(self.pip_command)
+
+        if command[0] == "uv":
+            return (
+                [*command, verb, "--python", python_location] + extra_args
+                if python_location
+                else [*command, verb, *extra_args]
+            )
+
+        return (
+            [*command, "--python", python_location, verb] + extra_args
+            if python_location
+            else [*command, verb, *extra_args]
+        )
 
     def _prepare_install(
-        self, upgrade: bool = False, skip_confirmation: bool = False
+        self,
+        upgrade: bool = False,
+        skip_confirmation: bool = False,
+        python_location: Optional[str] = None,
     ) -> Optional[dict[str, Any]]:
         # NOTE: Internal and only meant to be called by the CLI.
         if self.in_core:
@@ -476,8 +523,7 @@ class PluginMetadata(BaseInterfaceModel):
 
         elif self.version is not None and upgrade:
             logger.error(
-                f"Cannot use '--upgrade' option when specifying "
-                f"a version for plugin '{self.name}'."
+                f"Cannot use '--upgrade' option when specifying a version for plugin '{self.name}'."
             )
             return None
 
@@ -486,7 +532,10 @@ class PluginMetadata(BaseInterfaceModel):
             logger.warning(f"Plugin '{self.name}' is not an trusted plugin.")
 
         result_handler = ModifyPluginResultHandler(self)
-        pip_arguments = [*self.pip_command, "install"]
+
+        pip_arguments = self.prepare_package_manager_args(
+            verb="install", python_location=python_location
+        )
 
         if upgrade:
             logger.info(f"Upgrading '{self.name}' plugin ...")
@@ -519,8 +568,10 @@ class PluginMetadata(BaseInterfaceModel):
             )
             return None
 
-    def _get_uninstall_args(self) -> list[str]:
-        arguments = [*self.pip_command, "uninstall"]
+    def _get_uninstall_args(self, python_location: Optional[str]) -> list[str]:
+        arguments = self.prepare_package_manager_args(
+            verb="uninstall", python_location=python_location
+        )
 
         if self.pip_command[0] != "uv":
             arguments.append("-y")
@@ -562,8 +613,7 @@ class ModifyPluginResultHandler:
 
         elif self._plugin.version:
             logger.success(
-                f"Plugin '{self._plugin.name}' has been "
-                f"upgraded to version {self._plugin.version}."
+                f"Plugin '{self._plugin.name}' has been upgraded to version {self._plugin.version}."
             )
             return True
 
@@ -620,6 +670,9 @@ class PluginGroup(BaseModel):
     def __str__(self) -> str:
         return self.to_str()
 
+    def __iter__(self) -> Iterator[str]:  # type: ignore
+        yield from self.plugins
+
     @field_validator("plugin_type", mode="before")
     @classmethod
     def validate_plugin_type(cls, value):
@@ -637,7 +690,31 @@ class PluginGroup(BaseModel):
     def plugin_names(self) -> list[str]:
         return [x.name for x in self.plugins.values()]
 
-    def to_str(self, max_length: Optional[int] = None, include_version: bool = True) -> str:
+    def to_str(
+        self,
+        max_length: Optional[int] = None,
+        include_version: bool = True,
+        output_format: Optional[OutputFormat] = OutputFormat.DEFAULT,
+    ) -> str:
+        output_format = output_format or OutputFormat.DEFAULT
+        if output_format in (OutputFormat.DEFAULT, OutputFormat.PREFIXED):
+            return self._get_default_formatted_str(
+                max_length=max_length,
+                include_version=include_version,
+                include_prefix=f"{output_format}" == OutputFormat.PREFIXED,
+            )
+
+        # Freeze format.
+        return self._get_freeze_formatted_str(
+            max_length=max_length, include_version=include_version
+        )
+
+    def _get_default_formatted_str(
+        self,
+        max_length: Optional[int] = None,
+        include_version: bool = True,
+        include_prefix: bool = False,
+    ) -> str:
         title = f"{self.name} Plugins"
         if len(self.plugins) <= 0:
             return title
@@ -646,7 +723,7 @@ class PluginGroup(BaseModel):
         max_length = self.max_name_length if max_length is None else max_length
         plugins_sorted = sorted(self.plugins.values(), key=lambda p: p.name)
         for plugin in plugins_sorted:
-            line = plugin.name
+            line = plugin.package_name if include_prefix else plugin.name
             if include_version:
                 version = plugin.version or get_package_version(plugin.package_name)
                 if version:
@@ -654,6 +731,23 @@ class PluginGroup(BaseModel):
                     line = f"{line}{spacing * ' '}{version}"
 
             lines.append(f"  {line}")  # Indent.
+
+        return "\n".join(lines)
+
+    def _get_freeze_formatted_str(
+        self,
+        max_length: Optional[int] = None,
+        include_version: bool = True,
+        include_prefix: bool = False,
+    ) -> str:
+        lines = []
+        for plugin in sorted(self.plugins.values(), key=lambda p: p.name):
+            line = plugin.package_name
+            if include_version:
+                version = plugin.version or get_package_version(plugin.package_name)
+                line = f"{line}=={version}"
+
+            lines.append(line)
 
         return "\n".join(lines)
 
@@ -671,10 +765,16 @@ class ApePluginsRepr:
     """
 
     def __init__(
-        self, metadata: PluginMetadataList, include: Optional[Sequence[PluginType]] = None
+        self,
+        metadata: PluginMetadataList,
+        include: Optional[Sequence[PluginType]] = None,
+        include_version: bool = True,
+        output_format: Optional[OutputFormat] = None,
     ):
         self.include = include or (PluginType.INSTALLED, PluginType.THIRD_PARTY)
         self.metadata = metadata
+        self.include_version = include_version
+        self.output_format = output_format
 
     @log_instead_of_fail(default="<ApePluginsRepr>")
     def __repr__(self) -> str:
@@ -700,8 +800,16 @@ class ApePluginsRepr:
         max_length = max(x.max_name_length for x in sections)
 
         version_skips = (PluginType.CORE, PluginType.AVAILABLE)
+
+        def include_version(section):
+            return section.plugin_type not in version_skips if self.include_version else False
+
         formatted_sections = [
-            x.to_str(max_length=max_length, include_version=x.plugin_type not in version_skips)
+            x.to_str(
+                max_length=max_length,
+                include_version=include_version(x),
+                output_format=self.output_format,
+            )
             for x in sections
         ]
         return "\n\n".join(formatted_sections)
