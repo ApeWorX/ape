@@ -375,9 +375,9 @@ Also, smart contract wallets (such as Safe) cannot sign these message types as o
 ```
 
 Once set, you can see if a delegate contract has been set for your EOA account via `account.delegate`.
-Ape exposes a [convienence subcommand](../commands/accounts.html#accounts-auth) group under `ape accounts` for use in managing your delegations.
+Ape exposes a [convenience subcommand](../commands/accounts.html#accounts-auth) group under `ape accounts` for use in managing your delegations.
 
-Ape also exposes the following convienent higher-level API for working with authorizations in a scripting or testing context:
+Ape also exposes the following convenient higher-level API for working with authorizations in a scripting or testing context:
 
 ```py
 assert not account.delegate
