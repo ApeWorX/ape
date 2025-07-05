@@ -1629,7 +1629,7 @@ class ContractContainer(ContractTypeWrapper, ExtraAttributesMixin):
             :class:`~ape.contracts.base.ContractInstance`
         """
         # TODO: Not possible method not available
-        
+
         if "sender" in kwargs:
             possible_address = kwargs["sender"].get_deployment_address()
             styled_address = click.style(possible_address, bold=True)

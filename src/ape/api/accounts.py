@@ -339,7 +339,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         possible_address = self.get_deployment_address()
         styled_address = click.style(possible_address, bold=True)
         logger.info(f"Contract will be deployed at: {styled_address}")
-        
+
         from ape.contracts import ContractContainer
 
         if isinstance(contract, ContractType):
