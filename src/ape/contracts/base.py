@@ -390,7 +390,14 @@ class ContractTransaction(ManagerAccessMixin):
 
         arguments = self.conversion_manager.convert_method_args(self.abi, args)
         converted_kwargs = self.conversion_manager.convert_method_kwargs(kwargs)
-        return self.provider.network.ecosystem.encode_transaction(
+
+        try:
+            ecosystem = self.provider.network.ecosystem
+        except ProviderNotConnectedError:
+            logger.warning("Unknown network when serializing transaction. Assuming EVM behaviors.")
+            ecosystem = self.network_manager.ethereum
+
+        return ecosystem.encode_transaction(
             self.address, self.abi, *arguments, **converted_kwargs
         )
 
@@ -428,7 +435,9 @@ class ContractTransactionHandler(ContractMethodHandler):
         sign = kwargs.pop("sign", False)
         contract_transaction = self._as_transaction(*args)
         transaction = contract_transaction.serialize_transaction(*args, **kwargs)
-        self.provider.prepare_transaction(transaction)
+
+        if provider := self.network_manager.active_provider:
+            provider.prepare_transaction(transaction)
 
         if sender := kwargs.get("sender"):
             if isinstance(sender, AccountAPI):

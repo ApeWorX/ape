@@ -2,7 +2,7 @@ from abc import abstractmethod
 from functools import cached_property
 from typing import TYPE_CHECKING, Any, Optional
 
-from ape.exceptions import AccountsError, ConversionError
+from ape.exceptions import AccountsError, ConversionError, ProviderNotConnectedError
 from ape.types.address import AddressType
 from ape.types.units import CurrencyValue
 from ape.utils.basemodel import BaseInterface
@@ -238,9 +238,16 @@ class BaseAddress(BaseInterface):
         """
 
         # NOTE: Allow overriding nonce, assume user understands what this does
+        try:
+            sender_nonce = self.nonce
+        except ProviderNotConnectedError:
+            # Nothing we can do.
+            return txn
+            
         if txn.nonce is None:
-            txn.nonce = self.nonce
-        elif txn.nonce < self.nonce:
+            txn.nonce = sender_nonce
+
+        elif txn.nonce < sender_nonce:
             raise AccountsError("Invalid nonce, will not publish.")
 
         txn = self.provider.prepare_transaction(txn)
