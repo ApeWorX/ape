@@ -29,6 +29,7 @@ from ape.exceptions import (
     CustomError,
     MethodNonPayableError,
     MissingDeploymentBytecodeError,
+    ProviderNotConnectedError,
 )
 from ape.logging import get_rich_console, logger
 from ape.types.events import ContractLog, LogFilter, MockContractLog
@@ -282,12 +283,18 @@ class ContractMethodHandler(ManagerAccessMixin):
         raise err
 
     def _validate_is_contract(self):
-        if not self.contract.is_contract:
-            raise ContractNotFoundError(
-                self.contract.address,
-                self.provider.network.explorer is not None,
-                self.provider.network_choice,
-            )
+        try:
+            is_contract = self.contract.is_contract
+        except ProviderNotConnectedError:
+            # Not connected. We can't verify. Allow anyway.
+            return
+        else:
+            if not is_contract:
+                raise ContractNotFoundError(
+                    self.contract.address,
+                    self.provider.network.explorer is not None,
+                    self.provider.network_choice,
+                )
 
 
 class ContractCallHandler(ContractMethodHandler):
