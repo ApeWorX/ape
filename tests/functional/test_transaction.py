@@ -316,7 +316,19 @@ def test_str_when_data_is_bytes(ethereum):
     assert isinstance(actual, str)
 
 
-def test_str_when_data_is_long_shows_first_4_bytes(vyper_contract_instance):
+def test_str_when_data_is_long_shows_first_4_bytes(project, vyper_contract_instance):
+    """
+    Tests against a condition that would cause transactions to
+    fail with string-encoding errors.
+    """
+    txn = vyper_contract_instance.setNumber.as_transaction(123)
+    with project.temp_config(display={"calldata": "abridged"}):
+        actual = str(txn)
+    assert isinstance(actual, str)
+    assert "data: 0x3fb5c1cb..." in actual
+
+
+def test_str_decoded(project, vyper_contract_instance):
     """
     Tests against a condition that would cause transactions to
     fail with string-encoding errors.
@@ -324,7 +336,7 @@ def test_str_when_data_is_long_shows_first_4_bytes(vyper_contract_instance):
     txn = vyper_contract_instance.setNumber.as_transaction(123)
     actual = str(txn)
     assert isinstance(actual, str)
-    assert "data: 0x3fb5c1cb..." in actual
+    assert "data: setNumber(num=123)" in actual
 
 
 def test_str_when_data_is_long_and_configured_full_calldata(project, vyper_contract_instance):

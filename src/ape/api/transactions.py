@@ -66,9 +66,11 @@ class TransactionAPI(BaseInterfaceModel):
     model_config = ConfigDict(populate_by_name=True)
 
     def __init__(self, *args, **kwargs):
+        abi = kwargs.pop("abi", None)
         raise_on_revert = kwargs.pop("raise_on_revert", True)
         super().__init__(*args, **kwargs)
         self._raise_on_revert = raise_on_revert
+        self._abi = abi
 
     @field_validator("gas_limit", mode="before")
     @classmethod
@@ -199,22 +201,41 @@ class TransactionAPI(BaseInterfaceModel):
         """
         data = self.model_dump(mode="json")  # JSON mode used for style purposes.
 
-        if calldata_repr is None:
-            # If was not specified, use the default value from the config.
-            calldata_repr = self.local_project.config.display.calldata
-
         # Elide the transaction calldata for abridged representations if the length exceeds 8
         # (4 bytes for function selector and trailing 4 bytes).
-        calldata = HexBytes(data["data"])
-        data["data"] = (
-            calldata[:4].to_0x_hex() + "..." + calldata[-4:].hex()
-            if calldata_repr == "abridged" and len(calldata) > 8
-            else calldata.to_0x_hex()
-        )
+        data["data"] = self._repr_calldata(calldata_repr=calldata_repr)
 
         params = "\n  ".join(f"{k}: {v}" for k, v in data.items())
         cls_name = getattr(type(self), "__name__", TransactionAPI.__name__)
         return f"{cls_name}:\n  {params}"
+
+    def _repr_calldata(
+        self,
+        calldata_repr: Optional["CalldataRepr"] = None,
+    ) -> str:
+        calldata = HexBytes(self.data)
+
+        if calldata_repr is None:
+            # If was not specified, use the default value from the config.
+            calldata_repr = self.local_project.config.display.calldata
+
+        if calldata_repr == "decoded" and self._abi:
+            ecosystem = (
+                self.provider.network.ecosystem
+                if self.network_manager.connected
+                else self.network_manager.ethereum
+            )
+
+            method_name = self._abi.name if hasattr(self._abi, "name") else "constructor"
+            input_dict = ecosystem.decode_calldata(self._abi, calldata[4:])
+            input_str = ", ".join([f"{k}={v}" for k, v in input_dict.items()])
+
+            return f"{method_name}({input_str})"
+
+        elif calldata_repr == "abridged" and len(calldata) > 8:
+            return calldata[:4].to_0x_hex() + "..." + calldata[-4:].hex()
+
+        return calldata.to_0x_hex()
 
 
 class ConfirmationsProgressBar:

@@ -286,7 +286,7 @@ class DisplayConfig(PluginConfig):
     Configure display settings in Ape.
     """
 
-    calldata: CalldataRepr = CalldataRepr.abridged
+    calldata: CalldataRepr = CalldataRepr.decoded
     """
     Dictates how the calldata displays when signing transactions.
     """

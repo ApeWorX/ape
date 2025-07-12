@@ -615,3 +615,8 @@ class CalldataRepr(str, Enum):
     """
     Show the full calldata.
     """
+
+    decoded = "decoded"
+    """
+    Show ABI decoded calldata.
+    """
