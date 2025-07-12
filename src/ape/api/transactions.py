@@ -228,6 +228,12 @@ class TransactionAPI(BaseInterfaceModel):
 
             method_name = self._abi.name if hasattr(self._abi, "name") else "constructor"
             input_dict = ecosystem.decode_calldata(self._abi, calldata[4:])
+
+            # Replace bytes values with hex-strings.
+            for key, value in input_dict.items():
+                if isinstance(value, bytes):
+                    input_dict[key] = to_hex(value)
+
             input_str = ", ".join([f"{k}={v}" for k, v in input_dict.items()])
 
             return f"{method_name}({input_str})"
