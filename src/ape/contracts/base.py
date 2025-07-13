@@ -1628,10 +1628,8 @@ class ContractContainer(ContractTypeWrapper, ExtraAttributesMixin):
         Returns:
             :class:`~ape.contracts.base.ContractInstance`
         """
-        # TODO: Not possible method not available
-
-        if "sender" in kwargs:
-            possible_address = kwargs["sender"].get_deployment_address()
+        if isinstance(sender := kwargs.get("sender"), AccountAPI):
+            possible_address = sender.get_deployment_address()
             styled_address = click.style(possible_address, bold=True)
             logger.info(f"Contract will be deployed at: {styled_address}")
 
