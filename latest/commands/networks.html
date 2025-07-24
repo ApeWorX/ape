@@ -7,7 +7,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=397bb51e" />
-    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=d0008d65" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=76b6f612" />
     <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -31,7 +31,7 @@
       <img class="dark-logo" src="../_static/logo_green.svg" alt="ape" height="28" loading="lazy" />
       <strong>ape</strong>
     </a>
-    <div class="sy-head-nav" id="HeadNav">
+    <div class="sy-head-nav" id="head-nav">
       <nav class="sy-head-links"></nav>
       <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../search.html" method="get">
   <input type="text" name="q" placeholder="Search" />
@@ -43,7 +43,7 @@ data-aria-auto="Switch to light color mode"
 data-aria-light="Switch to dark color mode"
 data-aria-dark="Switch to auto color mode">
 <i class="i-lucide theme-icon"></i>
-</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="HeadNav" aria-expanded="false">
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="head-nav" aria-expanded="false">
         <div class="hamburger">
           <span class="hamburger_1"></span>
           <span class="hamburger_2 -translate-x-2"></span>
@@ -235,7 +235,7 @@ data-aria-dark="Switch to auto color mode">
 <dd><p>Filter the results by ecosystem</p>
 <dl class="field-list simple">
 <dt class="field-odd">Options<span class="colon">:</span></dt>
-<dd class="field-odd"><p>fraxtal | avalanche | taiko | moonbeam | flow-evm | metis | xmtp | zora | blast | ethereum | geist | optimism | lumia | unichain | shape | polynomial | oort | wemix | apechain | kroma | arbitrum | bsc | polygon | filecoin | lens | palm | astar | base | gnosis | world-chain | xai | zksync | bttc | polygon-zkevm | fantom | scroll | rise | mantle | linea | berachain | zetachain | rootstock | cronos-zkevm | abstract | crossfi | sonic | soneium | shibarium | cronos | celo</p>
+<dd class="field-odd"><p>linea | gnosis | avalanche | polygon | world-chain | soneium | lumia | zksync | palm | rise | mantle | scroll | sonic | cronos-zkevm | bsc | ethereum | crossfi | optimism | geist | berachain | abstract | filecoin | wemix | blast | unichain | bttc | shape | taiko | polynomial | oort | arbitrum | metis | astar | base | fraxtal | lens | zora | shibarium | celo | polygon-zkevm | cronos | xmtp | flow-evm | xai | zetachain | moonbeam | rootstock | kroma | apechain | fantom</p>
 </dd>
 </dl>
 </dd></dl>
@@ -246,7 +246,7 @@ data-aria-dark="Switch to auto color mode">
 <dd><p>Filter the results by network</p>
 <dl class="field-list simple">
 <dt class="field-odd">Options<span class="colon">:</span></dt>
-<dd class="field-odd"><p>amoy-fork | testnet-fork | puppynet | prism | holesky-fork | prism-fork | bartio-fork | fuji-fork | minato | opbnb-fork | blaze | moonbase-fork | moonbase | puppynet-fork | mumbai | goerli-fork | moonriver-fork | mumbai-fork | cardona-fork | opbnb-testnet | dev | local | blaze-fork | moonriver | testnet | mainnet-fork | polter-fork | goerli | fuji | opbnb | chiado | dev-fork | mainnet | donau | polter | opbnb-testnet-fork | nova-fork | curtis-fork | holesky | minato-fork | amoy | hekla | cardona | sepolia | nova | sepolia-fork | bartio | donau-fork | alfajores-fork | calibration | chiado-fork | hekla-fork | calibration-fork | alfajores | curtis</p>
+<dd class="field-odd"><p>curtis | sepolia-fork | opbnb-fork | local | moonriver-fork | amoy-fork | hekla-fork | testnet-fork | goerli | nova | chiado | blaze | donau-fork | holesky-fork | opbnb-testnet-fork | polter-fork | bartio-fork | bartio | alfajores | holesky | fuji | mainnet-fork | donau | blaze-fork | mainnet | opbnb | calibration-fork | dev | opbnb-testnet | minato | moonbase | dev-fork | puppynet-fork | hekla | curtis-fork | moonbase-fork | goerli-fork | alfajores-fork | chiado-fork | cardona-fork | sepolia | cardona | puppynet | minato-fork | polter | fuji-fork | prism-fork | nova-fork | moonriver | mumbai | testnet | prism | calibration | mumbai-fork | amoy</p>
 </dd>
 </dl>
 </dd></dl>
@@ -377,8 +377,8 @@ and stream stdout and stderr.</p>
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="../_static/documentation_options.js?v=5929fcd5"></script>
-      <script src="../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script data-domain="docs.apeworx.io" defer="defer" src="https://plausible.io/js/script.js"></script>
-      <script src="../_static/shibuya.js?v=1d2088d1"></script></body>
+      <script src="../_static/shibuya.js?v=c477d091"></script></body>
 </html>
