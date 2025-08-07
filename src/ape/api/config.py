@@ -3,7 +3,7 @@ from collections.abc import Iterable, Iterator
 from enum import Enum
 from functools import cached_property
 from pathlib import Path
-from typing import Any, Optional, TypeVar, Union, cast
+from typing import Any, Optional, TypeVar, cast
 
 import yaml
 from ethpm_types import PackageManifest, PackageMeta, Source

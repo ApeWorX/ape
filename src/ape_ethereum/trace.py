@@ -729,12 +729,14 @@ def _call_to_str(call: dict, stylize: bool = False, verbose: bool = False) -> st
 
     contract = str(call.get("contract_id", ""))
 
-    arguments_str = _get_inputs_str(call.get("calldata"), stylize=stylize)
-    if is_create and is_0x_prefixed(arguments_str):
-        # Un-enriched CREATE calldata is a massive hex.
-        arguments_str = ""
-
-    method = prettify_function(method, arguments_str, contract=contract, stylize=stylize, is_create=is_create)
+    method = prettify_function(
+        method,
+        call.get("calldata", ""),
+        returndata=call.get("returndata", ""),
+        contract=contract,
+        stylize=stylize,
+        is_create=is_create,
+    )
     signature = f"{contract}.{method}"
 
     if call.get("call_type") is not None and call["call_type"].upper() == "DELEGATECALL":

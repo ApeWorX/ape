@@ -193,9 +193,7 @@ class TransactionAPI(BaseInterfaceModel):
     def __str__(self) -> str:
         return self.to_string()
 
-    def to_string(
-        self, calldata_repr: Optional[CalldataRepr] = None
-    ) -> str:
+    def to_string(self, calldata_repr: Optional[CalldataRepr] = None) -> str:
         """
         Get the stringified representation of the transaction.
 
@@ -223,7 +221,7 @@ class TransactionAPI(BaseInterfaceModel):
                 contract=self.receiver,
                 is_create=self.receiver is None,
             )
-        tx_str = f"{tx_str}\n\n\t{pretty_fn}"
+            tx_str = f"{tx_str}\n\n\t{pretty_fn}"
 
         return tx_str
 
@@ -239,6 +237,9 @@ class TransactionAPI(BaseInterfaceModel):
         )
 
     def _decoded_calldata_repr(self) -> Optional[str]:
+        if not self._contract_type:
+            return None
+
         ecosystem = (
             self.provider.network.ecosystem
             if self.network_manager.connected
