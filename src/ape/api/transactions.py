@@ -203,7 +203,7 @@ class TransactionAPI(BaseInterfaceModel):
             # If was not specified, use the default value from the config.
             calldata_repr = self.local_project.config.display.calldata
 
-        # Ellide the transaction calldata for abridged representations if the length exceeds 8
+        # Elide the transaction calldata for abridged representations if the length exceeds 8
         # (4 bytes for function selector and trailing 4 bytes).
         calldata = HexBytes(data["data"])
         data["data"] = (
