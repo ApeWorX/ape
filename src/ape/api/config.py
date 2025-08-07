@@ -3,7 +3,7 @@ from collections.abc import Iterable, Iterator
 from enum import Enum
 from functools import cached_property
 from pathlib import Path
-from typing import Any, Optional, TypeVar, cast
+from typing import Any, Optional, TypeVar, Union, cast
 
 import yaml
 from ethpm_types import PackageManifest, PackageMeta, Source
@@ -286,7 +286,7 @@ class DisplayConfig(PluginConfig):
     Configure display settings in Ape.
     """
 
-    calldata: CalldataRepr = CalldataRepr.decoded
+    calldata: CalldataRepr = CalldataRepr.abridged
     """
     Dictates how the calldata displays when signing transactions.
     """

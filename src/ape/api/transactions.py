@@ -24,8 +24,10 @@ from ape.types.address import AddressType
 from ape.types.basic import HexInt
 from ape.types.gas import AutoGasLimit
 from ape.types.signatures import TransactionSignature
+from ape.utils.abi import CalldataRepr
 from ape.utils.basemodel import BaseInterfaceModel, ExtraAttributesMixin, ExtraModelAttributes
 from ape.utils.misc import log_instead_of_fail, raises_not_implemented
+from ape.utils.trace import prettify_function
 
 if TYPE_CHECKING:
     from ethpm_types.abi import EventABI, MethodABI
@@ -36,7 +38,6 @@ if TYPE_CHECKING:
     from ape.contracts import ContractEvent
     from ape.types.events import ContractLogContainer
     from ape.types.trace import SourceTraceback
-    from ape.utils.abi import CalldataRepr
 
 
 class TransactionAPI(BaseInterfaceModel):
@@ -66,11 +67,11 @@ class TransactionAPI(BaseInterfaceModel):
     model_config = ConfigDict(populate_by_name=True)
 
     def __init__(self, *args, **kwargs):
-        abi = kwargs.pop("abi", None)
+        contract_type = kwargs.pop("contract_type", None)
         raise_on_revert = kwargs.pop("raise_on_revert", True)
         super().__init__(*args, **kwargs)
         self._raise_on_revert = raise_on_revert
-        self._abi = abi
+        self._contract_type = contract_type
 
     @field_validator("gas_limit", mode="before")
     @classmethod
@@ -171,6 +172,10 @@ class TransactionAPI(BaseInterfaceModel):
         """
         return self.provider.get_transaction_trace(to_hex(self.txn_hash))
 
+    @cached_property
+    def _calldata_repr(self) -> CalldataRepr:
+        return self.local_project.config.display.calldata
+
     @abstractmethod
     def serialize_transaction(self) -> bytes:
         """
@@ -188,7 +193,9 @@ class TransactionAPI(BaseInterfaceModel):
     def __str__(self) -> str:
         return self.to_string()
 
-    def to_string(self, calldata_repr: Optional["CalldataRepr"] = None) -> str:
+    def to_string(
+        self, calldata_repr: Optional[CalldataRepr] = None
+    ) -> str:
         """
         Get the stringified representation of the transaction.
 
@@ -201,47 +208,60 @@ class TransactionAPI(BaseInterfaceModel):
         """
         data = self.model_dump(mode="json")  # JSON mode used for style purposes.
 
-        # Elide the transaction calldata for abridged representations if the length exceeds 8
-        # (4 bytes for function selector and trailing 4 bytes).
+        calldata_repr = calldata_repr or self._calldata_repr
         data["data"] = self._repr_calldata(calldata_repr=calldata_repr)
 
         params = "\n  ".join(f"{k}: {v}" for k, v in data.items())
         cls_name = getattr(type(self), "__name__", TransactionAPI.__name__)
-        return f"{cls_name}:\n  {params}"
+        tx_str = f"{cls_name}:\n  {params}"
 
-    def _repr_calldata(
-        self,
-        calldata_repr: Optional["CalldataRepr"] = None,
-    ) -> str:
+        # Decode the actual call so the user can see the function.
+        if decoded := self._decoded_calldata_repr():
+            pretty_fn = prettify_function(
+                decoded,
+                HexBytes(self.data)[4:],
+                contract=self.receiver,
+                is_create=self.receiver is None,
+            )
+        tx_str = f"{tx_str}\n\n\t{pretty_fn}"
+
+        return tx_str
+
+    def _repr_calldata(self, calldata_repr: "CalldataRepr") -> str:
         calldata = HexBytes(self.data)
 
-        if calldata_repr is None:
-            # If was not specified, use the default value from the config.
-            calldata_repr = self.local_project.config.display.calldata
+        # Elide the transaction calldata for abridged representations if the length exceeds 8
+        # (4 bytes for function selector and trailing 4 bytes).
+        return (
+            calldata[:4].to_0x_hex() + "..." + calldata[-4:].hex()
+            if calldata_repr == "abridged" and len(calldata) > 8
+            else calldata.to_0x_hex()
+        )
 
-        if calldata_repr == "decoded" and self._abi:
-            ecosystem = (
-                self.provider.network.ecosystem
-                if self.network_manager.connected
-                else self.network_manager.ethereum
-            )
+    def _decoded_calldata_repr(self) -> Optional[str]:
+        ecosystem = (
+            self.provider.network.ecosystem
+            if self.network_manager.connected
+            else self.network_manager.ethereum
+        )
+        data = HexBytes(self.data)
 
-            method_name = self._abi.name if hasattr(self._abi, "name") else "constructor"
-            input_dict = ecosystem.decode_calldata(self._abi, calldata[4:])
+        try:
+            abi = self._contract_type[data[:4]]
+        except KeyError:
+            return None
 
-            # Replace bytes values with hex-strings.
-            for key, value in input_dict.items():
-                if isinstance(value, bytes):
-                    input_dict[key] = to_hex(value)
+        method_name = abi.name if hasattr(abi, "name") else "constructor"
+        input_dict = ecosystem.decode_calldata(abi, data[4:])
 
-            input_str = ", ".join([f"{k}={v}" for k, v in input_dict.items()])
+        # Replace bytes values with hex-strings.
+        for key, value in input_dict.items():
+            if isinstance(value, bytes):
+                input_dict[key] = to_hex(value)
 
-            return f"{method_name}({input_str})"
+        input_str = ", ".join([f"{k}={v}" for k, v in input_dict.items()])
 
-        elif calldata_repr == "abridged" and len(calldata) > 8:
-            return calldata[:4].to_0x_hex() + "..." + calldata[-4:].hex()
-
-        return calldata.to_0x_hex()
+        return f"{method_name}({input_str})"
 
 
 class ConfirmationsProgressBar:

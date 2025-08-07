@@ -29,7 +29,7 @@ from ape.api.transactions import TransactionAPI
 from ape.exceptions import ContractLogicError, ProviderError, TransactionNotFoundError
 from ape.logging import get_rich_console, logger
 from ape.utils.misc import ZERO_ADDRESS, is_evm_precompile, is_zero_hex, log_instead_of_fail
-from ape.utils.trace import TraceStyles, _exclude_gas
+from ape.utils.trace import TraceStyles, _exclude_gas, prettify_function, prettify_inputs
 from ape_ethereum._print import extract_debug_logs
 
 if TYPE_CHECKING:
@@ -720,41 +720,29 @@ def _create_event_tree(event: dict, suffix: str = "") -> Tree:
 
 
 def _call_to_str(call: dict, stylize: bool = False, verbose: bool = False) -> str:
-    contract = str(call.get("contract_id", ""))
     is_create = "CREATE" in call.get("call_type", "")
     method = (
         "__new__"
         if is_create and call["method_id"] and is_0x_prefixed(call["method_id"])
         else str(call.get("method_id") or "")
     )
-    if "(" in method:
-        # Only show short name, not ID name
-        # (it is the full signature when multiple methods have the same name).
-        method = method.split("(")[0].strip() or method
 
-    if stylize:
-        contract = f"[{TraceStyles.CONTRACTS}]{contract}[/]"
-        method = f"[{TraceStyles.METHODS}]{method}[/]"
-
-    call_path = f"{contract}.{method}"
-
-    if call.get("call_type") is not None and call["call_type"].upper() == "DELEGATECALL":
-        delegate = "(delegate)"
-        if stylize:
-            delegate = f"[orange]{delegate}[/]"
-
-        call_path = f"{delegate} {call_path}"
+    contract = str(call.get("contract_id", ""))
 
     arguments_str = _get_inputs_str(call.get("calldata"), stylize=stylize)
     if is_create and is_0x_prefixed(arguments_str):
         # Un-enriched CREATE calldata is a massive hex.
         arguments_str = ""
 
-    signature = f"{call_path}{arguments_str}"
-    returndata = call.get("returndata", "")
-    if not is_create and returndata not in ((), [], None, {}, ""):
-        if return_str := _get_outputs_str(returndata, stylize=stylize):
-            signature = f"{signature} -> {return_str}"
+    method = prettify_function(method, arguments_str, contract=contract, stylize=stylize, is_create=is_create)
+    signature = f"{contract}.{method}"
+
+    if call.get("call_type") is not None and call["call_type"].upper() == "DELEGATECALL":
+        delegate = "(delegate)"
+        if stylize:
+            delegate = f"[orange]{delegate}[/]"
+
+        signature = f"{delegate} {signature}"
 
     if call.get("value"):
         value = str(call["value"])
@@ -783,7 +771,7 @@ def _event_to_str(event: dict, stylize: bool = False, suffix: str = "") -> str:
     #  even though the 'name' is a bit misleading.
     event_name = event.get("name", "ANONYMOUS_EVENT")
     name = f"[{TraceStyles.METHODS}]{event_name}[/]" if stylize else event_name
-    arguments_str = _get_inputs_str(event.get("calldata", "0x"), stylize=stylize)
+    arguments_str = prettify_inputs(event.get("calldata", "0x"), stylize=stylize)
     prefix = f"[{TraceStyles.CONTRACTS}]log[/]" if stylize else "log"
     return f"{prefix} {name}{arguments_str}{suffix}"
 
@@ -791,114 +779,3 @@ def _event_to_str(event: dict, stylize: bool = False, suffix: str = "") -> str:
 def _create_tree(call: dict, verbose: bool = False) -> Tree:
     signature = _call_to_str(call, stylize=True, verbose=verbose)
     return Tree(signature)
-
-
-def _get_inputs_str(inputs: Any, stylize: bool = False) -> str:
-    color = TraceStyles.INPUTS if stylize else None
-    if inputs in ["0x", None, (), [], {}]:
-        return "()"
-
-    elif isinstance(inputs, dict):
-        return _dict_to_str(inputs, color=color)
-
-    elif isinstance(inputs, bytes):
-        return to_hex(inputs)
-
-    return f"({inputs})"
-
-
-def _get_outputs_str(outputs: Any, stylize: bool = False) -> Optional[str]:
-    if outputs in ["0x", None, (), [], {}]:
-        return None
-
-    elif isinstance(outputs, dict):
-        color = TraceStyles.OUTPUTS if stylize else None
-        return _dict_to_str(outputs, color=color)
-
-    elif isinstance(outputs, (list, tuple)):
-        return (
-            f"[{TraceStyles.OUTPUTS}]{_list_to_str(outputs)}[/]"
-            if stylize
-            else _list_to_str(outputs)
-        )
-
-    return f"[{TraceStyles.OUTPUTS}]{outputs}[/]" if stylize else str(outputs)
-
-
-def _dict_to_str(dictionary: dict, color: Optional[str] = None) -> str:
-    length = sum(len(str(v)) for v in [*dictionary.keys(), *dictionary.values()])
-    do_wrap = length > _WRAP_THRESHOLD
-
-    index = 0
-    end_index = len(dictionary) - 1
-    kv_str = "(\n" if do_wrap else "("
-
-    for key, value in dictionary.items():
-        if do_wrap:
-            kv_str += _INDENT * " "
-
-        if isinstance(value, (list, tuple)):
-            value = _list_to_str(value, 1 if do_wrap else 0)
-
-        value_str = f"[{color}]{value}[/]" if color is not None else str(value)
-        kv_str += f"{key}={value_str}" if key and not key.isnumeric() else value_str
-        if index < end_index:
-            kv_str += ", "
-
-        if do_wrap:
-            kv_str += "\n"
-
-        index += 1
-
-    return f"{kv_str})"
-
-
-def _list_to_str(ls: Union[list, tuple], depth: int = 0) -> str:
-    if not isinstance(ls, (list, tuple)) or len(str(ls)) < _WRAP_THRESHOLD:
-        return str(ls)
-
-    elif ls and isinstance(ls[0], (list, tuple)):
-        # List of lists
-        sub_lists = [_list_to_str(i) for i in ls]
-
-        # Use multi-line if exceeds threshold OR any of the sub-lists use multi-line
-        extra_chars_len = (len(sub_lists) - 1) * 2
-        use_multiline = len(str(sub_lists)) + extra_chars_len > _WRAP_THRESHOLD or any(
-            ["\n" in ls for ls in sub_lists]
-        )
-
-        if not use_multiline:
-            # Happens for lists like '[[0], [1]]' that are short.
-            return f"[{', '.join(sub_lists)}]"
-
-        value = "[\n"
-        num_sub_lists = len(sub_lists)
-        index = 0
-        spacing = _INDENT * " " * 2
-        for formatted_list in sub_lists:
-            if "\n" in formatted_list:
-                # Multi-line sub list. Append 1 more spacing to each line.
-                indented_item = f"\n{spacing}".join(formatted_list.splitlines())
-                value = f"{value}{spacing}{indented_item}"
-            else:
-                # Single line sub-list
-                value = f"{value}{spacing}{formatted_list}"
-
-            if index < num_sub_lists - 1:
-                value = f"{value},"
-
-            value = f"{value}\n"
-            index += 1
-
-        value = f"{value}]"
-        return value
-
-    return _list_to_multiline_str(ls, depth=depth)
-
-
-def _list_to_multiline_str(value: Union[list, tuple], depth: int = 0) -> str:
-    spacing = _INDENT * " "
-    ls_spacing = spacing * (depth + 1)
-    joined = ",\n".join([f"{ls_spacing}{v}" for v in value])
-    new_val = f"[\n{joined}\n{spacing * depth}]"
-    return new_val

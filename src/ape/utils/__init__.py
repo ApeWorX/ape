@@ -108,7 +108,16 @@ def __getattr__(name: str):
 
         return getattr(testing_module, name)
 
-    elif name in ("USER_ASSERT_TAG", "TraceStyles", "parse_coverage_tables", "parse_gas_table"):
+    elif name in (
+        "USER_ASSERT_TAG",
+        "TraceStyles",
+        "parse_coverage_tables",
+        "parse_gas_table",
+        "prettify_dict",
+        "prettify_function",
+        "prettify_inputs",
+        "prettify_list",
+    ):
         import ape.utils.trace as trace_module
 
         return getattr(trace_module, name)
@@ -177,6 +186,10 @@ __all__ = [
     "parse_coverage_tables",
     "parse_gas_table",
     "path_match",
+    "prettify_dict",
+    "prettify_function",
+    "prettify_inputs",
+    "prettify_list",
     "pragma_str_to_specifier_set",
     "raises_not_implemented",
     "request_with_retry",
