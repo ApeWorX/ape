@@ -256,6 +256,10 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#ape.utils.trace.TraceStyles.VALUE"><code class="docutils literal notranslate">VALUE</span></code></a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#ape.utils.trace.prettify_dict"><code class="docutils literal notranslate"><span class="pre">prettify_dict()</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.trace.prettify_function"><code class="docutils literal notranslate"><span class="pre">prettify_function()</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.trace.prettify_inputs"><code class="docutils literal notranslate"><span class="pre">prettify_inputs()</span></code></a></li>
+<li><a class="reference internal" href="#ape.utils.trace.prettify_list"><code class="docutils literal notranslate"><span class="pre">prettify_list()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -1359,6 +1363,80 @@ the trace it colors.</p>
 <dd><p>The transaction value, when it’s &gt; 0.</p>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ape.utils.trace.prettify_dict">
+<span class="sig-prename descclassname"><span class="pre">ape.utils.trace.</span></span><span class="sig-name descname"><span class="pre">prettify_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dictionary</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wrap_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">50</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#ape.utils.trace.prettify_dict" title="Link to this definition"></a></dt>
+<dd><p>Prettify a dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dictionary</strong> (<em>dict</em>) – The dictionary to prettify.</p></li>
+<li><p><strong>color</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The color to use for pretty printing.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ape.utils.trace.prettify_function">
+<span class="sig-prename descclassname"><span class="pre">ape.utils.trace.</span></span><span class="sig-name descname"><span class="pre">prettify_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calldata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contract</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">returndata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stylize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_create</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depth</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#ape.utils.trace.prettify_function" title="Link to this definition"></a></dt>
+<dd><p>Prettify the given method call-string to a displayable, prettier string.
+Useful for displaying traces and decoded calls.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>method</strong> (<em>str</em>) – the method call-string to prettify.</p></li>
+<li><p><strong>calldata</strong> (<em>Any</em>) – Arguments to the method.</p></li>
+<li><p><strong>contract</strong> (<em>str</em><em> | </em><em>None</em>) – The contract name called.</p></li>
+<li><p><strong>returndata</strong> (<em>Any</em>) – Returned values from the method.</p></li>
+<li><p><strong>stylize</strong> (<em>bool</em>) – <code class="docutils literal notranslate"><span class="pre">True</span></code> to use rich styling.</p></li>
+<li><p><strong>is_create</strong> (<em>bool</em>) – Set to <code class="docutils literal notranslate"><span class="pre">True</span></code> if creating a contract for better styling.</p></li>
+<li><p><strong>depth</strong> (<em>int</em>) – The depth in the trace (or output) this function gets displayed.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ape.utils.trace.prettify_inputs">
+<span class="sig-prename descclassname"><span class="pre">ape.utils.trace.</span></span><span class="sig-name descname"><span class="pre">prettify_inputs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stylize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#ape.utils.trace.prettify_inputs" title="Link to this definition"></a></dt>
+<dd><p>Prettify the inputs to a function or event (or alike).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>inputs</strong> (<em>Any</em>) – the inputs to prettify.</p></li>
+<li><p><strong>stylize</strong> (<em>bool</em>) – <code class="docutils literal notranslate"><span class="pre">True</span></code> to use rich styling.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ape.utils.trace.prettify_list">
+<span class="sig-prename descclassname"><span class="pre">ape.utils.trace.</span></span><span class="sig-name descname"><span class="pre">prettify_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">tuple</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depth</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wrap_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">50</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#ape.utils.trace.prettify_list" title="Link to this definition"></a></dt>
+<dd><p>Prettify a list of values for displaying.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ls</strong> (<em>list</em>) – the list to prettify.</p></li>
+<li><p><strong>depth</strong> (<em>int</em>) – The depth the list appears in a tree structure (for traces).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
 </dd></dl>
 
 </section>
