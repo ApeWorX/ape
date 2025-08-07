@@ -1628,6 +1628,10 @@ class ContractContainer(ContractTypeWrapper, ExtraAttributesMixin):
         Returns:
             :class:`~ape.contracts.base.ContractInstance`
         """
+        if isinstance(sender := kwargs.get("sender"), AccountAPI):
+            possible_address = sender.get_deployment_address()
+            styled_address = click.style(possible_address, bold=True)
+            logger.info(f"Contract will be deployed at: {styled_address}")
 
         bytecode = self.contract_type.deployment_bytecode
         if not bytecode or bytecode.bytecode in (None, "", "0x"):
