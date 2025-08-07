@@ -55,7 +55,7 @@ def prettify_function(
         # Un-enriched CREATE calldata is a massive hex.
         arguments_str = "()"
 
-    signature = f"{method}({arguments_str})"
+    signature = f"{method}{arguments_str}"
     if not is_create and returndata not in ((), [], None, {}, ""):
         if return_str := _get_outputs_str(returndata, stylize=stylize):
             signature = f"{signature} -> {return_str}"

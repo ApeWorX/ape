@@ -7,7 +7,7 @@ from functools import cached_property
 from typing import IO, TYPE_CHECKING, Any, NoReturn, Optional, Union
 
 from eth_pydantic_types import HexBytes, HexStr
-from eth_utils import is_hex, to_hex, to_int
+from eth_utils import humanize_hexstr, is_hex, to_hex, to_int
 from pydantic import ConfigDict, field_validator
 from pydantic.fields import Field
 from tqdm import tqdm  # type: ignore
@@ -67,11 +67,9 @@ class TransactionAPI(BaseInterfaceModel):
     model_config = ConfigDict(populate_by_name=True)
 
     def __init__(self, *args, **kwargs):
-        contract_type = kwargs.pop("contract_type", None)
         raise_on_revert = kwargs.pop("raise_on_revert", True)
         super().__init__(*args, **kwargs)
         self._raise_on_revert = raise_on_revert
-        self._contract_type = contract_type
 
     @field_validator("gas_limit", mode="before")
     @classmethod
@@ -214,14 +212,8 @@ class TransactionAPI(BaseInterfaceModel):
         tx_str = f"{cls_name}:\n  {params}"
 
         # Decode the actual call so the user can see the function.
-        if decoded := self._decoded_calldata_repr():
-            pretty_fn = prettify_function(
-                decoded,
-                HexBytes(self.data)[4:],
-                contract=self.receiver,
-                is_create=self.receiver is None,
-            )
-            tx_str = f"{tx_str}\n\n\t{pretty_fn}"
+        if decoded := self._decoded_call():
+            tx_str = f"{tx_str}\n\n\t{decoded}"
 
         return tx_str
 
@@ -236,33 +228,36 @@ class TransactionAPI(BaseInterfaceModel):
             else calldata.to_0x_hex()
         )
 
-    def _decoded_calldata_repr(self) -> Optional[str]:
-        if not self._contract_type:
+    def _decoded_call(self) -> Optional[str]:
+        if not self.receiver:
+            return "constructor()"
+
+        if not (contract_type := self.chain_manager.contracts.get(self.receiver)):
+            # Unknown.
+            return None
+
+        try:
+            abi = contract_type.methods[HexBytes(self.data)[:4]]
+        except KeyError:
             return None
 
         ecosystem = (
             self.provider.network.ecosystem
-            if self.network_manager.connected
+            if self.network_manager.active_provider
             else self.network_manager.ethereum
         )
-        data = HexBytes(self.data)
+        decoded_calldata = ecosystem.decode_calldata(abi, HexBytes(self.data)[4:])
 
-        try:
-            abi = self._contract_type[data[:4]]
-        except KeyError:
-            return None
+        # NOTE: There is no actual returndata yet, but we can show the type.
+        returndata = f"({', '.join([x.type for x in abi.inputs])})"
 
-        method_name = abi.name if hasattr(abi, "name") else "constructor"
-        input_dict = ecosystem.decode_calldata(abi, data[4:])
-
-        # Replace bytes values with hex-strings.
-        for key, value in input_dict.items():
-            if isinstance(value, bytes):
-                input_dict[key] = to_hex(value)
-
-        input_str = ", ".join([f"{k}={v}" for k, v in input_dict.items()])
-
-        return f"{method_name}({input_str})"
+        return prettify_function(
+            abi.name or "",
+            decoded_calldata,
+            returndata=returndata,
+            contract=contract_type.name or humanize_hexstr(self.receiver),
+            is_create=self.receiver is None,
+        )
 
 
 class ConfirmationsProgressBar:

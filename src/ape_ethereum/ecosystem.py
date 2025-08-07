@@ -854,7 +854,6 @@ class Ethereum(EcosystemAPI):
         *args,
         **kwargs,
     ) -> BaseTransaction:
-        breakpoint()
         kwargs["abi"] = abi
         txn = self.create_transaction(receiver=address, **kwargs)
 
@@ -875,7 +874,6 @@ class Ethereum(EcosystemAPI):
             :class:`~ape.api.transactions.TransactionAPI`
         """
         # Handle all aliases.
-        contract_type = kwargs.pop("contract_type", None)
         tx_data = dict(kwargs)
         tx_data = _correct_key(
             "max_priority_fee",
@@ -977,7 +975,6 @@ class Ethereum(EcosystemAPI):
             tx_data["gas"] = None
 
         tx = txn_class.model_validate(tx_data)
-        tx._contract_type = contract_type
         return tx
 
     def decode_logs(self, logs: Sequence[dict], *events: EventABI) -> Iterator[ContractLog]:
