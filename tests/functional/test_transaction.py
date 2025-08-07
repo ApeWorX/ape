@@ -328,15 +328,40 @@ def test_str_when_data_is_long_shows_first_4_bytes(project, vyper_contract_insta
     assert "data: 0x3fb5c1cb..." in actual
 
 
-def test_str_decoded(project, vyper_contract_instance):
+def test_str_decoded(vyper_contract_instance):
     """
     Tests against a condition that would cause transactions to
     fail with string-encoding errors.
     """
+    # Transaction, 1 input, not outputs.
     txn = vyper_contract_instance.setNumber.as_transaction(123)
-    actual = str(txn)
-    assert isinstance(actual, str)
-    assert "data: setNumber(num=123)" in actual
+    assert "VyperContract.setNumber(num=123)" in str(txn)
+
+    # Tuple returndata.
+    txn = vyper_contract_instance.getDynamicStructArray.as_transaction()
+    assert "VyperContract.getDynamicStructArray() -> ((address,bytes32,uint256),uint256)[]" in str(
+        txn
+    )
+
+    # A bunch of inputs.
+    txn = vyper_contract_instance.functionWithUniqueAmountOfArguments.as_transaction(
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10
+    )
+    assert (
+        "VyperContract.functionWithUniqueAmountOfArguments(a0=1, a1=2, a2=3, a3=4, a4=5, a5=6, a6=7, a7=8, a8=9, a9=10)"
+        in str(txn)
+    )
+
+    # Nested return arrays.
+    txn = vyper_contract_instance.getNestedArrayMixedDynamic.as_transaction()
+    assert "VyperContract.getNestedArrayMixedDynamic() -> uint256[][3][][5]" in str(txn)
+
+    # Weird tuple of structs return that wraps around.
+    txn = vyper_contract_instance.getEmptyTupleOfDynArrayStructs.as_transaction()
+    assert (
+        "VyperContract.getEmptyTupleOfDynArrayStructs() -> [\n          (address,bytes32,uint256)[],\n          (address,bytes32,uint256)[]\n        ]"
+        in str(txn)
+    )
 
 
 def test_str_when_data_is_long_and_configured_full_calldata(project, vyper_contract_instance):

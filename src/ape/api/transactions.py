@@ -24,7 +24,6 @@ from ape.types.address import AddressType
 from ape.types.basic import HexInt
 from ape.types.gas import AutoGasLimit
 from ape.types.signatures import TransactionSignature
-from ape.utils.abi import CalldataRepr
 from ape.utils.basemodel import BaseInterfaceModel, ExtraAttributesMixin, ExtraModelAttributes
 from ape.utils.misc import log_instead_of_fail, raises_not_implemented
 from ape.utils.trace import prettify_function
@@ -38,6 +37,7 @@ if TYPE_CHECKING:
     from ape.contracts import ContractEvent
     from ape.types.events import ContractLogContainer
     from ape.types.trace import SourceTraceback
+    from ape.utils.abi import CalldataRepr
 
 
 class TransactionAPI(BaseInterfaceModel):
@@ -171,7 +171,7 @@ class TransactionAPI(BaseInterfaceModel):
         return self.provider.get_transaction_trace(to_hex(self.txn_hash))
 
     @cached_property
-    def _calldata_repr(self) -> CalldataRepr:
+    def _calldata_repr(self) -> "CalldataRepr":
         return self.local_project.config.display.calldata
 
     @abstractmethod
@@ -191,7 +191,7 @@ class TransactionAPI(BaseInterfaceModel):
     def __str__(self) -> str:
         return self.to_string()
 
-    def to_string(self, calldata_repr: Optional[CalldataRepr] = None) -> str:
+    def to_string(self, calldata_repr: Optional["CalldataRepr"] = None) -> str:
         """
         Get the stringified representation of the transaction.
 
@@ -249,14 +249,17 @@ class TransactionAPI(BaseInterfaceModel):
         decoded_calldata = ecosystem.decode_calldata(abi, HexBytes(self.data)[4:])
 
         # NOTE: There is no actual returndata yet, but we can show the type.
-        returndata = f"({', '.join([x.type for x in abi.inputs])})"
+        return_types = [t.canonical_type for t in abi.outputs]
+        if len(return_types) == 1:
+            return_types = return_types[0]
 
         return prettify_function(
             abi.name or "",
             decoded_calldata,
-            returndata=returndata,
+            returndata=return_types,
             contract=contract_type.name or humanize_hexstr(self.receiver),
             is_create=self.receiver is None,
+            depth=4,
         )
 
 

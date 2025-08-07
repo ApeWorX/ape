@@ -24,6 +24,7 @@ def prettify_function(
     returndata: Optional[Any] = None,
     stylize: bool = False,
     is_create: bool = False,
+    depth: int = 0,
 ) -> str:
     """
     Prettify the given method call-string to a displayable, prettier string.
@@ -36,6 +37,7 @@ def prettify_function(
         returndata (Any): Returned values from the method.
         stylize (bool): ``True`` to use rich styling.
         is_create (bool): Set to ``True`` if creating a contract for better styling.
+        depth (int): The depth in the trace (or output) this function gets displayed.
 
     Returns:
         str
@@ -57,7 +59,7 @@ def prettify_function(
 
     signature = f"{method}{arguments_str}"
     if not is_create and returndata not in ((), [], None, {}, ""):
-        if return_str := _get_outputs_str(returndata, stylize=stylize):
+        if return_str := _get_outputs_str(returndata, stylize=stylize, depth=depth):
             signature = f"{signature} -> {return_str}"
 
     if contract:
@@ -90,7 +92,7 @@ def prettify_inputs(inputs: Any, stylize: bool = False) -> str:
     return f"({inputs})"
 
 
-def _get_outputs_str(outputs: Any, stylize: bool = False) -> Optional[str]:
+def _get_outputs_str(outputs: Any, stylize: bool = False, depth: int = 0) -> Optional[str]:
     if outputs in ["0x", None, (), [], {}]:
         return None
 
@@ -102,7 +104,7 @@ def _get_outputs_str(outputs: Any, stylize: bool = False) -> Optional[str]:
         return (
             f"[{TraceStyles.OUTPUTS}]{prettify_list(outputs)}[/]"
             if stylize
-            else prettify_list(outputs)
+            else prettify_list(outputs, depth=depth)
         )
 
     return f"[{TraceStyles.OUTPUTS}]{outputs}[/]" if stylize else str(outputs)
