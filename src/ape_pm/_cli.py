@@ -173,7 +173,9 @@ def _package_callback(ctx, param, value):
         else:
             return dependency
 
-    raise click.BadArgumentUsage(f"Unknown package '{value}'.")
+    raise click.BadArgumentUsage(
+        f"Unknown package '{value}'. Did you mean to prefix with `gh:`, `npm:` etc.?"
+    )
 
 
 @cli.command()
