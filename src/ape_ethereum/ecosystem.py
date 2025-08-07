@@ -836,6 +836,7 @@ class Ethereum(EcosystemAPI):
     def encode_deployment(
         self, deployment_bytecode: HexBytes, abi: ConstructorABI, *args, **kwargs
     ) -> BaseTransaction:
+        kwargs["abi"] = abi
         txn = self.create_transaction(**kwargs)
         data = HexBytes(deployment_bytecode)
 
@@ -853,6 +854,7 @@ class Ethereum(EcosystemAPI):
         *args,
         **kwargs,
     ) -> BaseTransaction:
+        kwargs["abi"] = abi
         txn = self.create_transaction(receiver=address, **kwargs)
 
         # Add method ID
@@ -972,7 +974,8 @@ class Ethereum(EcosystemAPI):
         if "gas" not in tx_data:
             tx_data["gas"] = None
 
-        return txn_class.model_validate(tx_data)
+        tx = txn_class.model_validate(tx_data)
+        return tx
 
     def decode_logs(self, logs: Sequence[dict], *events: EventABI) -> Iterator[ContractLog]:
         if not logs:

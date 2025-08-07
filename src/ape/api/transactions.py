@@ -7,7 +7,7 @@ from functools import cached_property
 from typing import IO, TYPE_CHECKING, Any, NoReturn, Optional, Union
 
 from eth_pydantic_types import HexBytes, HexStr
-from eth_utils import is_hex, to_hex, to_int
+from eth_utils import humanize_hexstr, is_hex, to_hex, to_int
 from pydantic import ConfigDict, field_validator
 from pydantic.fields import Field
 from tqdm import tqdm  # type: ignore
@@ -26,6 +26,7 @@ from ape.types.gas import AutoGasLimit
 from ape.types.signatures import TransactionSignature
 from ape.utils.basemodel import BaseInterfaceModel, ExtraAttributesMixin, ExtraModelAttributes
 from ape.utils.misc import log_instead_of_fail, raises_not_implemented
+from ape.utils.trace import prettify_function
 
 if TYPE_CHECKING:
     from ethpm_types.abi import EventABI, MethodABI
@@ -169,6 +170,10 @@ class TransactionAPI(BaseInterfaceModel):
         """
         return self.provider.get_transaction_trace(to_hex(self.txn_hash))
 
+    @cached_property
+    def _calldata_repr(self) -> "CalldataRepr":
+        return self.local_project.config.display.calldata
+
     @abstractmethod
     def serialize_transaction(self) -> bytes:
         """
@@ -199,22 +204,63 @@ class TransactionAPI(BaseInterfaceModel):
         """
         data = self.model_dump(mode="json")  # JSON mode used for style purposes.
 
-        if calldata_repr is None:
-            # If was not specified, use the default value from the config.
-            calldata_repr = self.local_project.config.display.calldata
+        calldata_repr = calldata_repr or self._calldata_repr
+        data["data"] = self._get_calldata_repr_str(calldata_repr=calldata_repr)
+
+        params = "\n  ".join(f"{k}: {v}" for k, v in data.items())
+        cls_name = getattr(type(self), "__name__", TransactionAPI.__name__)
+        tx_str = f"{cls_name}:\n  {params}"
+
+        # Decode the actual call so the user can see the function.
+        if decoded := self._decoded_call():
+            tx_str = f"{tx_str}\n\n\t{decoded}"
+
+        return tx_str
+
+    def _get_calldata_repr_str(self, calldata_repr: "CalldataRepr") -> str:
+        calldata = HexBytes(self.data)
 
         # Elide the transaction calldata for abridged representations if the length exceeds 8
         # (4 bytes for function selector and trailing 4 bytes).
-        calldata = HexBytes(data["data"])
-        data["data"] = (
+        return (
             calldata[:4].to_0x_hex() + "..." + calldata[-4:].hex()
             if calldata_repr == "abridged" and len(calldata) > 8
             else calldata.to_0x_hex()
         )
 
-        params = "\n  ".join(f"{k}: {v}" for k, v in data.items())
-        cls_name = getattr(type(self), "__name__", TransactionAPI.__name__)
-        return f"{cls_name}:\n  {params}"
+    def _decoded_call(self) -> Optional[str]:
+        if not self.receiver:
+            return "constructor()"
+
+        if not (contract_type := self.chain_manager.contracts.get(self.receiver)):
+            # Unknown.
+            return None
+
+        try:
+            abi = contract_type.methods[HexBytes(self.data)[:4]]
+        except KeyError:
+            return None
+
+        ecosystem = (
+            self.provider.network.ecosystem
+            if self.network_manager.active_provider
+            else self.network_manager.ethereum
+        )
+        decoded_calldata = ecosystem.decode_calldata(abi, HexBytes(self.data)[4:])
+
+        # NOTE: There is no actual returndata yet, but we can show the type.
+        return_types = [t.canonical_type for t in abi.outputs]
+        if len(return_types) == 1:
+            return_types = return_types[0]
+
+        return prettify_function(
+            abi.name or "",
+            decoded_calldata,
+            returndata=return_types,
+            contract=contract_type.name or humanize_hexstr(self.receiver),
+            is_create=self.receiver is None,
+            depth=4,
+        )
 
 
 class ConfirmationsProgressBar:

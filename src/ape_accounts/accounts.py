@@ -221,8 +221,7 @@ class KeyfileAccount(AccountAPI):
     def sign_transaction(
         self, txn: "TransactionAPI", **signer_options
     ) -> Optional["TransactionAPI"]:
-        user_approves = self.__autosign or click.confirm(f"{txn}\n\nSign: ")
-        if not user_approves:
+        if not (self.__autosign or click.confirm(f"{txn}\n\nSign: ")):
             return None
 
         signature = EthAccount.sign_transaction(

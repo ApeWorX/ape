@@ -200,7 +200,7 @@ def create_tempdir(name: Optional[str] = None) -> Iterator[Path]:
     Returns:
         Iterator[Path]: Context managing the temporary directory.
     """
-    with TemporaryDirectory() as temp_dir:
+    with TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
         temp_path = Path(temp_dir).resolve()
 
         if name:

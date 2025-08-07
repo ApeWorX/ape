@@ -1,8 +1,9 @@
 from collections.abc import Sequence
 from fnmatch import fnmatch
 from statistics import mean, median
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Optional, Union
 
+from eth_utils import is_0x_prefixed, to_hex
 from rich.box import SIMPLE
 from rich.table import Table
 
@@ -13,6 +14,209 @@ if TYPE_CHECKING:
     from ape.types.trace import ContractFunctionPath, GasReport
 
 USER_ASSERT_TAG = "USER_ASSERT"
+DEFAULT_WRAP_THRESHOLD = 50
+
+
+def prettify_function(
+    method: str,
+    calldata: Any,
+    contract: Optional[str] = None,
+    returndata: Optional[Any] = None,
+    stylize: bool = False,
+    is_create: bool = False,
+    depth: int = 0,
+) -> str:
+    """
+    Prettify the given method call-string to a displayable, prettier string.
+    Useful for displaying traces and decoded calls.
+
+    Args:
+        method (str): the method call-string to prettify.
+        calldata (Any): Arguments to the method.
+        contract (str | None): The contract name called.
+        returndata (Any): Returned values from the method.
+        stylize (bool): ``True`` to use rich styling.
+        is_create (bool): Set to ``True`` if creating a contract for better styling.
+        depth (int): The depth in the trace (or output) this function gets displayed.
+
+    Returns:
+        str
+    """
+    if "(" in method:
+        # Only show short name, not ID name
+        # (it is the full signature when multiple methods have the same name).
+        method = method.split("(")[0].strip() or method
+
+    if stylize:
+        method = f"[{TraceStyles.METHODS}]{method}[/]"
+        if contract:
+            contract = f"[{TraceStyles.CONTRACTS}]{contract}[/]"
+
+    arguments_str = prettify_inputs(calldata, stylize=stylize)
+    if is_create and is_0x_prefixed(arguments_str):
+        # Un-enriched CREATE calldata is a massive hex.
+        arguments_str = "()"
+
+    signature = f"{method}{arguments_str}"
+    if not is_create and returndata not in ((), [], None, {}, ""):
+        if return_str := _get_outputs_str(returndata, stylize=stylize, depth=depth):
+            signature = f"{signature} -> {return_str}"
+
+    if contract:
+        signature = f"{contract}.{signature}"
+
+    return signature
+
+
+def prettify_inputs(inputs: Any, stylize: bool = False) -> str:
+    """
+    Prettify the inputs to a function or event (or alike).
+
+    Args:
+        inputs (Any): the inputs to prettify.
+        stylize (bool): ``True`` to use rich styling.
+
+    Returns:
+        str
+    """
+    color = TraceStyles.INPUTS if stylize else None
+    if inputs in ["0x", None, (), [], {}]:
+        return "()"
+
+    elif isinstance(inputs, dict):
+        return prettify_dict(inputs, color=color)
+
+    elif isinstance(inputs, bytes):
+        return to_hex(inputs)
+
+    return f"({inputs})"
+
+
+def _get_outputs_str(outputs: Any, stylize: bool = False, depth: int = 0) -> Optional[str]:
+    if outputs in ["0x", None, (), [], {}]:
+        return None
+
+    elif isinstance(outputs, dict):
+        color = TraceStyles.OUTPUTS if stylize else None
+        return prettify_dict(outputs, color=color)
+
+    elif isinstance(outputs, (list, tuple)):
+        return (
+            f"[{TraceStyles.OUTPUTS}]{prettify_list(outputs)}[/]"
+            if stylize
+            else prettify_list(outputs, depth=depth)
+        )
+
+    return f"[{TraceStyles.OUTPUTS}]{outputs}[/]" if stylize else str(outputs)
+
+
+def prettify_list(
+    ls: Union[list, tuple],
+    depth: int = 0,
+    indent: int = 2,
+    wrap_threshold: int = DEFAULT_WRAP_THRESHOLD,
+) -> str:
+    """
+    Prettify a list of values for displaying.
+
+    Args:
+        ls (list): the list to prettify.
+        depth (int): The depth the list appears in a tree structure (for traces).
+
+    Returns:
+        str
+    """
+    if not isinstance(ls, (list, tuple)) or len(str(ls)) < wrap_threshold:
+        return str(ls)
+
+    elif ls and isinstance(ls[0], (list, tuple)):
+        # List of lists
+        sub_lists = [prettify_list(i) for i in ls]
+
+        # Use multi-line if exceeds threshold OR any of the sub-lists use multi-line
+        extra_chars_len = (len(sub_lists) - 1) * 2
+        use_multiline = len(str(sub_lists)) + extra_chars_len > wrap_threshold or any(
+            ["\n" in ls for ls in sub_lists]
+        )
+
+        if not use_multiline:
+            # Happens for lists like '[[0], [1]]' that are short.
+            return f"[{', '.join(sub_lists)}]"
+
+        value = "[\n"
+        num_sub_lists = len(sub_lists)
+        index = 0
+        spacing = indent * " " * 2
+        for formatted_list in sub_lists:
+            if "\n" in formatted_list:
+                # Multi-line sub list. Append 1 more spacing to each line.
+                indented_item = f"\n{spacing}".join(formatted_list.splitlines())
+                value = f"{value}{spacing}{indented_item}"
+            else:
+                # Single line sub-list
+                value = f"{value}{spacing}{formatted_list}"
+
+            if index < num_sub_lists - 1:
+                value = f"{value},"
+
+            value = f"{value}\n"
+            index += 1
+
+        value = f"{value}]"
+        return value
+
+    return _list_to_multiline_str(ls, depth=depth)
+
+
+def prettify_dict(
+    dictionary: dict,
+    color: Optional[str] = None,
+    indent: int = 2,
+    wrap_threshold: int = DEFAULT_WRAP_THRESHOLD,
+) -> str:
+    """
+    Prettify a dictionary.
+
+    Args:
+        dictionary (dict): The dictionary to prettify.
+        color (Optional[str]): The color to use for pretty printing.
+
+    Returns:
+        str
+    """
+    length = sum(len(str(v)) for v in [*dictionary.keys(), *dictionary.values()])
+    do_wrap = length > wrap_threshold
+
+    index = 0
+    end_index = len(dictionary) - 1
+    kv_str = "(\n" if do_wrap else "("
+
+    for key, value in dictionary.items():
+        if do_wrap:
+            kv_str += indent * " "
+
+        if isinstance(value, (list, tuple)):
+            value = prettify_list(value, 1 if do_wrap else 0)
+
+        value_str = f"[{color}]{value}[/]" if color is not None else str(value)
+        kv_str += f"{key}={value_str}" if key and not key.isnumeric() else value_str
+        if index < end_index:
+            kv_str += ", "
+
+        if do_wrap:
+            kv_str += "\n"
+
+        index += 1
+
+    return f"{kv_str})"
+
+
+def _list_to_multiline_str(value: Union[list, tuple], depth: int = 0, indent: int = 2) -> str:
+    spacing = indent * " "
+    ls_spacing = spacing * (depth + 1)
+    joined = ",\n".join([f"{ls_spacing}{v}" for v in value])
+    new_val = f"[\n{joined}\n{spacing * depth}]"
+    return new_val
 
 
 class TraceStyles:
