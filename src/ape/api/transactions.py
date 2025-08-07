@@ -205,7 +205,7 @@ class TransactionAPI(BaseInterfaceModel):
         data = self.model_dump(mode="json")  # JSON mode used for style purposes.
 
         calldata_repr = calldata_repr or self._calldata_repr
-        data["data"] = self._repr_calldata(calldata_repr=calldata_repr)
+        data["data"] = self._get_calldata_repr_str(calldata_repr=calldata_repr)
 
         params = "\n  ".join(f"{k}: {v}" for k, v in data.items())
         cls_name = getattr(type(self), "__name__", TransactionAPI.__name__)
@@ -217,7 +217,7 @@ class TransactionAPI(BaseInterfaceModel):
 
         return tx_str
 
-    def _repr_calldata(self, calldata_repr: "CalldataRepr") -> str:
+    def _get_calldata_repr_str(self, calldata_repr: "CalldataRepr") -> str:
         calldata = HexBytes(self.data)
 
         # Elide the transaction calldata for abridged representations if the length exceeds 8
