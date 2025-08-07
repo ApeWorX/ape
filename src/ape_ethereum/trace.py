@@ -729,7 +729,7 @@ def _call_to_str(call: dict, stylize: bool = False, verbose: bool = False) -> st
 
     contract = str(call.get("contract_id", ""))
 
-    method = prettify_function(
+    signature = prettify_function(
         method,
         call.get("calldata", ""),
         returndata=call.get("returndata", ""),
@@ -737,7 +737,6 @@ def _call_to_str(call: dict, stylize: bool = False, verbose: bool = False) -> st
         stylize=stylize,
         is_create=is_create,
     )
-    signature = f"{contract}.{method}"
 
     if call.get("call_type") is not None and call["call_type"].upper() == "DELEGATECALL":
         delegate = "(delegate)"
