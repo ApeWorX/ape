@@ -29,6 +29,7 @@ from ape.exceptions import (
     CustomError,
     MethodNonPayableError,
     MissingDeploymentBytecodeError,
+    ProviderNotConnectedError,
 )
 from ape.logging import get_rich_console, logger
 from ape.types.events import ContractLog, LogFilter, MockContractLog
@@ -282,12 +283,18 @@ class ContractMethodHandler(ManagerAccessMixin):
         raise err
 
     def _validate_is_contract(self):
-        if not self.contract.is_contract:
-            raise ContractNotFoundError(
-                self.contract.address,
-                self.provider.network.explorer is not None,
-                self.provider.network_choice,
-            )
+        try:
+            is_contract = self.contract.is_contract
+        except ProviderNotConnectedError:
+            # Not connected. We can't verify. Allow anyway.
+            return
+        else:
+            if not is_contract:
+                raise ContractNotFoundError(
+                    self.contract.address,
+                    self.provider.network.explorer is not None,
+                    self.provider.network_choice,
+                )
 
 
 class ContractCallHandler(ContractMethodHandler):
@@ -383,7 +390,14 @@ class ContractTransaction(ManagerAccessMixin):
 
         arguments = self.conversion_manager.convert_method_args(self.abi, args)
         converted_kwargs = self.conversion_manager.convert_method_kwargs(kwargs)
-        return self.provider.network.ecosystem.encode_transaction(
+
+        try:
+            ecosystem = self.provider.network.ecosystem
+        except ProviderNotConnectedError:
+            logger.warning("Unknown network when serializing transaction. Assuming EVM behaviors.")
+            ecosystem = self.network_manager.ethereum
+
+        return ecosystem.encode_transaction(
             self.address, self.abi, *arguments, **converted_kwargs
         )
 
@@ -421,7 +435,9 @@ class ContractTransactionHandler(ContractMethodHandler):
         sign = kwargs.pop("sign", False)
         contract_transaction = self._as_transaction(*args)
         transaction = contract_transaction.serialize_transaction(*args, **kwargs)
-        self.provider.prepare_transaction(transaction)
+
+        if provider := self.network_manager.active_provider:
+            provider.prepare_transaction(transaction)
 
         if sender := kwargs.get("sender"):
             if isinstance(sender, AccountAPI):
