@@ -1437,12 +1437,12 @@ class DependencyManager(BaseManager):
         matching = []
 
         # First, only look at local configured packages (to give priority).
-        for dependency in self.config_apis:
-            if getattr(dependency, attr) != package_id:
+        for api in self.config_apis:
+            if getattr(api, attr) != package_id:
                 continue
 
-            if (version and dependency.version_id == version) or not version:
-                matching.append(dependency)
+            if (version and api.version_id == version) or not version:
+                matching.append(api)
 
         if not matching:
             # Nothing found: search in 'all'.
