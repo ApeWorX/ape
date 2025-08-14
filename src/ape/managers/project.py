@@ -1435,12 +1435,25 @@ class DependencyManager(BaseManager):
         self, package_id: str, version: Optional[str] = None, attr: str = "package_id"
     ) -> Optional[DependencyAPI]:
         matching = []
-        for dependency in self.config_apis:
-            if getattr(dependency, attr) != package_id:
+
+        # First, only look at local configured packages (to give priority).
+        for api in self.config_apis:
+            if getattr(api, attr) != package_id:
                 continue
 
-            if (version and dependency.version_id == version) or not version:
-                matching.append(dependency)
+            if (version and api.version_id == version) or not version:
+                matching.append(api)
+
+        if not matching:
+            # Nothing found: search in 'all'.
+            for dependency in self.all:
+                if getattr(dependency, attr) != package_id:
+                    continue
+
+                if (version and dependency.api.version_id == version) or not version:
+                    matching.append(dependency.api)
+
+        # else: prioritize the local dependencies, as that is most-likely what the user wants.
 
         return sorted(matching, key=lambda d: d.version_id)[-1] if matching else None
 
