@@ -104,16 +104,15 @@ class PluginManager:
 
         for plugin_name, results in map(get_plugin_name_and_hookfn, hookimpls):
             # NOTE: Some plugins return a tuple and some return iterators
-            if not isinstance(results, Generator):
-                validated_plugin = self._validate_plugin(plugin_name, results)
-                if validated_plugin:
-                    yield validated_plugin
-            else:
-                # Only if it's an iterator, provide results as a series
+            if isinstance(results, Iterable) and not isinstance(results, (str, bytes)):
                 for result in results:
                     validated_plugin = self._validate_plugin(plugin_name, result)
                     if validated_plugin:
                         yield validated_plugin
+            else:
+                validated_plugin = self._validate_plugin(plugin_name, results)
+                if validated_plugin:
+                    yield validated_plugin
 
     @cached_property
     def registered_plugins(self) -> set[str]:
