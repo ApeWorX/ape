@@ -3,7 +3,7 @@ from fnmatch import fnmatch
 from statistics import mean, median
 from typing import TYPE_CHECKING, Any, Optional, Union
 
-from eth_utils import is_0x_prefixed, to_hex
+from faster_eth_utils import is_0x_prefixed, to_hex
 from rich.box import SIMPLE
 from rich.table import Table
 
