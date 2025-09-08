@@ -7,7 +7,7 @@ from functools import cached_property
 from typing import IO, TYPE_CHECKING, Any, NoReturn, Optional, Union
 
 from eth_pydantic_types import HexBytes, HexStr
-from eth_utils import humanize_hexstr, is_hex, to_hex, to_int
+from faster_eth_utils import humanize_hexstr, is_hex, to_hex, to_int
 from pydantic import ConfigDict, field_validator
 from pydantic.fields import Field
 from tqdm import tqdm  # type: ignore
