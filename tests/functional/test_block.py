@@ -1,6 +1,6 @@
 import pytest
 from eth_pydantic_types import HexBytes
-from eth_utils import to_hex
+from faster_eth_utils import to_hex
 from web3.types import BlockData
 
 from ape_ethereum.ecosystem import Block
