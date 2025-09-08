@@ -17,8 +17,8 @@ from subprocess import DEVNULL, PIPE, Popen
 from typing import TYPE_CHECKING, Any, ClassVar, Optional, Union, cast
 
 from eth_pydantic_types import HexBytes
-from eth_utils import to_hex
 from ethpm_types import MethodABI
+from faster_eth_utils import to_hex
 from pydantic import Field, computed_field, field_serializer, model_validator
 
 from ape.api.networks import NetworkAPI
