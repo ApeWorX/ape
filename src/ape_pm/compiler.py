@@ -5,8 +5,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Optional
 
 from eth_pydantic_types import HexBytes
-from eth_utils import is_0x_prefixed
 from ethpm_types import ContractType
+from faster_eth_utils import is_0x_prefixed
 
 from ape.api.compiler import CompilerAPI
 from ape.exceptions import CompilerError, ContractLogicError

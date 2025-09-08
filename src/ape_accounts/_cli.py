@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Optional
 
 import click
 from cchecksum import to_checksum_address
-from eth_utils import to_hex
+from faster_eth_utils import to_hex
 
 from ape.cli import ConnectedProviderCommand
 from ape.cli.arguments import existing_alias_argument, non_existing_alias_argument

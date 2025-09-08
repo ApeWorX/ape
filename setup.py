@@ -114,14 +114,15 @@ setup(
         "urllib3>=2.3,<3",
         "watchdog>=3.0,<4",
         # ** Dependencies maintained by Ethereum Foundation **
-        "eth-abi>=5.1.0,<6",
         "eth-account>=0.11.3,<0.14",
         "eth-typing>=3.5.2,<6",
-        "eth-utils>=2.1.0,<6",
         "hexbytes>=1.2.0,<2",
         "py-geth>=5.4.0,<6",
         "trie>=3.0.1,<4",  # Peer: stricter pin needed for uv support.
         "web3[tester]>=6.20.1,<8",
+        # ** Dependencies maintained by Ethereum Foundation and compiled to C by BobTheBuidler**
+        "faster-eth-abi>=5.1.0,<6",
+        "faster-eth-utils>=2.1.0,<6",
         # ** Dependencies maintained by ApeWorX **
         "eip712>=0.2.10,<0.3",
         "ethpm-types>=0.6.27,<0.7",

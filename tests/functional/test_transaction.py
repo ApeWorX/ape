@@ -4,7 +4,7 @@ from typing import Optional
 
 import pytest
 from eth_pydantic_types import HexBytes
-from eth_utils import to_hex
+from faster_eth_utils import to_hex
 from hexbytes import HexBytes as BaseHexBytes
 
 from ape.api import TransactionAPI

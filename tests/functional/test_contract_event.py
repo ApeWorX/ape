@@ -4,8 +4,8 @@ from typing import TYPE_CHECKING, Optional
 
 import pytest
 from eth_pydantic_types import HexBytes, HexBytes20
-from eth_utils import to_hex
 from ethpm_types import ContractType
+from faster_eth_utils import to_hex
 
 from ape.contracts.base import ContractEventWrapper
 from ape.exceptions import ProviderError

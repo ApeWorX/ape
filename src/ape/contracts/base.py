@@ -8,8 +8,8 @@ from typing import TYPE_CHECKING, Any, Optional, Union
 
 import click
 from eth_pydantic_types import HexBytes
-from eth_utils import to_hex
 from ethpm_types.abi import EventABI
+from faster_eth_utils import to_hex
 
 from ape.api.accounts import AccountAPI
 from ape.api.address import Address, BaseAddress

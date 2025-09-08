@@ -3,15 +3,15 @@ from enum import Enum, IntEnum
 from functools import cached_property
 from typing import IO, TYPE_CHECKING, Any, Optional, Union
 
-from eth_abi import decode
 from eth_account import Account as EthAccount
 from eth_account._utils.legacy_transactions import (
     encode_transaction,
     serializable_unsigned_transaction_from_dict,
 )
 from eth_pydantic_types import HexBytes
-from eth_utils import decode_hex, encode_hex, keccak, to_canonical_address, to_hex, to_int
 from ethpm_types.abi import EventABI, MethodABI
+from faster_eth_abi import decode
+from faster_eth_utils import decode_hex, encode_hex, keccak, to_canonical_address, to_hex, to_int
 from pydantic import BaseModel, Field, field_serializer, field_validator, model_validator
 
 from ape.api.transactions import ReceiptAPI, TransactionAPI

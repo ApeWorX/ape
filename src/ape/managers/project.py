@@ -9,11 +9,11 @@ from re import Pattern
 from typing import Any, Optional, Union, cast
 
 from eth_typing import HexStr
-from eth_utils import to_hex
 from ethpm_types import ContractInstance as EthPMContractInstance
 from ethpm_types import ContractType, PackageManifest, PackageMeta, Source
 from ethpm_types.source import Compiler, ContractSource
 from ethpm_types.utils import compute_checksum
+from faster_eth_utils import to_hex
 from pydantic_core import Url
 
 from ape.api.projects import ApeProject, DependencyAPI, ProjectAPI
