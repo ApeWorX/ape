@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Optional, Union
 from eth_account import Account
 from eth_account.messages import SignableMessage
 from eth_pydantic_types import HexBytes
-from eth_utils import to_bytes, to_hex
+from faster_eth_utils import to_bytes, to_hex
 from pydantic.dataclasses import dataclass
 
 from ape.utils.misc import as_our_module, log_instead_of_fail
