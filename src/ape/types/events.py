@@ -3,8 +3,8 @@ from functools import cached_property
 from typing import TYPE_CHECKING, Any, Optional, Union
 
 from eth_pydantic_types import HexBytes, HexStr
-from eth_utils import encode_hex, is_hex, keccak, to_hex
 from ethpm_types.abi import EventABI
+from faster_eth_utils import encode_hex, is_hex, keccak, to_hex
 from pydantic import BaseModel, field_serializer, field_validator, model_validator
 from web3.types import FilterParams
 
