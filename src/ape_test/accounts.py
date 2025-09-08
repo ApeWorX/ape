@@ -8,7 +8,7 @@ from eth_account._utils.signing import sign_transaction_dict
 from eth_account.messages import SignableMessage, encode_defunct
 from eth_keys.datatypes import PrivateKey  # type: ignore
 from eth_pydantic_types import HexBytes
-from eth_utils import to_bytes, to_canonical_address, to_hex
+from faster_eth_utils import to_bytes, to_canonical_address, to_hex
 
 from ape.api.accounts import TestAccountAPI, TestAccountContainerAPI
 from ape.api.address import BaseAddress
