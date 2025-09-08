@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 import pytest
-from eth_utils import to_hex
+from faster_eth_utils import to_hex
 from rich.table import Table
 from rich.tree import Tree
 
