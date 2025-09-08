@@ -9,7 +9,7 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse
 from urllib.request import urlopen
 
-from eth_utils import add_0x_prefix, to_hex
+from faster_eth_utils import add_0x_prefix, to_hex
 from geth.chain import initialize_chain as initialize_gethdev_chain
 from geth.process import BaseGethProcess
 from geth.wrapper import ALL_APIS, construct_test_chain_kwargs
