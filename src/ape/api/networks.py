@@ -6,8 +6,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar, Optional, Union
 
 from eth_pydantic_types import HexBytes
-from faster_eth_utils import keccak
 from evmchains import PUBLIC_CHAIN_META
+from faster_eth_utils import keccak
 from pydantic import model_validator
 
 from ape.exceptions import (
