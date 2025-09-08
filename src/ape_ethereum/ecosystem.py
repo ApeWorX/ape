@@ -6,11 +6,12 @@ from typing import TYPE_CHECKING, Any, ClassVar, Optional, Union, cast
 
 import rlp  # type: ignore
 from cchecksum import to_checksum_address
-from eth_abi import decode, encode
-from eth_abi.exceptions import InsufficientDataBytes, NonEmptyPaddingBytes
 from eth_pydantic_types import HexBytes
 from eth_typing import Hash32, HexStr
-from eth_utils import (
+from ethpm_types.abi import ABIType, ConstructorABI, EventABI, MethodABI
+from faster_eth_abi import decode, encode
+from faster_eth_abi.exceptions import InsufficientDataBytes, NonEmptyPaddingBytes
+from faster_eth_utils import (
     add_0x_prefix,
     encode_hex,
     humanize_hash,
@@ -21,7 +22,6 @@ from eth_utils import (
     to_bytes,
     to_hex,
 )
-from ethpm_types.abi import ABIType, ConstructorABI, EventABI, MethodABI
 from pydantic import Field, computed_field, field_validator, model_validator
 from pydantic_settings import SettingsConfigDict
 
