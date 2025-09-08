@@ -1,4 +1,4 @@
-from eth_utils import to_hex
+from faster_eth_utils import to_hex
 
 from ape.api import TraceAPI
 from ape.utils import ManagerAccessMixin
