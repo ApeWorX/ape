@@ -24,8 +24,8 @@ from typing import TYPE_CHECKING, Any, cast
 
 from eth_abi import decode
 from eth_typing import ChecksumAddress
-from eth_utils import add_0x_prefix, decode_hex, to_hex
 from ethpm_types import ContractType, MethodABI
+from faster_eth_utils import add_0x_prefix, decode_hex, to_hex
 from hexbytes import HexBytes
 
 import ape
