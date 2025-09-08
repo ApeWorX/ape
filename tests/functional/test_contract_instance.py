@@ -3,8 +3,8 @@ from collections import namedtuple
 
 import pytest
 from eth_pydantic_types import HexBytes
-from eth_utils import is_checksum_address, to_hex
 from ethpm_types import BaseModel, ContractType
+from faster_eth_utils import is_checksum_address, to_hex
 from web3._utils.abi import recursive_dict_to_namedtuple
 
 from ape.api import TransactionAPI
