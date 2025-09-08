@@ -5,8 +5,8 @@ from cchecksum import to_checksum_address
 from eip712.messages import EIP712Message, EIP712Type
 from eth_account.messages import encode_defunct
 from eth_pydantic_types import HexBytes
-from eth_utils import keccak, to_hex
 from ethpm_types import ContractType
+from faster_eth_utils import keccak, to_hex
 
 import ape
 from ape.api import ImpersonatedAccount
