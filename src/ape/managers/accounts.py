@@ -4,7 +4,7 @@ from contextlib import AbstractContextManager as ContextManager
 from functools import cached_property, singledispatchmethod
 from typing import TYPE_CHECKING, Optional, Union
 
-from eth_utils import is_hex
+from faster_eth_utils import is_hex
 
 from ape.api import (
     AccountAPI,
