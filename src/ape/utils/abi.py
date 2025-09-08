@@ -4,15 +4,15 @@ from dataclasses import make_dataclass
 from enum import Enum
 from typing import Any, Optional, Union
 
-from eth_abi import grammar
-from eth_abi.abi import decode
-from eth_abi.decoding import UnsignedIntegerDecoder
-from eth_abi.encoding import UnsignedIntegerEncoder
-from eth_abi.exceptions import DecodingError, InsufficientDataBytes
-from eth_abi.registry import BaseEquals, registry
 from eth_pydantic_types import HexBytes, HexStr
 from eth_pydantic_types.utils import validate_bytes_size
-from eth_utils import decode_hex
+from faster_eth_abi import grammar
+from faster_eth_abi.abi import decode
+from faster_eth_abi.decoding import UnsignedIntegerDecoder
+from faster_eth_abi.encoding import UnsignedIntegerEncoder
+from faster_eth_abi.exceptions import DecodingError, InsufficientDataBytes
+from faster_eth_abi.registry import BaseEquals, registry
+from faster_eth_utils import decode_hex
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, EventABIType, MethodABI
 
 from ape.logging import logger
