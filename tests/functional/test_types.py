@@ -1,8 +1,8 @@
 from typing import Any, Optional
 
 import pytest
-from eth_utils import to_hex
 from ethpm_types.abi import EventABI
+from faster_eth_utils import to_hex
 from hexbytes import HexBytes
 from pydantic import BaseModel, Field, ValidationError
 
