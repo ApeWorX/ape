@@ -5,8 +5,8 @@ import shutil
 from pathlib import Path
 
 import pytest
-from eth_utils import to_hex
 from ethpm_types import Compiler, ContractType, PackageManifest, Source
+from faster_eth_utils import to_hex
 
 from ape import Project
 from ape.contracts import ContractContainer
