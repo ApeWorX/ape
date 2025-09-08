@@ -3,7 +3,7 @@
 import re
 from warnings import warn
 
-from eth_utils import is_hex
+from faster_eth_utils import is_hex
 
 from ape.exceptions import AccountsError, AliasAlreadyInUseError
 from ape.utils.basemodel import ManagerAccessMixin
