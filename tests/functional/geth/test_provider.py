@@ -7,7 +7,7 @@ from urllib.error import HTTPError, URLError
 import pytest
 from eth_pydantic_types import HexBytes32
 from eth_typing import HexStr
-from eth_utils import keccak, to_hex
+from faster_eth_utils import keccak, to_hex
 from hexbytes import HexBytes
 from web3 import AutoProvider, Web3
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
