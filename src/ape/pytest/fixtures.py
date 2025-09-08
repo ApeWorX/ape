@@ -8,7 +8,7 @@ from functools import cached_property, singledispatchmethod
 from typing import TYPE_CHECKING, ClassVar, Optional
 
 import pytest
-from eth_utils import to_hex
+from faster_eth_utils import to_hex
 
 from ape.exceptions import BlockNotFoundError, ChainError, ProviderNotConnectedError
 from ape.logging import logger
