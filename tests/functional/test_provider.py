@@ -6,7 +6,7 @@ import pytest
 from eth_pydantic_types import HexBytes32
 from eth_tester.exceptions import TransactionFailed  # type: ignore
 from eth_typing import HexStr
-from eth_utils import ValidationError, to_hex
+from faster_eth_utils import ValidationError, to_hex
 from hexbytes import HexBytes
 from requests import HTTPError
 from web3.exceptions import ContractPanicError, ExtraDataLengthError, TimeExhausted
