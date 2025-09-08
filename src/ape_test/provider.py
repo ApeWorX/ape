@@ -12,9 +12,9 @@ from eth_tester import EthereumTester  # type: ignore
 from eth_tester.backends import PyEVMBackend  # type: ignore
 from eth_tester.backends.pyevm.main import setup_tester_chain  # type: ignore
 from eth_tester.exceptions import TransactionFailed  # type: ignore
-from eth_utils import is_0x_prefixed, to_hex
-from eth_utils.exceptions import ValidationError
-from eth_utils.toolz import merge
+from faster_eth_utils import is_0x_prefixed, to_hex
+from faster_eth_utils.exceptions import ValidationError
+from faster_eth_utils.toolz import merge
 from web3 import EthereumTesterProvider, Web3
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.providers.eth_tester.defaults import API_ENDPOINTS, static_return
