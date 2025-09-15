@@ -846,6 +846,12 @@ def test_create_transaction_uses_network_gas_limit(tx_type, ethereum, eth_tester
     assert tx.gas_limit == eth_tester_provider.max_gas
 
 
+def test_create_transaction_not_connected(networks_disconnected):
+    tx = networks_disconnected.ethereum.create_transaction()
+    # Show it doesn't try to refer to network gas limit.
+    assert tx.gas_limit == 0
+
+
 def test_create_transaction_with_none_values(ethereum, eth_tester_provider):
     """
     Tests against None being in place of values in kwargs,
