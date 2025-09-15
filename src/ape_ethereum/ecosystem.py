@@ -909,7 +909,7 @@ class Ethereum(EcosystemAPI):
             TransactionType.SET_CODE: SetCodeTransaction,
         }
         if "type" in tx_data:
-            # May be None in data.
+            # It might be `None` in the given data dict.
             if tx_data["type"] is None:
                 # Explicit `None` means used default.
                 version = self.default_transaction_type
@@ -953,12 +953,11 @@ class Ethereum(EcosystemAPI):
 
             tx_data["required_confirmations"] = required_confirmations
 
-        if isinstance(tx_data.get("chainId"), str):
-            tx_data["chainId"] = int(tx_data["chainId"], 16)
+        chain_id = tx_data.get("chainId", tx_data.get("chain_id"))
+        if isinstance(chain_id, str):
+            tx_data["chainId"] = int(chain_id, 16)
 
-        elif (
-            "chainId" not in tx_data or tx_data["chainId"] is None
-        ) and self.network_manager.active_provider is not None:
+        elif chain_id is None and self.network_manager.active_provider is not None:
             tx_data["chainId"] = self.provider.chain_id
 
         if "input" in tx_data:
