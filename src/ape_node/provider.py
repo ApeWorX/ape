@@ -191,7 +191,7 @@ class GethDevProcess(BaseGethProcess):
 
         if rpc_api is None:
             # Reth also has MEV API support.
-            rpc_api_str = f"{ALL_APIS},mev" if is_reth else ALL_APIS
+            rpc_api_str = f"{ALL_APIS},mev,flashbots" if is_reth else ALL_APIS
         else:
             rpc_api_str = ",".join(rpc_api)
 
@@ -242,6 +242,7 @@ class GethDevProcess(BaseGethProcess):
         # Correct multi-word executable.
         idx = self.command.index(executable[0])
         self.command = self.command[:idx] + executable + self.command[idx + 1 :]
+        logger.debug(" ".join(self.command))
 
     @classmethod
     def from_uri(cls, uri: str, data_folder: Path, **kwargs):

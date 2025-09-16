@@ -29,7 +29,14 @@ from web3.exceptions import (
     TransactionNotFound,
 )
 
-from ape.types.private_mempool import Bundle, SimulationReport
+from ape.types.private_mempool import (
+    Bundle,
+    EthBundle,
+    EthCallBundle,
+    EthCallSimulationReport,
+    EthSendBundleResult,
+    SimulationReport,
+)
 
 try:
     from web3.exceptions import Web3RPCError  # type: ignore
@@ -1754,6 +1761,34 @@ class EthereumNodeProvider(Web3Provider, ABC):
 
         self._complete_connect()
 
+    def send_transaction_bundle(self, bundle: EthBundle) -> EthSendBundleResult:
+        """
+        Send a transaction bundle.
+
+        Args:
+            bundle (:class:`~ape.types.private_mempool.Bundle`) A bundle of transactions to send to the matchmaker.
+
+        Returns:
+            :class:`~ape.types.private_mempool.EthSendBundleResult`
+        """
+        params = [bundle.model_dump(mode="json", exclude_none=True)]
+        result = self.provider.make_request("eth_sendBundle", params)
+        return EthSendBundleResult.model_validate(result)
+
+    def call_transaction_bundle(self, bundle: EthCallBundle) -> EthCallSimulationReport:
+        """
+        Simulate a transaction bundle using ``eth_callBundle``.
+
+        Args:
+            bundle (:class:`~ape.types.private_mempool.Bundle`) A bundle of transactions to send to the matchmaker.
+
+        Returns:
+            :class:`~ape.types.private_mempool.EthSendBundleResult`
+        """
+        params = [bundle.model_dump(mode="json", exclude_none=True)]
+        result = self.provider.make_request("eth_callBundle", params)
+        return EthCallSimulationReport.model_validate(result)
+
     def simulate_transaction_bundle(
         self, bundle: Bundle, sim_overrides: Optional[dict] = None
     ) -> SimulationReport:
@@ -1767,7 +1802,10 @@ class EthereumNodeProvider(Web3Provider, ABC):
         Returns:
             :class:`~ape.types.private_mempool.SimulationReport`
         """
-        bundle_request = {"bundle": bundle.model_dump(), "simOverrides": sim_overrides or {}}
+        bundle_request = {
+            "bundle": bundle.model_dump(mode="json", exclude_none=True),
+            "simOverrides": sim_overrides or {},
+        }
         result = self.provider.make_request("mev_simBundle", bundle_request)
         return SimulationReport.model_validate(result)
 

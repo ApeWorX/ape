@@ -1089,5 +1089,5 @@ class TestGethDevProcess:
             "path/to/reth.ipc", data_folder, executable=["reth", "node"], verify_bin=False
         )
         actual = set(reth_dev.geth_kwargs["rpc_api"].split(","))
-        expected = {"admin", "debug", "eth", "net", "txpool", "web3", "mev"}
+        expected = {"admin", "debug", "eth", "net", "txpool", "web3", "mev", "flashbots"}
         assert actual == expected
