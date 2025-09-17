@@ -381,7 +381,7 @@ def test_raw_compiler_output_bytecode(integ_project):
 
 @skip_projects_except("with-contracts")
 def test_compile_exclude(ape_cli, runner):
-    result = runner.invoke(ape_cli, ("compile", "--force", "-v", "INFO"), catch_exceptions=False)
+    result = runner.invoke(ape_cli, ("compile", "VyperContract", "--force", "-v", "INFO"), catch_exceptions=False)
     assert "Compiling 'contracts/Exclude.json'" not in result.output
     assert "Compiling 'contracts/IgnoreUsingRegex.json'" not in result.output
     assert "Compiling 'contracts/exclude_dir/UnwantedContract.json'" not in result.output
