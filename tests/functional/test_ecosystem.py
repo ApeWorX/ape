@@ -938,6 +938,16 @@ def test_create_transaction_set_code(tx_kwargs, ethereum):
     assert tx.type == TransactionType.SET_CODE.value
 
 
+def test_create_transaction_chain_id(ethereum):
+    """
+    Tests against a bug where `create_transaction()` always used
+    the connected chain ID instead of the given.
+    """
+    chain_id = 123  # Anything but the local, connected chain.
+    tx = ethereum.create_transaction(chain_id=chain_id)
+    assert tx.chain_id == chain_id
+
+
 @pytest.mark.parametrize("tx_type", TransactionType)
 def test_encode_transaction(tx_type, ethereum, vyper_contract_instance, owner, eth_tester_provider):
     abi = vyper_contract_instance.contract_type.methods[0]

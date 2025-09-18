@@ -381,10 +381,13 @@ def test_raw_compiler_output_bytecode(integ_project):
 
 @skip_projects_except("with-contracts")
 def test_compile_exclude(ape_cli, runner):
-    result = runner.invoke(ape_cli, ("compile", "--force", "-v", "INFO"), catch_exceptions=False)
-    assert "Compiling 'contracts/Exclude.json'" not in result.output
-    assert "Compiling 'contracts/IgnoreUsingRegex.json'" not in result.output
-    assert "Compiling 'contracts/exclude_dir/UnwantedContract.json'" not in result.output
+    result = runner.invoke(
+        ape_cli, ("compile", "VyperContract", "--force", "-v", "INFO"), catch_exceptions=False
+    )
+    assert result.exit_code == 0, result.output
+    assert "Compiling 'contracts/Exclude'" not in result.output
+    assert "Compiling 'contracts/IgnoreUsingRegex'" not in result.output
+    assert "Compiling 'contracts/exclude_dir/UnwantedContract'" not in result.output
 
 
 @skip_projects_except("with-contracts")
@@ -392,10 +395,13 @@ def test_compile_config_override(ape_cli, runner):
     arguments = (
         "compile",
         "--force",
+        "ContractA",
+        "ContractB",
         "--config-override",
         '{"compile": {"exclude": ["*ContractA*"]}}',
         "-v",
         "INFO",
     )
     result = runner.invoke(ape_cli, arguments, catch_exceptions=False)
-    assert "Compiling 'contracts/ContractA.json'" not in result.output
+    assert result.exit_code == 0, result.output
+    assert "Compiling 'contracts/ContractA" not in result.output
