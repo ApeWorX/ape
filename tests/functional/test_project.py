@@ -734,7 +734,7 @@ class TestProject:
         # NOTE: Using tempdir to avoid clashing with other tests during x-dist.
         with project.isolate_in_tempdir() as temp_project:
             assert project.path == with_dependencies_project_path
-            project.manifest_path.unlink(missing_ok=True, ignore_errors=True)
+            project.manifest_path.unlink(missing_ok=True)
 
             #  Re-init to show it doesn't create the manifest file.
             _ = Project(temp_project.path)
