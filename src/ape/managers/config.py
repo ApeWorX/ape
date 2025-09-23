@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional, Union
 
 from ape.api.config import ApeConfig
+from ape.logging import logger
 from ape.managers.base import BaseManager
 from ape.utils.basemodel import (
     ExtraAttributesMixin,
@@ -150,7 +151,13 @@ class ConfigManager(ExtraAttributesMixin, BaseManager):
                             continue
 
                         dest_path = temp_data_folder / item
-                        shutil.copytree(path_to_keep, dest_path)
+                        try:
+                            shutil.copytree(path_to_keep, dest_path)
+                        except Exception as err:
+                            logger.warning(
+                                f"Problem copying '{dest_path.name}' when making isolated project: {err}"
+                            )
+                            continue
 
                     self.DATA_FOLDER = temp_data_folder
                     yield temp_data_folder

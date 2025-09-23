@@ -737,7 +737,7 @@ class TestProject:
             project.manifest_path.unlink(missing_ok=True)
 
             #  Re-init to show it doesn't create the manifest file.
-            project = Project(temp_project.path)
+            _ = Project(temp_project.path)
 
     def test_init_invalid_config(self):
         here = os.curdir
