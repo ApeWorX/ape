@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 from unittest import mock
 
@@ -25,7 +24,6 @@ from ape.exceptions import (
 from ape.types.events import LogFilter
 from ape.utils.testing import DEFAULT_TEST_CHAIN_ID
 from ape_ethereum.provider import (
-    WEB3_PROVIDER_URI_ENV_VAR_NAME,
     EthereumNodeProvider,
     Web3Provider,
     _sanitize_web3_url,
