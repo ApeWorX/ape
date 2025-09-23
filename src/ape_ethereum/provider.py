@@ -73,6 +73,8 @@ from ape_ethereum._print import CONSOLE_ADDRESS, console_contract
 from ape_ethereum.trace import CallTrace, TraceApproach, TransactionTrace
 from ape_ethereum.transactions import AccessList, AccessListTransaction, TransactionStatusEnum
 
+WEB3_PROVIDER_URI_ENV_VAR_NAME = "WEB3_PROVIDER_URI"
+
 if TYPE_CHECKING:
     from ethpm_types import EventABI
 
@@ -103,34 +105,6 @@ def _sanitize_web3_url(msg: str) -> str:
         rest[0] = rest[0].rstrip(",")
     sanitized_url = sanitize_url(rest[0])
     return f"{prefix} URI: {sanitized_url} {' '.join(rest[1:])}"
-
-
-WEB3_PROVIDER_URI_ENV_VAR_NAME = "WEB3_PROVIDER_URI"
-
-
-def assert_web3_provider_uri_env_var_not_set():
-    """
-    Environment variable $WEB3_PROVIDER_URI causes problems
-    when used with Ape (ignores Ape's networks). Use
-    this validator to eliminate the concern.
-
-    Raises:
-          :class:`~ape.exceptions.ProviderError`: If environment variable
-            WEB3_PROVIDER_URI exists in ``os.environ``.
-    """
-    if WEB3_PROVIDER_URI_ENV_VAR_NAME not in os.environ:
-        return
-
-    # NOTE: This was the source of confusion for user when they noticed
-    #  Ape would only connect to RPC URL set by an environment variable
-    #  named $WEB3_PROVIDER_URI instead of whatever network they were telling Ape.
-    raise ProviderError(
-        "Ape does not support Web3.py's environment variable "
-        f"${WEB3_PROVIDER_URI_ENV_VAR_NAME}. If you are using this environment "
-        "variable name incidentally, please use a different name. If you are "
-        "trying to set the network in Web3.py, please use Ape's `ape-config.yaml` "
-        "or `--network` option instead."
-    )
 
 
 def _post_send_transaction(tx: TransactionAPI, receipt: ReceiptAPI):
@@ -171,8 +145,6 @@ class Web3Provider(ProviderAPI, ABC):
     _transaction_trace_cache: dict[str, TransactionTrace] = {}
 
     def __new__(cls, *args, **kwargs):
-        assert_web3_provider_uri_env_var_not_set()
-
         # Post-connection ops
         def post_connect_hook(connect):
             @wraps(connect)
@@ -384,7 +356,20 @@ class Web3Provider(ProviderAPI, ABC):
             # Use a default localhost value.
             return DEFAULT_HTTP_URI
 
-        elif rpc := self._get_random_rpc():
+        elif env_var := os.getenv(WEB3_PROVIDER_URI_ENV_VAR_NAME):
+            # Default Web3 environment variable support that works with web3 out-the-box.
+            # Eliminates need for random RPCs and allows usage of this feature. **MUST BE**
+            # for the same chain the user is trying to connect to, which requires a bit of a hack.
+            # NOTE: We should be able to assume NOT dev here which means chain IDs are hardcoded.
+            tmp_w3 = Web3(HTTPProvider(endpoint_uri=env_var))
+            if self.network.chain_id == tmp_w3.eth.chain_id:
+                return env_var
+
+            # NOTE: We **must** remove the environment variable here or else Ape won't work.
+            os.environ.pop(WEB3_PROVIDER_URI_ENV_VAR_NAME, None)
+            # Next, drop down and try to use a random RPc from evmchains.
+
+        if rpc := self._get_random_rpc():
             # This works when the network is in `evmchains`.
             return rpc
 
