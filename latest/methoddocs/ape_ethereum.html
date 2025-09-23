@@ -228,7 +228,6 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#ape_ethereum.provider.Web3Provider.ws_uri"><code class="docutils literal notranslate">.ws_uri</span></code></a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#ape_ethereum.provider.assert_web3_provider_uri_env_var_not_set"><code class="docutils literal notranslate"><span class="pre">assert_web3_provider_uri_env_var_not_set()</span></code></a></li>
 <li><a class="reference internal" href="#ape_ethereum.proxies.ProxyInfo"><code class="docutils literal notranslate"><span class="pre">ProxyInfo</span></code></a><ul>
 <li><a class="reference internal" href="#ape_ethereum.proxies.ProxyInfo.abi"><code class="docutils literal notranslate">.abi</span></code></a></li>
 </ul>
@@ -1454,20 +1453,6 @@ May require a reconnect.</p>
 <dd><p>Return the raw WS/WSS URI to connect to this provider, if supported.</p>
 </dd></dl>
 
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="ape_ethereum.provider.assert_web3_provider_uri_env_var_not_set">
-<span class="sig-prename descclassname"><span class="pre">ape_ethereum.provider.</span></span><span class="sig-name descname"><span class="pre">assert_web3_provider_uri_env_var_not_set</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ape_ethereum.provider.assert_web3_provider_uri_env_var_not_set" title="Link to this definition"></a></dt>
-<dd><p>Environment variable $WEB3_PROVIDER_URI causes problems
-when used with Ape (ignores Ape’s networks). Use
-this validator to eliminate the concern.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Raises<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="exceptions.html#ape.exceptions.ProviderError" title="ape.exceptions.ProviderError"><strong>ProviderError</strong></a> – If environment variable
-    WEB3_PROVIDER_URI exists in <code class="docutils literal notranslate"><span class="pre">os.environ</span></code>.</p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py class" id="module-ape_ethereum.proxies">
