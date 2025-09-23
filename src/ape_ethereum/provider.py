@@ -1549,15 +1549,33 @@ class Web3Provider(ProviderAPI, ABC):
         )
         enriched = self.compiler_manager.enrich_error(result)
 
-        # Show call trace if available
-        if enriched.txn:
-            # Unlikely scenario where a transaction is on the error even though a receipt exists.
-            if isinstance(enriched.txn, TransactionAPI) and enriched.txn.receipt:
-                enriched.txn.receipt.show_trace()
-            elif isinstance(enriched.txn, ReceiptAPI):
-                enriched.txn.show_trace()
+        # Show call trace if possible.
+        if trace := _get_trace_from_revert_kwargs(trace=trace, txn=enriched):
+            trace.show()
 
         return enriched
+
+
+# Abstracted for unit-testing.
+def _get_trace_from_revert_kwargs(**kwargs) -> Optional["TraceAPI"]:
+    trace = kwargs.get("trace")
+    txn = kwargs.get("txn")
+
+    if trace and callable(trace):
+        trace = trace()
+
+    if not trace and (txn := txn):
+        if isinstance(txn, TransactionAPI):
+            if txn.receipt:
+                return txn.receipt.trace
+
+            # Calls it from the provider.
+            return txn.trace
+
+        elif isinstance(txn, ReceiptAPI):
+            return txn.trace
+
+    return trace
 
 
 class EthereumNodeProvider(Web3Provider, ABC):
