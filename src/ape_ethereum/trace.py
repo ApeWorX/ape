@@ -654,23 +654,11 @@ class CallTrace(Trace):
             self.provider._supports_debug_trace_call = True
 
     def _debug_trace_call(self):
-        tx = {
-            "from": self.transaction.get("from", ZERO_ADDRESS),
-            "to": self.transaction.get("to", ZERO_ADDRESS),
-            "gas": to_hex(self.transaction.get("gas", 21_000)),
-            "gasPrice": to_hex(self.transaction.get("gasPrice", 0)),
-            "value": to_hex(self.transaction.get("value", 0)),
-            "data": self.transaction.get("data", "0x"),
-            "maxFeePerGas": self.transaction.get("maxFeePerGas", self.provider.base_fee),
-            "maxPriorityFeePerGas": to_hex(self.transaction.get("maxPriorityFeePerGas", 0)),
-        }
-        arguments = [tx, *self.arguments]
+        arguments = [self.transaction, *self.arguments]
 
         # Block ID is required, at least for regular geth nodes.
         if len(arguments) == 1:
-            arguments.extend(("latest", {"tracer": "callTracer"}))
-        elif len(arguments) == 2:
-            arguments.append({"tracer": "callTracer"})
+            arguments.append("latest")
 
         return self.provider.make_request("debug_traceCall", arguments)
 

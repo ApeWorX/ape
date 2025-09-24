@@ -294,7 +294,13 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
                 return err
 
             compiler = self.registered_compilers[ext]
-            return compiler.enrich_error(err)
+            err = compiler.enrich_error(err)
+            if f"{err}".startswith("0x"):
+                # Still not enriched.
+                for error in self.chain_manager.contracts:
+                    if contract_type and f"{err}" in contract_type.errors:
+                        breakpoint()
+                        x = 3
 
         # No further enrichment.
         return err
