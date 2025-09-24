@@ -335,8 +335,8 @@ class ContractLogicError(VirtualMachineError):
     @revert_message.setter
     def revert_message(self, value):
         self.message = value
-        if self.args:
-            self.args = [value, *self.args[1:]]
+        if args := self.args:
+            self.args = tuple([value, *args[1:]])
 
     @property
     def dev_message(self) -> Optional[str]:
