@@ -551,7 +551,7 @@ class Web3Provider(ProviderAPI, ABC):
         txn_params = cast(TxParams, txn_dict)
         try:
             return self.web3.eth.estimate_gas(txn_params, block_identifier=block_id)
-        except (ValueError, Web3ContractLogicError) as err:
+        except (ValueError, Web3ContractLogicError, Web3RPCError) as err:
             # NOTE: Try to use debug_traceCall to obtain a trace.
             #  And the RPC can be very picky with inputs.
             tx_to_trace: dict = {}
@@ -1375,6 +1375,10 @@ class Web3Provider(ProviderAPI, ABC):
             elif err.response.status_code == 429:
                 raise  # Raise as-is so rate-limit handling picks it up.
 
+            elif json_data := err.response.json():
+                message = json_data.get("error", json_data).get("message", json_data)
+                raise ProviderError(message) from err
+
             raise ProviderError(str(err)) from err
 
         if "error" in result:
@@ -1529,11 +1533,11 @@ class Web3Provider(ProviderAPI, ABC):
 
                 if trace is not None:
                     if callable(trace):
-                        trace_called = params["trace"] = trace()
+                        trace = params["trace"] = trace()
                     else:
-                        trace_called = trace
+                        trace = trace
 
-                    if trace_called is not None and (revert_message := trace_called.revert_message):
+                    if trace is not None and (revert_message := trace.revert_message):
                         message = revert_message
                         no_reason = False
 
