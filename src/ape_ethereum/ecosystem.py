@@ -167,9 +167,8 @@ class NetworkConfig(PluginConfig):
             value = value.get("auto", {})
             return AutoGasLimit.model_validate(value)
 
-        elif isinstance(value, AutoGasLimit):
-            # Already validated AutoGasLimit.
-            return value
+        elif value == "auto":
+            return AutoGasLimit()
 
         elif value in ("auto", "max") or isinstance(value, AutoGasLimit):
             return value

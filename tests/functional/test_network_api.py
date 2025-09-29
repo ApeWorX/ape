@@ -74,16 +74,30 @@ def test_gas_limit_defaults(ethereum, project, custom_networks_config_dict):
     (
         {"auto": {"multiplier": 1.1}},
         AutoGasLimit(multiplier=1.1),
-        # "auto",
-        # "max",
-        # 100,
-        # "0x100",
     ),
 )
-def test_gas_limit_configured_auto(gas_limit_cfg, ethereum, project, custom_networks_config_dict):
-    custom_networks_config_dict["networks"]["custom"][0]["gas_limit"] = gas_limit_cfg
-    with project.temp_config(**custom_networks_config_dict):
-        assert ethereum.apenet.gas_limit == AutoGasLimit(multiplier=1.1)
+def test_gas_limit_configured_auto_with_multiplier(gas_limit_cfg):
+    cfg = NetworkConfig(gas_limit=gas_limit_cfg)
+    assert cfg.gas_limit == AutoGasLimit(multiplier=1.1)
+
+
+def test_gas_limit_configured_auto(ethereum, project):
+    network = NetworkConfig(gas_limit="auto")
+    assert network.gas_limit == AutoGasLimit(multiplier=1.0)
+
+
+def test_gas_limit_configured_max(ethereum, project):
+    with project.temp_config(ethereum={"local": {"gas_limit": "max"}}):
+        assert ethereum.local.gas_limit == "max"
+
+
+@pytest.mark.parametrize(
+    "gas_limit_cfg",
+    (100, "0x64"),
+)
+def test_gas_limit_configured_numerically(gas_limit_cfg):
+    network = NetworkConfig(gas_limit=gas_limit_cfg)
+    assert network.gas_limit == 100
 
 
 def test_base_fee_multiplier(ethereum):
