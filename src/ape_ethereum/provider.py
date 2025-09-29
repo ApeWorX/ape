@@ -542,7 +542,7 @@ class Web3Provider(ProviderAPI, ABC):
         txn_params = cast(TxParams, txn_dict)
         try:
             return self.web3.eth.estimate_gas(txn_params, block_identifier=block_id)
-        except (ValueError, Web3ContractLogicError) as err:
+        except (ValueError, Web3ContractLogicError, Web3RPCError) as err:
             # NOTE: Try to use debug_traceCall to obtain a trace.
             #  And the RPC can be very picky with inputs.
             tx_to_trace: dict = {}
@@ -1366,6 +1366,10 @@ class Web3Provider(ProviderAPI, ABC):
             elif err.response.status_code == 429:
                 raise  # Raise as-is so rate-limit handling picks it up.
 
+            elif json_data := err.response.json():
+                message = json_data.get("error", json_data).get("message", json_data)
+                raise ProviderError(message) from err
+
             raise ProviderError(str(err)) from err
 
         if "error" in result:
@@ -1520,11 +1524,11 @@ class Web3Provider(ProviderAPI, ABC):
 
                 if trace is not None:
                     if callable(trace):
-                        trace_called = params["trace"] = trace()
+                        trace = params["trace"] = trace()
                     else:
-                        trace_called = trace
+                        trace = trace
 
-                    if trace_called is not None and (revert_message := trace_called.revert_message):
+                    if trace is not None and (revert_message := trace.revert_message):
                         message = revert_message
                         no_reason = False
 
@@ -1540,15 +1544,33 @@ class Web3Provider(ProviderAPI, ABC):
         )
         enriched = self.compiler_manager.enrich_error(result)
 
-        # Show call trace if available
-        if enriched.txn:
-            # Unlikely scenario where a transaction is on the error even though a receipt exists.
-            if isinstance(enriched.txn, TransactionAPI) and enriched.txn.receipt:
-                enriched.txn.receipt.show_trace()
-            elif isinstance(enriched.txn, ReceiptAPI):
-                enriched.txn.show_trace()
+        # Show call trace if possible.
+        if trace := _get_trace_from_revert_kwargs(trace=trace, txn=enriched):
+            trace.show()
 
         return enriched
+
+
+# Abstracted for unit-testing.
+def _get_trace_from_revert_kwargs(**kwargs) -> Optional["TraceAPI"]:
+    trace = kwargs.get("trace")
+    txn = kwargs.get("txn")
+
+    if trace and callable(trace):
+        trace = trace()
+
+    if not trace and (txn := txn):
+        if isinstance(txn, TransactionAPI):
+            if txn.receipt:
+                return txn.receipt.trace
+
+            # Calls it from the provider.
+            return txn.trace
+
+        elif isinstance(txn, ReceiptAPI):
+            return txn.trace
+
+    return trace
 
 
 class EthereumNodeProvider(Web3Provider, ABC):
