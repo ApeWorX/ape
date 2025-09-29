@@ -245,7 +245,6 @@ class GethDevProcess(BaseGethProcess):
         idx = self.command.index(executable[0])
         self.command = self.command[:idx] + executable + self.command[idx + 1 :]
 
-
     @classmethod
     def from_uri(cls, uri: str, data_folder: Path, **kwargs):
         mnemonic = kwargs.get("mnemonic", DEFAULT_TEST_MNEMONIC)
