@@ -2714,11 +2714,18 @@ class LocalProject(Project):
     def unpack(self, destination: Path, config_override: Optional[dict] = None) -> "LocalProject":
         config_override = {**self._config_override, **(config_override or {})}
 
+        def copytree(src, dst):
+            try:
+                shutil.copytree(src, dst, dirs_exist_ok=True)
+            except Exception as err:
+                logger.error(f"Failed to unpack '{src}' to '{dst}': {err}")
+                pass
+
         # Unpack contracts.
         if self.contracts_folder.is_dir():
             contracts_path = get_relative_path(self.contracts_folder, self.path)
             contracts_destination = destination / contracts_path
-            shutil.copytree(self.contracts_folder, contracts_destination, dirs_exist_ok=True)
+            copytree(self.contracts_folder, contracts_destination)
 
         # Unpack config file.
         if not (destination / "ape-config.yaml").is_file():
@@ -2726,13 +2733,11 @@ class LocalProject(Project):
 
         # Unpack scripts folder.
         if self.scripts_folder.is_dir():
-            scripts_destination = destination / "scripts"
-            shutil.copytree(self.scripts_folder, scripts_destination, dirs_exist_ok=True)
+            copytree(self.scripts_folder, destination / "scripts")
 
         # Unpack tests folder.
         if self.tests_folder.is_dir():
-            tests_destination = destination / "tests"
-            shutil.copytree(self.tests_folder, tests_destination, dirs_exist_ok=True)
+            copytree(self.tests_folder, destination / "tests")
 
         # Unpack interfaces folder. Avoid double unpacking if already covered in contracts folder.
         if self.interfaces_folder.is_dir() and not self.interfaces_folder.is_relative_to(
@@ -2741,13 +2746,13 @@ class LocalProject(Project):
             prefix = get_relative_path(self.interfaces_folder.parent, self.path)
             interfaces_destination = destination / prefix / self.config.interfaces_folder
             interfaces_destination.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copytree(self.interfaces_folder, interfaces_destination, dirs_exist_ok=True)
+            copytree(self.interfaces_folder, interfaces_destination)
 
         # Unpack build folder (to avoid needless re-compiling).
         if self.manifest_path.parent.is_dir() and self.manifest_path.parent.name == ".build":
             build_destination = destination / ".build"
             build_destination.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copytree(self.manifest_path.parent, build_destination, dirs_exist_ok=True)
+            copytree(self.manifest_path.parent, build_destination)
 
         return LocalProject(destination, config_override=config_override)
 

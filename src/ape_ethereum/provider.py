@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING, Any, Callable, Optional, Union, cast
 import ijson  # type: ignore
 import requests
 from eth_pydantic_types import HexBytes
-from eth_typing import BlockNumber, HexStr
+from eth_typing import HexStr
 from eth_utils import add_0x_prefix, is_hex, to_hex
 from evmchains import PUBLIC_CHAIN_META, get_random_rpc
 from pydantic.dataclasses import dataclass
@@ -448,32 +448,23 @@ class Web3Provider(ProviderAPI, ABC):
 
     @property
     def base_fee(self) -> int:
-        latest_block_number = self._get_latest_block_rpc().get("number")
-        if latest_block_number is None:
-            # Possibly no blocks yet.
-            logger.debug("Latest block has no number. Using base fee of '0'.")
-            return 0
-
         try:
-            fee_history = self._get_fee_history(latest_block_number)
+            fee_history = self._get_fee_history()
         except Exception as exc:
-            # Use the less-accurate approach (OK for testing).
             logger.debug(
-                "Failed using `web3.eth.fee_history` for network "
-                f"'{self.network_choice}'. Error: {exc}"
+                f"Failed using `eth_feeHistory` for network '{self.network_choice}'. Error: {exc}"
             )
             return self._get_last_base_fee()
 
-        if "baseFeePerGas" not in fee_history or len(fee_history["baseFeePerGas"] or []) < 2:
-            logger.debug("Not enough fee_history. Defaulting less-accurate approach.")
-            return self._get_last_base_fee()
+        base_fees = fee_history.get("baseFeePerGas") or []
+        if base_fees:
+            latest_fee = base_fees[-1]
+            if latest_fee is not None:
+                return to_int(latest_fee)
 
-        pending_base_fee = fee_history["baseFeePerGas"][1]
-        if pending_base_fee is None:
-            # Non-EIP-1559 chains or we time-travelled pre-London fork.
-            return self._get_last_base_fee()
-
-        return to_int(pending_base_fee)
+        # Fallback for non-EIP-1559 chains or missing data
+        logger.debug("Insufficient or missing baseFeePerGas. Using fallback base fee.")
+        return self._get_last_base_fee()
 
     @property
     def call_trace_approach(self) -> Optional[TraceApproach]:
@@ -488,9 +479,9 @@ class Web3Provider(ProviderAPI, ABC):
 
         return self.settings.get("call_trace_approach")
 
-    def _get_fee_history(self, block_number: int) -> FeeHistory:
+    def _get_fee_history(self, block_id: "BlockID" = "latest") -> FeeHistory:
         try:
-            return self.web3.eth.fee_history(1, BlockNumber(block_number), reward_percentiles=[])
+            return self.web3.eth.fee_history(1, block_id, reward_percentiles=[])  # type: ignore
         except (MethodUnavailable, AttributeError) as err:
             raise APINotImplementedError(str(err)) from err
 
@@ -551,7 +542,7 @@ class Web3Provider(ProviderAPI, ABC):
         txn_params = cast(TxParams, txn_dict)
         try:
             return self.web3.eth.estimate_gas(txn_params, block_identifier=block_id)
-        except (ValueError, Web3ContractLogicError) as err:
+        except (ValueError, Web3ContractLogicError, Web3RPCError) as err:
             # NOTE: Try to use debug_traceCall to obtain a trace.
             #  And the RPC can be very picky with inputs.
             tx_to_trace: dict = {}
@@ -1375,6 +1366,10 @@ class Web3Provider(ProviderAPI, ABC):
             elif err.response.status_code == 429:
                 raise  # Raise as-is so rate-limit handling picks it up.
 
+            elif json_data := err.response.json():
+                message = json_data.get("error", json_data).get("message", json_data)
+                raise ProviderError(message) from err
+
             raise ProviderError(str(err)) from err
 
         if "error" in result:
@@ -1529,11 +1524,11 @@ class Web3Provider(ProviderAPI, ABC):
 
                 if trace is not None:
                     if callable(trace):
-                        trace_called = params["trace"] = trace()
+                        trace = params["trace"] = trace()
                     else:
-                        trace_called = trace
+                        trace = trace
 
-                    if trace_called is not None and (revert_message := trace_called.revert_message):
+                    if trace is not None and (revert_message := trace.revert_message):
                         message = revert_message
                         no_reason = False
 
@@ -1549,15 +1544,33 @@ class Web3Provider(ProviderAPI, ABC):
         )
         enriched = self.compiler_manager.enrich_error(result)
 
-        # Show call trace if available
-        if enriched.txn:
-            # Unlikely scenario where a transaction is on the error even though a receipt exists.
-            if isinstance(enriched.txn, TransactionAPI) and enriched.txn.receipt:
-                enriched.txn.receipt.show_trace()
-            elif isinstance(enriched.txn, ReceiptAPI):
-                enriched.txn.show_trace()
+        # Show call trace if possible.
+        if trace := _get_trace_from_revert_kwargs(trace=trace, txn=enriched):
+            trace.show()
 
         return enriched
+
+
+# Abstracted for unit-testing.
+def _get_trace_from_revert_kwargs(**kwargs) -> Optional["TraceAPI"]:
+    trace = kwargs.get("trace")
+    txn = kwargs.get("txn")
+
+    if trace and callable(trace):
+        trace = trace()
+
+    if not trace and (txn := txn):
+        if isinstance(txn, TransactionAPI):
+            if txn.receipt:
+                return txn.receipt.trace
+
+            # Calls it from the provider.
+            return txn.trace
+
+        elif isinstance(txn, ReceiptAPI):
+            return txn.trace
+
+    return trace
 
 
 class EthereumNodeProvider(Web3Provider, ABC):

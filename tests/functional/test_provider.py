@@ -26,8 +26,10 @@ from ape.utils.testing import DEFAULT_TEST_CHAIN_ID
 from ape_ethereum.provider import (
     EthereumNodeProvider,
     Web3Provider,
+    _get_trace_from_revert_kwargs,
     _sanitize_web3_url,
 )
+from ape_ethereum.trace import TransactionTrace
 from ape_ethereum.transactions import TransactionStatusEnum, TransactionType
 from ape_test import LocalProvider
 
@@ -836,3 +838,26 @@ class TestSubprocessProvider:
         expected = r"Process not started and cannot connect to existing process\."
         with pytest.raises(ProviderError, match=expected):
             subprocess_provider.start()
+
+
+def test_get_trace_from_revert_kwargs(ethereum, owner, chain):
+    """
+    Trace already given, ignore transaction.
+    """
+    trace = TransactionTrace(transaction_hash="0x")
+    txn = ethereum.create_transaction(
+        sender=owner, max_fee=chain.provider.base_fee, max_priority_fee=0, nonce=0
+    )
+    txn = owner.sign_transaction(txn)
+
+    actual = _get_trace_from_revert_kwargs(trace=trace, txn=txn)
+    assert actual == trace
+
+    # Only given txn. It uses the provider to get it.
+    actual = _get_trace_from_revert_kwargs(txn=txn)
+    assert actual == txn.trace
+
+    # Only given a receipt. It is cached on the receipt after using the provider.
+    receipt = owner.call(txn)
+    actual = _get_trace_from_revert_kwargs(txn=receipt)
+    assert actual == receipt.trace
