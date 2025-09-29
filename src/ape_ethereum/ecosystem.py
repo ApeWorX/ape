@@ -136,7 +136,7 @@ class NetworkConfig(PluginConfig):
     from a transaction before failing.
     """
 
-    gas_limit: GasLimit = "auto"
+    gas_limit: GasLimit = AutoGasLimit()
     """
     The gas limit override to use for the network. If set to ``"auto"``, ape will
     estimate gas limits based on the transaction. If set to ``"max"`` the gas limit
@@ -163,8 +163,13 @@ class NetworkConfig(PluginConfig):
     @field_validator("gas_limit", mode="before")
     @classmethod
     def validate_gas_limit(cls, value):
-        if isinstance(value, dict) and "auto" in value:
-            return AutoGasLimit.model_validate(value["auto"])
+        if isinstance(value, dict):
+            value = value.get("auto", {})
+            return AutoGasLimit.model_validate(value)
+
+        elif isinstance(value, AutoGasLimit):
+            # Already validated AutoGasLimit.
+            return value
 
         elif value in ("auto", "max") or isinstance(value, AutoGasLimit):
             return value
@@ -175,10 +180,11 @@ class NetworkConfig(PluginConfig):
         elif isinstance(value, str) and value.isnumeric():
             return int(value)
 
-        elif isinstance(value, str) and is_hex(value) and is_0x_prefixed(value):
-            return int(value, 16)
+        elif isinstance(value, str) and is_hex(value):
+            if is_0x_prefixed(value):
+                return int(value, 16)
 
-        elif is_hex(value):
+            # Else, we don't know if it is base 10 or 16.
             raise ValueError("Gas limit hex str must include '0x' prefix.")
 
         raise ValueError(f"Invalid gas limit '{value}'")

@@ -5,9 +5,11 @@ from unittest import mock
 
 import pytest
 
+from ape.api.config import PluginConfig
 from ape.api.networks import ForkedNetworkAPI, NetworkAPI, create_network_type
 from ape.api.providers import ProviderAPI
 from ape.exceptions import NetworkError, ProviderNotFoundError
+from ape.types.gas import AutoGasLimit
 from ape_ethereum import Ethereum, EthereumConfig
 from ape_ethereum.ecosystem import BaseEthereumConfig, NetworkConfig, create_network_config
 from ape_ethereum.transactions import TransactionType
@@ -57,13 +59,31 @@ def test_set_default_provider_not_exists(ape_caplog, ethereum):
         ethereum.sepolia.set_default_provider(bad_provider)
 
 
-def test_gas_limits(ethereum, project, custom_networks_config_dict):
+def test_gas_limit_defaults(ethereum, project, custom_networks_config_dict):
     """
     Test the default gas limit configurations for local and live networks.
     """
     with project.temp_config(**custom_networks_config_dict):
-        assert ethereum.sepolia.gas_limit == "auto"
+        assert ethereum.sepolia.gas_limit == AutoGasLimit(multiplier=1.0)
+        assert ethereum.apenet.gas_limit == AutoGasLimit(multiplier=1.0)
         assert ethereum.local.gas_limit == "max"
+
+
+@pytest.mark.parametrize(
+    "gas_limit_cfg",
+    (
+        {"auto": {"multiplier": 1.1}},
+        AutoGasLimit(multiplier=1.1),
+        # "auto",
+        # "max",
+        # 100,
+        # "0x100",
+    ),
+)
+def test_gas_limit_configured_auto(gas_limit_cfg, ethereum, project, custom_networks_config_dict):
+    custom_networks_config_dict["networks"]["custom"][0]["gas_limit"] = gas_limit_cfg
+    with project.temp_config(**custom_networks_config_dict):
+        assert ethereum.apenet.gas_limit == AutoGasLimit(multiplier=1.1)
 
 
 def test_base_fee_multiplier(ethereum):
@@ -172,6 +192,27 @@ def test_config_networks_from_custom_ecosystem(
     # Show .get() works (returns None when not found).
     assert network_by_get is not None
     assert network_by_get.default_transaction_type == TransactionType.STATIC
+
+
+def test_config_validates_dict():
+    """
+    Ecosystem plugins may return dictionaries here.
+    """
+    val = 123
+    name = "foodnetcfgtest"
+
+    class MockEcosystem:
+        @property
+        def config(self):
+            return {name: {"fooprop": val}}
+
+    mock_ecosystem = MockEcosystem()
+    network_type = create_network_type(0, 0, False)
+    network = network_type.model_construct(name=name, ecosystem=mock_ecosystem)
+
+    assert isinstance(network.config, PluginConfig)
+    assert network.config["fooprop"] == val
+    assert network.config.fooprop == val  # getattr works (wouldn't if only a dict).
 
 
 def test_use_provider_using_provider_instance(eth_tester_provider):
@@ -295,7 +336,7 @@ def test_is_mainnet(ethereum):
     assert not ethereum.mainnet_fork.is_mainnet
 
 
-def test_is_mainnet_from_config(project):
+def test_is_mainnet_from_config():
     """
     Simulate an EVM plugin with a weird named mainnet that properly
     configured it.

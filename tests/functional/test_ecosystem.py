@@ -64,9 +64,7 @@ def event_abi(vyper_contract_instance):
 
 
 @pytest.fixture
-def configured_custom_ecosystem(
-    custom_networks_config_dict, project, networks, custom_network_name_0
-):
+def configured_custom_ecosystem(custom_networks_config_dict, project, custom_network_name_0):
     data = copy.deepcopy(custom_networks_config_dict)
     data["networks"]["custom"][0]["ecosystem"] = CUSTOM_ECOSYSTEM_NAME
 
