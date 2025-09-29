@@ -222,7 +222,7 @@ def test_config_validates_dict():
 
     mock_ecosystem = MockEcosystem()
     network_type = create_network_type(0, 0, False)
-    network = network_type.model_construct(name=name, ecosystem=mock_ecosystem)
+    network = network_type.model_construct(name=name, ecosystem=mock_ecosystem)  # type: ignore
 
     assert isinstance(network.config, PluginConfig)
     assert network.config["fooprop"] == val

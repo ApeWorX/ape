@@ -479,9 +479,9 @@ class Web3Provider(ProviderAPI, ABC):
 
         return self.settings.get("call_trace_approach")
 
-    def _get_fee_history(self, block_id: int | str = "latest") -> FeeHistory:
+    def _get_fee_history(self, block_id: "BlockID" = "latest") -> FeeHistory:
         try:
-            return self.web3.eth.fee_history(1, block_id, reward_percentiles=[])
+            return self.web3.eth.fee_history(1, block_id, reward_percentiles=[])  # type: ignore
         except (MethodUnavailable, AttributeError) as err:
             raise APINotImplementedError(str(err)) from err
 
