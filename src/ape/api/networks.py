@@ -29,6 +29,7 @@ from ape.utils.basemodel import (
     ManagerAccessMixin,
 )
 from ape.utils.misc import (
+    DEFAULT_LIVE_NETWORK_BASE_FEE_MULTIPLIER,
     DEFAULT_TRANSACTION_ACCEPTANCE_TIMEOUT,
     LOCAL_NETWORK_NAME,
     log_instead_of_fail,
@@ -941,7 +942,7 @@ class NetworkAPI(BaseInterfaceModel):
         for opt in name_options:
             if cfg := self.ecosystem_config.get(opt):
                 if isinstance(cfg, dict):
-                    return cfg
+                    return PluginConfig.model_validate(cfg)
                 elif isinstance(cfg, PluginConfig):
                     return cfg
                 else:
@@ -951,7 +952,7 @@ class NetworkAPI(BaseInterfaceModel):
 
     @cached_property
     def gas_limit(self) -> GasLimit:
-        return self.config.get("gas_limit", "auto")
+        return self.config.get("gas_limit", AutoGasLimit())
 
     @cached_property
     def auto_gas_multiplier(self) -> float:
@@ -965,7 +966,7 @@ class NetworkAPI(BaseInterfaceModel):
         """
         A multiplier to apply to a transaction base fee.
         """
-        return self.config.get("base_fee_multiplier", 1.0)
+        return self.config.get("base_fee_multiplier", DEFAULT_LIVE_NETWORK_BASE_FEE_MULTIPLIER)
 
     @property
     def chain_id(self) -> int:
