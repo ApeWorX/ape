@@ -365,7 +365,7 @@ class ConversionManager(BaseManager):
             # NOTE: Always process lists and tuples
             return value
 
-        if isinstance(value, ConvertibleAPI) is value.is_convertible(to_type):
+        if isinstance(value, ConvertibleAPI) and value.is_convertible(to_type):
             return value.convert_to(to_type)
 
         return self._convert_using_converter_apis(value, to_type)

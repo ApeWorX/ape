@@ -1,7 +1,6 @@
-from abc import abstractmethod
-from typing import Any, Generic, Optional, TypeVar
+from abc import ABC, abstractmethod
+from typing import Any, Generic, TypeVar
 
-from ape.exceptions import APINotImplementedError
 from ape.utils.basemodel import BaseInterfaceModel
 
 ConvertedType = TypeVar("ConvertedType")
@@ -59,16 +58,20 @@ class ConverterAPI(BaseInterfaceModel, Generic[ConvertedType]):
         return name.lower()
 
 
-class ConvertibleAPI:
+class ConvertibleAPI(ABC):
     """
     Use this base-class mixin if you want your custom class to be convertible to a more basic type
     without having to register a converter plugin for it.
     """
 
+    @abstractmethod
     def is_convertible(self, to_type: type) -> bool:
-        return False
+        """
+        Returns ``True`` if ``self`` can be converted to ``to_type``.
+        """
 
-    def convert_to(self, to_type: type) -> Optional[Any]:
-        raise APINotImplementedError(
-            f"Unable to convert '{self.__class__.__name__}' to type '{to_type.__class__.__name__}'."
-        )
+    @abstractmethod
+    def convert_to(self, to_type: type) -> Any:
+        """
+        Convert ``self`` to the given type. Raises ``ConversionError`` if not convertible.
+        """
