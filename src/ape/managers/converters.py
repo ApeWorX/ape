@@ -12,7 +12,7 @@ from eth_typing.evm import ChecksumAddress
 from eth_utils import is_0x_prefixed, is_checksum_address, is_hex, is_hex_address, to_int
 
 from ape.api.address import BaseAddress
-from ape.api.convert import ConverterAPI
+from ape.api.convert import ConverterAPI, ConvertibleAPI
 from ape.api.transactions import TransactionAPI
 from ape.exceptions import ConversionError
 from ape.logging import logger
@@ -365,6 +365,12 @@ class ConversionManager(BaseManager):
             # NOTE: Always process lists and tuples
             return value
 
+        if isinstance(value, ConvertibleAPI) is value.is_convertible(to_type):
+            return value.convert_to(to_type)
+
+        return self._convert_using_converter_apis(value, to_type)
+
+    def _convert_using_converter_apis(self, value: Any, to_type: type) -> Any:
         for converter in self._converters[to_type]:
             try:
                 is_convertible = converter.is_convertible(value)
