@@ -20,7 +20,6 @@ from ape.exceptions import AccountsError, APINotImplementedError
 from ape.logging import logger
 from ape.types import AddressType
 from ape.types.signatures import MessageSignature, SignableMessage, TransactionSignature
-from ape.utils._web3_compat import sign_hash
 from ape.utils.basemodel import ManagerAccessMixin
 from ape.utils.misc import ZERO_ADDRESS, derive_public_key, log_instead_of_fail
 from ape.utils.validators import _validate_account_alias, _validate_account_passphrase
@@ -249,7 +248,7 @@ class KeyfileAccount(AccountAPI):
         # Also, we have already warned the user about the safety.
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            signed_msg = sign_hash(msghash, self.__key)
+            signed_msg = EthAccount.unsafe_sign_hash(msghash, self.__key)
 
         return MessageSignature(
             v=signed_msg.v,
