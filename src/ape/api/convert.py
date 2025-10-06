@@ -73,5 +73,6 @@ class ConvertibleAPI(ABC):
     @abstractmethod
     def convert_to(self, to_type: type) -> Any:
         """
-        Convert ``self`` to the given type. Raises ``ConversionError`` if not convertible.
+        Convert ``self`` to the given type. Implementing classes _should_ raises ``ConversionError`` if not convertible.
+        Ape's conversion system will **only** attempt to convert classes where ``.is_convertible()`` returns ``True``.
         """
