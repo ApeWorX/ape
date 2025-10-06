@@ -681,6 +681,10 @@ def test_test_accounts_repr(accounts, config):
     actual = repr(accounts)
     assert config.get_config("test").hd_path in actual
 
+    # Show actual test-account repr (address should be checksummed).
+    actual = repr(accounts[0])
+    assert accounts[0].address in actual
+
 
 def test_account_comparison_to_non_account(core_account):
     # Before, would get a ConversionError.
