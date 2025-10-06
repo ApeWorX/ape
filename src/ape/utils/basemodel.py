@@ -15,7 +15,11 @@ from ethpm_types import BaseModel as EthpmTypesBaseModel
 from pydantic import BaseModel as RootBaseModel
 from pydantic import ConfigDict
 
-from ape.exceptions import ApeAttributeError, ApeIndexError, ProviderNotConnectedError
+from ape.exceptions import (
+    ApeAttributeError,
+    ApeIndexError,
+    ProviderNotConnectedError,
+)
 from ape.logging import logger
 from ape.utils.misc import log_instead_of_fail, raises_not_implemented
 
