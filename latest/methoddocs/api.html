@@ -321,6 +321,11 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#ape.api.convert.ConverterAPI.name"><code class="docutils literal notranslate">name</span></code></a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#ape.api.convert.ConvertibleAPI"><code class="docutils literal notranslate"><span class="pre">ConvertibleAPI</span></code></a><ul>
+<li><a class="reference internal" href="#ape.api.convert.ConvertibleAPI.convert_to"><code class="docutils literal notranslate">convert_to()</span></code></a></li>
+<li><a class="reference internal" href="#ape.api.convert.ConvertibleAPI.is_convertible"><code class="docutils literal notranslate">is_convertible()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a class="reference internal" href="#module-ape.api.explorers">Explorers</a><ul>
@@ -2423,6 +2428,27 @@ when the item fails to convert properly.</p>
 <dd><p>The calculated name of the converter class.
 Typically, it is the lowered prefix of the class without
 the “Converter” or “Conversions” suffix.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.api.convert.ConvertibleAPI">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.api.convert.</span></span><span class="sig-name descname"><span class="pre">ConvertibleAPI</span></span><a class="headerlink" href="#ape.api.convert.ConvertibleAPI" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<p>Use this base-class mixin if you want your custom class to be convertible to a more basic type
+without having to register a converter plugin for it.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.api.convert.ConvertibleAPI.convert_to">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">convert_to</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">to_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">type</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#ape.api.convert.ConvertibleAPI.convert_to" title="Link to this definition"></a></dt>
+<dd><p>Convert <code class="docutils literal notranslate"><span class="pre">self</span></code> to the given type. Implementing classes _should_ raise <code class="docutils literal notranslate"><span class="pre">ConversionError</span></code> if not convertible.
+Ape’s conversion system will <strong>only</strong> attempt to convert classes where <code class="docutils literal notranslate"><span class="pre">.is_convertible()</span></code> returns <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.api.convert.ConvertibleAPI.is_convertible">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_convertible</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">to_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">type</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#ape.api.convert.ConvertibleAPI.is_convertible" title="Link to this definition"></a></dt>
+<dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if <code class="docutils literal notranslate"><span class="pre">self</span></code> can be converted to <code class="docutils literal notranslate"><span class="pre">to_type</span></code>.</p>
 </dd></dl>
 
 </dd></dl>
