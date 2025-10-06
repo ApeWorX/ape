@@ -105,6 +105,10 @@ class TransactionAPI(BaseInterfaceModel):
         """
         return self.gas_limit
 
+    @gas.setter
+    def gas(self, value):
+        self.gas_limit = self.validate_gas_limit(value)
+
     @property
     def raise_on_revert(self) -> bool:
         """

@@ -198,19 +198,34 @@ class SourceManager(BaseManager):
         """
         All contract source paths.
         """
+        yield from self.get_source_paths()
+
+    def get_source_paths(self, include_missing_compilers: bool = False) -> Iterator[Path]:
+        """
+        Get contract source paths.
+
+        Args:
+            include_missing_compilers (bool): Set to ``True`` to include the source path even if its extension is
+              not for a known compiler. Defaults to ``False``.
+
+        Returns:
+            Iterator[Path]
+        """
         for path in self._all_files:
-            if self.is_excluded(path):
+            if self.is_excluded(path, exclude_missing_compilers=not include_missing_compilers):
                 continue
 
             yield path
 
-    def is_excluded(self, path: Path) -> bool:
+    def is_excluded(self, path: Path, exclude_missing_compilers: bool = True) -> bool:
         """
         Check if the given path is considered an "excluded"
         file based on the configured ignore-patterns.
 
         Args:
             path (Path): The path to check.
+            exclude_missing_compilers (bool): Set to ``False`` to not consider sources with missing compilers as
+              "excluded".
 
         Returns:
             bool
@@ -226,12 +241,13 @@ class SourceManager(BaseManager):
             self._exclude_cache[source_id] = True
             return True
 
-        # Files with missing compiler extensions are also ignored.
-        suffix = get_full_extension(path)
-        registered = self.compiler_manager.registered_compilers
-        if suffix not in registered:
-            self._exclude_cache[source_id] = True
-            return True
+        if exclude_missing_compilers:
+            # Files with missing compiler extensions are also ignored.
+            suffix = get_full_extension(path)
+            registered = self.compiler_manager.registered_compilers
+            if suffix not in registered:
+                self._exclude_cache[source_id] = True
+                return True
 
         # If we get here, we have a matching compiler and this source exists.
         # Check if is excluded.
