@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Generic, Optional, TypeVar, Union
 
 from ethpm_types import ABI, ContractType
+from ethpm_types.contract_type import ABIList
 from pydantic import BaseModel
 
 from ape.api.networks import ProxyInfoAPI
@@ -772,7 +773,7 @@ class ContractCache(BaseManager):
                         raise  # Current exception
 
             # If the ABI was a str, it should be a list now.
-            if isinstance(abi, list):
+            if isinstance(abi, (ABIList, list)):
                 contract_type = ContractType(abi=abi)
 
                 # Ensure we cache the contract-types from ABI!
