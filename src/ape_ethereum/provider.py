@@ -37,8 +37,10 @@ except ImportError:
     Web3RPCError = ValueError  # type: ignore
 
 from web3.gas_strategies.rpc import rpc_gas_price_strategy
+from web3.middleware import ExtraDataToPOAMiddleware
 from web3.middleware.validation import MAX_EXTRADATA_LENGTH
 from web3.providers import AutoProvider
+from web3.providers import WebSocketProvider as WebsocketProvider
 from web3.providers.auto import load_provider_from_environment
 from web3.types import FeeHistory, RPCEndpoint, TxParams
 
@@ -65,7 +67,6 @@ from ape.logging import logger, sanitize_url
 from ape.types.events import ContractLog, LogFilter
 from ape.types.gas import AutoGasLimit
 from ape.types.trace import SourceTraceback
-from ape.utils._web3_compat import ExtraDataToPOAMiddleware, WebsocketProvider
 from ape.utils.basemodel import ManagerAccessMixin
 from ape.utils.misc import DEFAULT_MAX_RETRIES_TX, gas_estimation_error_message, to_int
 from ape.utils.rpc import request_with_retry
