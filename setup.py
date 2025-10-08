@@ -100,6 +100,7 @@ setup(
         "packaging>=23.0,<24",
         "pandas>=2.2.2,<3",
         "pluggy>=1.3,<2",
+        # TODO: 2.12 introduces a breaking change (see #2701)
         "pydantic>=2.10.0,<2.12.0",
         "pydantic-settings>=2.5.2,<3",
         "pytest>=8.0,<9.0",
