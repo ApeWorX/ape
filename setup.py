@@ -100,7 +100,8 @@ setup(
         "packaging>=23.0,<24",
         "pandas>=2.2.2,<3",
         "pluggy>=1.3,<2",
-        "pydantic>=2.10.0,<3",
+        # TODO: 2.12 introduces a breaking change (see #2701)
+        "pydantic>=2.10.0,<2.12.0",
         "pydantic-settings>=2.5.2,<3",
         "pytest>=8.0,<9.0",
         "python-dateutil>=2.8.2,<3",
@@ -119,7 +120,7 @@ setup(
         "hexbytes>=1.2.0,<2",
         "py-geth>=5.4.0,<6",
         "trie>=3.0.1,<4",  # Peer: stricter pin needed for uv support.
-        "web3[tester]>=6.20.1,<8",
+        "web3[tester]>=7.12.1,<8",
         # ** Dependencies maintained by Ethereum Foundation and compiled to C by BobTheBuidler**
         "faster-eth-abi>=5.1.0,<6",
         "faster-eth-utils>=2.1.0,<6",
@@ -158,7 +159,7 @@ setup(
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
-        "License :: OSI Approved :: MIT License",
+        "License :: OSI Approved :: Apache Software License",
         "Natural Language :: English",
         "Operating System :: MacOS",
         "Operating System :: POSIX",

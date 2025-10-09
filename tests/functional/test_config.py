@@ -11,6 +11,7 @@ from pydantic_settings import SettingsConfigDict
 from ape.api.config import ApeConfig, ConfigEnum, PluginConfig
 from ape.exceptions import ConfigError
 from ape.managers.config import CONFIG_FILE_NAME, merge_configs
+from ape.types.gas import AutoGasLimit
 from ape.utils.os import create_tempdir
 from ape_cache.config import CacheConfig
 from ape_compile.config import Config as CompileConfig
@@ -22,7 +23,6 @@ from tests.functional.conftest import PROJECT_WITH_LONG_CONTRACTS_FOLDER
 
 if TYPE_CHECKING:
     from ape.types.gas import GasLimit
-
 
 CONTRACTS_FOLDER = "pathsomewhwere"
 NUMBER_OF_TEST_ACCOUNTS = 31
@@ -169,7 +169,13 @@ def test_model_validate_handles_environment_variables():
     # Assert that union types are handled.
     run_test(NetworkConfig, "gas_limit", "APE_ETHEREUM_GAS_LIMIT", "0", 0)
     run_test(NetworkConfig, "gas_limit", "APE_ETHEREUM_GAS_LIMIT", "0x100", 0x100)
-    run_test(NetworkConfig, "gas_limit", "APE_ETHEREUM_GAS_LIMIT", "auto")
+    run_test(
+        NetworkConfig,
+        "gas_limit",
+        "APE_ETHEREUM_GAS_LIMIT",
+        "auto",
+        expected=AutoGasLimit(multiplier=1.0),
+    )
     run_test(NetworkConfig, "gas_limit", "APE_ETHEREUM_GAS_LIMIT", "max")
     with pytest.raises(ValidationError, match=r"Value error, Invalid gas limit"):
         run_test(NetworkConfig, "gas_limit", "APE_ETHEREUM_GAS_LIMIT", "something")
@@ -358,7 +364,7 @@ def test_ethereum_network_configs(config, project):
 def test_network_gas_limit_default(config):
     eth_config = config.get_config("ethereum")
 
-    assert eth_config.sepolia.gas_limit == "auto"
+    assert eth_config.sepolia.gas_limit == AutoGasLimit(multiplier=1.0)
     assert eth_config.local.gas_limit == "max"
 
 
@@ -380,7 +386,8 @@ def test_network_gas_limit_string_config(gas_limit, project):
     with project.temp_config(**eth_config):
         actual = project.config.get_config("ethereum")
 
-        assert actual.sepolia.gas_limit == gas_limit
+        expected = AutoGasLimit() if gas_limit == "auto" else gas_limit
+        assert actual.sepolia.gas_limit == expected
 
         # Local configuration is unaffected
         assert actual.local.gas_limit == "max"

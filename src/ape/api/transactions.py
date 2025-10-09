@@ -75,10 +75,11 @@ class TransactionAPI(BaseInterfaceModel):
     @classmethod
     def validate_gas_limit(cls, value):
         if value is None:
-            if not cls.network_manager.connected:
-                raise NetworkError("Must be connected to use default gas config.")
-
-            value = cls.network_manager.active_provider.network.gas_limit
+            value = (
+                cls.network_manager.active_provider.network.gas_limit
+                if cls.network_manager.connected
+                else 0
+            )
 
         if value == "auto" or isinstance(value, AutoGasLimit):
             return None  # Delegate to `ProviderAPI.estimate_gas_cost`
@@ -103,6 +104,10 @@ class TransactionAPI(BaseInterfaceModel):
         Alias for ``.gas_limit``.
         """
         return self.gas_limit
+
+    @gas.setter
+    def gas(self, value):
+        self.gas_limit = self.validate_gas_limit(value)
 
     @property
     def raise_on_revert(self) -> bool:
