@@ -1936,7 +1936,7 @@ function defined in the given contract type.</p></li>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.api.config.ApeConfig.__pydantic_extra__">
-<span class="sig-name descname"><span class="pre">__pydantic_extra__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.config.ApeConfig.__pydantic_extra__" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">__pydantic_extra__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.config.ApeConfig.__pydantic_extra__" title="Link to this definition"></a></dt>
 <dd><p>A dictionary containing extra values, if [<cite>extra</cite>][pydantic.config.ConfigDict.extra] is set to <cite>‘allow’</cite>.</p>
 </dd></dl>
 
@@ -1955,7 +1955,7 @@ This replaces <cite>Model.__fields__</cite> from Pydantic V1.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.api.config.ApeConfig.__pydantic_private__">
-<span class="sig-name descname"><span class="pre">__pydantic_private__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.config.ApeConfig.__pydantic_private__" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">__pydantic_private__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.config.ApeConfig.__pydantic_private__" title="Link to this definition"></a></dt>
 <dd><p>Values of private attributes set on the model instance.</p>
 </dd></dl>
 
@@ -2043,7 +2043,7 @@ Note: The actual dependency classes are decoded later.</p>
 <dt class="sig sig-object py" id="ape.api.config.ApeConfig.model_dump">
 <span class="sig-name descname"><span class="pre">model_dump</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.api.config.ApeConfig.model_dump" title="Link to this definition"></a></dt>
 <dd><dl class="simple">
-<dt>!!! abstract “Usage Documentation”</dt><dd><p>[<cite>model_dump</cite>](../concepts/serialization.md#modelmodel_dump)</p>
+<dt>!!! abstract “Usage Documentation”</dt><dd><p>[<cite>model_dump</cite>](../concepts/serialization.md#python-mode)</p>
 </dd>
 </dl>
 <p>Generate a dictionary representation of the model, optionally specifying which fields to include or exclude.</p>
@@ -2060,6 +2060,9 @@ If mode is ‘python’, the output may contain non-JSON-serializable Python obj
 <li><p><strong>exclude_unset</strong> – Whether to exclude fields that have not been explicitly set.</p></li>
 <li><p><strong>exclude_defaults</strong> – Whether to exclude fields that are set to their default value.</p></li>
 <li><p><strong>exclude_none</strong> – Whether to exclude fields that have a value of <cite>None</cite>.</p></li>
+<li><p><strong>exclude_computed_fields</strong> – Whether to exclude computed fields.
+While this can be useful for round-tripping, it is usually recommended tu use the dedicated
+<cite>round_trip</cite> parameter instead.</p></li>
 <li><p><strong>round_trip</strong> – If True, dumped values should be valid as input for non-idempotent types such as Json[T].</p></li>
 <li><p><strong>warnings</strong> – How to handle serialization errors. False/”none” ignores them, True/”warn” logs errors,
 “error” raises a [<cite>PydanticSerializationError</cite>][pydantic_core.PydanticSerializationError].</p></li>
@@ -2177,7 +2180,7 @@ Use this to limit the values of a config item, such as colors <code class="docut
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.api.config.DeploymentConfig.__pydantic_extra__">
-<span class="sig-name descname"><span class="pre">__pydantic_extra__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.config.DeploymentConfig.__pydantic_extra__" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">__pydantic_extra__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.config.DeploymentConfig.__pydantic_extra__" title="Link to this definition"></a></dt>
 <dd><p>A dictionary containing extra values, if [<cite>extra</cite>][pydantic.config.ConfigDict.extra] is set to <cite>‘allow’</cite>.</p>
 </dd></dl>
 
@@ -2196,7 +2199,7 @@ This replaces <cite>Model.__fields__</cite> from Pydantic V1.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.api.config.DeploymentConfig.__pydantic_private__">
-<span class="sig-name descname"><span class="pre">__pydantic_private__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.config.DeploymentConfig.__pydantic_private__" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">__pydantic_private__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.config.DeploymentConfig.__pydantic_private__" title="Link to this definition"></a></dt>
 <dd><p>Values of private attributes set on the model instance.</p>
 </dd></dl>
 
@@ -2240,7 +2243,7 @@ This replaces <cite>Model.__fields__</cite> from Pydantic V1.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.api.config.DisplayConfig.__pydantic_extra__">
-<span class="sig-name descname"><span class="pre">__pydantic_extra__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.config.DisplayConfig.__pydantic_extra__" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">__pydantic_extra__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.config.DisplayConfig.__pydantic_extra__" title="Link to this definition"></a></dt>
 <dd><p>A dictionary containing extra values, if [<cite>extra</cite>][pydantic.config.ConfigDict.extra] is set to <cite>‘allow’</cite>.</p>
 </dd></dl>
 
@@ -2259,7 +2262,7 @@ This replaces <cite>Model.__fields__</cite> from Pydantic V1.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.api.config.DisplayConfig.__pydantic_private__">
-<span class="sig-name descname"><span class="pre">__pydantic_private__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.config.DisplayConfig.__pydantic_private__" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">__pydantic_private__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.config.DisplayConfig.__pydantic_private__" title="Link to this definition"></a></dt>
 <dd><p>Values of private attributes set on the model instance.</p>
 </dd></dl>
 
@@ -2304,7 +2307,7 @@ a config API must register a subclass of this class.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.api.config.PluginConfig.__pydantic_extra__">
-<span class="sig-name descname"><span class="pre">__pydantic_extra__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.config.PluginConfig.__pydantic_extra__" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">__pydantic_extra__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.config.PluginConfig.__pydantic_extra__" title="Link to this definition"></a></dt>
 <dd><p>A dictionary containing extra values, if [<cite>extra</cite>][pydantic.config.ConfigDict.extra] is set to <cite>‘allow’</cite>.</p>
 </dd></dl>
 
@@ -2323,7 +2326,7 @@ This replaces <cite>Model.__fields__</cite> from Pydantic V1.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.api.config.PluginConfig.__pydantic_private__">
-<span class="sig-name descname"><span class="pre">__pydantic_private__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.config.PluginConfig.__pydantic_private__" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">__pydantic_private__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.config.PluginConfig.__pydantic_private__" title="Link to this definition"></a></dt>
 <dd><p>Values of private attributes set on the model instance.</p>
 </dd></dl>
 
@@ -3519,7 +3522,7 @@ an instance of this context manager.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.api.networks.ProxyInfoAPI.__pydantic_extra__">
-<span class="sig-name descname"><span class="pre">__pydantic_extra__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.networks.ProxyInfoAPI.__pydantic_extra__" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">__pydantic_extra__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.networks.ProxyInfoAPI.__pydantic_extra__" title="Link to this definition"></a></dt>
 <dd><p>A dictionary containing extra values, if [<cite>extra</cite>][pydantic.config.ConfigDict.extra] is set to <cite>‘allow’</cite>.</p>
 </dd></dl>
 
@@ -3538,7 +3541,7 @@ This replaces <cite>Model.__fields__</cite> from Pydantic V1.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.api.networks.ProxyInfoAPI.__pydantic_private__">
-<span class="sig-name descname"><span class="pre">__pydantic_private__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.networks.ProxyInfoAPI.__pydantic_private__" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">__pydantic_private__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.networks.ProxyInfoAPI.__pydantic_private__" title="Link to this definition"></a></dt>
 <dd><p>Values of private attributes set on the model instance.</p>
 </dd></dl>
 
@@ -5008,7 +5011,7 @@ of transactions made by <code class="docutils literal notranslate"><span class="
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.api.query.AccountTransactionQuery.__pydantic_extra__">
-<span class="sig-name descname"><span class="pre">__pydantic_extra__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.query.AccountTransactionQuery.__pydantic_extra__" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">__pydantic_extra__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.query.AccountTransactionQuery.__pydantic_extra__" title="Link to this definition"></a></dt>
 <dd><p>A dictionary containing extra values, if [<cite>extra</cite>][pydantic.config.ConfigDict.extra] is set to <cite>‘allow’</cite>.</p>
 </dd></dl>
 
@@ -5027,7 +5030,7 @@ This replaces <cite>Model.__fields__</cite> from Pydantic V1.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.api.query.AccountTransactionQuery.__pydantic_private__">
-<span class="sig-name descname"><span class="pre">__pydantic_private__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.query.AccountTransactionQuery.__pydantic_private__" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">__pydantic_private__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.query.AccountTransactionQuery.__pydantic_private__" title="Link to this definition"></a></dt>
 <dd><p>Values of private attributes set on the model instance.</p>
 </dd></dl>
 
@@ -5059,7 +5062,7 @@ blocks between <code class="docutils literal notranslate"><span class="pre">star
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.api.query.BlockQuery.__pydantic_extra__">
-<span class="sig-name descname"><span class="pre">__pydantic_extra__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.query.BlockQuery.__pydantic_extra__" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">__pydantic_extra__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.query.BlockQuery.__pydantic_extra__" title="Link to this definition"></a></dt>
 <dd><p>A dictionary containing extra values, if [<cite>extra</cite>][pydantic.config.ConfigDict.extra] is set to <cite>‘allow’</cite>.</p>
 </dd></dl>
 
@@ -5078,7 +5081,7 @@ This replaces <cite>Model.__fields__</cite> from Pydantic V1.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.api.query.BlockQuery.__pydantic_private__">
-<span class="sig-name descname"><span class="pre">__pydantic_private__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.query.BlockQuery.__pydantic_private__" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">__pydantic_private__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.query.BlockQuery.__pydantic_private__" title="Link to this definition"></a></dt>
 <dd><p>Values of private attributes set on the model instance.</p>
 </dd></dl>
 
@@ -5110,7 +5113,7 @@ transactions collected inside the <code class="docutils literal notranslate"><sp
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.api.query.BlockTransactionQuery.__pydantic_extra__">
-<span class="sig-name descname"><span class="pre">__pydantic_extra__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.query.BlockTransactionQuery.__pydantic_extra__" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">__pydantic_extra__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.query.BlockTransactionQuery.__pydantic_extra__" title="Link to this definition"></a></dt>
 <dd><p>A dictionary containing extra values, if [<cite>extra</cite>][pydantic.config.ConfigDict.extra] is set to <cite>‘allow’</cite>.</p>
 </dd></dl>
 
@@ -5129,7 +5132,7 @@ This replaces <cite>Model.__fields__</cite> from Pydantic V1.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.api.query.BlockTransactionQuery.__pydantic_private__">
-<span class="sig-name descname"><span class="pre">__pydantic_private__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.query.BlockTransactionQuery.__pydantic_private__" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">__pydantic_private__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.query.BlockTransactionQuery.__pydantic_private__" title="Link to this definition"></a></dt>
 <dd><p>Values of private attributes set on the model instance.</p>
 </dd></dl>
 
@@ -5165,7 +5168,7 @@ or a node connected to the OTS namespace.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.api.query.ContractCreation.__pydantic_extra__">
-<span class="sig-name descname"><span class="pre">__pydantic_extra__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.query.ContractCreation.__pydantic_extra__" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">__pydantic_extra__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.query.ContractCreation.__pydantic_extra__" title="Link to this definition"></a></dt>
 <dd><p>A dictionary containing extra values, if [<cite>extra</cite>][pydantic.config.ConfigDict.extra] is set to <cite>‘allow’</cite>.</p>
 </dd></dl>
 
@@ -5184,7 +5187,7 @@ This replaces <cite>Model.__fields__</cite> from Pydantic V1.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.api.query.ContractCreation.__pydantic_private__">
-<span class="sig-name descname"><span class="pre">__pydantic_private__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.query.ContractCreation.__pydantic_private__" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">__pydantic_private__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.query.ContractCreation.__pydantic_private__" title="Link to this definition"></a></dt>
 <dd><p>Values of private attributes set on the model instance.</p>
 </dd></dl>
 
@@ -5262,7 +5265,7 @@ Returns <code class="docutils literal notranslate"><span class="pre">ContractCre
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.api.query.ContractCreationQuery.__pydantic_extra__">
-<span class="sig-name descname"><span class="pre">__pydantic_extra__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.query.ContractCreationQuery.__pydantic_extra__" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">__pydantic_extra__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.query.ContractCreationQuery.__pydantic_extra__" title="Link to this definition"></a></dt>
 <dd><p>A dictionary containing extra values, if [<cite>extra</cite>][pydantic.config.ConfigDict.extra] is set to <cite>‘allow’</cite>.</p>
 </dd></dl>
 
@@ -5281,7 +5284,7 @@ This replaces <cite>Model.__fields__</cite> from Pydantic V1.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.api.query.ContractCreationQuery.__pydantic_private__">
-<span class="sig-name descname"><span class="pre">__pydantic_private__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.query.ContractCreationQuery.__pydantic_private__" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">__pydantic_private__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.query.ContractCreationQuery.__pydantic_private__" title="Link to this definition"></a></dt>
 <dd><p>Values of private attributes set on the model instance.</p>
 </dd></dl>
 
@@ -5313,7 +5316,7 @@ logs emitted by <code class="docutils literal notranslate"><span class="pre">con
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.api.query.ContractEventQuery.__pydantic_extra__">
-<span class="sig-name descname"><span class="pre">__pydantic_extra__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.query.ContractEventQuery.__pydantic_extra__" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">__pydantic_extra__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.query.ContractEventQuery.__pydantic_extra__" title="Link to this definition"></a></dt>
 <dd><p>A dictionary containing extra values, if [<cite>extra</cite>][pydantic.config.ConfigDict.extra] is set to <cite>‘allow’</cite>.</p>
 </dd></dl>
 
@@ -5332,7 +5335,7 @@ This replaces <cite>Model.__fields__</cite> from Pydantic V1.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.api.query.ContractEventQuery.__pydantic_private__">
-<span class="sig-name descname"><span class="pre">__pydantic_private__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.query.ContractEventQuery.__pydantic_private__" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">__pydantic_private__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.query.ContractEventQuery.__pydantic_private__" title="Link to this definition"></a></dt>
 <dd><p>Values of private attributes set on the model instance.</p>
 </dd></dl>
 
@@ -5364,7 +5367,7 @@ over a range of blocks between <code class="docutils literal notranslate"><span 
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.api.query.ContractMethodQuery.__pydantic_extra__">
-<span class="sig-name descname"><span class="pre">__pydantic_extra__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.query.ContractMethodQuery.__pydantic_extra__" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">__pydantic_extra__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.query.ContractMethodQuery.__pydantic_extra__" title="Link to this definition"></a></dt>
 <dd><p>A dictionary containing extra values, if [<cite>extra</cite>][pydantic.config.ConfigDict.extra] is set to <cite>‘allow’</cite>.</p>
 </dd></dl>
 
@@ -5383,7 +5386,7 @@ This replaces <cite>Model.__fields__</cite> from Pydantic V1.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.api.query.ContractMethodQuery.__pydantic_private__">
-<span class="sig-name descname"><span class="pre">__pydantic_private__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.query.ContractMethodQuery.__pydantic_private__" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">__pydantic_private__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape.api.query.ContractMethodQuery.__pydantic_private__" title="Link to this definition"></a></dt>
 <dd><p>Values of private attributes set on the model instance.</p>
 </dd></dl>
 
