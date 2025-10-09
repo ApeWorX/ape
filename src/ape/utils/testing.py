@@ -1,6 +1,6 @@
 from collections import namedtuple
 
-from eth_utils import to_hex
+from faster_eth_utils import to_hex
 
 DEFAULT_NUMBER_OF_TEST_ACCOUNTS = 10
 DEFAULT_TEST_MNEMONIC = "test test test test test test test test test test test junk"

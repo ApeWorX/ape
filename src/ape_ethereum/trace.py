@@ -8,7 +8,6 @@ from functools import cached_property
 from typing import IO, TYPE_CHECKING, Any, Optional, Union
 
 from eth_pydantic_types import HexStr
-from eth_utils import is_0x_prefixed, to_hex
 from evm_trace import (
     CallTreeNode,
     CallType,
@@ -20,6 +19,7 @@ from evm_trace import (
     get_calltree_from_parity_trace,
 )
 from evm_trace.gas import merge_reports
+from faster_eth_utils import is_0x_prefixed, to_hex
 from hexbytes import HexBytes
 from pydantic import field_validator
 from rich.tree import Tree

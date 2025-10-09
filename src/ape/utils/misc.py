@@ -23,7 +23,7 @@ from typing import TYPE_CHECKING, Any, Optional, TypeVar, cast
 import yaml
 from eth_keys import keys  # type: ignore
 from eth_pydantic_types import HexBytes
-from eth_utils import is_0x_prefixed
+from faster_eth_utils import is_0x_prefixed
 from packaging.specifiers import SpecifierSet
 
 from ape.exceptions import APINotImplementedError

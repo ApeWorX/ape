@@ -14,9 +14,9 @@ from typing import TYPE_CHECKING, Any, Callable, Optional, Union, cast
 import ijson  # type: ignore
 import requests
 from eth_pydantic_types import HexBytes
-from eth_typing import HexStr
-from eth_utils import add_0x_prefix, is_hex, to_hex
+from eth_typing import BlockNumber, HexStr
 from evmchains import PUBLIC_CHAIN_META, get_random_rpc
+from faster_eth_utils import add_0x_prefix, is_hex, to_hex
 from pydantic.dataclasses import dataclass
 from requests import HTTPError
 from web3 import HTTPProvider, IPCProvider, Web3

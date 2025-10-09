@@ -6,9 +6,9 @@ from typing import TYPE_CHECKING, Optional, cast
 
 import pytest
 from eth_pydantic_types import HexBytes
-from eth_utils import to_hex
 from ethpm_types import ContractType, ErrorABI, MethodABI
 from ethpm_types.abi import ABIType
+from faster_eth_utils import to_hex
 
 import ape
 from ape.contracts.base import ContractCallHandler
