@@ -1,6 +1,7 @@
 [![Pypi.org][pypi-badge]][pypi-url]
 [![Apache licensed][licence-badge]][licence-url]
 [![Build Status][actions-badge]][actions-url]
+[![Contributing](https://img.shields.io/badge/CONTRIBUTING-guidelines-brightgreen?style=flat-square)](https://github.com/ApeWorX/ape/blob/main/CONTRIBUTING.md)
 [![Discord chat][discord-badge]][discord-url]
 [![Twitter][twitter-badge]][twitter-url]
 
