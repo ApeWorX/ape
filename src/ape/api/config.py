@@ -517,7 +517,7 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
         return self.__getattr__(name)
 
     def __contains__(self, item):
-        # Always return True o handle lazy loading plugins.
+        # Always return True to handle lazy loading plugins.
         return True
 
     def model_dump(self, *args, **kwargs):
