@@ -1,7 +1,7 @@
 import sys
 from enum import Enum, IntEnum
 from functools import cached_property
-from typing import IO, TYPE_CHECKING, Any, Optional, Union, List, Dict
+from typing import IO, TYPE_CHECKING, Any, Optional, Union
 
 from eth_abi import decode
 from eth_account import Account as EthAccount
@@ -61,40 +61,7 @@ class TransactionType(Enum):
 
 class AccessList(BaseModel):
     address: AddressType
-    storage_keys: List[HexBytes] = Field(default_factory=list, alias="storageKeys")
-
-
-class Authorization(BaseModel):
-    """
-    `EIP-7702 <https://eips.ethereum.org/EIPS/eip-7702>`__ authorization list item.
-    """
-
-    chain_id: HexInt = Field(alias="chainId")
-    address: AddressType
-    nonce: HexInt
-    v: HexInt = Field(alias="yParity")
-    r: HexBytes
-    s: HexBytes
-
-    @field_serializer("chain_id", "nonce", "v")
-    def _int_to_hex(self, value: int) -> str:
-        return to_hex(value)
-
-    @classmethod
-    def from_signature(cls, chain_id: int, address: AddressType, nonce: int, signature: MessageSignature) -> "Self":
-        return cls(chainId=chain_id, address=address, nonce=nonce, yParity=signature.v, r=signature.r, s=signature.s)
-
-    @property
-    def signature(self) -> MessageSignature:
-        return MessageSignature(v=self.v, r=self.r, s=self.s)
-
-    @cached_property
-    def authority(self) -> AddressType:
-        # TODO: Move above when `web3` pin is `>7`
-        from eth_account.typed_transactions.set_code_transaction import Authorization as EthAcctAuth
-
-        auth = EthAcctAuth(self.chain_id, to_canonical_address(self.address), self.nonce)
-        return EthAccount._recover_hash(auth.hash(), vrs=(self.signature.v, to_int(self.r), to_int(self.s)))
+    storage_keys: list[HexBytes] = Field(default_factory=list, alias="storageKeys")
 
 
 class BaseTransaction(TransactionAPI):
@@ -124,20 +91,16 @@ class BaseTransaction(TransactionAPI):
         return signed_txn
 
     def _normalize_lists(self, txn_data: dict) -> dict:
-        def _normalize_hex_list(lst: List[dict], keys: Optional[List[str]] = None) -> List[dict]:
-            keys = keys or []
-            normalized = []
-            for item in lst:
-                normalized.append({k: to_hex(v) if isinstance(v, bytes) or k in keys else v for k, v in item.items()})
-            return normalized
-
         if "accessList" in txn_data:
             txn_data["accessList"] = [
                 {**item, "storageKeys": [to_hex(k) for k in item.get("storageKeys", [])]} for item in txn_data["accessList"]
             ]
 
         if "authorizationList" in txn_data:
-            txn_data["authorizationList"] = _normalize_hex_list(txn_data["authorizationList"], keys=["r", "s"])
+            normalized_auth = []
+            for item in txn_data["authorizationList"]:
+                normalized_auth.append({k: to_hex(v) if isinstance(v, bytes) else v for k, v in item.items()})
+            txn_data["authorizationList"] = normalized_auth
 
         return txn_data
 
@@ -183,7 +146,7 @@ class AccessListTransaction(StaticFeeTransaction):
 
     gas_price: Optional[int] = Field(default=None, alias="gasPrice")
     type: int = TransactionType.ACCESS_LIST.value
-    access_list: List[AccessList] = Field(default_factory=list, alias="accessList")
+    access_list: list[AccessList] = Field(default_factory=list, alias="accessList")
 
     @field_validator("type")
     @classmethod
@@ -200,7 +163,7 @@ class DynamicFeeTransaction(BaseTransaction):
     max_priority_fee: Optional[HexInt] = Field(default=None, alias="maxPriorityFeePerGas")
     max_fee: Optional[HexInt] = Field(default=None, alias="maxFeePerGas")
     type: HexInt = TransactionType.DYNAMIC.value
-    access_list: List[AccessList] = Field(default_factory=list, alias="accessList")
+    access_list: list[AccessList] = Field(default_factory=list, alias="accessList")
 
     @field_validator("type")
     @classmethod
@@ -214,7 +177,7 @@ class SharedBlobTransaction(DynamicFeeTransaction):
     """
 
     max_fee_per_blob_gas: HexInt = Field(default=0, alias="maxFeePerBlobGas")
-    blob_versioned_hashes: List[HexBytes] = Field(default_factory=list, alias="blobVersionedHashes")
+    blob_versioned_hashes: list[HexBytes] = Field(default_factory=list, alias="blobVersionedHashes")
 
     receiver: AddressType = Field(default=ZERO_ADDRESS, alias="to")
     """
@@ -222,12 +185,44 @@ class SharedBlobTransaction(DynamicFeeTransaction):
     """
 
 
+class Authorization(BaseModel):
+    """
+    `EIP-7702 <https://eips.ethereum.org/EIPS/eip-7702>`__ authorization list item.
+    """
+
+    chain_id: HexInt = Field(alias="chainId")
+    address: AddressType
+    nonce: HexInt
+    v: HexInt = Field(alias="yParity")
+    r: HexBytes
+    s: HexBytes
+
+    @field_serializer("chain_id", "nonce", "v")
+    def convert_int_to_hex(self, value: int) -> str:
+        return to_hex(value)
+
+    @classmethod
+    def from_signature(cls, chain_id: int, address: AddressType, nonce: int, signature: MessageSignature) -> "Self":
+        return cls(chainId=chain_id, address=address, nonce=nonce, yParity=signature.v, r=signature.r, s=signature.s)
+
+    @property
+    def signature(self) -> MessageSignature:
+        return MessageSignature(v=self.v, r=self.r, s=self.s)
+
+    @cached_property
+    def authority(self) -> AddressType:
+        from eth_account.typed_transactions.set_code_transaction import Authorization as EthAcctAuth
+
+        auth = EthAcctAuth(self.chain_id, to_canonical_address(self.address), self.nonce)
+        return EthAccount._recover_hash(auth.hash(), vrs=(self.signature.v, to_int(self.r), to_int(self.s)))
+
+
 class SetCodeTransaction(DynamicFeeTransaction):
     """
     `EIP-7702 <https://eips.ethereum.org/EIPS/eip-7702>`__ transactions.
     """
 
-    authorizations: List[Authorization] = Field(default_factory=list, alias="authorizationList")
+    authorizations: list[Authorization] = Field(default_factory=list, alias="authorizationList")
     receiver: AddressType = Field(default=ZERO_ADDRESS, alias="to")
     """
     Overridden because EIP-7702 states it cannot be nil.
@@ -257,13 +252,12 @@ class Receipt(ReceiptAPI):
         return self.status != TransactionStatusEnum.NO_ERROR
 
     @cached_property
-    def debug_logs_typed(self) -> List[tuple]:
+    def debug_logs_typed(self):
         """
         Extract messages to console outputted by contracts via print() or console.log() statements
         """
         try:
             trace = self.trace
-        # Some providers do not implement this, so skip.
         except NotImplementedError:
             logger.debug("Call tree not available, skipping debug log extraction")
             return []
@@ -274,20 +268,20 @@ class Receipt(ReceiptAPI):
         return list(trace.debug_logs)
 
     @cached_property
-    def contract_type(self) -> Optional["ContractType"]:
+    def contract_type(self):
         if address := (self.receiver or self.contract_address):
             return self.chain_manager.contracts.get(address)
         return None
 
     @cached_property
-    def method_called(self) -> Optional[MethodABI]:
+    def method_called(self):
         if not self.contract_type:
             return None
         method_id = self.data[:4]
         return self.contract_type.methods.get(method_id)
 
     @cached_property
-    def source_traceback(self) -> SourceTraceback:
+    def source_traceback(self):
         if contract_type := self.contract_type:
             if contract_src := self.local_project._create_contract_source(contract_type):
                 try:
@@ -333,9 +327,9 @@ class Receipt(ReceiptAPI):
     def decode_logs(
         self,
         abi: Optional[
-            Union[List[Union[EventABI, "ContractEvent"]], Union[EventABI, "ContractEvent"]]
+            Union[list[Union[EventABI, "ContractEvent"]], Union[EventABI, "ContractEvent"]]
         ] = None,
-    ) -> ContractLogContainer:
+    ):
         if not self.logs:
             return ContractLogContainer([])
 
@@ -350,46 +344,73 @@ class Receipt(ReceiptAPI):
         addresses = {x["address"] for x in self.logs}
         contract_types = self.chain_manager.contracts.get_multiple(addresses)
         selectors = {
-            address.lower(): {
-                encode_hex(keccak(text=abi.selector)): abi for abi in contract.events
-            }
-            for address, contract in contract_types.items()
+            addr.lower(): {encode_hex(keccak(text=abi.selector)): abi for abi in contract.events}
+            for addr, contract in contract_types.items()
         }
 
-        decoded_logs: ContractLogContainer = ContractLogContainer()
-        for log in self.logs:
-            decoded = self._decode_single_log(log, selectors)
-            decoded_logs.extend(decoded if isinstance(decoded, list) else [decoded])
+        def get_default_log(_log, logs, evt_name=None):
+            log_index = _log.get("logIndex", logs[-1].log_index + 1 if logs else 0)
+            evt_name = evt_name or f"UnknownLog_WithIndex_{log_index}"
+            return ContractLog(
+                block_hash=self.block.hash,
+                block_number=self.block_number,
+                event_arguments={"root": _log["data"]},
+                event_name=f"<{evt_name}>",
+                log_index=log_index,
+                transaction_hash=self.txn_hash,
+                transaction_index=logs[-1].transaction_index if logs else None,
+            )
 
+        decoded_logs = ContractLogContainer()
+        for log in self.logs:
+            if contract_address := log.get("address"):
+                lower_address = contract_address.lower()
+                if lower_address in selectors and (topics := log.get("topics")):
+                    selector = encode_hex(topics[0])
+                    if selector in selectors[lower_address]:
+                        event_abi = selectors[lower_address][selector]
+                        decoded_logs.extend(
+                            self.provider.network.ecosystem.decode_logs([log], event_abi)
+                        )
+                    elif library_log := self._decode_ds_note(log):
+                        decoded_logs.append(library_log)
+                    else:
+                        obj = get_default_log(log, decoded_logs, evt_name=f"UnknownLogWithSelector_{selector}")
+                        decoded_logs.append(obj)
+                elif library_log := self._decode_ds_note(log):
+                    decoded_logs.append(library_log)
+                else:
+                    index = log.get("logIndex")
+                    name = f"UnknownLogAtAddress_{contract_address}"
+                    if index is not None:
+                        name = f"{name}_AndLogIndex_{index}"
+                    decoded_logs.append(get_default_log(log, decoded_logs, evt_name=name))
+            elif library_log := self._decode_ds_note(log):
+                decoded_logs.append(library_log)
+            else:
+                decoded_logs.append(get_default_log(log, decoded_logs))
         return decoded_logs
 
-    def _decode_single_log(self, log: dict, selectors: dict) -> Optional[ContractLog]:
-        if library_log := self._decode_ds_note(log):
-            return library_log
-
-        lower_address = log.get("address", "").lower()
-        if lower_address in selectors and (topics := log.get("topics")):
-            selector = encode_hex(topics[0])
-            if selector in selectors[lower_address]:
-                return self.provider.network.ecosystem.decode_logs([log], selectors[lower_address][selector])
-
-        return self._default_log(log)
-
-    def _decode_ds_note(self, log: dict) -> Optional[ContractLog]:
-        if len(log.get("topics", [])) == 0:
+    def _decode_ds_note(self, log: dict):
+        if len(log["topics"]) == 0:
             return None
 
         selector, tail = log["topics"][0][:4], log["topics"][0][4:]
-        if any(tail) or not (contract_type := self.chain_manager.contracts.get(log["address"])):
+        if sum(tail):
             return None
 
-        method_abi = contract_type.mutable_methods.get(selector)
-        if not method_abi:
+        if not (contract_type := self.chain_manager.contracts.get(log["address"])):
+            return None
+
+        try:
+            method_abi = contract_type.mutable_methods[selector]
+        except KeyError:
             return None
 
         data = decode_hex(log["data"]) if isinstance(log["data"], str) else log["data"]
         input_types = [i.canonical_type for i in method_abi.inputs]
-        values = decode(input_types, data[4:])
+        start_index = data.index(selector) + 4
+        values = decode(input_types, data[start_index:])
         address = self.provider.network.ecosystem.decode_address(log["address"])
 
         return ContractLog(
