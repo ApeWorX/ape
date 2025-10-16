@@ -12,6 +12,7 @@ from evm_trace import CallTreeNode, CallType
 from ape.api.networks import ForkedNetworkAPI, NetworkAPI
 from ape.exceptions import CustomError, DecodingError, NetworkError, NetworkNotFoundError
 from ape.types.address import AddressType
+from ape.types.gas import AutoGasLimit
 from ape.types.units import CurrencyValueComparable
 from ape.utils.misc import DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT, LOCAL_NETWORK_NAME
 from ape_ethereum.ecosystem import BLUEPRINT_HEADER, BaseEthereumConfig, Block, Ethereum
@@ -64,9 +65,7 @@ def event_abi(vyper_contract_instance):
 
 
 @pytest.fixture
-def configured_custom_ecosystem(
-    custom_networks_config_dict, project, networks, custom_network_name_0
-):
+def configured_custom_ecosystem(custom_networks_config_dict, project, custom_network_name_0):
     data = copy.deepcopy(custom_networks_config_dict)
     data["networks"]["custom"][0]["ecosystem"] = CUSTOM_ECOSYSTEM_NAME
 
@@ -726,7 +725,7 @@ def test_gas_limit_local_networks(ethereum, network_name):
 
 def test_gas_limit_live_networks(ethereum):
     network = ethereum.get_network("sepolia")
-    assert network.gas_limit == "auto"
+    assert network.gas_limit == AutoGasLimit(multiplier=1.0)
 
 
 def test_encode_blueprint_contract(ethereum, project):
@@ -846,6 +845,12 @@ def test_create_transaction_uses_network_gas_limit(tx_type, ethereum, eth_tester
     assert tx.gas_limit == eth_tester_provider.max_gas
 
 
+def test_create_transaction_not_connected(networks_disconnected):
+    tx = networks_disconnected.ethereum.create_transaction()
+    # Show it doesn't try to refer to network gas limit.
+    assert tx.gas_limit == 0
+
+
 def test_create_transaction_with_none_values(ethereum, eth_tester_provider):
     """
     Tests against None being in place of values in kwargs,
@@ -930,6 +935,16 @@ def test_create_transaction_set_code(tx_kwargs, ethereum):
     tx = ethereum.create_transaction(**tx_kwargs)
     assert isinstance(tx, SetCodeTransaction)
     assert tx.type == TransactionType.SET_CODE.value
+
+
+def test_create_transaction_chain_id(ethereum):
+    """
+    Tests against a bug where `create_transaction()` always used
+    the connected chain ID instead of the given.
+    """
+    chain_id = 123  # Anything but the local, connected chain.
+    tx = ethereum.create_transaction(chain_id=chain_id)
+    assert tx.chain_id == chain_id
 
 
 @pytest.mark.parametrize("tx_type", TransactionType)

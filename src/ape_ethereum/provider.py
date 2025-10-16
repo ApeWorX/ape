@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING, Any, Callable, Optional, Union, cast
 import ijson  # type: ignore
 import requests
 from eth_pydantic_types import HexBytes
-from eth_typing import BlockNumber, HexStr
+from eth_typing import HexStr
 from eth_utils import add_0x_prefix, is_hex, to_hex
 from evmchains import PUBLIC_CHAIN_META, get_random_rpc
 from pydantic.dataclasses import dataclass
@@ -74,6 +74,8 @@ from ape_ethereum._print import CONSOLE_ADDRESS, console_contract
 from ape_ethereum.trace import CallTrace, TraceApproach, TransactionTrace
 from ape_ethereum.transactions import AccessList, AccessListTransaction, TransactionStatusEnum
 
+WEB3_PROVIDER_URI_ENV_VAR_NAME = "WEB3_PROVIDER_URI"
+
 if TYPE_CHECKING:
     from ethpm_types import EventABI
 
@@ -104,34 +106,6 @@ def _sanitize_web3_url(msg: str) -> str:
         rest[0] = rest[0].rstrip(",")
     sanitized_url = sanitize_url(rest[0])
     return f"{prefix} URI: {sanitized_url} {' '.join(rest[1:])}"
-
-
-WEB3_PROVIDER_URI_ENV_VAR_NAME = "WEB3_PROVIDER_URI"
-
-
-def assert_web3_provider_uri_env_var_not_set():
-    """
-    Environment variable $WEB3_PROVIDER_URI causes problems
-    when used with Ape (ignores Ape's networks). Use
-    this validator to eliminate the concern.
-
-    Raises:
-          :class:`~ape.exceptions.ProviderError`: If environment variable
-            WEB3_PROVIDER_URI exists in ``os.environ``.
-    """
-    if WEB3_PROVIDER_URI_ENV_VAR_NAME not in os.environ:
-        return
-
-    # NOTE: This was the source of confusion for user when they noticed
-    #  Ape would only connect to RPC URL set by an environment variable
-    #  named $WEB3_PROVIDER_URI instead of whatever network they were telling Ape.
-    raise ProviderError(
-        "Ape does not support Web3.py's environment variable "
-        f"${WEB3_PROVIDER_URI_ENV_VAR_NAME}. If you are using this environment "
-        "variable name incidentally, please use a different name. If you are "
-        "trying to set the network in Web3.py, please use Ape's `ape-config.yaml` "
-        "or `--network` option instead."
-    )
 
 
 def _post_send_transaction(tx: TransactionAPI, receipt: ReceiptAPI):
@@ -172,8 +146,6 @@ class Web3Provider(ProviderAPI, ABC):
     _transaction_trace_cache: dict[str, TransactionTrace] = {}
 
     def __new__(cls, *args, **kwargs):
-        assert_web3_provider_uri_env_var_not_set()
-
         # Post-connection ops
         def post_connect_hook(connect):
             @wraps(connect)
@@ -385,7 +357,20 @@ class Web3Provider(ProviderAPI, ABC):
             # Use a default localhost value.
             return DEFAULT_HTTP_URI
 
-        elif rpc := self._get_random_rpc():
+        elif env_var := os.getenv(WEB3_PROVIDER_URI_ENV_VAR_NAME):
+            # Default Web3 environment variable support that works with web3 out-the-box.
+            # Eliminates need for random RPCs and allows usage of this feature. **MUST BE**
+            # for the same chain the user is trying to connect to, which requires a bit of a hack.
+            # NOTE: We should be able to assume NOT dev here which means chain IDs are hardcoded.
+            tmp_w3 = Web3(HTTPProvider(endpoint_uri=env_var))
+            if self.network.chain_id == tmp_w3.eth.chain_id:
+                return env_var
+
+            # NOTE: We **must** remove the environment variable here or else Ape won't work.
+            os.environ.pop(WEB3_PROVIDER_URI_ENV_VAR_NAME, None)
+            # Next, drop down and try to use a random RPc from evmchains.
+
+        if rpc := self._get_random_rpc():
             # This works when the network is in `evmchains`.
             return rpc
 
@@ -464,32 +449,23 @@ class Web3Provider(ProviderAPI, ABC):
 
     @property
     def base_fee(self) -> int:
-        latest_block_number = self._get_latest_block_rpc().get("number")
-        if latest_block_number is None:
-            # Possibly no blocks yet.
-            logger.debug("Latest block has no number. Using base fee of '0'.")
-            return 0
-
         try:
-            fee_history = self._get_fee_history(latest_block_number)
+            fee_history = self._get_fee_history()
         except Exception as exc:
-            # Use the less-accurate approach (OK for testing).
             logger.debug(
-                "Failed using `web3.eth.fee_history` for network "
-                f"'{self.network_choice}'. Error: {exc}"
+                f"Failed using `eth_feeHistory` for network '{self.network_choice}'. Error: {exc}"
             )
             return self._get_last_base_fee()
 
-        if "baseFeePerGas" not in fee_history or len(fee_history["baseFeePerGas"] or []) < 2:
-            logger.debug("Not enough fee_history. Defaulting less-accurate approach.")
-            return self._get_last_base_fee()
+        base_fees = fee_history.get("baseFeePerGas") or []
+        if base_fees:
+            latest_fee = base_fees[-1]
+            if latest_fee is not None:
+                return to_int(latest_fee)
 
-        pending_base_fee = fee_history["baseFeePerGas"][1]
-        if pending_base_fee is None:
-            # Non-EIP-1559 chains or we time-travelled pre-London fork.
-            return self._get_last_base_fee()
-
-        return to_int(pending_base_fee)
+        # Fallback for non-EIP-1559 chains or missing data
+        logger.debug("Insufficient or missing baseFeePerGas. Using fallback base fee.")
+        return self._get_last_base_fee()
 
     @property
     def call_trace_approach(self) -> Optional[TraceApproach]:
@@ -504,9 +480,9 @@ class Web3Provider(ProviderAPI, ABC):
 
         return self.settings.get("call_trace_approach")
 
-    def _get_fee_history(self, block_number: int) -> FeeHistory:
+    def _get_fee_history(self, block_id: "BlockID" = "latest") -> FeeHistory:
         try:
-            return self.web3.eth.fee_history(1, BlockNumber(block_number), reward_percentiles=[])
+            return self.web3.eth.fee_history(1, block_id, reward_percentiles=[])  # type: ignore
         except (MethodUnavailable, AttributeError) as err:
             raise APINotImplementedError(str(err)) from err
 
@@ -567,7 +543,7 @@ class Web3Provider(ProviderAPI, ABC):
         txn_params = cast(TxParams, txn_dict)
         try:
             return self.web3.eth.estimate_gas(txn_params, block_identifier=block_id)
-        except (ValueError, Web3ContractLogicError) as err:
+        except (ValueError, Web3ContractLogicError, Web3RPCError) as err:
             # NOTE: Try to use debug_traceCall to obtain a trace.
             #  And the RPC can be very picky with inputs.
             tx_to_trace: dict = {}
@@ -1391,6 +1367,10 @@ class Web3Provider(ProviderAPI, ABC):
             elif err.response.status_code == 429:
                 raise  # Raise as-is so rate-limit handling picks it up.
 
+            elif json_data := err.response.json():
+                message = json_data.get("error", json_data).get("message", json_data)
+                raise ProviderError(message) from err
+
             raise ProviderError(str(err)) from err
 
         if "error" in result:
@@ -1545,11 +1525,11 @@ class Web3Provider(ProviderAPI, ABC):
 
                 if trace is not None:
                     if callable(trace):
-                        trace_called = params["trace"] = trace()
+                        trace = params["trace"] = trace()
                     else:
-                        trace_called = trace
+                        trace = trace
 
-                    if trace_called is not None and (revert_message := trace_called.revert_message):
+                    if trace is not None and (revert_message := trace.revert_message):
                         message = revert_message
                         no_reason = False
 
@@ -1565,15 +1545,33 @@ class Web3Provider(ProviderAPI, ABC):
         )
         enriched = self.compiler_manager.enrich_error(result)
 
-        # Show call trace if available
-        if enriched.txn:
-            # Unlikely scenario where a transaction is on the error even though a receipt exists.
-            if isinstance(enriched.txn, TransactionAPI) and enriched.txn.receipt:
-                enriched.txn.receipt.show_trace()
-            elif isinstance(enriched.txn, ReceiptAPI):
-                enriched.txn.show_trace()
+        # Show call trace if possible.
+        if trace := _get_trace_from_revert_kwargs(trace=trace, txn=enriched):
+            trace.show()
 
         return enriched
+
+
+# Abstracted for unit-testing.
+def _get_trace_from_revert_kwargs(**kwargs) -> Optional["TraceAPI"]:
+    trace = kwargs.get("trace")
+    txn = kwargs.get("txn")
+
+    if trace and callable(trace):
+        trace = trace()
+
+    if not trace and (txn := txn):
+        if isinstance(txn, TransactionAPI):
+            if txn.receipt:
+                return txn.receipt.trace
+
+            # Calls it from the provider.
+            return txn.trace
+
+        elif isinstance(txn, ReceiptAPI):
+            return txn.trace
+
+    return trace
 
 
 class EthereumNodeProvider(Web3Provider, ABC):

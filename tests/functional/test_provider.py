@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 from unittest import mock
 
@@ -25,11 +24,12 @@ from ape.exceptions import (
 from ape.types.events import LogFilter
 from ape.utils.testing import DEFAULT_TEST_CHAIN_ID
 from ape_ethereum.provider import (
-    WEB3_PROVIDER_URI_ENV_VAR_NAME,
     EthereumNodeProvider,
     Web3Provider,
+    _get_trace_from_revert_kwargs,
     _sanitize_web3_url,
 )
+from ape_ethereum.trace import TransactionTrace
 from ape_ethereum.transactions import TransactionStatusEnum, TransactionType
 from ape_test import LocalProvider
 
@@ -671,39 +671,6 @@ def test_auto_mine(eth_tester_provider, owner):
     assert eth_tester_provider.auto_mine
 
 
-def test_new_when_web3_provider_uri_set():
-    """
-    Tests against a confusing case where having an env var
-    $WEB3_PROVIDER_URI caused web3.py to only ever use that RPC
-    URL regardless of what was said in Ape's --network or config.
-    Now, we raise an error to avoid having users think Ape's
-    network system is broken.
-    """
-    os.environ[WEB3_PROVIDER_URI_ENV_VAR_NAME] = "TEST"
-    expected = (
-        rf"Ape does not support Web3\.py's environment variable "
-        rf"\${WEB3_PROVIDER_URI_ENV_VAR_NAME}\. If you are using this environment "
-        r"variable name incidentally, please use a different name\. If you are "
-        r"trying to set the network in Web3\.py, please use Ape's `ape-config\.yaml` "
-        r"or `--network` option instead\."
-    )
-
-    class MyProvider(Web3Provider):
-        def connect(self):
-            raise NotImplementedError()
-
-        def disconnect(self):
-            raise NotImplementedError()
-
-    try:
-        with pytest.raises(ProviderError, match=expected):
-            _ = MyProvider(data_folder=None, name=None, network=None)
-
-    finally:
-        if WEB3_PROVIDER_URI_ENV_VAR_NAME in os.environ:
-            del os.environ[WEB3_PROVIDER_URI_ENV_VAR_NAME]
-
-
 def test_account_balance_state(project, eth_tester_provider, owner):
     amount = convert("100_000 ETH", int)
 
@@ -871,3 +838,26 @@ class TestSubprocessProvider:
         expected = r"Process not started and cannot connect to existing process\."
         with pytest.raises(ProviderError, match=expected):
             subprocess_provider.start()
+
+
+def test_get_trace_from_revert_kwargs(ethereum, owner, chain):
+    """
+    Trace already given, ignore transaction.
+    """
+    trace = TransactionTrace(transaction_hash="0x")
+    txn = ethereum.create_transaction(
+        sender=owner, max_fee=chain.provider.base_fee, max_priority_fee=0, nonce=0
+    )
+    txn = owner.sign_transaction(txn)
+
+    actual = _get_trace_from_revert_kwargs(trace=trace, txn=txn)
+    assert actual == trace
+
+    # Only given txn. It uses the provider to get it.
+    actual = _get_trace_from_revert_kwargs(txn=txn)
+    assert actual == txn.trace
+
+    # Only given a receipt. It is cached on the receipt after using the provider.
+    receipt = owner.call(txn)
+    actual = _get_trace_from_revert_kwargs(txn=receipt)
+    assert actual == receipt.trace

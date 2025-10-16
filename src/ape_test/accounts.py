@@ -1,5 +1,6 @@
 import warnings
 from collections.abc import Iterator
+from functools import cached_property
 from typing import TYPE_CHECKING, Any, Optional, Union, cast
 
 from eip712.messages import EIP712Message
@@ -114,7 +115,7 @@ class TestAccount(TestAccountAPI):
     def alias(self) -> str:
         return f"TEST::{self.index}"
 
-    @property
+    @cached_property
     def address(self) -> AddressType:
         return self.network_manager.ethereum.decode_address(self.address_str)
 
@@ -124,7 +125,7 @@ class TestAccount(TestAccountAPI):
 
     @log_instead_of_fail(default="<TestAccount>")
     def __repr__(self) -> str:
-        return f"<{self.__class__.__name__}_{self.index} {self.address_str}>"
+        return f"<{self.__class__.__name__}_{self.index} {self.address}>"
 
     def sign_authorization(
         self,
