@@ -217,7 +217,31 @@ contract = project.MyContract.deployments[0]
 
 ```{note}
 Ape does not add or edit deployments in your `ape-config.yaml` file.
+You should add them yourself after you deploy if you want to share them with your project.
 ```
+
+For contracts that are deployed using deterministic deployment factories (such as using `CREATE2`),
+the addresses are the same on all chains.
+You can reference a contract type deployment as being deterministic, which means it will always deploy to the same address.
+
+To specify a deterministic deployment, use the following config:
+
+```toml
+[[tool.ape.deployments.deterministic]]
+contract_type = "MyContract"
+address = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
+```
+
+Or the equivalent YAML:
+
+```yaml
+deployments:
+  deterministic:
+    - contract_type: MyContract
+      address: 0x5FbDB2315678afecb367f032d93F642f64180aa3
+```
+
+And you can access them (on any public chain) via the same method mentioned above.
 
 ## Name
 
