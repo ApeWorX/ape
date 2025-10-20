@@ -453,7 +453,7 @@ def _get_signing_message_with_display(msg) -> tuple[Optional[str], Any]:
         display_msg += "Message\n"
         for field, value in msg._body_["message"].items():
             if isinstance(value, EIP712Type):
-                msg_fields = [x for x in dir(value) if not x.startswith("_")]
+                msg_fields = [x for x in dir(value) if not x.startswith("_") and not x.startswith("eip712_")]
                 msg_value = ""
                 for msg_field in msg_fields:
                     attr = getattr(value, msg_field)
