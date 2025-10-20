@@ -427,14 +427,16 @@ def _account_callback(ctx, param, value):
     return value
 
 
-def account_option(account_type: _ACCOUNT_TYPE_FILTER = None) -> Callable:
+def account_option(*param_decls, account_type: _ACCOUNT_TYPE_FILTER = None) -> Callable:
     """
     A CLI option that accepts either the account alias or the account number.
     If not given anything, it will prompt the user to select an account.
     """
+    if not param_decls:
+        param_decls = ("--account",)
 
     return click.option(
-        "--account",
+        *param_decls,
         type=AccountAliasPromptChoice(key=account_type),
         callback=_account_callback,
     )
