@@ -436,6 +436,7 @@ def account_option(
 
         return value
 
+    # Else, it uses "Select an account" by default.
     prompt_msg = prompt if isinstance(prompt, str) else None
 
     return click.option(

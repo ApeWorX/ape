@@ -374,7 +374,9 @@ def test_account_option_prompts_when_more_than_one_keyfile_account(
     assert expected in result.output
 
 
-def test_account_option_custom_prompt(runner, keyfile_account):
+def test_account_option_custom_prompt(runner, keyfile_account, second_keyfile_account):
+    _ = second_keyfile_account  # Existence is part of test!
+
     @click.command()
     @account_option(prompt="Select a web3 dev")
     def cmd(account):
@@ -386,7 +388,9 @@ def test_account_option_custom_prompt(runner, keyfile_account):
     assert "Select a web3 dev" in result.output
 
 
-def test_account_option_false_prompt(runner, keyfile_account):
+def test_account_option_false_prompt(runner, keyfile_account, second_keyfile_account):
+    _ = second_keyfile_account  # Existence is part of test!
+
     @click.command()
     @account_option(prompt=False)
     def cmd(account):
