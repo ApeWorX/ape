@@ -420,14 +420,9 @@ def skip_confirmation_option(help="") -> Callable:
     )
 
 
-def _account_callback(ctx, param, value):
-    if param and not value:
-        return param.type.select_account()
-
-    return value
-
-
-def account_option(*param_decls, account_type: _ACCOUNT_TYPE_FILTER = None) -> Callable:
+def account_option(
+    *param_decls, account_type: _ACCOUNT_TYPE_FILTER = None, prompt: Union[bool, str] = True
+) -> Callable:
     """
     A CLI option that accepts either the account alias or the account number.
     If not given anything, it will prompt the user to select an account.
@@ -435,9 +430,17 @@ def account_option(*param_decls, account_type: _ACCOUNT_TYPE_FILTER = None) -> C
     if not param_decls:
         param_decls = ("--account",)
 
+    def _account_callback(ctx, param, value):
+        if prompt and param and not value:
+            return param.type.select_account()
+
+        return value
+
+    prompt_msg = prompt if isinstance(prompt, str) else None
+
     return click.option(
         *param_decls,
-        type=AccountAliasPromptChoice(key=account_type),
+        type=AccountAliasPromptChoice(key=account_type, prompt_message=prompt_msg),
         callback=_account_callback,
     )
 
