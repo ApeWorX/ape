@@ -1,4 +1,4 @@
-import json
+import ujson as json
 import warnings
 from collections.abc import Iterator
 from os import environ

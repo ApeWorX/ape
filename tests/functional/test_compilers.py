@@ -1,4 +1,4 @@
-import json
+import ujson as json
 from pathlib import Path
 from re import Pattern
 from typing import cast

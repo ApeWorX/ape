@@ -1,4 +1,4 @@
-import json
+import ujson as json
 from collections.abc import Collection
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager

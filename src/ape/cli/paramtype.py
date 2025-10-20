@@ -1,4 +1,4 @@
-import json
+import ujson as json
 from pathlib import Path as PathLibPath
 from typing import Any
 

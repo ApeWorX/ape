@@ -3,7 +3,7 @@ TODO: In 0.9, move this module to `ape.types`.
 """
 
 import inspect
-import json
+import ujson as json
 from abc import ABC
 from collections.abc import Callable, Iterator, Mapping, Sequence
 from importlib import import_module
