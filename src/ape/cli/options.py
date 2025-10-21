@@ -423,7 +423,7 @@ def skip_confirmation_option(help="") -> Callable:
 def account_option(
     *param_decls,
     account_type: _ACCOUNT_TYPE_FILTER = None,
-    prompt: Optional[str] = AccountAliasPromptChoice.DEFAULT_PROMPT,
+    prompt: Optional[Union[str, bool]] = AccountAliasPromptChoice.DEFAULT_PROMPT,
 ) -> Callable:
     """
     A CLI option that accepts either the account alias or the account number.
@@ -438,9 +438,10 @@ def account_option(
 
         return value
 
+    prompt_message = prompt if isinstance(prompt, str) else None
     return click.option(
         *param_decls,
-        type=AccountAliasPromptChoice(key=account_type, prompt_message=prompt),
+        type=AccountAliasPromptChoice(key=account_type, prompt_message=prompt_message),
         callback=_account_callback,
     )
 
