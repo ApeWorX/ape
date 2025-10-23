@@ -66,8 +66,8 @@ class BaseMulticall(ManagerAccessMixin):
         provider = cls.network_manager.provider
         provider.set_code(MULTICALL3_ADDRESS, MULTICALL3_CODE)
 
-        if provider.chain_id not in SUPPORTED_CHAINS:
-            SUPPORTED_CHAINS.append(provider.chain_id)
+        if cls.chain_manager.chain_id not in SUPPORTED_CHAINS:
+            SUPPORTED_CHAINS.append(cls.chain_manager.chain_id)
 
         return multicall
 
@@ -85,7 +85,10 @@ class BaseMulticall(ManagerAccessMixin):
                 contract_type=ContractType.model_validate(MULTICALL3_CONTRACT_TYPE),
             )
 
-        if self.provider.chain_id not in self.supported_chains and contract.code != MULTICALL3_CODE:
+        if (
+            self.chain_manager.chain_id not in self.supported_chains
+            and contract.code != MULTICALL3_CODE
+        ):
             # NOTE: 2nd condition allows for use in local test deployments and fork networks
             raise UnsupportedChainError()
 
