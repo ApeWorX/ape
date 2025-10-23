@@ -188,10 +188,11 @@ def _package_callback(ctx, param, value):
     help="A reference flag, used for GitHub branches or tags instead of version",
     metavar="REF",
 )
+@click.option("--scheme", help="Scheme to use")
 @click.option("--force", "-f", help="Force a re-install", is_flag=True)
 @config_override_option()
 @click.option("--no-recurse", is_flag=True, help="Avoids installing dependencies of dependencies")
-def install(cli_ctx, package, name, version, ref, force, config_override, no_recurse):
+def install(cli_ctx, package, name, version, ref, force, config_override, no_recurse, scheme):
     """
     Download and cache packages
     """
@@ -224,6 +225,8 @@ def install(cli_ctx, package, name, version, ref, force, config_override, no_rec
         package["version"] = version
     if config_override:
         package["config_override"] = config_override
+    if scheme:
+        package["scheme"] = scheme
 
     try:
         dependency = pm.dependencies.install(**package, use_cache=not force, recurse=not no_recurse)
