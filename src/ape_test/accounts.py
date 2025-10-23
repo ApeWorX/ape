@@ -1,28 +1,13 @@
-import warnings
 from collections.abc import Iterator
 from functools import cached_property
-from typing import TYPE_CHECKING, Any, Optional, Union, cast
-
-from eip712.messages import EIP712Message
-from eth_account import Account as EthAccount
-from eth_account._utils.signing import sign_transaction_dict
-from eth_account.messages import SignableMessage, encode_defunct
-from eth_keys.datatypes import PrivateKey  # type: ignore
-from eth_pydantic_types import HexBytes
-from eth_utils import to_bytes, to_canonical_address, to_hex
+from typing import Optional, cast
 
 from ape.api.accounts import TestAccountAPI, TestAccountContainerAPI
-from ape.api.address import BaseAddress
-from ape.exceptions import APINotImplementedError, ProviderNotConnectedError, SignatureError
+from ape.exceptions import ProviderNotConnectedError
 from ape.types import AddressType
-from ape.types.signatures import MessageSignature, TransactionSignature
-from ape.utils.misc import ZERO_ADDRESS, derive_public_key, log_instead_of_fail
+from ape.utils.misc import log_instead_of_fail
 from ape.utils.testing import generate_dev_accounts
-from ape_ethereum import Authorization
-from ape_ethereum.transactions import TransactionType
-
-if TYPE_CHECKING:
-    from ape.api.transactions import TransactionAPI
+from ape_accounts.accounts import ApeSigner
 
 
 class TestAccountContainer(TestAccountContainerAPI):
@@ -45,7 +30,7 @@ class TestAccountContainer(TestAccountContainerAPI):
         self.config_manager.test.mnemonic = mnemonic
         self.generated_accounts = []
 
-    @TestAccountContainerAPI.mnemonic.setter
+    @mnemonic.setter
     def mnemonic(self, mnemonic: str) -> None:
         self.config_manager.test.mnemonic = mnemonic
         self.generated_accounts = []
@@ -104,10 +89,9 @@ class TestAccountContainer(TestAccountContainerAPI):
         self.generated_accounts = []
 
 
-class TestAccount(TestAccountAPI):
+class TestAccount(ApeSigner, TestAccountAPI):
     index: int
     address_str: str
-    private_key: str
 
     __test__ = False
 
@@ -117,141 +101,9 @@ class TestAccount(TestAccountAPI):
 
     @cached_property
     def address(self) -> AddressType:
+        # Overridden.
         return self.network_manager.ethereum.decode_address(self.address_str)
-
-    @property
-    def public_key(self) -> "HexBytes":
-        return derive_public_key(HexBytes(self.private_key))
 
     @log_instead_of_fail(default="<TestAccount>")
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__}_{self.index} {self.address}>"
-
-    def sign_authorization(
-        self,
-        address: AddressType,
-        chain_id: Optional[int] = None,
-        nonce: Optional[int] = None,
-    ) -> Optional[MessageSignature]:
-        if chain_id is None:
-            chain_id = self.provider.chain_id
-
-        try:
-            signed_authorization = EthAccount.sign_authorization(
-                dict(
-                    chainId=chain_id,
-                    address=to_canonical_address(address),
-                    nonce=nonce or self.nonce,
-                ),
-                self.private_key,
-            )
-        except AttributeError as e:
-            # TODO: Remove `try..except` once web3 pinned `>=7`
-            raise APINotImplementedError from e
-
-        return MessageSignature(
-            v=signed_authorization.y_parity,
-            r=to_bytes(signed_authorization.r),
-            s=to_bytes(signed_authorization.s),
-        )
-
-    def sign_message(self, msg: Any, **signer_options) -> Optional[MessageSignature]:
-        # Convert str and int to SignableMessage if needed
-        if isinstance(msg, str):
-            msg = encode_defunct(text=msg)
-        elif isinstance(msg, int):
-            msg = to_hex(msg)
-            msg = encode_defunct(hexstr=msg)
-        elif isinstance(msg, EIP712Message):
-            # Convert EIP712Message to SignableMessage for handling below
-            msg = msg.signable_message
-
-        # Process SignableMessage
-        if isinstance(msg, SignableMessage):
-            signed_msg = EthAccount.sign_message(msg, self.private_key)
-            return MessageSignature(
-                v=signed_msg.v,
-                r=to_bytes(signed_msg.r),
-                s=to_bytes(signed_msg.s),
-            )
-        return None
-
-    def sign_transaction(
-        self, txn: "TransactionAPI", **signer_options
-    ) -> Optional["TransactionAPI"]:
-        # Signs any transaction that's given to it.
-        # NOTE: Using JSON mode, as only primitive types can be signed.
-        tx_data = txn.model_dump(mode="json", by_alias=True, exclude={"sender"})
-        private_key = PrivateKey(HexBytes(self.private_key))
-
-        # NOTE: var name `sig_r` instead of `r` to avoid clashing with pdb commands.
-        try:
-            (
-                sig_v,
-                sig_r,
-                sig_s,
-                _,
-            ) = sign_transaction_dict(private_key, tx_data)
-        except TypeError as err:
-            # Occurs when missing properties on the txn that are needed to sign.
-            raise SignatureError(str(err), transaction=txn) from err
-
-        # NOTE: Using `to_bytes(hexstr=to_hex(sig_r))` instead of `to_bytes(sig_r)` as
-        #   a performance optimization.
-        txn.signature = TransactionSignature(
-            v=sig_v,
-            r=to_bytes(hexstr=to_hex(sig_r)),
-            s=to_bytes(hexstr=to_hex(sig_s)),
-        )
-
-        return txn
-
-    def sign_raw_msghash(self, msghash: HexBytes) -> MessageSignature:
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            signed_msg = EthAccount.unsafe_sign_hash(msghash, self.private_key)
-
-        return MessageSignature(
-            v=signed_msg.v,
-            r=to_bytes(signed_msg.r),
-            s=to_bytes(signed_msg.s),
-        )
-
-    def set_delegate(self, contract: Union[BaseAddress, AddressType, str], **txn_kwargs):
-        contract_address = self.conversion_manager.convert(contract, AddressType)
-        sig = self.sign_authorization(contract_address, nonce=self.nonce + 1)
-        auth = Authorization.from_signature(
-            address=contract_address,
-            chain_id=self.provider.chain_id,
-            # NOTE: `tx` uses `self.nonce`
-            nonce=self.nonce + 1,
-            signature=sig,
-        )
-        tx = self.provider.network.ecosystem.create_transaction(
-            type=TransactionType.SET_CODE,
-            authorizations=[auth],
-            sender=self,
-            # NOTE: Cannot target `ZERO_ADDRESS`
-            receiver=txn_kwargs.pop("receiver", None) or self,
-            **txn_kwargs,
-        )
-        return self.call(tx)
-
-    def remove_delegate(self, **txn_kwargs):
-        sig = self.sign_authorization(ZERO_ADDRESS, nonce=self.nonce + 1)
-        auth = Authorization.from_signature(
-            chain_id=self.provider.chain_id,
-            address=ZERO_ADDRESS,
-            # NOTE: `tx` uses `self.nonce`
-            nonce=self.nonce + 1,
-            signature=sig,
-        )
-        tx = self.provider.network.ecosystem.create_transaction(
-            type=TransactionType.SET_CODE,
-            authorizations=[auth],
-            sender=self,
-            # NOTE: Cannot target `ZERO_ADDRESS`
-            receiver=txn_kwargs.pop("receiver", None) or self,
-            **txn_kwargs,
-        )
-        return self.call(tx)

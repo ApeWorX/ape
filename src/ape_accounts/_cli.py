@@ -198,7 +198,7 @@ def export(cli_ctx, alias):
     from eth_account import Account as EthAccount
 
     path = _get_container().data_folder.joinpath(f"{alias}.json")
-    account = json.loads(path.read_text())
+    account = json.loads(path.read_text(encoding="utf-8"))
     password = click.prompt("Enter password to decrypt account", hide_input=True)
     private_key = EthAccount.decrypt(account, password)
     address = to_checksum_address(account["address"])
