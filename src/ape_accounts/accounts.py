@@ -174,7 +174,7 @@ class KeyfileAccount(AccountAPI):
         nonce: Optional[int] = None,
     ) -> Optional[MessageSignature]:
         if chain_id is None:
-            chain_id = self.provider.chain_id
+            chain_id = self.chain_manager.chain_id
 
         display_msg = f"Allow **full root access** to '{address}' on {chain_id or 'any chain'}?"
         if not click.confirm(click.style(f"{display_msg}\n\nAcknowledge: ", fg="yellow")):
@@ -294,7 +294,7 @@ class KeyfileAccount(AccountAPI):
         sig = self.sign_authorization(contract_address, nonce=self.nonce + 1)
         auth = Authorization.from_signature(
             address=contract_address,
-            chain_id=self.provider.chain_id,
+            chain_id=self.chain_manager.chain_id,
             # NOTE: `tx` uses `self.nonce`
             nonce=self.nonce + 1,
             signature=sig,
@@ -312,7 +312,7 @@ class KeyfileAccount(AccountAPI):
     def remove_delegate(self, **txn_kwargs):
         sig = self.sign_authorization(ZERO_ADDRESS, nonce=self.nonce + 1)
         auth = Authorization.from_signature(
-            chain_id=self.provider.chain_id,
+            chain_id=self.chain_manager.chain_id,
             address=ZERO_ADDRESS,
             # NOTE: `tx` uses `self.nonce`
             nonce=self.nonce + 1,
