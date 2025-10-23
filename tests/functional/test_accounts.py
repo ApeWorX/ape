@@ -24,6 +24,7 @@ from ape.types.gas import AutoGasLimit
 from ape.types.signatures import recover_signer
 from ape.utils.testing import DEFAULT_TEST_MNEMONIC
 from ape_accounts.accounts import (
+    ApeSigner,
     KeyfileAccount,
     _get_signing_message_with_display,
     generate_account,
@@ -1133,3 +1134,13 @@ def test_resolve_address(owner, keyfile_account, account_manager, vyper_contract
     # Test int input.
     actual = account_manager.resolve_address(HexBytes(owner.address))
     assert actual == owner.address
+
+
+def test_use_ape_signer(accounts, project):
+    """
+    Showing you can use the inner Ape account (base class) directly as an ape account in txns.
+    """
+    signer = accounts[5].signer
+    assert isinstance(signer, ApeSigner)
+    contract = project.VyperContract.deploy(1012, sender=signer)
+    assert contract.is_contract
