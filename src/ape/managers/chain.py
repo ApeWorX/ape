@@ -605,7 +605,6 @@ class TransactionHistory(BaseManager):
         Args:
             block_number (int): The block number to revert to.
         """
-
         self._hash_to_receipt_map = {
             h: r for h, r in self._hash_to_receipt_map.items() if r.block_number <= block_number
         }
