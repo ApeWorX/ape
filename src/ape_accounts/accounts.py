@@ -1,6 +1,7 @@
 import json
 import warnings
 from collections.abc import Iterator
+from functools import cached_property
 from os import environ
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional, Union
@@ -8,17 +9,19 @@ from typing import TYPE_CHECKING, Any, Optional, Union
 import click
 from eip712.messages import EIP712Message, EIP712Type
 from eth_account import Account as EthAccount
+from eth_account._utils.signing import sign_transaction_dict
 from eth_account.hdaccount import ETHEREUM_DEFAULT_PATH
 from eth_account.messages import encode_defunct
+from eth_keys.datatypes import PrivateKey
 from eth_pydantic_types import HexBytes
 from eth_typing import HexStr
 from eth_utils import remove_0x_prefix, to_bytes, to_canonical_address, to_hex
 
 from ape.api.accounts import AccountAPI, AccountContainerAPI
 from ape.api.address import BaseAddress
-from ape.exceptions import AccountsError, APINotImplementedError
+from ape.exceptions import AccountsError, APINotImplementedError, SignatureError
 from ape.logging import logger
-from ape.types import AddressType
+from ape.types.address import AddressType
 from ape.types.signatures import MessageSignature, SignableMessage, TransactionSignature
 from ape.utils.basemodel import ManagerAccessMixin
 from ape.utils.misc import ZERO_ADDRESS, derive_public_key, log_instead_of_fail
@@ -66,12 +69,153 @@ class AccountContainer(AccountContainerAPI):
         return len([*self._keyfiles])
 
 
+class ApeSigner(AccountAPI):
+    private_key: HexBytes
+
+    @cached_property
+    def address(self) -> AddressType:
+        return EthAccount.from_key(self.private_key).address
+
+    @property
+    def public_key(self) -> "HexBytes":
+        return derive_public_key(HexBytes(self.private_key))
+
+    def sign_authorization(
+        self,
+        address: AddressType,
+        chain_id: Optional[int] = None,
+        nonce: Optional[int] = None,
+    ) -> Optional[MessageSignature]:
+        if chain_id is None:
+            chain_id = self.provider.chain_id
+
+        try:
+            signed_authorization = EthAccount.sign_authorization(
+                dict(
+                    chainId=chain_id,
+                    address=to_canonical_address(address),
+                    nonce=nonce or self.nonce,
+                ),
+                self.private_key,
+            )
+        except AttributeError as e:
+            # TODO: Remove `try..except` once web3 pinned `>=7`
+            raise APINotImplementedError from e
+
+        return MessageSignature(
+            v=signed_authorization.y_parity,
+            r=to_bytes(signed_authorization.r),
+            s=to_bytes(signed_authorization.s),
+        )
+
+    def sign_message(self, msg: Any, **signer_options) -> Optional[MessageSignature]:
+        # Convert str and int to SignableMessage if needed
+        if isinstance(msg, str):
+            msg = encode_defunct(text=msg)
+        elif isinstance(msg, int):
+            msg = to_hex(msg)
+            msg = encode_defunct(hexstr=msg)
+        elif isinstance(msg, EIP712Message):
+            # Convert EIP712Message to SignableMessage for handling below
+            msg = msg.signable_message
+
+        # Process SignableMessage
+        if isinstance(msg, SignableMessage):
+            signed_msg = EthAccount.sign_message(msg, self.private_key)
+            return MessageSignature(
+                v=signed_msg.v,
+                r=to_bytes(signed_msg.r),
+                s=to_bytes(signed_msg.s),
+            )
+        return None
+
+    def sign_transaction(
+        self, txn: "TransactionAPI", **signer_options
+    ) -> Optional["TransactionAPI"]:
+        # Signs any transaction that's given to it.
+        # NOTE: Using JSON mode, as only primitive types can be signed.
+        tx_data = txn.model_dump(mode="json", by_alias=True, exclude={"sender"})
+        private_key = PrivateKey(HexBytes(self.private_key))
+
+        # NOTE: var name `sig_r` instead of `r` to avoid clashing with pdb commands.
+        try:
+            (
+                sig_v,
+                sig_r,
+                sig_s,
+                _,
+            ) = sign_transaction_dict(private_key, tx_data)
+        except TypeError as err:
+            # Occurs when missing properties on the txn that are needed to sign.
+            raise SignatureError(str(err), transaction=txn) from err
+
+        # NOTE: Using `to_bytes(hexstr=to_hex(sig_r))` instead of `to_bytes(sig_r)` as
+        #   a performance optimization.
+        txn.signature = TransactionSignature(
+            v=sig_v,
+            r=to_bytes(hexstr=to_hex(sig_r)),
+            s=to_bytes(hexstr=to_hex(sig_s)),
+        )
+
+        return txn
+
+    def sign_raw_msghash(self, msghash: HexBytes) -> MessageSignature:
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            signed_msg = EthAccount.unsafe_sign_hash(msghash, self.private_key)
+
+        return MessageSignature(
+            v=signed_msg.v,
+            r=to_bytes(signed_msg.r),
+            s=to_bytes(signed_msg.s),
+        )
+
+    def set_delegate(self, contract: Union[BaseAddress, AddressType, str], **txn_kwargs):
+        contract_address = self.conversion_manager.convert(contract, AddressType)
+        sig = self.sign_authorization(contract_address, nonce=self.nonce + 1)
+        auth = Authorization.from_signature(
+            address=contract_address,
+            chain_id=self.provider.chain_id,
+            # NOTE: `tx` uses `self.nonce`
+            nonce=self.nonce + 1,
+            signature=sig,
+        )
+        tx = self.provider.network.ecosystem.create_transaction(
+            type=TransactionType.SET_CODE,
+            authorizations=[auth],
+            sender=self,
+            # NOTE: Cannot target `ZERO_ADDRESS`
+            receiver=txn_kwargs.pop("receiver", None) or self,
+            **txn_kwargs,
+        )
+        return self.call(tx)
+
+    def remove_delegate(self, **txn_kwargs):
+        sig = self.sign_authorization(ZERO_ADDRESS, nonce=self.nonce + 1)
+        auth = Authorization.from_signature(
+            chain_id=self.provider.chain_id,
+            address=ZERO_ADDRESS,
+            # NOTE: `tx` uses `self.nonce`
+            nonce=self.nonce + 1,
+            signature=sig,
+        )
+        tx = self.provider.network.ecosystem.create_transaction(
+            type=TransactionType.SET_CODE,
+            authorizations=[auth],
+            sender=self,
+            # NOTE: Cannot target `ZERO_ADDRESS`
+            receiver=txn_kwargs.pop("receiver", None) or self,
+            **txn_kwargs,
+        )
+        return self.call(tx)
+
+
 # NOTE: `AccountAPI` is an BaseInterfaceModel
 class KeyfileAccount(AccountAPI):
     keyfile_path: Path
     locked: bool = True
     __autosign: bool = False
-    __cached_key: Optional[bytes] = None
+    __cached_signer: Optional[ApeSigner] = None
 
     @log_instead_of_fail(default="<KeyfileAccount>")
     def __repr__(self) -> str:
@@ -93,21 +237,23 @@ class KeyfileAccount(AccountAPI):
         return self.network_manager.ethereum.decode_address(self.keyfile["address"])
 
     @property
-    def __key(self) -> bytes:
-        if self.__cached_key is not None:
+    def __signer(self) -> ApeSigner:
+        if self.__cached_signer is not None:
             if not self.locked:
                 logger.warning("Using cached key for %s", self.alias)
-                return self.__cached_key
-            self.__cached_key = None
+                return self.__cached_signer
+
+            self.__cached_signer = None
 
         passphrase = self._prompt_for_passphrase(default="")
         key = self.__decrypt_keyfile(passphrase)
+        signer = ApeSigner(private_key=key)
 
         if click.confirm(f"Leave '{self.alias}' unlocked?"):
             self.locked = False
-            self.__cached_key = key
+            self.__cached_signer = signer
 
-        return key
+        return signer
 
     @property
     def public_key(self) -> Optional[HexBytes]:
@@ -116,7 +262,7 @@ class KeyfileAccount(AccountAPI):
             return HexBytes(bytes.fromhex(keyfile_data["public_key"]))
 
         # Derive the public key from the private key
-        public_key = derive_public_key(self.__key)
+        public_key = self.__signer.public_key
         keyfile_data["public_key"] = remove_0x_prefix(HexStr(public_key.hex()))
 
         # Store the public key so we don't have to derive it again.
@@ -145,7 +291,7 @@ class KeyfileAccount(AccountAPI):
             raise AccountsError("Passphrase can't be 'None'")
 
         # Rest of the code to unlock the account using the passphrase
-        self.__cached_key = self.__decrypt_keyfile(passphrase)
+        self.__cached_signer = ApeSigner(private_key=self.__decrypt_keyfile(passphrase))
         self.locked = False
 
     def lock(self):
@@ -153,7 +299,7 @@ class KeyfileAccount(AccountAPI):
 
     def change_password(self):
         self.locked = True  # force entering passphrase to get key
-        key = self.__key
+        key = self.__signer.private_key
 
         passphrase = self._prompt_for_passphrase("Create new passphrase", confirmation_prompt=True)
         self.keyfile_path.write_text(
@@ -180,24 +326,7 @@ class KeyfileAccount(AccountAPI):
         if not click.confirm(click.style(f"{display_msg}\n\nAcknowledge: ", fg="yellow")):
             return None
 
-        try:
-            signed_authorization = EthAccount.sign_authorization(
-                dict(
-                    chainId=chain_id,
-                    address=to_canonical_address(address),
-                    nonce=nonce or self.nonce,
-                ),
-                self.__key,
-            )
-        except AttributeError as e:
-            # TODO: Remove `try..except` once web3 pinned `>=7`
-            raise APINotImplementedError from e
-
-        return MessageSignature(
-            v=signed_authorization.y_parity,
-            r=to_bytes(signed_authorization.r),
-            s=to_bytes(signed_authorization.s),
-        )
+        return self.__signer.sign_authorization(address=address, chain_id=chain_id, nonce=nonce)
 
     def sign_message(self, msg: Any, **signer_options) -> Optional[MessageSignature]:
         display_msg, msg = _get_signing_message_with_display(msg)
@@ -206,7 +335,7 @@ class KeyfileAccount(AccountAPI):
             return None
 
         if self.__autosign or click.confirm(f"{display_msg}\n\nSign: "):
-            signed_msg = EthAccount.sign_message(msg, self.__key)
+            signed_msg = self.__signer.sign_message(msg, **signer_options)
 
         else:
             return None
@@ -223,16 +352,7 @@ class KeyfileAccount(AccountAPI):
         if not (self.__autosign or click.confirm(f"{txn}\n\nSign: ")):
             return None
 
-        signature = EthAccount.sign_transaction(
-            txn.model_dump(exclude_none=True, by_alias=True), self.__key
-        )
-        txn.signature = TransactionSignature(
-            v=signature.v,
-            r=to_bytes(signature.r),
-            s=to_bytes(signature.s),
-        )
-
-        return txn
+        return self.__signer.sign_transaction(txn, **signer_options)
 
     def sign_raw_msghash(self, msghash: HexBytes) -> Optional[MessageSignature]:
         logger.warning(
@@ -248,13 +368,7 @@ class KeyfileAccount(AccountAPI):
         # Also, we have already warned the user about the safety.
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            signed_msg = EthAccount.unsafe_sign_hash(msghash, self.__key)
-
-        return MessageSignature(
-            v=signed_msg.v,
-            r=to_bytes(signed_msg.r),
-            s=to_bytes(signed_msg.s),
-        )
+            return self.__signer.sign_raw_msghash(msghash)
 
     def set_autosign(self, enabled: bool, passphrase: Optional[str] = None):
         """
@@ -271,9 +385,9 @@ class KeyfileAccount(AccountAPI):
 
         self.__autosign = enabled
         if not enabled:
-            # Re-lock if was turning off
+            # Re-lock if it was turning off
             self.locked = True
-            self.__cached_key = None
+            self.__cached_signer = None
 
     def _prompt_for_passphrase(self, message: Optional[str] = None, **kwargs) -> str:
         message = message or f"Enter passphrase to unlock '{self.alias}'"
