@@ -3,6 +3,7 @@ from functools import cached_property
 from typing import TYPE_CHECKING, Any, Optional, Union, cast
 
 from eth_pydantic_types import HexBytes
+from eth_utils import to_hex
 
 from ape.api.accounts import TestAccountAPI, TestAccountContainerAPI
 from ape.api.address import BaseAddress
@@ -39,7 +40,7 @@ class TestAccountContainer(TestAccountContainerAPI):
         self.config_manager.test.mnemonic = mnemonic
         self.generated_accounts = []
 
-    @TestAccountContainerAPI.mnemonic.setter
+    @mnemonic.setter
     def mnemonic(self, mnemonic: str) -> None:
         self.config_manager.test.mnemonic = mnemonic
         self.generated_accounts = []
@@ -116,6 +117,10 @@ class TestAccount(TestAccountAPI):
     @property
     def public_key(self) -> "HexBytes":
         return self.signer.public_key
+
+    @property
+    def private_key(self) -> str:
+        return to_hex(self.signer.private_key)
 
     @log_instead_of_fail(default="<TestAccount>")
     def __repr__(self) -> str:

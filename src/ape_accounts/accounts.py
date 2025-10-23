@@ -19,7 +19,7 @@ from eth_utils import remove_0x_prefix, to_bytes, to_canonical_address, to_hex
 
 from ape.api.accounts import AccountAPI, AccountContainerAPI
 from ape.api.address import BaseAddress
-from ape.exceptions import AccountsError, APINotImplementedError, SignatureError
+from ape.exceptions import AccountsError, SignatureError
 from ape.logging import logger
 from ape.types.address import AddressType
 from ape.types.signatures import MessageSignature, SignableMessage, TransactionSignature
@@ -89,19 +89,14 @@ class ApeSigner(AccountAPI):
         if chain_id is None:
             chain_id = self.provider.chain_id
 
-        try:
-            signed_authorization = EthAccount.sign_authorization(
-                dict(
-                    chainId=chain_id,
-                    address=to_canonical_address(address),
-                    nonce=nonce or self.nonce,
-                ),
-                self.private_key,
-            )
-        except AttributeError as e:
-            # TODO: Remove `try..except` once web3 pinned `>=7`
-            raise APINotImplementedError from e
-
+        signed_authorization = EthAccount.sign_authorization(
+            dict(
+                chainId=chain_id,
+                address=to_canonical_address(address),
+                nonce=nonce or self.nonce,
+            ),
+            self.private_key,
+        )
         return MessageSignature(
             v=signed_authorization.y_parity,
             r=to_bytes(signed_authorization.r),
@@ -127,6 +122,7 @@ class ApeSigner(AccountAPI):
                 r=to_bytes(signed_msg.r),
                 s=to_bytes(signed_msg.s),
             )
+
         return None
 
     def sign_transaction(
@@ -335,16 +331,9 @@ class KeyfileAccount(AccountAPI):
             return None
 
         if self.__autosign or click.confirm(f"{display_msg}\n\nSign: "):
-            signed_msg = self.__signer.sign_message(msg, **signer_options)
+            return self.__signer.sign_message(msg, **signer_options)
 
-        else:
-            return None
-
-        return MessageSignature(
-            v=signed_msg.v,
-            r=to_bytes(signed_msg.r),
-            s=to_bytes(signed_msg.s),
-        )
+        return None
 
     def sign_transaction(
         self, txn: "TransactionAPI", **signer_options
