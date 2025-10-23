@@ -14,6 +14,7 @@ from eth_account.hdaccount import ETHEREUM_DEFAULT_PATH
 from eth_account.messages import encode_defunct
 from eth_keys.datatypes import PrivateKey
 from eth_pydantic_types import HexBytes
+from eth_pydantic_types import HexStr as PydanticHexStr
 from eth_typing import HexStr
 from eth_utils import remove_0x_prefix, to_bytes, to_canonical_address, to_hex
 
@@ -70,7 +71,7 @@ class AccountContainer(AccountContainerAPI):
 
 
 class ApeSigner(AccountAPI):
-    private_key: HexBytes
+    private_key: PydanticHexStr
 
     @cached_property
     def address(self) -> AddressType:
@@ -393,43 +394,10 @@ class KeyfileAccount(AccountAPI):
             raise InvalidPasswordError() from err
 
     def set_delegate(self, contract: Union[BaseAddress, AddressType, str], **txn_kwargs):
-        contract_address = self.conversion_manager.convert(contract, AddressType)
-        sig = self.sign_authorization(contract_address, nonce=self.nonce + 1)
-        auth = Authorization.from_signature(
-            address=contract_address,
-            chain_id=self.provider.chain_id,
-            # NOTE: `tx` uses `self.nonce`
-            nonce=self.nonce + 1,
-            signature=sig,
-        )
-        tx = self.provider.network.ecosystem.create_transaction(
-            type=TransactionType.SET_CODE,
-            authorizations=[auth],
-            sender=self,
-            # NOTE: Cannot target `ZERO_ADDRESS`
-            receiver=txn_kwargs.pop("receiver", None) or self,
-            **txn_kwargs,
-        )
-        return self.call(tx)
+        return self.__signer.set_delegate(contract, **txn_kwargs)
 
     def remove_delegate(self, **txn_kwargs):
-        sig = self.sign_authorization(ZERO_ADDRESS, nonce=self.nonce + 1)
-        auth = Authorization.from_signature(
-            chain_id=self.provider.chain_id,
-            address=ZERO_ADDRESS,
-            # NOTE: `tx` uses `self.nonce`
-            nonce=self.nonce + 1,
-            signature=sig,
-        )
-        tx = self.provider.network.ecosystem.create_transaction(
-            type=TransactionType.SET_CODE,
-            authorizations=[auth],
-            sender=self,
-            # NOTE: Cannot target `ZERO_ADDRESS`
-            receiver=txn_kwargs.pop("receiver", None) or self,
-            **txn_kwargs,
-        )
-        return self.call(tx)
+        return self.__signer.remove_delegate(**txn_kwargs)
 
 
 def _write_and_return_account(

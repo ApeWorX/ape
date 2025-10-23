@@ -1140,7 +1140,7 @@ def test_use_ape_signer(accounts, project):
     """
     Showing you can use the inner Ape account (base class) directly as an ape account in txns.
     """
-    signer = accounts[5].signer
+    signer = ApeSigner(private_key=accounts[5].private_key)
     assert isinstance(signer, ApeSigner)
     contract = project.VyperContract.deploy(1012, sender=signer)
     assert contract.is_contract

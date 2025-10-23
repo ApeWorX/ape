@@ -1,23 +1,13 @@
 from collections.abc import Iterator
 from functools import cached_property
-from typing import TYPE_CHECKING, Any, Optional, Union, cast
-
-from eth_pydantic_types import HexBytes
-from eth_utils import to_hex
+from typing import Optional, cast
 
 from ape.api.accounts import TestAccountAPI, TestAccountContainerAPI
-from ape.api.address import BaseAddress
 from ape.exceptions import ProviderNotConnectedError
 from ape.types import AddressType
-from ape.types.signatures import MessageSignature
-from ape.utils.misc import ZERO_ADDRESS, log_instead_of_fail
+from ape.utils.misc import log_instead_of_fail
 from ape.utils.testing import generate_dev_accounts
 from ape_accounts.accounts import ApeSigner
-from ape_ethereum import Authorization
-from ape_ethereum.transactions import TransactionType
-
-if TYPE_CHECKING:
-    from ape.api.transactions import TransactionAPI
 
 
 class TestAccountContainer(TestAccountContainerAPI):
@@ -92,17 +82,16 @@ class TestAccountContainer(TestAccountContainerAPI):
         return TestAccount(
             index=index,
             address_str=address,
-            signer=ApeSigner(private_key=private_key),
+            private_key=private_key,
         )
 
     def reset(self):
         self.generated_accounts = []
 
 
-class TestAccount(TestAccountAPI):
+class TestAccount(ApeSigner, TestAccountAPI):
     index: int
     address_str: str
-    signer: ApeSigner
 
     __test__ = False
 
@@ -112,77 +101,9 @@ class TestAccount(TestAccountAPI):
 
     @cached_property
     def address(self) -> AddressType:
+        # Overridden.
         return self.network_manager.ethereum.decode_address(self.address_str)
-
-    @property
-    def public_key(self) -> "HexBytes":
-        return self.signer.public_key
-
-    @property
-    def private_key(self) -> str:
-        return to_hex(self.signer.private_key)
 
     @log_instead_of_fail(default="<TestAccount>")
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__}_{self.index} {self.address}>"
-
-    def sign_authorization(
-        self,
-        address: AddressType,
-        chain_id: Optional[int] = None,
-        nonce: Optional[int] = None,
-    ) -> Optional[MessageSignature]:
-        if chain_id is None:
-            chain_id = self.provider.chain_id
-
-        return self.signer.sign_authorization(address, chain_id=chain_id, nonce=nonce)
-
-    def sign_message(self, msg: Any, **signer_options) -> Optional[MessageSignature]:
-        return self.signer.sign_message(msg, **signer_options)
-
-    def sign_transaction(
-        self, txn: "TransactionAPI", **signer_options
-    ) -> Optional["TransactionAPI"]:
-        return self.signer.sign_transaction(txn, **signer_options)
-
-    def sign_raw_msghash(self, msghash: HexBytes) -> MessageSignature:
-        return self.signer.sign_raw_msghash(msghash)
-
-    def set_delegate(self, contract: Union[BaseAddress, AddressType, str], **txn_kwargs):
-        contract_address = self.conversion_manager.convert(contract, AddressType)
-        sig = self.sign_authorization(contract_address, nonce=self.nonce + 1)
-        auth = Authorization.from_signature(
-            address=contract_address,
-            chain_id=self.provider.chain_id,
-            # NOTE: `tx` uses `self.nonce`
-            nonce=self.nonce + 1,
-            signature=sig,
-        )
-        tx = self.provider.network.ecosystem.create_transaction(
-            type=TransactionType.SET_CODE,
-            authorizations=[auth],
-            sender=self,
-            # NOTE: Cannot target `ZERO_ADDRESS`
-            receiver=txn_kwargs.pop("receiver", None) or self,
-            **txn_kwargs,
-        )
-        return self.call(tx)
-
-    def remove_delegate(self, **txn_kwargs):
-        sig = self.sign_authorization(ZERO_ADDRESS, nonce=self.nonce + 1)
-        auth = Authorization.from_signature(
-            chain_id=self.provider.chain_id,
-            address=ZERO_ADDRESS,
-            # NOTE: `tx` uses `self.nonce`
-            nonce=self.nonce + 1,
-            signature=sig,
-        )
-        tx = self.provider.network.ecosystem.create_transaction(
-            type=TransactionType.SET_CODE,
-            authorizations=[auth],
-            sender=self,
-            # NOTE: Cannot target `ZERO_ADDRESS`
-            receiver=txn_kwargs.pop("receiver", None) or self,
-            **txn_kwargs,
-        )
-        return self.call(tx)
