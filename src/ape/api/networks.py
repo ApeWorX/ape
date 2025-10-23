@@ -1041,7 +1041,9 @@ class NetworkAPI(BaseInterfaceModel):
         Returns:
             :class:`ape.api.explorers.ExplorerAPI`, optional
         """
-        chain_id = None if self.network_manager.active_provider is None else self.provider.chain_id
+        chain_id = (
+            None if self.network_manager.active_provider is None else self.chain_manager.chain_id
+        )
         for plugin_name, plugin_tuple in self._plugin_explorers:
             ecosystem_name, network_name, explorer_class = plugin_tuple
 
