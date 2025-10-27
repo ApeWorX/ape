@@ -744,7 +744,7 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
         if block_number_int == current_block:
             # Head is already at this block.
             return
-        elif block_number_int > block_number_int:
+        elif block_number_int > current_block:
             logger.error("Unable to set head to future block.")
             return
 
