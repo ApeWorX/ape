@@ -1,7 +1,7 @@
 from os import environ
 
 import pytest
-from cchecksum import to_checksum_address
+from eth_utils import to_checksum_address
 from eip712.messages import EIP712Message, EIP712Type
 from eth_account.messages import encode_defunct
 from eth_pydantic_types import HexBytes
