@@ -75,8 +75,10 @@ class _ContractPaths:
             # Given single path.
             contract_paths = (Path(value),)
         elif not value or value == "*":
-            # Get all file paths in the project.
-            return {p for p in self.project.sources.paths}
+            # We include missing compilers here in case the user isn't aware, and we can print a better message.
+            contract_paths = {
+                p for p in self.project.sources.get_source_paths(include_missing_compilers=True)
+            }
         elif isinstance(value, Iterable):
             contract_paths = value
         else:

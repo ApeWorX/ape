@@ -246,6 +246,13 @@ class TestContractNotFoundError:
             "\x1b[0m, or using a network with explorer support."
         )
 
+    def test_revert_message_setter(self):
+        err = ContractLogicError(revert_message="test message 1")
+        err.revert_message = "test message 2"
+        assert str(err) == "test message 2"
+        assert err.message == "test message 2"
+        assert err.revert_message == "test message 2"
+
 
 class TestUnknownSnapshotError:
     def test_bytes(self):

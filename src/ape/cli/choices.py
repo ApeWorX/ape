@@ -189,6 +189,8 @@ class AccountAliasPromptChoice(PromptChoice):
     Useful for adhoc scripts to lessen the need to hard-code aliases.
     """
 
+    DEFAULT_PROMPT = "Select an account"
+
     def __init__(
         self,
         key: _ACCOUNT_TYPE_FILTER = None,
@@ -197,7 +199,7 @@ class AccountAliasPromptChoice(PromptChoice):
     ):
         # NOTE: we purposely skip the constructor of `PromptChoice`
         self._key_filter = key
-        self._prompt_message = prompt_message or "Select an account"
+        self._prompt_message = prompt_message or self.DEFAULT_PROMPT
         self.name = name
 
     @cached_property

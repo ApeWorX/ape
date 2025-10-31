@@ -12,6 +12,7 @@ from evm_trace import CallTreeNode, CallType
 from ape.api.networks import ForkedNetworkAPI, NetworkAPI
 from ape.exceptions import CustomError, DecodingError, NetworkError, NetworkNotFoundError
 from ape.types.address import AddressType
+from ape.types.gas import AutoGasLimit
 from ape.types.units import CurrencyValueComparable
 from ape.utils.misc import DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT, LOCAL_NETWORK_NAME
 from ape_ethereum.ecosystem import BLUEPRINT_HEADER, BaseEthereumConfig, Block, Ethereum
@@ -64,9 +65,7 @@ def event_abi(vyper_contract_instance):
 
 
 @pytest.fixture
-def configured_custom_ecosystem(
-    custom_networks_config_dict, project, networks, custom_network_name_0
-):
+def configured_custom_ecosystem(custom_networks_config_dict, project, custom_network_name_0):
     data = copy.deepcopy(custom_networks_config_dict)
     data["networks"]["custom"][0]["ecosystem"] = CUSTOM_ECOSYSTEM_NAME
 
@@ -726,7 +725,7 @@ def test_gas_limit_local_networks(ethereum, network_name):
 
 def test_gas_limit_live_networks(ethereum):
     network = ethereum.get_network("sepolia")
-    assert network.gas_limit == "auto"
+    assert network.gas_limit == AutoGasLimit(multiplier=1.0)
 
 
 def test_encode_blueprint_contract(ethereum, project):

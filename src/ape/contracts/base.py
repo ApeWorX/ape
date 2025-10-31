@@ -1160,7 +1160,6 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
         Returns:
             :class:`~ape.types.address.AddressType`
         """
-
         return self._address
 
     @cached_property

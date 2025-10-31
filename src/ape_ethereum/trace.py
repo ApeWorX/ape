@@ -627,6 +627,7 @@ class CallTrace(Trace):
             return self._debug_trace_call()
         elif self.supports_debug_trace_call is False:
             return {}
+        # else: is None - need to figure out what this node supports.
 
         try:
             result = self._debug_trace_call()

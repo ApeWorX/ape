@@ -198,19 +198,34 @@ class SourceManager(BaseManager):
         """
         All contract source paths.
         """
+        yield from self.get_source_paths()
+
+    def get_source_paths(self, include_missing_compilers: bool = False) -> Iterator[Path]:
+        """
+        Get contract source paths.
+
+        Args:
+            include_missing_compilers (bool): Set to ``True`` to include the source path even if its extension is
+              not for a known compiler. Defaults to ``False``.
+
+        Returns:
+            Iterator[Path]
+        """
         for path in self._all_files:
-            if self.is_excluded(path):
+            if self.is_excluded(path, exclude_missing_compilers=not include_missing_compilers):
                 continue
 
             yield path
 
-    def is_excluded(self, path: Path) -> bool:
+    def is_excluded(self, path: Path, exclude_missing_compilers: bool = True) -> bool:
         """
         Check if the given path is considered an "excluded"
         file based on the configured ignore-patterns.
 
         Args:
             path (Path): The path to check.
+            exclude_missing_compilers (bool): Set to ``False`` to not consider sources with missing compilers as
+              "excluded".
 
         Returns:
             bool
@@ -226,12 +241,13 @@ class SourceManager(BaseManager):
             self._exclude_cache[source_id] = True
             return True
 
-        # Files with missing compiler extensions are also ignored.
-        suffix = get_full_extension(path)
-        registered = self.compiler_manager.registered_compilers
-        if suffix not in registered:
-            self._exclude_cache[source_id] = True
-            return True
+        if exclude_missing_compilers:
+            # Files with missing compiler extensions are also ignored.
+            suffix = get_full_extension(path)
+            registered = self.compiler_manager.registered_compilers
+            if suffix not in registered:
+                self._exclude_cache[source_id] = True
+                return True
 
         # If we get here, we have a matching compiler and this source exists.
         # Check if is excluded.
@@ -2714,11 +2730,18 @@ class LocalProject(Project):
     def unpack(self, destination: Path, config_override: Optional[dict] = None) -> "LocalProject":
         config_override = {**self._config_override, **(config_override or {})}
 
+        def copytree(src, dst):
+            try:
+                shutil.copytree(src, dst, dirs_exist_ok=True)
+            except Exception as err:
+                logger.error(f"Failed to unpack '{src}' to '{dst}': {err}")
+                pass
+
         # Unpack contracts.
         if self.contracts_folder.is_dir():
             contracts_path = get_relative_path(self.contracts_folder, self.path)
             contracts_destination = destination / contracts_path
-            shutil.copytree(self.contracts_folder, contracts_destination, dirs_exist_ok=True)
+            copytree(self.contracts_folder, contracts_destination)
 
         # Unpack config file.
         if not (destination / "ape-config.yaml").is_file():
@@ -2726,13 +2749,11 @@ class LocalProject(Project):
 
         # Unpack scripts folder.
         if self.scripts_folder.is_dir():
-            scripts_destination = destination / "scripts"
-            shutil.copytree(self.scripts_folder, scripts_destination, dirs_exist_ok=True)
+            copytree(self.scripts_folder, destination / "scripts")
 
         # Unpack tests folder.
         if self.tests_folder.is_dir():
-            tests_destination = destination / "tests"
-            shutil.copytree(self.tests_folder, tests_destination, dirs_exist_ok=True)
+            copytree(self.tests_folder, destination / "tests")
 
         # Unpack interfaces folder. Avoid double unpacking if already covered in contracts folder.
         if self.interfaces_folder.is_dir() and not self.interfaces_folder.is_relative_to(
@@ -2741,13 +2762,13 @@ class LocalProject(Project):
             prefix = get_relative_path(self.interfaces_folder.parent, self.path)
             interfaces_destination = destination / prefix / self.config.interfaces_folder
             interfaces_destination.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copytree(self.interfaces_folder, interfaces_destination, dirs_exist_ok=True)
+            copytree(self.interfaces_folder, interfaces_destination)
 
         # Unpack build folder (to avoid needless re-compiling).
         if self.manifest_path.parent.is_dir() and self.manifest_path.parent.name == ".build":
             build_destination = destination / ".build"
             build_destination.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copytree(self.manifest_path.parent, build_destination, dirs_exist_ok=True)
+            copytree(self.manifest_path.parent, build_destination)
 
         return LocalProject(destination, config_override=config_override)
 

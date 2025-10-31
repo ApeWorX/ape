@@ -24,6 +24,7 @@ from ape.types.gas import AutoGasLimit
 from ape.types.signatures import recover_signer
 from ape.utils.testing import DEFAULT_TEST_MNEMONIC
 from ape_accounts.accounts import (
+    ApeSigner,
     KeyfileAccount,
     _get_signing_message_with_display,
     generate_account,
@@ -681,6 +682,10 @@ def test_test_accounts_repr(accounts, config):
     actual = repr(accounts)
     assert config.get_config("test").hd_path in actual
 
+    # Show actual test-account repr (address should be checksummed).
+    actual = repr(accounts[0])
+    assert accounts[0].address in actual
+
 
 def test_account_comparison_to_non_account(core_account):
     # Before, would get a ConversionError.
@@ -1129,3 +1134,13 @@ def test_resolve_address(owner, keyfile_account, account_manager, vyper_contract
     # Test int input.
     actual = account_manager.resolve_address(HexBytes(owner.address))
     assert actual == owner.address
+
+
+def test_use_ape_signer(accounts, project):
+    """
+    Showing you can use the inner Ape account (base class) directly as an ape account in txns.
+    """
+    signer = ApeSigner(private_key=accounts[5].private_key)
+    assert isinstance(signer, ApeSigner)
+    contract = project.VyperContract.deploy(1012, sender=signer)
+    assert contract.is_contract

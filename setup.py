@@ -100,7 +100,7 @@ setup(
         "packaging>=23.0,<24",
         "pandas>=2.2.2,<3",
         "pluggy>=1.3,<2",
-        "pydantic>=2.10.0,<3",
+        "pydantic>=2.10,<3",
         "pydantic-settings>=2.5.2,<3",
         "pytest>=8.0,<9.0",
         "python-dateutil>=2.8.2,<3",
@@ -123,8 +123,8 @@ setup(
         "trie>=3.0.1,<4",  # Peer: stricter pin needed for uv support.
         "web3[tester]>=7.12.1,<8",
         # ** Dependencies maintained by ApeWorX **
-        "eip712>=0.2.10,<0.3",
-        "ethpm-types>=0.6.27,<0.7",
+        "ethpm-types>=0.6.28,<0.7",
+        "eip712>=0.2.14,<0.3",
         "eth_pydantic_types>=0.2.1,<0.3",
         "evmchains>=0.1.0,<0.2",
         "evm-trace>=0.2.6,<0.3",

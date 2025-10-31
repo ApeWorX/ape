@@ -479,8 +479,18 @@ def test_override_annotated_fields():
     assert my_tx.type == tx_type
 
 
-def test_gas(ethereum):
-    tx = ethereum.create_transaction(gas_limit=123)
+@pytest.mark.parametrize("key", ("gas_limit", "gas"))
+def test_gas(ethereum, key):
+    kwargs = {key: 123}
+    tx = ethereum.create_transaction(**kwargs)
     assert tx.gas_limit == 123
     # Show the `gas` alias works.
     assert tx.gas == 123
+
+
+@pytest.mark.parametrize("val", (2, "0x2"))
+def test_gas_setter(ethereum, val):
+    tx = ethereum.create_transaction()
+    tx.gas = val
+    assert tx.gas_limit == 2
+    assert tx.gas == 2
