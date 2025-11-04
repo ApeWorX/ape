@@ -740,11 +740,11 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
             block_number_hex_str = to_hex(snapshot_id)
             block_number_int = int(snapshot_id, 16)
 
-        current_block = self._get_latest_block().number
+        current_block = self._get_latest_block().number or 0
         if block_number_int == current_block:
             # Head is already at this block.
             return
-        elif block_number_int > block_number_int:
+        elif block_number_int > current_block:
             logger.error("Unable to set head to future block.")
             return
 
