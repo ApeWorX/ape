@@ -161,12 +161,11 @@ class GithubDependency(DependencyAPI):
         return model
 
     @model_validator(mode="after")
-    @classmethod
-    def ensure_ref_or_version(cls, dep):
-        if dep.ref is None and dep.version is None:
+    def ensure_ref_or_version(self):
+        if self.ref is None and self.version is None:
             raise ValueError("GitHub dependency must have either ref or version specified.")
 
-        return dep
+        return self
 
     @property
     def package_id(self) -> str:
