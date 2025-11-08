@@ -1,4 +1,4 @@
-import json
+import ujson as json
 from importlib import import_module
 from typing import TYPE_CHECKING, Optional
 

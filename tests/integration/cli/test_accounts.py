@@ -1,4 +1,4 @@
-import json
+import ujson as json
 import re
 from typing import Optional
 

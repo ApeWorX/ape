@@ -1,4 +1,4 @@
-import json
+import ujson as json
 import sys
 from abc import abstractmethod
 from collections import defaultdict, deque

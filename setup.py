@@ -111,6 +111,7 @@ setup(
         "toml; python_version<'3.11'",
         "tqdm>=4.67,<5.0",
         "traitlets>=5.3.0",
+        "ujson>=5.11.0,<6",
         "urllib3>=2.3,<3",
         "watchdog>=3.0,<4",
         # ** Dependencies maintained by Ethereum Foundation **

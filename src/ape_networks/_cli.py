@@ -1,4 +1,4 @@
-import json
+import ujson as json
 from collections.abc import Callable, Sequence
 from typing import TYPE_CHECKING
 

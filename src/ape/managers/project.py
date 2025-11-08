@@ -1,4 +1,4 @@
-import json
+import ujson as json
 import random
 import shutil
 from collections.abc import Callable, Iterable, Iterator

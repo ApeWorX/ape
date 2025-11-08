@@ -1,6 +1,6 @@
-import json
+import ujson as json
 from collections.abc import Iterable, Iterator
-from json import JSONDecodeError
+from ujson import JSONDecodeError
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional
 

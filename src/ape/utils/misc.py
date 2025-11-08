@@ -1,7 +1,7 @@
 import asyncio
 import functools
 import inspect
-import json
+import ujson as json
 import sys
 
 if sys.version_info.minor >= 11:
