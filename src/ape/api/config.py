@@ -3,7 +3,7 @@ from collections.abc import Iterable, Iterator
 from enum import Enum
 from functools import cached_property
 from pathlib import Path
-from typing import Any, Optional, TypeVar, cast
+from typing import Any, TypeVar, cast
 
 import yaml
 from ethpm_types import PackageManifest, PackageMeta, Source
@@ -73,7 +73,7 @@ class PluginConfig(BaseSettings):
 
     @classmethod
     def from_overrides(
-        cls, overrides: dict, plugin_name: Optional[str] = None, project_path: Optional[Path] = None
+        cls, overrides: dict, plugin_name: str | None = None, project_path: Path | None = None
     ) -> "PluginConfig":
         default_values = cls().model_dump()
 
@@ -100,8 +100,8 @@ class PluginConfig(BaseSettings):
 
     @classmethod
     def _find_plugin_config_problems(
-        cls, err: ValidationError, plugin_name: str, project_path: Optional[Path] = None
-    ) -> Optional[str]:
+        cls, err: ValidationError, plugin_name: str, project_path: Path | None = None
+    ) -> str | None:
         # Attempt showing line-nos for failed plugin config validation.
         # This is trickier than root-level data since by this time, we
         # no longer are aware of which files are responsible for which config.
@@ -131,7 +131,7 @@ class PluginConfig(BaseSettings):
     @classmethod
     def _find_plugin_config_problems_from_file(
         cls, err: ValidationError, base_path: Path
-    ) -> Optional[str]:
+    ) -> str | None:
         cfg_files = _find_config_yaml_files(base_path)
         for cfg_file in cfg_files:
             if problems := _get_problem_with_config(err.errors(), cfg_file):
@@ -174,7 +174,7 @@ class PluginConfig(BaseSettings):
         )
         return yaml.safe_dump(data)
 
-    def get(self, key: str, default: Optional[ConfigItemType] = None) -> ConfigItemType:
+    def get(self, key: str, default: ConfigItemType | None = None) -> ConfigItemType:
         extra: dict = self.__pydantic_extra__ or {}
         return self.__dict__.get(key, extra.get(key, default))  # type: ignore
 
@@ -202,7 +202,7 @@ class DeploymentConfig(PluginConfig):
     """
 
 
-def _get_problem_with_config(errors: list, path: Path) -> Optional[str]:
+def _get_problem_with_config(errors: list, path: Path) -> str | None:
     # Attempt to find line numbers in the config matching.
     cfg_content = Source(content=path.read_text(encoding="utf8")).content
     if not cfg_content:
@@ -303,7 +303,7 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
         # NOTE: Cannot reference `self` at all until after super init.
         self._project_path = project_path
 
-    contracts_folder: Optional[str] = None
+    contracts_folder: str | None = None
     """
     The path to the folder containing the contract source files.
     **NOTE**: Non-absolute paths are relative to the project-root.
@@ -352,7 +352,7 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
     The name of the project.
     """
 
-    base_path: Optional[str] = None
+    base_path: str | None = None
     """
     Use this when the project's base-path is not the
     root of the project.
@@ -527,7 +527,7 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
         #  shouldn't. Figure out why.
         return {k: v for k, v in res.items() if not k.startswith("_")}
 
-    def get(self, name: str) -> Optional[Any]:
+    def get(self, name: str) -> Any | None:
         return self.__getattr__(name)
 
     def get_config(self, plugin_name: str) -> PluginConfig:
@@ -538,7 +538,7 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
             or self.get_unknown_config(name)
         )
 
-    def get_plugin_config(self, name: str) -> Optional[PluginConfig]:
+    def get_plugin_config(self, name: str) -> PluginConfig | None:
         name = name.replace("-", "_")
         cfg = self._plugin_configs.get(name, {})
         if cfg and not isinstance(cfg, dict):
@@ -568,7 +568,7 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
         # NOTE: Abstracted for easily mocking in tests.
         return self.plugin_manager.config_class
 
-    def get_custom_ecosystem_config(self, name: str) -> Optional[PluginConfig]:
+    def get_custom_ecosystem_config(self, name: str) -> PluginConfig | None:
         name = name.replace("-", "_")
         if not (networks := self.get_plugin_config("networks")):
             # Shouldn't happen.

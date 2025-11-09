@@ -1,7 +1,6 @@
 from abc import abstractmethod
 from functools import cached_property
 from pathlib import Path
-from typing import Optional
 
 from pydantic import Field, field_validator
 
@@ -103,7 +102,7 @@ class ProjectAPI(BaseInterfaceModel):
         """
 
     @classmethod
-    def attempt_validate(cls, **kwargs) -> Optional["ProjectAPI"]:
+    def attempt_validate(cls, **kwargs) -> "ProjectAPI | None":
         try:
             instance = cls(**kwargs)
         except ValueError:

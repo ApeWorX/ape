@@ -1,6 +1,6 @@
 from abc import abstractmethod
 from functools import cached_property
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 
 from ape.exceptions import AccountsError, ConversionError
 from ape.types.address import AddressType
@@ -179,7 +179,7 @@ class BaseAddress(BaseInterface):
         return self.codesize > 0
 
     @property
-    def delegate(self) -> Optional["BaseAddress"]:
+    def delegate(self) -> "BaseAddress | None":
         """
         Check and see if Account has a "delegate" contract, which is a contract that this account
         delegates functionality to. This could be from many contexts, such as a Smart Wallet like
