@@ -2,7 +2,7 @@ import re
 from collections.abc import Sequence
 from dataclasses import make_dataclass
 from enum import Enum
-from typing import Any, Optional, Union
+from typing import Any
 
 from eth_abi import grammar
 from eth_abi.abi import decode
@@ -53,12 +53,12 @@ registry.register(
 )
 
 
-def is_array(abi_type: Union[str, ABIType]) -> bool:
+def is_array(abi_type: str | ABIType) -> bool:
     """
     Returns ``True`` if the given type is a probably an array.
 
     Args:
-        abi_type (Union[str, ABIType]): The type to check.
+        abi_type (str | ABIType): The type to check.
 
     Returns:
         bool
@@ -90,7 +90,7 @@ class StructParser:
     A utility class responsible for parsing structs out of values.
     """
 
-    def __init__(self, method_abi: Union[ConstructorABI, MethodABI, EventABI]):
+    def __init__(self, method_abi: ConstructorABI | MethodABI | EventABI):
         self.abi = method_abi
 
     @property
@@ -103,19 +103,19 @@ class StructParser:
         name = self.abi.name if isinstance(self.abi, MethodABI) else "constructor"
         return f"{name}_return"
 
-    def encode_input(self, values: Union[list, tuple, dict]) -> Any:
+    def encode_input(self, values: list | tuple | dict) -> Any:
         """
         Convert dicts and other objects to struct inputs.
 
         Args:
-            values (Union[list, tuple]): A list of input values.
+            values (list | tuple | dict): A list of input values.
 
         Returns:
             Any: The same input values only decoded into structs when applicable.
         """
         return [self._encode(ipt, v) for ipt, v in zip(self.abi.inputs, values)]
 
-    def decode_input(self, values: Union[Sequence, dict[str, Any]]) -> Any:
+    def decode_input(self, values: Sequence | dict[str, Any]) -> Any:
         return (
             self._decode(self.abi.inputs, values)
             if isinstance(self.abi, (EventABI, MethodABI))
@@ -159,14 +159,14 @@ class StructParser:
 
         return value
 
-    def decode_output(self, values: Union[list, tuple]) -> Any:
+    def decode_output(self, values: list | tuple) -> Any:
         """
         Parse a list of output types and values into structs.
         Values are only altered when they are a struct.
         This method also handles structs within structs as well as arrays of structs.
 
         Args:
-            values (Union[list, tuple]): A list of output values.
+            values (list | tuple): A list of output values.
 
         Returns:
             Any: The same input values only decoded into structs when applicable.
@@ -176,8 +176,8 @@ class StructParser:
 
     def _decode(
         self,
-        _types: Union[Sequence[ABIType]],
-        values: Union[Sequence, dict[str, Any]],
+        _types: Sequence[ABIType],
+        values: Sequence | dict[str, Any],
     ):
         if is_struct(_types):
             return self._create_struct(_types[0], values)
@@ -251,7 +251,7 @@ class StructParser:
 
         return return_values
 
-    def _create_struct(self, out_abi: ABIType, out_value: Any) -> Optional[Any]:
+    def _create_struct(self, out_abi: ABIType, out_value: Any) -> Any | None:
         if not out_abi.components or not out_value[0]:
             # Likely an empty tuple or not a struct.
             return None
@@ -284,7 +284,7 @@ class StructParser:
         return parsed_values
 
 
-def is_struct(outputs: Union[ABIType, Sequence[ABIType]]) -> bool:
+def is_struct(outputs: ABIType | Sequence[ABIType]) -> bool:
     """
     Returns ``True`` if the given output is a struct.
     """
@@ -435,7 +435,7 @@ def create_struct(name: str, types: Sequence[ABIType], output_values: Sequence) 
     return struct_def(*output_values)
 
 
-def is_dynamic_sized_type(abi_type: Union[ABIType, str]) -> bool:
+def is_dynamic_sized_type(abi_type: ABIType | str) -> bool:
     parsed = grammar.parse(str(abi_type))
     return parsed.is_dynamic
 
@@ -455,7 +455,7 @@ class LogInputABICollection:
         return self.abi.name
 
     def decode(
-        self, topics: list[str], data: Union[str, bytes], use_hex_on_fail: bool = False
+        self, topics: list[str], data: str | bytes, use_hex_on_fail: bool = False
     ) -> dict:
         decoded = {}
         for abi, topic_value in zip(self.topic_abi_types, topics[1:]):
@@ -545,7 +545,7 @@ def _enrich_natspec(natspec: str) -> str:
     return re.sub(NATSPEC_KEY_PATTERN, replacement, natspec)
 
 
-def encode_topics(abi: EventABI, topics: Optional[dict[str, Any]] = None) -> list[HexStr]:
+def encode_topics(abi: EventABI, topics: dict[str, Any] | None = None) -> list[HexStr]:
     """
     Encode the given topics using the given ABI. Useful for searching logs.
 

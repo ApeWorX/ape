@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 import click
 import pytest
@@ -28,7 +28,7 @@ class PytestApeRunner(ManagerAccessMixin):
         receipt_capture: "ReceiptCapture",
         gas_tracker: "GasTracker",
         coverage_tracker: "CoverageTracker",
-        fixture_manager: Optional["FixtureManager"] = None,
+        fixture_manager: "FixtureManager | None" = None,
     ):
         self.config_wrapper = config_wrapper
         self.isolation_manager = isolation_manager
@@ -56,7 +56,7 @@ class PytestApeRunner(ManagerAccessMixin):
         return self.network_manager.parse_network_choice(self.config_wrapper.network)
 
     @property
-    def _coverage_report(self) -> Optional["CoverageReport"]:
+    def _coverage_report(self) -> "CoverageReport | None":
         return self.coverage_tracker.data.report if self.coverage_tracker.data else None
 
     def pytest_exception_interact(self, report, call):

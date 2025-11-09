@@ -4,7 +4,7 @@ from collections.abc import Iterator
 from functools import cached_property
 from os import environ
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import TYPE_CHECKING, Any
 
 import click
 from eip712.messages import EIP712Message, EIP712Type
@@ -84,9 +84,9 @@ class ApeSigner(AccountAPI):
     def sign_authorization(
         self,
         address: AddressType,
-        chain_id: Optional[int] = None,
-        nonce: Optional[int] = None,
-    ) -> Optional[MessageSignature]:
+        chain_id: int | None = None,
+        nonce: int | None = None,
+    ) -> MessageSignature | None:
         if chain_id is None:
             chain_id = self.provider.chain_id
 
@@ -104,7 +104,7 @@ class ApeSigner(AccountAPI):
             s=to_bytes(signed_authorization.s),
         )
 
-    def sign_message(self, msg: Any, **signer_options) -> Optional[MessageSignature]:
+    def sign_message(self, msg: Any, **signer_options) -> MessageSignature | None:
         # Convert str and int to SignableMessage if needed
         if isinstance(msg, str):
             msg = encode_defunct(text=msg)
@@ -128,7 +128,7 @@ class ApeSigner(AccountAPI):
 
     def sign_transaction(
         self, txn: "TransactionAPI", **signer_options
-    ) -> Optional["TransactionAPI"]:
+    ) -> "TransactionAPI | None":
         # Signs any transaction that's given to it.
         # NOTE: Using JSON mode, as only primitive types can be signed.
         tx_data = txn.model_dump(mode="json", by_alias=True, exclude={"sender"})
@@ -167,7 +167,7 @@ class ApeSigner(AccountAPI):
             s=to_bytes(signed_msg.s),
         )
 
-    def set_delegate(self, contract: Union[BaseAddress, AddressType, str], **txn_kwargs):
+    def set_delegate(self, contract: BaseAddress | AddressType | str, **txn_kwargs):
         contract_address = self.conversion_manager.convert(contract, AddressType)
         sig = self.sign_authorization(contract_address, nonce=self.nonce + 1)
         auth = Authorization.from_signature(
@@ -212,7 +212,7 @@ class KeyfileAccount(AccountAPI):
     keyfile_path: Path
     locked: bool = True
     __autosign: bool = False
-    __cached_signer: Optional[ApeSigner] = None
+    __cached_signer: ApeSigner | None = None
 
     @log_instead_of_fail(default="<KeyfileAccount>")
     def __repr__(self) -> str:
@@ -253,7 +253,7 @@ class KeyfileAccount(AccountAPI):
         return signer
 
     @property
-    def public_key(self) -> Optional[HexBytes]:
+    def public_key(self) -> HexBytes | None:
         keyfile_data = self.keyfile
         if "public_key" in keyfile_data:
             return HexBytes(bytes.fromhex(keyfile_data["public_key"]))
@@ -267,7 +267,7 @@ class KeyfileAccount(AccountAPI):
 
         return public_key
 
-    def unlock(self, passphrase: Optional[str] = None):
+    def unlock(self, passphrase: str | None = None):
         if not passphrase:
             # Check if environment variable is available
             env_variable = f"APE_ACCOUNTS_{self.alias}_PASSPHRASE"
@@ -313,9 +313,9 @@ class KeyfileAccount(AccountAPI):
     def sign_authorization(
         self,
         address: AddressType,
-        chain_id: Optional[int] = None,
-        nonce: Optional[int] = None,
-    ) -> Optional[MessageSignature]:
+        chain_id: int | None = None,
+        nonce: int | None = None,
+    ) -> MessageSignature | None:
         if chain_id is None:
             chain_id = self.provider.chain_id
 
@@ -325,7 +325,7 @@ class KeyfileAccount(AccountAPI):
 
         return self.__signer.sign_authorization(address=address, chain_id=chain_id, nonce=nonce)
 
-    def sign_message(self, msg: Any, **signer_options) -> Optional[MessageSignature]:
+    def sign_message(self, msg: Any, **signer_options) -> MessageSignature | None:
         display_msg, msg = _get_signing_message_with_display(msg)
         if display_msg is None:
             logger.warning("Unsupported message type, (type=%r, msg=%r)", type(msg), msg)
@@ -338,13 +338,13 @@ class KeyfileAccount(AccountAPI):
 
     def sign_transaction(
         self, txn: "TransactionAPI", **signer_options
-    ) -> Optional["TransactionAPI"]:
+    ) -> "TransactionAPI | None":
         if not (self.__autosign or click.confirm(f"{txn}\n\nSign: ")):
             return None
 
         return self.__signer.sign_transaction(txn, **signer_options)
 
-    def sign_raw_msghash(self, msghash: HexBytes) -> Optional[MessageSignature]:
+    def sign_raw_msghash(self, msghash: HexBytes) -> MessageSignature | None:
         logger.warning(
             "Signing a raw hash directly is a dangerous action which could risk "
             "substantial losses! Only confirm if you are 100% sure of the origin!"
@@ -360,13 +360,13 @@ class KeyfileAccount(AccountAPI):
             warnings.simplefilter("ignore")
             return self.__signer.sign_raw_msghash(msghash)
 
-    def set_autosign(self, enabled: bool, passphrase: Optional[str] = None):
+    def set_autosign(self, enabled: bool, passphrase: str | None = None):
         """
         Allow this account to automatically sign messages and transactions.
 
         Args:
             enabled (bool): ``True`` to enable, ``False`` to disable.
-            passphrase (Optional[str]): Optionally provide the passphrase.
+            passphrase (str | None): Optionally provide the passphrase.
               If not provided, you will be prompted to enter it.
         """
         if enabled:
@@ -379,7 +379,7 @@ class KeyfileAccount(AccountAPI):
             self.locked = True
             self.__cached_signer = None
 
-    def _prompt_for_passphrase(self, message: Optional[str] = None, **kwargs) -> str:
+    def _prompt_for_passphrase(self, message: str | None = None, **kwargs) -> str:
         message = message or f"Enter passphrase to unlock '{self.alias}'"
         return click.prompt(
             message,
@@ -393,7 +393,7 @@ class KeyfileAccount(AccountAPI):
         except ValueError as err:
             raise InvalidPasswordError() from err
 
-    def set_delegate(self, contract: Union[BaseAddress, AddressType, str], **txn_kwargs):
+    def set_delegate(self, contract: BaseAddress | AddressType | str, **txn_kwargs):
         return self.__signer.set_delegate(contract, **txn_kwargs)
 
     def remove_delegate(self, **txn_kwargs):
@@ -488,7 +488,7 @@ def import_account_from_private_key(
 
 
 # Abstracted to make testing easier.
-def _get_signing_message_with_display(msg) -> tuple[Optional[str], Any]:
+def _get_signing_message_with_display(msg) -> tuple[str | None, Any]:
     display_msg = None
 
     if isinstance(msg, str):

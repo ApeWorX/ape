@@ -1,4 +1,4 @@
-from typing import Literal, Union
+from typing import Literal
 
 from pydantic import BaseModel, field_validator
 
@@ -22,7 +22,7 @@ class AutoGasLimit(BaseModel):
         return value
 
 
-GasLimit = Union[Literal["auto", "max"], int, str, AutoGasLimit]
+GasLimit = Literal["auto", "max"] | int | str | AutoGasLimit
 """
 A value you can give to Ape for handling gas-limit calculations.
 ``"auto"`` refers to automatically figuring out the gas,

@@ -6,7 +6,7 @@ from contextlib import contextmanager
 from functools import cached_property, singledispatchmethod
 from pathlib import Path
 from re import Pattern
-from typing import Any, Optional, Union, cast
+from typing import Any, cast
 
 from eth_typing import HexStr
 from eth_utils import to_hex
@@ -63,7 +63,7 @@ class SourceManager(BaseManager):
     but with more functionality for active development.
     """
 
-    _path_cache: Optional[list[Path]] = None
+    _path_cache: list[Path] | None = None
 
     # perf: calculating paths from source Ids can be expensive.
     _path_to_source_id: dict[Path, str] = {}
@@ -72,7 +72,7 @@ class SourceManager(BaseManager):
         self,
         root_path: Path,
         get_contracts_path: Callable,
-        exclude_globs: Optional[set[Union[str, Pattern]]] = None,
+        exclude_globs: set[str | Pattern] | None = None,
     ):
         self.root_path = root_path
         self.get_contracts_path = get_contracts_path
@@ -106,7 +106,7 @@ class SourceManager(BaseManager):
 
         return src
 
-    def get(self, source_id: str) -> Optional[Source]:
+    def get(self, source_id: str) -> Source | None:
         """
         Get a Source by source_id.
 
@@ -121,7 +121,7 @@ class SourceManager(BaseManager):
 
         for path in self.paths:
             if self._get_source_id(path) == source_id:
-                text: Union[str, dict]
+                text: str | dict
                 if path.is_file():
                     try:
                         text = path.read_text(encoding="utf8")
@@ -282,12 +282,12 @@ class SourceManager(BaseManager):
         self._exclude_cache[source_id] = False
         return False
 
-    def lookup(self, path_id: Union[str, Path]) -> Optional[Path]:
+    def lookup(self, path_id: str | Path) -> Path | None:
         """
         Look-up a path by given a sub-path or a source ID.
 
         Args:
-            path_id (Union[str, Path]): Either part of a path
+            path_id (str | Path): Either part of a path
               or a source ID.
 
         Returns:
@@ -301,7 +301,7 @@ class SourceManager(BaseManager):
         input_stem = input_path.stem
         input_extension = get_full_extension(input_path) or None
 
-        def find_in_dir(dir_path: Path, path: Path) -> Optional[Path]:
+        def find_in_dir(dir_path: Path, path: Path) -> Path | None:
             # Try exact match with or without extension
             possible_matches = []
             contracts_folder = self.get_contracts_path()
@@ -411,7 +411,7 @@ class ContractManager(BaseManager):
 
     def get(
         self, name: str, compile_missing: bool = True, check_for_changes: bool = True
-    ) -> Optional[ContractContainer]:
+    ) -> ContractContainer | None:
         """
         Get a contract by name.
 
@@ -479,11 +479,11 @@ class ContractManager(BaseManager):
                 # Deleted before yield.
                 continue
 
-    def _compile_missing_contracts(self, paths: Iterable[Union[Path, str]]):
+    def _compile_missing_contracts(self, paths: Iterable[Path | str]):
         non_compiled_sources = self._get_needs_compile(paths)
         self._compile_contracts(non_compiled_sources)
 
-    def _get_needs_compile(self, paths: Iterable[Union[Path, str]]) -> Iterable[Path]:
+    def _get_needs_compile(self, paths: Iterable[Path | str]) -> Iterable[Path]:
         for path in paths:
             if self._detect_change(path):
                 if isinstance(path, str):
@@ -493,8 +493,8 @@ class ContractManager(BaseManager):
 
     def _compile_contracts(
         self,
-        paths: Iterable[Union[Path, str]],
-        excluded_compilers: Optional[list[str]] = None,
+        paths: Iterable[Path | str],
+        excluded_compilers: list[str] | None = None,
     ):
         if not (
             new_types := {
@@ -525,9 +525,9 @@ class ContractManager(BaseManager):
 
     def _compile(
         self,
-        paths: Union[Path, str, Iterable[Union[Path, str]]],
+        paths: Path | str | Iterable[Path | str],
         use_cache: bool = True,
-        excluded_compilers: Optional[list[str]] = None,
+        excluded_compilers: list[str] | None = None,
     ) -> Iterator[ContractContainer]:
         path_ls = list([paths] if isinstance(paths, (Path, str)) else paths)
         if not path_ls:
@@ -553,7 +553,7 @@ class ContractManager(BaseManager):
             if contract_type.source_id and contract_type.source_id in src_ids:
                 yield ContractContainer(contract_type)
 
-    def _detect_change(self, path: Union[Path, str]) -> bool:
+    def _detect_change(self, path: Path | str) -> bool:
         if not (existing_types := (self.project.manifest.contract_types or {}).values()):
             return True  # Nothing compiled yet.
 
@@ -604,12 +604,12 @@ class Dependency(BaseManager, ExtraAttributesMixin):
     them from ``project.dependencies``.
     """
 
-    def __init__(self, api: DependencyAPI, project: Optional["ProjectManager"] = None):
+    def __init__(self, api: DependencyAPI, project: "ProjectManager | None" = None):
         self.api = api
         # This is the base project using this dependency.
         self.base_project = project or self.local_project
         # When installed (and set, lazily), this is the dependency project.
-        self._installation: Optional[ProjectManager] = None
+        self._installation: "ProjectManager | None" = None
         self._tried_fetch = False
 
     @log_instead_of_fail(default="<Dependency>")
@@ -745,7 +745,7 @@ class Dependency(BaseManager, ExtraAttributesMixin):
     def install(
         self,
         use_cache: bool = True,
-        config_override: Optional[dict] = None,
+        config_override: dict | None = None,
         recurse: bool = True,
     ) -> "ProjectManager":
         """
@@ -874,7 +874,7 @@ class Dependency(BaseManager, ExtraAttributesMixin):
     def compile(
         self,
         use_cache: bool = True,
-        config_override: Optional[dict] = None,
+        config_override: dict | None = None,
         allow_install: bool = False,
     ) -> dict[str, ContractContainer]:
         """
@@ -882,7 +882,7 @@ class Dependency(BaseManager, ExtraAttributesMixin):
 
         Args:
             use_cache (bool): Set to ``False`` to force a re-compile.
-            config_override (Optional[dict]): Optionally override the configuration,
+            config_override (dict | None): Optionally override the configuration,
               which may be needed for compiling.
             allow_install (bool): Set to ``True`` to allow installing.
 
@@ -1179,8 +1179,8 @@ class DependencyVersionMap(dict[str, "ProjectManager"]):
         raise KeyError(version)
 
     def get(  # type: ignore
-        self, version: str, default: Optional["ProjectManager"] = None
-    ) -> Optional["ProjectManager"]:
+        self, version: str, default: "ProjectManager | None" = None
+    ) -> "ProjectManager | None":
         options = _version_to_options(version)
         for vers in options:
             if not dict.__contains__(self, vers):  # type: ignore
@@ -1205,7 +1205,7 @@ class DependencyManager(BaseManager):
     # Class-level cache
     _cache: dict[DependencyAPI, Dependency] = {}
 
-    def __init__(self, project: Optional["ProjectManager"] = None):
+    def __init__(self, project: "ProjectManager | None" = None):
         self.project = project or self.local_project
 
     @log_instead_of_fail(default="<DependencyManager>")
@@ -1298,9 +1298,9 @@ class DependencyManager(BaseManager):
     def get_project_dependencies(
         self,
         use_cache: bool = True,
-        config_override: Optional[dict] = None,
-        name: Optional[str] = None,
-        version: Optional[str] = None,
+        config_override: dict | None = None,
+        name: str | None = None,
+        version: str | None = None,
         allow_install: bool = True,
         strict: bool = False,
         recurse: bool = True,
@@ -1311,9 +1311,9 @@ class DependencyManager(BaseManager):
         Args:
             use_cache (bool): Set to ``False`` to force-reinstall dependencies.
                Defaults to ``True``. Does not work with ``allow_install=False``.
-            config_override (Optional[dict]): Override shared configuration for each dependency.
-            name (Optional[str]): Optionally only get dependencies with a certain name.
-            version (Optional[str]): Optionally only get dependencies with certain version.
+            config_override (dict | None): Override shared configuration for each dependency.
+            name (str | None): Optionally only get dependencies with a certain name.
+            version (str | None): Optionally only get dependencies with certain version.
             allow_install (bool): Set to ``False`` to not allow installing uninstalled specified dependencies.
             strict (bool): ``True`` requires the dependency to either be installed or install properly.
             recurse (bool): Set to ``False`` to not recursively install dependencies of dependencies.
@@ -1416,13 +1416,13 @@ class DependencyManager(BaseManager):
 
     def get(
         self, name: str, version: str, allow_install: bool = True
-    ) -> Optional["ProjectManager"]:
+    ) -> "ProjectManager | None":
         if dependency := self._get(name, version, allow_install=allow_install, checked=set()):
             return dependency.project
 
         return None
 
-    def get_dependency_api(self, package_id: str, version: Optional[str] = None) -> DependencyAPI:
+    def get_dependency_api(self, package_id: str, version: str | None = None) -> DependencyAPI:
         """
         Get a dependency API. If not given version and there are multiple,
         returns the latest.
@@ -1448,8 +1448,8 @@ class DependencyManager(BaseManager):
         raise ProjectError(message)
 
     def _get_dependency_api_by_package_id(
-        self, package_id: str, version: Optional[str] = None, attr: str = "package_id"
-    ) -> Optional[DependencyAPI]:
+        self, package_id: str, version: str | None = None, attr: str = "package_id"
+    ) -> DependencyAPI | None:
         matching = []
 
         # First, only look at local configured packages (to give priority).
@@ -1478,8 +1478,8 @@ class DependencyManager(BaseManager):
         name: str,
         version: str,
         allow_install: bool = True,
-        checked: Optional[set] = None,
-    ) -> Optional[Dependency]:
+        checked: set | None = None,
+    ) -> Dependency | None:
         checked = checked or set()
 
         # Check already-installed first to prevent having to install anything.
@@ -1678,7 +1678,7 @@ class DependencyManager(BaseManager):
             f"Keys={', '.join([x for x in item.keys()])}"
         )
 
-    def add(self, dependency: Union[dict, DependencyAPI]) -> Dependency:
+    def add(self, dependency: dict | DependencyAPI) -> Dependency:
         """
         Add the dependency API data. This sets up a dependency such that
         it can be fetched.
@@ -1710,7 +1710,7 @@ class DependencyManager(BaseManager):
                 f"Failed to add dependency {api.name}@{api.version_id}: {err}"
             ) from err
 
-    def install(self, **dependency: Any) -> Union[Dependency, list[Dependency]]:
+    def install(self, **dependency: Any) -> Dependency | list[Dependency]:
         """
         Install dependencies.
 
@@ -1741,9 +1741,9 @@ class DependencyManager(BaseManager):
 
     def install_dependency(
         self,
-        dependency_data: Union[dict, DependencyAPI],
+        dependency_data: dict | DependencyAPI,
         use_cache: bool = True,
-        config_override: Optional[dict] = None,
+        config_override: dict | None = None,
         recurse: bool = True,
     ) -> Dependency:
         dependency = self.add(dependency_data)
@@ -1766,7 +1766,7 @@ class DependencyManager(BaseManager):
             dependency.unpack(cache_folder)
 
 
-def _load_manifest(path: Union[Path, str]) -> PackageManifest:
+def _load_manifest(path: Path | str) -> PackageManifest:
     path = Path(path)
     return (
         PackageManifest.model_validate_json(path.read_text())
@@ -1814,16 +1814,16 @@ class ProjectManager(ExtraAttributesMixin, BaseManager):
     @classmethod
     def from_manifest(
         cls,
-        manifest: Union[PackageManifest, Path, str],
-        config_override: Optional[dict] = None,
+        manifest: PackageManifest | Path | str,
+        config_override: dict | None = None,
     ) -> "Project":
         """
         Create an Ape project using only a manifest.
 
         Args:
-            manifest (Union[PackageManifest, Path, str]): Either a manifest or a
+            manifest (PackageManifest | Path | str): Either a manifest or a
               path to a manifest file.
-            config_override (Optional[Dict]): Optionally provide a config override.
+            config_override (dict | None): Optionally provide a config override.
 
         Returns:
             :class:`~ape.managers.project.ProjectManifest`
@@ -1834,7 +1834,7 @@ class ProjectManager(ExtraAttributesMixin, BaseManager):
 
     @classmethod
     def from_python_library(
-        cls, package_name: str, config_override: Optional[dict] = None
+        cls, package_name: str, config_override: dict | None = None
     ) -> "LocalProject":
         """
         Create an Ape project instance from an installed Python package.
@@ -1861,7 +1861,7 @@ class ProjectManager(ExtraAttributesMixin, BaseManager):
     @classmethod
     @contextmanager
     def create_temporary_project(
-        cls, config_override: Optional[dict] = None
+        cls, config_override: dict | None = None
     ) -> Iterator["LocalProject"]:
         cls._invalidate_project_dependent_caches()
         with create_tempdir() as path:
@@ -1879,7 +1879,7 @@ class Project(ProjectManager):
     manifests or local source-paths.
     """
 
-    def __init__(self, manifest: PackageManifest, config_override: Optional[dict] = None):
+    def __init__(self, manifest: PackageManifest, config_override: dict | None = None):
         self._manifest = manifest
         self._config_override = config_override or {}
 
@@ -1985,10 +1985,10 @@ class Project(ProjectManager):
         yield
         self.reconfigure(**existing_overrides)
 
-    def get(self, name: str) -> Optional[ContractContainer]:
+    def get(self, name: str) -> ContractContainer | None:
         return self.contracts.get(name)
 
-    def unpack(self, destination: Path, config_override: Optional[dict] = None) -> "LocalProject":
+    def unpack(self, destination: Path, config_override: dict | None = None) -> "LocalProject":
         """
         Unpack the project to a location using the information
         from the manifest. Converts a manifest-based project
@@ -2129,7 +2129,7 @@ class Project(ProjectManager):
         return self.manifest.sources or {}
 
     def load_contracts(
-        self, *source_ids: Union[str, Path], use_cache: bool = True
+        self, *source_ids: str | Path, use_cache: bool = True
     ) -> dict[str, ContractContainer]:
         result = {
             ct.name: ct
@@ -2392,9 +2392,9 @@ class LocalProject(Project):
 
     def __init__(
         self,
-        path: Union[Path, str],
-        manifest_path: Optional[Path] = None,
-        config_override: Optional[dict] = None,
+        path: Path | str,
+        manifest_path: Path | None = None,
+        config_override: dict | None = None,
     ) -> None:
         self._session_source_change_check: set[str] = set()
 
@@ -2596,7 +2596,7 @@ class LocalProject(Project):
         # If we get here, there are more than 1 project types we should use.
         return MultiProject(apis=valid_apis, path=self._base_path)
 
-    def _get_ape_project_api(self) -> Optional[ApeProject]:
+    def _get_ape_project_api(self) -> ApeProject | None:
         if instance := ApeProject.attempt_validate(path=self._base_path):
             return cast(ApeProject, instance)
 
@@ -2647,7 +2647,7 @@ class LocalProject(Project):
         return DeploymentManager(self)
 
     @property
-    def exclusions(self) -> set[Union[str, Pattern]]:
+    def exclusions(self) -> set[str | Pattern]:
         """
         Source-file exclusion glob patterns.
         """
@@ -2727,7 +2727,7 @@ class LocalProject(Project):
                 project.manifest.sources = sources
                 yield project
 
-    def unpack(self, destination: Path, config_override: Optional[dict] = None) -> "LocalProject":
+    def unpack(self, destination: Path, config_override: dict | None = None) -> "LocalProject":
         config_override = {**self._config_override, **(config_override or {})}
 
         def copytree(src, dst):
@@ -2817,9 +2817,9 @@ class LocalProject(Project):
 
     def load_contracts(
         self,
-        *source_ids: Union[str, Path],
+        *source_ids: str | Path,
         use_cache: bool = True,
-        excluded_compilers: Optional[list[str]] = None,
+        excluded_compilers: list[str] | None = None,
     ) -> dict[str, ContractContainer]:
         paths: Iterable[Path]
         starting: dict[str, ContractContainer] = {}
@@ -2879,7 +2879,7 @@ class LocalProject(Project):
         self.sources._path_cache = None
         self._clear_cached_config()
 
-    def chdir(self, path: Optional[Path] = None):
+    def chdir(self, path: Path | None = None):
         """
         Change the local project to the new path.
 
@@ -2964,7 +2964,7 @@ class LocalProject(Project):
         if "config" in self.__dict__:
             del self.__dict__["config"]
 
-    def _create_contract_source(self, contract_type: ContractType) -> Optional[ContractSource]:
+    def _create_contract_source(self, contract_type: ContractType) -> ContractSource | None:
         if not (source_id := contract_type.source_id):
             return None
 
@@ -3003,7 +3003,7 @@ class LocalProject(Project):
 
 def _find_directory_with_extension(
     path: Path, extensions: set[str], recurse: bool = True
-) -> Optional[Path]:
+) -> Path | None:
     if not path.is_dir():
         return None
 

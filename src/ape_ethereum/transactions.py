@@ -1,7 +1,7 @@
 import sys
 from enum import Enum, IntEnum
 from functools import cached_property
-from typing import IO, TYPE_CHECKING, Any, Optional, Union
+from typing import IO, TYPE_CHECKING, Any
 
 from eth_abi import decode
 from eth_account import Account as EthAccount
@@ -140,10 +140,10 @@ class StaticFeeTransaction(BaseTransaction):
     Transactions that are pre-EIP-1559 and use the ``gasPrice`` field.
     """
 
-    gas_price: Optional[HexInt] = Field(default=None, alias="gasPrice")
-    max_priority_fee: Optional[HexInt] = Field(default=None, exclude=True)  # type: ignore
+    gas_price: HexInt | None = Field(default=None, alias="gasPrice")
+    max_priority_fee: HexInt | None = Field(default=None, exclude=True)  # type: ignore
     type: HexInt = Field(default=TransactionType.STATIC.value, exclude=True)
-    max_fee: Optional[HexInt] = Field(default=None, exclude=True)  # type: ignore
+    max_fee: HexInt | None = Field(default=None, exclude=True)  # type: ignore
 
     @model_validator(mode="after")
     @classmethod
@@ -159,7 +159,7 @@ class AccessListTransaction(StaticFeeTransaction):
     transactions are similar to legacy transaction with an added access list functionality.
     """
 
-    gas_price: Optional[int] = Field(default=None, alias="gasPrice")
+    gas_price: int | None = Field(default=None, alias="gasPrice")
     type: int = TransactionType.ACCESS_LIST.value
     access_list: list[AccessList] = Field(default_factory=list, alias="accessList")
 
@@ -175,8 +175,8 @@ class DynamicFeeTransaction(BaseTransaction):
     and ``maxPriorityFeePerGas`` fields.
     """
 
-    max_priority_fee: Optional[HexInt] = Field(default=None, alias="maxPriorityFeePerGas")
-    max_fee: Optional[HexInt] = Field(default=None, alias="maxFeePerGas")
+    max_priority_fee: HexInt | None = Field(default=None, alias="maxPriorityFeePerGas")
+    max_fee: HexInt | None = Field(default=None, alias="maxFeePerGas")
     type: HexInt = TransactionType.DYNAMIC.value
     access_list: list[AccessList] = Field(default_factory=list, alias="accessList")
 
@@ -302,14 +302,14 @@ class Receipt(ReceiptAPI):
         return list(trace.debug_logs)
 
     @cached_property
-    def contract_type(self) -> Optional["ContractType"]:
+    def contract_type(self) -> "ContractType | None":
         if address := (self.receiver or self.contract_address):
             return self.chain_manager.contracts.get(address)
 
         return None
 
     @cached_property
-    def method_called(self) -> Optional[MethodABI]:
+    def method_called(self) -> MethodABI | None:
         if not self.contract_type:
             return None
 
@@ -333,7 +333,7 @@ class Receipt(ReceiptAPI):
         return SourceTraceback.model_validate([])
 
     def raise_for_status(self):
-        err: Optional[TransactionError] = None
+        err: TransactionError | None = None
         if self.gas_limit is not None and self.ran_out_of_gas:
             err = OutOfGasError(txn=self)
 
@@ -370,9 +370,9 @@ class Receipt(ReceiptAPI):
 
     def decode_logs(
         self,
-        abi: Optional[
-            Union[list[Union[EventABI, "ContractEvent"]], Union[EventABI, "ContractEvent"]]
-        ] = None,
+        abi: (
+            "list[EventABI | ContractEvent] | EventABI | ContractEvent | None"
+        ) = None,
     ) -> ContractLogContainer:
         if not self.logs:
             # Short circuit.
@@ -400,7 +400,7 @@ class Receipt(ReceiptAPI):
             }
 
             def get_default_log(
-                _log: dict, logs: ContractLogContainer, evt_name: Optional[str] = None
+                _log: dict, logs: ContractLogContainer, evt_name: str | None = None
             ) -> ContractLog:
                 log_index = _log.get("logIndex", logs[-1].log_index + 1 if logs else 0)
 
@@ -459,7 +459,7 @@ class Receipt(ReceiptAPI):
 
             return decoded_logs
 
-    def _decode_ds_note(self, log: dict) -> Optional[ContractLog]:
+    def _decode_ds_note(self, log: dict) -> ContractLog | None:
         if len(log["topics"]) == 0:
             # anon event log
             return None
@@ -506,7 +506,7 @@ class SharedBlobReceipt(Receipt):
     blob transaction.
     """
 
-    blob_gas_used: Optional[HexInt] = Field(default=None, alias="blobGasUsed")
+    blob_gas_used: HexInt | None = Field(default=None, alias="blobGasUsed")
     """
     The total amount of blob gas consumed by the transactions within the block.
     """
