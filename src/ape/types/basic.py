@@ -1,5 +1,5 @@
 from collections.abc import Callable, Iterator, Sequence
-from typing import Annotated, TypeVar, Union, overload
+from typing import Annotated, TypeVar, overload
 
 from pydantic import BeforeValidator
 
@@ -26,7 +26,7 @@ _T = TypeVar("_T")  # _LazySequence generic.
 
 
 class _LazySequence(Sequence[_T]):
-    def __init__(self, generator: Union[Iterator[_T], Callable[[], Iterator[_T]]]):
+    def __init__(self, generator: Iterator[_T] | Callable[[], Iterator[_T]]):
         self._generator = generator
         self.cache: list = []
 
@@ -36,7 +36,7 @@ class _LazySequence(Sequence[_T]):
     @overload
     def __getitem__(self, index: slice) -> Sequence[_T]: ...
 
-    def __getitem__(self, index: Union[int, slice]) -> Union[_T, Sequence[_T]]:
+    def __getitem__(self, index: int | slice) -> _T | Sequence[_T]:
         if isinstance(index, int):
             while len(self.cache) <= index:
                 # Catch up the cache.
