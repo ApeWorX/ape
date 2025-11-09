@@ -3,7 +3,7 @@ from collections.abc import Callable, Iterator, Sequence
 from enum import Enum
 from functools import cache, cached_property
 from importlib import import_module
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import TYPE_CHECKING, Any
 
 import click
 from click import Choice, Context, Parameter
@@ -19,9 +19,9 @@ if TYPE_CHECKING:
     from ape.api.accounts import AccountAPI
     from ape.api.providers import ProviderAPI
 
-_ACCOUNT_TYPE_FILTER = Union[
-    None, Sequence["AccountAPI"], type["AccountAPI"], Callable[["AccountAPI"], bool]
-]
+_ACCOUNT_TYPE_FILTER = (
+    None | Sequence["AccountAPI"] | type["AccountAPI"] | Callable[["AccountAPI"], bool]
+)
 
 
 def _get_accounts(key: _ACCOUNT_TYPE_FILTER) -> list["AccountAPI"]:
@@ -105,7 +105,7 @@ class PromptChoice(click.ParamType):
             click.echo(f"__expected_{choice}")
     """
 
-    def __init__(self, choices: Sequence[str], name: Optional[str] = None):
+    def __init__(self, choices: Sequence[str], name: str | None = None):
         self.choices = choices
         # Since we purposely skip the super() constructor, we need to make
         # sure the class still has a name.
@@ -125,8 +125,8 @@ class PromptChoice(click.ParamType):
             click.echo()
 
     def convert(
-        self, value: Any, param: Optional[Parameter], ctx: Optional[Context]
-    ) -> Optional[Any]:
+        self, value: Any, param: Parameter | None, ctx: Context | None
+    ) -> Any | None:
         # noinspection PyBroadException
         try:
             choice_index = int(value)
@@ -156,7 +156,7 @@ class PromptChoice(click.ParamType):
 
 
 def select_account(
-    prompt_message: Optional[str] = None, key: _ACCOUNT_TYPE_FILTER = None
+    prompt_message: str | None = None, key: _ACCOUNT_TYPE_FILTER = None
 ) -> "AccountAPI":
     """
     Prompt the user to pick from their accounts and return that account.
@@ -165,8 +165,8 @@ def select_account(
     :meth:`~ape.cli.options.account_option`.
 
     Args:
-        prompt_message (Optional[str]): Customize the prompt message.
-        key (Union[None, type[AccountAPI], Callable[[AccountAPI], bool]]):
+        prompt_message (str | None): Customize the prompt message.
+        key (None | type[AccountAPI] | Callable[[AccountAPI], bool]):
           If given, the user may only select a matching account. You can provide
           a list of accounts, an account class type, or a callable for filtering
           the accounts.
@@ -194,7 +194,7 @@ class AccountAliasPromptChoice(PromptChoice):
     def __init__(
         self,
         key: _ACCOUNT_TYPE_FILTER = None,
-        prompt_message: Optional[str] = None,
+        prompt_message: str | None = None,
         name: str = "account",
     ):
         # NOTE: we purposely skip the constructor of `PromptChoice`
@@ -209,8 +209,8 @@ class AccountAliasPromptChoice(PromptChoice):
         return _LazySequence(self._choices_iterator)
 
     def convert(
-        self, value: Any, param: Optional[Parameter], ctx: Optional[Context]
-    ) -> Optional["AccountAPI"]:
+        self, value: Any, param: Parameter | None, ctx: Context | None
+    ) -> "AccountAPI | None":
         if value is None:
             return None
 
@@ -295,7 +295,7 @@ class AccountAliasPromptChoice(PromptChoice):
         return self.fail("Invalid choice. Type the number or the alias.", param=param)
 
 
-_NETWORK_FILTER = Optional[Union[list[str], str]]
+_NETWORK_FILTER = list[str] | str | None
 _NONE_NETWORK = "__NONE_NETWORK__"
 
 
@@ -363,8 +363,8 @@ class NetworkChoice(click.Choice):
         ecosystem: _NETWORK_FILTER = None,
         network: _NETWORK_FILTER = None,
         provider: _NETWORK_FILTER = None,
-        base_type: Optional[Union[type, str]] = None,
-        callback: Optional[Callable] = None,
+        base_type: type | str | None = None,
+        callback: Callable | None = None,
     ):
         self._base_type = base_type
         self.callback = callback
@@ -375,7 +375,7 @@ class NetworkChoice(click.Choice):
         # NOTE: Purposely avoid super().init for performance reasons.
 
     @property
-    def base_type(self) -> Union[type["ProviderAPI"], str]:
+    def base_type(self) -> type["ProviderAPI"] | str:
         if self._base_type is not None:
             return self._base_type
 
@@ -395,7 +395,7 @@ class NetworkChoice(click.Choice):
     def get_metavar(self, param):
         return "[ecosystem-name][:[network-name][:[provider-name]]]"
 
-    def convert(self, value: Any, param: Optional[Parameter], ctx: Optional[Context]) -> Any:
+    def convert(self, value: Any, param: Parameter | None, ctx: Context | None) -> Any:
         if not value or value.lower() in ("none", "null"):
             return self.callback(ctx, param, _NONE_NETWORK) if self.callback else _NONE_NETWORK
 
@@ -426,7 +426,7 @@ class OutputFormat(Enum):
     """A standard .yaml format of the data."""
 
 
-def output_format_choice(options: Optional[list[OutputFormat]] = None) -> Choice:
+def output_format_choice(options: list[OutputFormat] | None = None) -> Choice:
     """
     Returns a ``click.Choice()`` type for the given options.
 
