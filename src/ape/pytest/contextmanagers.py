@@ -1,13 +1,13 @@
 import re
 from re import Pattern
-from typing import Optional, Union
+from typing import TYPE_CHECKING
 
 from ethpm_types.abi import ErrorABI
 
 from ape.exceptions import ContractLogicError, CustomError, TransactionError
 from ape.utils.basemodel import ManagerAccessMixin
 
-_RevertMessage = Union[str, re.Pattern]
+_RevertMessage = str | re.Pattern
 
 
 class RevertInfo:
@@ -24,14 +24,14 @@ class RevertInfo:
 class RevertsContextManager(ManagerAccessMixin):
     def __init__(
         self,
-        expected_message: Optional[Union[_RevertMessage, type[CustomError], ErrorABI]] = None,
-        dev_message: Optional[_RevertMessage] = None,
+        expected_message: _RevertMessage | type[CustomError] | ErrorABI | None = None,
+        dev_message: _RevertMessage | None = None,
         **error_inputs,
     ):
         self.expected_message = expected_message
         self.dev_message = dev_message
         self.error_inputs = error_inputs
-        self.revert_info: Optional[RevertInfo] = None
+        self.revert_info: RevertInfo | None = None
 
     def _check_dev_message(self, exception: ContractLogicError):
         """
@@ -103,7 +103,7 @@ class RevertsContextManager(ManagerAccessMixin):
 
             raise AssertionError(f"{assertion_error_prefix} but got '{actual}'.")
 
-    def _check_custom_error(self, exception: Union[CustomError]):
+    def _check_custom_error(self, exception: CustomError):
         # perf: avoid loading from contracts namespace until needed.
         from ape.contracts import ContractInstance
 
