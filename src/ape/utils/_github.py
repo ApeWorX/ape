@@ -6,7 +6,7 @@ import zipfile
 from collections.abc import Iterator
 from io import BytesIO
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any
 
 from requests import HTTPError, Session
 from requests.adapters import HTTPAdapter
@@ -26,7 +26,7 @@ class GitProcessWrapper:
 
         raise ProjectError("`git` not installed.")
 
-    def clone(self, url: str, target_path: Optional[Path] = None, branch: Optional[str] = None):
+    def clone(self, url: str, target_path: Path | None = None, branch: str | None = None):
         command = [self.git, "-c", "advice.detachedHead=false", "clone", url]
 
         if target_path:
@@ -68,7 +68,7 @@ class _GithubClient:
     FRAMEWORK_NAME = "ape"
     _repo_cache: dict[str, dict] = {}
 
-    def __init__(self, session: Optional[Session] = None):
+    def __init__(self, session: Session | None = None):
         if session:
             # NOTE: Mostly allowed for testing purposes.
             self.__session = session
@@ -171,8 +171,8 @@ class _GithubClient:
         self,
         org_name: str,
         repo_name: str,
-        target_path: Union[str, Path],
-        branch: Optional[str] = None,
+        target_path: str | Path,
+        branch: str | None = None,
         scheme: str = "https",
     ):
         repo = self.get_repo(org_name, repo_name)
@@ -196,7 +196,7 @@ class _GithubClient:
         self.git.clone(url, branch=branch, target_path=target_path)
 
     def download_package(
-        self, org_name: str, repo_name: str, version: str, target_path: Union[Path, str]
+        self, org_name: str, repo_name: str, version: str, target_path: Path | str
     ):
         target_path = Path(target_path)  # Handles str
         if not target_path or not target_path.is_dir():
@@ -223,7 +223,7 @@ class _GithubClient:
             for source_file in package_path.iterdir():
                 shutil.move(str(source_file), str(target_path))
 
-    def _get(self, url: str, params: Optional[dict] = None) -> Any:
+    def _get(self, url: str, params: dict | None = None) -> Any:
         return self._request("GET", url, params=params)
 
     def _request(self, method: str, url: str, **kwargs) -> Any:
