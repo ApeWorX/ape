@@ -209,7 +209,7 @@ class _GithubClient:
         )
 
         # Use temporary path to isolate a package when unzipping
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             temp_path = Path(tmp)
             with zipfile.ZipFile(BytesIO(release_content)) as zf:
                 zf.extractall(temp_path)
