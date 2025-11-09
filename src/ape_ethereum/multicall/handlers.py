@@ -1,7 +1,7 @@
 from collections.abc import Iterator
 from functools import cached_property
 from types import ModuleType
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import TYPE_CHECKING, Any
 
 from ethpm_types import ContractType
 
@@ -36,7 +36,7 @@ class BaseMulticall(ManagerAccessMixin):
     def __init__(
         self,
         address: "AddressType" = MULTICALL3_ADDRESS,
-        supported_chains: Optional[list[int]] = None,
+        supported_chains: list[int] | None = None,
     ) -> None:
         """
         Initialize a new Multicall session object. By default, there are no calls to make.
@@ -164,12 +164,12 @@ class Call(BaseMulticall):
     def __init__(
         self,
         address: "AddressType" = MULTICALL3_ADDRESS,
-        supported_chains: Optional[list[int]] = None,
+        supported_chains: list[int] | None = None,
     ) -> None:
         super().__init__(address=address, supported_chains=supported_chains)
 
         self.abis: list[MethodABI] = []
-        self._result: Union[None, list[tuple[bool, HexBytes]]] = None
+        self._result: list[tuple[bool, HexBytes]] | None = None
 
     @property
     def handler(self) -> ContractCallHandler:  # type: ignore[override]

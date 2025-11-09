@@ -1,6 +1,5 @@
 from collections.abc import Iterator
 from functools import singledispatchmethod
-from typing import Optional
 
 from ape.api.query import ContractCreation, ContractCreationQuery, QueryAPI, QueryType
 from ape.exceptions import QueryEngineError
@@ -10,7 +9,7 @@ from ape_ethereum.provider import EthereumNodeProvider
 
 class OtterscanQueryEngine(QueryAPI):
     @singledispatchmethod
-    def estimate_query(self, query: QueryType) -> Optional[int]:  # type: ignore[override]
+    def estimate_query(self, query: QueryType) -> int | None:  # type: ignore[override]
         return None
 
     @singledispatchmethod
@@ -20,7 +19,7 @@ class OtterscanQueryEngine(QueryAPI):
         )
 
     @estimate_query.register
-    def estimate_contract_creation_query(self, query: ContractCreationQuery) -> Optional[int]:
+    def estimate_contract_creation_query(self, query: ContractCreationQuery) -> int | None:
         if getattr(self.provider, "_ots_api_level", None) is not None:
             return 250
         return None

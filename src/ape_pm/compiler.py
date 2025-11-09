@@ -2,7 +2,7 @@ import json
 from collections.abc import Iterable, Iterator
 from json import JSONDecodeError
 from pathlib import Path
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from eth_pydantic_types import HexBytes
 from eth_utils import is_0x_prefixed
@@ -35,8 +35,8 @@ class InterfaceCompiler(CompilerAPI):
     def compile(
         self,
         contract_filepaths: Iterable[Path],
-        project: Optional["ProjectManager"],
-        settings: Optional[dict] = None,
+        project: "ProjectManager | None",
+        settings: dict | None = None,
     ) -> Iterator[ContractType]:
         project = project or self.local_project
         source_ids = {
@@ -68,7 +68,7 @@ class InterfaceCompiler(CompilerAPI):
     def compile_code(
         self,
         code: str,
-        project: Optional["ProjectManager"] = None,
+        project: "ProjectManager | None" = None,
         **kwargs,
     ) -> ContractType:
         code = code or "[]"

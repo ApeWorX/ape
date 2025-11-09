@@ -9,7 +9,7 @@ from importlib.util import module_from_spec, spec_from_loader
 from os import environ
 from pathlib import Path
 from types import ModuleType
-from typing import TYPE_CHECKING, Any, Optional, Union, cast
+from typing import TYPE_CHECKING, Any, cast
 
 import click
 
@@ -131,7 +131,7 @@ class ApeConsoleNamespace(dict):
     def _global_extras(self) -> dict:
         return self._load_extras_file(self._global_path)
 
-    def get(self, key: str, default: Optional[Any] = None):
+    def get(self, key: str, default: Any | None = None):
         try:
             return self.__getitem__(key)
         except KeyError:
@@ -167,11 +167,11 @@ class ApeConsoleNamespace(dict):
 
 
 def console(
-    project: Optional[Union["ProjectManager", Path]] = None,
+    project: "ProjectManager | Path | None" = None,
     verbose: bool = False,
-    extra_locals: Optional[dict] = None,
+    extra_locals: dict | None = None,
     embed: bool = False,
-    code: Optional[list[str]] = None,
+    code: list[str] | None = None,
 ):
     import IPython
     from IPython.terminal.ipapp import Config as IPythonConfig
@@ -228,7 +228,7 @@ def _launch_console(
     ipy_config: "IPythonConfig",
     embed: bool,
     banner: str,
-    code: Optional[list[str]],
+    code: list[str] | None,
 ):
     import IPython
 
