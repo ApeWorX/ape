@@ -4,7 +4,7 @@ from collections.abc import Callable, Iterator
 from functools import cached_property, partial, singledispatchmethod
 from itertools import islice
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import TYPE_CHECKING, Any
 
 import click
 from eth_pydantic_types import HexBytes
@@ -352,7 +352,7 @@ class ContractCallHandler(ContractMethodHandler):
         return self.transact.estimate_gas_cost(*arguments, **kwargs)
 
 
-def _select_method_abi(abis: list["MethodABI"], args: Union[tuple, list]) -> "MethodABI":
+def _select_method_abi(abis: list["MethodABI"], args: tuple | list) -> "MethodABI":
     args = args or []
     selected_abi = None
     for abi in abis:
@@ -501,7 +501,7 @@ class ContractEvent(BaseInterfaceModel):
 
     contract: "ContractTypeWrapper"
     abi: EventABI
-    _logs: Optional[list[ContractLog]] = None
+    _logs: list[ContractLog] | None = None
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -555,7 +555,7 @@ class ContractEvent(BaseInterfaceModel):
         return LogFilter.from_event(event=self.abi, addresses=addresses, start_block=0)
 
     @singledispatchmethod
-    def __getitem__(self, value) -> Union[ContractLog, list[ContractLog]]:  # type: ignore[override]
+    def __getitem__(self, value) -> ContractLog | list[ContractLog]:  # type: ignore[override]
         raise NotImplementedError(f"Cannot use '{type(value)}' to access logs.")
 
     @__getitem__.register
@@ -673,9 +673,9 @@ class ContractEvent(BaseInterfaceModel):
         self,
         *columns: str,
         start_block: int = 0,
-        stop_block: Optional[int] = None,
+        stop_block: int | None = None,
         step: int = 1,
-        engine_to_use: Optional[str] = None,
+        engine_to_use: str | None = None,
     ) -> "DataFrame":
         """
         Iterate through blocks for log events
@@ -685,11 +685,11 @@ class ContractEvent(BaseInterfaceModel):
               return.
             start_block (int): The first block, by number, to include in the
               query. Defaults to ``0``.
-            stop_block (Optional[int]): The last block, by number, to include
+            stop_block (int | None): The last block, by number, to include
               in the query. Defaults to the latest block.
             step (int): The number of blocks to iterate between block numbers.
               Defaults to ``1``.
-            engine_to_use (Optional[str]): query engine to use, bypasses query
+            engine_to_use (str | None): query engine to use, bypasses query
               engine selection algorithm.
 
         Returns:
@@ -734,9 +734,9 @@ class ContractEvent(BaseInterfaceModel):
     def range(
         self,
         start_or_stop: int,
-        stop: Optional[int] = None,
-        search_topics: Optional[dict[str, Any]] = None,
-        extra_addresses: Optional[list] = None,
+        stop: int | None = None,
+        search_topics: dict[str, Any] | None = None,
+        extra_addresses: list | None = None,
     ) -> Iterator[ContractLog]:
         """
         Search through the logs for this event using the given filter parameters.
@@ -745,11 +745,11 @@ class ContractEvent(BaseInterfaceModel):
             start_or_stop (int): When also given ``stop``, this is the earliest
               block number in the desired log set.
               Otherwise, it is the total amount of blocks to get starting from ``0``.
-            stop (Optional[int]): The latest block number in the
+            stop (int | None): The latest block number in the
               desired log set. Defaults to delegating to provider.
-            search_topics (Optional[dict]): Search topics, such as indexed event inputs,
+            search_topics (dict | None): Search topics, such as indexed event inputs,
               to query by. Defaults to getting all events.
-            extra_addresses (Optional[list[:class:`~ape.types.address.AddressType`]]):
+            extra_addresses (list | None): Additional contract addresses containing the same event type. Defaults to
               Additional contract addresses containing the same event type. Defaults to
               only looking at the contract instance where this event is defined.
 
@@ -851,11 +851,11 @@ class ContractEvent(BaseInterfaceModel):
 
     def poll_logs(
         self,
-        start_block: Optional[int] = None,
-        stop_block: Optional[int] = None,
-        required_confirmations: Optional[int] = None,
-        new_block_timeout: Optional[int] = None,
-        search_topics: Optional[dict[str, Any]] = None,
+        start_block: int | None = None,
+        stop_block: int | None = None,
+        required_confirmations: int | None = None,
+        new_block_timeout: int | None = None,
+        search_topics: dict[str, Any] | None = None,
         **search_topic_kwargs: dict[str, Any],
     ) -> Iterator[ContractLog]:
         """
@@ -870,17 +870,17 @@ class ContractEvent(BaseInterfaceModel):
                 print(f"New event log found: block_number={new_log.block_number}")
 
         Args:
-            start_block (Optional[int]): The block number to start with. Defaults to the pending
+            start_block (int | None): The block number to start with. Defaults to the pending
               block number.
-            stop_block (Optional[int]): Optionally set a future block number to stop at.
+            stop_block (int | None): Optionally set a future block number to stop at.
               Defaults to never-ending.
-            required_confirmations (Optional[int]): The amount of confirmations to wait
+            required_confirmations (int | None): The amount of confirmations to wait
               before yielding the block. The more confirmations, the less likely a reorg will occur.
               Defaults to the network's configured required confirmations.
-            new_block_timeout (Optional[int]): The amount of time to wait for a new block before
+            new_block_timeout (int | None): The amount of time to wait for a new block before
               quitting. Defaults to 10 seconds for local networks or ``50 * block_time`` for live
               networks.
-            search_topics (Optional[dict[str, Any]]): A dictionary of search topics to use when
+            search_topics (dict[str, Any] | None): A dictionary of search topics to use when
               constructing a polling filter. Overrides the value of `**search_topics_kwargs`.
             search_topics_kwargs: Search topics to use when constructing a polling filter. Allows
               easily specifying topic filters using kwarg syntax but can be used w/ `search_topics`
@@ -952,7 +952,7 @@ class ContractEventWrapper:
 
 class ContractTypeWrapper(ManagerAccessMixin):
     contract_type: "ContractType"
-    base_path: Optional[Path] = None
+    base_path: Path | None = None
 
     @property
     def selector_identifiers(self) -> dict[str, str]:
@@ -971,7 +971,7 @@ class ContractTypeWrapper(ManagerAccessMixin):
         return self.contract_type.identifier_lookup
 
     @property
-    def source_path(self) -> Optional[Path]:
+    def source_path(self) -> Path | None:
         """
         Returns the path to the local contract if determined that this container
         belongs to the active project by cross-checking source_id.
@@ -1078,7 +1078,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
         self,
         address: "AddressType",
         contract_type: "ContractType",
-        txn_hash: Optional[Union[str, HexBytes]] = None,
+        txn_hash: str | HexBytes | None = None,
     ) -> None:
         super().__init__()
         self._address = address
@@ -1137,7 +1137,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
         return instance
 
     @property
-    def creation_metadata(self) -> Optional[ContractCreation]:
+    def creation_metadata(self) -> ContractCreation | None:
         """
         Contract creation details: txn_hash, block, deployer, factory, receipt.
         See :class:`~ape.api.query.ContractCreation` for more details.
@@ -1558,9 +1558,9 @@ class ContractContainer(ContractTypeWrapper, ExtraAttributesMixin):
     def at(
         self,
         address: "AddressType",
-        txn_hash: Optional[Union[str, HexBytes]] = None,
+        txn_hash: str | HexBytes | None = None,
         fetch_from_explorer: bool = True,
-        proxy_info: Optional["ProxyInfoAPI"] = None,
+        proxy_info: "ProxyInfoAPI | None" = None,
         detect_proxy: bool = True,
     ) -> ContractInstance:
         """
@@ -1577,7 +1577,7 @@ class ContractContainer(ContractTypeWrapper, ExtraAttributesMixin):
               **NOTE**: Things will not work as expected if the contract is not actually
               deployed to this address or if the contract at the given address has
               a different ABI than :attr:`~ape.contracts.ContractContainer.contract_type`.
-            txn_hash (Union[str, HexBytes]): The hash of the transaction that deployed the
+            txn_hash (str | HexBytes): The hash of the transaction that deployed the
               contract, if available. Defaults to ``None``.
             fetch_from_explorer (bool): Set to ``False`` to avoid fetching from an explorer.
             proxy_info (:class:`~ape.api.networks.ProxyInfoAPI` | None): Proxy info object to set
@@ -1743,7 +1743,7 @@ class ContractNamespace:
         return f"<{self.name}>"
 
     @only_raise_attribute_error
-    def __getattr__(self, item: str) -> Union[ContractContainer, "ContractNamespace"]:
+    def __getattr__(self, item: str) -> "ContractContainer | ContractNamespace":
         """
         Access the next contract container or namespace.
 
@@ -1751,7 +1751,7 @@ class ContractNamespace:
             item (str): The name of the next node.
 
         Returns:
-            Union[:class:`~ape.contracts.base.ContractContainer`,
+            :class:`~ape.contracts.base.ContractContainer` |
             :class:`~ape.contracts.base.ContractNamespace`]
         """
         _assert_not_ipython_check(item)
