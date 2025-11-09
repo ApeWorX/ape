@@ -145,7 +145,7 @@ setup(
             "ape_pm=ape_pm._cli:cli",
         ],
     },
-    python_requires=">=3.9,<4",
+    python_requires=">=3.10,<4",
     extras_require=extras_require,
     py_modules=list(_MODULES),
     license="Apache-2.0",
