@@ -16,12 +16,12 @@ from geth.wrapper import ALL_APIS, construct_test_chain_kwargs
 from pydantic import field_validator
 from pydantic_settings import SettingsConfigDict
 from requests.exceptions import ConnectionError
+from web3.middleware import ExtraDataToPOAMiddleware
 
 from ape.api.config import PluginConfig
 from ape.api.providers import SubprocessProvider, TestProviderAPI
 from ape.exceptions import VirtualMachineError
 from ape.logging import LogLevel, logger
-from ape.utils._web3_compat import ExtraDataToPOAMiddleware
 from ape.utils.misc import ZERO_ADDRESS, log_instead_of_fail, raises_not_implemented
 from ape.utils.process import JoinableQueue, spawn
 from ape.utils.testing import (
@@ -740,11 +740,11 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
             block_number_hex_str = to_hex(snapshot_id)
             block_number_int = int(snapshot_id, 16)
 
-        current_block = self._get_latest_block().number
+        current_block = self._get_latest_block().number or 0
         if block_number_int == current_block:
             # Head is already at this block.
             return
-        elif block_number_int > block_number_int:
+        elif block_number_int > current_block:
             logger.error("Unable to set head to future block.")
             return
 

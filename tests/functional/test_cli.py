@@ -355,9 +355,11 @@ def test_account_option_uses_single_account_as_default(runner, one_account):
     assert expected in result.output
 
 
-def test_account_prompts_when_more_than_one_keyfile_account(
+def test_account_option_prompts_when_more_than_one_keyfile_account(
     runner, keyfile_account, second_keyfile_account
 ):
+    _ = second_keyfile_account  # Existence is part of test!
+
     @click.command()
     @account_option()
     def cmd(account):
@@ -370,6 +372,34 @@ def test_account_prompts_when_more_than_one_keyfile_account(
     result = runner.invoke(cmd, (), input="0\n")
 
     assert expected in result.output
+
+
+def test_account_option_custom_prompt(runner, keyfile_account, second_keyfile_account):
+    _ = second_keyfile_account  # Existence is part of test!
+
+    @click.command()
+    @account_option(prompt="Select a web3 dev")
+    def cmd(account):
+        _expected = get_expected_account_str(account)
+        click.echo(_expected)
+
+    # Requires user input.
+    result = runner.invoke(cmd, (), input="0\n")
+    assert "Select a web3 dev" in result.output
+
+
+def test_account_option_false_prompt(runner, keyfile_account, second_keyfile_account):
+    _ = second_keyfile_account  # Existence is part of test!
+
+    @click.command()
+    @account_option(prompt=False)
+    def cmd(account):
+        assert account is None
+        click.echo("It works!")
+
+    # Requires user input.
+    result = runner.invoke(cmd, ())
+    assert "It works!" in result.output
 
 
 @pytest.mark.parametrize("test_key", ("test", "TEST"))
@@ -388,7 +418,7 @@ def test_account_option_can_use_test_account(runner, accounts, test_key):
     assert expected in result.output
 
 
-def test_account_option_alias_not_found(runner, keyfile_account):
+def test_account_option_alias_not_found(runner):
     @click.command()
     @account_option()
     def cmd(account):
@@ -397,6 +427,27 @@ def test_account_option_alias_not_found(runner, keyfile_account):
     result = runner.invoke(cmd, ("--account", "THIS ALAS IS NOT FOUND"))
     expected = (
         "Invalid value for '--account': Account with alias 'THIS ALAS IS NOT FOUND' not found"
+    )
+    assert expected in result.output
+
+
+def test_account_option_different_param_decls(runner, keyfile_account):
+    """
+    Additionally, this is how you can use multiple `account_options`.
+    """
+
+    @click.command()
+    @account_option("--submitter")
+    @account_option("--owner")
+    def cmd(submitter, owner):
+        _expected = get_expected_account_str(submitter)
+        click.echo(_expected)
+        _expected = get_expected_account_str(owner)
+        click.echo(_expected)
+
+    expected = get_expected_account_str(keyfile_account)
+    result = runner.invoke(
+        cmd, ("--submitter", keyfile_account.alias, "--owner", keyfile_account.alias)
     )
     assert expected in result.output
 
