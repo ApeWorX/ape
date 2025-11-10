@@ -1,7 +1,7 @@
 [![Pypi.org][pypi-badge]][pypi-url]
-[![Apache licensed][licence-badge]][licence-url]
+[![Apache licensed][license-badge]][license-url]
 [![Build Status][actions-badge]][actions-url]
-[![Contributing](https://img.shields.io/badge/CONTRIBUTING-guidelines-brightgreen?style=flat-square)](https://github.com/ApeWorX/ape?tab=contributing-ov-file)
+[![Contributing][contributing-badge]][contributing-url]
 [![Discord chat][discord-badge]][discord-url]
 [![Twitter][twitter-badge]][twitter-url]
 
@@ -134,10 +134,12 @@ Install 3rd party plugins at your own risk.
 [actions-url]: https://github.com/ApeWorX/ape/actions?query=branch%3Amain+event%3Apush
 [compile-guide]: https://docs.apeworx.io/ape/stable/userguides/compile.html
 [console-guide]: https://docs.apeworx.io/ape/stable/userguides/console.html
+[contributing-badge]: https://img.shields.io/badge/CONTRIBUTING-guidelines-brightgreen?style=flat-square
+[contributing-url]: https://github.com/ApeWorX/ape?tab=contributing-ov-file
 [discord-badge]: https://img.shields.io/discord/922917176040640612.svg?logo=discord&style=flat-square
 [discord-url]: https://discord.gg/apeworx
-[licence-badge]: https://img.shields.io/github/license/ApeWorX/ape?color=blue
-[licence-url]: https://github.com/ApeWorX/ape/blob/main/LICENSE
+[license-badge]: https://img.shields.io/github/license/ApeWorX/ape?color=blue
+[license-url]: https://github.com/ApeWorX/ape?tab=License-1-ov-file
 [logging-guide]: https://docs.apeworx.io/ape/stable/userguides/logging.html
 [networks-guide]: https://docs.apeworx.io/ape/stable/userguides/networks.html
 [projects-guide]: https://docs.apeworx.io/ape/stable/userguides/projects.html
