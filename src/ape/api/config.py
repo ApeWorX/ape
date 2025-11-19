@@ -442,8 +442,7 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
 
         # NOTE: Merge deterministic deployments after we initializing `NetworkManager.ecosystems`
         for ecosystem_name, ecosystem in self.network_manager.ecosystems.items():
-            if ecosystem_name not in self.deployment_data:
-                self.deployment_data[ecosystem_name] = dict()
+            self.deployment_data.setdefault(ecosystem_name, {})
 
             for network_name in ecosystem.networks:
                 if network_name == "local" or network_name.endswith("-fork"):
