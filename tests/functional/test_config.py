@@ -600,7 +600,7 @@ def test_contracts_folder(project):
 
 
 def test_contracts_folder_with_hyphen(project):
-    with project.temp_config(**{"contracts-folder": "src"}):
+    with project.temp_config(**{"contracts_folder": "src"}):
         assert project.contracts_folder.name == "src"
 
 
