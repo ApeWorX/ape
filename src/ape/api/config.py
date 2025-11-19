@@ -440,7 +440,7 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
                         f"Invalid network '{ecosystem_name}:{network_name}' in deployments config."
                     )
 
-        # NOTE: Merge deterministic deployments after we initializing `NetworkManager.ecosystems`
+        # NOTE: Merge deterministic deployments after we initialize `NetworkManager.ecosystems`
         for ecosystem_name, ecosystem in self.network_manager.ecosystems.items():
             self.deployment_data.setdefault(ecosystem_name, {})
 

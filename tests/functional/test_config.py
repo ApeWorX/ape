@@ -303,7 +303,7 @@ def test_deployments(networks_connected_to_tester, owner, project):
     assert deployment.address == instance.address
 
 
-def test_deterministic_deployments(
+def test_deployments_deterministic(
     networks_connected_to_tester, owner, vyper_contract_container, project
 ):
     _ = networks_connected_to_tester  # Connection needs to lookup config.
