@@ -87,7 +87,7 @@ jobs:
         - name: Install Geth
           uses: gacts/install-geth-tools@v1
           with:
-            version: 1.16.2
+            version: 1.16.7
 
         - name: Setup Ape
           uses: ApeWorX/github-action@v3
