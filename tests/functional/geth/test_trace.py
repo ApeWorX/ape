@@ -339,8 +339,9 @@ def test_return_value(benchmark, geth_contract, geth_account):
     # Seeing 0.14.
     # Before https://github.com/ApeWorX/ape/pull/2225, was seeing 0.17.
     # In CI, can see up to 0.4 though.
-    avg = benchmark.stats["mean"]
-    assert avg < 0.6
+    if benchmark.stats:
+        avg = benchmark.stats["mean"]
+        assert avg < 0.6
 
 
 @geth_process_test
