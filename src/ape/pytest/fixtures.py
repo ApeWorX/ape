@@ -662,6 +662,8 @@ class IsolationManager(ManagerAccessMixin):
             )
             # To avoid trying again
             self.supported = False
+        except Exception as err:
+            logger.error(f"Unhandled error with restoring snapshot: {err}")
 
         self.snapshots.clear_snapshot_id(scope)
 
