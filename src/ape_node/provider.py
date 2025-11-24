@@ -167,7 +167,6 @@ class GethDevProcess(BaseGethProcess):
         kwargs_ctor: dict = {
             "data_dir": self.data_dir,
             "geth_executable": executable[0],
-            "network_id": f"{chain_id}",
         }
         if hostname is not None:
             kwargs_ctor["rpc_addr"] = hostname
@@ -199,7 +198,6 @@ class GethDevProcess(BaseGethProcess):
         geth_kwargs = construct_test_chain_kwargs(**kwargs_ctor)
         if is_reth:
             geth_kwargs.pop("max_peers", None)
-            geth_kwargs.pop("network_id", None)
             geth_kwargs.pop("no_discover", None)
 
             # NOTE: --verbosity _is_ available in reth, but it is a different type (flag only).
@@ -219,6 +217,10 @@ class GethDevProcess(BaseGethProcess):
         self._clean()
 
         geth_kwargs["dev_mode"] = True
+
+        # Does not work with --dev mode.
+        geth_kwargs.pop("network_id", None)
+
         hd_path = hd_path or DEFAULT_TEST_HD_PATH
 
         if generate_accounts:
