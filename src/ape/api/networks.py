@@ -123,12 +123,11 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
     """The default network of the ecosystem, such as ``local``."""
 
     @model_validator(mode="after")
-    @classmethod
-    def _validate_ecosystem(cls, model):
-        headers = RPCHeaders(**model.request_header)
-        headers["User-Agent"] = f"ape-{model.name}"
-        model.request_header = dict(**headers)
-        return model
+    def _validate_ecosystem(self):
+        headers = RPCHeaders(**self.request_header)
+        headers["User-Agent"] = f"ape-{self.name}"
+        self.request_header = dict(**headers)
+        return self
 
     @log_instead_of_fail(default="<EcosystemAPI>")
     def __repr__(self) -> str:
