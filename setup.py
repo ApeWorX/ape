@@ -119,7 +119,7 @@ setup(
         "eth-typing>=3.5.2,<6",
         "eth-utils>=2.1.0,<6",
         "hexbytes>=1.2.0,<2",
-        "py-geth>=5.4.0,<6",
+        "py-geth>=6.2.0,<7",
         "trie>=3.0.1,<4",  # Peer: stricter pin needed for uv support.
         "web3[tester]>=7.12.1,<8",
         # ** Dependencies maintained by ApeWorX **
