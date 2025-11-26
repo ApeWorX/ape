@@ -193,3 +193,10 @@ def test_poll_blocks_future(chain_that_mined_5, eth_tester_provider, owner, Poll
     third = blocks.get().number
     assert first == second - 1
     assert second == third - 1
+
+
+def test_find_block_at_time(chain_that_mined_5):
+    assert (
+        chain_that_mined_5.get_block_at(chain_that_mined_5.blocks[-1].datetime).number
+        == chain_that_mined_5.blocks.height - 1
+    )
