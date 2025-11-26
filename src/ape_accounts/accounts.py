@@ -217,8 +217,8 @@ class KeyfileAccount(AccountAPI):
     @log_instead_of_fail(default="<KeyfileAccount>")
     def __repr__(self) -> str:
         # NOTE: Prevent errors from preventing repr from working.
-        address_str = f" address={self.address} " if self.address else ""
-        alias_str = f" alias={self.alias} " if self.alias else ""
+        address_str = f" address={self.address}" if self.address else ""
+        alias_str = f" alias={self.alias}" if self.alias else ""
         return f"<{self.__class__.__name__}{address_str}{alias_str}>"
 
     @property
