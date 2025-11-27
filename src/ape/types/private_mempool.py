@@ -5,7 +5,6 @@ https://github.com/alloy-rs/alloy
 
 from collections.abc import Iterator
 from enum import Enum
-from typing import Optional, Union
 
 from eth_pydantic_types.hex import HexBytes, HexBytes32, HexInt
 from ethpm_types.abi import EventABI
@@ -90,12 +89,12 @@ class Privacy(BaseModel):
     Preferences on what data should be shared about the bundle and its transactions
     """
 
-    hints: Optional[list[PrivacyHint]] = None
+    hints: list[PrivacyHint] | None = None
     """
     Hints on what data should be shared about the bundle and its transactions.
     """
 
-    builders: Optional[list[str]] = None
+    builders: list[str] | None = None
     """
     Names of the builders that should be allowed to see the bundle/transaction.
     """
@@ -111,7 +110,7 @@ class Inclusion(BaseModel):
     The first block the bundle is valid for.
     """
 
-    max_block: Union[HexInt, None] = Field(None, alias="maxBlock")
+    max_block: HexInt | None = Field(None, alias="maxBlock")
     """
     The last block the bundle is valid for.
     """
@@ -179,13 +178,13 @@ class Validity(BaseModel):
     Requirements for the bundle to be included in the block.
     """
 
-    refund: Union[list[Refund], None] = None
+    refund: list[Refund] | None = None
     """
     Specifies the minimum percent of a given bundle's earnings to redistribute
     for it to be included in a builder's block.
     """
 
-    refund_config: Optional[list[RefundConfig]] = Field(None, alias="refundConfig")
+    refund_config: list[RefundConfig] | None = Field(None, alias="refundConfig")
     """
     Specifies what addresses should receive what percent of the overall refund for this bundle,
     if it is enveloped by another bundle (e.g. a searcher backrun).
@@ -207,17 +206,17 @@ class Bundle(BaseModel):
     Data used by block builders to check if the bundle should be considered for inclusion.
     """
 
-    body: list[Union[BundleHashItem, BundleTxItem, BundleNestedItem]]
+    body: list[BundleHashItem | BundleTxItem | BundleNestedItem]
     """
     The transactions to include in the bundle.
     """
 
-    validity: Optional[Validity] = None
+    validity: Validity | None = None
     """
     Requirements for the bundle to be included in the block.
     """
 
-    privacy: Optional[Privacy] = None
+    privacy: Privacy | None = None
     """
     Preferences on what data should be shared about the bundle and its transactions
     """
@@ -226,11 +225,11 @@ class Bundle(BaseModel):
     def build_for_block(
         cls,
         block: HexInt,
-        max_block: Optional[HexInt] = None,
-        version: Optional[ProtocolVersion] = None,
-        body: Optional[list[Union[BundleHashItem, BundleTxItem, BundleNestedItem]]] = None,
-        validity: Optional[Validity] = None,
-        privacy: Optional[Privacy] = None,
+        max_block: HexInt | None = None,
+        version: ProtocolVersion | None = None,
+        body: list[BundleHashItem | BundleTxItem | BundleNestedItem] | None = None,
+        validity: Validity | None = None,
+        privacy: Privacy | None = None,
     ) -> "Bundle":
         return cls(
             version=version or ProtocolVersion.V0_1,
@@ -257,12 +256,12 @@ class SimBundleLogs(BaseModel):
     Logs returned by `mev_simBundle`.
     """
 
-    tx_logs: Optional[list[dict]] = Field(None, alias="txLogs")
+    tx_logs: list[dict] | None = Field(None, alias="txLogs")
     """
     Logs for transactions in bundle.
     """
 
-    bundle_logs: Optional[list["SimBundleLogs"]] = Field(None, alias="bundleLogs")
+    bundle_logs: list["SimBundleLogs"] | None = Field(None, alias="bundleLogs")
     """
     Logs for bundles in bundle.
     """
@@ -278,12 +277,12 @@ class SimulationReport(BaseModel):
     Whether the simulation was successful.
     """
 
-    error: Optional[str] = None
+    error: str | None = None
     """
     Error message if the simulation failed.
     """
 
-    state_block: Optional[HexInt] = Field(None, alias="stateBlock")
+    state_block: HexInt | None = Field(None, alias="stateBlock")
     """
     The block number of the simulated block.
     """
@@ -298,27 +297,27 @@ class SimulationReport(BaseModel):
     The profit of the simulated block.
     """
 
-    refundable_value: Optional[HexInt] = Field(None, alias="refundableValue")
+    refundable_value: HexInt | None = Field(None, alias="refundableValue")
     """
     The refundable value of the simulated block.
     """
 
-    gas_used: Optional[HexInt] = Field(None, alias="gasUsed")
+    gas_used: HexInt | None = Field(None, alias="gasUsed")
     """
     The gas used by the simulated block.
     """
 
-    logs: Optional[list[SimBundleLogs]] = None
+    logs: list[SimBundleLogs] | None = None
     """
     Logs returned by `mev_simBundle`.
     """
 
-    exec_error: Optional[str] = Field(None, alias="execError")
+    exec_error: str | None = Field(None, alias="execError")
     """
     Error message if the bundle execution failed.
     """
 
-    revert: Optional[HexBytes] = None
+    revert: HexBytes | None = None
     """
     Contains the return data if the transaction reverted
     """

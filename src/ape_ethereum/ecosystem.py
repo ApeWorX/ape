@@ -2,7 +2,7 @@ import re
 from collections.abc import Iterator, Sequence
 from decimal import Decimal
 from functools import cached_property
-from typing import TYPE_CHECKING, Any, ClassVar, Optional, Union, cast
+from typing import TYPE_CHECKING, Any, ClassVar, cast
 
 import rlp  # type: ignore
 from cchecksum import to_checksum_address
@@ -106,7 +106,7 @@ class NetworkConfig(PluginConfig):
     considering a transaction 'confirmed'.
     """
 
-    default_provider: Optional[str] = "node"
+    default_provider: str | None = "node"
     """
     The default provider to use. If set to ``None``, ape will rely on
     an external plugin supplying the provider implementation, such as
@@ -149,7 +149,7 @@ class NetworkConfig(PluginConfig):
     base_fee_multiplier: float = 1.0
     """A multiplier to apply to a transaction base fee."""
 
-    is_mainnet: Optional[bool] = None
+    is_mainnet: bool | None = None
     """
     Set to ``True`` to declare as a mainnet or ``False`` to ensure
     it isn't detected as one.
@@ -190,14 +190,14 @@ class NetworkConfig(PluginConfig):
 
 
 class ForkedNetworkConfig(NetworkConfig):
-    upstream_provider: Optional[str] = None
+    upstream_provider: str | None = None
     """
     The provider to use as the upstream-provider for this forked network.
     """
 
 
 def create_local_network_config(
-    default_provider: Optional[str] = None, use_fork: bool = False, **kwargs
+        default_provider: str | None = None, use_fork: bool = False, **kwargs
 ):
     if "gas_limit" not in kwargs:
         kwargs["gas_limit"] = "max"
@@ -308,7 +308,7 @@ class BaseEthereumConfig(PluginConfig):
 
         return super().__contains__(key)
 
-    def get(self, key: str, default: Optional[Any] = None) -> Any:
+    def get(self, key: str, default: Any | None = None) -> Any:
         net_key = key.replace("-", "_")
         if net_key.endswith("_fork"):
             if cfg := self._get_forked_config(net_key):
@@ -324,7 +324,7 @@ class BaseEthereumConfig(PluginConfig):
         except AttributeError:
             return default
 
-    def _get_forked_config(self, name: str) -> Optional[ForkedNetworkConfig]:
+    def _get_forked_config(self, name: str) -> ForkedNetworkConfig | None:
         live_key: str = name.replace("_fork", "")
         if self._forked_configs.get(live_key):
             return self._forked_configs[live_key]
@@ -365,7 +365,7 @@ class Block(BlockAPI):
     uncles: list[HexBytes] = []
 
     # Type re-declares.
-    hash: Optional[HexBytes] = None
+    hash: HexBytes | None = None
     parent_hash: HexBytes = Field(
         default=EMPTY_BYTES32, alias="parentHash"
     )  # NOTE: genesis block has no parent hash
@@ -469,7 +469,7 @@ class Ethereum(EcosystemAPI):
             deploy_bytecode, contract_type.constructor, **converted_kwargs
         )
 
-    def get_proxy_info(self, address: AddressType) -> Optional[ProxyInfo]:
+    def get_proxy_info(self, address: AddressType) -> ProxyInfo | None:
         contract_code = self.chain_manager.get_code(address)
         if isinstance(contract_code, bytes):
             contract_code = to_hex(contract_code)
@@ -644,7 +644,7 @@ class Ethereum(EcosystemAPI):
 
         return Block.model_validate(data)
 
-    def _python_type_for_abi_type(self, abi_type: ABIType) -> Union[type, Sequence]:
+    def _python_type_for_abi_type(self, abi_type: ABIType) -> type | Sequence:
         # NOTE: An array can be an array of tuples, so we start with an array check
         if str(abi_type.type).endswith("]"):
             # remove one layer of the potential onion of array
@@ -681,7 +681,7 @@ class Ethereum(EcosystemAPI):
 
         raise ConversionError(f"Unable to convert '{abi_type}'.")
 
-    def encode_calldata(self, abi: Union[ConstructorABI, MethodABI], *args) -> HexBytes:
+    def encode_calldata(self, abi: ConstructorABI | MethodABI, *args) -> HexBytes:
         if not abi.inputs:
             return HexBytes("")
 
@@ -693,7 +693,7 @@ class Ethereum(EcosystemAPI):
         encoded_calldata = encode(input_types, converted_args)
         return HexBytes(encoded_calldata)
 
-    def decode_calldata(self, abi: Union[ConstructorABI, MethodABI], calldata: bytes) -> dict:
+    def decode_calldata(self, abi: ConstructorABI | MethodABI, calldata: bytes) -> dict:
         raw_input_types = [i.canonical_type for i in abi.inputs]
         input_types = [parse_type(i.model_dump()) for i in abi.inputs]
 
@@ -802,8 +802,8 @@ class Ethereum(EcosystemAPI):
         return value
 
     def decode_primitive_value(
-        self, value: Any, output_type: Union[str, tuple, list]
-    ) -> Union[str, HexBytes, int, tuple, list]:
+        self, value: Any, output_type: str | tuple | list
+    ) -> str | HexBytes | int | tuple | list:
         if output_type == "address":
             try:
                 return self.decode_address(value)
@@ -989,7 +989,7 @@ class Ethereum(EcosystemAPI):
             encode_hex(keccak(text=abi.selector)): LogInputABICollection(abi) for abi in events
         }
 
-        def get_abi(_topic: HexStr) -> Optional[LogInputABICollection]:
+        def get_abi(_topic: HexStr) -> LogInputABICollection | None:
             return abi_inputs[_topic] if _topic in abi_inputs else None
 
         for log in logs:
@@ -1160,7 +1160,7 @@ class Ethereum(EcosystemAPI):
         if events := call.get("events"):
             call["events"] = self._enrich_trace_events(events, address=address, **kwargs)
 
-        method_abi: Optional[Union[MethodABI, ConstructorABI]] = None
+        method_abi: MethodABI | ConstructorABI | None = None
         if is_create:
             method_abi = contract_type.constructor
             name = "__new__"
@@ -1249,7 +1249,7 @@ class Ethereum(EcosystemAPI):
     def _enrich_calldata(
         self,
         call: dict,
-        method_abi: Union[MethodABI, ConstructorABI],
+        method_abi: MethodABI | ConstructorABI,
         **kwargs,
     ) -> dict:
         calldata = call["calldata"]
@@ -1362,7 +1362,7 @@ class Ethereum(EcosystemAPI):
     def _enrich_trace_events(
         self,
         events: list[dict],
-        address: Optional[AddressType] = None,
+        address: AddressType | None = None,
         **kwargs,
     ) -> list[dict]:
         return [self._enrich_trace_event(e, address=address, **kwargs) for e in events]
@@ -1370,7 +1370,7 @@ class Ethereum(EcosystemAPI):
     def _enrich_trace_event(
         self,
         event: dict,
-        address: Optional[AddressType] = None,
+        address: AddressType | None = None,
         **kwargs,
     ) -> dict:
         if "topics" not in event or len(event["topics"]) < 1:
@@ -1434,7 +1434,7 @@ class Ethereum(EcosystemAPI):
 
     def _get_contract_type_for_enrichment(
         self, address: AddressType, **kwargs
-    ) -> Optional["ContractType"]:
+    ) -> "ContractType | None":
         if not (contract_type := kwargs.get("contract_type")):
             try:
                 contract_type = self.chain_manager.contracts.get(address)
@@ -1443,7 +1443,7 @@ class Ethereum(EcosystemAPI):
 
         return contract_type
 
-    def get_python_types(self, abi_type: ABIType) -> Union[type, Sequence]:
+    def get_python_types(self, abi_type: ABIType) -> type | Sequence:
         return self._python_type_for_abi_type(abi_type)
 
     def decode_custom_error(
@@ -1451,7 +1451,7 @@ class Ethereum(EcosystemAPI):
         data: HexBytes,
         address: AddressType,
         **kwargs,
-    ) -> Optional[CustomError]:
+    ) -> CustomError | None:
         # Use an instance (required for proper error caching).
         try:
             contract = self.chain_manager.contracts.instance_at(address)
@@ -1519,7 +1519,7 @@ class Ethereum(EcosystemAPI):
         return self.decode_address(address_bytes)
 
 
-def parse_type(type_: dict[str, Any]) -> Union[str, tuple, list]:
+def parse_type(type_: dict[str, Any]) -> str | tuple | list:
     if "tuple" not in type_["type"]:
         return type_["type"]
 

@@ -4,7 +4,7 @@ from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
 from functools import cached_property
 from pathlib import Path
-from typing import TYPE_CHECKING, Generic, Optional, TypeVar, Union
+from typing import TYPE_CHECKING, Generic, TypeVar
 
 from ethpm_types import ABI, ContractType
 from ethpm_types.contract_type import ABIList
@@ -56,7 +56,7 @@ class ApeDataCache(CacheDirectory, Generic[_BASE_MODEL]):
 
         super().__init__(base_path / key)
 
-    def __getitem__(self, key: str) -> Optional[_BASE_MODEL]:  # type: ignore
+    def __getitem__(self, key: str) -> _BASE_MODEL | None:  # type: ignore
         return self.get_type(key)
 
     def __setitem__(self, key: str, value: _BASE_MODEL):  # type: ignore
@@ -77,7 +77,7 @@ class ApeDataCache(CacheDirectory, Generic[_BASE_MODEL]):
         except KeyError:
             return False
 
-    def get_type(self, key: str) -> Optional[_BASE_MODEL]:
+    def get_type(self, key: str) -> _BASE_MODEL | None:
         if model := self.memory.get(key):
             return model
 
@@ -130,8 +130,8 @@ class ContractCache(BaseManager):
         self,
         key: str,
         model_type: type,
-        ecosystem_key: Optional[str] = None,
-        network_key: Optional[str] = None,
+        ecosystem_key: str | None = None,
+        network_key: str | None = None,
     ):
         ecosystem_name = ecosystem_key or self.provider.network.ecosystem.name
         network_name = network_key or self.provider.network.name.replace("-fork", "")
@@ -152,7 +152,7 @@ class ContractCache(BaseManager):
         return DeploymentDiskCache()
 
     def __setitem__(
-        self, address: AddressType, item: Union[ContractType, ProxyInfoAPI, ContractCreation]
+        self, address: AddressType, item: ContractType | ProxyInfoAPI | ContractCreation
     ):
         """
         Cache the given contract type. Contracts are cached in memory per session.
@@ -182,8 +182,8 @@ class ContractCache(BaseManager):
         self,
         address: AddressType,
         contract_type: ContractType,
-        ecosystem_key: Optional[str] = None,
-        network_key: Optional[str] = None,
+        ecosystem_key: str | None = None,
+        network_key: str | None = None,
     ):
         """
         Cache a contract type at the given address for the given network.
@@ -214,8 +214,8 @@ class ContractCache(BaseManager):
         self,
         address: AddressType,
         contract_creation: ContractCreation,
-        ecosystem_key: Optional[str] = None,
-        network_key: Optional[str] = None,
+        ecosystem_key: str | None = None,
+        network_key: str | None = None,
     ):
         """
         Cache a contract creation object.
@@ -274,7 +274,7 @@ class ContractCache(BaseManager):
     def cache_deployment(
         self,
         contract_instance: ContractInstance,
-        proxy_info: Optional[ProxyInfoAPI] = None,
+        proxy_info: ProxyInfoAPI | None = None,
         detect_proxy: bool = True,
     ):
         """
@@ -283,7 +283,7 @@ class ContractCache(BaseManager):
         Args:
             contract_instance (:class:`~ape.contracts.base.ContractInstance`): The contract
               to cache.
-            proxy_info (Optional[ProxyInfoAPI]): Pass in the proxy info, if it is known, to
+            proxy_info (ProxyInfoAPI | None): Pass in the proxy info, if it is known, to
               avoid the potentially expensive look-up.
             detect_proxy (bool): Set to ``False`` to avoid detecting if the contract is a
               proxy.
@@ -364,7 +364,7 @@ class ContractCache(BaseManager):
         """
         self.blueprints[blueprint_id] = contract_type
 
-    def get_proxy_info(self, address: AddressType) -> Optional[ProxyInfoAPI]:
+    def get_proxy_info(self, address: AddressType) -> ProxyInfoAPI | None:
         """
         Get proxy information about a contract using its address,
         either from a local cache, a disk cache, or the provider.
@@ -373,11 +373,11 @@ class ContractCache(BaseManager):
             address (AddressType): The address of the proxy contract.
 
         Returns:
-            Optional[:class:`~ape.api.networks.ProxyInfoAPI`]
+            :class:`~ape.api.networks.ProxyInfoAPI` | None
         """
         return self.proxy_infos[address]
 
-    def get_creation_metadata(self, address: AddressType) -> Optional[ContractCreation]:
+    def get_creation_metadata(self, address: AddressType) -> ContractCreation | None:
         """
         Get contract creation metadata containing txn_hash, deployer, factory, block.
 
@@ -385,7 +385,7 @@ class ContractCache(BaseManager):
             address (AddressType): The address of the contract.
 
         Returns:
-            Optional[:class:`~ape.api.query.ContractCreation`]
+            :class:`~ape.api.query.ContractCreation` | None
         """
         if creation := self.contract_creations[address]:
             return creation
@@ -404,7 +404,7 @@ class ContractCache(BaseManager):
         self.contract_creations[address] = creation
         return creation
 
-    def get_blueprint(self, blueprint_id: str) -> Optional[ContractType]:
+    def get_blueprint(self, blueprint_id: str) -> ContractType | None:
         """
         Get a cached blueprint contract type.
 
@@ -418,7 +418,7 @@ class ContractCache(BaseManager):
         return self.blueprints[blueprint_id]
 
     def _get_errors(
-        self, address: AddressType, chain_id: Optional[int] = None
+        self, address: AddressType, chain_id: int | None = None
     ) -> set[type[CustomError]]:
         if chain_id is None and self.network_manager.active_provider is not None:
             chain_id = self.chain_manager.chain_id
@@ -435,7 +435,7 @@ class ContractCache(BaseManager):
         return set()
 
     def _cache_error(
-        self, address: AddressType, error: type[CustomError], chain_id: Optional[int] = None
+        self, address: AddressType, error: type[CustomError], chain_id: int | None = None
     ):
         if chain_id is None and self.network_manager.active_provider is not None:
             chain_id = self.chain_manager.chain_id
@@ -462,14 +462,14 @@ class ContractCache(BaseManager):
         return contract_type
 
     def get_multiple(
-        self, addresses: Collection[AddressType], concurrency: Optional[int] = None
+        self, addresses: Collection[AddressType], concurrency: int | None = None
     ) -> dict[AddressType, ContractType]:
         """
         Get contract types for all given addresses.
 
         Args:
             addresses (list[AddressType): A list of addresses to get contract types for.
-            concurrency (Optional[int]): The number of threads to use. Defaults to
+            concurrency (int | None): The number of threads to use. Defaults to
               ``min(4, len(addresses))``.
 
         Returns:
@@ -518,11 +518,11 @@ class ContractCache(BaseManager):
     def get(
         self,
         address: AddressType,
-        default: Optional[ContractType] = None,
+        default: ContractType | None = None,
         fetch_from_explorer: bool = True,
-        proxy_info: Optional[ProxyInfoAPI] = None,
+        proxy_info: ProxyInfoAPI | None = None,
         detect_proxy: bool = True,
-    ) -> Optional[ContractType]:
+    ) -> ContractType | None:
         """
         Get a contract type by address.
         If the contract is cached, it will return the contract from the cache.
@@ -531,17 +531,17 @@ class ContractCache(BaseManager):
 
         Args:
             address (AddressType): The address of the contract.
-            default (Optional[ContractType]): A default contract when none is found.
+            default (ContractType | None): A default contract when none is found.
               Defaults to ``None``.
             fetch_from_explorer (bool): Set to ``False`` to avoid fetching from an
               explorer. Defaults to ``True``. Only fetches if it needs to (uses disk
               & memory caching otherwise).
-            proxy_info (Optional[ProxyInfoAPI]): Pass in the proxy info, if it is known,
+            proxy_info (ProxyInfoAPI | None): Pass in the proxy info, if it is known,
               to avoid the potentially expensive look-up.
             detect_proxy (bool): Set to ``False`` to avoid detecting if it is a proxy.
 
         Returns:
-            Optional[ContractType]: The contract type if it was able to get one,
+            ContractType | None: The contract type if it was able to get one,
               otherwise the default parameter.
         """
         try:
@@ -603,8 +603,8 @@ class ContractCache(BaseManager):
         address: AddressType,
         proxy_info: ProxyInfoAPI,
         fetch_from_explorer: bool = True,
-        default: Optional[ContractType] = None,
-    ) -> Optional[ContractType]:
+        default: ContractType | None = None,
+    ) -> ContractType | None:
         """
         Combines the discoverable ABIs from the proxy contract and its implementation.
         """
@@ -643,8 +643,8 @@ class ContractCache(BaseManager):
         self,
         address: AddressType,
         fetch_from_explorer: bool = True,
-        default: Optional[ContractType] = None,
-    ) -> Optional[ContractType]:
+        default: ContractType | None = None,
+    ) -> ContractType | None:
         """
         Get the _exact_ ContractType for a given address. For proxy contracts, returns
         the proxy ABIs if there are any and not the implementation ABIs.
@@ -673,12 +673,12 @@ class ContractCache(BaseManager):
 
     def instance_at(
         self,
-        address: Union[str, AddressType],
-        contract_type: Optional[ContractType] = None,
-        txn_hash: Optional[Union[str, "HexBytes"]] = None,
-        abi: Optional[Union[list[ABI], dict, str, Path]] = None,
+        address: str | AddressType,
+        contract_type: ContractType | None = None,
+        txn_hash: "str | HexBytes | None" = None,
+        abi: list[ABI] | dict | str | Path | None = None,
         fetch_from_explorer: bool = True,
-        proxy_info: Optional[ProxyInfoAPI] = None,
+        proxy_info: ProxyInfoAPI | None = None,
         detect_proxy: bool = True,
     ) -> ContractInstance:
         """
@@ -693,18 +693,18 @@ class ContractCache(BaseManager):
             :class:`~ape.exceptions.ContractNotFoundError`: When the contract type is not found.
 
         Args:
-            address (Union[str, AddressType]): The address of the plugin. If you are using the ENS
+            address (str | AddressType): The address of the plugin. If you are using the ENS
               plugin, you can also provide an ENS domain name.
-            contract_type (Optional[``ContractType``]): Optionally provide the contract type
+            contract_type (ContractType | None): Optionally provide the contract type
               in case it is not already known.
-            txn_hash (Optional[Union[str, HexBytes]]): The hash of the transaction responsible for
+            txn_hash (str | HexBytes | None): The hash of the transaction responsible for
               deploying the contract, if known. Useful for publishing. Defaults to ``None``.
-            abi (Optional[Union[list[ABI], dict, str, Path]]): Use an ABI str, dict, path,
+            abi (list[ABI] | dict | str | Path | None): Use an ABI str, dict, path,
               or ethpm models to create a contract instance class.
             fetch_from_explorer (bool): Set to ``False`` to avoid fetching from the explorer.
               Defaults to ``True``. Won't fetch unless it needs to (uses disk & memory caching
               first).
-            proxy_info (Optional[ProxyInfoAPI]): Pass in the proxy info, if it is known, to avoid
+            proxy_info (ProxyInfoAPI | None): Pass in the proxy info, if it is known, to avoid
               the potentially expensive look-up.
             detect_proxy (bool): Set to ``False`` to avoid detecting if the contract is a proxy.
 
@@ -883,7 +883,7 @@ class ContractCache(BaseManager):
 
         self.deployments.clear_local()
 
-    def _get_contract_type_from_explorer(self, address: AddressType) -> Optional[ContractType]:
+    def _get_contract_type_from_explorer(self, address: AddressType) -> ContractType | None:
         if not self.provider.network.explorer:
             return None
 

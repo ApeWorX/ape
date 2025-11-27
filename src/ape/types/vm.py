@@ -1,15 +1,15 @@
-from typing import Any, Literal, Union
+from typing import Any, Literal
 
 from eth_typing import HexStr
 from hexbytes import HexBytes
 
-BlockID = Union[int, HexStr, HexBytes, Literal["earliest", "latest", "pending"]]
+BlockID = int | HexStr | HexBytes | Literal["earliest", "latest", "pending"]
 """
 An ID that can match a block, such as the literals ``"earliest"``, ``"latest"``, or ``"pending"``
 as well as a block number or hash (HexBytes).
 """
 
-ContractCode = Union[str, bytes, HexBytes]
+ContractCode = str | bytes | HexBytes
 """
 A type that represents contract code, which can be represented in string, bytes, or HexBytes.
 """

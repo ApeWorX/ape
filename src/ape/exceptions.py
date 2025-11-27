@@ -8,7 +8,7 @@ from functools import cached_property
 from inspect import getframeinfo, stack
 from pathlib import Path
 from types import CodeType, TracebackType
-from typing import TYPE_CHECKING, Any, Callable, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable
 
 import click
 from rich import print as rich_print
@@ -30,7 +30,7 @@ if TYPE_CHECKING:
     from ape.types.vm import BlockID, SnapshotID
 
 
-FailedTxn = Union["TransactionAPI", "ReceiptAPI"]
+FailedTxn = "TransactionAPI | ReceiptAPI"
 
 
 class ApeException(Exception):
@@ -74,7 +74,7 @@ class SignatureError(AccountsError):
     Raised when there are issues with signing.
     """
 
-    def __init__(self, message: str, transaction: Optional["TransactionAPI"] = None):
+    def __init__(self, message: str, transaction: "TransactionAPI | None" = None):
         self.transaction = transaction
         super().__init__(message)
 
@@ -112,7 +112,7 @@ class ArgumentsLengthError(ContractDataError):
     def __init__(
         self,
         arguments_length: int,
-        inputs: Union["MethodABI", "ConstructorABI", int, list, None] = None,
+        inputs: "MethodABI | ConstructorABI | int | list | None" = None,
         **kwargs,
     ):
         prefix = (
@@ -123,7 +123,7 @@ class ArgumentsLengthError(ContractDataError):
             super().__init__(f"{prefix}.")
             return
 
-        inputs_ls: list[Union[MethodABI, ConstructorABI, int]] = (
+        inputs_ls: list[MethodABI | ConstructorABI | int] = (
             inputs if isinstance(inputs, list) else [inputs]
         )
         if not inputs_ls:
@@ -158,7 +158,7 @@ class DecodingError(ContractDataError):
     a contract call, transaction, or event.
     """
 
-    def __init__(self, message: Optional[str] = None):
+    def __init__(self, message: str | None = None):
         message = message or "Output corrupted."
         super().__init__(message)
 
@@ -169,10 +169,10 @@ class MethodNonPayableError(ContractDataError):
     """
 
 
-_TRACE_ARG = Optional[Union["TraceAPI", Callable[[], Optional["TraceAPI"]]]]
-_SOURCE_TRACEBACK_ARG = Optional[
-    Union["SourceTraceback", Callable[[], Optional["SourceTraceback"]]]
-]
+_TRACE_ARG = "TraceAPI | Callable[[], TraceAPI | None] | None"
+_SOURCE_TRACEBACK_ARG = (
+    "SourceTraceback | Callable[[], SourceTraceback | None] | None"
+)
 
 
 class TransactionError(ApeException):
@@ -184,14 +184,14 @@ class TransactionError(ApeException):
 
     def __init__(
         self,
-        message: Optional[str] = None,
-        base_err: Optional[Exception] = None,
-        code: Optional[int] = None,
-        txn: Optional[FailedTxn] = None,
-        trace: _TRACE_ARG = None,
-        contract_address: Optional["AddressType"] = None,
-        source_traceback: _SOURCE_TRACEBACK_ARG = None,
-        project: Optional["ProjectManager"] = None,
+        message: str | None = None,
+        base_err: Exception | None = None,
+        code: int | None = None,
+        txn: "FailedTxn | None" = None,
+        trace: "_TRACE_ARG" = None,
+        contract_address: "AddressType | None" = None,
+        source_traceback: "_SOURCE_TRACEBACK_ARG" = None,
+        project: "ProjectManager | None" = None,
         set_ape_traceback: bool = False,  # Overridden in ContractLogicError
     ):
         message = message or (str(base_err) if base_err else self.DEFAULT_MESSAGE)
@@ -213,7 +213,7 @@ class TransactionError(ApeException):
             self.with_ape_traceback()
 
     @property
-    def address(self) -> Optional["AddressType"]:
+    def address(self) -> "AddressType | None":
         if addr := self.contract_address:
             return addr
 
@@ -226,7 +226,7 @@ class TransactionError(ApeException):
         return receiver
 
     @cached_property
-    def contract_type(self) -> Optional["ContractType"]:
+    def contract_type(self) -> "ContractType | None":
         if not (address := self.address):
             # Contract address not found.
             return None
@@ -240,7 +240,7 @@ class TransactionError(ApeException):
             return None
 
     @property
-    def trace(self) -> Optional["TraceAPI"]:
+    def trace(self) -> "TraceAPI | None":
         tr = self._trace
         if callable(tr):
             result = tr()
@@ -254,9 +254,9 @@ class TransactionError(ApeException):
         self._trace = value
 
     @property
-    def source_traceback(self) -> Optional["SourceTraceback"]:
+    def source_traceback(self) -> "SourceTraceback | None":
         tb = self._source_traceback
-        result: Optional[SourceTraceback]
+        result: SourceTraceback | None
         if not self._attempted_source_traceback and tb is None and self.txn is not None:
             result = _get_ape_traceback_from_tx(self.txn)
             # Prevent re-trying.
@@ -273,7 +273,7 @@ class TransactionError(ApeException):
     def source_traceback(self, value):
         self._source_traceback = value
 
-    def _get_ape_traceback(self) -> Optional[TracebackType]:
+    def _get_ape_traceback(self) -> TracebackType | None:
         if src_tb := self.source_traceback:
             # Create a custom Pythonic traceback using lines from the sources
             # found from analyzing the trace of the transaction.
@@ -300,13 +300,13 @@ class ContractLogicError(VirtualMachineError):
 
     def __init__(
         self,
-        revert_message: Optional[str] = None,
-        txn: Optional[FailedTxn] = None,
-        trace: _TRACE_ARG = None,
-        contract_address: Optional["AddressType"] = None,
-        source_traceback: _SOURCE_TRACEBACK_ARG = None,
-        base_err: Optional[Exception] = None,
-        project: Optional["ProjectManager"] = None,
+        revert_message: str | None = None,
+        txn: "FailedTxn | None" = None,
+        trace: "_TRACE_ARG" = None,
+        contract_address: "AddressType | None" = None,
+        source_traceback: "_SOURCE_TRACEBACK_ARG" = None,
+        base_err: Exception | None = None,
+        project: "ProjectManager | None" = None,
         set_ape_traceback: bool = True,  # Overridden default.
     ):
         self.txn = txn
@@ -339,7 +339,7 @@ class ContractLogicError(VirtualMachineError):
             self.args = tuple([value, *args[1:]])
 
     @property
-    def dev_message(self) -> Optional[str]:
+    def dev_message(self) -> str | None:
         """
         The dev-string message of the exception.
 
@@ -368,9 +368,9 @@ class OutOfGasError(VirtualMachineError):
 
     def __init__(
         self,
-        code: Optional[int] = None,
-        txn: Optional[FailedTxn] = None,
-        base_err: Optional[Exception] = None,
+        code: int | None = None,
+        txn: "FailedTxn | None" = None,
+        base_err: Exception | None = None,
         set_ape_traceback: bool = False,
     ):
         super().__init__(
@@ -393,7 +393,7 @@ class EcosystemNotFoundError(NetworkError):
     Raised when the ecosystem with the given name was not found.
     """
 
-    def __init__(self, ecosystem: str, options: Optional[Collection[str]] = None):
+    def __init__(self, ecosystem: str, options: Collection[str] | None = None):
         self.ecosystem = ecosystem
         self.options = options
         message = f"No ecosystem named '{ecosystem}'."
@@ -417,8 +417,8 @@ class NetworkNotFoundError(NetworkError):
     def __init__(
         self,
         network: str,
-        ecosystem: Optional[str] = None,
-        options: Optional[Collection[str]] = None,
+        ecosystem: str | None = None,
+        options: Collection[str] | None = None,
     ):
         self.network = network
         options = options or []
@@ -458,9 +458,9 @@ class ProviderNotFoundError(NetworkError):
     def __init__(
         self,
         provider: str,
-        network: Optional[str] = None,
-        ecosystem: Optional[str] = None,
-        options: Optional[Collection[str]] = None,
+        network: str | None = None,
+        ecosystem: str | None = None,
+        options: Collection[str] | None = None,
     ):
         self.provider = provider
         self.network = network
@@ -501,7 +501,7 @@ class ApeAttributeError(ProjectError, AttributeError):
     Raised when trying to access items via ``.`` access.
     """
 
-    def __init__(self, msg: str, base_err: Optional[Exception] = None):
+    def __init__(self, msg: str, base_err: Exception | None = None):
         self.base_err = base_err
         super().__init__(msg)
 
@@ -532,7 +532,7 @@ class BlockNotFoundError(ProviderError):
     Raised when unable to find a block.
     """
 
-    def __init__(self, block_id: "BlockID", reason: Optional[str] = None):
+    def __init__(self, block_id: "BlockID", reason: str | None = None):
         if isinstance(block_id, bytes):
             block_id_str = block_id.hex()
             if not block_id_str.startswith("0x"):
@@ -556,7 +556,7 @@ class TransactionNotFoundError(ProviderError):
     Raised when unable to find a transaction.
     """
 
-    def __init__(self, transaction_hash: Optional[str] = None, error_message: Optional[str] = None):
+    def __init__(self, transaction_hash: str | None = None, error_message: str | None = None):
         message = (
             f"Transaction '{transaction_hash}' not found."
             if transaction_hash
@@ -681,9 +681,9 @@ class SubprocessTimeoutError(SubprocessError):
     def __init__(
         self,
         provider: "SubprocessProvider",
-        message: Optional[str] = None,
-        seconds: Optional[int] = None,
-        exception: Optional[Exception] = None,
+        message: str | None = None,
+        seconds: int | None = None,
+        exception: Exception | None = None,
         *args,
         **kwargs,
     ):
@@ -691,8 +691,8 @@ class SubprocessTimeoutError(SubprocessError):
         self._message = message or "Timed out waiting for process."
         self._seconds = seconds
         self._exception = exception
-        self._start_time: Optional[float] = None
-        self._is_running: Optional[bool] = None
+        self._start_time: float | None = None
+        self._is_running: bool | None = None
 
     def __enter__(self):
         self.start()
@@ -756,8 +756,8 @@ class RPCTimeoutError(SubprocessTimeoutError):
     def __init__(
         self,
         provider: "SubprocessProvider",
-        seconds: Optional[int] = None,
-        exception: Optional[Exception] = None,
+        seconds: int | None = None,
+        exception: Exception | None = None,
         *args,
         **kwargs,
     ):
@@ -786,7 +786,7 @@ class PluginVersionError(PluginInstallError):
     """
 
     def __init__(
-        self, operation: str, reason: Optional[str] = None, resolution: Optional[str] = None
+        self, operation: str, reason: str | None = None, resolution: str | None = None
     ):
         message = f"Unable to {operation} plugin."
         if reason:
@@ -797,7 +797,7 @@ class PluginVersionError(PluginInstallError):
         super().__init__(message)
 
 
-def handle_ape_exception(err: ApeException, base_paths: Iterable[Union[Path, str]]) -> bool:
+def handle_ape_exception(err: ApeException, base_paths: Iterable[Path | str]) -> bool:
     """
     Handle a transaction error by showing relevant stack frames,
     including custom contract frames added to the exception.
@@ -807,7 +807,7 @@ def handle_ape_exception(err: ApeException, base_paths: Iterable[Union[Path, str
     Args:
         err (:class:`~ape.exceptions.TransactionError`): The transaction error
           being handled.
-        base_paths (Optional[Iterable[Union[Path, str]]]): Optionally include additional
+        base_paths (Iterable[Path | str] | None): Optionally include additional
           source-path prefixes to use when finding relevant frames.
 
     Returns:
@@ -825,7 +825,7 @@ def handle_ape_exception(err: ApeException, base_paths: Iterable[Union[Path, str
     return True
 
 
-def _get_relevant_frames(base_paths: Iterable[Union[Path, str]]):
+def _get_relevant_frames(base_paths: Iterable[Path | str]):
     # Abstracted for testing easement.
     tb = traceback.extract_tb(sys.exc_info()[2])
     if relevant_tb := [f for f in tb if any(str(p) in f.filename for p in base_paths)]:
@@ -841,7 +841,7 @@ class Abort(click.ClickException):
     useful for all user-facing errors.
     """
 
-    def __init__(self, message: Optional[str] = None):
+    def __init__(self, message: str | None = None):
         if not message:
             caller = getframeinfo(stack()[1][0])
             file_path = Path(caller.filename)
@@ -851,7 +851,7 @@ class Abort(click.ClickException):
         super().__init__(message)
 
     @classmethod
-    def from_ape_exception(cls, exc: ApeException, show_traceback: Optional[bool] = None):
+    def from_ape_exception(cls, exc: ApeException, show_traceback: bool | None = None):
         show_traceback = (
             logger.level == LogLevel.DEBUG.value if show_traceback is None else show_traceback
         )
@@ -881,11 +881,11 @@ class CustomError(ContractLogicError):
         self,
         abi: "ErrorABI",
         inputs: dict[str, Any],
-        txn: Optional[FailedTxn] = None,
-        trace: _TRACE_ARG = None,
-        contract_address: Optional["AddressType"] = None,
-        base_err: Optional[Exception] = None,
-        source_traceback: _SOURCE_TRACEBACK_ARG = None,
+        txn: "FailedTxn | None" = None,
+        trace: "_TRACE_ARG" = None,
+        contract_address: "AddressType | None" = None,
+        base_err: Exception | None = None,
+        source_traceback: "_SOURCE_TRACEBACK_ARG" = None,
     ):
         self.abi = abi
         self.inputs = inputs
@@ -918,7 +918,7 @@ class CustomError(ContractLogicError):
         return f"{name}({calldata})"
 
 
-def _get_ape_traceback_from_tx(txn: FailedTxn) -> Optional["SourceTraceback"]:
+def _get_ape_traceback_from_tx(txn: "FailedTxn") -> "SourceTraceback | None":
     from ape.api.transactions import ReceiptAPI
 
     try:
@@ -944,8 +944,8 @@ def _get_ape_traceback_from_tx(txn: FailedTxn) -> Optional["SourceTraceback"]:
 def _get_custom_python_traceback(
     err: TransactionError,
     ape_traceback: "SourceTraceback",
-    project: Optional["ProjectManager"] = None,
-) -> Optional[TracebackType]:
+    project: "ProjectManager | None" = None,
+) -> TracebackType | None:
     # Manipulate python traceback to show lines from contract.
     # Help received from Jinja lib:
     #  https://github.com/pallets/jinja/blob/main/src/jinja2/debug.py#L142

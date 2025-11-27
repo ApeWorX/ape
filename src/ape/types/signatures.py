@@ -1,5 +1,5 @@
 from collections.abc import Iterator
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING
 
 from eth_account import Account
 from eth_account.messages import SignableMessage
@@ -41,7 +41,7 @@ def signable_message_repr(msg) -> str:
 SignableMessage.__repr__ = signable_message_repr  # type: ignore[method-assign]
 
 
-def _bytes_to_human_str(bytes_value: bytes) -> Optional[str]:
+def _bytes_to_human_str(bytes_value: bytes) -> str | None:
     try:
         # Try as text
         return bytes_value.decode("utf8")
@@ -84,7 +84,7 @@ class _Signature:
     The signature proof point (``s``) in an ECDSA signature.
     """
 
-    def __iter__(self) -> Iterator[Union[int, bytes]]:
+    def __iter__(self) -> Iterator[int | bytes]:
         # NOTE: Allows tuple destructuring
         yield self.v
         yield self.r

@@ -18,7 +18,7 @@ from functools import cached_property, singledispatchmethod, wraps
 from importlib.metadata import PackageNotFoundError, distributions
 from importlib.metadata import version as version_metadata
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Optional, TypeVar, cast
+from typing import TYPE_CHECKING, Any, TypeVar, cast
 
 import yaml
 from eth_keys import keys  # type: ignore
@@ -71,7 +71,7 @@ _python_version: str = (
 
 
 @functools.cache
-def _get_distributions(pkg_name: Optional[str] = None) -> list:
+def _get_distributions(pkg_name: str | None = None) -> list:
     """
     Get a mapping of top-level packages to their distributions.
     """
@@ -87,7 +87,7 @@ def _get_distributions(pkg_name: Optional[str] = None) -> list:
     return distros
 
 
-def pragma_str_to_specifier_set(pragma_str: str) -> Optional[SpecifierSet]:
+def pragma_str_to_specifier_set(pragma_str: str) -> SpecifierSet | None:
     """
     Convert the given pragma str to a ``packaging.version.SpecifierSet``
     if possible.
@@ -96,7 +96,7 @@ def pragma_str_to_specifier_set(pragma_str: str) -> Optional[SpecifierSet]:
         pragma_str (str): The str to convert.
 
     Returns:
-        ``Optional[packaging.version.SpecifierSet]``
+        SpecifierSet | None
     """
 
     pragma_parts = iter([x.strip(" ,") for x in pragma_str.split(" ")])
@@ -266,7 +266,7 @@ def gas_estimation_error_message(tx_error: Exception) -> str:
     )
 
 
-def extract_nested_value(root: Mapping, *args: str) -> Optional[dict]:
+def extract_nested_value(root: Mapping, *args: str) -> dict | None:
     """
     Dig through a nested ``dict`` using the given keys and return the
     last-found object.
@@ -472,7 +472,7 @@ def _dict_overlay(mapping: dict[str, Any], overlay: dict[str, Any], depth: int =
     return mapping
 
 
-def log_instead_of_fail(default: Optional[Any] = None):
+def log_instead_of_fail(default: Any | None = None):
     """
     A decorator for logging errors instead of raising.
     This is useful for methods like __repr__ which shouldn't fail.
@@ -500,7 +500,7 @@ def log_instead_of_fail(default: Optional[Any] = None):
 _MOD_T = TypeVar("_MOD_T")
 
 
-def as_our_module(cls_or_def: _MOD_T, doc_str: Optional[str] = None) -> Optional[_MOD_T]:
+def as_our_module(cls_or_def: _MOD_T, doc_str: str | None = None) -> _MOD_T | None:
     """
     Ape sometimes reclaims definitions from other packages, such as
     class:`~ape.types.signatures.SignableMessage`). When doing so, the doc str

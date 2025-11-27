@@ -12,7 +12,7 @@ from importlib.metadata import PackageNotFoundError, distribution
 from pathlib import Path
 from re import Pattern
 from tempfile import TemporaryDirectory, gettempdir
-from typing import Any, Optional, Union
+from typing import Any
 
 
 # TODO: This method is no longer needed since the dropping of 3.9
@@ -64,7 +64,7 @@ def get_relative_path(target: Path, anchor: Path) -> Path:
 
 
 def get_all_files_in_directory(
-    path: Path, pattern: Optional[Union[Pattern, str]] = None, max_files: Optional[int] = None
+    path: Path, pattern: Pattern | str | None = None, max_files: int | None = None
 ) -> list[Path]:
     """
     Returns all the files in a directory structure (recursive).
@@ -79,9 +79,9 @@ def get_all_files_in_directory(
 
     Args:
         path (pathlib.Path): A directory containing files of interest.
-        pattern (Optional[Union[Pattern, str]]): Optionally provide a regex
+        pattern (Pattern | str | None): Optionally provide a regex
           pattern to match.
-        max_files (Optional[int]): Optionally set a max file count. This is useful
+        max_files (int | None): Optionally set a max file count. This is useful
           because huge file structures will be very slow.
 
     Returns:
@@ -92,7 +92,7 @@ def get_all_files_in_directory(
     elif not path.is_dir():
         return []
 
-    pattern_obj: Optional[Pattern] = None
+    pattern_obj: Pattern | None = None
     if isinstance(pattern, str):
         pattern_obj = re.compile(pattern)
     elif pattern is not None:
@@ -132,7 +132,7 @@ class use_temp_sys_path:
     a user's sys paths without permanently modifying it.
     """
 
-    def __init__(self, path: Path, exclude: Optional[list[Path]] = None):
+    def __init__(self, path: Path, exclude: list[Path] | None = None):
         self.temp_path = str(path)
         self.exclude = [str(p) for p in exclude or []]
 
@@ -156,7 +156,7 @@ class use_temp_sys_path:
                 sys.path.append(path)
 
 
-def get_full_extension(path: Union[Path, str]) -> str:
+def get_full_extension(path: Path | str) -> str:
     """
     For a path like ``Path("Contract.t.sol")``,
     returns ``.t.sol``, unlike the regular Path
@@ -187,13 +187,13 @@ def get_full_extension(path: Union[Path, str]) -> str:
 
 
 @contextmanager
-def create_tempdir(name: Optional[str] = None) -> Iterator[Path]:
+def create_tempdir(name: str | None = None) -> Iterator[Path]:
     """
     Create a temporary directory. Differs from ``TemporaryDirectory()``
     context-call alone because it automatically resolves the path.
 
     Args:
-        name (Optional[str]): Optional provide a name of  the directory.
+        name (str | None): Optional provide a name of  the directory.
           Else, defaults to root of ``tempfile.TemporaryDirectory()``
           (resolved).
 
@@ -214,7 +214,7 @@ def create_tempdir(name: Optional[str] = None) -> Iterator[Path]:
 
 def run_in_tempdir(
     fn: Callable[[Path], Any],
-    name: Optional[str] = None,
+    name: str | None = None,
 ):
     """
     Run the given function in a temporary directory with its path
@@ -223,7 +223,7 @@ def run_in_tempdir(
     Args:
         fn (Callable): A function that takes a path. It gets called
           with the resolved path to the temporary directory.
-        name (Optional[str]): Optionally name the temporary directory.
+        name (str | None): Optionally name the temporary directory.
 
     Returns:
         Any: The result of the function call.
@@ -247,7 +247,7 @@ def in_tempdir(path: Path) -> bool:
     return normalized_path.startswith(temp_dir)
 
 
-def path_match(path: Union[str, Path], *exclusions: str) -> bool:
+def path_match(path: str | Path, *exclusions: str) -> bool:
     """
     A better glob-matching function. For example:
 
@@ -325,13 +325,13 @@ def get_package_path(package_name: str) -> Path:
     return package_path
 
 
-def extract_archive(archive_file: Path, destination: Optional[Path] = None):
+def extract_archive(archive_file: Path, destination: Path | None = None):
     """
     Extract an archive file. Supports ``.zip`` or ``.tar.gz``.
 
     Args:
         archive_file (Path): The file-path to the archive.
-        destination (Optional[Path]): Optionally provide a destination.
+        destination (Path | None): Optionally provide a destination.
           Defaults to the parent directory of the archive file.
     """
     destination = destination or archive_file.parent
@@ -477,9 +477,9 @@ class ChangeDirectory:
         self,
         original_path: Path,
         new_path: Path,
-        chdir: Optional[Callable[[Path], None]] = None,
-        on_push: Optional[Callable[[Path], dict]] = None,
-        on_pop: Optional[Callable[[dict], None]] = None,
+        chdir: Callable[[Path], None] | None = None,
+        on_push: Callable[[Path], dict] | None = None,
+        on_pop: Callable[[dict], None] | None = None,
     ):
         self.original_path = original_path
         self.new_path = new_path

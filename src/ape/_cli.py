@@ -6,7 +6,7 @@ from functools import cached_property
 from gettext import gettext
 from importlib.metadata import entry_points
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 from warnings import catch_warnings, simplefilter
 
 import click
@@ -153,7 +153,7 @@ class ApeCLI(click.MultiCommand):
     def list_commands(self, ctx) -> list[str]:
         return [k for k in self.commands]
 
-    def get_command(self, ctx, name) -> Optional[click.Command]:
+    def get_command(self, ctx, name) -> click.Command | None:
         try:
             return self.commands[name]()
         except Exception as err:

@@ -4,7 +4,7 @@ import re
 import shutil
 from pathlib import Path
 from subprocess import DEVNULL, PIPE, Popen
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import TYPE_CHECKING, Any
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse
 from urllib.request import urlopen
@@ -109,25 +109,25 @@ class GethDevProcess(BaseGethProcess):
     def __init__(
         self,
         data_dir: Path,
-        hostname: Optional[str] = None,
-        port: Optional[int] = None,
-        ipc_path: Optional[Path] = None,
-        ws_hostname: Optional[str] = None,
-        ws_port: Optional[str] = None,
+        hostname: str | None = None,
+        port: int | None = None,
+        ipc_path: Path | None = None,
+        ws_hostname: str | None = None,
+        ws_port: str | None = None,
         mnemonic: str = DEFAULT_TEST_MNEMONIC,
         number_of_accounts: int = DEFAULT_NUMBER_OF_TEST_ACCOUNTS,
         chain_id: int = DEFAULT_TEST_CHAIN_ID,
-        initial_balance: Union[str, int] = DEFAULT_TEST_ACCOUNT_BALANCE,
-        executable: Optional[Union[list[str], str]] = None,
+        initial_balance: str | int = DEFAULT_TEST_ACCOUNT_BALANCE,
+        executable: list[str] | str | None = None,
         auto_disconnect: bool = True,
-        extra_funded_accounts: Optional[list[str]] = None,
-        hd_path: Optional[str] = DEFAULT_TEST_HD_PATH,
-        block_time: Optional[int] = None,
+        extra_funded_accounts: list[str] | None = None,
+        hd_path: str | None = DEFAULT_TEST_HD_PATH,
+        block_time: int | None = None,
         generate_accounts: bool = True,
         initialize_chain: bool = True,
         background: bool = False,
         verify_bin: bool = True,
-        rpc_api: Optional[list[str]] = None,
+        rpc_api: list[str] | None = None,
     ):
         if isinstance(executable, str):
             # Legacy.
@@ -339,19 +339,19 @@ class GethDevProcess(BaseGethProcess):
             return True
 
     @property
-    def _hostname(self) -> Optional[str]:
+    def _hostname(self) -> str | None:
         return self.geth_kwargs.get("rpc_addr")
 
     @property
-    def _port(self) -> Optional[str]:
+    def _port(self) -> str | None:
         return self.geth_kwargs.get("rpc_port")
 
     @property
-    def _ws_hostname(self) -> Optional[str]:
+    def _ws_hostname(self) -> str | None:
         return self.geth_kwargs.get("ws_addr")
 
     @property
-    def _ws_port(self) -> Optional[str]:
+    def _ws_port(self) -> str | None:
         return self.geth_kwargs.get("ws_port")
 
     def connect(self, timeout: int = 60):
@@ -459,25 +459,25 @@ class EthereumNodeConfig(PluginConfig):
     such as which URIs to use for each network.
     """
 
-    executable: Optional[list[str]] = None
+    executable: list[str] | None = None
     """
     For starting nodes, select the executable. Defaults to using
     ``shutil.which("geth")``.
     """
 
-    data_dir: Optional[Path] = None
+    data_dir: Path | None = None
     """
     For node-management, choose where the geth data directory shall
     be located. Defaults to using a location within Ape's DATA_FOLDER.
     """
 
-    ipc_path: Optional[Path] = None
+    ipc_path: Path | None = None
     """
     For IPC connections, select the IPC path. If managing a process,
     web3.py can determine the IPC w/o needing to manually configure.
     """
 
-    call_trace_approach: Optional[TraceApproach] = None
+    call_trace_approach: TraceApproach | None = None
     """
     Select the trace approach to use. Defaults to deducing one
     based on your node's client-version and available RPCs.
@@ -488,7 +488,7 @@ class EthereumNodeConfig(PluginConfig):
     Optionally specify request headers to use whenever using this provider.
     """
 
-    rpc_api: Optional[list[str]] = None
+    rpc_api: list[str] | None = None
     """
     RPC APIs to enable. Defaults to all geth APIs.
     """
@@ -527,7 +527,7 @@ class NodeSoftwareNotInstalledError(ConnectionError):
 # NOTE: Using EthereumNodeProvider because of it's geth-derived default behavior.
 # TODO: In 0.9, change NAME to be `gethdev`, so for local networks it is more obvious.
 class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
-    _process: Optional[GethDevProcess] = None
+    _process: GethDevProcess | None = None
     name: str = "node"
 
     @property
@@ -545,7 +545,7 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
         return self.settings.ethereum.local.get("chain_id", DEFAULT_TEST_CHAIN_ID)
 
     @property
-    def block_time(self) -> Optional[int]:
+    def block_time(self) -> int | None:
         return self.settings.ethereum.local.get("block_time")
 
     @property
@@ -576,7 +576,7 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
         raise NotImplementedError("'auto_mine' setter not implemented.")
 
     @property
-    def ipc_path(self) -> Optional[Path]:
+    def ipc_path(self) -> Path | None:
         if rpc := self._configured_ipc_path:
             # "ipc_path" found in config/settings
             return Path(rpc)
