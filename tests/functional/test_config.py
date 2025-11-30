@@ -8,7 +8,7 @@ import pytest
 from pydantic import ValidationError
 from pydantic_settings import SettingsConfigDict
 
-from ape.api.config import ApeConfig, ConfigEnum, PluginConfig
+from ape.api.config import ApeConfig, ConfigEnum, DeploymentConfig, PluginConfig
 from ape.exceptions import ConfigError
 from ape.managers.config import CONFIG_FILE_NAME, merge_configs
 from ape.types.gas import AutoGasLimit
@@ -303,6 +303,25 @@ def test_deployments(networks_connected_to_tester, owner, project):
     assert deployment.address == instance.address
 
 
+def test_deployments_deterministic(
+    networks_connected_to_tester, owner, vyper_contract_container, project
+):
+    _ = networks_connected_to_tester  # Connection needs to lookup config.
+
+    # First, obtain a "previously-deployed" contract.
+    instance = vyper_contract_container.deploy(1000200000, sender=owner)
+    address = instance.address
+
+    # Create a config using this new contract for a "later time".
+    deploy = DeploymentConfig(address=address, contract_type=instance.contract_type.name)
+    with project.temp_config(deployments=dict(deterministic=[deploy])):
+        deploy_config = project.config.deployments
+        assert deploy_config["ethereum"]["mainnet"][0]["address"] == address
+        deployment = vyper_contract_container.deployments[0]
+
+    assert deployment.address == instance.address
+
+
 def test_deployments_integer_type_addresses(networks, project):
     deploys = {
         **_create_deployments(address=0x0C25212C557D00024B7CA3DF3238683A35541354),
@@ -581,7 +600,7 @@ def test_contracts_folder(project):
 
 
 def test_contracts_folder_with_hyphen(project):
-    with project.temp_config(**{"contracts-folder": "src"}):
+    with project.temp_config(**{"contracts_folder": "src"}):
         assert project.contracts_folder.name == "src"
 
 
