@@ -503,7 +503,7 @@ def test_model_dump_json():
         '{"block_hash":"block-hash","block_number":123,'
         '"contract_address":"0x0000000000000000000000000000000000000000",'
         '"event_arguments":{"key":123,"validators":["0x7b"]},"event_name":'
-        '"MyEvent","log_index":0,'
+        '"MyEvent","log_index":0,"removed":false,'
         '"transaction_hash":"0x00000000000000000000000004d21f074916369e"}'
     )
 

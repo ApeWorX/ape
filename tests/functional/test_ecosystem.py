@@ -294,11 +294,14 @@ def test_transaction_acceptance_timeout(project, networks):
         assert networks.provider.network.transaction_acceptance_timeout == new_value
 
 
-def test_decode_logs(ethereum, vyper_contract_instance):
+@pytest.mark.parametrize("removed", [True, False])
+def test_decode_logs(ethereum, vyper_contract_instance, removed):
     abi = vyper_contract_instance.NumberChange.abi
-    result = [x for x in ethereum.decode_logs([LOG], abi)]
+    log = {**LOG, "removed": removed}
+    result = [x for x in ethereum.decode_logs([log], abi)]
     assert len(result) == 1
-    assert result[0].model_dump() == {
+    model_dump = result[0].model_dump()
+    assert model_dump == {
         "event_name": "NumberChange",
         "contract_address": "0x274b028b03A250cA03644E6c578D81f019eE1323",
         "event_arguments": {
@@ -315,6 +318,7 @@ def test_decode_logs(ethereum, vyper_contract_instance):
         "block_hash": "0x2c99950b07accf3e442512a3352a11e6fed37b2331de5f71b7743b357d96e4e8",
         "log_index": 0,
         "transaction_index": 0,
+        "removed": removed,
     }
 
 
