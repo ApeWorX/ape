@@ -98,7 +98,7 @@ def test_transact_wrong_number_of_arguments(owner, contract_instance):
         second = ""
 
     expected = (
-        r"The number of the given arguments \(4\) do not match what is defined in the ABI:\n"
+        r"The number of the given arguments \(4\) does not match what is defined in the ABI:\n"
         r"\n\t.*setNumber\(uint256 num\).*"
         f"{second}"
     )
