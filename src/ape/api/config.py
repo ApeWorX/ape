@@ -458,7 +458,10 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
         Returns:
             :class:`~ape.api.config.ApeConfig`
         """
-        data = {**load_config(path), **overrides}
+        file_config = load_config(path)
+        file_config = {k.replace("-", "_"): v for k, v in file_config.items()}
+        overrides = {k.replace("-", "_"): v for k, v in overrides.items()}
+        data = {**file_config, **overrides}
 
         # NOTE: We are including the project path here to assist
         #  in relative-path resolution, such as for local dependencies.

@@ -605,7 +605,6 @@ class TransactionHistory(BaseManager):
         Args:
             block_number (int): The block number to revert to.
         """
-
         self._hash_to_receipt_map = {
             h: r for h, r in self._hash_to_receipt_map.items() if r.block_number <= block_number
         }
@@ -821,7 +820,7 @@ class ChainManager(BaseManager):
         Returns:
             :class:`~ape.types.SnapshotID`: The snapshot ID.
         """
-        chain_id = self.provider.chain_id
+        chain_id = self.chain_manager.chain_id
         snapshot_id = self.provider.snapshot()
         if snapshot_id not in self._snapshots[chain_id]:
             self._snapshots[chain_id].append(snapshot_id)
@@ -843,7 +842,7 @@ class ChainManager(BaseManager):
             snapshot_id (:class:`~ape.types.SnapshotID` | None): The snapshot ID. Defaults
               to the most recent snapshot ID.
         """
-        chain_id = self.provider.chain_id
+        chain_id = self.chain_manager.chain_id
         if snapshot_id is None and not self._snapshots[chain_id]:
             raise ChainError("There are no snapshots to revert to.")
         elif snapshot_id is None:

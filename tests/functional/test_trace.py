@@ -246,6 +246,8 @@ def test_transaction_trace_provider_does_not_implement_client_version(
     mock_weird_node = mocker.MagicMock()
     mock_weird_node.client_version.side_effect = AttributeError
     mock_weird_node.network = ethereum.local
+    mock_weird_node.chain_id = chain.chain_id
+    mock_weird_node.get_block.side_effect = chain.provider.get_block
 
     class HackyTransactionTrace(TransactionTrace):
         def _discover_calltrace_approach(self) -> CallTreeNode:

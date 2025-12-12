@@ -146,11 +146,10 @@ class StaticFeeTransaction(BaseTransaction):
     max_fee: HexInt | None = Field(default=None, exclude=True)  # type: ignore
 
     @model_validator(mode="after")
-    @classmethod
-    def calculate_read_only_max_fee(cls, tx):
+    def calculate_read_only_max_fee(self):
         # Work-around: we cannot use a computed field to override a non-computed field.
-        tx.max_fee = (tx.gas_limit or 0) * (tx.gas_price or 0)
-        return tx
+        self.max_fee = (self.gas_limit or 0) * (self.gas_price or 0)
+        return self
 
 
 class AccessListTransaction(StaticFeeTransaction):

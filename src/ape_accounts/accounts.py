@@ -88,7 +88,7 @@ class ApeSigner(AccountAPI):
         nonce: int | None = None,
     ) -> MessageSignature | None:
         if chain_id is None:
-            chain_id = self.provider.chain_id
+            chain_id = self.chain_manager.chain_id
 
         signed_authorization = EthAccount.sign_authorization(
             dict(
@@ -172,7 +172,7 @@ class ApeSigner(AccountAPI):
         sig = self.sign_authorization(contract_address, nonce=self.nonce + 1)
         auth = Authorization.from_signature(
             address=contract_address,
-            chain_id=self.provider.chain_id,
+            chain_id=self.chain_manager.chain_id,
             # NOTE: `tx` uses `self.nonce`
             nonce=self.nonce + 1,
             signature=sig,
@@ -190,7 +190,7 @@ class ApeSigner(AccountAPI):
     def remove_delegate(self, **txn_kwargs):
         sig = self.sign_authorization(ZERO_ADDRESS, nonce=self.nonce + 1)
         auth = Authorization.from_signature(
-            chain_id=self.provider.chain_id,
+            chain_id=self.chain_manager.chain_id,
             address=ZERO_ADDRESS,
             # NOTE: `tx` uses `self.nonce`
             nonce=self.nonce + 1,
@@ -217,8 +217,8 @@ class KeyfileAccount(AccountAPI):
     @log_instead_of_fail(default="<KeyfileAccount>")
     def __repr__(self) -> str:
         # NOTE: Prevent errors from preventing repr from working.
-        address_str = f" address={self.address} " if self.address else ""
-        alias_str = f" alias={self.alias} " if self.alias else ""
+        address_str = f" address={self.address}" if self.address else ""
+        alias_str = f" alias={self.alias}" if self.alias else ""
         return f"<{self.__class__.__name__}{address_str}{alias_str}>"
 
     @property

@@ -648,7 +648,7 @@ class IsolationManager(ManagerAccessMixin):
         if snapshot_id is None:
             return
 
-        elif snapshot_id not in self.chain_snapshots[self.provider.chain_id]:
+        elif snapshot_id not in self.chain_snapshots[self.chain_manager.chain_id]:
             # Still clear out.
             self.snapshots.clear_snapshot_id(scope)
             return
@@ -662,6 +662,8 @@ class IsolationManager(ManagerAccessMixin):
             )
             # To avoid trying again
             self.supported = False
+        except Exception as err:
+            logger.error(f"Unhandled error with restoring snapshot: {err}")
 
         self.snapshots.clear_snapshot_id(scope)
 

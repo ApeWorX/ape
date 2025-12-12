@@ -421,7 +421,7 @@ class ContractCache(BaseManager):
         self, address: AddressType, chain_id: int | None = None
     ) -> set[type[CustomError]]:
         if chain_id is None and self.network_manager.active_provider is not None:
-            chain_id = self.provider.chain_id
+            chain_id = self.chain_manager.chain_id
         elif chain_id is None:
             return set()
 
@@ -438,7 +438,7 @@ class ContractCache(BaseManager):
         self, address: AddressType, error: type[CustomError], chain_id: int | None = None
     ):
         if chain_id is None and self.network_manager.active_provider is not None:
-            chain_id = self.provider.chain_id
+            chain_id = self.chain_manager.chain_id
         elif chain_id is None:
             return
 

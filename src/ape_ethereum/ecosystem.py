@@ -963,7 +963,7 @@ class Ethereum(EcosystemAPI):
             tx_data["chainId"] = int(chain_id, 16)
 
         elif chain_id is None and self.network_manager.active_provider is not None:
-            tx_data["chainId"] = self.provider.chain_id
+            tx_data["chainId"] = self.chain_manager.chain_id
 
         if "input" in tx_data:
             tx_data["data"] = tx_data.pop("input")
