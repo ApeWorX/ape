@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional, Union
 
 import click
-from eip712.messages import EIP712Message, EIP712Type
+from eip712.messages import EIP712Message
 from eth_account import Account as EthAccount
 from eth_account._utils.signing import sign_transaction_dict
 from eth_account.hdaccount import ETHEREUM_DEFAULT_PATH
@@ -509,31 +509,27 @@ def _get_signing_message_with_display(msg) -> tuple[Optional[str], Any]:
 
         # Domain Data
         display_msg += "Domain\n"
-        if msg._name_:
-            display_msg += f"\tName: {msg._name_}\n"
-        if msg._version_:
-            display_msg += f"\tVersion: {msg._version_}\n"
-        if msg._chainId_:
-            display_msg += f"\tChain ID: {msg._chainId_}\n"
-        if msg._verifyingContract_:
-            display_msg += f"\tContract: {msg._verifyingContract_}\n"
-        if msg._salt_:
-            display_msg += f"\tSalt: {to_hex(msg._salt_)}\n"
+        if msg._eip712_domain_.name:
+            display_msg += f"\tName: {msg._eip712_domain_.name}\n"
+        if msg._eip712_domain_.version:
+            display_msg += f"\tVersion: {msg._eip712_domain_.version}\n"
+        if msg._eip712_domain_.chainId:
+            display_msg += f"\tChain ID: {msg._eip712_domain_.chainId}\n"
+        if msg._eip712_domain_.verifyingContract:
+            display_msg += f"\tContract: {msg._eip712_domain_.verifyingContract}\n"
+        if msg._eip712_domain_.salt:
+            display_msg += f"\tSalt: {to_hex(msg._eip712_domain_.salt)}\n"
 
         # Message Data
         display_msg += "Message\n"
-        for field, value in msg._body_["message"].items():
-            if isinstance(value, EIP712Type):
-                msg_fields = [
-                    x for x in dir(value) if not x.startswith("_") and not x.startswith("eip712_")
-                ]
+        for field, value in msg.model_dump().items():
+            if isinstance(value, dict):
                 msg_value = ""
-                for msg_field in msg_fields:
-                    attr = getattr(value, msg_field)
+                for sub_field, attr in value.items():
                     if isinstance(attr, bytes):
                         attr = to_hex(attr)
 
-                    msg_value += f"\t\t{msg_field}: {attr}\n"
+                    msg_value += f"\t\t{sub_field}: {attr}\n"
 
                 display_msg += f"\t{field}:\n{msg_value}\n"
 

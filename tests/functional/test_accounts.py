@@ -2,11 +2,12 @@ from os import environ
 
 import pytest
 from cchecksum import to_checksum_address
-from eip712.messages import EIP712Message, EIP712Type
+from eip712.messages import EIP712Domain, EIP712Message
 from eth_account.messages import encode_defunct
-from eth_pydantic_types import HexBytes
+from eth_pydantic_types import HexBytes, abi
 from eth_utils import keccak, to_hex
 from ethpm_types import ContractType
+from pydantic import BaseModel
 
 import ape
 from ape.api import ImpersonatedAccount
@@ -65,13 +66,14 @@ def message():
     return encode_defunct(text="Hello Apes!")
 
 
-class Baz(EIP712Type):
-    addr: "address"  # type: ignore  # noqa: F821
+class Baz(BaseModel):
+    addr: abi.address
 
 
 class Foo(EIP712Message):
-    _name_: "string" = "Foo"  # type: ignore  # noqa: F821
-    bar: "address"  # type: ignore  # noqa: F821
+    eip712_domain = EIP712Domain(name="Foo")
+
+    bar: abi.address
     baz: Baz
 
 
@@ -121,8 +123,8 @@ def test_recover_signer(signer, message):
 
 
 def test_sign_eip712_message(signer):
-    baz = Baz(addr=signer.address)  # type: ignore[call-arg]
-    foo = Foo(bar=signer.address, baz=baz)  # type: ignore[call-arg]
+    baz = Baz(addr=signer.address)
+    foo = Foo(bar=signer.address, baz=baz)
     signature = signer.sign_message(foo)
     assert signer.check_signature(foo, signature)
 
@@ -145,8 +147,8 @@ def test_sign_message_with_prompts(runner, keyfile_account, message):
 
 
 def test_sign_eip712_message_shows_custom_types(signer):
-    baz = Baz(addr=signer.address)  # type: ignore[call-arg]
-    foo = Foo(bar=signer.address, baz=baz)  # type: ignore[call-arg]
+    baz = Baz(addr=signer.address)
+    foo = Foo(bar=signer.address, baz=baz)
     display_msg, msg = _get_signing_message_with_display(foo)
     expected = """
 Signing EIP712 Message
