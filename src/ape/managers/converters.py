@@ -3,7 +3,8 @@ from collections.abc import Iterable, Sequence
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from functools import cached_property
-from typing import TYPE_CHECKING, Any
+from types import UnionType
+from typing import TYPE_CHECKING, Any, Union, get_args, get_origin
 
 from cchecksum import to_checksum_address
 from dateutil.parser import parse
@@ -453,9 +454,6 @@ class ConversionManager(BaseManager):
 
         def get_real_type(type_):
             # Handle both old (Optional/Union) and new (|) syntax
-            from types import UnionType
-            from typing import Union, get_args, get_origin
-
             # Try old syntax first (Optional/Union) - uses _typevar_types
             all_types = getattr(type_, "_typevar_types", None)
             if all_types and isinstance(all_types, (list, tuple)) and len(all_types) > 0:
