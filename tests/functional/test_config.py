@@ -1,8 +1,9 @@
 import os
 import re
 import shutil
+from collections.abc import Callable
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Optional, Union
+from typing import TYPE_CHECKING, Any
 
 import pytest
 from pydantic import ValidationError
@@ -336,8 +337,8 @@ def test_deployments_bad_network(project):
 def _create_deployments(
     ecosystem_name: str = "ethereum",
     network_name: str = "local",
-    address: Union[int, str] = "0x0C25212C557D00024B7CA3DF3238683A35541354",
-    contract_name: Optional[str] = "MyContract",
+    address: int | str = "0x0C25212C557D00024B7CA3DF3238683A35541354",
+    contract_name: str | None = "MyContract",
 ) -> dict:
     return {
         ecosystem_name: {
@@ -471,8 +472,8 @@ def test_from_overrides_shows_errors_in_project_config():
 @pytest.mark.parametrize("override_0,override_1", [(True, {"foo": 0}), ({"foo": 0}, True)])
 def test_plugin_config_with_union_dicts(override_0, override_1):
     class SubConfig(PluginConfig):
-        bool_or_dict: Union[bool, dict] = True
-        dict_or_bool: Union[dict, bool] = {}
+        bool_or_dict: bool | dict = True
+        dict_or_bool: dict | bool = {}
 
     config = SubConfig.from_overrides({"bool_or_dict": override_0, "dict_or_bool": override_1})
     assert config.bool_or_dict == override_0

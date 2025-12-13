@@ -612,7 +612,7 @@ class ContractEvent(BaseInterfaceModel):
             :class:`~ape.types.events.MockContractLog`
         """
         # Create a dictionary from the positional arguments
-        event_args: dict[Any, Any] = dict(zip((ipt.name for ipt in self.abi.inputs), args))
+        event_args: dict[Any, Any] = dict(zip((ipt.name for ipt in self.abi.inputs), args, strict=True))
         if overlapping_keys := set(event_args).intersection(kwargs):
             raise ValueError(
                 f"Overlapping keys found in arguments: '{', '.join(overlapping_keys)}'."

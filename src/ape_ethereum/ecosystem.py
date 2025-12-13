@@ -703,11 +703,11 @@ class Ethereum(EcosystemAPI):
             raise DecodingError(str(err)) from err
 
         input_values = [
-            self.decode_primitive_value(v, t) for v, t in zip(raw_input_values, input_types)
+            self.decode_primitive_value(v, t) for v, t in zip(raw_input_values, input_types, strict=True)
         ]
         arguments = {}
         index = 0
-        for i, v in zip(abi.inputs, input_values):
+        for i, v in zip(abi.inputs, input_values, strict=True):
             name = i.name or f"{index}"
             arguments[name] = v
             index += 1
@@ -734,7 +734,7 @@ class Ethereum(EcosystemAPI):
 
         output_types = [parse_type(o.model_dump()) for o in abi.outputs]
         output_values = [
-            self.decode_primitive_value(v, t) for v, t in zip(vm_return_values, output_types)
+            self.decode_primitive_value(v, t) for v, t in zip(vm_return_values, output_types, strict=True)
         ]
         parser = StructParser(abi)
         output_values = parser.decode_output(output_values)
@@ -827,7 +827,9 @@ class Ethereum(EcosystemAPI):
             return [self.decode_primitive_value(v, sub_type) for v in value]
 
         elif isinstance(output_type, tuple):
-            return tuple([self.decode_primitive_value(v, t) for v, t in zip(value, output_type)])
+            return tuple(
+                [self.decode_primitive_value(v, t) for v, t in zip(value, output_type, strict=True)]
+            )
 
         elif (
             isinstance(output_type, list)
@@ -1019,7 +1021,9 @@ class Ethereum(EcosystemAPI):
 
                 if isinstance(value, Struct):
                     struct_types = _type.lstrip("(").rstrip(")").split(",")
-                    for struct_type, (struct_key, struct_val) in zip(struct_types, value.items()):
+                    for struct_type, (struct_key, struct_val) in zip(
+                        struct_types, value.items(), strict=True
+                    ):
                         value[struct_key] = (
                             self.decode_address(struct_val)
                             if struct_type == "address"

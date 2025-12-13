@@ -113,7 +113,7 @@ class StructParser:
         Returns:
             Any: The same input values only decoded into structs when applicable.
         """
-        return [self._encode(ipt, v) for ipt, v in zip(self.abi.inputs, values)]
+        return [self._encode(ipt, v) for ipt, v in zip(self.abi.inputs, values, strict=True)]
 
     def decode_input(self, values: Sequence | dict[str, Any]) -> Any:
         return (
@@ -214,7 +214,7 @@ class StructParser:
                     return_values.append(item)
 
         else:
-            for output_type, value in zip(_types, values):
+            for output_type, value in zip(_types, values, strict=True):
                 if isinstance(value, (tuple, list)):
                     item_type_str = str(output_type.type).partition("[")[0]
                     if item_type_str == "tuple":
@@ -271,7 +271,7 @@ class StructParser:
 
     def _parse_components(self, components: list[ABIType], values) -> list:
         parsed_values = []
-        for component, value in zip(components, values):
+        for component, value in zip(components, values, strict=True):
             if is_struct(component):
                 new_value = self._create_struct(component, (value,))
                 parsed_values.append(new_value)
@@ -341,7 +341,7 @@ def create_struct(name: str, types: Sequence[ABIType], output_values: Sequence) 
         # NOTE: Allow struct to function as a tuple and dict as well
         struct_values = tuple(getattr(struct, field) for field in struct.__dataclass_fields__)
         if isinstance(key, str):
-            return dict(zip(struct.__dataclass_fields__, struct_values))[key]
+            return dict(zip(struct.__dataclass_fields__, struct_values, strict=True))[key]
 
         return struct_values[key]
 
@@ -382,7 +382,7 @@ def create_struct(name: str, types: Sequence[ABIType], output_values: Sequence) 
             # Allows comparing structs with sequence types.
             # NOTE: The order of the expected sequence matters!
 
-            for itm1, itm2 in zip(struct.values(), other):
+            for itm1, itm2 in zip(struct.values(), other, strict=True):
                 if itm1 != itm2:
                     return False
 
@@ -458,7 +458,7 @@ class LogInputABICollection:
         self, topics: list[str], data: str | bytes, use_hex_on_fail: bool = False
     ) -> dict:
         decoded = {}
-        for abi, topic_value in zip(self.topic_abi_types, topics[1:]):
+        for abi, topic_value in zip(self.topic_abi_types, topics[1:], strict=True):
             # reference types as indexed arguments are written as a hash
             # https://docs.soliditylang.org/en/v0.8.15/contracts.html#events
             abi_type = "bytes32" if is_dynamic_sized_type(abi.type) else abi.canonical_type
@@ -510,12 +510,12 @@ class LogInputABICollection:
                     "However, we are able to get a value using decode(strict=False)"
                 )
                 logger.warn_from_exception(err, warning_message)
-                for abi, value in zip(self.data_abi_types, data_values):
+                for abi, value in zip(self.data_abi_types, data_values, strict=True):
                     decoded[abi.name] = self.decode_value(abi.canonical_type, value)
 
         else:
             # The data was formatted correctly and we were able to decode logs.
-            for abi, value in zip(self.data_abi_types, data_values):
+            for abi, value in zip(self.data_abi_types, data_values, strict=True):
                 decoded[abi.name] = self.decode_value(abi.canonical_type, value)
 
         return decoded

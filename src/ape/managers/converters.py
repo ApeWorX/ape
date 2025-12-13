@@ -339,7 +339,7 @@ class ConversionManager(BaseManager):
         if isinstance(value, (list, tuple)) and isinstance(to_type, tuple):
             # We expected to convert a tuple type, so convert each item in the tuple.
             # NOTE: We allow values to be a list, just in case it is a list
-            return [self.convert(v, t) for v, t in zip(value, to_type)]
+            return [self.convert(v, t) for v, t in zip(value, to_type, strict=True)]
 
         elif isinstance(value, (list, tuple)) and isinstance(to_type, list) and len(to_type) == 1:
             # We expected to convert an array type(dynamic or static),
@@ -437,7 +437,7 @@ class ConversionManager(BaseManager):
     ):
         input_types = [i.canonical_type for i in abi.inputs]
         converted_arguments = []
-        for ipt, argument in zip(input_types, arguments):
+        for ipt, argument in zip(input_types, arguments, strict=True):
             # Handle primitive-addresses separately since they may not occur
             # on the tuple-conversion if they are integers or bytes.
             if str(ipt) == "address":
@@ -453,9 +453,9 @@ class ConversionManager(BaseManager):
 
         def get_real_type(type_):
             # Handle both old (Optional/Union) and new (|) syntax
-            from typing import get_args, get_origin, Union
             from types import UnionType
-            
+            from typing import Union, get_args, get_origin
+
             # Try old syntax first (Optional/Union) - uses _typevar_types
             all_types = getattr(type_, "_typevar_types", None)
             if all_types and isinstance(all_types, (list, tuple)) and len(all_types) > 0:

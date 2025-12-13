@@ -609,7 +609,7 @@ class Dependency(BaseManager, ExtraAttributesMixin):
         # This is the base project using this dependency.
         self.base_project = project or self.local_project
         # When installed (and set, lazily), this is the dependency project.
-        self._installation: "ProjectManager | None" = None
+        self._installation: ProjectManager | None = None
         self._tried_fetch = False
 
     @log_instead_of_fail(default="<Dependency>")

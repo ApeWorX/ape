@@ -193,7 +193,7 @@ class Call(BaseMulticall):
         return [res.returnData if res.success else None for res in result]  # type: ignore
 
     def _decode_results(self) -> Iterator[Any]:
-        for abi, data in zip(self.abis, self.returnData):
+        for abi, data in zip(self.abis, self.returnData, strict=True):
             if data is None:
                 # The call failed.
                 yield data

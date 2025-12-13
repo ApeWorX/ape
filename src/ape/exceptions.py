@@ -3,12 +3,12 @@ import sys
 import tempfile
 import time
 import traceback
-from collections.abc import Collection, Iterable
+from collections.abc import Callable, Collection, Iterable
 from functools import cached_property
 from inspect import getframeinfo, stack
 from pathlib import Path
 from types import CodeType, TracebackType
-from typing import TYPE_CHECKING, Any, Callable, TypeAlias
+from typing import TYPE_CHECKING, Any, TypeAlias
 
 import click
 from rich import print as rich_print

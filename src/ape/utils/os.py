@@ -52,7 +52,7 @@ def get_relative_path(target: Path, anchor: Path) -> Path:
     """
     # Calculate common prefix length
     common_parts = 0
-    for target_part, anchor_part in zip(target.parts, anchor.parts):
+    for target_part, anchor_part in zip(target.parts, anchor.parts, strict=False):
         if target_part == anchor_part:
             common_parts += 1
         else:

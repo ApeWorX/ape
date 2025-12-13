@@ -1,6 +1,5 @@
 import re
 from re import Pattern
-from typing import TYPE_CHECKING
 
 from ethpm_types.abi import ErrorABI
 

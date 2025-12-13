@@ -303,7 +303,7 @@ def _equal_event_inputs(mock_input: Any, real_input: Any) -> bool:
         if not isinstance(real_input, (list, tuple)) or len(real_input) != len(mock_input):
             return False
 
-        return all(_equal_event_inputs(m, r) for m, r in zip(mock_input, real_input))
+        return all(_equal_event_inputs(m, r) for m, r in zip(mock_input, real_input, strict=True))
 
     else:
         return mock_input == real_input

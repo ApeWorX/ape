@@ -12,7 +12,7 @@ from ape.exceptions import ConversionError
 from ape.utils.basemodel import ManagerAccessMixin
 
 if TYPE_CHECKING:
-    from typing_extensions import TypeAlias
+    from typing import TypeAlias
 
 
 class CurrencyValueComparable(int):
