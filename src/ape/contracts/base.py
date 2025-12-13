@@ -750,7 +750,6 @@ class ContractEvent(BaseInterfaceModel):
             search_topics (dict | None): Search topics, such as indexed event inputs,
               to query by. Defaults to getting all events.
             extra_addresses (list | None): Additional contract addresses containing the same event type. Defaults to
-              Additional contract addresses containing the same event type. Defaults to
               only looking at the contract instance where this event is defined.
 
         Returns:
