@@ -1,6 +1,5 @@
 import re
 from pathlib import Path
-from typing import Optional
 
 import pytest
 
@@ -217,7 +216,7 @@ class TestContractLogicError:
     def test_message_uses_revert_type_when_no_revert_message(self, mocker, revert_message):
         class TB(SourceTraceback):
             @property
-            def revert_type(self) -> Optional[str]:
+            def revert_type(self) -> str | None:
                 return "CUSTOM_ERROR"
 
         tb = TB([{"statements": [], "closure": {"name": "fn"}, "depth": 0}])  # type: ignore

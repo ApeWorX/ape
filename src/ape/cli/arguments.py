@@ -1,6 +1,6 @@
 from collections.abc import Iterable
 from pathlib import Path
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING
 
 import click
 from click import BadArgumentUsage
@@ -48,7 +48,7 @@ class _ContractPaths:
     Helper callback class for handling CLI-given contract paths.
     """
 
-    def __init__(self, value, project: Optional["ProjectManager"] = None):
+    def __init__(self, value, project: "ProjectManager | None" = None):
         from ape.utils.basemodel import ManagerAccessMixin
 
         self.value = value
@@ -111,10 +111,10 @@ class _ContractPaths:
 
         return access.config_manager.get_config("compile").exclude or set()
 
-    def do_exclude(self, path: Union[Path, str]) -> bool:
+    def do_exclude(self, path: Path | str) -> bool:
         return self.project.sources.is_excluded(path)
 
-    def compiler_is_unknown(self, path: Union[Path, str]) -> bool:
+    def compiler_is_unknown(self, path: Path | str) -> bool:
         from ape.utils.basemodel import ManagerAccessMixin
         from ape.utils.os import get_full_extension
 
@@ -127,7 +127,7 @@ class _ContractPaths:
 
         return bool(unknown_compiler)
 
-    def lookup(self, path_iter: Iterable, path_set: Optional[set] = None) -> set[Path]:
+    def lookup(self, path_iter: Iterable, path_set: set | None = None) -> set[Path]:
         path_set = path_set or set()
         given_paths = [p for p in path_iter]  # Handle iterators w/o losing it.
 

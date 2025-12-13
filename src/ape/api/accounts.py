@@ -4,7 +4,7 @@ from collections.abc import Iterator
 from contextlib import contextmanager
 from functools import cached_property
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import TYPE_CHECKING, Any
 
 import click
 from eip712.messages import EIP712Message
@@ -73,14 +73,14 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         ]
 
     @property
-    def alias(self) -> Optional[str]:
+    def alias(self) -> str | None:
         """
         A shortened-name for quicker access to the account.
         """
         return None
 
     @property
-    def public_key(self) -> Optional["HexBytes"]:
+    def public_key(self) -> "HexBytes | None":
         """
         The public key for the account.
 
@@ -95,7 +95,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         prepared_tx = super().prepare_transaction(txn, **kwargs)
         return (self.sign_transaction(prepared_tx) or prepared_tx) if sign else prepared_tx
 
-    def sign_raw_msghash(self, msghash: "HexBytes") -> Optional[MessageSignature]:
+    def sign_raw_msghash(self, msghash: "HexBytes") -> MessageSignature | None:
         """
         Sign a raw message hash.
 
@@ -115,19 +115,19 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
     def sign_authorization(
         self,
         address: Any,
-        chain_id: Optional[int] = None,
-        nonce: Optional[int] = None,
-    ) -> Optional[MessageSignature]:
+        chain_id: int | None = None,
+        nonce: int | None = None,
+    ) -> MessageSignature | None:
         """
         Sign an `EIP-7702 <https://eips.ethereum.org/EIPS/eip-7702>`__ Authorization.
 
         Args:
           address (Any): A delegate address to sign the authorization for.
-          chain_id (Optional[int]):
+          chain_id (int | None):
             The chain ID that the authorization should be valid for.
             A value of ``0`` means that the authorization is valid for **any chain**.
             Default tells implementation to use the currently connected network's ``chain_id``.
-          nonce (Optional[int]):
+          nonce (int | None):
             The nonce to use to sign authorization with. Defaults to account's current nonce.
 
         Returns:
@@ -146,7 +146,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         )
 
     @abstractmethod
-    def sign_message(self, msg: Any, **signer_options) -> Optional[MessageSignature]:
+    def sign_message(self, msg: Any, **signer_options) -> MessageSignature | None:
         """
         Sign a message.
 
@@ -164,7 +164,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         """
 
     @abstractmethod
-    def sign_transaction(self, txn: TransactionAPI, **signer_options) -> Optional[TransactionAPI]:
+    def sign_transaction(self, txn: TransactionAPI, **signer_options) -> TransactionAPI | None:
         """
         Sign a transaction.
 
@@ -259,9 +259,9 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
 
     def transfer(
         self,
-        account: Union[str, AddressType, BaseAddress],
-        value: Optional[Union[str, int]] = None,
-        data: Optional[Union[bytes, str]] = None,
+        account: str | AddressType | BaseAddress,
+        value: str | int | None = None,
+        data: bytes | str | None = None,
         private: bool = False,
         **kwargs,
     ) -> ReceiptAPI:
@@ -273,9 +273,9 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
               and using a provider that does not support private transactions.
 
         Args:
-            account (Union[str, AddressType, BaseAddress]): The receiver of the funds.
-            value (Optional[Union[str, int]]): The amount to send.
-            data (Optional[Union[bytes, str]]): Extra data to include in the transaction.
+            account (str | AddressType | BaseAddress): The receiver of the funds.
+            value (str | int | None): The amount to send.
+            data (bytes | str | None): Extra data to include in the transaction.
             private (bool): ``True`` asks the provider to make the transaction
               private. For example, EVM providers typically use the RPC
               ``eth_sendPrivateTransaction`` to achieve this. Local providers may ignore
@@ -412,8 +412,8 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
 
     def check_signature(
         self,
-        data: Union[SignableMessage, TransactionAPI, str, EIP712Message, int, bytes],
-        signature: Optional[MessageSignature] = None,  # TransactionAPI doesn't need it
+        data: SignableMessage | TransactionAPI | str | EIP712Message | int | bytes,
+        signature: MessageSignature | None = None,  # TransactionAPI doesn't need it
         recover_using_eip191: bool = True,
     ) -> bool:
         """
@@ -422,7 +422,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         Args:
             data (Union[:class:`~ape.types.signatures.SignableMessage`, :class:`~ape.api.transactions.TransactionAPI`]):  # noqa: E501
               The message or transaction to verify.
-            signature (Optional[:class:`~ape.types.signatures.MessageSignature`]):
+            signature (MessageSignature | None):
               The signature to check. Defaults to ``None`` and is not needed when the first
               argument is a transaction class.
             recover_using_eip191 (bool):
@@ -459,7 +459,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         else:
             raise AccountsError(f"Unsupported message type: {type(data)}.")
 
-    def get_deployment_address(self, nonce: Optional[int] = None) -> AddressType:
+    def get_deployment_address(self, nonce: int | None = None) -> AddressType:
         """
         Get a contract address before it is deployed. This is useful
         when you need to pass the contract address to another contract
@@ -481,7 +481,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         nonce = self.nonce if nonce is None else nonce
         return ecosystem.get_deployment_address(self.address, nonce)
 
-    def set_delegate(self, contract: Union[BaseAddress, AddressType, str], **txn_kwargs):
+    def set_delegate(self, contract: BaseAddress | AddressType | str, **txn_kwargs):
         """
         Have the account class override the value of its ``delegate``. For plugins that support
         this feature, the way they choose to handle it can vary. For example, it could be a call to
@@ -526,9 +526,9 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
     @contextmanager
     def delegate_to(
         self,
-        new_delegate: Union[BaseAddress, AddressType, str],
-        set_txn_kwargs: Optional[dict] = None,
-        reset_txn_kwargs: Optional[dict] = None,
+        new_delegate: BaseAddress | AddressType | str,
+        set_txn_kwargs: dict | None = None,
+        reset_txn_kwargs: dict | None = None,
         **txn_kwargs,
     ) -> Iterator[BaseAddress]:
         """
@@ -799,7 +799,7 @@ class TestAccountContainerAPI(AccountContainerAPI):
         """
 
     @abstractmethod
-    def generate_account(self, index: Optional[int] = None) -> "TestAccountAPI":
+    def generate_account(self, index: int | None = None) -> "TestAccountAPI":
         """
         Generate a new test account.
         """
@@ -832,10 +832,10 @@ class ImpersonatedAccount(AccountAPI):
     def address(self) -> AddressType:
         return self.raw_address
 
-    def sign_message(self, msg: Any, **signer_options) -> Optional[MessageSignature]:
+    def sign_message(self, msg: Any, **signer_options) -> MessageSignature | None:
         raise APINotImplementedError("This account cannot sign messages")
 
-    def sign_transaction(self, txn: TransactionAPI, **signer_options) -> Optional[TransactionAPI]:
+    def sign_transaction(self, txn: TransactionAPI, **signer_options) -> TransactionAPI | None:
         # Returns input transaction unsigned (since it doesn't have access to the key)
         return txn
 

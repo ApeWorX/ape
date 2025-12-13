@@ -1,7 +1,7 @@
 import sys
 from collections.abc import Iterable
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from ape.utils._github import _GithubClient, github_client
 
@@ -255,7 +255,7 @@ class FoundryProject(ProjectAPI):
         data: dict,
         dependencies: list[dict],
         lib_paths: Iterable[str],
-        contracts_folder: Optional[str] = None,
+        contracts_folder: str | None = None,
     ) -> dict:
         sol_cfg: dict = {}
 
@@ -288,7 +288,7 @@ class FoundryProject(ProjectAPI):
         foundry_remappings: list[str],
         dependencies: list[dict],
         lib_paths: Iterable[str],
-        contracts_folder: Optional[str] = None,
+        contracts_folder: str | None = None,
     ) -> list[str]:
         ape_sol_remappings: set[str] = set()
 

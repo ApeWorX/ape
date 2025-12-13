@@ -1,6 +1,6 @@
 from collections.abc import Iterator
 from functools import cached_property
-from typing import Optional, cast
+from typing import cast
 
 from ape.api.accounts import TestAccountAPI, TestAccountContainerAPI
 from ape.exceptions import ProviderNotConnectedError
@@ -59,7 +59,7 @@ class TestAccountContainer(TestAccountContainerAPI):
         except (NotImplementedError, ProviderNotConnectedError):
             return self.generate_account(index=index)
 
-    def generate_account(self, index: Optional[int] = None) -> "TestAccountAPI":
+    def generate_account(self, index: int | None = None) -> "TestAccountAPI":
         new_index = (
             self.number_of_accounts + len(self.generated_accounts) if index is None else index
         )

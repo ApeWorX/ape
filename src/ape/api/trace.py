@@ -1,7 +1,7 @@
 import sys
 from abc import abstractmethod
 from collections.abc import Iterator, Sequence
-from typing import IO, TYPE_CHECKING, Any, Optional
+from typing import IO, TYPE_CHECKING, Any
 
 from ape.utils.basemodel import BaseInterfaceModel
 
@@ -23,7 +23,7 @@ class TraceAPI(BaseInterfaceModel):
 
     @abstractmethod
     def get_gas_report(
-        self, exclude: Optional[Sequence["ContractFunctionPath"]] = None
+        self, exclude: Sequence["ContractFunctionPath"] | None = None
     ) -> "GasReport":
         """
         Get the gas report.
@@ -44,7 +44,7 @@ class TraceAPI(BaseInterfaceModel):
 
     @property
     @abstractmethod
-    def revert_message(self) -> Optional[str]:
+    def revert_message(self) -> str | None:
         """
         The revert message deduced from the trace.
         """

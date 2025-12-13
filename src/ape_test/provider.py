@@ -4,7 +4,7 @@ from collections.abc import Iterator
 from functools import cached_property
 from pathlib import Path
 from re import Pattern
-from typing import TYPE_CHECKING, Any, Optional, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from eth.exceptions import HeaderNotFound
 from eth_pydantic_types import HexBytes
@@ -112,8 +112,8 @@ class ApeTester(EthereumTesterProvider):
     def __init__(self, config: "ApeTestConfig", chain_id: int):
         self.config = config
         self.chain_id = chain_id
-        self._backend: Optional[ApeEVMBackend] = None
-        self._ethereum_tester: Optional[EthereumTester] = None
+        self._backend: ApeEVMBackend | None = None
+        self._ethereum_tester: EthereumTester | None = None
 
     @property
     def ethereum_tester(self) -> EthereumTester:
@@ -159,7 +159,7 @@ class ApeTester(EthereumTesterProvider):
 
 
 class LocalProvider(TestProviderAPI, Web3Provider):
-    _evm_backend: Optional[PyEVMBackend] = None
+    _evm_backend: PyEVMBackend | None = None
     _CANNOT_AFFORD_GAS_PATTERN: Pattern = re.compile(
         r"Sender b'[\\*|\w]*' cannot afford txn gas (\d+) with account balance (\d+)"
     )
@@ -197,15 +197,15 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         return self.evm_backend.get_block_by_number("latest")["gas_limit"]
 
     @property
-    def http_uri(self) -> Optional[str]:
+    def http_uri(self) -> str | None:
         return None
 
     @property
-    def ws_uri(self) -> Optional[str]:
+    def ws_uri(self) -> str | None:
         return None
 
     @property
-    def ipc_path(self) -> Optional[Path]:
+    def ipc_path(self) -> Path | None:
         return None
 
     def connect(self):
@@ -230,7 +230,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         self.connect()
 
     def estimate_gas_cost(
-        self, txn: "TransactionAPI", block_id: Optional["BlockID"] = None, **kwargs
+        self, txn: "TransactionAPI", block_id: "BlockID | None" = None, **kwargs
     ) -> int:
         if isinstance(self.network.gas_limit, int):
             return self.network.gas_limit
@@ -311,8 +311,8 @@ class LocalProvider(TestProviderAPI, Web3Provider):
     def send_call(
         self,
         txn: "TransactionAPI",
-        block_id: Optional["BlockID"] = None,
-        state: Optional[dict] = None,
+        block_id: "BlockID | None" = None,
+        state: dict | None = None,
         **kwargs,
     ) -> HexBytes:
         # NOTE: Using JSON mode since used as request data.
@@ -472,13 +472,13 @@ class LocalProvider(TestProviderAPI, Web3Provider):
     def mine(self, num_blocks: int = 1):
         self.evm_backend.mine_blocks(num_blocks)
 
-    def get_balance(self, address: AddressType, block_id: Optional["BlockID"] = None) -> int:
+    def get_balance(self, address: AddressType, block_id: "BlockID | None" = None) -> int:
         # perf: Using evm_backend directly instead of going through web3.
         return self.evm_backend.get_balance(
             HexBytes(address), block_number="latest" if block_id is None else block_id
         )
 
-    def get_nonce(self, address: AddressType, block_id: Optional["BlockID"] = None) -> int:
+    def get_nonce(self, address: AddressType, block_id: "BlockID | None" = None) -> int:
         return self.evm_backend.get_nonce(
             HexBytes(address), block_number="latest" if block_id is None else block_id
         )
