@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Annotated, Any
+from typing import TYPE_CHECKING, Annotated, Any, TypeAlias
 
 from eth_pydantic_types import Address as _Address
 from eth_pydantic_types import HexBytes20, HexStr20
@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from pydantic_core.core_schema import ValidationInfo
 
 
-RawAddress = str | int | HexStr20 | HexBytes20
+RawAddress: TypeAlias = str | int | HexStr20 | HexBytes20
 """
 A raw data-type representation of an address.
 """

@@ -8,7 +8,7 @@ from functools import cached_property
 from inspect import getframeinfo, stack
 from pathlib import Path
 from types import CodeType, TracebackType
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Any, Callable, TypeAlias
 
 import click
 from rich import print as rich_print
@@ -29,8 +29,17 @@ if TYPE_CHECKING:
     from ape.types.trace import SourceTraceback
     from ape.types.vm import BlockID, SnapshotID
 
+    # NOTE: These are used in type annotations throughout this module and also imported
+    # by other modules (e.g. providers). We define them as real type aliases for mypy.
+    FailedTxn: TypeAlias = TransactionAPI | ReceiptAPI
+    _TRACE_ARG: TypeAlias = TraceAPI | Callable[[], TraceAPI | None] | None
+    _SOURCE_TRACEBACK_ARG: TypeAlias = SourceTraceback | Callable[[], SourceTraceback | None] | None
 
-FailedTxn = "TransactionAPI | ReceiptAPI"
+else:
+    # Runtime fallbacks to avoid import cycles / heavy imports at module import time.
+    FailedTxn = Any
+    _TRACE_ARG = Any
+    _SOURCE_TRACEBACK_ARG = Any
 
 
 class ApeException(Exception):
@@ -169,12 +178,6 @@ class MethodNonPayableError(ContractDataError):
     """
 
 
-_TRACE_ARG = "TraceAPI | Callable[[], TraceAPI | None] | None"
-_SOURCE_TRACEBACK_ARG = (
-    "SourceTraceback | Callable[[], SourceTraceback | None] | None"
-)
-
-
 class TransactionError(ApeException):
     """
     Raised when issues occur related to transactions.
@@ -187,10 +190,10 @@ class TransactionError(ApeException):
         message: str | None = None,
         base_err: Exception | None = None,
         code: int | None = None,
-        txn: "FailedTxn | None" = None,
-        trace: "_TRACE_ARG" = None,
+        txn: FailedTxn | None = None,
+        trace: _TRACE_ARG = None,
         contract_address: "AddressType | None" = None,
-        source_traceback: "_SOURCE_TRACEBACK_ARG" = None,
+        source_traceback: _SOURCE_TRACEBACK_ARG = None,
         project: "ProjectManager | None" = None,
         set_ape_traceback: bool = False,  # Overridden in ContractLogicError
     ):
@@ -301,10 +304,10 @@ class ContractLogicError(VirtualMachineError):
     def __init__(
         self,
         revert_message: str | None = None,
-        txn: "FailedTxn | None" = None,
-        trace: "_TRACE_ARG" = None,
+        txn: FailedTxn | None = None,
+        trace: _TRACE_ARG = None,
         contract_address: "AddressType | None" = None,
-        source_traceback: "_SOURCE_TRACEBACK_ARG" = None,
+        source_traceback: _SOURCE_TRACEBACK_ARG = None,
         base_err: Exception | None = None,
         project: "ProjectManager | None" = None,
         set_ape_traceback: bool = True,  # Overridden default.
@@ -369,7 +372,7 @@ class OutOfGasError(VirtualMachineError):
     def __init__(
         self,
         code: int | None = None,
-        txn: "FailedTxn | None" = None,
+        txn: FailedTxn | None = None,
         base_err: Exception | None = None,
         set_ape_traceback: bool = False,
     ):
@@ -881,11 +884,11 @@ class CustomError(ContractLogicError):
         self,
         abi: "ErrorABI",
         inputs: dict[str, Any],
-        txn: "FailedTxn | None" = None,
-        trace: "_TRACE_ARG" = None,
+        txn: FailedTxn | None = None,
+        trace: _TRACE_ARG = None,
         contract_address: "AddressType | None" = None,
         base_err: Exception | None = None,
-        source_traceback: "_SOURCE_TRACEBACK_ARG" = None,
+        source_traceback: _SOURCE_TRACEBACK_ARG = None,
     ):
         self.abi = abi
         self.inputs = inputs
@@ -918,7 +921,7 @@ class CustomError(ContractLogicError):
         return f"{name}({calldata})"
 
 
-def _get_ape_traceback_from_tx(txn: "FailedTxn") -> "SourceTraceback | None":
+def _get_ape_traceback_from_tx(txn: FailedTxn) -> "SourceTraceback | None":
     from ape.api.transactions import ReceiptAPI
 
     try:

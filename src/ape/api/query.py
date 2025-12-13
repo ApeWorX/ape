@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from collections.abc import Iterator, Sequence
 from functools import cache, cached_property
-from typing import Any
+from typing import TYPE_CHECKING, Any, TypeAlias
 
 from ethpm_types.abi import EventABI, MethodABI
 from pydantic import NonNegativeInt, PositiveInt, model_validator
@@ -10,10 +10,6 @@ from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.logging import logger
 from ape.types.address import AddressType
 from ape.utils.basemodel import BaseInterface, BaseInterfaceModel, BaseModel
-
-QueryType = (
-    "BlockQuery | BlockTransactionQuery | AccountTransactionQuery | ContractCreationQuery | ContractEventQuery | ContractMethodQuery"
-)
 
 
 @cache
@@ -243,6 +239,20 @@ class ContractMethodQuery(_BaseBlockQuery):
     contract: AddressType
     method: MethodABI
     method_args: dict[str, Any]
+
+
+if TYPE_CHECKING:
+    QueryType: TypeAlias = (
+        BlockQuery
+        | BlockTransactionQuery
+        | AccountTransactionQuery
+        | ContractCreationQuery
+        | ContractEventQuery
+        | ContractMethodQuery
+    )
+else:
+    # Runtime fallback (mostly used only for type annotations).
+    QueryType = Any
 
 
 class QueryAPI(BaseInterface):
