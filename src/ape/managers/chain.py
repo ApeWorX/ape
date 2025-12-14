@@ -668,9 +668,7 @@ class ReportManager(BaseManager):
 
         self.echo(*tables, file=file)
 
-    def echo(
-        self, *rich_items, file: IO[str] | None = None, console: "RichConsole | None" = None
-    ):
+    def echo(self, *rich_items, file: IO[str] | None = None, console: "RichConsole | None" = None):
         console = console or get_rich_console(file)
         console.print(*rich_items)
 
@@ -994,9 +992,7 @@ class ChainManager(BaseManager):
 
         return receipt
 
-    def get_code(
-        self, address: AddressType, block_id: "BlockID | None" = None
-    ) -> "ContractCode":
+    def get_code(self, address: AddressType, block_id: "BlockID | None" = None) -> "ContractCode":
         network = self.provider.network
 
         # Two reasons to avoid caching:

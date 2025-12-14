@@ -751,9 +751,7 @@ class ReceiptCapture(ManagerAccessMixin):
     def _get_block_number(self) -> int | None:
         return self.provider.get_block("latest").number
 
-    def _exclude_from_gas_report(
-        self, contract_name: str, method_name: str | None = None
-    ) -> bool:
+    def _exclude_from_gas_report(self, contract_name: str, method_name: str | None = None) -> bool:
         """
         Helper method to determine if a certain contract / method combination should be
         excluded from the gas report.

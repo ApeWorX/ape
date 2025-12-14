@@ -396,9 +396,7 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @abstractmethod
-    def get_code(
-        self, address: "AddressType", block_id: "BlockID | None" = None
-    ) -> "ContractCode":
+    def get_code(self, address: "AddressType", block_id: "BlockID | None" = None) -> "ContractCode":
         """
         Get the bytes a contract.
 

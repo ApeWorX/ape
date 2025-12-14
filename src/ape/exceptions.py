@@ -788,9 +788,7 @@ class PluginVersionError(PluginInstallError):
     An error related to specified plugin version.
     """
 
-    def __init__(
-        self, operation: str, reason: str | None = None, resolution: str | None = None
-    ):
+    def __init__(self, operation: str, reason: str | None = None, resolution: str | None = None):
         message = f"Unable to {operation} plugin."
         if reason:
             message = f"{message}\nReason: {reason}"

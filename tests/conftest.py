@@ -468,9 +468,7 @@ class SubprocessRunner:
     modify installed plugins.
     """
 
-    def __init__(
-        self, root_cmd: Sequence[str] | None = None, data_folder: Path | None = None
-    ):
+    def __init__(self, root_cmd: Sequence[str] | None = None, data_folder: Path | None = None):
         self.root_cmd = root_cmd or []
         self.data_folder = data_folder
 

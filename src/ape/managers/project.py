@@ -1414,9 +1414,7 @@ class DependencyManager(BaseManager):
         """
         return {dep.name: Url(dep.api.uri) for dep in self.specified}
 
-    def get(
-        self, name: str, version: str, allow_install: bool = True
-    ) -> "ProjectManager | None":
+    def get(self, name: str, version: str, allow_install: bool = True) -> "ProjectManager | None":
         if dependency := self._get(name, version, allow_install=allow_install, checked=set()):
             return dependency.project
 

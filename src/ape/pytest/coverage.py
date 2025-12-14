@@ -27,9 +27,7 @@ class CoverageData(ManagerAccessMixin):
         sources: Iterable["ContractSource"] | Callable[[], Iterable["ContractSource"]],
     ):
         self.project = project
-        self._sources: Iterable[ContractSource] | Callable[[], Iterable[ContractSource]] = (
-            sources
-        )
+        self._sources: Iterable[ContractSource] | Callable[[], Iterable[ContractSource]] = sources
         self._report: CoverageReport | None = None
 
     @property

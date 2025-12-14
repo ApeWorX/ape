@@ -454,9 +454,7 @@ class LogInputABICollection:
     def event_name(self):
         return self.abi.name
 
-    def decode(
-        self, topics: list[str], data: str | bytes, use_hex_on_fail: bool = False
-    ) -> dict:
+    def decode(self, topics: list[str], data: str | bytes, use_hex_on_fail: bool = False) -> dict:
         decoded = {}
         for abi, topic_value in zip(self.topic_abi_types, topics[1:], strict=True):
             # reference types as indexed arguments are written as a hash

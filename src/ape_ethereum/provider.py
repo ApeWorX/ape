@@ -652,9 +652,7 @@ class Web3Provider(ProviderAPI, ABC):
     def get_balance(self, address: "AddressType", block_id: "BlockID | None" = None) -> int:
         return self.web3.eth.get_balance(address, block_identifier=block_id)
 
-    def get_code(
-        self, address: "AddressType", block_id: "BlockID | None" = None
-    ) -> "ContractCode":
+    def get_code(self, address: "AddressType", block_id: "BlockID | None" = None) -> "ContractCode":
         return self.web3.eth.get_code(address, block_identifier=block_id)
 
     def get_storage(

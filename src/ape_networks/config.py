@@ -1,4 +1,3 @@
-
 from pydantic_settings import SettingsConfigDict
 
 from ape.api.config import PluginConfig

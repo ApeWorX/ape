@@ -126,9 +126,7 @@ class ApeSigner(AccountAPI):
 
         return None
 
-    def sign_transaction(
-        self, txn: "TransactionAPI", **signer_options
-    ) -> "TransactionAPI | None":
+    def sign_transaction(self, txn: "TransactionAPI", **signer_options) -> "TransactionAPI | None":
         # Signs any transaction that's given to it.
         # NOTE: Using JSON mode, as only primitive types can be signed.
         tx_data = txn.model_dump(mode="json", by_alias=True, exclude={"sender"})
@@ -336,9 +334,7 @@ class KeyfileAccount(AccountAPI):
 
         return None
 
-    def sign_transaction(
-        self, txn: "TransactionAPI", **signer_options
-    ) -> "TransactionAPI | None":
+    def sign_transaction(self, txn: "TransactionAPI", **signer_options) -> "TransactionAPI | None":
         if not (self.__autosign or click.confirm(f"{txn}\n\nSign: ")):
             return None
 

@@ -124,9 +124,7 @@ class PromptChoice(click.ParamType):
         if did_print:
             click.echo()
 
-    def convert(
-        self, value: Any, param: Parameter | None, ctx: Context | None
-    ) -> Any | None:
+    def convert(self, value: Any, param: Parameter | None, ctx: Context | None) -> Any | None:
         # noinspection PyBroadException
         try:
             choice_index = int(value)

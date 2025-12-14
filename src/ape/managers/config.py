@@ -118,9 +118,7 @@ class ConfigManager(ExtraAttributesMixin, BaseManager):
         return ApeConfig.from_manifest(manifest, **overrides)
 
     @contextmanager
-    def isolate_data_folder(
-        self, keep: Iterable[str] | str | None = None
-    ) -> Iterator[Path]:
+    def isolate_data_folder(self, keep: Iterable[str] | str | None = None) -> Iterator[Path]:
         """
         Change Ape's DATA_FOLDER to point a temporary path,
         in a context, for testing purposes. Any data

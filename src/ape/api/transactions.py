@@ -471,9 +471,7 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
     @abstractmethod
     def decode_logs(
         self,
-        abi: (
-            "list[EventABI | ContractEvent] | EventABI | ContractEvent | None"
-        ) = None,
+        abi: ("list[EventABI | ContractEvent] | EventABI | ContractEvent | None") = None,
     ) -> "ContractLogContainer":
         """
         Decode the logs on the receipt.

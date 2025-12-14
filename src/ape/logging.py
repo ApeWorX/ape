@@ -97,9 +97,7 @@ class ApeColorFormatter(logging.Formatter):
 
 
 class ClickHandler(logging.Handler):
-    def __init__(
-        self, echo_kwargs: dict, handlers: Sequence[Callable[[str], str]] | None = None
-    ):
+    def __init__(self, echo_kwargs: dict, handlers: Sequence[Callable[[str], str]] | None = None):
         super().__init__()
         self.echo_kwargs = echo_kwargs
         self.handlers = handlers or []

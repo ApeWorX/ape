@@ -197,7 +197,7 @@ class ForkedNetworkConfig(NetworkConfig):
 
 
 def create_local_network_config(
-        default_provider: str | None = None, use_fork: bool = False, **kwargs
+    default_provider: str | None = None, use_fork: bool = False, **kwargs
 ):
     if "gas_limit" not in kwargs:
         kwargs["gas_limit"] = "max"
@@ -703,7 +703,8 @@ class Ethereum(EcosystemAPI):
             raise DecodingError(str(err)) from err
 
         input_values = [
-            self.decode_primitive_value(v, t) for v, t in zip(raw_input_values, input_types, strict=True)
+            self.decode_primitive_value(v, t)
+            for v, t in zip(raw_input_values, input_types, strict=True)
         ]
         arguments = {}
         index = 0
@@ -734,7 +735,8 @@ class Ethereum(EcosystemAPI):
 
         output_types = [parse_type(o.model_dump()) for o in abi.outputs]
         output_values = [
-            self.decode_primitive_value(v, t) for v, t in zip(vm_return_values, output_types, strict=True)
+            self.decode_primitive_value(v, t)
+            for v, t in zip(vm_return_values, output_types, strict=True)
         ]
         parser = StructParser(abi)
         output_values = parser.decode_output(output_values)
