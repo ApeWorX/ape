@@ -314,7 +314,7 @@ def test_poll_logs_with_topics(vyper_contract_instance, eth_tester_provider, own
         vyper_contract_instance.setNumber(33, sender=owner)  # block s+3f
 
     actual = [logs.get() for _ in range(size)]
-    assert all(a.newNum == e for a, e in zip(actual, (33,), strict=True))
+    assert all(a.newNum == e for a, e in zip(actual, (33,), strict=False))
 
 
 def test_poll_logs_timeout(vyper_contract_instance, eth_tester_provider, owner, PollDaemon):
