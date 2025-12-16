@@ -19,7 +19,7 @@ github = "OpenZeppelin/openzeppelin-contracts"
 show_internal = true
 
 [tool.mypy]
-exclude = ["build/", "dist/", "docs/", "tests/integration/cli/projects/"]
+exclude = ["build/", "dist/", "docs/", "tests/integration/cli/projects/", "venv/", ".venv/"]
 check_untyped_defs = true
 plugins = ["pydantic.mypy"]
 
