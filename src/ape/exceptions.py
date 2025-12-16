@@ -8,7 +8,7 @@ from functools import cached_property
 from inspect import getframeinfo, stack
 from pathlib import Path
 from types import CodeType, TracebackType
-from typing import TYPE_CHECKING, Any, TypeAlias
+from typing import TYPE_CHECKING, Any, Optional, TypeAlias, Union
 
 import click
 from rich import print as rich_print
@@ -29,17 +29,17 @@ if TYPE_CHECKING:
     from ape.types.trace import SourceTraceback
     from ape.types.vm import BlockID, SnapshotID
 
-    # NOTE: These are used in type annotations throughout this module and also imported
-    # by other modules (e.g. providers). We define them as real type aliases for mypy.
-    FailedTxn: TypeAlias = TransactionAPI | ReceiptAPI
-    _TRACE_ARG: TypeAlias = TraceAPI | Callable[[], TraceAPI | None] | None
-    _SOURCE_TRACEBACK_ARG: TypeAlias = SourceTraceback | Callable[[], SourceTraceback | None] | None
 
-else:
-    # Runtime fallbacks to avoid import cycles / heavy imports at module import time.
-    FailedTxn = Any
-    _TRACE_ARG = Any
-    _SOURCE_TRACEBACK_ARG = Any
+# NOTE: These are used in type annotations throughout this module and are also imported
+# by `ape_ethereum.provider`. Keep them available at runtime while avoiding import cycles
+# by using forward references.
+FailedTxn: TypeAlias = Union["TransactionAPI", "ReceiptAPI"]
+_TRACE_ARG: TypeAlias = Union["TraceAPI", Callable[[], Optional["TraceAPI"]], None]
+_SOURCE_TRACEBACK_ARG: TypeAlias = Union[
+    "SourceTraceback",
+    Callable[[], Optional["SourceTraceback"]],
+    None,
+]
 
 
 class ApeException(Exception):
