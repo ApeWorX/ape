@@ -475,7 +475,7 @@ class LogInputABICollection:
 
             else:
                 # The data was formatted correctly and we were able to decode logs.
-                result = self.decode_value(abi_type, value)
+                result = self.decode_value(abi, value, abi_type_override=abi_type)
                 decoded[abi.name] = result
 
         data_abi_types = [abi.canonical_type for abi in self.data_abi_types]
@@ -509,27 +509,39 @@ class LogInputABICollection:
                 )
                 logger.warn_from_exception(err, warning_message)
                 for abi, value in zip(self.data_abi_types, data_values, strict=True):
-                    decoded[abi.name] = self.decode_value(abi.canonical_type, value)
+                    decoded[abi.name] = self.decode_value(abi, value)
 
         else:
             # The data was formatted correctly and we were able to decode logs.
             for abi, value in zip(self.data_abi_types, data_values, strict=True):
-                decoded[abi.name] = self.decode_value(abi.canonical_type, value)
+                decoded[abi.name] = self.decode_value(abi, value)
 
         return decoded
 
-    def decode_value(self, abi_type: str, value: Any) -> Any:
+    def decode_value(
+        self, abi: EventABIType, value: Any, abi_type_override: str | None = None
+    ) -> Any:
+        abi_type = abi_type_override or abi.canonical_type
         if abi_type == "bytes32":
             return HexBytes(value)
 
         elif isinstance(value, (list, tuple)) and is_array(abi_type):
             sub_type = "[".join(abi_type.split("[")[:-1])
-            return [self.decode_value(sub_type, v) for v in value]
+            if sub_type == "bytes32":
+                return [HexBytes(v) for v in value]
+
+            # NOTE: Address arrays and other primitive conversions are handled
+            # later by the ecosystem in `decode_logs()`.
+            return list(value)
 
         elif isinstance(value, (list, tuple)):
-            parser = StructParser(self.abi)
-            result = parser.decode_input([value])
-            return result[0] if len(result) == 1 else result
+            # Tuples in event logs are ABI tuples. For consistency with historical behavior,
+            # return a list where any bytes-like items are promoted to HexBytes.
+            if "tuple" in str(abi.type):
+                return [HexBytes(v) if isinstance(v, (bytes, bytearray)) else v for v in value]
+
+            # Fallback: keep the raw value.
+            return value
 
         # NOTE: All the rest of the types are handled by the
         #  ecosystem API through the calling function.

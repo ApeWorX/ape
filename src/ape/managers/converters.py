@@ -3,6 +3,7 @@ from collections.abc import Iterable, Sequence
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from functools import cached_property
+from itertools import islice
 from types import UnionType
 from typing import TYPE_CHECKING, Any, Union, get_args, get_origin
 
@@ -339,8 +340,14 @@ class ConversionManager(BaseManager):
 
         if isinstance(value, (list, tuple)) and isinstance(to_type, tuple):
             # We expected to convert a tuple type, so convert each item in the tuple.
-            # NOTE: We allow values to be a list, just in case it is a list
-            return [self.convert(v, t) for v, t in zip(value, to_type, strict=True)]
+            #
+            # NOTE: Some callers provide *extra* items (e.g. struct-like tuples /
+            # namedtuples with additional fields). Extra values should be ignored,
+            # similar to how we ignore extra keys in dict-based struct inputs.
+            #
+            # However, providing *too few* items should still fail fast.
+            trimmed_values = list(islice(value, len(to_type)))
+            return [self.convert(v, t) for v, t in zip(trimmed_values, to_type, strict=True)]
 
         elif isinstance(value, (list, tuple)) and isinstance(to_type, list) and len(to_type) == 1:
             # We expected to convert an array type(dynamic or static),
