@@ -32,7 +32,7 @@ from ape.exceptions import (
 )
 from ape.logging import get_rich_console, logger
 from ape.types.events import ContractLog, LogFilter, MockContractLog
-from ape.utils.abi import StructParser, _enrich_natspec, encode_topics
+from ape.utils.abi import StructParser, _enrich_natspec, encode_topics, is_array
 from ape.utils.basemodel import (
     BaseInterfaceModel,
     ExtraAttributesMixin,
@@ -611,8 +611,17 @@ class ContractEvent(BaseInterfaceModel):
         Returns:
             :class:`~ape.types.events.MockContractLog`
         """
-        # Create a dictionary from the positional arguments
-        event_args: dict[Any, Any] = dict(zip((ipt.name for ipt in self.abi.inputs), args, strict=True))
+        # Create a dictionary from the positional arguments.
+        #
+        # NOTE: We intentionally allow providing only a subset of positional args
+        # (tests and user code often construct partial mock logs).
+        #
+        # However, we still want to fail fast if *too many* positional args are
+        # provided. Using zip(strict=True) with an inputs iterator limited to
+        # len(args) keeps the "too many args" safety without breaking the
+        # "partial args" use-case.
+        input_names = (ipt.name for ipt in islice(self.abi.inputs, len(args)))
+        event_args: dict[Any, Any] = dict(zip(input_names, args, strict=True))
         if overlapping_keys := set(event_args).intersection(kwargs):
             raise ValueError(
                 f"Overlapping keys found in arguments: '{', '.join(overlapping_keys)}'."
@@ -649,12 +658,36 @@ class ContractEvent(BaseInterfaceModel):
             input_abi = next(ipt for ipt in self.abi.inputs if ipt.name == key)
             py_type = ecosystem.get_python_types(input_abi)
             if isinstance(value, dict):
-                ls_values = list(value.values())
-                converted_values = self.conversion_manager.convert(ls_values, py_type)
-                converted_args[key] = parser.decode_input([converted_values])
+                if "tuple" in str(input_abi.type) and input_abi.components:
+                    # Preserve struct component order and ignore extra keys.
+                    ls_values = [value.get(c.name) for c in input_abi.components if c.name]
+                    converted_values = self.conversion_manager.convert(ls_values, py_type)
+
+                    # NOTE: eth-abi returns tuple-addresses as lower-case strings.
+                    # Match that behavior so mock logs compare equal with decoded logs.
+                    for i, comp in enumerate(input_abi.components):
+                        if (
+                            comp.canonical_type == "address"
+                            and i < len(converted_values)
+                            and isinstance(converted_values[i], str)
+                        ):
+                            converted_values[i] = converted_values[i].lower()
+
+                    converted_args[key] = parser.decode_input([converted_values])
+
+                else:
+                    ls_values = list(value.values())
+                    converted_values = self.conversion_manager.convert(ls_values, py_type)
+                    converted_args[key] = parser.decode_input([converted_values])
 
             elif isinstance(value, (list, tuple)):
-                converted_args[key] = parser.decode_input(value)
+                # Arrays are represented as lists/tuples in Python.
+                # Don't pass them through StructParser (which is for tuples/structs).
+                converted_args[key] = (
+                    self.conversion_manager.convert(value, py_type)
+                    if is_array(input_abi.type)
+                    else parser.decode_input(value)
+                )
 
             else:
                 converted_args[key] = self.conversion_manager.convert(value, py_type)
@@ -749,8 +782,8 @@ class ContractEvent(BaseInterfaceModel):
               desired log set. Defaults to delegating to provider.
             search_topics (dict | None): Search topics, such as indexed event inputs,
               to query by. Defaults to getting all events.
-            extra_addresses (list | None): Additional contract addresses containing the same event type. Defaults to
-              only looking at the contract instance where this event is defined.
+            extra_addresses (list | None): Additional contract addresses containing the same event type.
+              Defaults to only looking at the contract instance where this event is defined.
 
         Returns:
             Iterator[:class:`~ape.contracts.base.ContractLog`]
