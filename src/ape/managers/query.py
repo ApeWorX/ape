@@ -3,7 +3,6 @@ import time
 from collections.abc import Iterator
 from functools import cached_property, singledispatchmethod
 from itertools import tee
-from typing import Optional
 
 from ape.api.query import (
     AccountTransactionQuery,
@@ -32,11 +31,11 @@ class DefaultQueryProvider(QueryAPI):
         self.supports_contract_creation = None
 
     @singledispatchmethod
-    def estimate_query(self, query: QueryType) -> Optional[int]:  # type: ignore
+    def estimate_query(self, query: QueryType) -> int | None:  # type: ignore
         return None  # can't handle this query
 
     @estimate_query.register
-    def estimate_block_query(self, query: BlockQuery) -> Optional[int]:
+    def estimate_block_query(self, query: BlockQuery) -> int | None:
         # NOTE: Very loose estimate of 100ms per block
         return (1 + query.stop_block - query.start_block) * 100
 
@@ -135,12 +134,12 @@ class QueryManager(ManagerAccessMixin):
     def query(
         self,
         query: QueryType,
-        engine_to_use: Optional[str] = None,
+        engine_to_use: str | None = None,
     ) -> Iterator[BaseInterfaceModel]:
         """
         Args:
             query (``QueryType``): The type of query to execute
-            engine_to_use (Optional[str]): Short-circuit selection logic using
+            engine_to_use (str | None): Short-circuit selection logic using
               a specific engine. Defaults is set by performance-based selection logic.
 
         Raises:

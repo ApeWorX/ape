@@ -2,7 +2,7 @@ import itertools
 from datetime import datetime
 from html.parser import HTMLParser
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 from xml.dom.minidom import getDOMImplementation
 from xml.etree.ElementTree import Element, SubElement, tostring
 
@@ -131,7 +131,7 @@ class CoverageStatement(BaseModel):
     type of check.
     """
 
-    location: Optional[SourceLocation] = None
+    location: SourceLocation | None = None
     """
     The location of the item (line, column, endline, endcolumn).
     If multiple PCs share an exact location, it is only tracked as one.
@@ -147,7 +147,7 @@ class CoverageStatement(BaseModel):
     The times this node was hit.
     """
 
-    tag: Optional[str] = None
+    tag: str | None = None
     """
     An additional tag to mark this statement with.
     This is useful if the location field is empty.
@@ -226,7 +226,7 @@ class FunctionCoverage(BaseModel):
         return attribs
 
     def profile_statement(
-        self, pc: int, location: Optional[SourceLocation] = None, tag: Optional[str] = None
+        self, pc: int, location: SourceLocation | None = None, tag: str | None = None
     ):
         """
         Initialize a statement in the coverage profile with a hit count starting at zero.
@@ -359,7 +359,7 @@ class ContractCoverage(BaseModel):
         self.functions.append(func_cov)
         return func_cov
 
-    def get_function(self, full_name: str) -> Optional[FunctionCoverage]:
+    def get_function(self, full_name: str) -> FunctionCoverage | None:
         for func in self.functions:
             if func.full_name == full_name:
                 return func
@@ -1014,7 +1014,7 @@ class CoverageReport(BaseModel):
 
         return attribs
 
-    def get_source_coverage(self, source_id: str) -> Optional[ContractSourceCoverage]:
+    def get_source_coverage(self, source_id: str) -> ContractSourceCoverage | None:
         for project in self.projects:
             for src in project.sources:
                 if src.source_id == source_id:

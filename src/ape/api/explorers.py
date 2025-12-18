@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from ape.api.networks import NetworkAPI
 from ape.utils.basemodel import BaseInterfaceModel
@@ -44,7 +44,7 @@ class ExplorerAPI(BaseInterfaceModel):
         """
 
     @abstractmethod
-    def get_contract_type(self, address: "AddressType") -> Optional["ContractType"]:
+    def get_contract_type(self, address: "AddressType") -> "ContractType | None":
         """
         Get the contract type for a given address if it has been published to this explorer.
 

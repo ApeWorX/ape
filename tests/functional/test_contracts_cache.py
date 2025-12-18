@@ -310,7 +310,9 @@ def test_get_multiple_deployments_live(
     assert len(contracts_list_0) == len(starting_contracts_list_0) + 3
     assert len(contracts_list_1) == len(starting_contracts_list_1) + 3
 
-    for ct_name, ls in zip(("ApeContract0", "ApeContract1"), (contracts_list_0, contracts_list_1)):
+    for ct_name, ls in zip(
+        ("ApeContract0", "ApeContract1"), (contracts_list_0, contracts_list_1), strict=True
+    ):
         initial_ct, final_ct = contract_type_map[ct_name]
         assert ls[len(ls) - 3].address == initial_ct.address
         assert ls[-1].address == final_ct.address

@@ -5,7 +5,7 @@ from collections import defaultdict, deque
 from collections.abc import Iterable, Iterator, Sequence
 from enum import Enum
 from functools import cached_property
-from typing import IO, TYPE_CHECKING, Any, Optional, Union
+from typing import IO, TYPE_CHECKING, Any
 
 from eth_pydantic_types import HexStr
 from eth_utils import is_0x_prefixed, to_hex
@@ -96,10 +96,10 @@ class Trace(TraceAPI):
     involved, Ape must use the ``.name`` as the identifier for all contracts.
     """
 
-    call_trace_approach: Optional[TraceApproach] = None
+    call_trace_approach: TraceApproach | None = None
     """When None, attempts to deduce."""
 
-    _enriched_calltree: Optional[dict] = None
+    _enriched_calltree: dict | None = None
 
     def __repr__(self) -> str:
         try:
@@ -182,7 +182,7 @@ class Trace(TraceAPI):
         yield from self.get_addresses_used()
 
     @cached_property
-    def root_contract_type(self) -> Optional["ContractType"]:
+    def root_contract_type(self) -> "ContractType | None":
         if address := self.transaction.get("to"):
             try:
                 return self.chain_manager.contracts.get(address)
@@ -192,7 +192,7 @@ class Trace(TraceAPI):
         return None
 
     @cached_property
-    def root_method_abi(self) -> Optional["MethodABI"]:
+    def root_method_abi(self) -> "MethodABI | None":
         method_id = self.transaction.get("data", b"")[:10]
         if ct := self.root_contract_type:
             try:
@@ -249,8 +249,8 @@ class Trace(TraceAPI):
         return self._get_return_value_from_calltree(calltree)
 
     def _get_return_value_from_calltree(
-        self, calltree: Union[dict, CallTreeNode]
-    ) -> tuple[Optional[Any], ...]:
+        self, calltree: dict | CallTreeNode
+    ) -> tuple[Any | None, ...]:
         num_outputs = 1
         if raw_return_data := (
             calltree.get("returndata") if isinstance(calltree, dict) else calltree.returndata
@@ -269,12 +269,12 @@ class Trace(TraceAPI):
         return tuple([None for _ in range(num_outputs)])
 
     @cached_property
-    def revert_message(self) -> Optional[str]:
+    def revert_message(self) -> str | None:
         call = self.enriched_calltree
         if not call.get("failed", False):
             return None
 
-        def try_get_revert_msg(c) -> Optional[str]:
+        def try_get_revert_msg(c) -> str | None:
             if msg := c.get("revert_message"):
                 return msg
 
@@ -294,7 +294,7 @@ class Trace(TraceAPI):
         return None
 
     @cached_property
-    def _last_frame(self) -> Optional[dict]:
+    def _last_frame(self) -> dict | None:
         try:
             frame = deque(self.raw_trace_frames, maxlen=1)
         except Exception as err:
@@ -304,7 +304,7 @@ class Trace(TraceAPI):
         return frame[0] if frame else None
 
     @cached_property
-    def _revert_str_from_trace_frames(self) -> Optional[HexBytes]:
+    def _revert_str_from_trace_frames(self) -> HexBytes | None:
         if frame := self._last_frame:
             memory = frame.get("memory", [])
             if ret := "".join([x[2:] for x in memory[4:]]):
@@ -313,7 +313,7 @@ class Trace(TraceAPI):
         return None
 
     @cached_property
-    def _return_data_from_trace_frames(self) -> Optional[HexBytes]:
+    def _return_data_from_trace_frames(self) -> HexBytes | None:
         if frame := self._last_frame:
             memory = frame["memory"]
             start_pos = int(frame["stack"][2], 16) // 32
@@ -368,13 +368,13 @@ class Trace(TraceAPI):
         console.print(root)
 
     def get_gas_report(
-        self, exclude: Optional[Sequence["ContractFunctionPath"]] = None
+        self, exclude: Sequence["ContractFunctionPath"] | None = None
     ) -> "GasReport":
         call = self.enriched_calltree
         return self._get_gas_report_from_call(call, exclude=exclude)
 
     def _get_gas_report_from_call(
-        self, call: dict, exclude: Optional[Sequence["ContractFunctionPath"]] = None
+        self, call: dict, exclude: Sequence["ContractFunctionPath"] | None = None
     ) -> "GasReport":
         tx = self.transaction
 
@@ -446,7 +446,7 @@ class Trace(TraceAPI):
     def _get_tree(self, verbose: bool = False) -> Tree:
         return parse_rich_tree(self.enriched_calltree, verbose=verbose)
 
-    def _get_abi(self, call: Union[dict, CallTreeNode]) -> Optional["MethodABI"]:
+    def _get_abi(self, call: dict | CallTreeNode) -> "MethodABI | None":
         if not (addr := call.get("address") if isinstance(call, dict) else call.address):
             return self.root_method_abi
         if not (calldata := call.get("calldata") if isinstance(call, dict) else call.calldata):
@@ -542,7 +542,7 @@ class TransactionTrace(Trace):
         reason_str = ", ".join(f"{k}={v}" for k, v in reason_map.items())
         raise ProviderError(f"Unable to create CallTreeNode. Reason(s): {reason_str}")
 
-    def _debug_trace_transaction(self, parameters: Optional[dict] = None) -> dict:
+    def _debug_trace_transaction(self, parameters: dict | None = None) -> dict:
         parameters = parameters or self.debug_trace_transaction_parameters
         return self.provider.make_request(
             "debug_traceTransaction", [self.transaction_hash, parameters]
@@ -603,7 +603,7 @@ class CallTrace(Trace):
     call_trace_approach: TraceApproach = TraceApproach.GETH_STRUCT_LOG_PARSE
     """debug_traceCall must use the struct-log tracer."""
 
-    supports_debug_trace_call: Optional[bool] = None
+    supports_debug_trace_call: bool | None = None
 
     @field_validator("tx", mode="before")
     @classmethod

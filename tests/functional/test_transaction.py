@@ -1,6 +1,5 @@
 import re
 import warnings
-from typing import Optional
 
 import pytest
 from eth_pydantic_types import HexBytes
@@ -470,7 +469,7 @@ def test_override_annotated_fields():
         def serialize_transaction(self) -> bytes:
             return b""
 
-        chain_id: Optional[int] = None  # The base type is `Optional[HexInt]`.
+        chain_id: int | None = None  # The base type is `Optional[HexInt]`.
 
     chain_id = 123123123123123123123123123123
     tx_type = 120

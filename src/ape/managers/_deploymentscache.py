@@ -1,6 +1,5 @@
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Optional
 
 from ape.managers.base import BaseManager
 from ape.types.address import AddressType
@@ -14,7 +13,7 @@ class Deployment(BaseModel):
     """
 
     address: AddressType
-    transaction_hash: Optional[str] = None
+    transaction_hash: str | None = None
 
     def __getitem__(self, key: str):
         # Mainly exists for backwards compat.
@@ -89,8 +88,8 @@ class DeploymentDiskCache(BaseManager):
     def get_deployments(
         self,
         contract_name: str,
-        ecosystem_key: Optional[str] = None,
-        network_key: Optional[str] = None,
+        ecosystem_key: str | None = None,
+        network_key: str | None = None,
     ) -> list[Deployment]:
         """
         Get the deployments of the given contract on the currently connected network.
@@ -121,9 +120,9 @@ class DeploymentDiskCache(BaseManager):
         self,
         address: AddressType,
         contract_name: str,
-        transaction_hash: Optional[str] = None,
-        ecosystem_key: Optional[str] = None,
-        network_key: Optional[str] = None,
+        transaction_hash: str | None = None,
+        ecosystem_key: str | None = None,
+        network_key: str | None = None,
     ):
         """
         Update the deployments cache with a new contract.
@@ -165,8 +164,8 @@ class DeploymentDiskCache(BaseManager):
         self,
         contract_name: str,
         deployments: list[Deployment],
-        ecosystem_key: Optional[str] = None,
-        network_key: Optional[str] = None,
+        ecosystem_key: str | None = None,
+        network_key: str | None = None,
     ):
         ecosystem_name = ecosystem_key or self.provider.network.ecosystem.name
         network_name = network_key or self.provider.network.name.replace("-fork", "")

@@ -1,7 +1,7 @@
 import sys
 from importlib import import_module
 from pathlib import Path
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 import click
 
@@ -113,7 +113,7 @@ def _list(cli_ctx, list_all):
             click.echo(row.strip())
 
 
-def _handle_package_path(path: Path, original_value: Optional[str] = None) -> dict:
+def _handle_package_path(path: Path, original_value: str | None = None) -> dict:
     if not path.exists():
         value = original_value or path.as_posix()
         raise click.BadArgumentUsage(f"Unknown package '{value}'.")

@@ -1,7 +1,7 @@
 from collections.abc import Iterator
 from functools import singledispatchmethod
 from pathlib import Path
-from typing import Any, Optional, cast
+from typing import Any, cast
 
 from sqlalchemy import create_engine, func
 from sqlalchemy.engine import CursorResult
@@ -124,7 +124,7 @@ class CacheQueryProvider(QueryAPI):
                 or if the database has not been initialized.
 
         Returns:
-            Optional[`sqlalchemy.engine.Connection`]
+            `sqlalchemy.engine.Connection` | None
         """
         if self.provider.network.is_local:
             return None
@@ -208,7 +208,7 @@ class CacheQueryProvider(QueryAPI):
         )
 
     @singledispatchmethod
-    def _compute_estimate(self, query: QueryType, result: CursorResult) -> Optional[int]:
+    def _compute_estimate(self, query: QueryType, result: CursorResult) -> int | None:
         """
         A singledispatchemethod that computes the time a query
         will take to perform from the caching database
@@ -221,7 +221,7 @@ class CacheQueryProvider(QueryAPI):
         self,
         query: BlockQuery,
         result: CursorResult,
-    ) -> Optional[int]:
+    ) -> int | None:
         if result.scalar() == (1 + query.stop_block - query.start_block) // query.step:
             # NOTE: Assume 200 msec to get data from database
             return 200
@@ -235,7 +235,7 @@ class CacheQueryProvider(QueryAPI):
         self,
         query: BlockTransactionQuery,
         result: CursorResult,
-    ) -> Optional[int]:
+    ) -> int | None:
         # TODO: Update `transactions` table schema so this query functions properly
         # Uncomment below after https://github.com/ApeWorX/ape/issues/994
         # if result.scalar() > 0:  # type: ignore
@@ -250,7 +250,7 @@ class CacheQueryProvider(QueryAPI):
         self,
         query: ContractEventQuery,
         result: CursorResult,
-    ) -> Optional[int]:
+    ) -> int | None:
         if result.scalar() == (query.stop_block - query.start_block) // query.step:
             # NOTE: Assume 200 msec to get data from database
             return 200
@@ -259,7 +259,7 @@ class CacheQueryProvider(QueryAPI):
         # TODO: Allow partial queries
         return None
 
-    def estimate_query(self, query: QueryType) -> Optional[int]:
+    def estimate_query(self, query: QueryType) -> int | None:
         """
         Method called by the client to return a query time estimate.
 
@@ -268,7 +268,7 @@ class CacheQueryProvider(QueryAPI):
                 check of the number of rows that match the clause.
 
         Returns:
-            Optional[int]
+            int | None
         """
 
         # NOTE: Because of Python shortcircuiting, the first time `database_connection` is missing
@@ -404,7 +404,7 @@ class CacheQueryProvider(QueryAPI):
     @singledispatchmethod
     def _get_cache_data(
         self, query: QueryType, result: Iterator[BaseInterfaceModel]
-    ) -> Optional[list[dict[str, Any]]]:
+    ) -> list[dict[str, Any]] | None:
         raise QueryEngineError(
             """
             Not a compatible QueryType. For more details see our docs
@@ -415,13 +415,13 @@ class CacheQueryProvider(QueryAPI):
     @_get_cache_data.register
     def _get_block_cache_data(
         self, query: BlockQuery, result: Iterator[BaseInterfaceModel]
-    ) -> Optional[list[dict[str, Any]]]:
+    ) -> list[dict[str, Any]] | None:
         return [m.model_dump(mode="json", by_alias=False) for m in result]
 
     @_get_cache_data.register
     def _get_block_txns_data(
         self, query: BlockTransactionQuery, result: Iterator[BaseInterfaceModel]
-    ) -> Optional[list[dict[str, Any]]]:
+    ) -> list[dict[str, Any]] | None:
         new_result = []
         table_columns = [c.key for c in Transactions.__table__.columns]  # type: ignore
         txns: list[TransactionAPI] = cast(list[TransactionAPI], result)
@@ -452,7 +452,7 @@ class CacheQueryProvider(QueryAPI):
     @_get_cache_data.register
     def _get_cache_events_data(
         self, query: ContractEventQuery, result: Iterator[BaseInterfaceModel]
-    ) -> Optional[list[dict[str, Any]]]:
+    ) -> list[dict[str, Any]] | None:
         return [m.model_dump(mode="json", by_alias=False) for m in result]
 
     def update_cache(self, query: QueryType, result: Iterator[BaseInterfaceModel]):

@@ -4,7 +4,7 @@ from abc import abstractmethod
 from collections.abc import Iterator
 from datetime import datetime as datetime_type
 from functools import cached_property
-from typing import IO, TYPE_CHECKING, Any, NoReturn, Optional, Union
+from typing import IO, TYPE_CHECKING, Any, NoReturn
 
 from eth_pydantic_types import HexBytes, HexStr
 from eth_utils import humanize_hexstr, is_hex, to_hex, to_int
@@ -48,21 +48,21 @@ class TransactionAPI(BaseInterfaceModel):
     such as typed-transactions from `EIP-1559 <https://eips.ethereum.org/EIPS/eip-1559>`__.
     """
 
-    chain_id: Optional[HexInt] = Field(default=0, alias="chainId")
-    receiver: Optional[AddressType] = Field(default=None, alias="to")
-    sender: Optional[AddressType] = Field(default=None, alias="from")
-    gas_limit: Optional[HexInt] = Field(default=None, alias="gas")
-    nonce: Optional[HexInt] = None  # NOTE: `Optional` only to denote using default behavior
+    chain_id: HexInt | None = Field(default=0, alias="chainId")
+    receiver: AddressType | None = Field(default=None, alias="to")
+    sender: AddressType | None = Field(default=None, alias="from")
+    gas_limit: HexInt | None = Field(default=None, alias="gas")
+    nonce: HexInt | None = None  # NOTE: `None` only to denote using default behavior
     value: HexInt = 0
     data: HexBytes = HexBytes("")
     type: HexInt
-    max_fee: Optional[HexInt] = None
-    max_priority_fee: Optional[HexInt] = None
+    max_fee: HexInt | None = None
+    max_priority_fee: HexInt | None = None
 
     # If left as None, will get set to the network's default required confirmations.
-    required_confirmations: Optional[HexInt] = Field(default=None, exclude=True)
+    required_confirmations: HexInt | None = Field(default=None, exclude=True)
 
-    signature: Optional[TransactionSignature] = Field(default=None, exclude=True)
+    signature: TransactionSignature | None = Field(default=None, exclude=True)
 
     model_config = ConfigDict(populate_by_name=True)
 
@@ -99,7 +99,7 @@ class TransactionAPI(BaseInterfaceModel):
         return value
 
     @property
-    def gas(self) -> Optional[int]:
+    def gas(self) -> int | None:
         """
         Alias for ``.gas_limit``.
         """
@@ -149,7 +149,7 @@ class TransactionAPI(BaseInterfaceModel):
         return self.txn_hash
 
     @property
-    def receipt(self) -> Optional["ReceiptAPI"]:
+    def receipt(self) -> "ReceiptAPI | None":
         """
         This transaction's associated published receipt, if it exists.
         """
@@ -196,7 +196,7 @@ class TransactionAPI(BaseInterfaceModel):
     def __str__(self) -> str:
         return self.to_string()
 
-    def to_string(self, calldata_repr: Optional["CalldataRepr"] = None) -> str:
+    def to_string(self, calldata_repr: "CalldataRepr | None" = None) -> str:
         """
         Get the stringified representation of the transaction.
 
@@ -233,7 +233,7 @@ class TransactionAPI(BaseInterfaceModel):
             else calldata.to_0x_hex()
         )
 
-    def _decoded_call(self) -> Optional[str]:
+    def _decoded_call(self) -> str | None:
         if not self.receiver:
             return "constructor()"
 
@@ -326,14 +326,14 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
     a :class:`ape.contracts.base.ContractInstance`.
     """
 
-    contract_address: Optional[AddressType] = None
+    contract_address: AddressType | None = None
     block_number: HexInt
     gas_used: HexInt
     logs: list[dict] = []
     status: HexInt
     txn_hash: HexStr
     transaction: TransactionAPI
-    _error: Optional[TransactionError] = None
+    _error: TransactionError | None = None
 
     @log_instead_of_fail(default="<ReceiptAPI>")
     def __repr__(self) -> str:
@@ -375,7 +375,7 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
         return [" ".join(map(str, ln)) for ln in self.debug_logs_typed]
 
     @property
-    def error(self) -> Optional[TransactionError]:
+    def error(self) -> TransactionError | None:
         return self._error
 
     @error.setter
@@ -432,7 +432,7 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
         return self.provider.get_transaction_trace(self.txn_hash)
 
     @property
-    def _explorer(self) -> Optional["ExplorerAPI"]:
+    def _explorer(self) -> "ExplorerAPI | None":
         return self.provider.network.explorer
 
     @property
@@ -471,9 +471,7 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
     @abstractmethod
     def decode_logs(
         self,
-        abi: Optional[
-            Union[list[Union["EventABI", "ContractEvent"]], Union["EventABI", "ContractEvent"]]
-        ] = None,
+        abi: ("list[EventABI | ContractEvent] | EventABI | ContractEvent | None") = None,
     ) -> "ContractLogContainer":
         """
         Decode the logs on the receipt.
@@ -485,7 +483,7 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
             list[:class:`~ape.types.ContractLog`]
         """
 
-    def raise_for_status(self) -> Optional[NoReturn]:
+    def raise_for_status(self) -> NoReturn | None:
         """
         Handle provider-specific errors regarding a non-successful
         :class:`~api.providers.TransactionStatusEnum`.
@@ -562,7 +560,7 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
                 time.sleep(time_to_sleep)
 
     @property
-    def method_called(self) -> Optional["MethodABI"]:
+    def method_called(self) -> "MethodABI | None":
         """
         The method ABI of the method called to produce this receipt.
         """
