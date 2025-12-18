@@ -7,7 +7,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=14737038" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=a318c5d4" />
     <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -290,8 +290,43 @@ data-aria-dark="Switch to auto color mode">
     </div>
   </div>
 </div><div class="flex flex-col break-words justify-between">
-      <div class="min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
-        <article class="yue" role="main">
+      <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+  <div class="copy-page-wrapper relative pb-4 lg:absolute lg:top-8 lg:right-6 xl:right-12">
+  <div id="copy-page-trigger">
+    <button
+      type="button"
+      class="js-copy px-3 py-1 inline-flex items-center gap-1"
+      data-url="ape/_sources/methoddocs/utils.md.txt"
+    >
+      <i class="i-lucide" data-icon="copy"></i>
+      <span>Copy page</span>
+    </button>
+    <button class="js-menu px-2 py-1" type="button" aria-label="More actions"
+      aria-haspopup="menu" aria-expanded="false" aria-controls="copy-page-content">
+      <i class="i-lucide chevron-down"></i>
+    </button>
+  </div>
+  <div id="copy-page-content" role="menu" aria-orientation="vertical" aria-hidden="true">
+    <div role="presentation">
+      <div class="flex flex-col" role="group">
+        <button class="js-copy" type="button" role="menuitem"
+          data-url="ape/_sources/methoddocs/utils.md.txt">
+          <span class="iconify-icon">
+            <i class="i-lucide" data-icon="copy"></i>
+          </span>
+          <span>Copy page</span>
+        </button>
+        <a role="menuitem" href="ape/_sources/methoddocs/utils.md.txt" target="_blank" rel="nofollow"><iconify-icon icon="bi:markdown"></iconify-icon>
+            <span>View as Markdown</span></a><a role="menuitem" href="https://chatgpt.com/?hints=search&q=Read%20ape/_sources/methoddocs/utils.md.txt%20so%20I%20can%20ask%20questions%20about%20it." target="_blank" rel="nofollow">
+          <iconify-icon icon="bi:openai"></iconify-icon>
+          <span>Open in ChatGPT</span>
+        </a><a role="menuitem" href="https://claude.ai/new?q=Read%20ape/_sources/methoddocs/utils.md.txt%20so%20I%20can%20ask%20questions%20about%20it." target="_blank" rel="nofollow">
+          <iconify-icon icon="bi:claude"></iconify-icon>
+          <span>Open in Claude</span>
+        </a></div>
+    </div>
+  </div>
+</div><article class="yue" role="main">
           <section id="ape-utils">
 <h1>ape.utils<a class="headerlink" href="#ape-utils" title="Link to this heading"></a></h1>
 <section id="module-ape.utils.abi">
@@ -342,7 +377,7 @@ Values are only altered when they are a struct.
 This method also handles structs within structs as well as arrays of structs.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>values</strong> (<em>Union</em><em>[</em><em>list</em><em>, </em><em>tuple</em><em>]</em>) – A list of output values.</p>
+<dd class="field-odd"><p><strong>values</strong> (<em>list</em><em> | </em><em>tuple</em>) – A list of output values.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The same input values only decoded into structs when applicable.</p>
@@ -367,7 +402,7 @@ This value is also used for named tuples where the tuple does not have a name
 <dd><p>Convert dicts and other objects to struct inputs.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>values</strong> (<em>Union</em><em>[</em><em>list</em><em>, </em><em>tuple</em><em>]</em>) – A list of input values.</p>
+<dd class="field-odd"><p><strong>values</strong> (<em>list</em><em> | </em><em>tuple</em><em> | </em><em>dict</em>) – A list of input values.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The same input values only decoded into structs when applicable.</p>
@@ -431,7 +466,7 @@ properties.</p>
 <dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if the given type is a probably an array.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>abi_type</strong> (<em>Union</em><em>[</em><em>str</em><em>, </em><em>ABIType</em><em>]</em>) – The type to check.</p>
+<dd class="field-odd"><p><strong>abi_type</strong> (<em>str</em><em> | </em><em>ABIType</em>) – The type to check.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>bool</p>
@@ -530,7 +565,7 @@ before creating the new model. You should trust this data.</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>path</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="cli.html#ape.cli.paramtype.Path" title="ape.cli.paramtype.Path"><em>Path</em></a><em>]</em>) – Optionally provide the path now
+<li><p><strong>path</strong> (<a class="reference internal" href="cli.html#ape.cli.paramtype.Path" title="ape.cli.paramtype.Path"><em>Path</em></a><em> | </em><em>None</em>) – Optionally provide the path now
 if one wasn’t declared at init time. If given a directory,
 saves the file in that dir with the name of class with a
 .json suffix.</p></li>
@@ -554,7 +589,7 @@ reads directly from the file without validation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>path</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="cli.html#ape.cli.paramtype.Path" title="ape.cli.paramtype.Path"><em>Path</em></a><em>]</em>) – Optionally provide the path now
+<li><p><strong>path</strong> (<a class="reference internal" href="cli.html#ape.cli.paramtype.Path" title="ape.cli.paramtype.Path"><em>Path</em></a>) – Optionally provide the path now
 if one wasn’t declared at init time.</p></li>
 <li><p><strong>**kwargs</strong> – Extra kwargs to pass to <code class="docutils literal notranslate"><span class="pre">.model_validate_json()</span></code>.</p></li>
 </ul>
@@ -820,7 +855,7 @@ if possible.</p>
 <dd class="field-odd"><p><strong>pragma_str</strong> (<em>str</em>) – The str to convert.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">Optional[packaging.version.SpecifierSet]</span></code></p>
+<dd class="field-even"><p>SpecifierSet | None</p>
 </dd>
 </dl>
 </dd></dl>
@@ -923,7 +958,7 @@ with less doxxing.</p>
 context-call alone because it automatically resolves the path.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>name</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – Optional provide a name of  the directory.
+<dd class="field-odd"><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>) – Optional provide a name of  the directory.
 Else, defaults to root of <code class="docutils literal notranslate"><span class="pre">tempfile.TemporaryDirectory()</span></code>
 (resolved).</p>
 </dd>
@@ -964,7 +999,7 @@ representing a path.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>archive_file</strong> (<a class="reference internal" href="cli.html#ape.cli.paramtype.Path" title="ape.cli.paramtype.Path"><em>Path</em></a>) – The file-path to the archive.</p></li>
-<li><p><strong>destination</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="cli.html#ape.cli.paramtype.Path" title="ape.cli.paramtype.Path"><em>Path</em></a><em>]</em>) – Optionally provide a destination.
+<li><p><strong>destination</strong> (<a class="reference internal" href="cli.html#ape.cli.paramtype.Path" title="ape.cli.paramtype.Path"><em>Path</em></a><em> | </em><em>None</em>) – Optionally provide a destination.
 Defaults to the parent directory of the archive file.</p></li>
 </ul>
 </dd>
@@ -986,9 +1021,9 @@ the paths to <code class="docutils literal notranslate"><span class="pre">file_a
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>path</strong> (<em>pathlib.Path</em>) – A directory containing files of interest.</p></li>
-<li><p><strong>pattern</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>Pattern</em><em>, </em><em>str</em><em>]</em><em>]</em>) – Optionally provide a regex
+<li><p><strong>pattern</strong> (<em>Pattern</em><em> | </em><em>str</em><em> | </em><em>None</em>) – Optionally provide a regex
 pattern to match.</p></li>
-<li><p><strong>max_files</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – Optionally set a max file count. This is useful
+<li><p><strong>max_files</strong> (<em>int</em><em> | </em><em>None</em>) – Optionally set a max file count. This is useful
 because huge file structures will be very slow.</p></li>
 </ul>
 </dd>
@@ -1120,7 +1155,7 @@ resolved.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>fn</strong> (<em>Callable</em>) – A function that takes a path. It gets called
 with the resolved path to the temporary directory.</p></li>
-<li><p><strong>name</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – Optionally name the temporary directory.</p></li>
+<li><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>) – Optionally name the temporary directory.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -1202,7 +1237,7 @@ warns and returns <code class="docutils literal notranslate"><span class="pre">N
 </span><span data-line="4">
 </span><span data-line="5">
 </span><span data-line="6"><span class="nd">@allow_disconnected</span>
-</span><span data-line="7"><span class="k">def</span><span class="w"> </span><span class="nf">try_snapshot</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">SnapshotID</span><span class="p">]:</span>
+</span><span data-line="7"><span class="k">def</span><span class="w"> </span><span class="nf">try_snapshot</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;SnapshotID | None&quot;</span><span class="p">:</span>
 </span><span data-line="8">    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">chain</span><span class="o">.</span><span class="n">snapshot</span><span class="p">()</span>
 </span></pre></div>
 </div>
@@ -1373,7 +1408,7 @@ the trace it colors.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>dictionary</strong> (<em>dict</em>) – The dictionary to prettify.</p></li>
-<li><p><strong>color</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The color to use for pretty printing.</p></li>
+<li><p><strong>color</strong> (<em>str</em><em> | </em><em>None</em>) – The color to use for pretty printing.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -1488,5 +1523,5 @@ Useful for displaying traces and decoded calls.</p>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script data-domain="docs.apeworx.io" defer="defer" src="https://plausible.io/js/script.js"></script>
-      <script src="../_static/shibuya.js?v=c1cf1a6b"></script></body>
+      <script src="../_static/shibuya.js?v=cac61aee"></script></body>
 </html>

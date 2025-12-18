@@ -7,7 +7,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=14737038" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=a318c5d4" />
     <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -201,8 +201,43 @@ data-aria-dark="Switch to auto color mode">
     </div>
   </div>
 </div><div class="flex flex-col break-words justify-between">
-      <div class="min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
-        <article class="yue" role="main">
+      <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+  <div class="copy-page-wrapper relative pb-4 lg:absolute lg:top-8 lg:right-6 xl:right-12">
+  <div id="copy-page-trigger">
+    <button
+      type="button"
+      class="js-copy px-3 py-1 inline-flex items-center gap-1"
+      data-url="ape/_sources/methoddocs/contracts.md.txt"
+    >
+      <i class="i-lucide" data-icon="copy"></i>
+      <span>Copy page</span>
+    </button>
+    <button class="js-menu px-2 py-1" type="button" aria-label="More actions"
+      aria-haspopup="menu" aria-expanded="false" aria-controls="copy-page-content">
+      <i class="i-lucide chevron-down"></i>
+    </button>
+  </div>
+  <div id="copy-page-content" role="menu" aria-orientation="vertical" aria-hidden="true">
+    <div role="presentation">
+      <div class="flex flex-col" role="group">
+        <button class="js-copy" type="button" role="menuitem"
+          data-url="ape/_sources/methoddocs/contracts.md.txt">
+          <span class="iconify-icon">
+            <i class="i-lucide" data-icon="copy"></i>
+          </span>
+          <span>Copy page</span>
+        </button>
+        <a role="menuitem" href="ape/_sources/methoddocs/contracts.md.txt" target="_blank" rel="nofollow"><iconify-icon icon="bi:markdown"></iconify-icon>
+            <span>View as Markdown</span></a><a role="menuitem" href="https://chatgpt.com/?hints=search&q=Read%20ape/_sources/methoddocs/contracts.md.txt%20so%20I%20can%20ask%20questions%20about%20it." target="_blank" rel="nofollow">
+          <iconify-icon icon="bi:openai"></iconify-icon>
+          <span>Open in ChatGPT</span>
+        </a><a role="menuitem" href="https://claude.ai/new?q=Read%20ape/_sources/methoddocs/contracts.md.txt%20so%20I%20can%20ask%20questions%20about%20it." target="_blank" rel="nofollow">
+          <iconify-icon icon="bi:claude"></iconify-icon>
+          <span>Open in Claude</span>
+        </a></div>
+    </div>
+  </div>
+</div><article class="yue" role="main">
           <section id="ape-contracts">
 <h1>ape.contracts<a class="headerlink" href="#ape-contracts" title="Link to this heading"></a></h1>
 <dl class="py class">
@@ -462,7 +497,7 @@ are using this class.</p>
 <strong>NOTE</strong>: Things will not work as expected if the contract is not actually
 deployed to this address or if the contract at the given address has
 a different ABI than <code class="xref py py-attr docutils literal notranslate"><span class="pre">contract_type</span></code>.</p></li>
-<li><p><strong>txn_hash</strong> (<em>Union</em><em>[</em><em>str</em><em>, </em><em>HexBytes</em><em>]</em>) – The hash of the transaction that deployed the
+<li><p><strong>txn_hash</strong> (<em>str</em><em> | </em><em>HexBytes</em>) – The hash of the transaction that deployed the
 contract, if available. Defaults to <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
 <li><p><strong>fetch_from_explorer</strong> (<em>bool</em>) – Set to <code class="docutils literal notranslate"><span class="pre">False</span></code> to avoid fetching from an explorer.</p></li>
 <li><p><strong>proxy_info</strong> (<a class="reference internal" href="api.html#ape.api.networks.ProxyInfoAPI" title="ape.api.networks.ProxyInfoAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProxyInfoAPI</span></code></a> | None) – Proxy info object to set
@@ -612,17 +647,17 @@ Optionally set a start block to include historical blocks.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>start_block</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The block number to start with. Defaults to the pending
+<li><p><strong>start_block</strong> (<em>int</em><em> | </em><em>None</em>) – The block number to start with. Defaults to the pending
 block number.</p></li>
-<li><p><strong>stop_block</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – Optionally set a future block number to stop at.
+<li><p><strong>stop_block</strong> (<em>int</em><em> | </em><em>None</em>) – Optionally set a future block number to stop at.
 Defaults to never-ending.</p></li>
-<li><p><strong>required_confirmations</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The amount of confirmations to wait
+<li><p><strong>required_confirmations</strong> (<em>int</em><em> | </em><em>None</em>) – The amount of confirmations to wait
 before yielding the block. The more confirmations, the less likely a reorg will occur.
 Defaults to the network’s configured required confirmations.</p></li>
-<li><p><strong>new_block_timeout</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The amount of time to wait for a new block before
+<li><p><strong>new_block_timeout</strong> (<em>int</em><em> | </em><em>None</em>) – The amount of time to wait for a new block before
 quitting. Defaults to 10 seconds for local networks or <code class="docutils literal notranslate"><span class="pre">50</span> <span class="pre">*</span> <span class="pre">block_time</span></code> for live
 networks.</p></li>
-<li><p><strong>search_topics</strong> (<em>Optional</em><em>[</em><em>dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em><em>]</em>) – A dictionary of search topics to use when
+<li><p><strong>search_topics</strong> (<em>dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>] </em><em>| </em><em>None</em>) – A dictionary of search topics to use when
 constructing a polling filter. Overrides the value of <cite>**search_topics_kwargs</cite>.</p></li>
 <li><p><strong>search_topics_kwargs</strong> – Search topics to use when constructing a polling filter. Allows
 easily specifying topic filters using kwarg syntax but can be used w/ <cite>search_topics</cite></p></li>
@@ -645,11 +680,11 @@ easily specifying topic filters using kwarg syntax but can be used w/ <cite>sear
 return.</p></li>
 <li><p><strong>start_block</strong> (<em>int</em>) – The first block, by number, to include in the
 query. Defaults to <code class="docutils literal notranslate"><span class="pre">0</span></code>.</p></li>
-<li><p><strong>stop_block</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The last block, by number, to include
+<li><p><strong>stop_block</strong> (<em>int</em><em> | </em><em>None</em>) – The last block, by number, to include
 in the query. Defaults to the latest block.</p></li>
 <li><p><strong>step</strong> (<em>int</em>) – The number of blocks to iterate between block numbers.
 Defaults to <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p></li>
-<li><p><strong>engine_to_use</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – query engine to use, bypasses query
+<li><p><strong>engine_to_use</strong> (<em>str</em><em> | </em><em>None</em>) – query engine to use, bypasses query
 engine selection algorithm.</p></li>
 </ul>
 </dd>
@@ -669,12 +704,12 @@ engine selection algorithm.</p></li>
 <li><p><strong>start_or_stop</strong> (<em>int</em>) – When also given <code class="docutils literal notranslate"><span class="pre">stop</span></code>, this is the earliest
 block number in the desired log set.
 Otherwise, it is the total amount of blocks to get starting from <code class="docutils literal notranslate"><span class="pre">0</span></code>.</p></li>
-<li><p><strong>stop</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The latest block number in the
+<li><p><strong>stop</strong> (<em>int</em><em> | </em><em>None</em>) – The latest block number in the
 desired log set. Defaults to delegating to provider.</p></li>
-<li><p><strong>search_topics</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – Search topics, such as indexed event inputs,
+<li><p><strong>search_topics</strong> (<em>dict</em><em> | </em><em>None</em>) – Search topics, such as indexed event inputs,
 to query by. Defaults to getting all events.</p></li>
-<li><p><strong>extra_addresses</strong> (Optional[list[<a class="reference internal" href="types.html#ape.types.address.AddressType" title="ape.types.address.AddressType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddressType</span></code></a>]]) – Additional contract addresses containing the same event type. Defaults to
-only looking at the contract instance where this event is defined.</p></li>
+<li><p><strong>extra_addresses</strong> (<em>list</em><em> | </em><em>None</em>) – Additional contract addresses containing the same event type.
+Defaults to only looking at the contract instance where this event is defined.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -733,5 +768,5 @@ only looking at the contract instance where this event is defined.</p></li>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script data-domain="docs.apeworx.io" defer="defer" src="https://plausible.io/js/script.js"></script>
-      <script src="../_static/shibuya.js?v=c1cf1a6b"></script></body>
+      <script src="../_static/shibuya.js?v=cac61aee"></script></body>
 </html>

@@ -7,7 +7,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=14737038" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=a318c5d4" />
     <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -526,8 +526,43 @@ data-aria-dark="Switch to auto color mode">
     </div>
   </div>
 </div><div class="flex flex-col break-words justify-between">
-      <div class="min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
-        <article class="yue" role="main">
+      <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+  <div class="copy-page-wrapper relative pb-4 lg:absolute lg:top-8 lg:right-6 xl:right-12">
+  <div id="copy-page-trigger">
+    <button
+      type="button"
+      class="js-copy px-3 py-1 inline-flex items-center gap-1"
+      data-url="ape/_sources/methoddocs/managers.md.txt"
+    >
+      <i class="i-lucide" data-icon="copy"></i>
+      <span>Copy page</span>
+    </button>
+    <button class="js-menu px-2 py-1" type="button" aria-label="More actions"
+      aria-haspopup="menu" aria-expanded="false" aria-controls="copy-page-content">
+      <i class="i-lucide chevron-down"></i>
+    </button>
+  </div>
+  <div id="copy-page-content" role="menu" aria-orientation="vertical" aria-hidden="true">
+    <div role="presentation">
+      <div class="flex flex-col" role="group">
+        <button class="js-copy" type="button" role="menuitem"
+          data-url="ape/_sources/methoddocs/managers.md.txt">
+          <span class="iconify-icon">
+            <i class="i-lucide" data-icon="copy"></i>
+          </span>
+          <span>Copy page</span>
+        </button>
+        <a role="menuitem" href="ape/_sources/methoddocs/managers.md.txt" target="_blank" rel="nofollow"><iconify-icon icon="bi:markdown"></iconify-icon>
+            <span>View as Markdown</span></a><a role="menuitem" href="https://chatgpt.com/?hints=search&q=Read%20ape/_sources/methoddocs/managers.md.txt%20so%20I%20can%20ask%20questions%20about%20it." target="_blank" rel="nofollow">
+          <iconify-icon icon="bi:openai"></iconify-icon>
+          <span>Open in ChatGPT</span>
+        </a><a role="menuitem" href="https://claude.ai/new?q=Read%20ape/_sources/methoddocs/managers.md.txt%20so%20I%20can%20ask%20questions%20about%20it." target="_blank" rel="nofollow">
+          <iconify-icon icon="bi:claude"></iconify-icon>
+          <span>Open in Claude</span>
+        </a></div>
+    </div>
+  </div>
+</div><article class="yue" role="main">
           <section id="ape-managers">
 <h1>ape.managers<a class="headerlink" href="#ape-managers" title="Link to this heading"></a></h1>
 <section id="module-ape.managers.accounts">
@@ -637,7 +672,7 @@ to get.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.managers.accounts.AccountManager.resolve_address">
-<span class="sig-name descname"><span class="pre">resolve_address</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">account_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="api.html#ape.api.address.BaseAddress" title="ape.api.address.BaseAddress"><span class="pre">BaseAddress</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><span class="pre">ChecksumAddress</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_AddressValidator</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">bytes</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><span class="pre">ChecksumAddress</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_AddressValidator</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#ape.managers.accounts.AccountManager.resolve_address" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">resolve_address</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">account_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="api.html#ape.api.address.BaseAddress" title="ape.api.address.BaseAddress"><span class="pre">BaseAddress</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">AddressType</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">bytes</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><span class="pre">ChecksumAddress</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_AddressValidator</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#ape.managers.accounts.AccountManager.resolve_address" title="Link to this definition"></a></dt>
 <dd><p>Resolve the given input to an address.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -802,11 +837,11 @@ to compile <code class="docutils literal notranslate"><span class="pre">'.sol'</
 </dd>
 <dt class="field-even">Parameters<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
-<li><p><strong>contract_filepaths</strong> (<em>Union</em><em>[</em><a class="reference internal" href="cli.html#ape.cli.paramtype.Path" title="ape.cli.paramtype.Path"><em>Path</em></a><em>, </em><em>str</em><em>, </em><em>Iterable</em><em>[</em><em>Union</em><em>[</em><a class="reference internal" href="cli.html#ape.cli.paramtype.Path" title="ape.cli.paramtype.Path"><em>Path</em></a><em>, </em><em>str</em><em>]</em><em>]</em><em>]</em>) – The files to
+<li><p><strong>contract_filepaths</strong> (<a class="reference internal" href="cli.html#ape.cli.paramtype.Path" title="ape.cli.paramtype.Path"><em>Path</em></a><em> | </em><em>str</em><em> | </em><em>Iterable</em><em>[</em><a class="reference internal" href="cli.html#ape.cli.paramtype.Path" title="ape.cli.paramtype.Path"><em>Path</em></a><em> | </em><em>str</em><em>]</em>) – The files to
 compile, as <code class="docutils literal notranslate"><span class="pre">pathlib.Path</span></code> objects or path-strs.</p></li>
 <li><p><strong>project</strong> (Optional[<a class="reference internal" href="#ape.managers.project.ProjectManager" title="ape.managers.project.ProjectManager"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProjectManager</span></code></a>]) – Optionally
 compile a different project that the one from the current-working directory.</p></li>
-<li><p><strong>settings</strong> (<em>Optional</em><em>[</em><em>Dict</em><em>]</em>) – Adhoc compiler settings. Defaults to None.
+<li><p><strong>settings</strong> (<em>dict</em><em> | </em><em>None</em>) – Adhoc compiler settings. Defaults to None.
 Ensure the compiler name key is present in the dict for it to work.</p></li>
 </ul>
 </dd>
@@ -839,7 +874,7 @@ Ensure the compiler name key is present in the dict for it to work.</p></li>
 <li><p><strong>code</strong> (<em>str</em>) – The source code to compile.</p></li>
 <li><p><strong>project</strong> (Optional[<a class="reference internal" href="#ape.managers.project.ProjectManager" title="ape.managers.project.ProjectManager"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProjectManager</span></code></a>]) – Optionally
 compile a different project that the one from the current-working directory.</p></li>
-<li><p><strong>settings</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – Compiler settings.</p></li>
+<li><p><strong>settings</strong> (<em>dict</em><em> | </em><em>None</em>) – Compiler settings.</p></li>
 <li><p><strong>**kwargs</strong> (<em>Any</em>) – Additional overrides for the <code class="docutils literal notranslate"><span class="pre">ethpm_types.ContractType</span></code> model.</p></li>
 </ul>
 </dd>
@@ -902,7 +937,7 @@ address.</p>
 as a custom error.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Optional[<a class="reference internal" href="exceptions.html#ape.exceptions.CustomError" title="ape.exceptions.CustomError"><code class="xref py py-class docutils literal notranslate"><span class="pre">CustomError</span></code></a>]</p>
+<dd class="field-even"><p><a class="reference internal" href="exceptions.html#ape.exceptions.CustomError" title="ape.exceptions.CustomError"><code class="xref py py-class docutils literal notranslate"><span class="pre">CustomError</span></code></a> | None</p>
 </dd>
 </dl>
 </dd></dl>
@@ -916,7 +951,7 @@ and the value is a list of import source_ids.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>contract_filepaths</strong> (<em>Sequence</em><em>[</em><em>pathlib.Path</em><em>]</em>) – A list of source file paths to compile.</p></li>
-<li><p><strong>project</strong> (Optional[<a class="reference internal" href="#ape.managers.project.ProjectManager" title="ape.managers.project.ProjectManager"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProjectManager</span></code></a>]) – Optionally provide
+<li><p><strong>project</strong> (<a class="reference internal" href="#ape.managers.project.ProjectManager" title="ape.managers.project.ProjectManager"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProjectManager</span></code></a> | None) – Optionally provide
 the project.</p></li>
 </ul>
 </dd>
@@ -1082,9 +1117,9 @@ You can pass <code class="docutils literal notranslate"><span class="pre">engine
 <li><p><strong>*columns</strong> (<em>str</em>) – columns in the DataFrame to return</p></li>
 <li><p><strong>start_nonce</strong> (<em>int</em>) – The first transaction, by nonce, to include in the
 query. Defaults to 0.</p></li>
-<li><p><strong>stop_nonce</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The last transaction, by nonce, to include
+<li><p><strong>stop_nonce</strong> (<em>int</em><em> | </em><em>None</em>) – The last transaction, by nonce, to include
 in the query. Defaults to the latest transaction.</p></li>
-<li><p><strong>engine_to_use</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – query engine to use, bypasses query
+<li><p><strong>engine_to_use</strong> (<em>str</em><em> | </em><em>None</em>) – query engine to use, bypasses query
 engine selection algorithm.</p></li>
 </ul>
 </dd>
@@ -1216,7 +1251,7 @@ connected network’s name.</p></li>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>contract_instance</strong> (<a class="reference internal" href="contracts.html#ape.contracts.base.ContractInstance" title="ape.contracts.base.ContractInstance"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractInstance</span></code></a>) – The contract
 to cache.</p></li>
-<li><p><strong>proxy_info</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="api.html#ape.api.networks.ProxyInfoAPI" title="ape.api.networks.ProxyInfoAPI"><em>ProxyInfoAPI</em></a><em>]</em>) – Pass in the proxy info, if it is known, to
+<li><p><strong>proxy_info</strong> (<a class="reference internal" href="api.html#ape.api.networks.ProxyInfoAPI" title="ape.api.networks.ProxyInfoAPI"><em>ProxyInfoAPI</em></a><em> | </em><em>None</em>) – Pass in the proxy info, if it is known, to
 avoid the potentially expensive look-up.</p></li>
 <li><p><strong>detect_proxy</strong> (<em>bool</em>) – Set to <code class="docutils literal notranslate"><span class="pre">False</span></code> to avoid detecting if the contract is a
 proxy.</p></li>
@@ -1264,12 +1299,12 @@ Otherwise, if on a live network, it fetches it from the
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>address</strong> (<em>AddressType</em>) – The address of the contract.</p></li>
-<li><p><strong>default</strong> (<em>Optional</em><em>[</em><em>ContractType</em><em>]</em>) – A default contract when none is found.
+<li><p><strong>default</strong> (<em>ContractType</em><em> | </em><em>None</em>) – A default contract when none is found.
 Defaults to <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
 <li><p><strong>fetch_from_explorer</strong> (<em>bool</em>) – Set to <code class="docutils literal notranslate"><span class="pre">False</span></code> to avoid fetching from an
 explorer. Defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code>. Only fetches if it needs to (uses disk
 &amp; memory caching otherwise).</p></li>
-<li><p><strong>proxy_info</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="api.html#ape.api.networks.ProxyInfoAPI" title="ape.api.networks.ProxyInfoAPI"><em>ProxyInfoAPI</em></a><em>]</em>) – Pass in the proxy info, if it is known,
+<li><p><strong>proxy_info</strong> (<a class="reference internal" href="api.html#ape.api.networks.ProxyInfoAPI" title="ape.api.networks.ProxyInfoAPI"><em>ProxyInfoAPI</em></a><em> | </em><em>None</em>) – Pass in the proxy info, if it is known,
 to avoid the potentially expensive look-up.</p></li>
 <li><p><strong>detect_proxy</strong> (<em>bool</em>) – Set to <code class="docutils literal notranslate"><span class="pre">False</span></code> to avoid detecting if it is a proxy.</p></li>
 </ul>
@@ -1282,7 +1317,7 @@ to avoid the potentially expensive look-up.</p></li>
 </p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Optional[ContractType]</p>
+<dd class="field-odd"><p>ContractType | None</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1328,7 +1363,7 @@ the blueprint.</p>
 <dd class="field-odd"><p><strong>address</strong> (<em>AddressType</em>) – The address of the contract.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Optional[<a class="reference internal" href="api.html#ape.api.query.ContractCreation" title="ape.api.query.ContractCreation"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractCreation</span></code></a>]</p>
+<dd class="field-even"><p><a class="reference internal" href="api.html#ape.api.query.ContractCreation" title="ape.api.query.ContractCreation"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractCreation</span></code></a> | None</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1363,7 +1398,7 @@ have been deployed.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>addresses</strong> (<em>list</em><em>[</em><em>AddressType</em>) – A list of addresses to get contract types for.</p></li>
-<li><p><strong>concurrency</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The number of threads to use. Defaults to
+<li><p><strong>concurrency</strong> (<em>int</em><em> | </em><em>None</em>) – The number of threads to use. Defaults to
 <code class="docutils literal notranslate"><span class="pre">min(4,</span> <span class="pre">len(addresses))</span></code>.</p></li>
 </ul>
 </dd>
@@ -1387,7 +1422,7 @@ either from a local cache, a disk cache, or the provider.</p>
 <dd class="field-odd"><p><strong>address</strong> (<em>AddressType</em>) – The address of the proxy contract.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Optional[<a class="reference internal" href="api.html#ape.api.networks.ProxyInfoAPI" title="ape.api.networks.ProxyInfoAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProxyInfoAPI</span></code></a>]</p>
+<dd class="field-even"><p><a class="reference internal" href="api.html#ape.api.networks.ProxyInfoAPI" title="ape.api.networks.ProxyInfoAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProxyInfoAPI</span></code></a> | None</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1409,18 +1444,18 @@ next time.</p>
 </dd>
 <dt class="field-even">Parameters<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
-<li><p><strong>address</strong> (<em>Union</em><em>[</em><em>str</em><em>, </em><em>AddressType</em><em>]</em>) – The address of the plugin. If you are using the ENS
+<li><p><strong>address</strong> (<em>str</em><em> | </em><em>AddressType</em>) – The address of the plugin. If you are using the ENS
 plugin, you can also provide an ENS domain name.</p></li>
-<li><p><strong>contract_type</strong> (Optional[<code class="docutils literal notranslate"><span class="pre">ContractType</span></code>]) – Optionally provide the contract type
+<li><p><strong>contract_type</strong> (<em>ContractType</em><em> | </em><em>None</em>) – Optionally provide the contract type
 in case it is not already known.</p></li>
-<li><p><strong>txn_hash</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>str</em><em>, </em><em>HexBytes</em><em>]</em><em>]</em>) – The hash of the transaction responsible for
+<li><p><strong>txn_hash</strong> (<em>str</em><em> | </em><em>HexBytes</em><em> | </em><em>None</em>) – The hash of the transaction responsible for
 deploying the contract, if known. Useful for publishing. Defaults to <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
-<li><p><strong>abi</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>list</em><em>[</em><em>ABI</em><em>]</em><em>, </em><em>dict</em><em>, </em><em>str</em><em>, </em><a class="reference internal" href="cli.html#ape.cli.paramtype.Path" title="ape.cli.paramtype.Path"><em>Path</em></a><em>]</em><em>]</em>) – Use an ABI str, dict, path,
+<li><p><strong>abi</strong> (<em>list</em><em>[</em><em>ABI</em><em>] </em><em>| </em><em>dict</em><em> | </em><em>str</em><em> | </em><a class="reference internal" href="cli.html#ape.cli.paramtype.Path" title="ape.cli.paramtype.Path"><em>Path</em></a><em> | </em><em>None</em>) – Use an ABI str, dict, path,
 or ethpm models to create a contract instance class.</p></li>
 <li><p><strong>fetch_from_explorer</strong> (<em>bool</em>) – Set to <code class="docutils literal notranslate"><span class="pre">False</span></code> to avoid fetching from the explorer.
 Defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code>. Won’t fetch unless it needs to (uses disk &amp; memory caching
 first).</p></li>
-<li><p><strong>proxy_info</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="api.html#ape.api.networks.ProxyInfoAPI" title="ape.api.networks.ProxyInfoAPI"><em>ProxyInfoAPI</em></a><em>]</em>) – Pass in the proxy info, if it is known, to avoid
+<li><p><strong>proxy_info</strong> (<a class="reference internal" href="api.html#ape.api.networks.ProxyInfoAPI" title="ape.api.networks.ProxyInfoAPI"><em>ProxyInfoAPI</em></a><em> | </em><em>None</em>) – Pass in the proxy info, if it is known, to avoid
 the potentially expensive look-up.</p></li>
 <li><p><strong>detect_proxy</strong> (<em>bool</em>) – Set to <code class="docutils literal notranslate"><span class="pre">False</span></code> to avoid detecting if the contract is a proxy.</p></li>
 </ul>
@@ -1536,14 +1571,14 @@ or a <code class="docutils literal notranslate"><span class="pre">stop_block</sp
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>start_block</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The block number to start with. Defaults to the pending
+<li><p><strong>start_block</strong> (<em>int</em><em> | </em><em>None</em>) – The block number to start with. Defaults to the pending
 block number.</p></li>
-<li><p><strong>stop_block</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – Optionally set a future block number to stop at.
+<li><p><strong>stop_block</strong> (<em>int</em><em> | </em><em>None</em>) – Optionally set a future block number to stop at.
 Defaults to never-ending.</p></li>
-<li><p><strong>required_confirmations</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The amount of confirmations to wait
+<li><p><strong>required_confirmations</strong> (<em>int</em><em> | </em><em>None</em>) – The amount of confirmations to wait
 before yielding the block. The more confirmations, the less likely a reorg will occur.
 Defaults to the network’s configured required confirmations.</p></li>
-<li><p><strong>new_block_timeout</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – The amount of time to wait for a new block before
+<li><p><strong>new_block_timeout</strong> (<em>float</em><em> | </em><em>None</em>) – The amount of time to wait for a new block before
 timing out. Defaults to 10 seconds for local networks or <code class="docutils literal notranslate"><span class="pre">50</span> <span class="pre">*</span> <span class="pre">block_time</span></code> for live
 networks.</p></li>
 </ul>
@@ -1571,11 +1606,11 @@ provide a stopping block, the last block is assumed. You can pass
 <li><p><strong>*columns</strong> (<em>str</em>) – columns in the DataFrame to return</p></li>
 <li><p><strong>start_block</strong> (<em>int</em>) – The first block, by number, to include in the
 query. Defaults to 0.</p></li>
-<li><p><strong>stop_block</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The last block, by number, to include
+<li><p><strong>stop_block</strong> (<em>int</em><em> | </em><em>None</em>) – The last block, by number, to include
 in the query. Defaults to the latest block.</p></li>
 <li><p><strong>step</strong> (<em>int</em>) – The number of blocks to iterate between block numbers.
 Defaults to <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p></li>
-<li><p><strong>engine_to_use</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – query engine to use, bypasses query
+<li><p><strong>engine_to_use</strong> (<em>str</em><em> | </em><em>None</em>) – query engine to use, bypasses query
 engine selection algorithm.</p></li>
 </ul>
 </dd>
@@ -1607,12 +1642,12 @@ engine selection algorithm.</p></li>
 <li><p><strong>start_or_stop</strong> (<em>int</em>) – When given just a single value, it is the stop.
 Otherwise, it is the start. This mimics the behavior of <code class="docutils literal notranslate"><span class="pre">range</span></code>
 built-in Python function.</p></li>
-<li><p><strong>stop</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The block number to stop before. Also the total
+<li><p><strong>stop</strong> (<em>int</em><em> | </em><em>None</em>) – The block number to stop before. Also the total
 number of blocks to get. If not setting a start value, is set by
 the first argument.</p></li>
-<li><p><strong>step</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The value to increment by. Defaults to <code class="docutils literal notranslate"><span class="pre">1</span></code>.
+<li><p><strong>step</strong> (<em>int</em><em> | </em><em>None</em>) – The value to increment by. Defaults to <code class="docutils literal notranslate"><span class="pre">1</span></code>.
 number of blocks to get. Defaults to the latest block.</p></li>
-<li><p><strong>engine_to_use</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – query engine to use, bypasses query
+<li><p><strong>engine_to_use</strong> (<em>str</em><em> | </em><em>None</em>) – query engine to use, bypasses query
 engine selection algorithm.</p></li>
 </ul>
 </dd>
@@ -1746,9 +1781,9 @@ Requires using a local provider that supports snapshotting.</p>
 <dd class="field-even"><ul class="simple">
 <li><p><strong>num_blocks</strong> (<em>int</em>) – Choose the number of blocks to mine.
 Defaults to 1 block.</p></li>
-<li><p><strong>timestamp</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – Designate a time (in seconds) to begin mining.
+<li><p><strong>timestamp</strong> (<em>int</em><em> | </em><em>None</em>) – Designate a time (in seconds) to begin mining.
 Defaults to None.</p></li>
-<li><p><strong>deltatime</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – Designate a change in time (in seconds) to begin mining.
+<li><p><strong>deltatime</strong> (<em>int</em><em> | </em><em>None</em>) – Designate a change in time (in seconds) to begin mining.
 Defaults to None.</p></li>
 </ul>
 </dd>
@@ -1783,7 +1818,7 @@ Allows developers to go back to a previous state.</p>
 </ul>
 </dd>
 <dt class="field-even">Parameters<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>snapshot_id</strong> (Optional[<code class="xref py py-class docutils literal notranslate"><span class="pre">SnapshotID</span></code>]) – The snapshot ID. Defaults
+<dd class="field-even"><p><strong>snapshot_id</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">SnapshotID</span></code> | None) – The snapshot ID. Defaults
 to the most recent snapshot ID.</p>
 </dd>
 </dl>
@@ -1883,7 +1918,7 @@ in a context, for testing purposes. Any data
 cached to disk will not persist.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>keep</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>Iterable</em><em>[</em><em>str</em><em>]</em><em>, </em><em>str</em><em>]</em><em>]</em>) – Optionally, pass in
+<dd class="field-odd"><p><strong>keep</strong> (<em>Iterable</em><em>[</em><em>str</em><em>] </em><em>| </em><em>str</em><em> | </em><em>None</em>) – Optionally, pass in
 a key of subdirectory names to include in the new isolated
 data folder. For example, pass ing <code class="docutils literal notranslate"><span class="pre">&quot;packages&quot;</span></code> to avoid
 having to re-download dependencies in an isolated environment.</p>
@@ -2554,7 +2589,7 @@ Use plugins when possible!</p>
 when using HTTP.</p></li>
 <li><p><strong>provider_cls</strong> (type[<a class="reference internal" href="api.html#ape.api.providers.ProviderAPI" title="ape.api.providers.ProviderAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProviderAPI</span></code></a>]) – Defaults to
 <code class="xref py py-class docutils literal notranslate"><span class="pre">EthereumNodeProvider</span></code>.</p></li>
-<li><p><strong>provider_name</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The name of the provider. Defaults to best guess.</p></li>
+<li><p><strong>provider_name</strong> (<em>str</em><em> | </em><em>None</em>) – The name of the provider. Defaults to best guess.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -2625,7 +2660,7 @@ that ecosystem.</p>
 When <code class="docutils literal notranslate"><span class="pre">None</span></code>, returns the default provider.</p></li>
 <li><p><strong>provider_settings</strong> (<em>dict</em><em>, </em><em>optional</em>) – Settings to apply to the provider. Defaults to
 <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
-<li><p><strong>block_number</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – Optionally specify the block number you wish to fork.
+<li><p><strong>block_number</strong> (<em>int</em><em> | </em><em>None</em>) – Optionally specify the block number you wish to fork.
 Negative block numbers are relative to HEAD. Defaults to the configured fork
 block number or HEAD.</p></li>
 </ul>
@@ -2667,11 +2702,11 @@ combinations.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>ecosystem_filter</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>list</em><em>[</em><em>str</em><em>]</em><em>, </em><em>str</em><em>]</em><em>]</em>) – Get only the specified ecosystems.
+<li><p><strong>ecosystem_filter</strong> (<em>list</em><em>[</em><em>str</em><em>] </em><em>| </em><em>str</em><em> | </em><em>None</em>) – Get only the specified ecosystems.
 Defaults to getting all ecosystems.</p></li>
-<li><p><strong>network_filter</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>list</em><em>[</em><em>str</em><em>]</em><em>, </em><em>str</em><em>]</em><em>]</em>) – Get only the specified networks.
+<li><p><strong>network_filter</strong> (<em>list</em><em>[</em><em>str</em><em>] </em><em>| </em><em>str</em><em> | </em><em>None</em>) – Get only the specified networks.
 Defaults to getting all networks in ecosystems.</p></li>
-<li><p><strong>provider_filter</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>list</em><em>[</em><em>str</em><em>]</em><em>, </em><em>str</em><em>]</em><em>]</em>) – Get only the specified providers.
+<li><p><strong>provider_filter</strong> (<em>list</em><em>[</em><em>str</em><em>] </em><em>| </em><em>str</em><em> | </em><em>None</em>) – Get only the specified providers.
 Defaults to getting all providers in networks.</p></li>
 </ul>
 </dd>
@@ -2963,7 +2998,7 @@ for managing the installation of the dependency.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>use_cache</strong> (<em>bool</em>) – Set to <code class="docutils literal notranslate"><span class="pre">False</span></code> to force a re-compile.</p></li>
-<li><p><strong>config_override</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – Optionally override the configuration,
+<li><p><strong>config_override</strong> (<em>dict</em><em> | </em><em>None</em>) – Optionally override the configuration,
 which may be needed for compiling.</p></li>
 <li><p><strong>allow_install</strong> (<em>bool</em>) – Set to <code class="docutils literal notranslate"><span class="pre">True</span></code> to allow installing.</p></li>
 </ul>
@@ -3190,9 +3225,9 @@ returns the latest.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>use_cache</strong> (<em>bool</em>) – Set to <code class="docutils literal notranslate"><span class="pre">False</span></code> to force-reinstall dependencies.
 Defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code>. Does not work with <code class="docutils literal notranslate"><span class="pre">allow_install=False</span></code>.</p></li>
-<li><p><strong>config_override</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – Override shared configuration for each dependency.</p></li>
-<li><p><strong>name</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – Optionally only get dependencies with a certain name.</p></li>
-<li><p><strong>version</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – Optionally only get dependencies with certain version.</p></li>
+<li><p><strong>config_override</strong> (<em>dict</em><em> | </em><em>None</em>) – Override shared configuration for each dependency.</p></li>
+<li><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>) – Optionally only get dependencies with a certain name.</p></li>
+<li><p><strong>version</strong> (<em>str</em><em> | </em><em>None</em>) – Optionally only get dependencies with certain version.</p></li>
 <li><p><strong>allow_install</strong> (<em>bool</em>) – Set to <code class="docutils literal notranslate"><span class="pre">False</span></code> to not allow installing uninstalled specified dependencies.</p></li>
 <li><p><strong>strict</strong> (<em>bool</em>) – <code class="docutils literal notranslate"><span class="pre">True</span></code> requires the dependency to either be installed or install properly.</p></li>
 <li><p><strong>recurse</strong> (<em>bool</em>) – Set to <code class="docutils literal notranslate"><span class="pre">False</span></code> to not recursively install dependencies of dependencies.</p></li>
@@ -3746,9 +3781,9 @@ to a local one.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>manifest</strong> (<em>Union</em><em>[</em><em>PackageManifest</em><em>, </em><a class="reference internal" href="cli.html#ape.cli.paramtype.Path" title="ape.cli.paramtype.Path"><em>Path</em></a><em>, </em><em>str</em><em>]</em>) – Either a manifest or a
+<li><p><strong>manifest</strong> (<em>PackageManifest</em><em> | </em><a class="reference internal" href="cli.html#ape.cli.paramtype.Path" title="ape.cli.paramtype.Path"><em>Path</em></a><em> | </em><em>str</em>) – Either a manifest or a
 path to a manifest file.</p></li>
-<li><p><strong>config_override</strong> (<em>Optional</em><em>[</em><em>Dict</em><em>]</em>) – Optionally provide a config override.</p></li>
+<li><p><strong>config_override</strong> (<em>dict</em><em> | </em><em>None</em>) – Optionally provide a config override.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -3849,7 +3884,7 @@ file based on the configured ignore-patterns.</p>
 <dd><p>Look-up a path by given a sub-path or a source ID.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>path_id</strong> (<em>Union</em><em>[</em><em>str</em><em>, </em><a class="reference internal" href="cli.html#ape.cli.paramtype.Path" title="ape.cli.paramtype.Path"><em>Path</em></a><em>]</em>) – Either part of a path
+<dd class="field-odd"><p><strong>path_id</strong> (<em>str</em><em> | </em><a class="reference internal" href="cli.html#ape.cli.paramtype.Path" title="ape.cli.paramtype.Path"><em>Path</em></a>) – Either part of a path
 or a source ID.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -3967,7 +4002,7 @@ installed plugins.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>query</strong> (<code class="docutils literal notranslate"><span class="pre">QueryType</span></code>) – The type of query to execute</p></li>
-<li><p><strong>engine_to_use</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – Short-circuit selection logic using
+<li><p><strong>engine_to_use</strong> (<em>str</em><em> | </em><em>None</em>) – Short-circuit selection logic using
 a specific engine. Defaults is set by performance-based selection logic.</p></li>
 </ul>
 </dd>
@@ -4033,5 +4068,5 @@ a specific engine. Defaults is set by performance-based selection logic.</p></li
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script data-domain="docs.apeworx.io" defer="defer" src="https://plausible.io/js/script.js"></script>
-      <script src="../_static/shibuya.js?v=c1cf1a6b"></script></body>
+      <script src="../_static/shibuya.js?v=cac61aee"></script></body>
 </html>

@@ -7,7 +7,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=14737038" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=a318c5d4" />
     <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -160,17 +160,54 @@ data-aria-dark="Switch to auto color mode">
     </div>
   </div>
 </div><div class="flex flex-col break-words justify-between">
-      <div class="min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
-        <article class="yue" role="main">
+      <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+  <div class="copy-page-wrapper relative pb-4 lg:absolute lg:top-8 lg:right-6 xl:right-12">
+  <div id="copy-page-trigger">
+    <button
+      type="button"
+      class="js-copy px-3 py-1 inline-flex items-center gap-1"
+      data-url="ape/_sources/commands/pm.rst.txt"
+    >
+      <i class="i-lucide" data-icon="copy"></i>
+      <span>Copy page</span>
+    </button>
+    <button class="js-menu px-2 py-1" type="button" aria-label="More actions"
+      aria-haspopup="menu" aria-expanded="false" aria-controls="copy-page-content">
+      <i class="i-lucide chevron-down"></i>
+    </button>
+  </div>
+  <div id="copy-page-content" role="menu" aria-orientation="vertical" aria-hidden="true">
+    <div role="presentation">
+      <div class="flex flex-col" role="group">
+        <button class="js-copy" type="button" role="menuitem"
+          data-url="ape/_sources/commands/pm.rst.txt">
+          <span class="iconify-icon">
+            <i class="i-lucide" data-icon="copy"></i>
+          </span>
+          <span>Copy page</span>
+        </button>
+        <a role="menuitem" href="ape/_sources/commands/pm.rst.txt" target="_blank" rel="nofollow"><iconify-icon icon="bi:code-slash"></iconify-icon>
+            <span>View Source</span></a><a role="menuitem" href="https://chatgpt.com/?hints=search&q=Read%20ape/_sources/commands/pm.rst.txt%20so%20I%20can%20ask%20questions%20about%20it." target="_blank" rel="nofollow">
+          <iconify-icon icon="bi:openai"></iconify-icon>
+          <span>Open in ChatGPT</span>
+        </a><a role="menuitem" href="https://claude.ai/new?q=Read%20ape/_sources/commands/pm.rst.txt%20so%20I%20can%20ask%20questions%20about%20it." target="_blank" rel="nofollow">
+          <iconify-icon icon="bi:claude"></iconify-icon>
+          <span>Open in Claude</span>
+        </a></div>
+    </div>
+  </div>
+</div><article class="yue" role="main">
           <section id="pm">
 <h1>pm<a class="headerlink" href="#pm" title="Link to this heading"></a></h1>
 <p>Package management tools</p>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">pm<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
 </span></pre></div>
 </div>
 <section id="pm-compile">
 <h2>compile<a class="headerlink" href="#pm-compile" title="Link to this heading"></a></h2>
 <p>Compile a package</p>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">pm<span class="w"> </span>compile<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span><span class="o">[</span>NAME<span class="o">]</span>
 </span></pre></div>
 </div>
@@ -210,6 +247,7 @@ data-aria-dark="Switch to auto color mode">
 <section id="pm-install">
 <h2>install<a class="headerlink" href="#pm-install" title="Link to this heading"></a></h2>
 <p>Download and cache packages</p>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">pm<span class="w"> </span>install<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span><span class="o">[</span>PACKAGE<span class="o">]</span>
 </span></pre></div>
 </div>
@@ -273,6 +311,7 @@ data-aria-dark="Switch to auto color mode">
 <section id="pm-list">
 <h2>list<a class="headerlink" href="#pm-list" title="Link to this heading"></a></h2>
 <p>List installed packages</p>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">pm<span class="w"> </span>list<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
 </span></pre></div>
 </div>
@@ -303,6 +342,7 @@ versions to remove. You can also choose to remove all versions of the package.</
 <li><p>Prompt to choose versions: ape pm uninstall &lt;PackageName&gt;</p></li>
 <li><p>Remove all versions: ape pm uninstall &lt;PackageName&gt; -y</p></li>
 </ul>
+<p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">pm<span class="w"> </span>uninstall<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span><span class="o">[</span>NAME<span class="o">]</span><span class="w"> </span><span class="o">[</span>VERSIONS<span class="o">]</span>...
 </span></pre></div>
 </div>
@@ -381,5 +421,5 @@ versions to remove. You can also choose to remove all versions of the package.</
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script data-domain="docs.apeworx.io" defer="defer" src="https://plausible.io/js/script.js"></script>
-      <script src="../_static/shibuya.js?v=c1cf1a6b"></script></body>
+      <script src="../_static/shibuya.js?v=cac61aee"></script></body>
 </html>

@@ -7,7 +7,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=14737038" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=a318c5d4" />
     <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -246,8 +246,43 @@ data-aria-dark="Switch to auto color mode">
     </div>
   </div>
 </div><div class="flex flex-col break-words justify-between">
-      <div class="min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
-        <article class="yue" role="main">
+      <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+  <div class="copy-page-wrapper relative pb-4 lg:absolute lg:top-8 lg:right-6 xl:right-12">
+  <div id="copy-page-trigger">
+    <button
+      type="button"
+      class="js-copy px-3 py-1 inline-flex items-center gap-1"
+      data-url="ape/_sources/methoddocs/ape_test.md.txt"
+    >
+      <i class="i-lucide" data-icon="copy"></i>
+      <span>Copy page</span>
+    </button>
+    <button class="js-menu px-2 py-1" type="button" aria-label="More actions"
+      aria-haspopup="menu" aria-expanded="false" aria-controls="copy-page-content">
+      <i class="i-lucide chevron-down"></i>
+    </button>
+  </div>
+  <div id="copy-page-content" role="menu" aria-orientation="vertical" aria-hidden="true">
+    <div role="presentation">
+      <div class="flex flex-col" role="group">
+        <button class="js-copy" type="button" role="menuitem"
+          data-url="ape/_sources/methoddocs/ape_test.md.txt">
+          <span class="iconify-icon">
+            <i class="i-lucide" data-icon="copy"></i>
+          </span>
+          <span>Copy page</span>
+        </button>
+        <a role="menuitem" href="ape/_sources/methoddocs/ape_test.md.txt" target="_blank" rel="nofollow"><iconify-icon icon="bi:markdown"></iconify-icon>
+            <span>View as Markdown</span></a><a role="menuitem" href="https://chatgpt.com/?hints=search&q=Read%20ape/_sources/methoddocs/ape_test.md.txt%20so%20I%20can%20ask%20questions%20about%20it." target="_blank" rel="nofollow">
+          <iconify-icon icon="bi:openai"></iconify-icon>
+          <span>Open in ChatGPT</span>
+        </a><a role="menuitem" href="https://claude.ai/new?q=Read%20ape/_sources/methoddocs/ape_test.md.txt%20so%20I%20can%20ask%20questions%20about%20it." target="_blank" rel="nofollow">
+          <iconify-icon icon="bi:claude"></iconify-icon>
+          <span>Open in Claude</span>
+        </a></div>
+    </div>
+  </div>
+</div><article class="yue" role="main">
           <section id="module-ape_test.accounts">
 <span id="ape-test"></span><h1>ape-test<a class="headerlink" href="#module-ape_test.accounts" title="Link to this heading"></a></h1>
 <dl class="py class">
@@ -580,7 +615,7 @@ See <a class="reference external" href="https://chainlist.org/">ChainList</a> fo
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>txn</strong> (<a class="reference internal" href="api.html#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransactionAPI</span></code></a>) – The transaction to estimate the gas for.</p></li>
-<li><p><strong>block_id</strong> (Optional[<code class="xref py py-class docutils literal notranslate"><span class="pre">BlockID</span></code>]) – The block ID
+<li><p><strong>block_id</strong> (<em>&quot;BlockID</em><em> | </em><em>None&quot;</em>) – The block ID
 to use when estimating the transaction. Useful for checking a
 past estimation cost of a transaction.</p></li>
 </ul>
@@ -649,7 +684,7 @@ topic filters. Defaults to getting all events.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>address</strong> (<em>AddressType</em>) – The address of the account.</p></li>
-<li><p><strong>block_id</strong> (Optional[<code class="xref py py-class docutils literal notranslate"><span class="pre">BlockID</span></code>]) – The block ID
+<li><p><strong>block_id</strong> (<em>&quot;BlockID</em><em> | </em><em>None&quot;</em>) – The block ID
 for checking a previous account nonce.</p></li>
 </ul>
 </dd>
@@ -768,7 +803,7 @@ transaction on the blockchain.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>txn</strong> – <a class="reference internal" href="api.html#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransactionAPI</span></code></a></p></li>
-<li><p><strong>block_id</strong> (Optional[<code class="xref py py-class docutils literal notranslate"><span class="pre">BlockID</span></code>]) – The block ID
+<li><p><strong>block_id</strong> (<em>&quot;BlockID</em><em> | </em><em>None&quot;</em>) – The block ID
 to use to send a call at a historical point of a contract.
 Useful for checking a past estimation cost of a transaction.</p></li>
 <li><p><strong>state</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – Modify the state of the blockchain
@@ -906,5 +941,5 @@ May require a reconnect.</p>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script data-domain="docs.apeworx.io" defer="defer" src="https://plausible.io/js/script.js"></script>
-      <script src="../_static/shibuya.js?v=c1cf1a6b"></script></body>
+      <script src="../_static/shibuya.js?v=cac61aee"></script></body>
 </html>

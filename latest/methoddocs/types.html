@@ -7,7 +7,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=14737038" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=a318c5d4" />
     <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -332,8 +332,43 @@ data-aria-dark="Switch to auto color mode">
     </div>
   </div>
 </div><div class="flex flex-col break-words justify-between">
-      <div class="min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
-        <article class="yue" role="main">
+      <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+  <div class="copy-page-wrapper relative pb-4 lg:absolute lg:top-8 lg:right-6 xl:right-12">
+  <div id="copy-page-trigger">
+    <button
+      type="button"
+      class="js-copy px-3 py-1 inline-flex items-center gap-1"
+      data-url="ape/_sources/methoddocs/types.md.txt"
+    >
+      <i class="i-lucide" data-icon="copy"></i>
+      <span>Copy page</span>
+    </button>
+    <button class="js-menu px-2 py-1" type="button" aria-label="More actions"
+      aria-haspopup="menu" aria-expanded="false" aria-controls="copy-page-content">
+      <i class="i-lucide chevron-down"></i>
+    </button>
+  </div>
+  <div id="copy-page-content" role="menu" aria-orientation="vertical" aria-hidden="true">
+    <div role="presentation">
+      <div class="flex flex-col" role="group">
+        <button class="js-copy" type="button" role="menuitem"
+          data-url="ape/_sources/methoddocs/types.md.txt">
+          <span class="iconify-icon">
+            <i class="i-lucide" data-icon="copy"></i>
+          </span>
+          <span>Copy page</span>
+        </button>
+        <a role="menuitem" href="ape/_sources/methoddocs/types.md.txt" target="_blank" rel="nofollow"><iconify-icon icon="bi:markdown"></iconify-icon>
+            <span>View as Markdown</span></a><a role="menuitem" href="https://chatgpt.com/?hints=search&q=Read%20ape/_sources/methoddocs/types.md.txt%20so%20I%20can%20ask%20questions%20about%20it." target="_blank" rel="nofollow">
+          <iconify-icon icon="bi:openai"></iconify-icon>
+          <span>Open in ChatGPT</span>
+        </a><a role="menuitem" href="https://claude.ai/new?q=Read%20ape/_sources/methoddocs/types.md.txt%20so%20I%20can%20ask%20questions%20about%20it." target="_blank" rel="nofollow">
+          <iconify-icon icon="bi:claude"></iconify-icon>
+          <span>Open in Claude</span>
+        </a></div>
+    </div>
+  </div>
+</div><article class="yue" role="main">
           <section id="ape-types">
 <h1>ape.types<a class="headerlink" href="#ape-types" title="Link to this heading"></a></h1>
 <section id="module-ape.types.address">
@@ -347,9 +382,8 @@ data-aria-dark="Switch to auto color mode">
 
 <dl class="py data">
 <dt class="sig sig-object py" id="ape.types.address.RawAddress">
-<span class="sig-prename descclassname"><span class="pre">ape.types.address.</span></span><span class="sig-name descname"><span class="pre">RawAddress</span></span><a class="headerlink" href="#ape.types.address.RawAddress" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">ape.types.address.</span></span><span class="sig-name descname"><span class="pre">RawAddress</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">TypeAlias</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">str</span> <span class="pre">|</span> <span class="pre">int</span> <span class="pre">|</span> <span class="pre">eth_pydantic_types.hex.str.HexStr20</span> <span class="pre">|</span> <span class="pre">eth_pydantic_types.hex.bytes.HexBytes20</span></em><a class="headerlink" href="#ape.types.address.RawAddress" title="Link to this definition"></a></dt>
 <dd><p>A raw data-type representation of an address.</p>
-<p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">HexStr20</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">HexBytes20</span></code></p>
 </dd></dl>
 
 </section>
@@ -1254,8 +1288,8 @@ where 1 is the first calling function.</p>
 <dd class="field-even"><ul class="simple">
 <li><p><strong>location</strong> (<em>SourceLocation</em>) – The location of the content, in the form
 (lineno, col_offset, end_lineno, end_coloffset).</p></li>
-<li><p><strong>pcs</strong> (<em>Optional</em><em>[</em><em>set</em><em>[</em><em>int</em><em>]</em><em>]</em>) – The PC values of the statements.</p></li>
-<li><p><strong>ws_start</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – Optionally provide a white-space starting point
+<li><p><strong>pcs</strong> (<em>set</em><em>[</em><em>int</em><em>] </em><em>| </em><em>None</em>) – The PC values of the statements.</p></li>
+<li><p><strong>ws_start</strong> (<em>int</em><em> | </em><em>None</em>) – Optionally provide a white-space starting point
 to back-fill.</p></li>
 </ul>
 </dd>
@@ -1330,9 +1364,9 @@ for a usage example.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> (<em>str</em>) – The name of the compiler built-in.</p></li>
 <li><p><strong>_type</strong> (<em>str</em>) – A str describing the type of check.</p></li>
-<li><p><strong>full_name</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – A full-name ID.</p></li>
-<li><p><strong>source_path</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="cli.html#ape.cli.paramtype.Path" title="ape.cli.paramtype.Path"><em>Path</em></a><em>]</em>) – The source file related, if there is one.</p></li>
-<li><p><strong>pcs</strong> (<em>Optional</em><em>[</em><em>set</em><em>[</em><em>int</em><em>]</em><em>]</em>) – Program counter values mapping to this check.</p></li>
+<li><p><strong>full_name</strong> (<em>str</em><em> | </em><em>None</em>) – A full-name ID.</p></li>
+<li><p><strong>source_path</strong> (<a class="reference internal" href="cli.html#ape.cli.paramtype.Path" title="ape.cli.paramtype.Path"><em>Path</em></a><em> | </em><em>None</em>) – The source file related, if there is one.</p></li>
+<li><p><strong>pcs</strong> (<em>set</em><em>[</em><em>int</em><em>] </em><em>| </em><em>None</em>) – Program counter values mapping to this check.</p></li>
 </ul>
 </dd>
 </dl>
@@ -1347,9 +1381,9 @@ for a usage example.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>location</strong> (<code class="docutils literal notranslate"><span class="pre">SourceLocation</span></code>) – The location to add.</p></li>
 <li><p><strong>function</strong> (<code class="docutils literal notranslate"><span class="pre">Function</span></code>) – The function executing.</p></li>
-<li><p><strong>source_path</strong> (Optional[<code class="docutils literal notranslate"><span class="pre">Path</span></code>]) – The path of the source file.</p></li>
+<li><p><strong>source_path</strong> (<a class="reference internal" href="cli.html#ape.cli.paramtype.Path" title="ape.cli.paramtype.Path"><em>Path</em></a><em> | </em><em>None</em>) – The path of the source file.</p></li>
 <li><p><strong>depth</strong> (<em>int</em>) – The depth of the function call in the call tree.</p></li>
-<li><p><strong>pcs</strong> (<em>Optional</em><em>[</em><em>set</em><em>[</em><em>int</em><em>]</em><em>]</em>) – The program counter values.</p></li>
+<li><p><strong>pcs</strong> (<em>set</em><em>[</em><em>int</em><em>] </em><em>| </em><em>None</em>) – The program counter values.</p></li>
 <li><p><strong>source_path</strong> – The path of the source file.</p></li>
 </ul>
 </dd>
@@ -1383,7 +1417,7 @@ a control flow is separated by a jump.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>location</strong> (<code class="docutils literal notranslate"><span class="pre">SourceLocation</span></code>) – The location of the new content.</p></li>
-<li><p><strong>pcs</strong> (<em>Optional</em><em>[</em><em>set</em><em>[</em><em>int</em><em>]</em><em>]</em>) – The PC values to add on.</p></li>
+<li><p><strong>pcs</strong> (<em>set</em><em>[</em><em>int</em><em>] </em><em>| </em><em>None</em>) – The PC values to add on.</p></li>
 </ul>
 </dd>
 </dl>
@@ -1499,5 +1533,5 @@ To be used on pydantic-fields.</p>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script data-domain="docs.apeworx.io" defer="defer" src="https://plausible.io/js/script.js"></script>
-      <script src="../_static/shibuya.js?v=c1cf1a6b"></script></body>
+      <script src="../_static/shibuya.js?v=cac61aee"></script></body>
 </html>
