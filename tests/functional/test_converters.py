@@ -1,3 +1,6 @@
+from types import UnionType
+from typing import Union, get_origin
+
 import pytest
 
 from ape.managers.converters import (
@@ -41,3 +44,35 @@ def test_get_converters_by_type(conversion_manager):
     converters = conversion_manager.get_converters_by_type(AddressType)
     for expected in (AddressAPIConverter, IntAddressConverter, BytesAddressConverter):
         assert any(isinstance(c, expected) for c in converters)
+
+
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {"gas_limit": "0x2a"},
+        {"receiver": "0x0000000000000000000000000000000000000001"},
+    ],
+)
+def test_convert_method_kwargs_unwraps_pep604_optional(monkeypatch, conversion_manager, kwargs):
+    """
+    Ensure `ConversionManager.convert_method_kwargs()` unwraps `X | None` annotations
+    before attempting conversion (Python 3.10+ union syntax).
+    """
+
+    seen: dict[str, object] = {}
+
+    def fake_convert(_value, to_type):
+        seen["to_type"] = to_type
+        return 123
+
+    monkeypatch.setattr(conversion_manager, "convert", fake_convert)
+    actual = conversion_manager.convert_method_kwargs(kwargs)
+
+    # We attempted conversion and used the converted value.
+    key = next(iter(kwargs))
+    assert actual[key] == 123
+
+    # And the chosen type is not a union (i.e. None was stripped).
+    assert "to_type" in seen
+    origin = get_origin(seen["to_type"])
+    assert origin not in (Union, UnionType)
