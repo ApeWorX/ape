@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from fnmatch import fnmatch
 from statistics import mean, median
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import TYPE_CHECKING, Any
 
 from eth_utils import is_0x_prefixed, to_hex
 from rich.box import SIMPLE
@@ -20,8 +20,8 @@ DEFAULT_WRAP_THRESHOLD = 50
 def prettify_function(
     method: str,
     calldata: Any,
-    contract: Optional[str] = None,
-    returndata: Optional[Any] = None,
+    contract: str | None = None,
+    returndata: Any | None = None,
     stylize: bool = False,
     is_create: bool = False,
     depth: int = 0,
@@ -92,7 +92,7 @@ def prettify_inputs(inputs: Any, stylize: bool = False) -> str:
     return f"({inputs})"
 
 
-def _get_outputs_str(outputs: Any, stylize: bool = False, depth: int = 0) -> Optional[str]:
+def _get_outputs_str(outputs: Any, stylize: bool = False, depth: int = 0) -> str | None:
     if outputs in ["0x", None, (), [], {}]:
         return None
 
@@ -111,7 +111,7 @@ def _get_outputs_str(outputs: Any, stylize: bool = False, depth: int = 0) -> Opt
 
 
 def prettify_list(
-    ls: Union[list, tuple],
+    ls: list | tuple,
     depth: int = 0,
     indent: int = 2,
     wrap_threshold: int = DEFAULT_WRAP_THRESHOLD,
@@ -170,7 +170,7 @@ def prettify_list(
 
 def prettify_dict(
     dictionary: dict,
-    color: Optional[str] = None,
+    color: str | None = None,
     indent: int = 2,
     wrap_threshold: int = DEFAULT_WRAP_THRESHOLD,
 ) -> str:
@@ -179,7 +179,7 @@ def prettify_dict(
 
     Args:
         dictionary (dict): The dictionary to prettify.
-        color (Optional[str]): The color to use for pretty printing.
+        color (str | None): The color to use for pretty printing.
 
     Returns:
         str
@@ -211,7 +211,7 @@ def prettify_dict(
     return f"{kv_str})"
 
 
-def _list_to_multiline_str(value: Union[list, tuple], depth: int = 0, indent: int = 2) -> str:
+def _list_to_multiline_str(value: list | tuple, depth: int = 0, indent: int = 2) -> str:
     spacing = indent * " "
     ls_spacing = spacing * (depth + 1)
     joined = ",\n".join([f"{ls_spacing}{v}" for v in value])

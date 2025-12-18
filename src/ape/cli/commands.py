@@ -1,5 +1,5 @@
 import inspect
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 
 import click
 
@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from ape.api.providers import ProviderAPI
 
 
-def get_param_from_ctx(ctx: "Context", param: str) -> Optional[Any]:
+def get_param_from_ctx(ctx: "Context", param: str) -> Any | None:
     if value := ctx.params.get(param):
         return value
 
@@ -24,7 +24,7 @@ def get_param_from_ctx(ctx: "Context", param: str) -> Optional[Any]:
     return None
 
 
-def parse_network(ctx: "Context") -> Optional["ProviderContextManager"]:
+def parse_network(ctx: "Context") -> "ProviderContextManager | None":
     from ape.api.providers import ProviderAPI
     from ape.utils.basemodel import ManagerAccessMixin as access
 
@@ -72,7 +72,7 @@ class ConnectedProviderCommand(click.Command):
 
     def parse_args(self, ctx: "Context", args: list[str]) -> list[str]:
         arguments = args  # Renamed for better pdb support.
-        base_type: Optional[type] = None if self._use_cls_types else str
+        base_type: type | None = None if self._use_cls_types else str
         if existing_option := next(
             iter(
                 x
@@ -112,7 +112,7 @@ class ConnectedProviderCommand(click.Command):
         else:
             return self._invoke(ctx)
 
-    def _invoke(self, ctx: "Context", provider: Optional["ProviderAPI"] = None):
+    def _invoke(self, ctx: "Context", provider: "ProviderAPI | None" = None):
         # Will be put back with correct value if needed.
         # Else, causes issues.
         ctx.params.pop("network", None)

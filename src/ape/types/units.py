@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 
 from pydantic_core.core_schema import (
     CoreSchema,
@@ -12,7 +12,7 @@ from ape.exceptions import ConversionError
 from ape.utils.basemodel import ManagerAccessMixin
 
 if TYPE_CHECKING:
-    from typing_extensions import TypeAlias
+    from typing import TypeAlias
 
 
 class CurrencyValueComparable(int):
@@ -52,7 +52,7 @@ class CurrencyValueComparable(int):
         )
 
     @staticmethod
-    def _validate(value: Any, info: Optional[ValidationInfo] = None) -> "CurrencyValueComparable":
+    def _validate(value: Any, info: ValidationInfo | None = None) -> "CurrencyValueComparable":
         # NOTE: For some reason, for this to work, it has to happen
         #   in an "after" validator, or else it always only `int` type on the model.
         if value is None:

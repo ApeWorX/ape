@@ -166,7 +166,7 @@ def ape_plugins_runner(config):
         def __init__(self):
             super().__init__("plugins", data_folder=config.DATA_FOLDER)
 
-        def invoke_list(self, arguments: Optional[list] = None):
+        def invoke_list(self, arguments: list | None = None):
             arguments = arguments or []
             result = self.invoke("list", *arguments)
             assert result.exit_code == 0, result.output

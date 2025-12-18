@@ -1,7 +1,7 @@
 from collections.abc import Iterator
 from itertools import chain
 from pathlib import Path
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING
 
 from eth_pydantic_types import HexBytes
 from ethpm_types import ASTNode, BaseModel
@@ -45,7 +45,7 @@ class ControlFlow(BaseModel):
     The defining closure, such as a function or module, of the code sequence.
     """
 
-    source_path: Optional[Path] = None
+    source_path: Path | None = None
     """
     The path to the local contract file.
     Only exists when is from a local contract.
@@ -99,7 +99,7 @@ class ControlFlow(BaseModel):
         return [x for x in self.statements if isinstance(x, SourceStatement)]
 
     @property
-    def begin_lineno(self) -> Optional[int]:
+    def begin_lineno(self) -> int | None:
         """
         The first line number in the sequence.
         """
@@ -107,7 +107,7 @@ class ControlFlow(BaseModel):
         return stmts[0].begin_lineno if stmts else None
 
     @property
-    def ws_begin_lineno(self) -> Optional[int]:
+    def ws_begin_lineno(self) -> int | None:
         """
         The first line number in the sequence, including whitespace.
         """
@@ -146,7 +146,7 @@ class ControlFlow(BaseModel):
         return result.strip()
 
     @property
-    def end_lineno(self) -> Optional[int]:
+    def end_lineno(self) -> int | None:
         """
         The last line number.
         """
@@ -164,8 +164,8 @@ class ControlFlow(BaseModel):
     def extend(
         self,
         location: "SourceLocation",
-        pcs: Optional[set[int]] = None,
-        ws_start: Optional[int] = None,
+        pcs: set[int] | None = None,
+        ws_start: int | None = None,
     ):
         """
         Extend this node's content with other content that follows it directly.
@@ -176,8 +176,8 @@ class ControlFlow(BaseModel):
         Args:
             location (SourceLocation): The location of the content, in the form
               (lineno, col_offset, end_lineno, end_coloffset).
-            pcs (Optional[set[int]]): The PC values of the statements.
-            ws_start (Optional[int]): Optionally provide a white-space starting point
+            pcs (set[int] | None): The PC values of the statements.
+            ws_start (int | None): Optionally provide a white-space starting point
               to back-fill.
         """
 
@@ -254,7 +254,7 @@ class ControlFlow(BaseModel):
         return content
 
     @property
-    def next_statement(self) -> Optional[SourceStatement]:
+    def next_statement(self) -> SourceStatement | None:
         """
         Returns the next statement that _would_ execute
         if the program were to progress to the next line.
@@ -296,7 +296,7 @@ class SourceTraceback(RootModel[list[ControlFlow]]):
     """
 
     @classmethod
-    def create(cls, contract_source: ContractSource, trace: "TraceAPI", data: Union[HexBytes, str]):
+    def create(cls, contract_source: ContractSource, trace: "TraceAPI", data: HexBytes | str):
         # Use the trace as a 'ManagerAccessMixin'.
         compilers = trace.compiler_manager
         source_id = contract_source.source_id
@@ -333,7 +333,7 @@ class SourceTraceback(RootModel[list[ControlFlow]]):
         return self.root.__setitem__(key, value)
 
     @property
-    def revert_type(self) -> Optional[str]:
+    def revert_type(self) -> str | None:
         """
         The revert type, such as a builtin-error code or a user dev-message,
         if there is one.
@@ -356,7 +356,7 @@ class SourceTraceback(RootModel[list[ControlFlow]]):
         self.root.extend(__iterable.root)
 
     @property
-    def last(self) -> Optional[ControlFlow]:
+    def last(self) -> ControlFlow | None:
         """
         The last control flow in the traceback, if there is one.
         """
@@ -445,8 +445,8 @@ class SourceTraceback(RootModel[list[ControlFlow]]):
         location: "SourceLocation",
         function: Function,
         depth: int,
-        pcs: Optional[set[int]] = None,
-        source_path: Optional[Path] = None,
+        pcs: set[int] | None = None,
+        source_path: Path | None = None,
     ):
         """
         Add an execution sequence from a jump.
@@ -454,10 +454,10 @@ class SourceTraceback(RootModel[list[ControlFlow]]):
         Args:
             location (``SourceLocation``): The location to add.
             function (``Function``): The function executing.
-            source_path (Optional[``Path``]): The path of the source file.
+            source_path (Path | None): The path of the source file.
             depth (int): The depth of the function call in the call tree.
-            pcs (Optional[set[int]]): The program counter values.
-            source_path (Optional[``Path``]): The path of the source file.
+            pcs (set[int] | None): The program counter values.
+            source_path (Path | None): The path of the source file.
         """
 
         asts = function.get_content_asts(location)
@@ -470,13 +470,13 @@ class SourceTraceback(RootModel[list[ControlFlow]]):
         ControlFlow.model_rebuild()
         self._add(asts, content, pcs, function, depth, source_path=source_path)
 
-    def extend_last(self, location: "SourceLocation", pcs: Optional[set[int]] = None):
+    def extend_last(self, location: "SourceLocation", pcs: set[int] | None = None):
         """
         Extend the last node with more content.
 
         Args:
             location (``SourceLocation``): The location of the new content.
-            pcs (Optional[set[int]]): The PC values to add on.
+            pcs (set[int] | None): The PC values to add on.
         """
 
         if not self.last:
@@ -496,9 +496,9 @@ class SourceTraceback(RootModel[list[ControlFlow]]):
         self,
         name: str,
         _type: str,
-        full_name: Optional[str] = None,
-        source_path: Optional[Path] = None,
-        pcs: Optional[set[int]] = None,
+        full_name: str | None = None,
+        source_path: Path | None = None,
+        pcs: set[int] | None = None,
     ):
         """
         A convenience method for appending a control flow that happened
@@ -508,9 +508,9 @@ class SourceTraceback(RootModel[list[ControlFlow]]):
         Args:
             name (str): The name of the compiler built-in.
             _type (str): A str describing the type of check.
-            full_name (Optional[str]): A full-name ID.
-            source_path (Optional[Path]): The source file related, if there is one.
-            pcs (Optional[set[int]]): Program counter values mapping to this check.
+            full_name (str | None): A full-name ID.
+            source_path (Path | None): The source file related, if there is one.
+            pcs (set[int] | None): Program counter values mapping to this check.
         """
         pcs = pcs or set()
         closure = Closure(name=name, full_name=full_name or name)
@@ -528,7 +528,7 @@ class SourceTraceback(RootModel[list[ControlFlow]]):
         pcs: set[int],
         function: Function,
         depth: int,
-        source_path: Optional[Path] = None,
+        source_path: Path | None = None,
     ):
         statement = SourceStatement(asts=asts, content=content, pcs=pcs)
         exec_sequence = ControlFlow(
@@ -544,7 +544,7 @@ class ContractFunctionPath:
     """
 
     contract_name: str
-    method_name: Optional[str] = None
+    method_name: str | None = None
 
     @classmethod
     def from_str(cls, value: str) -> "ContractFunctionPath":

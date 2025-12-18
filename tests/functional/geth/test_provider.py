@@ -1,7 +1,7 @@
 import re
 from abc import ABC
 from pathlib import Path
-from typing import Optional, cast
+from typing import cast
 from urllib.error import HTTPError, URLError
 
 import pytest
@@ -156,7 +156,7 @@ def test_uri_missing(mock_sepolia):
         _configured_rpc = None
 
         @property
-        def _default_http_uri(self) -> Optional[str]:
+        def _default_http_uri(self) -> str | None:
             # Doing this to get the error to occur.
             return None
 
