@@ -120,10 +120,11 @@ jobs:
 
       - name: Run container retention policy
         if: github.ref == 'refs/heads/main'
-        uses: snok/container-retention-policy@v3.0.0
+        uses: snok/container-retention-policy@v2
         with:
           account: ApeWorX
           token: ${{ secrets.GITHUB_TOKEN }}
+          image-names: ${{ env.IMAGE_NAME }}
           image-tags: "!stable* !latest* !${{ env.keep_tags }}"
           tag-selection: both
           cut-off: 4w
