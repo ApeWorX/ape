@@ -32,8 +32,9 @@ import ape
 from ape_ethereum._console_log_abi import CONSOLE_LOG_ABI
 
 if TYPE_CHECKING:
+    from typing import TypeGuard
+
     from evm_trace import CallTreeNode
-    from typing_extensions import TypeGuard
 
 
 CONSOLE_ADDRESS = cast(ChecksumAddress, "0x000000000000000000636F6e736F6c652e6c6f67")

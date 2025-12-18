@@ -468,9 +468,7 @@ class SubprocessRunner:
     modify installed plugins.
     """
 
-    def __init__(
-        self, root_cmd: Optional[Sequence[str]] = None, data_folder: Optional[Path] = None
-    ):
+    def __init__(self, root_cmd: Sequence[str] | None = None, data_folder: Path | None = None):
         self.root_cmd = root_cmd or []
         self.data_folder = data_folder
 
@@ -479,7 +477,7 @@ class SubprocessRunner:
         *subcommand: str,
         input=None,
         timeout: int = 40,
-        env: Optional[dict] = None,
+        env: dict | None = None,
     ):
         subcommand = subcommand or ()
         cmd_ls = [*self.root_cmd, *subcommand]
@@ -509,8 +507,8 @@ class ApeSubprocessRunner(SubprocessRunner):
 
     def __init__(
         self,
-        root_cmd: Optional[Union[str, Sequence[str]]] = None,
-        data_folder: Optional[Path] = None,
+        root_cmd: str | Sequence[str] | None = None,
+        data_folder: Path | None = None,
     ):
         ape_path = Path(sys.executable).parent / "ape"
 
@@ -521,7 +519,7 @@ class ApeSubprocessRunner(SubprocessRunner):
         super().__init__([str(ape_path), *root], data_folder=data_folder)
         self.project = None
 
-    def invoke(self, *subcommand: str, input=None, timeout: int = 40, env: Optional[dict] = None):
+    def invoke(self, *subcommand: str, input=None, timeout: int = 40, env: dict | None = None):
         if self.project:
             try:
                 here = os.getcwd()

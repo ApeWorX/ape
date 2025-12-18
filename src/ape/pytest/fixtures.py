@@ -5,7 +5,7 @@ from collections.abc import Iterable, Iterator, Mapping
 from dataclasses import dataclass, field
 from fnmatch import fnmatch
 from functools import cached_property, singledispatchmethod
-from typing import TYPE_CHECKING, ClassVar, Optional
+from typing import TYPE_CHECKING, ClassVar
 
 import pytest
 from eth_utils import to_hex
@@ -105,10 +105,10 @@ class FixtureManager(ManagerAccessMixin):
 
         return fixture_map
 
-    def get_fixture_scope(self, fixture_name: str) -> Optional[Scope]:
+    def get_fixture_scope(self, fixture_name: str) -> Scope | None:
         return self._fixture_name_to_info.get(fixture_name, {}).get("scope")
 
-    def is_stateful(self, name: str) -> Optional[bool]:
+    def is_stateful(self, name: str) -> bool | None:
         if name in self._stateful_fixtures_cache:
             # Used `@ape.fixture(chain_isolation=<bool>)
             # Or we already calculated.
@@ -159,7 +159,7 @@ class FixtureManager(ManagerAccessMixin):
                 **info,
             }
 
-    def _get_cached_fixtures(self, nodeid: str) -> Optional["FixtureMap"]:
+    def _get_cached_fixtures(self, nodeid: str) -> "FixtureMap | None":
         return self._nodeid_to_fixture_map.get(nodeid)
 
     def needs_rebase(self, new_fixtures: list[str], snapshot: "Snapshot") -> bool:
@@ -203,7 +203,7 @@ class FixtureManager(ManagerAccessMixin):
                 if rebase.return_scope is not None:
                     log = f"{log} scope={rebase.return_scope}"
 
-    def _get_rebase(self, scope: Scope) -> Optional[FixtureRebase]:
+    def _get_rebase(self, scope: Scope) -> FixtureRebase | None:
         # Check for fixtures that are now invalid. For example, imagine a session
         # fixture comes into play after the module snapshot has been set.
         # Once we restore the module's state and move to the next module,
@@ -239,7 +239,7 @@ class FixtureManager(ManagerAccessMixin):
 class FixtureMap(dict[Scope, list[str]]):
     def __init__(self, item):
         self._item = item
-        self._parametrized_names: Optional[list[str]] = None
+        self._parametrized_names: list[str] | None = None
         super().__init__(
             {
                 Scope.SESSION: [],
@@ -506,7 +506,7 @@ class Snapshot:
     scope: Scope
     """Corresponds to fixture scope."""
 
-    identifier: Optional["SnapshotID"] = None
+    identifier: "SnapshotID | None" = None
     """Snapshot ID taken before the peer-fixtures in the same scope."""
 
     fixtures: list = field(default_factory=list)
@@ -532,7 +532,7 @@ class SnapshotRegistry(dict[Scope, Snapshot]):
             }
         )
 
-    def get_snapshot_id(self, scope: Scope) -> Optional["SnapshotID"]:
+    def get_snapshot_id(self, scope: Scope) -> "SnapshotID | None":
         return self[scope].identifier
 
     def set_snapshot_id(self, scope: Scope, snapshot_id: "SnapshotID"):
@@ -557,7 +557,7 @@ class IsolationManager(ManagerAccessMixin):
         self,
         config_wrapper: "ConfigWrapper",
         receipt_capture: "ReceiptCapture",
-        chain_snapshots: Optional[dict] = None,
+        chain_snapshots: dict | None = None,
     ):
         self.config_wrapper = config_wrapper
         self.receipt_capture = receipt_capture
@@ -620,7 +620,7 @@ class IsolationManager(ManagerAccessMixin):
                 self.snapshots.set_snapshot_id(scope, snapshot_id)
 
     @allow_disconnected
-    def take_snapshot(self) -> Optional["SnapshotID"]:
+    def take_snapshot(self) -> "SnapshotID | None":
         try:
             return self.chain_manager.snapshot()
         except NotImplementedError:
@@ -748,12 +748,10 @@ class ReceiptCapture(ManagerAccessMixin):
         self.enter_blocks = []
 
     @allow_disconnected
-    def _get_block_number(self) -> Optional[int]:
+    def _get_block_number(self) -> int | None:
         return self.provider.get_block("latest").number
 
-    def _exclude_from_gas_report(
-        self, contract_name: str, method_name: Optional[str] = None
-    ) -> bool:
+    def _exclude_from_gas_report(self, contract_name: str, method_name: str | None = None) -> bool:
         """
         Helper method to determine if a certain contract / method combination should be
         excluded from the gas report.
@@ -771,7 +769,7 @@ class ReceiptCapture(ManagerAccessMixin):
         return False
 
 
-def fixture(chain_isolation: Optional[bool], **kwargs):
+def fixture(chain_isolation: bool | None, **kwargs):
     """
     A thin-wrapper around ``@pytest.fixture`` with extra capabilities.
     Set ``chain_isolation`` to ``False`` to signal to Ape that this fixture's

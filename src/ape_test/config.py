@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, NewType, Optional, Union
+from typing import TYPE_CHECKING, NewType
 
 from pydantic import NonNegativeInt, field_validator
 from pydantic_settings import SettingsConfigDict
@@ -25,7 +25,7 @@ class EthTesterProviderConfig(PluginConfig):
 
 class GasExclusion(PluginConfig):
     contract_name: str = "*"  # If only given method, searches across all contracts.
-    method_name: Optional[str] = None  # By default, match all methods in a contract
+    method_name: str | None = None  # By default, match all methods in a contract
     model_config = SettingsConfigDict(extra="allow", env_prefix="APE_TEST_")
 
 
@@ -70,7 +70,7 @@ class GasConfig(PluginConfig):
         return "terminal" in self.reports
 
 
-_ReportType = Union[bool, dict]
+_ReportType = bool | dict
 """Dict is for extra report settings."""
 
 
@@ -214,7 +214,7 @@ class ApeTestConfig(PluginConfig):
     useful for debugging the framework itself.
     """
 
-    isolation: Union[bool, IsolationConfig] = True
+    isolation: bool | IsolationConfig = True
     """
     Configure which scope-specific isolation to enable. Set to
     ``False`` to disable all and ``True`` (default) to disable all.

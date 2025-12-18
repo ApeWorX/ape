@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from evm_trace.gas import merge_reports
 
@@ -23,7 +23,7 @@ class GasTracker(ManagerAccessMixin):
 
     def __init__(self, config_wrapper: "ConfigWrapper"):
         self.config_wrapper = config_wrapper
-        self.session_gas_report: Optional[GasReport] = None
+        self.session_gas_report: GasReport | None = None
 
     @property
     def enabled(self) -> bool:

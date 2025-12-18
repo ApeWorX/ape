@@ -1,5 +1,3 @@
-from typing import Optional
-
 from pydantic_settings import SettingsConfigDict
 
 from ape.api.config import PluginConfig
@@ -19,7 +17,7 @@ class CustomNetwork(PluginConfig):
     ecosystem: str
     """The name of the ecosystem."""
 
-    base_ecosystem_plugin: Optional[str] = None
+    base_ecosystem_plugin: str | None = None
     """The base ecosystem plugin to use, when applicable. Defaults to the default ecosystem."""
 
     default_provider: str = "node"

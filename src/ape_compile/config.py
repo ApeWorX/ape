@@ -1,6 +1,5 @@
 import re
 from re import Pattern
-from typing import Union
 
 from pydantic import field_serializer, field_validator
 from pydantic_settings import SettingsConfigDict
@@ -28,7 +27,7 @@ class Config(PluginConfig):
     Configure general compiler settings.
     """
 
-    exclude: set[Union[str, Pattern]] = set()
+    exclude: set[str | Pattern] = set()
     """
     Source exclusion globs or regex patterns across all file types.
     To use regex, start your values with ``r"`` and they'll be turned

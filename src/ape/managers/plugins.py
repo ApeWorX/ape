@@ -2,7 +2,7 @@ from collections.abc import Generator, Iterable, Iterator
 from functools import cached_property
 from importlib import import_module
 from itertools import chain
-from typing import Any, Optional
+from typing import Any
 
 from ape.exceptions import ApeAttributeError
 from ape.logging import logger
@@ -143,7 +143,7 @@ class PluginManager:
 
         self.__registered = True
 
-    def _validate_plugin(self, plugin_name: str, plugin_cls) -> Optional[tuple[str, tuple]]:
+    def _validate_plugin(self, plugin_name: str, plugin_cls) -> tuple[str, tuple] | None:
         if valid_impl(plugin_cls):
             return clean_plugin_name(plugin_name), plugin_cls
         else:
