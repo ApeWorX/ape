@@ -1,7 +1,6 @@
 import time
 from collections.abc import Callable
 from random import randint
-from typing import Optional
 
 import requests
 from requests.models import CaseInsensitiveDict
@@ -27,7 +26,7 @@ def allow_disconnected(fn: Callable):
 
 
         @allow_disconnected
-        def try_snapshot(self) -> Optional[SnapshotID]:
+        def try_snapshot(self) -> "SnapshotID | None":
             return self.chain.snapshot()
 
     """
@@ -102,7 +101,7 @@ def request_with_retry(
     max_retry_delay: int = 30_000,
     max_retries: int = 10,
     retry_jitter: int = 250,
-    is_rate_limit: Optional[Callable[[Exception], bool]] = None,
+    is_rate_limit: Callable[[Exception], bool] | None = None,
 ):
     """
     Make a request with 429/rate-limit retry logic.

@@ -4,7 +4,7 @@ from collections.abc import Iterable, Iterator
 from contextlib import contextmanager
 from functools import cached_property
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import TYPE_CHECKING, Any
 
 from ape.api.config import ApeConfig
 from ape.logging import logger
@@ -35,7 +35,7 @@ class ConfigManager(ExtraAttributesMixin, BaseManager):
     definitions, see :class:`~ape.api.config.ApeConfig`.
     """
 
-    def __init__(self, data_folder: Optional[Path] = None, request_header: Optional[dict] = None):
+    def __init__(self, data_folder: Path | None = None, request_header: dict | None = None):
         if not data_folder and "APE_DATA_FOLDER" in os.environ:
             self.DATA_FOLDER = Path(os.environ["APE_DATA_FOLDER"])
         else:
@@ -118,16 +118,14 @@ class ConfigManager(ExtraAttributesMixin, BaseManager):
         return ApeConfig.from_manifest(manifest, **overrides)
 
     @contextmanager
-    def isolate_data_folder(
-        self, keep: Optional[Union[Iterable[str], str]] = None
-    ) -> Iterator[Path]:
+    def isolate_data_folder(self, keep: Iterable[str] | str | None = None) -> Iterator[Path]:
         """
         Change Ape's DATA_FOLDER to point a temporary path,
         in a context, for testing purposes. Any data
         cached to disk will not persist.
 
         Args:
-            keep (Optional[Union[Iterable[str], str]]): Optionally, pass in
+            keep (Iterable[str] | str | None): Optionally, pass in
               a key of subdirectory names to include in the new isolated
               data folder. For example, pass ing ``"packages"`` to avoid
               having to re-download dependencies in an isolated environment.

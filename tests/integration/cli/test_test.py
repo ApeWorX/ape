@@ -2,7 +2,6 @@ import io
 import os
 import re
 from pathlib import Path
-from typing import Optional
 
 import pytest
 
@@ -109,7 +108,7 @@ def setup_pytester(pytester, owner):
             pytester.makepyfile(**test_files)
 
         # Make other files
-        def _make_all_files(base: Path, prefix: Optional[Path] = None):
+        def _make_all_files(base: Path, prefix: Path | None = None):
             if not base.is_dir():
                 return
 
@@ -171,7 +170,7 @@ def run_gas_test(
         remainder = "\n".join(expected[actual_len:])
         pytest.fail(f"Expected contains more than actual:\n{remainder}")
 
-    for actual_line, expected_line in zip(actual, expected):
+    for actual_line, expected_line in zip(actual, expected, strict=True):
         message = f"'{actual_line}' does not match pattern '{expected_line}'."
         assert re.match(expected_line, actual_line), message
 

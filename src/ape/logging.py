@@ -6,7 +6,7 @@ from collections.abc import Callable, Iterator, Sequence
 from contextlib import contextmanager
 from enum import IntEnum
 from pathlib import Path
-from typing import IO, TYPE_CHECKING, Any, Optional, Union
+from typing import IO, TYPE_CHECKING, Any
 from urllib.parse import urlparse, urlunparse
 
 import click
@@ -70,7 +70,7 @@ def _isatty(stream: IO) -> bool:
 
 
 class ApeColorFormatter(logging.Formatter):
-    def __init__(self, fmt: Optional[str] = None):
+    def __init__(self, fmt: str | None = None):
         fmt = fmt or DEFAULT_LOG_FORMAT
         super().__init__(fmt=fmt)
 
@@ -97,9 +97,7 @@ class ApeColorFormatter(logging.Formatter):
 
 
 class ClickHandler(logging.Handler):
-    def __init__(
-        self, echo_kwargs: dict, handlers: Optional[Sequence[Callable[[str], str]]] = None
-    ):
+    def __init__(self, echo_kwargs: dict, handlers: Sequence[Callable[[str], str]] | None = None):
         super().__init__()
         self.echo_kwargs = echo_kwargs
         self.handlers = handlers or []
@@ -140,17 +138,17 @@ class ApeLogger:
         self.fmt = fmt
 
     @classmethod
-    def create(cls, fmt: Optional[str] = None) -> "ApeLogger":
+    def create(cls, fmt: str | None = None) -> "ApeLogger":
         fmt = fmt or DEFAULT_LOG_FORMAT
         _logger = get_logger("ape", fmt=fmt)
         return cls(_logger, fmt)
 
-    def format(self, fmt: Optional[str] = None):
+    def format(self, fmt: str | None = None):
         self.fmt = fmt or DEFAULT_LOG_FORMAT
         fmt = fmt or DEFAULT_LOG_FORMAT
         _format_logger(self._logger, fmt)
 
-    def _load_from_sys_argv(self, default: Optional[Union[str, int, LogLevel]] = None):
+    def _load_from_sys_argv(self, default: str | int | LogLevel | None = None):
         """
         Load from sys.argv to beat race condition with `click`.
         """
@@ -187,7 +185,7 @@ class ApeLogger:
     def level(self) -> int:
         return self._logger.level
 
-    def set_level(self, level: Union[str, int, LogLevel]):
+    def set_level(self, level: str | int | LogLevel):
         """
         Change the global ape logger log-level.
 
@@ -207,12 +205,12 @@ class ApeLogger:
             _logger.setLevel(level)
 
     @contextmanager
-    def at_level(self, level: Union[str, int, LogLevel]) -> Iterator:
+    def at_level(self, level: str | int | LogLevel) -> Iterator:
         """
         Change the log-level in a context.
 
         Args:
-            level (Union[str, int, LogLevel]): The level to use.
+            level (str | int | LogLevel): The level to use.
 
         Returns:
             Iterator
@@ -273,7 +271,7 @@ class ApeLogger:
         self._logger.debug(stack_trace)
 
     def create_logger(
-        self, new_name: str, handlers: Optional[Sequence[Callable[[str], str]]] = None
+        self, new_name: str, handlers: Sequence[Callable[[str], str]] | None = None
     ) -> logging.Logger:
         _logger = get_logger(new_name, fmt=self.fmt, handlers=handlers)
         _logger.setLevel(self.level)
@@ -282,7 +280,7 @@ class ApeLogger:
 
 
 def _format_logger(
-    _logger: logging.Logger, fmt: str, handlers: Optional[Sequence[Callable[[str], str]]] = None
+    _logger: logging.Logger, fmt: str, handlers: Sequence[Callable[[str], str]] | None = None
 ):
     handler = ClickHandler(echo_kwargs=CLICK_ECHO_KWARGS, handlers=handlers)
     formatter = ApeColorFormatter(fmt=fmt)
@@ -298,17 +296,17 @@ def _format_logger(
 
 def get_logger(
     name: str,
-    fmt: Optional[str] = None,
-    handlers: Optional[Sequence[Callable[[str], str]]] = None,
+    fmt: str | None = None,
+    handlers: Sequence[Callable[[str], str]] | None = None,
 ) -> logging.Logger:
     """
     Get a logger with the given ``name`` and configure it for usage with Ape.
 
     Args:
         name (str): The name of the logger.
-        fmt (Optional[str]): The format of the logger. Defaults to the Ape
+        fmt (str | None): The format of the logger. Defaults to the Ape
           logger's default format: ``"%(levelname)s%(plugin)s: %(message)s"``.
-        handlers (Optional[Sequence[Callable[[str], str]]]): Additional log message handlers.
+        handlers (Sequence[Callable[[str], str]] | None): Additional log message handlers.
 
     Returns:
         ``logging.Logger``
@@ -318,7 +316,7 @@ def get_logger(
     return _logger
 
 
-def _get_level(level: Optional[Union[str, int, LogLevel]] = None) -> str:
+def _get_level(level: str | int | LogLevel | None = None) -> str:
     if level is None:
         return DEFAULT_LOG_LEVEL
     elif isinstance(level, LogLevel):
@@ -350,7 +348,7 @@ logger = ApeLogger.create()
 class _RichConsoleFactory:
     rich_console_map: dict[str, "RichConsole"] = {}
 
-    def get_console(self, file: Optional[IO[str]] = None, **kwargs) -> "RichConsole":
+    def get_console(self, file: IO[str] | None = None, **kwargs) -> "RichConsole":
         # Configure custom file console
         file_id = str(file)
         if file_id not in self.rich_console_map:
@@ -365,12 +363,12 @@ class _RichConsoleFactory:
 _factory = _RichConsoleFactory()
 
 
-def get_rich_console(file: Optional[IO[str]] = None, **kwargs) -> "RichConsole":
+def get_rich_console(file: IO[str] | None = None, **kwargs) -> "RichConsole":
     """
     Get an Ape-configured rich console.
 
     Args:
-        file (Optional[IO[str]]): The file to output to. Will default
+        file (IO[str] | None): The file to output to. Will default
           to using stdout.
 
     Returns:

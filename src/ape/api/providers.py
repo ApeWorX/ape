@@ -14,7 +14,7 @@ from logging import FileHandler, Formatter, Logger, getLogger
 from pathlib import Path
 from signal import SIGINT, SIGTERM, signal
 from subprocess import DEVNULL, PIPE, Popen
-from typing import TYPE_CHECKING, Any, ClassVar, Optional, Union, cast
+from typing import TYPE_CHECKING, Any, ClassVar, cast
 
 from eth_pydantic_types import HexBytes
 from eth_utils import to_hex
@@ -71,12 +71,12 @@ class BlockAPI(BaseInterfaceModel):
     The number of transactions in the block.
     """
 
-    hash: Optional[Any] = None  # NOTE: pending block does not have a hash
+    hash: Any | None = None  # NOTE: pending block does not have a hash
     """
     The block hash identifier.
     """
 
-    number: Optional[HexInt] = None  # NOTE: pending block does not have a number
+    number: HexInt | None = None  # NOTE: pending block does not have a number
     """
     The block number identifier.
     """
@@ -94,7 +94,7 @@ class BlockAPI(BaseInterfaceModel):
     NOTE: The pending block uses the current timestamp.
     """
 
-    _size: Optional[HexInt] = None
+    _size: HexInt | None = None
 
     @log_instead_of_fail(default="<BlockAPI>")
     def __repr__(self) -> str:
@@ -189,7 +189,7 @@ class CallResult(BaseModel, ManagerAccessMixin):
     NOTE: Currently, you only get this for reverted calls from ``ProviderAPI``.
     """
 
-    revert: Optional[ContractLogicError] = None
+    revert: ContractLogicError | None = None
     """
     The revert, if the call reverted.
     """
@@ -220,7 +220,7 @@ class CallResult(BaseModel, ManagerAccessMixin):
         return self.revert is not None
 
     @property
-    def revert_message(self) -> Optional[str]:
+    def revert_message(self) -> str | None:
         """
         The revert message, if the call reverted.
         """
@@ -247,7 +247,7 @@ class ProviderAPI(BaseInterfaceModel):
     """
 
     # TODO: In 0.9, make not optional.
-    NAME: ClassVar[Optional[str]] = None
+    NAME: ClassVar[str | None] = None
 
     # TODO: Remove in 0.9 and have NAME be defined at the class-level (in plugins).
     name: str
@@ -312,21 +312,21 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @property
-    def ipc_path(self) -> Optional[Path]:
+    def ipc_path(self) -> Path | None:
         """
         Return the IPC path for the provider, if supported.
         """
         return None
 
     @property
-    def http_uri(self) -> Optional[str]:
+    def http_uri(self) -> str | None:
         """
         Return the raw HTTP/HTTPS URI to connect to this provider, if supported.
         """
         return None
 
     @property
-    def ws_uri(self) -> Optional[str]:
+    def ws_uri(self) -> str | None:
         """
         Return the raw WS/WSS URI to connect to this provider, if supported.
         """
@@ -342,7 +342,7 @@ class ProviderAPI(BaseInterfaceModel):
         return CustomConfig.model_validate(data)
 
     @property
-    def connection_id(self) -> Optional[str]:
+    def connection_id(self) -> str | None:
         """
         A connection ID to uniquely identify and manage multiple
         connections to providers, especially when working with multiple
@@ -382,7 +382,7 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @abstractmethod
-    def get_balance(self, address: "AddressType", block_id: Optional["BlockID"] = None) -> int:
+    def get_balance(self, address: "AddressType", block_id: "BlockID | None" = None) -> int:
         """
         Get the balance of an account.
 
@@ -396,15 +396,13 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @abstractmethod
-    def get_code(
-        self, address: "AddressType", block_id: Optional["BlockID"] = None
-    ) -> "ContractCode":
+    def get_code(self, address: "AddressType", block_id: "BlockID | None" = None) -> "ContractCode":
         """
         Get the bytes a contract.
 
         Args:
             address (:class:`~ape.types.address.AddressType`): The address of the contract.
-            block_id (Optional[:class:`~ape.types.BlockID`]): The block ID
+            block_id ("BlockID | None"): The block ID
                   for checking a previous account nonce.
 
         Returns:
@@ -427,7 +425,7 @@ class ProviderAPI(BaseInterfaceModel):
         return f"{self.network.choice}:{self.name}"
 
     @abstractmethod
-    def make_request(self, rpc: str, parameters: Optional[Iterable] = None) -> Any:
+    def make_request(self, rpc: str, parameters: Iterable | None = None) -> Any:
         """
         Make a raw RPC request to the provider.
         Advanced features such as tracing may utilize this to by-pass unnecessary
@@ -460,7 +458,7 @@ class ProviderAPI(BaseInterfaceModel):
 
     @raises_not_implemented
     def get_storage(  # type: ignore[empty-body]
-        self, address: "AddressType", slot: int, block_id: Optional["BlockID"] = None
+        self, address: "AddressType", slot: int, block_id: "BlockID | None" = None
     ) -> HexBytes:
         """
         Gets the raw value of a storage slot of a contract.
@@ -468,7 +466,7 @@ class ProviderAPI(BaseInterfaceModel):
         Args:
             address (AddressType): The address of the contract.
             slot (int): Storage slot to read the value of.
-            block_id (Optional[:class:`~ape.types.BlockID`]): The block ID
+            block_id ("BlockID | None"): The block ID
               for checking a previous storage value.
 
         Returns:
@@ -476,13 +474,13 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @abstractmethod
-    def get_nonce(self, address: "AddressType", block_id: Optional["BlockID"] = None) -> int:
+    def get_nonce(self, address: "AddressType", block_id: "BlockID | None" = None) -> int:
         """
         Get the number of times an account has transacted.
 
         Args:
             address (AddressType): The address of the account.
-            block_id (Optional[:class:`~ape.types.BlockID`]): The block ID
+            block_id ("BlockID | None"): The block ID
               for checking a previous account nonce.
 
         Returns:
@@ -490,14 +488,14 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @abstractmethod
-    def estimate_gas_cost(self, txn: TransactionAPI, block_id: Optional["BlockID"] = None) -> int:
+    def estimate_gas_cost(self, txn: TransactionAPI, block_id: "BlockID | None" = None) -> int:
         """
         Estimate the cost of gas for a transaction.
 
         Args:
             txn (:class:`~ape.api.transactions.TransactionAPI`):
               The transaction to estimate the gas for.
-            block_id (Optional[:class:`~ape.types.BlockID`]): The block ID
+            block_id ("BlockID | None"): The block ID
               to use when estimating the transaction. Useful for checking a
               past estimation cost of a transaction.
 
@@ -585,8 +583,8 @@ class ProviderAPI(BaseInterfaceModel):
     def send_call(
         self,
         txn: TransactionAPI,
-        block_id: Optional["BlockID"] = None,
-        state: Optional[dict] = None,
+        block_id: "BlockID | None" = None,
+        state: dict | None = None,
         **kwargs,
     ) -> HexBytes:  # Return value of function
         """
@@ -595,7 +593,7 @@ class ProviderAPI(BaseInterfaceModel):
 
         Args:
             txn: :class:`~ape.api.transactions.TransactionAPI`
-            block_id (Optional[:class:`~ape.types.BlockID`]): The block ID
+            block_id ("BlockID | None"): The block ID
                 to use to send a call at a historical point of a contract.
                 Useful for checking a past estimation cost of a transaction.
             state (Optional[dict]): Modify the state of the blockchain
@@ -831,7 +829,7 @@ class ProviderAPI(BaseInterfaceModel):
 
     @raises_not_implemented
     def get_transaction_trace(  # type: ignore[empty-body]
-        self, txn_hash: Union[HexBytes, str]
+        self, txn_hash: HexBytes | str
     ) -> "TraceAPI":
         """
         Provide a detailed description of opcodes.
@@ -847,9 +845,9 @@ class ProviderAPI(BaseInterfaceModel):
     @raises_not_implemented
     def poll_blocks(  # type: ignore[empty-body]
         self,
-        stop_block: Optional[int] = None,
-        required_confirmations: Optional[int] = None,
-        new_block_timeout: Optional[int] = None,
+        stop_block: int | None = None,
+        required_confirmations: int | None = None,
+        new_block_timeout: int | None = None,
     ) -> Iterator[BlockAPI]:
         """
         Poll new blocks.
@@ -878,12 +876,12 @@ class ProviderAPI(BaseInterfaceModel):
     @raises_not_implemented
     def poll_logs(  # type: ignore[empty-body]
         self,
-        stop_block: Optional[int] = None,
-        address: Optional["AddressType"] = None,
-        topics: Optional[list[Union[str, list[str]]]] = None,
-        required_confirmations: Optional[int] = None,
-        new_block_timeout: Optional[int] = None,
-        events: Optional[list["EventABI"]] = None,
+        stop_block: int | None = None,
+        address: "AddressType | None" = None,
+        topics: list[str | list[str]] | None = None,
+        required_confirmations: int | None = None,
+        new_block_timeout: int | None = None,
+        events: list["EventABI"] | None = None,
     ) -> Iterator["ContractLog"]:
         """
         Poll new blocks. Optionally set a start block to include historical blocks.
@@ -1054,12 +1052,12 @@ class SubprocessProvider(ProviderAPI):
 
     PROCESS_WAIT_TIMEOUT: int = 15
     background: bool = False
-    process: Optional[Popen] = None
+    process: Popen | None = None
     allow_start: bool = True
     is_stopping: bool = False
 
-    stdout_queue: Optional[JoinableQueue] = None
-    stderr_queue: Optional[JoinableQueue] = None
+    stdout_queue: JoinableQueue | None = None
+    stderr_queue: JoinableQueue | None = None
 
     @property
     @abstractmethod
@@ -1097,7 +1095,7 @@ class SubprocessProvider(ProviderAPI):
         return self._get_process_output_logger("stderr", self.stderr_logs_path)
 
     @property
-    def connection_id(self) -> Optional[str]:
+    def connection_id(self) -> str | None:
         cmd_id = ",".join(self.build_command())
         return f"{self.network_choice}:{cmd_id}"
 

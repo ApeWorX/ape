@@ -4,7 +4,7 @@ from collections.abc import Iterable, Iterator, Sequence
 from enum import Enum
 from functools import cached_property
 from shutil import which
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 from urllib.parse import urlparse
 
 import click
@@ -223,7 +223,7 @@ class PluginMetadataList(BaseModel):
         cls,
         packages: Iterable[str],
         include_available: bool = True,
-        trusted_list: Optional[Iterable] = None,
+        trusted_list: Iterable | None = None,
     ) -> "PluginMetadataList":
         PluginMetadataList.model_rebuild()
         core = PluginGroup(plugin_type=PluginType.CORE)
@@ -260,7 +260,7 @@ class PluginMetadataList(BaseModel):
 
     def to_str(
         self,
-        include: Optional[Sequence[PluginType]] = None,
+        include: Sequence[PluginType] | None = None,
         include_version: bool = True,
         output_format: OutputFormat = OutputFormat.DEFAULT,
     ) -> str:
@@ -274,7 +274,7 @@ class PluginMetadataList(BaseModel):
         yield from self.installed.plugins.values()
         yield from self.third_party.plugins.values()
 
-    def get_plugin(self, name: str, check_available: bool = True) -> Optional["PluginMetadata"]:
+    def get_plugin(self, name: str, check_available: bool = True) -> "PluginMetadata | None":
         name = name if name.startswith("ape_") else f"ape_{name}"
         if name in self.core.plugins:
             return self.core.plugins[name]
@@ -301,7 +301,7 @@ class PluginMetadata(BaseInterfaceModel):
     name: str
     """The name of the plugin, such as ``trezor``."""
 
-    version: Optional[str] = None
+    version: str | None = None
     """The version requested, if there is one."""
 
     pip_command: list[str] = PIP_COMMAND
@@ -366,7 +366,7 @@ class PluginMetadata(BaseInterfaceModel):
         return f"ape_{self.name.replace('-', '_')}"
 
     @cached_property
-    def current_version(self) -> Optional[str]:
+    def current_version(self) -> str | None:
         """
         The version currently installed if there is one.
         """
@@ -473,7 +473,7 @@ class PluginMetadata(BaseInterfaceModel):
 
         return any(n == self.package_name for n in get_plugin_dists())
 
-    def check_trusted(self, use_web: bool = True, trusted_list: Optional[Iterable] = None) -> bool:
+    def check_trusted(self, use_web: bool = True, trusted_list: Iterable | None = None) -> bool:
         if use_web:
             return self.is_available
 
@@ -485,8 +485,8 @@ class PluginMetadata(BaseInterfaceModel):
     def prepare_package_manager_args(
         self,
         verb: str,
-        python_location: Optional[str] = None,
-        extra_args: Optional[Iterable[str]] = None,
+        python_location: str | None = None,
+        extra_args: Iterable[str] | None = None,
     ) -> list[str]:
         """
         Build command arguments for pip or uv package managers.
@@ -514,8 +514,8 @@ class PluginMetadata(BaseInterfaceModel):
         self,
         upgrade: bool = False,
         skip_confirmation: bool = False,
-        python_location: Optional[str] = None,
-    ) -> Optional[dict[str, Any]]:
+        python_location: str | None = None,
+    ) -> dict[str, Any] | None:
         # NOTE: Internal and only meant to be called by the CLI.
         if self.in_core:
             logger.error(f"Cannot install core 'ape' plugin '{self.name}'.")
@@ -568,7 +568,7 @@ class PluginMetadata(BaseInterfaceModel):
             )
             return None
 
-    def _get_uninstall_args(self, python_location: Optional[str]) -> list[str]:
+    def _get_uninstall_args(self, python_location: str | None) -> list[str]:
         arguments = self.prepare_package_manager_args(
             verb="uninstall", python_location=python_location
         )
@@ -640,7 +640,7 @@ class ModifyPluginResultHandler:
         logger.error(f"Failed to {verb} plugin '{self._plugin}.")
 
 
-def _split_name_and_version(value: str) -> tuple[str, Optional[str]]:
+def _split_name_and_version(value: str) -> tuple[str, str | None]:
     if "@" in value:
         parts = [x for x in value.split("@") if x]
         return parts[0], "@".join(parts[1:])
@@ -692,9 +692,9 @@ class PluginGroup(BaseModel):
 
     def to_str(
         self,
-        max_length: Optional[int] = None,
+        max_length: int | None = None,
         include_version: bool = True,
-        output_format: Optional[OutputFormat] = OutputFormat.DEFAULT,
+        output_format: OutputFormat | None = OutputFormat.DEFAULT,
     ) -> str:
         output_format = output_format or OutputFormat.DEFAULT
         if output_format in (OutputFormat.DEFAULT, OutputFormat.PREFIXED):
@@ -711,7 +711,7 @@ class PluginGroup(BaseModel):
 
     def _get_default_formatted_str(
         self,
-        max_length: Optional[int] = None,
+        max_length: int | None = None,
         include_version: bool = True,
         include_prefix: bool = False,
     ) -> str:
@@ -736,7 +736,7 @@ class PluginGroup(BaseModel):
 
     def _get_freeze_formatted_str(
         self,
-        max_length: Optional[int] = None,
+        max_length: int | None = None,
         include_version: bool = True,
         include_prefix: bool = False,
     ) -> str:
@@ -767,9 +767,9 @@ class ApePluginsRepr:
     def __init__(
         self,
         metadata: PluginMetadataList,
-        include: Optional[Sequence[PluginType]] = None,
+        include: Sequence[PluginType] | None = None,
         include_version: bool = True,
-        output_format: Optional[OutputFormat] = None,
+        output_format: OutputFormat | None = None,
     ):
         self.include = include or (PluginType.INSTALLED, PluginType.THIRD_PARTY)
         self.metadata = metadata

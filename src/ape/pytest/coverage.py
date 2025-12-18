@@ -1,6 +1,6 @@
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable, Optional, Union
+from typing import TYPE_CHECKING
 
 import click
 
@@ -24,13 +24,11 @@ class CoverageData(ManagerAccessMixin):
     def __init__(
         self,
         project: "ProjectManager",
-        sources: Union[Iterable["ContractSource"], Callable[[], Iterable["ContractSource"]]],
+        sources: Iterable["ContractSource"] | Callable[[], Iterable["ContractSource"]],
     ):
         self.project = project
-        self._sources: Union[Iterable[ContractSource], Callable[[], Iterable[ContractSource]]] = (
-            sources
-        )
-        self._report: Optional[CoverageReport] = None
+        self._sources: Iterable[ContractSource] | Callable[[], Iterable[ContractSource]] = sources
+        self._report: CoverageReport | None = None
 
     @property
     def sources(self) -> list["ContractSource"]:
@@ -144,8 +142,8 @@ class CoverageTracker(ManagerAccessMixin):
     def __init__(
         self,
         config_wrapper: "ConfigWrapper",
-        project: Optional["ProjectManager"] = None,
-        output_path: Optional[Path] = None,
+        project: "ProjectManager | None" = None,
+        output_path: Path | None = None,
     ):
         self.config_wrapper = config_wrapper
         self._project = project or self.local_project
@@ -159,10 +157,10 @@ class CoverageTracker(ManagerAccessMixin):
             self._output_path = Path.cwd()
 
         # Data gets initialized lazily (if coverage is needed).
-        self._data: Optional[CoverageData] = None
+        self._data: CoverageData | None = None
 
     @property
-    def data(self) -> Optional[CoverageData]:
+    def data(self) -> CoverageData | None:
         if not self.enabled:
             return None
 
@@ -188,8 +186,8 @@ class CoverageTracker(ManagerAccessMixin):
     def cover(
         self,
         traceback: "SourceTraceback",
-        contract: Optional[str] = None,
-        function: Optional[str] = None,
+        contract: str | None = None,
+        function: str | None = None,
     ):
         """
         Track the coverage from the given source traceback.
@@ -208,9 +206,9 @@ class CoverageTracker(ManagerAccessMixin):
         if not self.data:
             return
 
-        last_path: Optional[Path] = None
+        last_path: Path | None = None
         last_pcs: set[int] = set()
-        last_call: Optional[str] = None
+        last_call: str | None = None
         main_fn = None
 
         if (contract and not function) or (function and not contract):
@@ -265,9 +263,9 @@ class CoverageTracker(ManagerAccessMixin):
     def _cover(
         self,
         control_flow: "ControlFlow",
-        last_path: Optional[Path] = None,
-        last_pcs: Optional[set[int]] = None,
-        last_call: Optional[str] = None,
+        last_path: Path | None = None,
+        last_pcs: set[int] | None = None,
+        last_call: str | None = None,
     ) -> tuple[set[int], list[str]]:
         if not self.data or control_flow.source_path is None:
             return set(), []

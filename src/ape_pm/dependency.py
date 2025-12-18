@@ -4,7 +4,6 @@ import shutil
 from collections.abc import Iterable
 from functools import cached_property
 from pathlib import Path
-from typing import Optional, Union
 
 import requests
 from pydantic import model_validator
@@ -18,7 +17,7 @@ from ape.utils.basemodel import ManagerAccessMixin
 from ape.utils.os import _remove_readonly, clean_path, extract_archive, get_package_path, in_tempdir
 
 
-def _fetch_local(src: Path, destination: Path, config_override: Optional[dict] = None):
+def _fetch_local(src: Path, destination: Path, config_override: dict | None = None):
     if src.is_dir():
         project = ManagerAccessMixin.Project(src, config_override=config_override)
         project.unpack(destination)
@@ -42,7 +41,7 @@ class LocalDependency(DependencyAPI):
     The root path (and API defining key) to the dependency files.
     """
 
-    version: Optional[str] = None
+    version: str | None = None
     """
     Specified version.
     """
@@ -119,7 +118,7 @@ class GithubDependency(DependencyAPI):
     such as ``dapphub/erc20``.
     """
 
-    ref: Optional[str] = None
+    ref: str | None = None
     """
     The branch or tag to use. When using this field
     instead of the 'release' field, the repository
@@ -129,7 +128,7 @@ class GithubDependency(DependencyAPI):
     **NOTE**: Will be ignored if given a 'release'.
     """
 
-    version: Optional[str] = None
+    version: str | None = None
     """
     The release version to use. When using this
     field instead of the 'ref' field, the GitHub
@@ -307,7 +306,7 @@ class NpmDependency(DependencyAPI):
     The package must already be installed!
     """
 
-    version: Optional[str] = None
+    version: str | None = None
     """
     Specify the version, if not wanting to use discovered version
     from install.
@@ -360,7 +359,7 @@ class NpmDependency(DependencyAPI):
         return str(self.npm).split("node_modules")[-1].strip(os.path.sep)
 
     @cached_property
-    def version_from_installed_package_json(self) -> Optional[str]:
+    def version_from_installed_package_json(self) -> str | None:
         """
         The version from package.json in the installed package.
         Requires having run `npm install`.
@@ -368,7 +367,7 @@ class NpmDependency(DependencyAPI):
         return _get_version_from_package_json(self.npm)
 
     @cached_property
-    def version_from_project_package_json(self) -> Optional[str]:
+    def version_from_project_package_json(self) -> str | None:
         """
         The version from your project's package.json, if exists.
         """
@@ -391,8 +390,8 @@ class NpmDependency(DependencyAPI):
 
 
 def _get_version_from_package_json(
-    base_path: Path, dict_path: Optional[Iterable[Union[str, Path]]] = None
-) -> Optional[str]:
+    base_path: Path, dict_path: Iterable[str | Path] | None = None
+) -> str | None:
     package_json = base_path / "package.json"
     if not package_json.is_file():
         return None
@@ -423,21 +422,21 @@ class PythonDependency(DependencyAPI):
     A dependency installed from Python tooling, such as `pip`.
     """
 
-    site_package: Optional[str] = None
+    site_package: str | None = None
     """
     The Python site-package name, such as ``"snekmate"``. Cannot use
     with ``pypi:``. Requires the dependency to have been installed
     either via ``pip`` or something alike.
     """
 
-    pypi: Optional[str] = None
+    pypi: str | None = None
     """
     The ``pypi`` reference, such as ``"snekmate"``. Cannot use with
     ``python:``. When set, downloads the dependency from ``pypi``
     using HTTP directly (not ``pip``).
     """
 
-    version: Optional[str] = None
+    version: str | None = None
     """
     Optionally specify the version expected to be installed.
     """
@@ -462,7 +461,7 @@ class PythonDependency(DependencyAPI):
         return values
 
     @cached_property
-    def path(self) -> Optional[Path]:
+    def path(self) -> Path | None:
         if self.pypi:
             # Is pypi: specified; has no special path.
             return None
@@ -483,7 +482,7 @@ class PythonDependency(DependencyAPI):
         raise ProjectError("Must provide either 'pypi:' or 'python:' for python-base dependencies.")
 
     @property
-    def python(self) -> Optional[str]:
+    def python(self) -> str | None:
         # For backwards-compat; serves as an undocumented alias.
         return self.site_package
 
@@ -551,7 +550,7 @@ class PythonDependency(DependencyAPI):
         return response.json()
 
     @cached_property
-    def version_from_package_data(self) -> Optional[str]:
+    def version_from_package_data(self) -> str | None:
         return self.package_data.get("info", {}).get("version")
 
     @cached_property

@@ -9,7 +9,7 @@ from collections.abc import Callable, Iterator, Mapping, Sequence
 from importlib import import_module
 from pathlib import Path
 from sys import getrecursionlimit
-from typing import TYPE_CHECKING, Any, ClassVar, Optional, Union
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from ethpm_types import BaseModel as EthpmTypesBaseModel
 from pydantic import BaseModel as RootBaseModel
@@ -145,7 +145,7 @@ class ManagerAccessMixin:
                 accounts = self.account_manager  # And so on!
     """
 
-    _test_runner: ClassVar[Optional["PytestApeRunner"]] = None
+    _test_runner: ClassVar["PytestApeRunner | None"] = None
 
     @manager_access
     def account_manager(cls) -> "AccountManager":
@@ -259,7 +259,7 @@ class BaseInterface(ManagerAccessMixin, ABC):
     """
 
 
-def _get_alt(name: str) -> Optional[str]:
+def _get_alt(name: str) -> str | None:
     alt = None
     if ("-" not in name and "_" not in name) or ("-" in name and "_" in name):
         alt = None
@@ -321,7 +321,7 @@ class ExtraModelAttributes(EthpmTypesBaseModel):
     we can show a more accurate exception message.
     """
 
-    attributes: Union[Any, Callable[[], Any], Callable[[str], Any]]
+    attributes: Any | Callable[[], Any] | Callable[[str], Any]
     """The attributes. The following types are supported:
 
     1. A model or dictionary to lookup attributes.
@@ -337,7 +337,7 @@ class ExtraModelAttributes(EthpmTypesBaseModel):
     include_getitem: bool = False
     """Whether to use these in ``__getitem__``."""
 
-    additional_error_message: Optional[str] = None
+    additional_error_message: str | None = None
     """
     An additional error message to include at the end of
     the normal IndexError message.
@@ -365,7 +365,7 @@ class ExtraModelAttributes(EthpmTypesBaseModel):
 
         return False
 
-    def get(self, name: str) -> Optional[Any]:
+    def get(self, name: str) -> Any | None:
         """
         Get an attribute.
 
@@ -387,7 +387,7 @@ class ExtraModelAttributes(EthpmTypesBaseModel):
 
         return None
 
-    def _get(self, name: str) -> Optional[Any]:
+    def _get(self, name: str) -> Any | None:
         attrs = self._attrs()
         return attrs.get(name) if hasattr(attrs, "get") else getattr(attrs, name, None)
 
@@ -415,9 +415,9 @@ class BaseModel(EthpmTypesBaseModel):
     def model_copy(
         self: "Model",
         *,
-        update: Optional[Mapping[str, Any]] = None,
+        update: Mapping[str, Any] | None = None,
         deep: bool = False,
-        cache_clear: Optional[Sequence[str]] = None,
+        cache_clear: Sequence[str] | None = None,
     ) -> "Model":
         result = super().model_copy(update=update, deep=deep)
 
@@ -637,7 +637,7 @@ class DiskCacheableModel(BaseModel):
         super().__init__(*args, **kwargs)
         self._path = path
 
-    def model_read_file(self, path: Optional[Path] = None) -> dict:
+    def model_read_file(self, path: Path | None = None) -> dict:
         """
         Get the file's raw data. This is different from ``model_dump()`` because it
         reads directly from the file without validation.
@@ -656,12 +656,12 @@ class DiskCacheableModel(BaseModel):
 
         return {}
 
-    def model_dump_file(self, path: Optional[Path] = None, **kwargs):
+    def model_dump_file(self, path: Path | None = None, **kwargs):
         """
         Save this model to disk.
 
         Args:
-            path (Optional[Path]): Optionally provide the path now
+            path (Path | None): Optionally provide the path now
               if one wasn't declared at init time. If given a directory,
               saves the file in that dir with the name of class with a
               .json suffix.
@@ -679,7 +679,7 @@ class DiskCacheableModel(BaseModel):
         Validate a file.
 
         Args:
-            path (Optional[Path]): Optionally provide the path now
+            path (Path): Optionally provide the path now
               if one wasn't declared at init time.
             **kwargs: Extra kwargs to pass to ``.model_validate_json()``.
         """
@@ -688,7 +688,7 @@ class DiskCacheableModel(BaseModel):
         model._path = path
         return model
 
-    def _get_path(self, path: Optional[Path] = None) -> Path:
+    def _get_path(self, path: Path | None = None) -> Path:
         if save_path := (path or self._path):
             return save_path
 

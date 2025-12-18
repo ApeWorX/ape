@@ -1,5 +1,4 @@
 import re
-from typing import Optional
 
 import pytest
 from ethpm_types import MethodABI
@@ -120,7 +119,7 @@ def assert_rich_output(rich_capture: list[str], expected: str):
     assert actual_lines, "No output."
     output = "\n".join(actual_lines)
 
-    for actual, expected in zip(actual_lines, expected_lines):
+    for actual, expected in zip(actual_lines, expected_lines, strict=True):
         fail_message = f"""\n
         \tPattern: {expected}\n
         \tLine   : {actual}\n
@@ -501,7 +500,7 @@ def test_return_value_tuple(geth_provider):
             return CallTreeNode.model_validate(calltree)
 
         @property
-        def root_method_abi(self) -> Optional[MethodABI]:
+        def root_method_abi(self) -> MethodABI | None:
             return abi
 
     trace = TraceForTest(transaction_hash=transaction_hash)

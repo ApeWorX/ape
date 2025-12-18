@@ -1,6 +1,5 @@
 from collections.abc import Iterator
 from functools import singledispatchmethod
-from typing import Optional
 
 from ape.api.query import ContractCreation, ContractCreationQuery, QueryAPI, QueryType
 from ape.exceptions import APINotImplementedError, ProviderError, QueryEngineError
@@ -16,7 +15,7 @@ class EthereumQueryProvider(QueryAPI):
         self.supports_contract_creation = None  # will be set after we try for the first time
 
     @singledispatchmethod
-    def estimate_query(self, query: QueryType) -> Optional[int]:  # type: ignore[override]
+    def estimate_query(self, query: QueryType) -> int | None:  # type: ignore[override]
         return None
 
     @singledispatchmethod
@@ -24,7 +23,7 @@ class EthereumQueryProvider(QueryAPI):
         raise QueryEngineError(f"Cannot handle '{type(query)}'.")
 
     @estimate_query.register
-    def estimate_contract_creation_query(self, query: ContractCreationQuery) -> Optional[int]:
+    def estimate_contract_creation_query(self, query: ContractCreationQuery) -> int | None:
         # NOTE: Extremely expensive query, involves binary search of all blocks in a chain
         #       Very loose estimate of 5s per transaction for this query.
         if self.supports_contract_creation is False:

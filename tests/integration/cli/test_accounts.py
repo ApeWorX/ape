@@ -1,6 +1,5 @@
 import json
 import re
-from typing import Optional
 
 import pytest
 from eth_account import Account
@@ -18,7 +17,7 @@ INVALID_MNEMONIC = "test test"
 CUSTOM_HDPATH = "m/44'/61'/0'/0/0"  # Ethereum Classic ($ETC) HDPath
 
 
-def extract_mnemonic(output: str) -> Optional[list[str]]:
+def extract_mnemonic(output: str) -> list[str] | None:
     found = re.search(r"Newly generated mnemonic is: ([a-z ]+)", output)
     if found:
         try:

@@ -3,7 +3,7 @@ from abc import abstractmethod
 from collections.abc import Collection, Iterator, Sequence
 from functools import cached_property, partial
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, ClassVar, Optional, Union
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from eth_pydantic_types import HexBytes
 from eth_utils import keccak
@@ -90,7 +90,7 @@ class ProxyInfoAPI(BaseModel):
         return f"<Proxy target={self.target}>"
 
     @property
-    def abi(self) -> Optional["MethodABI"]:
+    def abi(self) -> "MethodABI | None":
         """
         Some proxies have special ABIs which may not exist in their
         contract-types by default, such as Safe's ``masterCopy()``.
@@ -119,7 +119,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
     fee_token_decimals: int = 18
     """The number of decimals the fee token has."""
 
-    _default_network: Optional[str] = None
+    _default_network: str | None = None
     """The default network of the ecosystem, such as ``local``."""
 
     @model_validator(mode="after")
@@ -479,8 +479,8 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
 
     @raises_not_implemented
     def decode_primitive_value(  # type: ignore[empty-body]
-        self, value: Any, output_type: Union[str, tuple, list]
-    ) -> Union[str, HexBytes, tuple]:
+        self, value: Any, output_type: str | tuple | list
+    ) -> str | HexBytes | tuple:
         """
         Decode a primitive value-type given its ABI type as a ``str``
         and the value itself. This method is a hook for converting
@@ -489,10 +489,10 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
 
         Args:
             value (Any): The value to decode.
-            output_type (Union[str, tuple, list]): The value type.
+            output_type (str | tuple | list): The value type.
 
         Returns:
-            Union[str, HexBytes, tuple]
+            str | HexBytes | tuple
         """
 
     @abstractmethod
@@ -508,12 +508,12 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         """
 
     @abstractmethod
-    def decode_calldata(self, abi: Union["ConstructorABI", "MethodABI"], calldata: bytes) -> dict:
+    def decode_calldata(self, abi: "ConstructorABI | MethodABI", calldata: bytes) -> dict:
         """
         Decode method calldata.
 
         Args:
-            abi (Union[ConstructorABI, MethodABI]): The method called.
+            abi ("ConstructorABI | MethodABI"): The method called.
             calldata (bytes): The raw calldata bytes.
 
         Returns:
@@ -523,12 +523,12 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         """
 
     @abstractmethod
-    def encode_calldata(self, abi: Union["ConstructorABI", "MethodABI"], *args: Any) -> HexBytes:
+    def encode_calldata(self, abi: "ConstructorABI | MethodABI", *args: Any) -> HexBytes:
         """
         Encode method calldata.
 
         Args:
-            abi (Union[ConstructorABI, MethodABI]): The ABI of the method called.
+            abi ("ConstructorABI | MethodABI"): The ABI of the method called.
             *args (Any): The arguments given to the method.
 
         Returns:
@@ -586,7 +586,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         raise NetworkNotFoundError(network_name, ecosystem=self.name, options=networks)
 
     def get_network_data(
-        self, network_name: str, provider_filter: Optional[Collection[str]] = None
+        self, network_name: str, provider_filter: Collection[str] | None = None
     ) -> dict:
         """
         Get a dictionary of data about providers in the network.
@@ -596,7 +596,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
 
         Args:
             network_name (str): The name of the network to get provider data from.
-            provider_filter (Optional[Collection[str]]): Optionally filter the providers
+            provider_filter (Collection[str] | None): Optionally filter the providers
               by name.
 
         Returns:
@@ -628,7 +628,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
 
         return data
 
-    def get_proxy_info(self, address: AddressType) -> Optional[ProxyInfoAPI]:
+    def get_proxy_info(self, address: AddressType) -> ProxyInfoAPI | None:
         """
         Information about a proxy contract such as proxy type and implementation address.
 
@@ -636,7 +636,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
             address (:class:`~ape.types.address.AddressType`): The address of the contract.
 
         Returns:
-            Optional[:class:`~ape.api.networks.ProxyInfoAPI`]: Returns ``None`` if the contract
+            ProxyInfoAPI | None: Returns ``None`` if the contract
             does not use any known proxy pattern.
         """
         return None
@@ -683,7 +683,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
     @raises_not_implemented
     def get_python_types(  # type: ignore[empty-body]
         self, abi_type: "ABIType"
-    ) -> Union[type, Sequence]:
+    ) -> type | Sequence:
         """
         Get the Python types for a given ABI type.
 
@@ -691,7 +691,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
             abi_type (``ABIType``): The ABI type to get the Python types for.
 
         Returns:
-            Union[Type, Sequence]: The Python types for the given ABI type.
+            type | Sequence: The Python types for the given ABI type.
         """
 
     @raises_not_implemented
@@ -700,7 +700,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         data: HexBytes,
         address: AddressType,
         **kwargs,
-    ) -> Optional[CustomError]:
+    ) -> CustomError | None:
         """
         Decode a custom error class from an ABI defined in a contract.
 
@@ -712,7 +712,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
             **kwargs: Additional init kwargs for the custom error class.
 
         Returns:
-            Optional[CustomError]: If it able to decode one, else ``None``.
+            CustomError | None: If it able to decode one, else ``None``.
         """
 
     def _get_request_headers(self) -> RPCHeaders:
@@ -759,7 +759,7 @@ class ProviderContextManager(ManagerAccessMixin):
     # due to an exception, when interactive mode is set. If we don't hold on
     # to a reference to this object, the provider is dropped and reconnecting results
     # in losing state when using a spawned local provider
-    _recycled_provider: ClassVar[Optional["ProviderAPI"]] = None
+    _recycled_provider: ClassVar["ProviderAPI | None"] = None
 
     def __init__(
         self,
@@ -1034,7 +1034,7 @@ class NetworkAPI(BaseInterfaceModel):
         )
 
     @cached_property
-    def explorer(self) -> Optional["ExplorerAPI"]:
+    def explorer(self) -> "ExplorerAPI | None":
         """
         The block-explorer for the given network.
 
@@ -1077,7 +1077,7 @@ class NetworkAPI(BaseInterfaceModel):
         """
         True when the network is the mainnet network for the ecosystem.
         """
-        cfg_is_mainnet: Optional[bool] = self.config.get("is_mainnet")
+        cfg_is_mainnet: bool | None = self.config.get("is_mainnet")
         if cfg_is_mainnet is not None:
             return cfg_is_mainnet
 
@@ -1181,8 +1181,8 @@ class NetworkAPI(BaseInterfaceModel):
 
     def get_provider(
         self,
-        provider_name: Optional[str] = None,
-        provider_settings: Optional[dict] = None,
+        provider_name: str | None = None,
+        provider_settings: dict | None = None,
         connect: bool = False,
     ):
         """
@@ -1240,8 +1240,8 @@ class NetworkAPI(BaseInterfaceModel):
 
     def use_provider(
         self,
-        provider: Union[str, "ProviderAPI"],
-        provider_settings: Optional[dict] = None,
+        provider: "str | ProviderAPI",
+        provider_settings: dict | None = None,
         disconnect_after: bool = False,
         disconnect_on_exit: bool = True,
     ) -> ProviderContextManager:
@@ -1290,7 +1290,7 @@ class NetworkAPI(BaseInterfaceModel):
         )
 
     @property
-    def default_provider_name(self) -> Optional[str]:
+    def default_provider_name(self) -> str | None:
         """
         The name of the default provider or ``None``.
 
@@ -1315,7 +1315,7 @@ class NetworkAPI(BaseInterfaceModel):
         return None
 
     @property
-    def default_provider(self) -> Optional["ProviderAPI"]:
+    def default_provider(self) -> "ProviderAPI | None":
         if (name := self.default_provider_name) and name in self.providers:
             return self.get_provider(name)
 
@@ -1343,7 +1343,7 @@ class NetworkAPI(BaseInterfaceModel):
 
     def use_default_provider(
         self,
-        provider_settings: Optional[dict] = None,
+        provider_settings: dict | None = None,
         disconnect_after: bool = False,
     ) -> ProviderContextManager:
         """

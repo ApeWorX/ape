@@ -19,7 +19,7 @@ github = "OpenZeppelin/openzeppelin-contracts"
 show_internal = true
 
 [tool.mypy]
-exclude = ["build/", "dist/", "docs/", "tests/integration/cli/projects/"]
+exclude = ["build/", "dist/", "docs/", "tests/integration/cli/projects/", "venv/", ".venv/"]
 check_untyped_defs = true
 plugins = ["pydantic.mypy"]
 
@@ -49,7 +49,7 @@ pip: tests that rely on pip install operations"""
 timeout = 300
 
 [tool.ruff]
-target-version = "py39"
+target-version = "py310"
 line-length = 100
 
 [tool.ruff.lint]
