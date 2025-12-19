@@ -44,8 +44,7 @@ addopts = """
 
 python_files = "test_*.py"
 testpaths = "tests"
-markers = """fuzzing: Run Hypothesis fuzz test suite
-pip: tests that rely on pip install operations"""
+markers = """pip: tests that rely on pip install operations"""
 timeout = 300
 
 [tool.ruff]
