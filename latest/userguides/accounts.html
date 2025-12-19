@@ -468,27 +468,32 @@ However, you can also provide other types, such as a <code class="docutils liter
 <p>Some account plugins are able to sign EIP-712 structured message types by utilizing the <code class="docutils literal notranslate"><span class="pre">eip712</span></code> package.
 Here is an example with custom EIP-712 classes:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">accounts</span>
-</span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">eip712.messages</span><span class="w"> </span><span class="kn">import</span> <span class="n">EIP712Message</span><span class="p">,</span> <span class="n">EIP712Type</span>
-</span><span data-line="3">
-</span><span data-line="4"><span class="k">class</span><span class="w"> </span><span class="nc">Person</span><span class="p">(</span><span class="n">EIP712Type</span><span class="p">):</span>
-</span><span data-line="5">    <span class="n">name</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span>
-</span><span data-line="6">    <span class="n">wallet</span><span class="p">:</span> <span class="s2">&quot;address&quot;</span>
-</span><span data-line="7">
-</span><span data-line="8"><span class="k">class</span><span class="w"> </span><span class="nc">Mail</span><span class="p">(</span><span class="n">EIP712Message</span><span class="p">):</span>
-</span><span data-line="9">    <span class="n">_chainId_</span><span class="p">:</span> <span class="s2">&quot;uint256&quot;</span> <span class="o">=</span> <span class="mi">1</span>
-</span><span data-line="10">    <span class="n">_name_</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span> <span class="o">=</span> <span class="s2">&quot;Ether Mail&quot;</span>
-</span><span data-line="11">    <span class="n">_verifyingContract_</span><span class="p">:</span> <span class="s2">&quot;address&quot;</span> <span class="o">=</span> <span class="s2">&quot;0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC&quot;</span>
-</span><span data-line="12">    <span class="n">_version_</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span> <span class="o">=</span> <span class="s2">&quot;1&quot;</span>
-</span><span data-line="13">
-</span><span data-line="14">    <span class="n">sender</span><span class="p">:</span> <span class="n">Person</span>
-</span><span data-line="15">    <span class="n">receiver</span><span class="p">:</span> <span class="n">Person</span>
-</span><span data-line="16">
-</span><span data-line="17"><span class="n">alice</span> <span class="o">=</span> <span class="n">Person</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Alice&quot;</span><span class="p">,</span> <span class="n">wallet</span><span class="o">=</span><span class="s2">&quot;0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826&quot;</span><span class="p">)</span>
-</span><span data-line="18"><span class="n">bob</span> <span class="o">=</span> <span class="n">Person</span><span class="p">(</span><span class="s2">&quot;Bob&quot;</span><span class="p">,</span> <span class="s2">&quot;0xB0B0b0b0b0b0B000000000000000000000000000&quot;</span><span class="p">)</span>
-</span><span data-line="19"><span class="n">message</span> <span class="o">=</span> <span class="n">Mail</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">alice</span><span class="p">,</span> <span class="n">receiver</span><span class="o">=</span><span class="n">bob</span><span class="p">)</span>
+</span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">eip712.messages</span><span class="w"> </span><span class="kn">import</span> <span class="n">EIP712Message</span><span class="p">,</span> <span class="n">EIP712Domain</span>
+</span><span data-line="3"><span class="kn">from</span><span class="w"> </span><span class="nn">eth_pydantic_types</span><span class="w"> </span><span class="kn">import</span> <span class="n">abi</span>
+</span><span data-line="4"><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span>
+</span><span data-line="5">
+</span><span data-line="6"><span class="k">class</span><span class="w"> </span><span class="nc">Person</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+</span><span data-line="7">    <span class="n">name</span><span class="p">:</span> <span class="n">abi</span><span class="o">.</span><span class="n">string</span>
+</span><span data-line="8">    <span class="n">wallet</span><span class="p">:</span> <span class="n">abi</span><span class="o">.</span><span class="n">address</span>
+</span><span data-line="9">
+</span><span data-line="10"><span class="k">class</span><span class="w"> </span><span class="nc">Mail</span><span class="p">(</span><span class="n">EIP712Message</span><span class="p">):</span>
+</span><span data-line="11">    <span class="n">eip712_domain</span> <span class="o">=</span> <span class="n">EIP712Domain</span><span class="p">(</span>
+</span><span data-line="12">        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Ether Mail&quot;</span><span class="p">,</span>
+</span><span data-line="13">        <span class="n">version</span><span class="o">=</span><span class="s2">&quot;1&quot;</span><span class="p">,</span>
+</span><span data-line="14">        <span class="n">verifyingContract</span><span class="o">=</span><span class="s2">&quot;0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC&quot;</span><span class="p">,</span>
+</span><span data-line="15">        <span class="n">chainId</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+</span><span data-line="16">    <span class="p">)</span>
+</span><span data-line="17">
+</span><span data-line="18">    <span class="n">sender</span><span class="p">:</span> <span class="n">Person</span>
+</span><span data-line="19">    <span class="n">receivers</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Person</span><span class="p">]</span>
 </span><span data-line="20">
-</span><span data-line="21"><span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;&lt;ALIAS&gt;&quot;</span><span class="p">)</span>
-</span><span data-line="22"><span class="n">account</span><span class="o">.</span><span class="n">sign_message</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+</span><span data-line="21"><span class="n">alice</span> <span class="o">=</span> <span class="n">Person</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Alice&quot;</span><span class="p">,</span> <span class="n">wallet</span><span class="o">=</span><span class="s2">&quot;0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826&quot;</span><span class="p">)</span>
+</span><span data-line="22"><span class="n">bob</span> <span class="o">=</span> <span class="n">Person</span><span class="p">(</span><span class="s2">&quot;Bob&quot;</span><span class="p">,</span> <span class="s2">&quot;0xB0B0b0b0b0b0B000000000000000000000000000&quot;</span><span class="p">)</span>
+</span><span data-line="23"><span class="n">charlie</span> <span class="o">=</span> <span class="n">Person</span><span class="p">(</span><span class="s2">&quot;Charlie&quot;</span><span class="p">,</span> <span class="s2">&quot;0xC0C0c0c0c0c0C000000000000000000000000000&quot;</span><span class="p">)</span>
+</span><span data-line="24"><span class="n">message</span> <span class="o">=</span> <span class="n">Mail</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">alice</span><span class="p">,</span> <span class="n">receivers</span><span class="o">=</span><span class="p">[</span><span class="n">bob</span><span class="p">,</span> <span class="n">charlie</span><span class="p">])</span>
+</span><span data-line="25">
+</span><span data-line="26"><span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;&lt;ALIAS&gt;&quot;</span><span class="p">)</span>
+</span><span data-line="27"><span class="n">account</span><span class="o">.</span><span class="n">sign_message</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </section>
