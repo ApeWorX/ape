@@ -87,7 +87,7 @@ class ProxyInfoAPI(BaseModel):
         if _type := self.type_name:
             return f"<Proxy {_type} target={self.target}>"
 
-        return "<Proxy target={self.target}"
+        return f"<Proxy target={self.target}>"
 
     @property
     def abi(self) -> "MethodABI | None":
@@ -105,7 +105,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
 
     name: str
     """
-    The name of the ecosystem. This should be set the same name as the plugin.
+    The name of the ecosystem. This should be set to the same name as the plugin.
     """
 
     # TODO: In 0.9, make @property that returns value from config,
@@ -117,7 +117,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
     """The token symbol for the currency that pays for fees, such as ETH."""
 
     fee_token_decimals: int = 18
-    """The number of the decimals the fee token has."""
+    """The number of decimals the fee token has."""
 
     _default_network: str | None = None
     """The default network of the ecosystem, such as ``local``."""
@@ -209,7 +209,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
             **kwargs (Any): Transaction specifications, such as ``value``.
 
         Returns:
-            :class:`~ape.ape.transactions.TransactionAPI`
+            :class:`~ape.api.transactions.TransactionAPI`
         """
 
     @abstractmethod

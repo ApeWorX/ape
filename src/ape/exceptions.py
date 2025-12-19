@@ -126,7 +126,7 @@ class ArgumentsLengthError(ContractDataError):
     ):
         prefix = (
             f"The number of the given arguments ({arguments_length}) "
-            f"do not match what is defined in the ABI"
+            f"does not match what is defined in the ABI"
         )
         if inputs is None:
             super().__init__(f"{prefix}.")

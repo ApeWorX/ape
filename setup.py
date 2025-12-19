@@ -11,7 +11,7 @@ _MODULES = {p for p in _PACKAGES if re.match(_CORE_PLUGIN_PATTERN, p)}
 _MODULES.add("ape")
 
 extras_require = {
-    "test": [  # `test` GitHub Action jobs uses this
+    "test": [  # `test` GitHub Action jobs use this
         "pytest-xdist>=3.6.1,<4",  # Multi-process runner
         "pytest-cov>=4.0.0,<5",  # Coverage analyzer plugin
         "pytest-mock",  # For creating mocks
@@ -40,7 +40,7 @@ extras_require = {
         "mdformat-pyproject>=0.0.2",  # Allows configuring in pyproject.toml
     ],
     "doc": ["sphinx-ape"],
-    "release": [  # `release` GitHub Action job uses this
+    "release": [  # `release` GitHub Action job use this
         "setuptools>=75",  # Installation tool
         "wheel",  # Packaging tool
         "twine==3.8.0",  # Package upload tool
