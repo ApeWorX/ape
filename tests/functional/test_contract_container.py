@@ -38,7 +38,7 @@ def test_deploy_wrong_number_of_arguments(
     clean_contract_caches,
 ):
     expected = (
-        r"The number of the given arguments \(0\) do not match what is defined in the "
+        r"The number of the given arguments \(0\) does not match what is defined in the "
         r"ABI:\n\n\t.*__init__\(uint256 num\).*"
     )
     with pytest.raises(ArgumentsLengthError, match=expected):
