@@ -174,6 +174,11 @@ class ContractLog(ExtraAttributesMixin, BaseContractLog):
     Is `None` when from the pending block.
     """
 
+    removed: bool = False
+    """
+    ``True`` if this log has been removed.
+    """
+
     @field_validator("transaction_hash", mode="before")
     @classmethod
     def _validate_transaction_hash(cls, transaction_hash):
