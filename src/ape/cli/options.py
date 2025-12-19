@@ -259,7 +259,7 @@ def network_option(
 
     def decorator(f):
         # These are the available network object names you can request.
-        network_object_names = ("ecosystem", "network", "provider")
+        network_object_names = ("ecosystem", "network", "provider", "provider_settings")
         requested_network_objects = _get_requested_networks(f, network_object_names)
 
         # When using network_option, handle parsing now so we can pass to
@@ -327,6 +327,7 @@ def _update_context_with_network(ctx, provider, requested_network_objects):
         "ecosystem": provider.network.ecosystem,
         "network": provider.network,
         "provider": provider,
+        "provider_settings": provider.provider_settings,
     }
 
     # Set the actual values in the callback.

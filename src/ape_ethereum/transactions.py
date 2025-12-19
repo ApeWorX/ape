@@ -376,7 +376,7 @@ class Receipt(ReceiptAPI):
             return ContractLogContainer([])
 
         elif abi is not None:
-            if not isinstance(abi, list | tuple):
+            if not isinstance(abi, (list, tuple)):
                 abi = [abi]
 
             event_abis: list[EventABI] = [a.abi if not isinstance(a, EventABI) else a for a in abi]

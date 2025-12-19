@@ -117,7 +117,8 @@ class ConnectedProviderCommand(click.Command):
             # NOTE: None base-type will default to `ProviderAPI`.
 
             provider_settings = None
-            if idx := arguments.index("--provider-settings"):
+            if "--provider-settings" in arguments:
+                idx = arguments.index("--provider-settings")
                 if len(args) > idx + 1:
                     provider_settings = args[idx + 1]
                     try:
@@ -156,6 +157,11 @@ class ConnectedProviderCommand(click.Command):
             if self.callback is None
             else [x for x in inspect.signature(self.callback).parameters if x in valid_fields]
         )
+
+        if "provider_settings" not in requested_fields and "provider_settings" in ctx.params:
+            # Else, causes callback error.
+            ctx.params.pop("provider_settings")
+
         if self._use_cls_types and requested_fields:
             options = (
                 {}
@@ -164,7 +170,6 @@ class ConnectedProviderCommand(click.Command):
                     "ecosystem": provider.network.ecosystem,
                     "network": provider.network,
                     "provider": provider,
-                    "provider_settings": provider.provider_settings,
                 }
             )
             for name in requested_fields:
