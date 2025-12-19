@@ -89,8 +89,7 @@ class ConnectedProviderCommand(click.Command):
             # Automatically include a `ProviderSettingsOption`.
             from ape.cli.options import ProviderSettingsOption
 
-            option = ProviderSettingsOption()
-            self.params.append(option)
+            self.params.append(ProviderSettingsOption())
 
         if existing_option := next(
             iter(
