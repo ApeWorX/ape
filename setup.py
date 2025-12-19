@@ -124,7 +124,7 @@ setup(
         "web3[tester]>=7.12.1,<8",
         # ** Dependencies maintained by ApeWorX **
         "ethpm-types>=0.6.28,<0.7",
-        "eip712>=0.2.14,<0.3",
+        "eip712>=0.3.0,<0.4",
         "eth_pydantic_types>=0.2.1,<0.3",
         "evmchains>=0.1.0,<0.2",
         "evm-trace>=0.2.6,<0.3",
