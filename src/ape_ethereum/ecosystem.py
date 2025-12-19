@@ -1067,6 +1067,7 @@ class Ethereum(EcosystemAPI):
                     if "transactionIndex" in log
                     else log.get("transaction_index")
                 ),
+                removed=log.get("removed", False) or log.get("reverted", False),
             )
 
     def enrich_trace(self, trace: "TraceAPI", **kwargs) -> "TraceAPI":
