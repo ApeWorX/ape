@@ -4,8 +4,8 @@ from typing import TYPE_CHECKING, Any
 
 import click
 
-from ape.cli.paramtype import JSON
 from ape.cli.choices import _NONE_NETWORK, NetworkChoice
+from ape.cli.paramtype import JSON
 from ape.exceptions import NetworkError
 
 if TYPE_CHECKING:
