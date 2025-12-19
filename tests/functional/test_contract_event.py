@@ -1,6 +1,6 @@
 import time
 from queue import Queue
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 import pytest
 from eth_pydantic_types import HexBytes, HexBytes20
@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
 @pytest.fixture
 def assert_log_values(owner):
-    def _assert_log_values(log: ContractLog, number: int, previous_number: Optional[int] = None):
+    def _assert_log_values(log: ContractLog, number: int, previous_number: int | None = None):
         assert isinstance(log.b, bytes)
         expected_previous_number = number - 1 if previous_number is None else previous_number
         assert log.prevNum == expected_previous_number, "Event param 'prevNum' has unexpected value"
@@ -79,7 +79,7 @@ def test_from_event_type(contract_instance, owner, assert_log_values):
     logs = [log for log in event_type]
 
     assert len(logs) == size, "Unexpected number of logs"
-    for num, log in zip(num_range, logs):
+    for num, log in zip(num_range, logs, strict=True):
         if num == start_num:
             assert_log_values(log, num, previous_number=0)
         else:
@@ -292,7 +292,7 @@ def test_poll_logs(chain, vyper_contract_instance, eth_tester_provider, owner, P
         vyper_contract_instance.setNumber(7, sender=owner)  # block s+3
 
     actual = [logs.get() for _ in range(size)]
-    assert all(a.newNum == e for a, e in zip(actual, (1, 33, 7)))
+    assert all(a.newNum == e for a, e in zip(actual, (1, 33, 7), strict=True))
     assert actual[0].block_number == actual[0].block.number == start_block + 1
     assert actual[1].block_number == actual[1].block.number == actual[0].block_number + 1
     assert actual[2].block_number == actual[2].block.number == actual[1].block_number + 1
@@ -314,7 +314,7 @@ def test_poll_logs_with_topics(vyper_contract_instance, eth_tester_provider, own
         vyper_contract_instance.setNumber(33, sender=owner)  # block s+3f
 
     actual = [logs.get() for _ in range(size)]
-    assert all(a.newNum == e for a, e in zip(actual, (33,)))
+    assert all(a.newNum == e for a, e in zip(actual, (33,), strict=False))
 
 
 def test_poll_logs_timeout(vyper_contract_instance, eth_tester_provider, owner, PollDaemon):
@@ -503,7 +503,7 @@ def test_model_dump_json():
         '{"block_hash":"block-hash","block_number":123,'
         '"contract_address":"0x0000000000000000000000000000000000000000",'
         '"event_arguments":{"key":123,"validators":["0x7b"]},"event_name":'
-        '"MyEvent","log_index":0,'
+        '"MyEvent","log_index":0,"removed":false,'
         '"transaction_hash":"0x00000000000000000000000004d21f074916369e"}'
     )
 

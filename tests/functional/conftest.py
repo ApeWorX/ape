@@ -2,7 +2,7 @@ import threading
 import time
 from contextlib import contextmanager
 from pathlib import Path
-from typing import TYPE_CHECKING, Optional, cast
+from typing import TYPE_CHECKING, cast
 
 import pytest
 from eth_pydantic_types import HexBytes
@@ -340,7 +340,7 @@ class PollDaemonThread(threading.Thread):
             # Only raise if error-ed before hitting stop condition
             raise self._exception
 
-    def _run_until_stop(self, timeout_iterations: Optional[int] = None):
+    def _run_until_stop(self, timeout_iterations: int | None = None):
         iterations = 0
         while True:
             if self._do_stop():
@@ -375,8 +375,8 @@ def assert_log_values(contract_instance):
     def _assert_log_values(
         log: "ContractLog",
         number: int,
-        previous_number: Optional[int] = None,
-        address: Optional[AddressType] = None,
+        previous_number: int | None = None,
+        address: AddressType | None = None,
     ):
         assert log.contract_address == address or contract_instance.address
         assert isinstance(log.b, bytes)

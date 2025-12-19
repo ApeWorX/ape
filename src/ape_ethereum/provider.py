@@ -4,12 +4,12 @@ import re
 import sys
 import time
 from abc import ABC
-from collections.abc import Iterable, Iterator
+from collections.abc import Callable, Iterable, Iterator
 from concurrent.futures import ThreadPoolExecutor
 from copy import copy
 from functools import cached_property, wraps
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Optional, Union, cast
+from typing import TYPE_CHECKING, Any, cast
 
 import ijson  # type: ignore
 import requests
@@ -132,16 +132,16 @@ class Web3Provider(ProviderAPI, ABC):
     `web3.py <https://web3py.readthedocs.io/en/stable/>`__ python package.
     """
 
-    _web3: Optional[Web3] = None
-    _client_version: Optional[str] = None
+    _web3: Web3 | None = None
+    _client_version: str | None = None
 
-    _call_trace_approach: Optional[TraceApproach] = None
+    _call_trace_approach: TraceApproach | None = None
     """
     Is ``None`` until known.
     NOTE: This gets set in `ape_ethereum.trace.Trace`.
     """
 
-    _supports_debug_trace_call: Optional[bool] = None
+    _supports_debug_trace_call: bool | None = None
 
     _transaction_trace_cache: dict[str, TransactionTrace] = {}
 
@@ -199,7 +199,7 @@ class Web3Provider(ProviderAPI, ABC):
 
         return (config or {}).get(self.network.name) or {}
 
-    def _get_configured_rpc(self, key: str, validator: Callable[[str], bool]) -> Optional[str]:
+    def _get_configured_rpc(self, key: str, validator: Callable[[str], bool]) -> str | None:
         # key = "uri", "http_uri", "ws_uri", or "ipc_path"
         settings = self.settings  # Includes self.provider_settings and top-level config.
         result = None
@@ -223,19 +223,19 @@ class Web3Provider(ProviderAPI, ABC):
         return None
 
     @property
-    def _configured_http_uri(self) -> Optional[str]:
+    def _configured_http_uri(self) -> str | None:
         return self._get_configured_rpc("http_uri", _is_http_url)
 
     @property
-    def _configured_ws_uri(self) -> Optional[str]:
+    def _configured_ws_uri(self) -> str | None:
         return self._get_configured_rpc("ws_uri", _is_ws_url)
 
     @property
-    def _configured_ipc_path(self) -> Optional[str]:
+    def _configured_ipc_path(self) -> str | None:
         return self._get_configured_rpc("ipc_path", _is_ipc_path)
 
     @property
-    def _configured_uri(self) -> Optional[str]:
+    def _configured_uri(self) -> str | None:
         for key in ("uri", "url", "ipc_path", "http_uri", "ws_uri"):
             if rpc := self._get_configured_rpc(key, _is_uri):
                 return rpc
@@ -243,7 +243,7 @@ class Web3Provider(ProviderAPI, ABC):
         return None
 
     @property
-    def _configured_rpc(self) -> Optional[str]:
+    def _configured_rpc(self) -> str | None:
         """
         First of URI, HTTP_URI, WS_URI, IPC_PATH
         found in the provider_settings or config.
@@ -270,7 +270,7 @@ class Web3Provider(ProviderAPI, ABC):
 
         return None
 
-    def _get_connected_rpc(self, validator: Callable[[str], bool]) -> Optional[str]:
+    def _get_connected_rpc(self, validator: Callable[[str], bool]) -> str | None:
         """
         The connected HTTP URI. If using providers
         like `ape-node`, configure your URI and that will
@@ -284,19 +284,19 @@ class Web3Provider(ProviderAPI, ABC):
         return None
 
     @property
-    def _connected_http_uri(self) -> Optional[str]:
+    def _connected_http_uri(self) -> str | None:
         return self._get_connected_rpc(_is_http_url)
 
     @property
-    def _connected_ws_uri(self) -> Optional[str]:
+    def _connected_ws_uri(self) -> str | None:
         return self._get_connected_rpc(_is_ws_url)
 
     @property
-    def _connected_ipc_path(self) -> Optional[str]:
+    def _connected_ipc_path(self) -> str | None:
         return self._get_connected_rpc(_is_ipc_path)
 
     @property
-    def _connected_uri(self) -> Optional[str]:
+    def _connected_uri(self) -> str | None:
         return self._get_connected_rpc(_is_uri)
 
     @property
@@ -336,7 +336,7 @@ class Web3Provider(ProviderAPI, ABC):
         return super().network_choice
 
     @property
-    def http_uri(self) -> Optional[str]:
+    def http_uri(self) -> str | None:
         if rpc := self._connected_http_uri:
             return rpc
 
@@ -351,7 +351,7 @@ class Web3Provider(ProviderAPI, ABC):
         return self._default_http_uri
 
     @property
-    def _default_http_uri(self) -> Optional[str]:
+    def _default_http_uri(self) -> str | None:
         if self.network.is_dev:
             # Nothing is configured and we are running geth --dev.
             # Use a default localhost value.
@@ -377,7 +377,7 @@ class Web3Provider(ProviderAPI, ABC):
         return None
 
     @property
-    def ws_uri(self) -> Optional[str]:
+    def ws_uri(self) -> str | None:
         if rpc := self._connected_ws_uri:
             return rpc
 
@@ -393,7 +393,7 @@ class Web3Provider(ProviderAPI, ABC):
         return None
 
     @property
-    def ipc_path(self) -> Optional[Path]:
+    def ipc_path(self) -> Path | None:
         if rpc := self._configured_ipc_path:
             # "ipc_path" found in config/settings
             return Path(rpc)
@@ -405,7 +405,7 @@ class Web3Provider(ProviderAPI, ABC):
 
         return None
 
-    def _get_random_rpc(self) -> Optional[str]:
+    def _get_random_rpc(self) -> str | None:
         if self.network.is_dev:
             return None
 
@@ -468,7 +468,7 @@ class Web3Provider(ProviderAPI, ABC):
         return self._get_last_base_fee()
 
     @property
-    def call_trace_approach(self) -> Optional[TraceApproach]:
+    def call_trace_approach(self) -> TraceApproach | None:
         """
         The default tracing approach to use when building up a call-tree.
         By default, Ape attempts to use the faster approach. Meaning, if
@@ -523,7 +523,7 @@ class Web3Provider(ProviderAPI, ABC):
         self.provider_settings.update(new_settings)
         self.connect()
 
-    def estimate_gas_cost(self, txn: TransactionAPI, block_id: Optional["BlockID"] = None) -> int:
+    def estimate_gas_cost(self, txn: TransactionAPI, block_id: "BlockID | None" = None) -> int:
         # NOTE: Using JSON mode since used as request data.
         txn_dict = txn.model_dump(by_alias=True, mode="json")
 
@@ -646,19 +646,17 @@ class Web3Provider(ProviderAPI, ABC):
     def _get_latest_block_rpc(self) -> dict:
         return self.make_request("eth_getBlockByNumber", ["latest", False])
 
-    def get_nonce(self, address: "AddressType", block_id: Optional["BlockID"] = None) -> int:
+    def get_nonce(self, address: "AddressType", block_id: "BlockID | None" = None) -> int:
         return self.web3.eth.get_transaction_count(address, block_identifier=block_id)
 
-    def get_balance(self, address: "AddressType", block_id: Optional["BlockID"] = None) -> int:
+    def get_balance(self, address: "AddressType", block_id: "BlockID | None" = None) -> int:
         return self.web3.eth.get_balance(address, block_identifier=block_id)
 
-    def get_code(
-        self, address: "AddressType", block_id: Optional["BlockID"] = None
-    ) -> "ContractCode":
+    def get_code(self, address: "AddressType", block_id: "BlockID | None" = None) -> "ContractCode":
         return self.web3.eth.get_code(address, block_identifier=block_id)
 
     def get_storage(
-        self, address: "AddressType", slot: int, block_id: Optional["BlockID"] = None
+        self, address: "AddressType", slot: int, block_id: "BlockID | None" = None
     ) -> HexBytes:
         try:
             return HexBytes(self.web3.eth.get_storage_at(address, slot, block_identifier=block_id))
@@ -682,8 +680,8 @@ class Web3Provider(ProviderAPI, ABC):
     def send_call(
         self,
         txn: TransactionAPI,
-        block_id: Optional["BlockID"] = None,
-        state: Optional[dict] = None,
+        block_id: "BlockID | None" = None,
+        state: dict | None = None,
         **kwargs: Any,
     ) -> HexBytes:
         if block_id is not None:
@@ -805,7 +803,7 @@ class Web3Provider(ProviderAPI, ABC):
 
         return HexBytes(result)
 
-    def _prepare_call(self, txn: Union[dict, TransactionAPI], **kwargs) -> list:
+    def _prepare_call(self, txn: dict | TransactionAPI, **kwargs) -> list:
         # NOTE: Using mode="json" because used in request data.
         txn_dict = (
             txn.model_dump(by_alias=True, mode="json") if isinstance(txn, TransactionAPI) else txn
@@ -838,7 +836,7 @@ class Web3Provider(ProviderAPI, ABC):
         self,
         txn_hash: str,
         required_confirmations: int = 0,
-        timeout: Optional[int] = None,
+        timeout: int | None = None,
         **kwargs,
     ) -> ReceiptAPI:
         if required_confirmations < 0:
@@ -1000,9 +998,9 @@ class Web3Provider(ProviderAPI, ABC):
 
     def poll_blocks(
         self,
-        stop_block: Optional[int] = None,
-        required_confirmations: Optional[int] = None,
-        new_block_timeout: Optional[int] = None,
+        stop_block: int | None = None,
+        required_confirmations: int | None = None,
+        new_block_timeout: int | None = None,
     ) -> Iterator[BlockAPI]:
         # Wait half the time as the block time
         # to get data faster.
@@ -1105,12 +1103,12 @@ class Web3Provider(ProviderAPI, ABC):
 
     def poll_logs(
         self,
-        stop_block: Optional[int] = None,
-        address: Optional["AddressType"] = None,
-        topics: Optional[list[Union[str, list[str]]]] = None,
-        required_confirmations: Optional[int] = None,
-        new_block_timeout: Optional[int] = None,
-        events: Optional[list["EventABI"]] = None,
+        stop_block: int | None = None,
+        address: "AddressType | None" = None,
+        topics: list[str | list[str]] | None = None,
+        required_confirmations: int | None = None,
+        new_block_timeout: int | None = None,
+        events: list["EventABI"] | None = None,
     ) -> Iterator[ContractLog]:
         events = events or []
         if required_confirmations is None:
@@ -1137,7 +1135,7 @@ class Web3Provider(ProviderAPI, ABC):
             log_filter = LogFilter(**log_params)
             yield from self.get_contract_logs(log_filter)
 
-    def block_ranges(self, start: int = 0, stop: Optional[int] = None, page: Optional[int] = None):
+    def block_ranges(self, start: int = 0, stop: int | None = None, page: int | None = None):
         if stop is None:
             stop = self.chain_manager.blocks.height
         if page is None:
@@ -1351,10 +1349,10 @@ class Web3Provider(ProviderAPI, ABC):
             network_key=self.network.name,
         )
 
-    def make_request(self, rpc: str, parameters: Optional[Iterable] = None) -> Any:
+    def make_request(self, rpc: str, parameters: Iterable | None = None) -> Any:
         return request_with_retry(lambda: self._make_request(rpc, parameters=parameters))
 
-    def _make_request(self, rpc: str, parameters: Optional[Iterable] = None) -> Any:
+    def _make_request(self, rpc: str, parameters: Iterable | None = None) -> Any:
         parameters = parameters or []
         try:
             result = self.web3.provider.make_request(RPCEndpoint(rpc), parameters)
@@ -1413,7 +1411,7 @@ class Web3Provider(ProviderAPI, ABC):
             del results[:]
 
     def create_access_list(
-        self, transaction: TransactionAPI, block_id: Optional["BlockID"] = None
+        self, transaction: TransactionAPI, block_id: "BlockID | None" = None
     ) -> list[AccessList]:
         """
         Get the access list for a transaction use ``eth_createAccessList``.
@@ -1489,12 +1487,12 @@ class Web3Provider(ProviderAPI, ABC):
 
     def _handle_execution_reverted(
         self,
-        exception: Union[Exception, str],
-        txn: Optional[TransactionAPI] = None,
+        exception: Exception | str,
+        txn: TransactionAPI | None = None,
         trace: _TRACE_ARG = None,
-        contract_address: Optional["AddressType"] = None,
+        contract_address: "AddressType | None" = None,
         source_traceback: _SOURCE_TRACEBACK_ARG = None,
-        set_ape_traceback: Optional[bool] = None,
+        set_ape_traceback: bool | None = None,
     ) -> ContractLogicError:
         if hasattr(exception, "args") and len(exception.args) == 2:
             message = exception.args[0].replace("execution reverted: ", "")
@@ -1553,7 +1551,7 @@ class Web3Provider(ProviderAPI, ABC):
 
 
 # Abstracted for unit-testing.
-def _get_trace_from_revert_kwargs(**kwargs) -> Optional["TraceAPI"]:
+def _get_trace_from_revert_kwargs(**kwargs) -> "TraceAPI | None":
     trace = kwargs.get("trace")
     txn = kwargs.get("txn")
 
@@ -1589,7 +1587,7 @@ class EthereumNodeProvider(Web3Provider, ABC):
         return self.uri or f"{self.ipc_path}"
 
     @property
-    def connection_id(self) -> Optional[str]:
+    def connection_id(self) -> str | None:
         return f"{self.network_choice}:{self.uri}"
 
     @property
@@ -1605,7 +1603,7 @@ class EthereumNodeProvider(Web3Provider, ABC):
         return _get_default_data_dir()
 
     @property
-    def ipc_path(self) -> Optional[Path]:
+    def ipc_path(self) -> Path | None:
         if path := super().ipc_path:
             return path
 
@@ -1644,7 +1642,7 @@ class EthereumNodeProvider(Web3Provider, ABC):
         return findings
 
     @cached_property
-    def _ots_api_level(self) -> Optional[int]:
+    def _ots_api_level(self) -> int | None:
         # NOTE: Returns None when OTS namespace is not enabled.
         try:
             result = self.make_request("ots_getApiLevel")
@@ -1726,7 +1724,7 @@ class EthereumNodeProvider(Web3Provider, ABC):
         )
         logger.info(f"{msg} {suffix}.")
 
-    def ots_get_contract_creator(self, address: "AddressType") -> Optional[dict]:
+    def ots_get_contract_creator(self, address: "AddressType") -> dict | None:
         if self._ots_api_level is None:
             return None
 
@@ -1737,7 +1735,7 @@ class EthereumNodeProvider(Web3Provider, ABC):
 
         return result
 
-    def _get_contract_creation_receipt(self, address: "AddressType") -> Optional[ReceiptAPI]:
+    def _get_contract_creation_receipt(self, address: "AddressType") -> ReceiptAPI | None:
         if result := self.ots_get_contract_creator(address):
             tx_hash = result["hash"]
             return self.get_receipt(tx_hash)
@@ -1754,7 +1752,7 @@ class EthereumNodeProvider(Web3Provider, ABC):
         self._complete_connect()
 
     def simulate_transaction_bundle(
-        self, bundle: Bundle, sim_overrides: Optional[dict] = None
+        self, bundle: Bundle, sim_overrides: dict | None = None
     ) -> SimulationReport:
         """
         Submit a bundle and get the simulation result.
@@ -1772,10 +1770,10 @@ class EthereumNodeProvider(Web3Provider, ABC):
 
 
 def _create_web3(
-    http_uri: Optional[str] = None,
-    ipc_path: Optional[Path] = None,
-    ws_uri: Optional[str] = None,
-    request_kwargs: Optional[dict] = None,
+    http_uri: str | None = None,
+    ipc_path: Path | None = None,
+    ws_uri: str | None = None,
+    request_kwargs: dict | None = None,
 ):
     # NOTE: This list is ordered by try-attempt.
     # Try ENV, then IPC, and then HTTP last.
@@ -1826,7 +1824,7 @@ def _is_ws_url(val: str) -> bool:
     return val.startswith("wss://") or val.startswith("ws://")
 
 
-def _is_ipc_path(val: Union[str, Path]) -> bool:
+def _is_ipc_path(val: str | Path) -> bool:
     return f"{val}".endswith(".ipc")
 
 
@@ -1843,7 +1841,7 @@ class _LazyCallTrace(ManagerAccessMixin):
         )
 
     @cached_property
-    def source_traceback(self) -> Optional[SourceTraceback]:
+    def source_traceback(self) -> SourceTraceback | None:
         ct = self.contract_type
         if ct is None:
             return None

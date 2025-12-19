@@ -1,6 +1,6 @@
 from collections.abc import Iterable, Iterator, Sequence
 from functools import cached_property
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import TYPE_CHECKING, Any
 
 from eth_pydantic_types import HexBytes, HexStr
 from eth_utils import encode_hex, is_hex, keccak, to_hex
@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     from ape.contracts import ContractEvent
 
 
-TopicFilter = Sequence[Union[Optional[HexStr], Sequence[Optional[HexStr]]]]
+TopicFilter = Sequence[HexStr | None | Sequence[HexStr | None]]
 
 
 class LogFilter(BaseModel):
@@ -28,7 +28,7 @@ class LogFilter(BaseModel):
     events: list[EventABI] = []
     topic_filter: TopicFilter = []
     start_block: int = 0
-    stop_block: Optional[int] = None  # Use block height
+    stop_block: int | None = None  # Use block height
     selectors: dict[str, EventABI] = {}
 
     @model_validator(mode="before")
@@ -66,9 +66,9 @@ class LogFilter(BaseModel):
     @classmethod
     def from_event(
         cls,
-        event: Union[EventABI, "ContractEvent"],
-        search_topics: Optional[dict[str, Any]] = None,
-        addresses: Optional[list[AddressType]] = None,
+        event: "EventABI | ContractEvent",
+        search_topics: dict[str, Any] | None = None,
+        addresses: list[AddressType] | None = None,
         start_block=None,
         stop_block=None,
     ):
@@ -168,10 +168,15 @@ class ContractLog(ExtraAttributesMixin, BaseContractLog):
     log_index: HexInt
     """The index of the log on the transaction."""
 
-    transaction_index: Optional[HexInt] = None
+    transaction_index: HexInt | None = None
     """
     The index of the transaction's position when the log was created.
     Is `None` when from the pending block.
+    """
+
+    removed: bool = False
+    """
+    ``True`` if this log has been removed.
     """
 
     @field_validator("transaction_hash", mode="before")
@@ -290,7 +295,7 @@ class ContractLog(ExtraAttributesMixin, BaseContractLog):
         # call __eq__ on parent class
         return super().__eq__(other)
 
-    def get(self, item: str, default: Optional[Any] = None) -> Any:
+    def get(self, item: str, default: Any | None = None) -> Any:
         return self.event_arguments.get(item, default)
 
 
@@ -303,7 +308,7 @@ def _equal_event_inputs(mock_input: Any, real_input: Any) -> bool:
         if not isinstance(real_input, (list, tuple)) or len(real_input) != len(mock_input):
             return False
 
-        return all(_equal_event_inputs(m, r) for m, r in zip(mock_input, real_input))
+        return all(_equal_event_inputs(m, r) for m, r in zip(mock_input, real_input, strict=True))
 
     else:
         return mock_input == real_input

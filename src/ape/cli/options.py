@@ -3,7 +3,7 @@ import sys
 from collections.abc import Callable
 from functools import partial
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, NoReturn, Optional, Union
+from typing import TYPE_CHECKING, Any, NoReturn
 
 import click
 from click import Option
@@ -51,7 +51,7 @@ class ApeCliContextObject(dict):
             return getattr(ManagerAccessMixin, item)
 
     @staticmethod
-    def abort(msg: str, base_error: Optional[Exception] = None) -> NoReturn:
+    def abort(msg: str, base_error: Exception | None = None) -> NoReturn:
         """
         End execution of the current command invocation.
 
@@ -69,9 +69,9 @@ class ApeCliContextObject(dict):
 
 
 def verbosity_option(
-    cli_logger: Optional[ApeLogger] = None,
-    default: Optional[Union[str, int, LogLevel]] = None,
-    callback: Optional[Callable] = None,
+    cli_logger: ApeLogger | None = None,
+    default: str | int | LogLevel | None = None,
+    callback: Callable | None = None,
     **kwargs,
 ) -> Callable:
     """A decorator that adds a `--verbosity, -v` option to the decorated
@@ -97,9 +97,9 @@ def verbosity_option(
 
 
 def _create_verbosity_kwargs(
-    _logger: Optional[ApeLogger] = None,
-    default: Optional[Union[str, int, LogLevel]] = None,
-    callback: Optional[Callable] = None,
+    _logger: ApeLogger | None = None,
+    default: str | int | LogLevel | None = None,
+    callback: Callable | None = None,
     **kwargs,
 ) -> dict:
     default = logger.level if default is None else default
@@ -137,7 +137,7 @@ def _create_verbosity_kwargs(
 
 
 def ape_cli_context(
-    default_log_level: Optional[Union[str, int, LogLevel]] = None,
+    default_log_level: str | int | LogLevel | None = None,
     obj_type: type = ApeCliContextObject,
 ) -> Callable:
     """
@@ -230,10 +230,10 @@ class NetworkOption(Option):
 
 
 def network_option(
-    default: Optional[Union[str, Callable]] = "auto",
-    ecosystem: Optional[Union[list[str], str]] = None,
-    network: Optional[Union[list[str], str]] = None,
-    provider: Optional[Union[list[str], str]] = None,
+    default: str | Callable | None = "auto",
+    ecosystem: list[str] | str | None = None,
+    network: list[str] | str | None = None,
+    provider: list[str] | str | None = None,
     required: bool = False,
     **kwargs,
 ) -> Callable:
@@ -423,7 +423,7 @@ def skip_confirmation_option(help="") -> Callable:
 def account_option(
     *param_decls,
     account_type: _ACCOUNT_TYPE_FILTER = None,
-    prompt: Optional[Union[str, bool]] = AccountAliasPromptChoice.DEFAULT_PROMPT,
+    prompt: str | bool | None = AccountAliasPromptChoice.DEFAULT_PROMPT,
 ) -> Callable:
     """
     A CLI option that accepts either the account alias or the account number.
@@ -446,7 +446,7 @@ def account_option(
     )
 
 
-def _load_contracts(ctx, param, value) -> Optional[Union["ContractType", list["ContractType"]]]:
+def _load_contracts(ctx, param, value) -> "ContractType | list[ContractType] | None":
     if not value:
         return None
 

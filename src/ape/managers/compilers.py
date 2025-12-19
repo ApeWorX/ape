@@ -2,7 +2,7 @@ from collections import defaultdict
 from collections.abc import Iterable, Iterator, Sequence
 from functools import cached_property
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import TYPE_CHECKING, Any
 
 from eth_pydantic_types import HexBytes
 
@@ -81,7 +81,7 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
 
         return registered_compilers
 
-    def get_compiler(self, name: str, settings: Optional[dict] = None) -> Optional["CompilerAPI"]:
+    def get_compiler(self, name: str, settings: dict | None = None) -> "CompilerAPI | None":
         for compiler in self.registered_compilers.values():
             if compiler.name != name:
                 continue
@@ -96,10 +96,10 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
 
     def compile(
         self,
-        contract_filepaths: Union[Path, str, Iterable[Union[Path, str]]],
-        project: Optional["ProjectManager"] = None,
-        settings: Optional[dict] = None,
-        excluded_compilers: Optional[list[str]] = None,
+        contract_filepaths: Path | str | Iterable[Path | str],
+        project: "ProjectManager | None" = None,
+        settings: dict | None = None,
+        excluded_compilers: list[str] | None = None,
     ) -> Iterator["ContractType"]:
         """
         Invoke :meth:`ape.ape.compiler.CompilerAPI.compile` for each of the given files.
@@ -111,11 +111,11 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
               file-extension as well as when there are contract-type collisions across compilers.
 
         Args:
-            contract_filepaths (Union[Path, str, Iterable[Union[Path, str]]]): The files to
+            contract_filepaths (Path | str | Iterable[Path | str]): The files to
               compile, as ``pathlib.Path`` objects or path-strs.
             project (Optional[:class:`~ape.managers.project.ProjectManager`]): Optionally
               compile a different project that the one from the current-working directory.
-            settings (Optional[Dict]): Adhoc compiler settings. Defaults to None.
+            settings (dict | None): Adhoc compiler settings. Defaults to None.
               Ensure the compiler name key is present in the dict for it to work.
 
         Returns:
@@ -177,8 +177,8 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
         self,
         compiler_name: str,
         code: str,
-        project: Optional["ProjectManager"] = None,
-        settings: Optional[dict] = None,
+        project: "ProjectManager | None" = None,
+        settings: dict | None = None,
         **kwargs,
     ) -> ContractContainer:
         """
@@ -198,7 +198,7 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
             code (str): The source code to compile.
             project (Optional[:class:`~ape.managers.project.ProjectManager`]): Optionally
               compile a different project that the one from the current-working directory.
-            settings (Optional[dict]): Compiler settings.
+            settings (dict | None): Compiler settings.
             **kwargs (Any): Additional overrides for the ``ethpm_types.ContractType`` model.
 
         Returns:
@@ -214,7 +214,7 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
     def get_imports(
         self,
         contract_filepaths: Sequence[Path],
-        project: Optional["ProjectManager"] = None,
+        project: "ProjectManager | None" = None,
     ) -> dict[str, list[str]]:
         """
         Combine import dicts from all compilers, where the key is a contract's source_id
@@ -222,7 +222,7 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
 
         Args:
             contract_filepaths (Sequence[pathlib.Path]): A list of source file paths to compile.
-            project (Optional[:class:`~ape.managers.project.ProjectManager`]): Optionally provide
+            project (:class:`~ape.managers.project.ProjectManager` | None): Optionally provide
               the project.
 
         Returns:
@@ -299,7 +299,7 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
         # No further enrichment.
         return err
 
-    def get_custom_error(self, err: ContractLogicError) -> Optional[CustomError]:
+    def get_custom_error(self, err: ContractLogicError) -> CustomError | None:
         """
         Get a custom error for the given contract logic error using the contract-type
         found from address-data in the error. Returns ``None`` if the given error is
@@ -311,7 +311,7 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
               as a custom error.
 
         Returns:
-            Optional[:class:`~ape.exceptions.CustomError`]
+            :class:`~ape.exceptions.CustomError` | None
         """
         message = err.revert_message
         if not message.startswith("0x"):
