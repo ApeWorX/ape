@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any
 
 import pytest
 from eth_utils import to_hex
@@ -159,7 +159,7 @@ class TestHexInt:
     def test_model(self):
         class MyModel(BaseModel):
             ual: HexInt = 0
-            ual_optional: Optional[HexInt] = Field(default=None, validate_default=True)
+            ual_optional: HexInt | None = Field(default=None, validate_default=True)
 
         act = MyModel.model_validate({"ual": "0x123"})
         expected = 291  # Base-10 form of 0x123.
@@ -200,7 +200,7 @@ class TestCurrencyValueComparable:
 
         class MyAnnotatedModel(BaseModel):
             val: CurrencyValueComparable
-            val_optional: Optional[CurrencyValueComparable]
+            val_optional: CurrencyValueComparable | None
 
         model = MyAnnotatedModel.model_validate({"val": value, "val_optional": value})
         assert isinstance(model.val, CurrencyValueComparable)
@@ -219,7 +219,7 @@ class TestCurrencyValueComparable:
     def test_validate_from_currency_value(self):
         class MyAnnotatedModel(BaseModel):
             val: CurrencyValueComparable
-            val_optional: Optional[CurrencyValueComparable]
+            val_optional: CurrencyValueComparable | None
             val_in_dict: dict[str, Any]
 
         value = "100000000000000000000000000 ETH"

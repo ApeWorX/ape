@@ -193,3 +193,15 @@ def test_poll_blocks_future(chain_that_mined_5, eth_tester_provider, owner, Poll
     third = blocks.get().number
     assert first == second - 1
     assert second == third - 1
+
+
+@pytest.mark.parametrize("delta", range(1, 5))
+def test_find_block_at_time(chain, delta):
+    for _ in range(delta):
+        chain.mine(deltatime=1)
+
+    assert (
+        chain.get_block_at((delta_block := chain.blocks[-delta]).datetime)
+        == chain.get_block_at(delta_block.timestamp)
+        == delta_block
+    )

@@ -3,7 +3,9 @@ from collections.abc import Iterable, Sequence
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from functools import cached_property
-from typing import TYPE_CHECKING, Any, Union
+from itertools import islice
+from types import UnionType
+from typing import TYPE_CHECKING, Any, Union, get_args, get_origin
 
 from cchecksum import to_checksum_address
 from dateutil.parser import parse
@@ -161,7 +163,7 @@ class IntAddressConverter(ConverterAPI):
     A converter that converts an integer address to an :class:`~ape.types.address.AddressType`.
     """
 
-    _cache: dict[int, Union[AddressType, bool]] = {}
+    _cache: dict[int, AddressType | bool] = {}
 
     def is_convertible(self, value: Any) -> bool:
         if not isinstance(value, int):
@@ -191,7 +193,7 @@ class IntAddressConverter(ConverterAPI):
 
         return res
 
-    def _convert(self, value: int) -> Union[AddressType, bool]:
+    def _convert(self, value: int) -> AddressType | bool:
         try:
             val = Address.__eth_pydantic_validate__(value)
         except Exception:
@@ -206,7 +208,7 @@ class TimestampConverter(ConverterAPI):
     No timezone required, but should be formatted to UTC.
     """
 
-    def is_convertible(self, value: Union[str, datetime, timedelta]) -> bool:
+    def is_convertible(self, value: str | datetime | timedelta) -> bool:
         if not isinstance(value, (str, datetime, timedelta)):
             return False
         if isinstance(value, str):
@@ -219,7 +221,7 @@ class TimestampConverter(ConverterAPI):
                     return False
         return True
 
-    def convert(self, value: Union[str, datetime, timedelta]) -> int:
+    def convert(self, value: str | datetime | timedelta) -> int:
         if isinstance(value, str):
             return int(parse(value).replace(tzinfo=timezone.utc).timestamp())
         elif isinstance(value, datetime):
@@ -318,7 +320,7 @@ class ConversionManager(BaseManager):
         """
         return is_checksum_address(value) if to_type is AddressType else isinstance(value, to_type)
 
-    def convert(self, value: Any, to_type: Union[type, tuple, list]) -> Any:
+    def convert(self, value: Any, to_type: type | tuple | list) -> Any:
         """
         Convert the given value to the given type. This method accesses
         all :class:`~ape.api.convert.ConverterAPI` instances known to
@@ -338,8 +340,14 @@ class ConversionManager(BaseManager):
 
         if isinstance(value, (list, tuple)) and isinstance(to_type, tuple):
             # We expected to convert a tuple type, so convert each item in the tuple.
-            # NOTE: We allow values to be a list, just in case it is a list
-            return [self.convert(v, t) for v, t in zip(value, to_type)]
+            #
+            # NOTE: Some callers provide *extra* items (e.g. struct-like tuples /
+            # namedtuples with additional fields). Extra values should be ignored,
+            # similar to how we ignore extra keys in dict-based struct inputs.
+            #
+            # However, providing *too few* items should still fail fast.
+            trimmed_values = list(islice(value, len(to_type)))
+            return [self.convert(v, t) for v, t in zip(trimmed_values, to_type, strict=True)]
 
         elif isinstance(value, (list, tuple)) and isinstance(to_type, list) and len(to_type) == 1:
             # We expected to convert an array type(dynamic or static),
@@ -432,12 +440,12 @@ class ConversionManager(BaseManager):
 
     def convert_method_args(
         self,
-        abi: Union["MethodABI", "ConstructorABI", "EventABI", "ConstructorABI"],
+        abi: "MethodABI | ConstructorABI | EventABI",
         arguments: Sequence[Any],
     ):
         input_types = [i.canonical_type for i in abi.inputs]
         converted_arguments = []
-        for ipt, argument in zip(input_types, arguments):
+        for ipt, argument in zip(input_types, arguments, strict=True):
             # Handle primitive-addresses separately since they may not occur
             # on the tuple-conversion if they are integers or bytes.
             if str(ipt) == "address":
@@ -452,14 +460,30 @@ class ConversionManager(BaseManager):
         fields = TransactionAPI.__pydantic_fields__
 
         def get_real_type(type_):
-            all_types = getattr(type_, "_typevar_types", [])
-            if not all_types or not isinstance(all_types, (list, tuple)):
-                return type_
+            # Handle both old (Optional/Union) and new (|) syntax
+            # Try old syntax first (Optional/Union) - uses _typevar_types
+            all_types = getattr(type_, "_typevar_types", None)
+            if all_types and isinstance(all_types, (list, tuple)) and len(all_types) > 0:
+                # Old syntax found, use it
+                pass
+            else:
+                # Try new syntax (| operator) - uses get_args/get_origin
+                origin = get_origin(type_)
+                if origin is not None and origin in (Union, UnionType):
+                    args = get_args(type_)
+                    if args:
+                        all_types = list(args)
+                    else:
+                        # No args means it's not a union, return as-is
+                        return type_
+                else:
+                    # Not a union type, return as-is
+                    return type_
 
-            # Filter out None
-            valid_types = [t for t in all_types if t is not None]
+            # Filter out None/NoneType
+            valid_types = [t for t in all_types if t is not type(None) and t is not None]
             if len(valid_types) == 1:
-                # This is something like Optional[int],
+                # This is something like Optional[int] or int | None,
                 # however, if the user provides a value,
                 # we want to convert to the non-optional type.
                 return valid_types[0]

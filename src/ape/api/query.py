@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from collections.abc import Iterator, Sequence
 from functools import cache, cached_property
-from typing import Any, Optional, Union
+from typing import Any, TypeAlias
 
 from ethpm_types.abi import EventABI, MethodABI
 from pydantic import NonNegativeInt, PositiveInt, model_validator
@@ -10,15 +10,6 @@ from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.logging import logger
 from ape.types.address import AddressType
 from ape.utils.basemodel import BaseInterface, BaseInterfaceModel, BaseModel
-
-QueryType = Union[
-    "BlockQuery",
-    "BlockTransactionQuery",
-    "AccountTransactionQuery",
-    "ContractCreationQuery",
-    "ContractEventQuery",
-    "ContractMethodQuery",
-]
 
 
 @cache
@@ -195,7 +186,7 @@ class ContractCreation(BaseModel, BaseInterface):
     The contract deployer address.
     """
 
-    factory: Optional[AddressType] = None
+    factory: AddressType | None = None
     """
     The address of the factory contract, if there is one
     and it is known (depends on the query provider!).
@@ -234,9 +225,9 @@ class ContractEventQuery(_BaseBlockQuery):
     logs emitted by ``contract`` between ``start_block`` and ``stop_block``.
     """
 
-    contract: Union[list[AddressType], AddressType]
+    contract: list[AddressType] | AddressType
     event: EventABI
-    search_topics: Optional[dict[str, Any]] = None
+    search_topics: dict[str, Any] | None = None
 
 
 class ContractMethodQuery(_BaseBlockQuery):
@@ -250,9 +241,19 @@ class ContractMethodQuery(_BaseBlockQuery):
     method_args: dict[str, Any]
 
 
+QueryType: TypeAlias = (
+    BlockQuery
+    | BlockTransactionQuery
+    | AccountTransactionQuery
+    | ContractCreationQuery
+    | ContractEventQuery
+    | ContractMethodQuery
+)
+
+
 class QueryAPI(BaseInterface):
     @abstractmethod
-    def estimate_query(self, query: QueryType) -> Optional[int]:
+    def estimate_query(self, query: QueryType) -> int | None:
         """
         Estimation of time needed to complete the query. The estimation is returned
         as an int representing milliseconds. A value of None indicates that the

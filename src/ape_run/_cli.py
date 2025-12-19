@@ -5,7 +5,7 @@ import traceback
 from contextlib import contextmanager
 from pathlib import Path
 from runpy import run_module
-from typing import Any, Union
+from typing import Any
 
 import click
 
@@ -95,7 +95,7 @@ class ScriptCommand(click.MultiCommand):
                 # Don't handle error - raise exception as normal.
                 raise
 
-    def _get_command(self, filepath: Path) -> Union[click.Command, click.Group, None]:
+    def _get_command(self, filepath: Path) -> click.Command | click.Group | None:
         scripts_folder = Path.cwd() / "scripts"
         relative_filepath = filepath.relative_to(scripts_folder)
 
@@ -176,7 +176,7 @@ class ScriptCommand(click.MultiCommand):
             return call
 
     @property
-    def commands(self) -> dict[str, Union[click.Command, click.Group]]:
+    def commands(self) -> dict[str, click.Command | click.Group]:
         # perf: Don't reference `.local_project.scripts_folder` here;
         #   it's too slow when doing just doing `--help`.
         scripts_folder = Path.cwd() / "scripts"

@@ -2,7 +2,7 @@ import contextlib
 from collections.abc import Generator, Iterator
 from contextlib import AbstractContextManager as ContextManager
 from functools import cached_property, singledispatchmethod
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING
 
 from eth_utils import is_hex
 
@@ -27,7 +27,7 @@ _DEFAULT_SENDERS: list[AccountAPI] = []
 
 @contextlib.contextmanager
 def _use_sender(
-    account: Union[AccountAPI, TestAccountAPI],
+    account: AccountAPI | TestAccountAPI,
 ) -> "Generator[AccountAPI, TestAccountAPI, None]":
     try:
         _DEFAULT_SENDERS.append(account)
@@ -199,7 +199,7 @@ class TestAccountManager(list, ManagerAccessMixin):
     def generate_test_account(self, container_name: str = "test") -> TestAccountAPI:
         return self.containers[container_name].generate_account()
 
-    def use_sender(self, account_id: Union[TestAccountAPI, AddressType, int]) -> "ContextManager":
+    def use_sender(self, account_id: TestAccountAPI | AddressType | int) -> "ContextManager":
         account = account_id if isinstance(account_id, TestAccountAPI) else self[account_id]
         return _use_sender(account)
 
@@ -236,7 +236,7 @@ class AccountManager(BaseManager):
     _alias_to_account_cache: dict[str, AccountAPI] = {}
 
     @property
-    def default_sender(self) -> Optional[AccountAPI]:
+    def default_sender(self) -> AccountAPI | None:
         return _DEFAULT_SENDERS[-1] if _DEFAULT_SENDERS else None
 
     @cached_property
@@ -450,7 +450,7 @@ class AccountManager(BaseManager):
 
     def use_sender(
         self,
-        account_id: Union[AccountAPI, AddressType, str, int],
+        account_id: AccountAPI | AddressType | str | int,
     ) -> "ContextManager":
         if not isinstance(account_id, AccountAPI):
             if isinstance(account_id, int) or is_hex(account_id):
@@ -470,8 +470,8 @@ class AccountManager(BaseManager):
         return self.test_accounts.init_test_account(index, address, private_key)
 
     def resolve_address(
-        self, account_id: Union["BaseAddress", AddressType, str, int, bytes]
-    ) -> Optional[AddressType]:
+        self, account_id: "BaseAddress | AddressType | str | int | bytes"
+    ) -> AddressType | None:
         """
         Resolve the given input to an address.
 

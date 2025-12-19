@@ -1,5 +1,5 @@
 from functools import cached_property
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import TYPE_CHECKING, Any
 
 from ape.utils.basemodel import ManagerAccessMixin
 
@@ -78,11 +78,11 @@ class ConfigWrapper(ManagerAccessMixin):
         return self.pytest_config.getoption("--coverage") or self.ape_test_config.coverage.track
 
     @property
-    def xml_coverage(self) -> Union[bool, dict]:
+    def xml_coverage(self) -> bool | dict:
         return self.ape_test_config.coverage.reports.xml
 
     @property
-    def html_coverage(self) -> Union[bool, dict]:
+    def html_coverage(self) -> bool | dict:
         return self.ape_test_config.coverage.reports.html
 
     @cached_property
@@ -114,7 +114,7 @@ class ConfigWrapper(ManagerAccessMixin):
     def coverage_exclusions(self) -> list["ContractFunctionPath"]:
         return _get_config_exclusions(self.ape_test_config.coverage)
 
-    def get_pytest_plugin(self, name: str) -> Optional[Any]:
+    def get_pytest_plugin(self, name: str) -> Any | None:
         if self.pytest_config.pluginmanager.has_plugin(name):
             return self.pytest_config.pluginmanager.get_plugin(name)
 

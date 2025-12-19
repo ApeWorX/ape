@@ -1,9 +1,10 @@
 from collections import defaultdict
 from collections.abc import Iterator
 from contextlib import contextmanager
+from datetime import datetime
 from functools import cached_property, partial, singledispatchmethod
 from statistics import mean, median
-from typing import IO, TYPE_CHECKING, Optional, Union, cast
+from typing import IO, TYPE_CHECKING, cast
 
 import pandas as pd
 from rich.box import SIMPLE
@@ -121,9 +122,9 @@ class BlockContainer(BaseManager):
         self,
         *columns: str,
         start_block: int = 0,
-        stop_block: Optional[int] = None,
+        stop_block: int | None = None,
         step: int = 1,
-        engine_to_use: Optional[str] = None,
+        engine_to_use: str | None = None,
     ) -> pd.DataFrame:
         """
         A method for querying blocks and returning an Iterator. If you
@@ -139,11 +140,11 @@ class BlockContainer(BaseManager):
             *columns (str): columns in the DataFrame to return
             start_block (int): The first block, by number, to include in the
               query. Defaults to 0.
-            stop_block (Optional[int]): The last block, by number, to include
+            stop_block (int | None): The last block, by number, to include
               in the query. Defaults to the latest block.
             step (int): The number of blocks to iterate between block numbers.
               Defaults to ``1``.
-            engine_to_use (Optional[str]): query engine to use, bypasses query
+            engine_to_use (str | None): query engine to use, bypasses query
               engine selection algorithm.
 
         Returns:
@@ -182,9 +183,9 @@ class BlockContainer(BaseManager):
     def range(
         self,
         start_or_stop: int,
-        stop: Optional[int] = None,
+        stop: int | None = None,
         step: int = 1,
-        engine_to_use: Optional[str] = None,
+        engine_to_use: str | None = None,
     ) -> Iterator[BlockAPI]:
         """
         Iterate over blocks. Works similarly to python ``range()``.
@@ -203,12 +204,12 @@ class BlockContainer(BaseManager):
             start_or_stop (int): When given just a single value, it is the stop.
               Otherwise, it is the start. This mimics the behavior of ``range``
               built-in Python function.
-            stop (Optional[int]): The block number to stop before. Also the total
+            stop (int | None): The block number to stop before. Also the total
               number of blocks to get. If not setting a start value, is set by
               the first argument.
-            step (Optional[int]): The value to increment by. Defaults to ``1``.
+            step (int | None): The value to increment by. Defaults to ``1``.
              number of blocks to get. Defaults to the latest block.
-            engine_to_use (Optional[str]): query engine to use, bypasses query
+            engine_to_use (str | None): query engine to use, bypasses query
               engine selection algorithm.
 
         Returns:
@@ -241,10 +242,10 @@ class BlockContainer(BaseManager):
 
     def poll_blocks(
         self,
-        start_block: Optional[int] = None,
-        stop_block: Optional[int] = None,
-        required_confirmations: Optional[int] = None,
-        new_block_timeout: Optional[int] = None,
+        start_block: int | None = None,
+        stop_block: int | None = None,
+        required_confirmations: int | None = None,
+        new_block_timeout: int | None = None,
     ) -> Iterator[BlockAPI]:
         """
         Poll new blocks. Optionally set a start block to include historical blocks.
@@ -264,14 +265,14 @@ class BlockContainer(BaseManager):
                 print(f"New block found: number={new_block.number}")
 
         Args:
-            start_block (Optional[int]): The block number to start with. Defaults to the pending
+            start_block (int | None): The block number to start with. Defaults to the pending
               block number.
-            stop_block (Optional[int]): Optionally set a future block number to stop at.
+            stop_block (int | None): Optionally set a future block number to stop at.
               Defaults to never-ending.
-            required_confirmations (Optional[int]): The amount of confirmations to wait
+            required_confirmations (int | None): The amount of confirmations to wait
               before yielding the block. The more confirmations, the less likely a reorg will occur.
               Defaults to the network's configured required confirmations.
-            new_block_timeout (Optional[float]): The amount of time to wait for a new block before
+            new_block_timeout (float | None): The amount of time to wait for a new block before
               timing out. Defaults to 10 seconds for local networks or ``50 * block_time`` for live
               networks.
 
@@ -350,8 +351,8 @@ class AccountHistory(BaseInterfaceModel):
         self,
         *columns: str,
         start_nonce: int = 0,
-        stop_nonce: Optional[int] = None,
-        engine_to_use: Optional[str] = None,
+        stop_nonce: int | None = None,
+        engine_to_use: str | None = None,
     ) -> pd.DataFrame:
         """
         A method for querying transactions made by an account and returning an Iterator.
@@ -367,9 +368,9 @@ class AccountHistory(BaseInterfaceModel):
             *columns (str): columns in the DataFrame to return
             start_nonce (int): The first transaction, by nonce, to include in the
               query. Defaults to 0.
-            stop_nonce (Optional[int]): The last transaction, by nonce, to include
+            stop_nonce (int | None): The last transaction, by nonce, to include
               in the query. Defaults to the latest transaction.
-            engine_to_use (Optional[str]): query engine to use, bypasses query
+            engine_to_use (str | None): query engine to use, bypasses query
               engine selection algorithm.
 
         Returns:
@@ -515,7 +516,7 @@ class TransactionHistory(BaseManager):
         return self._get_account_history(address)
 
     @__getitem__.register
-    def __getitem_str(self, account_or_hash: str) -> Union[AccountHistory, ReceiptAPI]:
+    def __getitem_str(self, account_or_hash: str) -> AccountHistory | ReceiptAPI:
         """
         Get a receipt from the history by its transaction hash.
         If the receipt is not currently cached, will use the provider
@@ -528,7 +529,7 @@ class TransactionHistory(BaseManager):
             :class:`~ape.api.transactions.ReceiptAPI`: The receipt.
         """
 
-        def _get_receipt() -> Optional[ReceiptAPI]:
+        def _get_receipt() -> ReceiptAPI | None:
             try:
                 return self._get_receipt(account_or_hash)
             except Exception:
@@ -611,7 +612,7 @@ class TransactionHistory(BaseManager):
         for account_history in self._account_history_cache.values():
             account_history.revert_to_block(block_number)
 
-    def _get_account_history(self, address: Union[BaseAddress, AddressType]) -> AccountHistory:
+    def _get_account_history(self, address: BaseAddress | AddressType) -> AccountHistory:
         address_key: AddressType = self.conversion_manager.convert(address, AddressType)
 
         if address_key not in self._account_history_cache:
@@ -628,7 +629,7 @@ class ReportManager(BaseManager):
     **NOTE**: This class is not part of the public API.
     """
 
-    def show_gas(self, report: "GasReport", file: Optional[IO[str]] = None):
+    def show_gas(self, report: "GasReport", file: IO[str] | None = None):
         tables: list[Table] = []
 
         for contract_id, method_calls in report.items():
@@ -668,17 +669,15 @@ class ReportManager(BaseManager):
 
         self.echo(*tables, file=file)
 
-    def echo(
-        self, *rich_items, file: Optional[IO[str]] = None, console: Optional["RichConsole"] = None
-    ):
+    def echo(self, *rich_items, file: IO[str] | None = None, console: "RichConsole | None" = None):
         console = console or get_rich_console(file)
         console.print(*rich_items)
 
     def show_source_traceback(
         self,
         traceback: "SourceTraceback",
-        file: Optional[IO[str]] = None,
-        console: Optional["RichConsole"] = None,
+        file: IO[str] | None = None,
+        console: "RichConsole | None" = None,
         failing: bool = True,
     ):
         console = console or get_rich_console(file)
@@ -686,7 +685,7 @@ class ReportManager(BaseManager):
         console.print(str(traceback), style=style)
 
     def show_events(
-        self, events: list, file: Optional[IO[str]] = None, console: Optional["RichConsole"] = None
+        self, events: list, file: IO[str] | None = None, console: "RichConsole | None" = None
     ):
         console = console or get_rich_console(file)
         console.print("Events emitted:")
@@ -798,8 +797,63 @@ class ChainManager(BaseManager):
         return self.provider.get_block("pending").timestamp
 
     @pending_timestamp.setter
-    def pending_timestamp(self, new_value: Union[int, str]):
+    def pending_timestamp(self, new_value: int | str):
         self.provider.set_timestamp(self.conversion_manager.convert(new_value, int))
+
+    def get_block_at(
+        self,
+        time: datetime | int,
+        block_time_secs: int | None = None,
+    ) -> "BlockAPI":
+        """
+        Search for a block closest to time ``time``.
+
+        ```{important}
+        This method returns the closest block at or after ``time``.
+        ```
+
+        Args:
+            time: (datetime | int): Time of block to search for.
+            block_time_secs: (int | None):
+                The average amount of time between blocks. Influenced the search algorithm.
+                Defaults to the configured block time for this chain.
+
+        Returns:
+            (~:class:`BlockAPI`): The first block mined at or after ``time`` .
+        """
+
+        if isinstance(time, datetime):
+            time = int(time.timestamp())
+
+        if time < (genesis := self.blocks[0]).timestamp:
+            return genesis
+
+        elif time > (head := self.blocks.head).timestamp:
+            raise ValueError(f"Time {time} is after head.")
+        assert head.number is not None  # mypy happy
+
+        # NOTE: This is only an estimate of the block time, used for the algorithm
+        block_time_secs = block_time_secs or self.network_manager.network.block_time or 1
+
+        est_blocks = int((self.pending_timestamp - time) / block_time_secs)
+        block = self.blocks[max(head.number - est_blocks, 0)]
+        assert block.number is not None  # mypy happy
+
+        # NOTE: Ordering here favors having a block with `.timestamp` that is after `time`
+        while time > block.timestamp and (
+            est_blocks := int((time - block.timestamp) / block_time_secs)
+        ):
+            block = self.blocks[min(block.number + est_blocks, head.number)]
+            assert block.number is not None  # mypy happy
+
+        assert block.number is not None  # mypy happy
+        while time < block.timestamp and (
+            est_blocks := int((block.timestamp - time) / block_time_secs)
+        ):
+            block = self.blocks[max(block.number - est_blocks, 0)]
+            assert block.number is not None  # mypy happy
+
+        return block
 
     @log_instead_of_fail(default="<ChainManager>")
     def __repr__(self) -> str:
@@ -827,7 +881,7 @@ class ChainManager(BaseManager):
 
         return snapshot_id
 
-    def restore(self, snapshot_id: Optional["SnapshotID"] = None):
+    def restore(self, snapshot_id: "SnapshotID | None" = None):
         """
         Regress the current call using the given snapshot ID.
         Allows developers to go back to a previous state.
@@ -839,7 +893,7 @@ class ChainManager(BaseManager):
             :class:`~ape.exceptions.ChainError`: When there are no snapshot IDs to select from.
 
         Args:
-            snapshot_id (Optional[:class:`~ape.types.SnapshotID`]): The snapshot ID. Defaults
+            snapshot_id (:class:`~ape.types.SnapshotID` | None): The snapshot ID. Defaults
               to the most recent snapshot ID.
         """
         chain_id = self.chain_manager.chain_id
@@ -911,8 +965,8 @@ class ChainManager(BaseManager):
     def mine(
         self,
         num_blocks: int = 1,
-        timestamp: Optional[int] = None,
-        deltatime: Optional[int] = None,
+        timestamp: int | None = None,
+        deltatime: int | None = None,
     ) -> None:
         """
         Mine any given number of blocks.
@@ -923,9 +977,9 @@ class ChainManager(BaseManager):
         Args:
             num_blocks (int): Choose the number of blocks to mine.
                 Defaults to 1 block.
-            timestamp (Optional[int]): Designate a time (in seconds) to begin mining.
+            timestamp (int | None): Designate a time (in seconds) to begin mining.
                 Defaults to None.
-            deltatime (Optional[int]): Designate a change in time (in seconds) to begin mining.
+            deltatime (int | None): Designate a change in time (in seconds) to begin mining.
                 Defaults to None.
         """
         if timestamp and deltatime:
@@ -937,7 +991,7 @@ class ChainManager(BaseManager):
         self.provider.mine(num_blocks)
 
     def get_balance(
-        self, address: Union[BaseAddress, AddressType, str], block_id: Optional["BlockID"] = None
+        self, address: BaseAddress | AddressType | str, block_id: "BlockID | None" = None
     ) -> int:
         """
         Get the balance of the given address. If ``ape-ens`` is installed,
@@ -958,7 +1012,7 @@ class ChainManager(BaseManager):
 
         return self.provider.get_balance(address, block_id=block_id)
 
-    def set_balance(self, account: Union[BaseAddress, AddressType, str], amount: Union[int, str]):
+    def set_balance(self, account: BaseAddress | AddressType | str, amount: int | str):
         """
         Set an account balance, only works on development chains.
 
@@ -994,9 +1048,7 @@ class ChainManager(BaseManager):
 
         return receipt
 
-    def get_code(
-        self, address: AddressType, block_id: Optional["BlockID"] = None
-    ) -> "ContractCode":
+    def get_code(self, address: AddressType, block_id: "BlockID | None" = None) -> "ContractCode":
         network = self.provider.network
 
         # Two reasons to avoid caching:
@@ -1017,7 +1069,7 @@ class ChainManager(BaseManager):
         self._code[network.ecosystem.name][network.name][address] = code
         return code
 
-    def get_delegate(self, address: AddressType) -> Optional[BaseAddress]:
+    def get_delegate(self, address: AddressType) -> BaseAddress | None:
         ecosystem = self.provider.network.ecosystem
 
         if not (proxy_info := ecosystem.get_proxy_info(address)):
