@@ -233,6 +233,7 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#ape.managers.chain.ChainManager.contracts"><code class="docutils literal notranslate">contracts</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.chain.ChainManager.gas_price"><code class="docutils literal notranslate">gas_price</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.chain.ChainManager.get_balance"><code class="docutils literal notranslate">get_balance()</span></code></a></li>
+<li><a class="reference internal" href="#ape.managers.chain.ChainManager.get_block_at"><code class="docutils literal notranslate">get_block_at()</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.chain.ChainManager.get_receipt"><code class="docutils literal notranslate">get_receipt()</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.chain.ChainManager.history"><code class="docutils literal notranslate">history</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.chain.ChainManager.isolate"><code class="docutils literal notranslate">isolate()</span></code></a></li>
@@ -1731,6 +1732,31 @@ you can pass ENS names.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.chain.ChainManager.get_block_at">
+<span class="sig-name descname"><span class="pre">get_block_at</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datetime</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_time_secs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="api.html#ape.api.providers.BlockAPI" title="ape.api.providers.BlockAPI"><span class="pre">BlockAPI</span></a></span></span><a class="headerlink" href="#ape.managers.chain.ChainManager.get_block_at" title="Link to this definition"></a></dt>
+<dd><p>Search for a block closest to time <code class="docutils literal notranslate"><span class="pre">time</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">`{important}</span>
+<span class="pre">This</span> <span class="pre">method</span> <span class="pre">returns</span> <span class="pre">the</span> <span class="pre">closest</span> <span class="pre">block</span> <span class="pre">at</span> <span class="pre">or</span> <span class="pre">after</span> <span class="pre">``time</span></code>.
+<a href="#id1"><span class="problematic" id="id2">``</span></a><a href="#id3"><span class="problematic" id="id4">`</span></a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>time</strong> – (datetime | int): Time of block to search for.</p></li>
+<li><p><strong>block_time_secs</strong> – (int | None):
+The average amount of time between blocks. Influenced the search algorithm.
+Defaults to the configured block time for this chain.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The first block mined at or after <code class="docutils literal notranslate"><span class="pre">time</span></code> .</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(~:class:<cite>BlockAPI</cite>)</p>
 </dd>
 </dl>
 </dd></dl>
