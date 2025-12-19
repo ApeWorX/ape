@@ -1,6 +1,7 @@
 from collections import defaultdict
 from collections.abc import Iterator
 from contextlib import contextmanager
+from datetime import datetime
 from functools import cached_property, partial, singledispatchmethod
 from statistics import mean, median
 from typing import IO, TYPE_CHECKING, cast
@@ -798,6 +799,61 @@ class ChainManager(BaseManager):
     @pending_timestamp.setter
     def pending_timestamp(self, new_value: int | str):
         self.provider.set_timestamp(self.conversion_manager.convert(new_value, int))
+
+    def get_block_at(
+        self,
+        time: datetime | int,
+        block_time_secs: int | None = None,
+    ) -> "BlockAPI":
+        """
+        Search for a block closest to time ``time``.
+
+        ```{important}
+        This method returns the closest block at or after ``time``.
+        ```
+
+        Args:
+            time: (datetime | int): Time of block to search for.
+            block_time_secs: (int | None):
+                The average amount of time between blocks. Influenced the search algorithm.
+                Defaults to the configured block time for this chain.
+
+        Returns:
+            (~:class:`BlockAPI`): The first block mined at or after ``time`` .
+        """
+
+        if isinstance(time, datetime):
+            time = int(time.timestamp())
+
+        if time < (genesis := self.blocks[0]).timestamp:
+            return genesis
+
+        elif time > (head := self.blocks.head).timestamp:
+            raise ValueError(f"Time {time} is after head.")
+        assert head.number is not None  # mypy happy
+
+        # NOTE: This is only an estimate of the block time, used for the algorithm
+        block_time_secs = block_time_secs or self.network_manager.network.block_time or 1
+
+        est_blocks = int((self.pending_timestamp - time) / block_time_secs)
+        block = self.blocks[max(head.number - est_blocks, 0)]
+        assert block.number is not None  # mypy happy
+
+        # NOTE: Ordering here favors having a block with `.timestamp` that is after `time`
+        while time > block.timestamp and (
+            est_blocks := int((time - block.timestamp) / block_time_secs)
+        ):
+            block = self.blocks[min(block.number + est_blocks, head.number)]
+            assert block.number is not None  # mypy happy
+
+        assert block.number is not None  # mypy happy
+        while time < block.timestamp and (
+            est_blocks := int((block.timestamp - time) / block_time_secs)
+        ):
+            block = self.blocks[max(block.number - est_blocks, 0)]
+            assert block.number is not None  # mypy happy
+
+        return block
 
     @log_instead_of_fail(default="<ChainManager>")
     def __repr__(self) -> str:
