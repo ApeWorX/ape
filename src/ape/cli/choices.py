@@ -363,6 +363,7 @@ class NetworkChoice(click.Choice):
         provider: _NETWORK_FILTER = None,
         base_type: type | str | None = None,
         callback: Callable | None = None,
+        provider_settings: dict | None = None,
     ):
         self._base_type = base_type
         self.callback = callback
@@ -370,6 +371,7 @@ class NetworkChoice(click.Choice):
         self.ecosystem = ecosystem
         self.network = network
         self.provider = provider
+        self.provider_settings = provider_settings
         # NOTE: Purposely avoid super().init for performance reasons.
 
     @property
@@ -403,7 +405,9 @@ class NetworkChoice(click.Choice):
 
             networks = access.network_manager
             try:
-                value = networks.get_provider_from_choice(network_choice=value)
+                value = networks.get_provider_from_choice(
+                    network_choice=value, provider_settings=self.provider_settings
+                )
             except (EcosystemNotFoundError, NetworkNotFoundError, ProviderNotFoundError) as err:
                 self.fail(str(err))
 

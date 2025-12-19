@@ -177,6 +177,7 @@ class NetworkOption(Option):
         ecosystem = kwargs.pop("ecosystem", None)
         network = kwargs.pop("network", None)
         provider = kwargs.pop("provider", None)
+        provider_settings = kwargs.pop("provider_settings", None)
         default = kwargs.pop("default", "auto")
 
         callback = kwargs.pop("callback", None)
@@ -192,6 +193,7 @@ class NetworkOption(Option):
                 provider=provider,
                 base_type=base_type,
                 callback=callback,
+                provider_settings=provider_settings,
             )
         elif callback is not None:
             # Make sure these are the same.
@@ -261,7 +263,7 @@ def network_option(
         requested_network_objects = _get_requested_networks(f, network_object_names)
 
         # When using network_option, handle parsing now so we can pass to
-        # callback outside of command context.
+        # callback outside a command context.
         user_callback = kwargs.pop("callback", None)
 
         def callback(ctx, param, value):
@@ -629,3 +631,19 @@ def excluded_compilers_option(**kwargs):
         multiple=True,
         **kwargs,
     )
+
+
+def provider_settings_option(**kwargs):
+    return click.option(type=ProviderSettingsOption(), **kwargs)
+
+
+class ProviderSettingsOption(click.Option):
+    def __init__(self, *args, **kwargs):
+        help_msg = "Override the default provide settings."
+        kwargs = {
+            "param_decls": ("--provider-settings",),
+            "help": help_msg,
+            "type": JSON(),
+            **kwargs,
+        }
+        super().__init__(**kwargs)

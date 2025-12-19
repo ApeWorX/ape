@@ -24,6 +24,9 @@ class JSON(click.ParamType):
     and loads it into a dictionary.
     """
 
+    def get_metavar(self, param):
+        return "JSON"
+
     def convert(self, value, param, ctx):
         if not value:
             return {}

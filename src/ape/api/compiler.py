@@ -132,7 +132,7 @@ class CompilerAPI(BaseInterfaceModel):
             project ("ProjectManager | None"): Optionally provide
               the project containing the base paths and full source set. Defaults to the local
               project. Dependencies will change this value to their respective projects.
-            settings (Optional[Dict]): Adhoc compiler settings.
+            settings (Optional[dict]): Adhoc compiler settings.
             **kwargs: Additional overrides for the ``ethpm_types.ContractType`` model.
 
         Returns:
