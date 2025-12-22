@@ -88,8 +88,8 @@ jobs:
           account: ApeWorX
           token: ${{ secrets.GITHUB_TOKEN }}
           image-names: "ape"
-          # NOTE: Keep stable/stable-slim, latest/latest-slim, all 0.8.x series, and last in 0.7.x series
-          image-tags: "!stable* !latest* !0.8* !0.7.23*"
+          # NOTE: Keep stable/stable-slim, latest/latest-slim, all v0.8.x series, and last in v0.7.x series
+          image-tags: "!stable* !latest* !v0.8* !v0.7.23*"
           tag-selection: both
           cut-off: 4w
           dry-run: ${{ github.ref != 'refs/heads/main' }}
