@@ -635,7 +635,7 @@ def excluded_compilers_option(**kwargs):
 
 
 def provider_settings_option(**kwargs):
-    return click.option(type=ProviderSettingsOption(), **kwargs)
+    return click.option(cls=ProviderSettingsOption, **kwargs)
 
 
 class ProviderSettingsOption(click.Option):
