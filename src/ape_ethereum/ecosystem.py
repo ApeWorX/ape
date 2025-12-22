@@ -36,6 +36,7 @@ from ape.exceptions import (
     CustomError,
     DecodingError,
     SignatureError,
+    TransactionError,
 )
 from ape.logging import logger
 from ape.managers.config import merge_configs
@@ -531,18 +532,28 @@ class Ethereum(EcosystemAPI):
 
             return ProxyInfo(type=_type, target=target, abi=IMPLEMENTATION_ABI)
 
-        # safe >=1.1.0 provides `masterCopy()`, which is also stored in slot 0
-        # call it and check that target matches
-        try:
-            singleton = ContractCall(MASTER_COPY_ABI, address)(skip_trace=True)
+        # safe >=1.1.0 provides `masterCopy()` (0xa619486e), which is also stored in slot 0
+        if re.match(r".*a619486e.*", code):  # NOTE: Such a short sequence can have false positives
             slot_0 = self.provider.get_storage(address, 0)
-            target = self.conversion_manager.convert(slot_0[-20:], AddressType)
-            # NOTE: `target` is set in initialized proxies
-            if target != ZERO_ADDRESS and target == singleton:
-                return ProxyInfo(type=ProxyType.GnosisSafe, target=target, abi=MASTER_COPY_ABI)
+            # Slot value is "address-like" heuristic (all contract addresses have >12 nonzero bytes)
+            # NOTE: Farming an address with 8 leading zeros is pretty improbable
+            if all(b == 0 for b in slot_0[:-20]) and sum(1 for b in slot_0[-20:] if b > 0) >= 12:
+                # Slot is "address-like", so convert it
+                target = self.conversion_manager.convert(slot_0[-20:], AddressType)
 
-        except ApeException:
-            pass
+                try:
+                    # call `masterCopy()` and check that target matches return value
+                    singleton = ContractCall(MASTER_COPY_ABI, address)(skip_trace=True)
+
+                except TransactionError:
+                    pass
+
+                else:
+                    # NOTE: `target` is set in initialized proxies like GnosisSafe
+                    if target == singleton:
+                        return ProxyInfo(
+                            type=ProxyType.GnosisSafe, target=target, abi=MASTER_COPY_ABI
+                        )
 
         # eip-897 delegate proxy, read `proxyType()` and `implementation()`
         # perf: only make a call when a proxyType() selector is mentioned in the code
