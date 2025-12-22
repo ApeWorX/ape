@@ -8,7 +8,12 @@ from rich import print as echo_rich_text
 from rich.tree import Tree
 
 from ape.cli.choices import LazyChoice, OutputFormat
-from ape.cli.options import ape_cli_context, network_option, output_format_option
+from ape.cli.options import (
+    ape_cli_context,
+    network_option,
+    output_format_option,
+    provider_settings_option,
+)
 from ape.exceptions import NetworkError
 from ape.logging import LogLevel
 
@@ -146,7 +151,8 @@ def _print_running_networks(cli_ctx):
 @network_option(default="ethereum:local:node")
 @click.option("--block-time", default=None, type=int, help="Block time in seconds")
 @click.option("--background", is_flag=True, help="Run in the background")
-def run(cli_ctx, provider, block_time, background):
+@provider_settings_option()
+def run(cli_ctx, provider, block_time, background, provider_settings):
     """
     Start a subprocess node as if running independently
     and stream stdout and stderr.
@@ -175,14 +181,20 @@ def run(cli_ctx, provider, block_time, background):
     cli_ctx.logger.format(fmt="%(message)s")
 
     try:
-        _run(cli_ctx, provider, background=background)
+        _run(cli_ctx, provider, background=background, provider_settings=provider_settings)
     finally:
         cli_ctx.logger.set_level(original_level)
         cli_ctx.logger.format(fmt=original_format)
 
 
-def _run(cli_ctx, provider: "SubprocessProvider", background: bool = False):
+def _run(
+    cli_ctx,
+    provider: "SubprocessProvider",
+    background: bool = False,
+    provider_settings: dict | None = None,
+):
     provider.background = background
+    provider.provider_settings = {**provider.provider_settings, **(provider_settings or {})}
     provider.connect()
 
     if process := provider.process:

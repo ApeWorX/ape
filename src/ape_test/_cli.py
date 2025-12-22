@@ -36,7 +36,7 @@ def _validate_pytest_args(*pytest_args) -> list[str]:
 
 
 def _is_ape_loglevel(value: Any) -> bool:
-    if isinstance(value, (int, LogLevel)):
+    if isinstance(value, int | LogLevel):
         return True
 
     elif isinstance(value, str):

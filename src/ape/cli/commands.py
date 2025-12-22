@@ -1,9 +1,11 @@
 import inspect
+import json
 from typing import TYPE_CHECKING, Any
 
 import click
 
 from ape.cli.choices import _NONE_NETWORK, NetworkChoice
+from ape.cli.paramtype import JSON
 from ape.exceptions import NetworkError
 
 if TYPE_CHECKING:
@@ -73,6 +75,22 @@ class ConnectedProviderCommand(click.Command):
     def parse_args(self, ctx: "Context", args: list[str]) -> list[str]:
         arguments = args  # Renamed for better pdb support.
         base_type: type | None = None if self._use_cls_types else str
+
+        if not next(
+            iter(
+                x
+                for x in self.params
+                if isinstance(x, click.core.Option)
+                and x.name == "provider_settings"
+                and isinstance(x.type, JSON)
+            ),
+            None,
+        ):
+            # Automatically include a `ProviderSettingsOption`.
+            from ape.cli.options import ProviderSettingsOption
+
+            self.params.append(ProviderSettingsOption())
+
         if existing_option := next(
             iter(
                 x
@@ -97,7 +115,23 @@ class ConnectedProviderCommand(click.Command):
             from ape.cli.options import NetworkOption
 
             # NOTE: None base-type will default to `ProviderAPI`.
-            option = NetworkOption(base_type=base_type, callback=self._network_callback)
+
+            provider_settings = None
+            if "--provider-settings" in arguments:
+                idx = arguments.index("--provider-settings")
+                if len(args) > idx + 1:
+                    provider_settings = args[idx + 1]
+                    try:
+                        provider_settings = json.loads(provider_settings)
+                    except json.JSONDecodeError:
+                        raise click.BadParameter("Invalid JSON for `--provider-settings`")
+
+                # else: let click error naturally later.
+            option = NetworkOption(
+                base_type=base_type,
+                callback=self._network_callback,
+                provider_settings=provider_settings,
+            )
             self.params.append(option)
 
         return super().parse_args(ctx, arguments)
@@ -117,12 +151,17 @@ class ConnectedProviderCommand(click.Command):
         # Else, causes issues.
         ctx.params.pop("network", None)
 
-        valid_fields = ("ecosystem", "network", "provider")
+        valid_fields = ("ecosystem", "network", "provider", "provider_settings")
         requested_fields = (
             []
             if self.callback is None
             else [x for x in inspect.signature(self.callback).parameters if x in valid_fields]
         )
+
+        if "provider_settings" not in requested_fields and "provider_settings" in ctx.params:
+            # Else, causes callback error.
+            ctx.params.pop("provider_settings")
+
         if self._use_cls_types and requested_fields:
             options = (
                 {}

@@ -25,6 +25,7 @@ from ape.cli.options import (
     network_option,
     output_format_option,
     project_option,
+    provider_settings_option,
     skip_confirmation_option,
     verbosity_option,
 )
@@ -55,6 +56,7 @@ __all__ = [
     "output_format_choice",
     "output_format_option",
     "project_option",
+    "provider_settings_option",
     "select_account",
     "skip_confirmation_option",
     "verbosity_option",

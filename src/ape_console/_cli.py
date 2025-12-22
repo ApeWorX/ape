@@ -44,7 +44,7 @@ def _code_callback(ctx, param, value) -> list[str]:
 @ape_cli_context()
 @project_option(hidden=True, type=Path)  # Hidden as mostly used for test purposes.
 @click.option("-c", "--code", help="Program passed in as a string", callback=_code_callback)
-def cli(cli_ctx, project, code):
+def cli(cli_ctx, project, code, provider_settings):
     """Opens a console for the local project."""
     verbose = cli_ctx.logger.level == logging.DEBUG
     return console(project=project, verbose=verbose, code=code)
