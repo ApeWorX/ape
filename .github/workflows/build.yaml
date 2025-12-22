@@ -120,7 +120,8 @@ jobs:
 
       - name: Run container retention policy
         if: github.ref == 'refs/heads/main'
-        uses: snok/container-retention-policy@v2
+        # TODO: Use `v3` when available
+        uses: snok/container-retention-policy@v3.0.1
         with:
           account: ApeWorX
           token: ${{ secrets.GITHUB_TOKEN }}
