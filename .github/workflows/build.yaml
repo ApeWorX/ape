@@ -81,53 +81,16 @@ jobs:
           build-args: |
             SLIM_IMAGE=${{ steps.meta.outputs.tags }}-slim
 
-      - name: Fetch all tags and store them
-        run: |
-          # List all tags
-          tags=$(git tag -l)
-          echo "All tags:"
-          echo "$tags"
-
-          # Save tags in an environment variable for later use
-          echo "ALL_TAGS=$(echo $tags | tr '\n' ' ')" >> $GITHUB_ENV
-
-      - name: Retain last two minor versions
-        run: |
-          # Fetch all tags in the format X.Y.Z
-          echo "Using stored tags..."
-          all_tags="${{ env.ALL_TAGS }}"
-          echo "All tags:"
-          echo "$all_tags"
-
-          # Extract the minor versions (X.Y) from tags in the format vX.X.X
-          latest_two_minors=$(echo "$all_tags" | tr ' ' '\n' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sed -E 's/^v([0-9]+\.[0-9]+)\.[0-9]+$/\1/' | uniq | tail -n 2)
-          echo "Last two minor versions:"
-          echo "$latest_two_minors"
-
-          keep_tags=""
-          for minor in $latest_two_minors; do
-            echo "Processing minor version: $minor"
-            patches=$(echo "$all_tags" | tr ' ' '\n' | grep "^v$minor\.")
-            echo "Latest patch for $minor: $patches"
-            keep_tags="$keep_tags $patches"
-          done
-
-          # Store the tags in the environment variable
-          keep_tags=$(echo $keep_tags | tr ' ' '\n' | paste -sd ',' -)
-          echo "Tags to keep: $keep_tags"
-          echo "keep_tags=$keep_tags" >> $GITHUB_ENV
-          echo "keep_tags=$keep_tags"
-
       - name: Run container retention policy
-        if: github.ref == 'refs/heads/main'
         # TODO: Use `v3` when available
         uses: snok/container-retention-policy@v3.0.1
         with:
           account: ApeWorX
           token: ${{ secrets.GITHUB_TOKEN }}
-          image-names: ${{ env.IMAGE_NAME }}
-          image-tags: "!stable* !latest* !${{ env.keep_tags }}"
+          image-names: "ape"
+          # NOTE: Keep stable/stable-slim, latest/latest-slim, all v0.8.x series, and last in v0.7.x series
+          image-tags: "!stable* !latest* !v0.8* !v0.7.23*"
           tag-selection: both
           cut-off: 4w
-          dry-run: true
+          dry-run: ${{ github.ref != 'refs/heads/main' }}
 
