@@ -3,9 +3,8 @@ import re
 import sys
 from functools import cached_property
 from gettext import gettext
-from importlib.metadata import entry_points
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import click
 import yaml
@@ -13,6 +12,9 @@ import yaml
 from ape.cli.options import ape_cli_context
 from ape.exceptions import Abort, ApeAttributeError, ApeException, handle_ape_exception
 from ape.logging import logger
+
+if TYPE_CHECKING:
+    from importlib.metadata import EntryPoint
 
 _DIFFLIB_CUT_OFF = 0.6
 
@@ -37,54 +39,36 @@ class ApeCLI(click.MultiCommand):
     _CLI_GROUP_NAME = "ape_cli_subcommands"
 
     def format_commands(self, ctx, formatter) -> None:
-        from ape.plugins._utils import PluginMetadataList
-
-        commands = []
-        for subcommand in self.list_commands(ctx):
-            cmd = self.get_command(ctx, subcommand)
-            if cmd is None or cmd.hidden:
-                continue
-
-            commands.append((subcommand, cmd))
-
-        if not commands:
-            return None
-
-        limit = formatter.width - 6 - max(len(cmd[0]) for cmd in commands)
-
-        # Split the commands into 3 sections.
-        sections: dict[str, list[tuple[str, str]]] = {
+        # Split the commands into 2 sections.
+        sections: dict[str, list[tuple[str, click.Command | click.Group]]] = {
             "Core": [],
             "Plugin": [],
-            "3rd-Party Plugin": [],
         }
-        pl_metadata = PluginMetadataList.from_package_names(f"ape_{c[0]}" for c in commands)
-        for cli_name, cmd in commands:
-            help = cmd.get_short_help_str(limit)
-            plugin = pl_metadata.get_plugin(cli_name, check_available=False)
-            if plugin is None:
-                continue
+        max_cmd_name_len = 0
+        for name, ep in self.cli_entrypoints.items():
+            sections["Core" if ep.dist and ep.dist.name == "eth-ape" else "Plugin"].append(
+                (name, ep.load())
+            )
+            max_cmd_name_len = max(max_cmd_name_len, len(name))
 
-            if plugin.in_core:
-                sections["Core"].append((cli_name, help))
-            elif plugin.check_trusted(use_web=False):
-                sections["Plugin"].append((cli_name, help))
-            else:
-                sections["3rd-Party Plugin"].append((cli_name, help))
+        limit = formatter.width - 6 - max_cmd_name_len
+        for section_name, commands in sections.items():
+            deflist = []
+            for name, cmd in sorted(commands, key=lambda t: t[0]):
+                if cmd is None or cmd.hidden:
+                    continue
 
-        for title, rows in sections.items():
-            if not rows:
-                continue
+                deflist.append((name, cmd.get_short_help_str(limit)))
 
-            with formatter.section(gettext(f"{title} Commands")):
-                formatter.write_dl(rows)
+            with formatter.section(gettext(f"{section_name} Commands")):
+                formatter.write_dl(deflist)
 
     def invoke(self, ctx) -> Any:
         try:
             return super().invoke(ctx)
 
         except click.UsageError as err:
-            self._suggest_cmd(err)
+            self._suggest_cmd(ctx, err)
 
         except ApeException as err:
             path = ctx.obj.local_project.path
@@ -108,8 +92,7 @@ class ApeCLI(click.MultiCommand):
             else:
                 raise Abort.from_ape_exception(err) from err
 
-    @staticmethod
-    def _suggest_cmd(usage_error):
+    def _suggest_cmd(self, ctx, usage_error):
         if usage_error.message is None:
             raise usage_error
 
@@ -122,7 +105,7 @@ class ApeCLI(click.MultiCommand):
 
         bad_arg = groups[0]
         suggested_commands = difflib.get_close_matches(
-            bad_arg, list(usage_error.ctx.command.commands.keys()), cutoff=_DIFFLIB_CUT_OFF
+            bad_arg, self.list_commands(ctx), cutoff=_DIFFLIB_CUT_OFF
         )
         if suggested_commands:
             if bad_arg not in suggested_commands:
@@ -133,23 +116,29 @@ class ApeCLI(click.MultiCommand):
         raise usage_error
 
     @cached_property
-    def commands(self) -> dict:
-        _entry_points = entry_points()
-        eps = _entry_points.select(group=self._CLI_GROUP_NAME)
-        commands = {cmd.name.replace("_", "-").replace("ape-", ""): cmd.load for cmd in eps}
-        return dict(sorted(commands.items()))
+    def cli_entrypoints(self) -> dict[str, "EntryPoint"]:
+        # Lazy load for performance
+        from importlib.metadata import entry_points
+
+        return {
+            ep.name.replace("_", "-").replace("ape-", ""): ep
+            for ep in entry_points().select(group=self._CLI_GROUP_NAME)
+        }
 
     def list_commands(self, ctx) -> list[str]:
-        return [k for k in self.commands]
+        return sorted(self.cli_entrypoints)
 
     def get_command(self, ctx, name) -> click.Command | None:
+        if not (ep := self.cli_entrypoints.get(name)):
+            # NOTE: don't return anything so Click displays proper error
+            return None
+
         try:
-            return self.commands[name]()
+            return ep.load()
         except Exception as err:
             logger.warn_from_exception(err, f"Unable to load CLI endpoint for plugin 'ape_{name}'")
-
-        # NOTE: don't return anything so Click displays proper error
-        return None
+            # NOTE: don't return anything so Click displays proper error
+            return None
 
 
 @click.command(cls=ApeCLI, context_settings=dict(help_option_names=["-h", "--help"]))
