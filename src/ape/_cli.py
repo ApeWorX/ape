@@ -60,6 +60,10 @@ class ApeCLI(click.MultiCommand):
 
                 deflist.append((name, cmd.get_short_help_str(limit)))
 
+            if not deflist:
+                # NOTE: Avoid issue with empty sections (now Plugins installed)
+                continue
+
             with formatter.section(gettext(f"{section_name} Commands")):
                 formatter.write_dl(deflist)
 
