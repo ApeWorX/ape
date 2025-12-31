@@ -1,13 +1,11 @@
 import difflib
 import re
 import sys
-from collections.abc import Iterable
 from functools import cached_property
 from gettext import gettext
 from importlib.metadata import entry_points
 from pathlib import Path
 from typing import Any
-from warnings import catch_warnings, simplefilter
 
 import click
 import yaml
@@ -137,16 +135,7 @@ class ApeCLI(click.MultiCommand):
     @cached_property
     def commands(self) -> dict:
         _entry_points = entry_points()
-        eps: Iterable
-
-        try:
-            eps = _entry_points.select(group=self._CLI_GROUP_NAME)
-        except AttributeError:
-            # Fallback for Python 3.9
-            with catch_warnings():
-                simplefilter("ignore")
-                eps = _entry_points.get(self._CLI_GROUP_NAME, [])  # type: ignore
-
+        eps = _entry_points.select(group=self._CLI_GROUP_NAME)
         commands = {cmd.name.replace("_", "-").replace("ape-", ""): cmd.load for cmd in eps}
         return dict(sorted(commands.items()))
 
