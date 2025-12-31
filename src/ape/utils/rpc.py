@@ -4,7 +4,6 @@ from random import randint
 
 import requests
 from requests.models import CaseInsensitiveDict
-from tqdm import tqdm  # type: ignore
 
 from ape.exceptions import ProviderError, ProviderNotConnectedError
 from ape.logging import logger
@@ -53,6 +52,9 @@ def stream_response(download_url: str, progress_bar_description: str = "Download
     Returns:
         bytes: Content in bytes to show the progress.
     """
+    # Lazy import for performance
+    from tqdm import tqdm  # type: ignore[import-untyped]
+
     response = requests.get(download_url, stream=True)
     response.raise_for_status()
 
