@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en" data-accent-color="lime" data-content_root="../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Contract Creation Metadata - ape documentation</title><link rel="shortcut icon" href="../_static/favicon.ico"/><link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Console" href="console.html" /><link rel="prev" title="Proxy Contracts" href="proxy.html" />
+      <link rel="canonical" href="ape/userguides/contract_metadata.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=e1a1ceaf" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=a318c5d4" />
+    <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    <meta property="og:type" content="website"/>
+  <meta property="og:url" content="ape/userguides/contract_metadata.html"/>
+  <meta property="og:title" content="Contract Creation Metadata"/>
+    <meta name="twitter:card" content="summary"/>
+  </head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="../index.html">
+      <img class="light-logo" src="../_static/logo_grey.svg" alt="ape" height="28" loading="lazy" />
+      <img class="dark-logo" src="../_static/logo_green.svg" alt="ape" height="28" loading="lazy" />
+      <strong>ape</strong>
+    </a>
+    <div class="sy-head-nav" id="head-nav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials"></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="head-nav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2"></span>
+          <span class="hamburger_3"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading" aria-level="3"><span class="caption-text">User Guides</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="projects.html">Developing Projects with Ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Configure Ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installing_plugins.html">Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="accounts.html">Accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="compile.html">Compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contracts.html">Contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="testing.html">Testing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reverts.html">Reverts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="networks.html">Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="forking_networks.html">Forking Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="publishing.html">Publishing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="proxy.html">Proxy Contracts</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Contract Creation Metadata</a></li>
+<li class="toctree-l1"><a class="reference internal" href="console.html">Console</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scripts.html">Scripting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transactions.html">Transactions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trace.html">Traces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="logging.html">Logging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="data.html">Querying Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="clis.html">CLIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="developing_plugins.html">Developing Plugins</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">CLI Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../commands/accounts.html">accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/compile.html">compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/console.html">console</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/init.html">init</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/networks.html">networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/plugins.html">plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/pm.html">pm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/run.html">run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/test.html">test</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Core Python Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape.html">ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/api.html">ape.api</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/cli.html">ape.cli</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/contracts.html">ape.contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/exceptions.html">ape.exceptions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/managers.html">ape.managers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/plugins.html">ape.plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/types.html">ape.types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/utils.html">ape.utils</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Plugin Python Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_accounts.html">ape-accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_compile.html">ape-compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_ethereum.html">ape-ethereum</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_ethereum.html#module-ape_ethereum.multicall">ape-ethereum.multicall</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_node.html">ape-node</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_pm.html">ape-pm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_test.html">ape-test</a></li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#accessing-creation-metadata">Accessing Creation Metadata</a></li>
+<li><a class="reference internal" href="#metadata-properties-and-usage">Metadata Properties and Usage</a></li>
+<li><a class="reference internal" href="#metadata-access-implementation">Metadata Access Implementation</a><ul>
+<li><a class="reference internal" href="#in-session-deployments">In-Session Deployments</a></li>
+<li><a class="reference internal" href="#otterscan-api-integration">Otterscan API Integration</a></li>
+<li><a class="reference internal" href="#archive-node-deployment-detection">Archive Node Deployment Detection</a></li>
+<li><a class="reference internal" href="#explorer-api-fallback">Explorer API Fallback</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#metadata-caching">Metadata Caching</a></li>
+<li><a class="reference internal" href="#advanced-programmatic-access">Advanced Programmatic Access</a></li>
+</ul>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6">
+<div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../index.html"><span itemprop="name">ape</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">Contract Creation Metadata</strong>
+        <meta itemprop="position" content="2" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+  <div class="copy-page-wrapper relative pb-4 lg:absolute lg:top-8 lg:right-6 xl:right-12">
+  <div id="copy-page-trigger">
+    <button
+      type="button"
+      class="js-copy px-3 py-1 inline-flex items-center gap-1"
+      data-url="ape/_sources/userguides/contract_metadata.md.txt"
+    >
+      <i class="i-lucide" data-icon="copy"></i>
+      <span>Copy page</span>
+    </button>
+    <button class="js-menu px-2 py-1" type="button" aria-label="More actions"
+      aria-haspopup="menu" aria-expanded="false" aria-controls="copy-page-content">
+      <i class="i-lucide chevron-down"></i>
+    </button>
+  </div>
+  <div id="copy-page-content" role="menu" aria-orientation="vertical" aria-hidden="true">
+    <div role="presentation">
+      <div class="flex flex-col" role="group">
+        <button class="js-copy" type="button" role="menuitem"
+          data-url="ape/_sources/userguides/contract_metadata.md.txt">
+          <span class="iconify-icon">
+            <i class="i-lucide" data-icon="copy"></i>
+          </span>
+          <span>Copy page</span>
+        </button>
+        <a role="menuitem" href="ape/_sources/userguides/contract_metadata.md.txt" target="_blank" rel="nofollow"><iconify-icon icon="bi:markdown"></iconify-icon>
+            <span>View as Markdown</span></a><a role="menuitem" href="https://chatgpt.com/?hints=search&q=Read%20ape/_sources/userguides/contract_metadata.md.txt%20so%20I%20can%20ask%20questions%20about%20it." target="_blank" rel="nofollow">
+          <iconify-icon icon="bi:openai"></iconify-icon>
+          <span>Open in ChatGPT</span>
+        </a><a role="menuitem" href="https://claude.ai/new?q=Read%20ape/_sources/userguides/contract_metadata.md.txt%20so%20I%20can%20ask%20questions%20about%20it." target="_blank" rel="nofollow">
+          <iconify-icon icon="bi:claude"></iconify-icon>
+          <span>Open in Claude</span>
+        </a></div>
+    </div>
+  </div>
+</div><article class="yue" role="main">
+          <section id="contract-creation-metadata">
+<h1>Contract Creation Metadata<a class="headerlink" href="#contract-creation-metadata" title="Link to this heading"></a></h1>
+<p>Ape provides powerful contract creation metadata capabilities that reveal deployment details like deployer address, transaction hash, block number, and factory information.
+This data enables contract verification, historical analysis, and audit workflows.</p>
+<section id="accessing-creation-metadata">
+<h2>Accessing Creation Metadata<a class="headerlink" href="#accessing-creation-metadata" title="Link to this heading"></a></h2>
+<p>Every contract instance in Ape exposes creation information through the <code class="docutils literal notranslate"><span class="pre">creation_metadata</span></code> property, which returns a <code class="docutils literal notranslate"><span class="pre">ContractCreation</span></code> object:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">Contract</span><span class="p">,</span> <span class="n">project</span><span class="p">,</span> <span class="n">accounts</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="c1"># For newly deployed contracts</span>
+</span><span data-line="4"><span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;my-account&quot;</span><span class="p">)</span>
+</span><span data-line="5"><span class="n">contract</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">account</span><span class="p">)</span>
+</span><span data-line="6"><span class="n">metadata</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">creation_metadata</span>
+</span><span data-line="7">
+</span><span data-line="8"><span class="c1"># For existing contracts</span>
+</span><span data-line="9"><span class="n">existing_contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span><span class="s2">&quot;0x123abc...&quot;</span><span class="p">)</span>
+</span><span data-line="10"><span class="n">metadata</span> <span class="o">=</span> <span class="n">existing_contract</span><span class="o">.</span><span class="n">creation_metadata</span>
+</span></pre></div>
+</div>
+</section>
+<section id="metadata-properties-and-usage">
+<h2>Metadata Properties and Usage<a class="headerlink" href="#metadata-properties-and-usage" title="Link to this heading"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">ContractCreation</span></code> object exposes several key properties:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="c1"># Deployment transaction hash</span>
+</span><span data-line="2"><span class="n">txn_hash</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">txn_hash</span>
+</span><span data-line="3">
+</span><span data-line="4"><span class="c1"># Deployment block number - useful for historical analysis</span>
+</span><span data-line="5"><span class="n">block_number</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">block</span>
+</span><span data-line="6">
+</span><span data-line="7"><span class="c1"># Contract deployer address - useful for ownership verification</span>
+</span><span data-line="8"><span class="n">deployer_address</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">deployer</span>
+</span><span data-line="9">
+</span><span data-line="10"><span class="c1"># Factory contract address (for factory-deployed contracts)</span>
+</span><span data-line="11"><span class="n">factory_address</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">factory</span>  <span class="c1"># None for direct deployments</span>
+</span><span data-line="12">
+</span><span data-line="13"><span class="c1"># Complete deployment transaction receipt</span>
+</span><span data-line="14"><span class="n">receipt</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">receipt</span>  <span class="c1"># See transactions guide for receipt properties</span>
+</span></pre></div>
+</div>
+<p>For complete details about transaction receipts, see the <a class="reference external" href="./transactions.html">transactions guide</a>.</p>
+<p>These properties unlock valuable workflows such as:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="c1"># Verify contract ownership</span>
+</span><span data-line="2"><span class="k">def</span><span class="w"> </span><span class="nf">is_creator</span><span class="p">(</span><span class="n">contract</span><span class="p">,</span> <span class="n">address</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+</span><span data-line="3"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if an address is the creator of a contract&quot;&quot;&quot;</span>
+</span><span data-line="4">    <span class="n">metadata</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">creation_metadata</span>
+</span><span data-line="5">    <span class="k">return</span> <span class="n">metadata</span> <span class="ow">and</span> <span class="n">metadata</span><span class="o">.</span><span class="n">deployer</span> <span class="o">==</span> <span class="n">address</span>
+</span><span data-line="6">
+</span><span data-line="7"><span class="c1"># Historical queries at contract inception</span>
+</span><span data-line="8"><span class="n">creation_block</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">creation_metadata</span><span class="o">.</span><span class="n">block</span>
+</span><span data-line="9"><span class="n">initial_balance</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">balance</span><span class="p">(</span><span class="n">block_number</span><span class="o">=</span><span class="n">creation_block</span><span class="p">)</span>
+</span></pre></div>
+</div>
+</section>
+<section id="metadata-access-implementation">
+<h2>Metadata Access Implementation<a class="headerlink" href="#metadata-access-implementation" title="Link to this heading"></a></h2>
+<p>Ape uses a sophisticated fallback system to retrieve contract creation metadata through several methods:</p>
+<section id="in-session-deployments">
+<h3>In-Session Deployments<a class="headerlink" href="#in-session-deployments" title="Link to this heading"></a></h3>
+<p>Contracts deployed in the current Ape session have their metadata automatically captured in memory.
+This approach provides instantaneous access with zero configuration but only works for contracts deployed during the active session.</p>
+</section>
+<section id="otterscan-api-integration">
+<h3>Otterscan API Integration<a class="headerlink" href="#otterscan-api-integration" title="Link to this heading"></a></h3>
+<p>For nodes with <a class="reference external" href="https://docs.otterscan.io/api-docs/ots-api">Otterscan extensions</a>, Ape utilizes the <code class="docutils literal notranslate"><span class="pre">ots_getContractCreator</span></code> RPC endpoint to obtain precise creation information.
+This method offers complete data including factory details but requires a specially configured node with Otterscan functionality.</p>
+</section>
+<section id="archive-node-deployment-detection">
+<h3>Archive Node Deployment Detection<a class="headerlink" href="#archive-node-deployment-detection" title="Link to this heading"></a></h3>
+<p>When working with archive nodes, Ape employs a binary search technique with <code class="docutils literal notranslate"><span class="pre">eth_getCode</span></code> to identify the deployment block, then uses block tracing (<code class="docutils literal notranslate"><span class="pre">debug_traceBlockByNumber</span></code> or <code class="docutils literal notranslate"><span class="pre">trace_replayBlockTransactions</span></code>) to reconstruct the deployment.
+This approach works with many Ethereum clients but requires archive node access and performs slower than other methods.</p>
+</section>
+<section id="explorer-api-fallback">
+<h3>Explorer API Fallback<a class="headerlink" href="#explorer-api-fallback" title="Link to this heading"></a></h3>
+<p>As a final option, Ape can query blockchain explorers using plugins like <code class="docutils literal notranslate"><span class="pre">ape-etherscan</span></code>.
+This approach offers broad compatibility across most networks with explorers but depends on third-party services, API keys, and may lack complete factory information.</p>
+<p>Ape intelligently attempts these methods in sequence, moving to the next if one fails.
+If all methods fail, <code class="docutils literal notranslate"><span class="pre">creation_metadata</span></code> returns <code class="docutils literal notranslate"><span class="pre">None</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">metadata</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">creation_metadata</span>
+</span><span data-line="2"><span class="k">if</span> <span class="n">metadata</span><span class="p">:</span>
+</span><span data-line="3">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Contract deployed by </span><span class="si">{</span><span class="n">metadata</span><span class="o">.</span><span class="n">deployer</span><span class="si">}</span><span class="s2"> in block </span><span class="si">{</span><span class="n">metadata</span><span class="o">.</span><span class="n">block</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="4"><span class="k">else</span><span class="p">:</span>
+</span><span data-line="5">    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Creation metadata unavailable&quot;</span><span class="p">)</span>
+</span></pre></div>
+</div>
+</section>
+</section>
+<section id="metadata-caching">
+<h2>Metadata Caching<a class="headerlink" href="#metadata-caching" title="Link to this heading"></a></h2>
+<p>To optimize performance, Ape automatically caches creation metadata.
+For permanent networks (not local or fork networks), this data persists on disk for future sessions, eliminating repeated lookup overhead.</p>
+</section>
+<section id="advanced-programmatic-access">
+<h2>Advanced Programmatic Access<a class="headerlink" href="#advanced-programmatic-access" title="Link to this heading"></a></h2>
+<p>For specialized use cases, you can work directly with the contracts cache manager:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">chain</span>
+</span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.api.query</span><span class="w"> </span><span class="kn">import</span> <span class="n">ContractCreation</span>
+</span><span data-line="3">
+</span><span data-line="4"><span class="c1"># Retrieve metadata programmatically</span>
+</span><span data-line="5"><span class="n">address</span> <span class="o">=</span> <span class="s2">&quot;0x123abc...&quot;</span>
+</span><span data-line="6"><span class="n">metadata</span> <span class="o">=</span> <span class="n">chain</span><span class="o">.</span><span class="n">contracts</span><span class="o">.</span><span class="n">get_creation_metadata</span><span class="p">(</span><span class="n">address</span><span class="p">)</span>
+</span><span data-line="7">
+</span><span data-line="8"><span class="c1"># Store custom metadata</span>
+</span><span data-line="9"><span class="n">chain</span><span class="o">.</span><span class="n">contracts</span><span class="o">.</span><span class="n">cache_contract_creation</span><span class="p">(</span>
+</span><span data-line="10">    <span class="n">address</span><span class="p">,</span> 
+</span><span data-line="11">    <span class="n">ContractCreation</span><span class="p">(</span>
+</span><span data-line="12">        <span class="n">txn_hash</span><span class="o">=</span><span class="s2">&quot;0xabc...&quot;</span><span class="p">,</span>
+</span><span data-line="13">        <span class="n">block</span><span class="o">=</span><span class="mi">12345</span><span class="p">,</span>
+</span><span data-line="14">        <span class="n">deployer</span><span class="o">=</span><span class="s2">&quot;0xdef...&quot;</span><span class="p">,</span>
+</span><span data-line="15">        <span class="n">factory</span><span class="o">=</span><span class="kc">None</span>
+</span><span data-line="16">    <span class="p">)</span>
+</span><span data-line="17"><span class="p">)</span>
+</span></pre></div>
+</div>
+<p>This level of access is particularly valuable for governance verification systems, contract audit tooling, and detailed deployment reporting.</p>
+</section>
+</section>
+
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"><div class="navigation-prev">
+    <a href="proxy.html">
+      <i class="i-lucide chevron-left"></i>
+      <div class="page-info">
+        <span>Previous</span><div class="title">Proxy Contracts</div></div>
+    </a>
+  </div><div class="navigation-next">
+    <a href="console.html">
+      <div class="page-info">
+        <span>Next</span>
+        <div class="title">Console</div>
+      </div>
+      <i class="i-lucide chevron-right"></i>
+    </a>
+  </div></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2024, ApeWorX LTD</p>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials"></div>
+    </div>
+  </div>
+</footer>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script data-domain="docs.apeworx.io" defer="defer" src="https://plausible.io/js/script.js"></script>
+      <script src="../_static/shibuya.js?v=cac61aee"></script></body>
+</html>

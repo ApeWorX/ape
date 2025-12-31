@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en" data-accent-color="lime" data-content_root="../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>ape-node - ape documentation</title><link rel="shortcut icon" href="../_static/favicon.ico"/><link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="ape-pm" href="ape_pm.html" /><link rel="prev" title="ape-ethereum" href="ape_ethereum.html" />
+      <link rel="canonical" href="ape/methoddocs/ape_node.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=e1a1ceaf" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=a318c5d4" />
+    <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    <meta property="og:type" content="website"/>
+  <meta property="og:url" content="ape/methoddocs/ape_node.html"/>
+  <meta property="og:title" content="ape-node"/>
+    <meta name="twitter:card" content="summary"/>
+  </head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="../index.html">
+      <img class="light-logo" src="../_static/logo_grey.svg" alt="ape" height="28" loading="lazy" />
+      <img class="dark-logo" src="../_static/logo_green.svg" alt="ape" height="28" loading="lazy" />
+      <strong>ape</strong>
+    </a>
+    <div class="sy-head-nav" id="head-nav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials"></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="head-nav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2"></span>
+          <span class="hamburger_3"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading" aria-level="3"><span class="caption-text">User Guides</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/quickstart.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/projects.html">Developing Projects with Ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/config.html">Configure Ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/installing_plugins.html">Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/accounts.html">Accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/compile.html">Compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/contracts.html">Contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/testing.html">Testing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/reverts.html">Reverts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/networks.html">Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/forking_networks.html">Forking Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/publishing.html">Publishing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/proxy.html">Proxy Contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/contract_metadata.html">Contract Creation Metadata</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/console.html">Console</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/scripts.html">Scripting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/transactions.html">Transactions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/trace.html">Traces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/logging.html">Logging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/data.html">Querying Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/clis.html">CLIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/developing_plugins.html">Developing Plugins</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">CLI Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../commands/accounts.html">accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/compile.html">compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/console.html">console</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/init.html">init</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/networks.html">networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/plugins.html">plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/pm.html">pm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/run.html">run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/test.html">test</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Core Python Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="ape.html">ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">ape.api</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">ape.cli</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contracts.html">ape.contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="exceptions.html">ape.exceptions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="managers.html">ape.managers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugins.html">ape.plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="types.html">ape.types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">ape.utils</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Plugin Python Reference</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="ape_accounts.html">ape-accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ape_compile.html">ape-compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ape_ethereum.html">ape-ethereum</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ape_ethereum.html#module-ape_ethereum.multicall">ape-ethereum.multicall</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">ape-node</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ape_pm.html">ape-pm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ape_test.html">ape-test</a></li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#ape_node.provider.EthereumNetworkConfig"><code class="docutils literal notranslate"><span class="pre">EthereumNetworkConfig</span></code></a></li>
+<li><a class="reference internal" href="#ape_node.provider.EthereumNodeConfig"><code class="docutils literal notranslate"><span class="pre">EthereumNodeConfig</span></code></a><ul>
+<li><a class="reference internal" href="#ape_node.provider.EthereumNodeConfig.call_trace_approach"><code class="docutils literal notranslate">call_trace_approach</span></code></a></li>
+<li><a class="reference internal" href="#ape_node.provider.EthereumNodeConfig.data_dir"><code class="docutils literal notranslate">data_dir</span></code></a></li>
+<li><a class="reference internal" href="#ape_node.provider.EthereumNodeConfig.ethereum"><code class="docutils literal notranslate">ethereum</span></code></a></li>
+<li><a class="reference internal" href="#ape_node.provider.EthereumNodeConfig.executable"><code class="docutils literal notranslate">executable</span></code></a></li>
+<li><a class="reference internal" href="#ape_node.provider.EthereumNodeConfig.ipc_path"><code class="docutils literal notranslate">ipc_path</span></code></a></li>
+<li><a class="reference internal" href="#ape_node.provider.EthereumNodeConfig.request_headers"><code class="docutils literal notranslate">request_headers</span></code></a></li>
+<li><a class="reference internal" href="#ape_node.provider.EthereumNodeConfig.rpc_api"><code class="docutils literal notranslate">rpc_api</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ape_node.provider.GethDev"><code class="docutils literal notranslate"><span class="pre">GethDev</span></code></a><ul>
+<li><a class="reference internal" href="#ape_node.provider.GethDev.auto_mine"><code class="docutils literal notranslate">auto_mine</span></code></a></li>
+<li><a class="reference internal" href="#ape_node.provider.GethDev.build_command"><code class="docutils literal notranslate">build_command()</span></code></a></li>
+<li><a class="reference internal" href="#ape_node.provider.GethDev.chain_id"><code class="docutils literal notranslate">chain_id</span></code></a></li>
+<li><a class="reference internal" href="#ape_node.provider.GethDev.connect"><code class="docutils literal notranslate">connect()</span></code></a></li>
+<li><a class="reference internal" href="#ape_node.provider.GethDev.disconnect"><code class="docutils literal notranslate">disconnect()</span></code></a></li>
+<li><a class="reference internal" href="#ape_node.provider.GethDev.get_test_account"><code class="docutils literal notranslate">get_test_account()</span></code></a></li>
+<li><a class="reference internal" href="#ape_node.provider.GethDev.ipc_path"><code class="docutils literal notranslate">ipc_path</span></code></a></li>
+<li><a class="reference internal" href="#ape_node.provider.GethDev.mine"><code class="docutils literal notranslate">mine()</span></code></a></li>
+<li><a class="reference internal" href="#ape_node.provider.GethDev.name"><code class="docutils literal notranslate">name</span></code></a></li>
+<li><a class="reference internal" href="#ape_node.provider.GethDev.process_name"><code class="docutils literal notranslate">process_name</span></code></a></li>
+<li><a class="reference internal" href="#ape_node.provider.GethDev.restore"><code class="docutils literal notranslate">restore()</span></code></a></li>
+<li><a class="reference internal" href="#ape_node.provider.GethDev.send_transaction"><code class="docutils literal notranslate">send_transaction()</span></code></a></li>
+<li><a class="reference internal" href="#ape_node.provider.GethDev.set_timestamp"><code class="docutils literal notranslate">set_timestamp()</span></code></a></li>
+<li><a class="reference internal" href="#ape_node.provider.GethDev.snapshot"><code class="docutils literal notranslate">snapshot()</span></code></a></li>
+<li><a class="reference internal" href="#ape_node.provider.GethDev.start"><code class="docutils literal notranslate">start()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ape_node.provider.GethDevProcess"><code class="docutils literal notranslate"><span class="pre">GethDevProcess</span></code></a></li>
+<li><a class="reference internal" href="#ape_node.provider.Node"><code class="docutils literal notranslate"><span class="pre">Node</span></code></a><ul>
+<li><a class="reference internal" href="#ape_node.provider.Node.connect"><code class="docutils literal notranslate">connect()</span></code></a></li>
+<li><a class="reference internal" href="#ape_node.provider.Node.send_transaction"><code class="docutils literal notranslate">send_transaction()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ape_node.provider.NodeSoftwareNotInstalledError"><code class="docutils literal notranslate"><span class="pre">NodeSoftwareNotInstalledError</span></code></a></li>
+<li><a class="reference internal" href="#ape_node.provider.create_genesis_data"><code class="docutils literal notranslate"><span class="pre">create_genesis_data()</span></code></a></li>
+</ul>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6">
+<div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../index.html"><span itemprop="name">ape</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">ape-node</strong>
+        <meta itemprop="position" content="2" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+  <div class="copy-page-wrapper relative pb-4 lg:absolute lg:top-8 lg:right-6 xl:right-12">
+  <div id="copy-page-trigger">
+    <button
+      type="button"
+      class="js-copy px-3 py-1 inline-flex items-center gap-1"
+      data-url="ape/_sources/methoddocs/ape_node.md.txt"
+    >
+      <i class="i-lucide" data-icon="copy"></i>
+      <span>Copy page</span>
+    </button>
+    <button class="js-menu px-2 py-1" type="button" aria-label="More actions"
+      aria-haspopup="menu" aria-expanded="false" aria-controls="copy-page-content">
+      <i class="i-lucide chevron-down"></i>
+    </button>
+  </div>
+  <div id="copy-page-content" role="menu" aria-orientation="vertical" aria-hidden="true">
+    <div role="presentation">
+      <div class="flex flex-col" role="group">
+        <button class="js-copy" type="button" role="menuitem"
+          data-url="ape/_sources/methoddocs/ape_node.md.txt">
+          <span class="iconify-icon">
+            <i class="i-lucide" data-icon="copy"></i>
+          </span>
+          <span>Copy page</span>
+        </button>
+        <a role="menuitem" href="ape/_sources/methoddocs/ape_node.md.txt" target="_blank" rel="nofollow"><iconify-icon icon="bi:markdown"></iconify-icon>
+            <span>View as Markdown</span></a><a role="menuitem" href="https://chatgpt.com/?hints=search&q=Read%20ape/_sources/methoddocs/ape_node.md.txt%20so%20I%20can%20ask%20questions%20about%20it." target="_blank" rel="nofollow">
+          <iconify-icon icon="bi:openai"></iconify-icon>
+          <span>Open in ChatGPT</span>
+        </a><a role="menuitem" href="https://claude.ai/new?q=Read%20ape/_sources/methoddocs/ape_node.md.txt%20so%20I%20can%20ask%20questions%20about%20it." target="_blank" rel="nofollow">
+          <iconify-icon icon="bi:claude"></iconify-icon>
+          <span>Open in Claude</span>
+        </a></div>
+    </div>
+  </div>
+</div><article class="yue" role="main">
+          <section id="module-ape_node.provider">
+<span id="ape-node"></span><h1>ape-node<a class="headerlink" href="#module-ape_node.provider" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="ape_node.provider.EthereumNetworkConfig">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape_node.provider.</span></span><span class="sig-name descname"><span class="pre">EthereumNetworkConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_case_sensitive</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_nested_model_default_partial_update</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_env_prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_env_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DotenvType</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">PosixPath('.')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_env_file_encoding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_env_ignore_empty</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_env_nested_delimiter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_env_nested_max_split</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_env_parse_none_str</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_env_parse_enums</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cli_prog_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cli_parse_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cli_settings_source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">CliSettingsSource</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cli_parse_none_str</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cli_hide_none_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cli_avoid_json</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cli_enforce_required</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cli_use_class_docs_for_groups</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cli_exit_on_error</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cli_prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cli_flag_prefix_char</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cli_implicit_flags</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cli_ignore_unknown_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cli_kebab_case</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'all'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'no_enums'</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cli_shortcuts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_secrets_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">PathType</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mainnet</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">holesky</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sepolia</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">local</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{'block_time':</span> <span class="pre">0,</span> <span class="pre">'chain_id':</span> <span class="pre">1337,</span> <span class="pre">'uri':</span> <span class="pre">'http://localhost:8545'}</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_node.provider.EthereumNetworkConfig" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape_node.provider.EthereumNodeConfig">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape_node.provider.</span></span><span class="sig-name descname"><span class="pre">EthereumNodeConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_case_sensitive</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_nested_model_default_partial_update</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_env_prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_env_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DotenvType</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">PosixPath('.')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_env_file_encoding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_env_ignore_empty</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_env_nested_delimiter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_env_nested_max_split</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_env_parse_none_str</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_env_parse_enums</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cli_prog_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cli_parse_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cli_settings_source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">CliSettingsSource</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cli_parse_none_str</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cli_hide_none_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cli_avoid_json</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cli_enforce_required</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cli_use_class_docs_for_groups</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cli_exit_on_error</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cli_prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cli_flag_prefix_char</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cli_implicit_flags</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cli_ignore_unknown_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cli_kebab_case</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'all'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'no_enums'</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cli_shortcuts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_secrets_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">PathType</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ethereum</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ape_node.provider.EthereumNetworkConfig" title="ape_node.provider.EthereumNetworkConfig"><span class="pre">EthereumNetworkConfig</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">EthereumNetworkConfig(mainnet={},</span> <span class="pre">holesky={},</span> <span class="pre">sepolia={},</span> <span class="pre">local={'uri':</span> <span class="pre">'http://localhost:8545',</span> <span class="pre">'chain_id':</span> <span class="pre">1337,</span> <span class="pre">'block_time':</span> <span class="pre">0})</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">executable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ipc_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">call_trace_approach</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ape_ethereum.html#ape_ethereum.trace.TraceApproach" title="ape_ethereum.trace.TraceApproach"><span class="pre">TraceApproach</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">request_headers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rpc_api</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_node.provider.EthereumNodeConfig" title="Link to this definition"></a></dt>
+<dd><p>Configure your <code class="docutils literal notranslate"><span class="pre">node:</span></code> in Ape, the default provider
+plugin for live-network nodes. Also, <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">node</span></code> can
+start-up a local development node for testing purposes.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape_node.provider.EthereumNodeConfig.call_trace_approach">
+<span class="sig-name descname"><span class="pre">call_trace_approach</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ape_ethereum.html#ape_ethereum.trace.TraceApproach" title="ape_ethereum.trace.TraceApproach"><span class="pre">TraceApproach</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape_node.provider.EthereumNodeConfig.call_trace_approach" title="Link to this definition"></a></dt>
+<dd><p>Select the trace approach to use. Defaults to deducing one
+based on your node’s client-version and available RPCs.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape_node.provider.EthereumNodeConfig.data_dir">
+<span class="sig-name descname"><span class="pre">data_dir</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape_node.provider.EthereumNodeConfig.data_dir" title="Link to this definition"></a></dt>
+<dd><p>For node-management, choose where the geth data directory shall
+be located. Defaults to using a location within Ape’s DATA_FOLDER.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape_node.provider.EthereumNodeConfig.ethereum">
+<span class="sig-name descname"><span class="pre">ethereum</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ape_node.provider.EthereumNetworkConfig" title="ape_node.provider.EthereumNetworkConfig"><span class="pre">EthereumNetworkConfig</span></a></em><a class="headerlink" href="#ape_node.provider.EthereumNodeConfig.ethereum" title="Link to this definition"></a></dt>
+<dd><p>Configure the Ethereum network settings for the <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">node</span></code> provider,
+such as which URIs to use for each network.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape_node.provider.EthereumNodeConfig.executable">
+<span class="sig-name descname"><span class="pre">executable</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape_node.provider.EthereumNodeConfig.executable" title="Link to this definition"></a></dt>
+<dd><p>For starting nodes, select the executable. Defaults to using
+<code class="docutils literal notranslate"><span class="pre">shutil.which(&quot;geth&quot;)</span></code>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape_node.provider.EthereumNodeConfig.ipc_path">
+<span class="sig-name descname"><span class="pre">ipc_path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape_node.provider.EthereumNodeConfig.ipc_path" title="Link to this definition"></a></dt>
+<dd><p>For IPC connections, select the IPC path. If managing a process,
+web3.py can determine the IPC w/o needing to manually configure.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape_node.provider.EthereumNodeConfig.request_headers">
+<span class="sig-name descname"><span class="pre">request_headers</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span></em><a class="headerlink" href="#ape_node.provider.EthereumNodeConfig.request_headers" title="Link to this definition"></a></dt>
+<dd><p>Optionally specify request headers to use whenever using this provider.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape_node.provider.EthereumNodeConfig.rpc_api">
+<span class="sig-name descname"><span class="pre">rpc_api</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape_node.provider.EthereumNodeConfig.rpc_api" title="Link to this definition"></a></dt>
+<dd><p>RPC APIs to enable. Defaults to all geth APIs.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape_node.provider.GethDev">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape_node.provider.</span></span><span class="sig-name descname"><span class="pre">GethDev</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'node'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">network</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="api.html#ape.api.networks.NetworkAPI" title="ape.api.networks.NetworkAPI"><span class="pre">NetworkAPI</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">provider_settings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">request_header</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{'User-Agent':</span> <span class="pre">'EthereumNodeProvider/web3.py/7.14.0'}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_page_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">concurrency</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">PROCESS_WAIT_TIMEOUT</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">15</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">background</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">process</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Popen</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_stopping</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stdout_queue</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="utils.html#ape.utils.process.JoinableQueue" title="ape.utils.process.JoinableQueue"><span class="pre">JoinableQueue</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stderr_queue</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="utils.html#ape.utils.process.JoinableQueue" title="ape.utils.process.JoinableQueue"><span class="pre">JoinableQueue</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_node.provider.GethDev" title="Link to this definition"></a></dt>
+<dd><dl class="py property">
+<dt class="sig sig-object py" id="ape_node.provider.GethDev.auto_mine">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">auto_mine</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#ape_node.provider.GethDev.auto_mine" title="Link to this definition"></a></dt>
+<dd><p>Whether automine is enabled.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape_node.provider.GethDev.build_command">
+<span class="sig-name descname"><span class="pre">build_command</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape_node.provider.GethDev.build_command" title="Link to this definition"></a></dt>
+<dd><p>Get the command as a list of <code class="docutils literal notranslate"><span class="pre">str</span></code>.
+Subclasses should override and add command arguments if needed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The command to pass to <code class="docutils literal notranslate"><span class="pre">subprocess.Popen</span></code>.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>list[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape_node.provider.GethDev.chain_id">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">chain_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ape_node.provider.GethDev.chain_id" title="Link to this definition"></a></dt>
+<dd><p>The blockchain ID.
+See <a class="reference external" href="https://chainlist.org/">ChainList</a> for a comprehensive list of IDs.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape_node.provider.GethDev.connect">
+<span class="sig-name descname"><span class="pre">connect</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ape_node.provider.GethDev.connect" title="Link to this definition"></a></dt>
+<dd><p>Connect to a provider, such as start-up a process or create an HTTP connection.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape_node.provider.GethDev.disconnect">
+<span class="sig-name descname"><span class="pre">disconnect</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ape_node.provider.GethDev.disconnect" title="Link to this definition"></a></dt>
+<dd><p>Disconnect from a provider, such as tear-down a process or quit an HTTP session.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape_node.provider.GethDev.get_test_account">
+<span class="sig-name descname"><span class="pre">get_test_account</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="api.html#ape.api.accounts.TestAccountAPI" title="ape.api.accounts.TestAccountAPI"><span class="pre">TestAccountAPI</span></a></span></span><a class="headerlink" href="#ape_node.provider.GethDev.get_test_account" title="Link to this definition"></a></dt>
+<dd><p>Retrieve one of the provider-generated test accounts.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>index</strong> (<em>int</em>) – The index of the test account in the HD-Path.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="api.html#ape.api.accounts.TestAccountAPI" title="ape.api.accounts.TestAccountAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">TestAccountAPI</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape_node.provider.GethDev.ipc_path">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ipc_path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape_node.provider.GethDev.ipc_path" title="Link to this definition"></a></dt>
+<dd><p>Return the IPC path for the provider, if supported.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape_node.provider.GethDev.mine">
+<span class="sig-name descname"><span class="pre">mine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_node.provider.GethDev.mine" title="Link to this definition"></a></dt>
+<dd><p>Defined to make the <code class="docutils literal notranslate"><span class="pre">ProviderAPI</span></code> interchangeable with a
+<a class="reference internal" href="api.html#ape.api.providers.TestProviderAPI" title="ape.api.providers.TestProviderAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">TestProviderAPI</span></code></a>, as in
+<a class="reference internal" href="managers.html#ape.managers.chain.ChainManager" title="ape.managers.chain.ChainManager"><code class="xref py py-class docutils literal notranslate"><span class="pre">ape.managers.chain.ChainManager</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="exceptions.html#ape.exceptions.APINotImplementedError" title="ape.exceptions.APINotImplementedError"><strong>APINotImplementedError</strong></a> – Unless overridden.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape_node.provider.GethDev.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_node.provider.GethDev.name" title="Link to this definition"></a></dt>
+<dd><p>use NAME). The name of the provider (should be the plugin name).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(deprecated</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape_node.provider.GethDev.process_name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">process_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_node.provider.GethDev.process_name" title="Link to this definition"></a></dt>
+<dd><p>The name of the process, such as <code class="docutils literal notranslate"><span class="pre">Hardhat</span> <span class="pre">node</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape_node.provider.GethDev.restore">
+<span class="sig-name descname"><span class="pre">restore</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">snapshot_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">SnapshotID</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_node.provider.GethDev.restore" title="Link to this definition"></a></dt>
+<dd><p>Defined to make the <code class="docutils literal notranslate"><span class="pre">ProviderAPI</span></code> interchangeable with a
+<a class="reference internal" href="api.html#ape.api.providers.TestProviderAPI" title="ape.api.providers.TestProviderAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">TestProviderAPI</span></code></a>, as in
+<a class="reference internal" href="managers.html#ape.managers.chain.ChainManager" title="ape.managers.chain.ChainManager"><code class="xref py py-class docutils literal notranslate"><span class="pre">ape.managers.chain.ChainManager</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="exceptions.html#ape.exceptions.APINotImplementedError" title="ape.exceptions.APINotImplementedError"><strong>APINotImplementedError</strong></a> – Unless overridden.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape_node.provider.GethDev.send_transaction">
+<span class="sig-name descname"><span class="pre">send_transaction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">txn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="api.html#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><span class="pre">TransactionAPI</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="api.html#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><span class="pre">ReceiptAPI</span></a></span></span><a class="headerlink" href="#ape_node.provider.GethDev.send_transaction" title="Link to this definition"></a></dt>
+<dd><p>Send a transaction to the network.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>txn</strong> (<a class="reference internal" href="api.html#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransactionAPI</span></code></a>) – The transaction to send.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="api.html#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReceiptAPI</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape_node.provider.GethDev.set_timestamp">
+<span class="sig-name descname"><span class="pre">set_timestamp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_node.provider.GethDev.set_timestamp" title="Link to this definition"></a></dt>
+<dd><p>Defined to make the <code class="docutils literal notranslate"><span class="pre">ProviderAPI</span></code> interchangeable with a
+<a class="reference internal" href="api.html#ape.api.providers.TestProviderAPI" title="ape.api.providers.TestProviderAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">TestProviderAPI</span></code></a>, as in
+<a class="reference internal" href="managers.html#ape.managers.chain.ChainManager" title="ape.managers.chain.ChainManager"><code class="xref py py-class docutils literal notranslate"><span class="pre">ape.managers.chain.ChainManager</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="exceptions.html#ape.exceptions.APINotImplementedError" title="ape.exceptions.APINotImplementedError"><strong>APINotImplementedError</strong></a> – Unless overridden.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape_node.provider.GethDev.snapshot">
+<span class="sig-name descname"><span class="pre">snapshot</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">SnapshotID</span></span></span><a class="headerlink" href="#ape_node.provider.GethDev.snapshot" title="Link to this definition"></a></dt>
+<dd><p>Defined to make the <code class="docutils literal notranslate"><span class="pre">ProviderAPI</span></code> interchangeable with a
+<a class="reference internal" href="api.html#ape.api.providers.TestProviderAPI" title="ape.api.providers.TestProviderAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">TestProviderAPI</span></code></a>, as in
+<a class="reference internal" href="managers.html#ape.managers.chain.ChainManager" title="ape.managers.chain.ChainManager"><code class="xref py py-class docutils literal notranslate"><span class="pre">ape.managers.chain.ChainManager</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="exceptions.html#ape.exceptions.APINotImplementedError" title="ape.exceptions.APINotImplementedError"><strong>APINotImplementedError</strong></a> – Unless overridden.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape_node.provider.GethDev.start">
+<span class="sig-name descname"><span class="pre">start</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">20</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_node.provider.GethDev.start" title="Link to this definition"></a></dt>
+<dd><p>Start the process and wait for its RPC to be ready.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape_node.provider.GethDevProcess">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape_node.provider.</span></span><span class="sig-name descname"><span class="pre">GethDevProcess</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hostname</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ipc_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ws_hostname</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ws_port</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mnemonic</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'test</span> <span class="pre">test</span> <span class="pre">test</span> <span class="pre">test</span> <span class="pre">test</span> <span class="pre">test</span> <span class="pre">test</span> <span class="pre">test</span> <span class="pre">test</span> <span class="pre">test</span> <span class="pre">test</span> <span class="pre">junk'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_accounts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chain_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1337</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_balance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10000000000000000000000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">executable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_disconnect</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_funded_accounts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hd_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">&quot;m/44'/60'/0'/0&quot;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generate_accounts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initialize_chain</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">background</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verify_bin</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rpc_api</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_node.provider.GethDevProcess" title="Link to this definition"></a></dt>
+<dd><p>A developer-configured geth that only exists until disconnected.
+(Implementation detail of the local node provider).</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape_node.provider.Node">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape_node.provider.</span></span><span class="sig-name descname"><span class="pre">Node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'node'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">network</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="api.html#ape.api.networks.NetworkAPI" title="ape.api.networks.NetworkAPI"><span class="pre">NetworkAPI</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">provider_settings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">request_header</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{'User-Agent':</span> <span class="pre">'EthereumNodeProvider/web3.py/7.14.0'}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_page_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">concurrency</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">16</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_node.provider.Node" title="Link to this definition"></a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="ape_node.provider.Node.connect">
+<span class="sig-name descname"><span class="pre">connect</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ape_node.provider.Node.connect" title="Link to this definition"></a></dt>
+<dd><p>Connect to a provider, such as start-up a process or create an HTTP connection.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape_node.provider.Node.send_transaction">
+<span class="sig-name descname"><span class="pre">send_transaction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">txn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="api.html#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><span class="pre">TransactionAPI</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="api.html#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><span class="pre">ReceiptAPI</span></a></span></span><a class="headerlink" href="#ape_node.provider.Node.send_transaction" title="Link to this definition"></a></dt>
+<dd><p>Send a transaction to the network.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>txn</strong> (<a class="reference internal" href="api.html#ape.api.transactions.TransactionAPI" title="ape.api.transactions.TransactionAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransactionAPI</span></code></a>) – The transaction to send.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="api.html#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReceiptAPI</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="ape_node.provider.NodeSoftwareNotInstalledError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape_node.provider.</span></span><span class="sig-name descname"><span class="pre">NodeSoftwareNotInstalledError</span></span><a class="headerlink" href="#ape_node.provider.NodeSoftwareNotInstalledError" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ape_node.provider.create_genesis_data">
+<span class="sig-prename descclassname"><span class="pre">ape_node.provider.</span></span><span class="sig-name descname"><span class="pre">create_genesis_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alloc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chain_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">GenesisDataTypedDict</span></span></span><a class="headerlink" href="#ape_node.provider.create_genesis_data" title="Link to this definition"></a></dt>
+<dd><p>A wrapper around genesis data for py-geth that
+fills in more defaults.</p>
+</dd></dl>
+
+</section>
+
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"><div class="navigation-prev">
+    <a href="ape_ethereum.html">
+      <i class="i-lucide chevron-left"></i>
+      <div class="page-info">
+        <span>Previous</span><div class="title">ape-ethereum</div></div>
+    </a>
+  </div><div class="navigation-next">
+    <a href="ape_pm.html">
+      <div class="page-info">
+        <span>Next</span>
+        <div class="title">ape-pm</div>
+      </div>
+      <i class="i-lucide chevron-right"></i>
+    </a>
+  </div></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2024, ApeWorX LTD</p>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials"></div>
+    </div>
+  </div>
+</footer>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script data-domain="docs.apeworx.io" defer="defer" src="https://plausible.io/js/script.js"></script>
+      <script src="../_static/shibuya.js?v=cac61aee"></script></body>
+</html>

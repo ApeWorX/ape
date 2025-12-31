@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en" data-accent-color="lime" data-content_root="../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Traces - ape documentation</title><link rel="shortcut icon" href="../_static/favicon.ico"/><link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Logging" href="logging.html" /><link rel="prev" title="Transactions" href="transactions.html" />
+      <link rel="canonical" href="ape/userguides/trace.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=e1a1ceaf" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=a318c5d4" />
+    <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    <meta property="og:type" content="website"/>
+  <meta property="og:url" content="ape/userguides/trace.html"/>
+  <meta property="og:title" content="Traces"/>
+    <meta name="twitter:card" content="summary"/>
+  </head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="../index.html">
+      <img class="light-logo" src="../_static/logo_grey.svg" alt="ape" height="28" loading="lazy" />
+      <img class="dark-logo" src="../_static/logo_green.svg" alt="ape" height="28" loading="lazy" />
+      <strong>ape</strong>
+    </a>
+    <div class="sy-head-nav" id="head-nav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials"></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="head-nav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2"></span>
+          <span class="hamburger_3"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading" aria-level="3"><span class="caption-text">User Guides</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="projects.html">Developing Projects with Ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Configure Ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installing_plugins.html">Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="accounts.html">Accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="compile.html">Compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contracts.html">Contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="testing.html">Testing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reverts.html">Reverts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="networks.html">Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="forking_networks.html">Forking Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="publishing.html">Publishing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="proxy.html">Proxy Contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contract_metadata.html">Contract Creation Metadata</a></li>
+<li class="toctree-l1"><a class="reference internal" href="console.html">Console</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scripts.html">Scripting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transactions.html">Transactions</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Traces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="logging.html">Logging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="data.html">Querying Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="clis.html">CLIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="developing_plugins.html">Developing Plugins</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">CLI Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../commands/accounts.html">accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/compile.html">compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/console.html">console</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/init.html">init</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/networks.html">networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/plugins.html">plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/pm.html">pm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/run.html">run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/test.html">test</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Core Python Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape.html">ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/api.html">ape.api</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/cli.html">ape.cli</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/contracts.html">ape.contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/exceptions.html">ape.exceptions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/managers.html">ape.managers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/plugins.html">ape.plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/types.html">ape.types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/utils.html">ape.utils</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Plugin Python Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_accounts.html">ape-accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_compile.html">ape-compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_ethereum.html">ape-ethereum</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_ethereum.html#module-ape_ethereum.multicall">ape-ethereum.multicall</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_node.html">ape-node</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_pm.html">ape-pm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_test.html">ape-test</a></li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#tracing-calls">Tracing Calls</a></li>
+<li><a class="reference internal" href="#gas-reports">Gas Reports</a></li>
+</ul>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6">
+<div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../index.html"><span itemprop="name">ape</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">Traces</strong>
+        <meta itemprop="position" content="2" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+  <div class="copy-page-wrapper relative pb-4 lg:absolute lg:top-8 lg:right-6 xl:right-12">
+  <div id="copy-page-trigger">
+    <button
+      type="button"
+      class="js-copy px-3 py-1 inline-flex items-center gap-1"
+      data-url="ape/_sources/userguides/trace.md.txt"
+    >
+      <i class="i-lucide" data-icon="copy"></i>
+      <span>Copy page</span>
+    </button>
+    <button class="js-menu px-2 py-1" type="button" aria-label="More actions"
+      aria-haspopup="menu" aria-expanded="false" aria-controls="copy-page-content">
+      <i class="i-lucide chevron-down"></i>
+    </button>
+  </div>
+  <div id="copy-page-content" role="menu" aria-orientation="vertical" aria-hidden="true">
+    <div role="presentation">
+      <div class="flex flex-col" role="group">
+        <button class="js-copy" type="button" role="menuitem"
+          data-url="ape/_sources/userguides/trace.md.txt">
+          <span class="iconify-icon">
+            <i class="i-lucide" data-icon="copy"></i>
+          </span>
+          <span>Copy page</span>
+        </button>
+        <a role="menuitem" href="ape/_sources/userguides/trace.md.txt" target="_blank" rel="nofollow"><iconify-icon icon="bi:markdown"></iconify-icon>
+            <span>View as Markdown</span></a><a role="menuitem" href="https://chatgpt.com/?hints=search&q=Read%20ape/_sources/userguides/trace.md.txt%20so%20I%20can%20ask%20questions%20about%20it." target="_blank" rel="nofollow">
+          <iconify-icon icon="bi:openai"></iconify-icon>
+          <span>Open in ChatGPT</span>
+        </a><a role="menuitem" href="https://claude.ai/new?q=Read%20ape/_sources/userguides/trace.md.txt%20so%20I%20can%20ask%20questions%20about%20it." target="_blank" rel="nofollow">
+          <iconify-icon icon="bi:claude"></iconify-icon>
+          <span>Open in Claude</span>
+        </a></div>
+    </div>
+  </div>
+</div><article class="yue" role="main">
+          <section id="traces">
+<h1>Traces<a class="headerlink" href="#traces" title="Link to this heading"></a></h1>
+<p>A transaction’s trace frames are the individual steps the transaction took.
+Using traces, Ape is able to offer features like:</p>
+<ol class="arabic simple">
+<li><p>Showing a pretty call-tree from a transaction receipt</p></li>
+<li><p>Gas reporting in <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">test</span></code></p></li>
+<li><p>Coverage tools in <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">test</span></code></p></li>
+</ol>
+<p>Some network providers, such as Alchemy and Foundry, implement <code class="docutils literal notranslate"><span class="pre">debug_traceTransaction</span></code> and Parity’s <code class="docutils literal notranslate"><span class="pre">trace_transaction</span></code> affording tracing capabilities in Ape.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Without RPCs for obtaining traces, some features such as gas-reporting and coverage are limited.</p>
+</div>
+<p>To see a transaction trace, use the <a class="reference external" href="../methoddocs/api.html#ape.api.transactions.ReceiptAPI.show_trace">show_trace()</a> method on a receipt API object.</p>
+<p>Here is an example using <code class="docutils literal notranslate"><span class="pre">show_trace()</span></code> in Python code to print out a transaction’s trace.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This code runs assuming you are connected to <code class="docutils literal notranslate"><span class="pre">ethereum:mainnet</span></code> using a provider with tracing RPCs.</p>
+</div>
+<p>To learn more about networks in Ape, see the <a class="reference external" href="./networks.html">networks guide</a>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">chain</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="n">tx</span> <span class="o">=</span> <span class="n">chain</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">get_receipt</span><span class="p">(</span><span class="s1">&#39;0xb7d7f1d5ce7743e821d3026647df486f517946ef1342a1ae93c96e4a8016eab7&#39;</span><span class="p">)</span>
+</span><span data-line="4">
+</span><span data-line="5"><span class="c1"># Show the steps the transaction took.</span>
+</span><span data-line="6"><span class="n">tx</span><span class="o">.</span><span class="n">show_trace</span><span class="p">()</span>
+</span></pre></div>
+</div>
+<p>You should see a (less-abridged) trace like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1">Call trace for &#39;0xb7d7f1d5ce7743e821d3026647df486f517946ef1342a1ae93c96e4a8016eab7&#39;
+</span><span data-line="2">tx.origin=0x5668EAd1eDB8E2a4d724C8fb9cB5fFEabEB422dc
+</span><span data-line="3">DSProxy.execute(_target=LoanShifterTaker, _data=0x35..0000) -&gt; &quot;&quot; [1421947 gas]
+</span><span data-line="4">└── (delegate) LoanShifterTaker.moveLoan(
+</span><span data-line="5">      _exchangeData=[
+</span><span data-line="6">        0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE,
+</span><span data-line="7">        ZERO_ADDRESS,
+</span><span data-line="8">        
+</span><span data-line="9">        ...
+</span><span data-line="10">        # Abridged because is super long #
+</span><span data-line="11">        ...
+</span><span data-line="12"> 
+</span><span data-line="13">
+</span><span data-line="14">    │                   └── LendingRateOracle.getMarketBorrowRate(_asset=DAI) -&gt; 
+</span><span data-line="15">    │                       35000000000000000000000000 [1164 gas]
+</span><span data-line="16">    ├── DSProxy.authority() -&gt; DSGuard [1291 gas]
+</span><span data-line="17">    ├── DSGuard.forbid(src=LoanShifterReceiver, dst=DSProxy, sig=0x1c..0000) [5253 gas]
+</span><span data-line="18">    └── DefisaverLogger.Log(
+</span><span data-line="19">          _contract=DSProxy, 
+</span><span data-line="20">          _caller=tx.origin, 
+</span><span data-line="21">          _logName=&quot;LoanShifter&quot;, 
+</span><span data-line="22">          _data=0x00..0000
+</span><span data-line="23">        ) [6057 gas]                                                                              
+</span></pre></div>
+</div>
+<p>Similarly, you can use the provider directly to get a trace.
+This is useful if you want to interact with the trace or change some parameters for creating the trace.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">chain</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="c1"># Change the `debug_traceTransaction` parameter dictionary</span>
+</span><span data-line="4"><span class="n">trace</span> <span class="o">=</span> <span class="n">chain</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">get_transaction_trace</span><span class="p">(</span>
+</span><span data-line="5">    <span class="s2">&quot;0x...&quot;</span><span class="p">,</span> <span class="n">debug_trace_transaction_parameters</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;enableMemory&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
+</span><span data-line="6"><span class="p">)</span>
+</span><span data-line="7">
+</span><span data-line="8"><span class="c1"># You can still print the pretty call-trace (as we did in the example above)</span>
+</span><span data-line="9"><span class="nb">print</span><span class="p">(</span><span class="n">trace</span><span class="p">)</span>
+</span><span data-line="10">
+</span><span data-line="11"><span class="c1"># Interact with low-level logs for deeper analysis.</span>
+</span><span data-line="12"><span class="n">struct_logs</span> <span class="o">=</span> <span class="n">trace</span><span class="o">.</span><span class="n">get_raw_frames</span><span class="p">()</span>
+</span></pre></div>
+</div>
+<section id="tracing-calls">
+<h2>Tracing Calls<a class="headerlink" href="#tracing-calls" title="Link to this heading"></a></h2>
+<p>Some network providers trace calls in addition to transactions.
+EVM-based providers best achieve this by implementing the <code class="docutils literal notranslate"><span class="pre">debug_traceCall</span></code> RPC.</p>
+<p>If you want to see the trace of call when making the call, use the <code class="docutils literal notranslate"><span class="pre">show_trace=</span></code> flag:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">token</span><span class="o">.</span><span class="n">balanceOf</span><span class="p">(</span><span class="n">account</span><span class="p">,</span> <span class="n">show_trace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span></pre></div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>If your provider does not properly support call-tracing (e.g. doesn’t implement <code class="docutils literal notranslate"><span class="pre">debug_traceCall</span></code>), traces are limited to the top-level call.</p>
+</div>
+<p>Ape traces calls automatically when using <code class="docutils literal notranslate"><span class="pre">--gas</span></code> or <code class="docutils literal notranslate"><span class="pre">--coverage</span></code> in tests to build reports.
+Learn more about testing in Ape in the <a class="reference external" href="./testing.html">testing guide</a> and in the following sections.</p>
+</section>
+<section id="gas-reports">
+<h2>Gas Reports<a class="headerlink" href="#gas-reports" title="Link to this heading"></a></h2>
+<p>To view the gas report of a transaction receipt, use the <a class="reference external" href="../methoddocs/api.html?highlight=receiptapi#ape.api.transactions.ReceiptAPI.show_gas_report">ReceiptAPI.show_gas_report()</a> method:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">networks</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="n">txn_hash</span> <span class="o">=</span> <span class="s2">&quot;0x053cba5c12172654d894f66d5670bab6215517a94189a9ffc09bc40a589ec04d&quot;</span>
+</span><span data-line="4"><span class="n">receipt</span> <span class="o">=</span> <span class="n">networks</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">get_receipt</span><span class="p">(</span><span class="n">txn_hash</span><span class="p">)</span>
+</span><span data-line="5"><span class="n">receipt</span><span class="o">.</span><span class="n">show_gas_report</span><span class="p">()</span>
+</span></pre></div>
+</div>
+<p>It outputs tables of contracts and methods with gas usages that look like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1">                            DAI Gas
+</span><span data-line="2">
+</span><span data-line="3">  Method           Times called    Min.    Max.    Mean   Median
+</span><span data-line="4"> ────────────────────────────────────────────────────────────────
+</span><span data-line="5">  balanceOf                   4   1302    13028   1302    1302
+</span><span data-line="6">  allowance                   2   1377    1377    1337    1337
+</span><span data-line="7">│ approve                     1   22414   22414   22414   22414
+</span><span data-line="8">│ burn                        1   11946   11946   11946   11946
+</span><span data-line="9">│ mint                        1   25845   25845   25845   25845
+</span></pre></div>
+</div>
+</section>
+</section>
+
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"><div class="navigation-prev">
+    <a href="transactions.html">
+      <i class="i-lucide chevron-left"></i>
+      <div class="page-info">
+        <span>Previous</span><div class="title">Transactions</div></div>
+    </a>
+  </div><div class="navigation-next">
+    <a href="logging.html">
+      <div class="page-info">
+        <span>Next</span>
+        <div class="title">Logging</div>
+      </div>
+      <i class="i-lucide chevron-right"></i>
+    </a>
+  </div></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2024, ApeWorX LTD</p>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials"></div>
+    </div>
+  </div>
+</footer>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script data-domain="docs.apeworx.io" defer="defer" src="https://plausible.io/js/script.js"></script>
+      <script src="../_static/shibuya.js?v=cac61aee"></script></body>
+</html>

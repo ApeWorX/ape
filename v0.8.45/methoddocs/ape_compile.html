@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en" data-accent-color="lime" data-content_root="../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>ape-compile - ape documentation</title><link rel="shortcut icon" href="../_static/favicon.ico"/><link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="ape-ethereum" href="ape_ethereum.html" /><link rel="prev" title="ape-accounts" href="ape_accounts.html" />
+      <link rel="canonical" href="ape/methoddocs/ape_compile.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=e1a1ceaf" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=a318c5d4" />
+    <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    <meta property="og:type" content="website"/>
+  <meta property="og:url" content="ape/methoddocs/ape_compile.html"/>
+  <meta property="og:title" content="ape-compile"/>
+    <meta name="twitter:card" content="summary"/>
+  </head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="../index.html">
+      <img class="light-logo" src="../_static/logo_grey.svg" alt="ape" height="28" loading="lazy" />
+      <img class="dark-logo" src="../_static/logo_green.svg" alt="ape" height="28" loading="lazy" />
+      <strong>ape</strong>
+    </a>
+    <div class="sy-head-nav" id="head-nav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials"></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="head-nav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2"></span>
+          <span class="hamburger_3"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading" aria-level="3"><span class="caption-text">User Guides</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/quickstart.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/projects.html">Developing Projects with Ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/config.html">Configure Ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/installing_plugins.html">Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/accounts.html">Accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/compile.html">Compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/contracts.html">Contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/testing.html">Testing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/reverts.html">Reverts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/networks.html">Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/forking_networks.html">Forking Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/publishing.html">Publishing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/proxy.html">Proxy Contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/contract_metadata.html">Contract Creation Metadata</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/console.html">Console</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/scripts.html">Scripting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/transactions.html">Transactions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/trace.html">Traces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/logging.html">Logging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/data.html">Querying Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/clis.html">CLIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguides/developing_plugins.html">Developing Plugins</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">CLI Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../commands/accounts.html">accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/compile.html">compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/console.html">console</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/init.html">init</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/networks.html">networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/plugins.html">plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/pm.html">pm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/run.html">run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/test.html">test</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Core Python Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="ape.html">ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">ape.api</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">ape.cli</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contracts.html">ape.contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="exceptions.html">ape.exceptions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="managers.html">ape.managers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugins.html">ape.plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="types.html">ape.types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">ape.utils</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Plugin Python Reference</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="ape_accounts.html">ape-accounts</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">ape-compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ape_ethereum.html">ape-ethereum</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ape_ethereum.html#module-ape_ethereum.multicall">ape-ethereum.multicall</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ape_node.html">ape-node</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ape_pm.html">ape-pm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ape_test.html">ape-test</a></li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#ape_compile.config.Config"><code class="docutils literal notranslate"><span class="pre">Config</span></code></a><ul>
+<li><a class="reference internal" href="#ape_compile.config.Config.exclude"><code class="docutils literal notranslate">exclude</span></code></a></li>
+<li><a class="reference internal" href="#ape_compile.config.Config.include_dependencies"><code class="docutils literal notranslate">include_dependencies</span></code></a></li>
+<li><a class="reference internal" href="#ape_compile.config.Config.output_extra"><code class="docutils literal notranslate">output_extra</span></code></a></li>
+<li><a class="reference internal" href="#ape_compile.config.Config.serialize_exclude"><code class="docutils literal notranslate">serialize_exclude()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ape_compile.config.OutputExtras"><code class="docutils literal notranslate"><span class="pre">OutputExtras</span></code></a><ul>
+<li><a class="reference internal" href="#ape_compile.config.OutputExtras.ABI"><code class="docutils literal notranslate">ABI</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6">
+<div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../index.html"><span itemprop="name">ape</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">ape-compile</strong>
+        <meta itemprop="position" content="2" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+  <div class="copy-page-wrapper relative pb-4 lg:absolute lg:top-8 lg:right-6 xl:right-12">
+  <div id="copy-page-trigger">
+    <button
+      type="button"
+      class="js-copy px-3 py-1 inline-flex items-center gap-1"
+      data-url="ape/_sources/methoddocs/ape_compile.md.txt"
+    >
+      <i class="i-lucide" data-icon="copy"></i>
+      <span>Copy page</span>
+    </button>
+    <button class="js-menu px-2 py-1" type="button" aria-label="More actions"
+      aria-haspopup="menu" aria-expanded="false" aria-controls="copy-page-content">
+      <i class="i-lucide chevron-down"></i>
+    </button>
+  </div>
+  <div id="copy-page-content" role="menu" aria-orientation="vertical" aria-hidden="true">
+    <div role="presentation">
+      <div class="flex flex-col" role="group">
+        <button class="js-copy" type="button" role="menuitem"
+          data-url="ape/_sources/methoddocs/ape_compile.md.txt">
+          <span class="iconify-icon">
+            <i class="i-lucide" data-icon="copy"></i>
+          </span>
+          <span>Copy page</span>
+        </button>
+        <a role="menuitem" href="ape/_sources/methoddocs/ape_compile.md.txt" target="_blank" rel="nofollow"><iconify-icon icon="bi:markdown"></iconify-icon>
+            <span>View as Markdown</span></a><a role="menuitem" href="https://chatgpt.com/?hints=search&q=Read%20ape/_sources/methoddocs/ape_compile.md.txt%20so%20I%20can%20ask%20questions%20about%20it." target="_blank" rel="nofollow">
+          <iconify-icon icon="bi:openai"></iconify-icon>
+          <span>Open in ChatGPT</span>
+        </a><a role="menuitem" href="https://claude.ai/new?q=Read%20ape/_sources/methoddocs/ape_compile.md.txt%20so%20I%20can%20ask%20questions%20about%20it." target="_blank" rel="nofollow">
+          <iconify-icon icon="bi:claude"></iconify-icon>
+          <span>Open in Claude</span>
+        </a></div>
+    </div>
+  </div>
+</div><article class="yue" role="main">
+          <section id="module-ape_compile.config">
+<span id="ape-compile"></span><h1>ape-compile<a class="headerlink" href="#module-ape_compile.config" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="ape_compile.config.Config">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape_compile.config.</span></span><span class="sig-name descname"><span class="pre">Config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_case_sensitive</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_nested_model_default_partial_update</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_env_prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_env_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DotenvType</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">PosixPath('.')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_env_file_encoding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_env_ignore_empty</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_env_nested_delimiter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_env_nested_max_split</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_env_parse_none_str</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_env_parse_enums</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cli_prog_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cli_parse_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cli_settings_source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">CliSettingsSource</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cli_parse_none_str</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cli_hide_none_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cli_avoid_json</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cli_enforce_required</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cli_use_class_docs_for_groups</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cli_exit_on_error</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cli_prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cli_flag_prefix_char</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cli_implicit_flags</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cli_ignore_unknown_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cli_kebab_case</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'all'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'no_enums'</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cli_shortcuts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_secrets_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">PathType</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Pattern</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_dependencies</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_extra</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape_compile.config.OutputExtras" title="ape_compile.config.OutputExtras"><span class="pre">OutputExtras</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_compile.config.Config" title="Link to this definition"></a></dt>
+<dd><p>Configure general compiler settings.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape_compile.config.Config.exclude">
+<span class="sig-name descname"><span class="pre">exclude</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Pattern</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape_compile.config.Config.exclude" title="Link to this definition"></a></dt>
+<dd><p>Source exclusion globs or regex patterns across all file types.
+To use regex, start your values with <code class="docutils literal notranslate"><span class="pre">r&quot;</span></code> and they’ll be turned
+into regex pattern objects.</p>
+<p><strong>NOTE</strong>: <code class="docutils literal notranslate"><span class="pre">ape.utils.misc.SOURCE_EXCLUDE_PATTERNS</span></code> are automatically
+included in this set.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape_compile.config.Config.include_dependencies">
+<span class="sig-name descname"><span class="pre">include_dependencies</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#ape_compile.config.Config.include_dependencies" title="Link to this definition"></a></dt>
+<dd><p>Set to <code class="docutils literal notranslate"><span class="pre">True</span></code> to compile dependencies during <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">compile</span></code>.
+Generally, dependencies are not compiled during <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">compile</span></code>
+This is because dependencies may not compile in Ape on their own,
+but you can still reference them in your project’s contracts’ imports.
+Some projects may be more dependency-based and wish to have the
+contract types always compiled during <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">compile</span></code>, and these projects
+should configure <code class="docutils literal notranslate"><span class="pre">include_dependencies</span></code> to be <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape_compile.config.Config.output_extra">
+<span class="sig-name descname"><span class="pre">output_extra</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ape_compile.config.OutputExtras" title="ape_compile.config.OutputExtras"><span class="pre">OutputExtras</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape_compile.config.Config.output_extra" title="Link to this definition"></a></dt>
+<dd><p>Extra selections to output. Outputs to <code class="docutils literal notranslate"><span class="pre">.build/{key.lower()}</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape_compile.config.Config.serialize_exclude">
+<span class="sig-name descname"><span class="pre">serialize_exclude</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exclude</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_compile.config.Config.serialize_exclude" title="Link to this definition"></a></dt>
+<dd><p>Exclude is put back with the weird r-prefix so we can
+go to-and-from.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ape_compile.config.OutputExtras">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape_compile.config.</span></span><span class="sig-name descname"><span class="pre">OutputExtras</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_compile.config.OutputExtras" title="Link to this definition"></a></dt>
+<dd><p>Extra stuff you can output. It will
+appear in <code class="docutils literal notranslate"><span class="pre">.build/{key.lower()/</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ape_compile.config.OutputExtras.ABI">
+<span class="sig-name descname"><span class="pre">ABI</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'ABI'</span></em><a class="headerlink" href="#ape_compile.config.OutputExtras.ABI" title="Link to this definition"></a></dt>
+<dd><p>Include this value to output the ABIs of your contracts
+to minified JSONs. This is useful for hosting purposes
+for web-apps.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"><div class="navigation-prev">
+    <a href="ape_accounts.html">
+      <i class="i-lucide chevron-left"></i>
+      <div class="page-info">
+        <span>Previous</span><div class="title">ape-accounts</div></div>
+    </a>
+  </div><div class="navigation-next">
+    <a href="ape_ethereum.html">
+      <div class="page-info">
+        <span>Next</span>
+        <div class="title">ape-ethereum</div>
+      </div>
+      <i class="i-lucide chevron-right"></i>
+    </a>
+  </div></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2024, ApeWorX LTD</p>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials"></div>
+    </div>
+  </div>
+</footer>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script data-domain="docs.apeworx.io" defer="defer" src="https://plausible.io/js/script.js"></script>
+      <script src="../_static/shibuya.js?v=cac61aee"></script></body>
+</html>

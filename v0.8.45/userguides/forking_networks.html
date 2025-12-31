@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en" data-accent-color="lime" data-content_root="../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Forking Networks - ape documentation</title><link rel="shortcut icon" href="../_static/favicon.ico"/><link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Publishing" href="publishing.html" /><link rel="prev" title="Networks" href="networks.html" />
+      <link rel="canonical" href="ape/userguides/forking_networks.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=e1a1ceaf" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=a318c5d4" />
+    <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    <meta property="og:type" content="website"/>
+  <meta property="og:url" content="ape/userguides/forking_networks.html"/>
+  <meta property="og:title" content="Forking Networks"/>
+    <meta name="twitter:card" content="summary"/>
+  </head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="../index.html">
+      <img class="light-logo" src="../_static/logo_grey.svg" alt="ape" height="28" loading="lazy" />
+      <img class="dark-logo" src="../_static/logo_green.svg" alt="ape" height="28" loading="lazy" />
+      <strong>ape</strong>
+    </a>
+    <div class="sy-head-nav" id="head-nav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials"></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="head-nav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2"></span>
+          <span class="hamburger_3"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading" aria-level="3"><span class="caption-text">User Guides</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="projects.html">Developing Projects with Ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Configure Ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installing_plugins.html">Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="accounts.html">Accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="compile.html">Compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contracts.html">Contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="testing.html">Testing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reverts.html">Reverts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="networks.html">Networks</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Forking Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="publishing.html">Publishing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="proxy.html">Proxy Contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contract_metadata.html">Contract Creation Metadata</a></li>
+<li class="toctree-l1"><a class="reference internal" href="console.html">Console</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scripts.html">Scripting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transactions.html">Transactions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trace.html">Traces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="logging.html">Logging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="data.html">Querying Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="clis.html">CLIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="developing_plugins.html">Developing Plugins</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">CLI Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../commands/accounts.html">accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/compile.html">compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/console.html">console</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/init.html">init</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/networks.html">networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/plugins.html">plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/pm.html">pm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/run.html">run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/test.html">test</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Core Python Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape.html">ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/api.html">ape.api</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/cli.html">ape.cli</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/contracts.html">ape.contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/exceptions.html">ape.exceptions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/managers.html">ape.managers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/plugins.html">ape.plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/types.html">ape.types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/utils.html">ape.utils</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Plugin Python Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_accounts.html">ape-accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_compile.html">ape-compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_ethereum.html">ape-ethereum</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_ethereum.html#module-ape_ethereum.multicall">ape-ethereum.multicall</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_node.html">ape-node</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_pm.html">ape-pm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_test.html">ape-test</a></li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#basic-fork-configuration">Basic Fork Configuration</a></li>
+<li><a class="reference internal" href="#advanced-fork-configuration">Advanced Fork Configuration</a></li>
+<li><a class="reference internal" href="#forking-plugin-networks">Forking Plugin Networks</a></li>
+<li><a class="reference internal" href="#configure-default">Configure Default</a></li>
+<li><a class="reference internal" href="#forked-context">Forked Context</a></li>
+<li><a class="reference internal" href="#time-travel-in-forks">Time Travel in Forks</a></li>
+</ul>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6">
+<div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../index.html"><span itemprop="name">ape</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">Forking Networks</strong>
+        <meta itemprop="position" content="2" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+  <div class="copy-page-wrapper relative pb-4 lg:absolute lg:top-8 lg:right-6 xl:right-12">
+  <div id="copy-page-trigger">
+    <button
+      type="button"
+      class="js-copy px-3 py-1 inline-flex items-center gap-1"
+      data-url="ape/_sources/userguides/forking_networks.md.txt"
+    >
+      <i class="i-lucide" data-icon="copy"></i>
+      <span>Copy page</span>
+    </button>
+    <button class="js-menu px-2 py-1" type="button" aria-label="More actions"
+      aria-haspopup="menu" aria-expanded="false" aria-controls="copy-page-content">
+      <i class="i-lucide chevron-down"></i>
+    </button>
+  </div>
+  <div id="copy-page-content" role="menu" aria-orientation="vertical" aria-hidden="true">
+    <div role="presentation">
+      <div class="flex flex-col" role="group">
+        <button class="js-copy" type="button" role="menuitem"
+          data-url="ape/_sources/userguides/forking_networks.md.txt">
+          <span class="iconify-icon">
+            <i class="i-lucide" data-icon="copy"></i>
+          </span>
+          <span>Copy page</span>
+        </button>
+        <a role="menuitem" href="ape/_sources/userguides/forking_networks.md.txt" target="_blank" rel="nofollow"><iconify-icon icon="bi:markdown"></iconify-icon>
+            <span>View as Markdown</span></a><a role="menuitem" href="https://chatgpt.com/?hints=search&q=Read%20ape/_sources/userguides/forking_networks.md.txt%20so%20I%20can%20ask%20questions%20about%20it." target="_blank" rel="nofollow">
+          <iconify-icon icon="bi:openai"></iconify-icon>
+          <span>Open in ChatGPT</span>
+        </a><a role="menuitem" href="https://claude.ai/new?q=Read%20ape/_sources/userguides/forking_networks.md.txt%20so%20I%20can%20ask%20questions%20about%20it." target="_blank" rel="nofollow">
+          <iconify-icon icon="bi:claude"></iconify-icon>
+          <span>Open in Claude</span>
+        </a></div>
+    </div>
+  </div>
+</div><article class="yue" role="main">
+          <section id="forking-networks">
+<h1>Forking Networks<a class="headerlink" href="#forking-networks" title="Link to this heading"></a></h1>
+<p>You can fork live networks in Ape to test against real blockchain state locally.
+To do so, ensure you are using a provider plugin with forking features.
+Some options are:</p>
+<ol class="arabic simple">
+<li><p><a class="reference external" href="https://github.com/ApeWorX/ape-foundry">ApeWorX/ape-foundry</a></p></li>
+<li><p><a class="reference external" href="https://github.com/ApeWorX/ape-hardhat">ApeWorX/ape-hardhat</a></p></li>
+</ol>
+<p>You can install one of these plugins by doing:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>plugins<span class="w"> </span>install<span class="w"> </span>&lt;foundry<span class="p">|</span>hardhat&gt;
+</span></pre></div>
+</div>
+<section id="basic-fork-configuration">
+<h2>Basic Fork Configuration<a class="headerlink" href="#basic-fork-configuration" title="Link to this heading"></a></h2>
+<p>Ensure you have also configured your upstream network (the network you are forking).
+For example, if forking <code class="docutils literal notranslate"><span class="pre">ethereum:mainnet</span></code> and using <code class="docutils literal notranslate"><span class="pre">alchemy</span></code>, set <code class="docutils literal notranslate"><span class="pre">alchemy</span></code> as the default mainnet provider:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">ethereum</span><span class="p">:</span>
+</span><span data-line="2"><span class="w">  </span><span class="nt">mainnet</span><span class="p">:</span>
+</span><span data-line="3"><span class="w">    </span><span class="nt">default_provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">alchemy</span>
+</span></pre></div>
+</div>
+<p>Now, you can start and connect to your forked-network:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>console<span class="w"> </span>--network<span class="w"> </span>ethereum:mainnet-fork:foundry
+</span></pre></div>
+</div>
+<p>Learn more about setting up networks in the <a class="reference external" href="./networks.html">the networks guide</a>.</p>
+</section>
+<section id="advanced-fork-configuration">
+<h2>Advanced Fork Configuration<a class="headerlink" href="#advanced-fork-configuration" title="Link to this heading"></a></h2>
+<p>You can configure additional fork options in your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">ethereum</span><span class="p">:</span>
+</span><span data-line="2"><span class="w">  </span><span class="nt">mainnet_fork</span><span class="p">:</span>
+</span><span data-line="3"><span class="w">    </span><span class="nt">default_provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">foundry</span>
+</span><span data-line="4"><span class="w">    </span><span class="nt">fork</span><span class="p">:</span>
+</span><span data-line="5"><span class="w">      </span><span class="c1"># Fork from a specific block number</span>
+</span><span data-line="6"><span class="w">      </span><span class="nt">block_number</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">17000000</span>
+</span><span data-line="7"><span class="w">      </span><span class="c1"># Optionally enable RPC caching to speed up fork initialization</span>
+</span><span data-line="8"><span class="w">      </span><span class="nt">cache</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span><span data-line="9"><span class="w">      </span><span class="c1"># Override default upstream provider if needed</span>
+</span><span data-line="10"><span class="w">      </span><span class="nt">upstream_provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">alchemy</span>
+</span></pre></div>
+</div>
+</section>
+<section id="forking-plugin-networks">
+<h2>Forking Plugin Networks<a class="headerlink" href="#forking-plugin-networks" title="Link to this heading"></a></h2>
+<p>You can also fork L2 plugin networks.
+For example, to fork a network such as Optimism or Arbitrum, install the corresponding plugin:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>plugins<span class="w"> </span>install<span class="w"> </span>optimism
+</span><span data-line="2">ape<span class="w"> </span>plugins<span class="w"> </span>install<span class="w"> </span>arbitrum
+</span></pre></div>
+</div>
+<p>Then, just like you did for <code class="docutils literal notranslate"><span class="pre">ethereum</span></code>, configure the default mainnet provider:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">optimism</span><span class="p">:</span>
+</span><span data-line="2"><span class="w">  </span><span class="nt">mainnet</span><span class="p">:</span>
+</span><span data-line="3"><span class="w">    </span><span class="nt">default_provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">alchemy</span>
+</span><span data-line="4">
+</span><span data-line="5"><span class="nt">arbitrum</span><span class="p">:</span>
+</span><span data-line="6"><span class="w">  </span><span class="nt">mainnet</span><span class="p">:</span>
+</span><span data-line="7"><span class="w">    </span><span class="nt">default_provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">alchemy</span>
+</span></pre></div>
+</div>
+<p>Now, you can start and connect to your forked-network:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>console<span class="w"> </span>--network<span class="w"> </span>optimism:mainnet-fork:foundry
+</span><span data-line="2">ape<span class="w"> </span>console<span class="w"> </span>--network<span class="w"> </span>arbitrum:mainnet-fork:foundry
+</span></pre></div>
+</div>
+</section>
+<section id="configure-default">
+<h2>Configure Default<a class="headerlink" href="#configure-default" title="Link to this heading"></a></h2>
+<p>If you want to change the default network from <code class="docutils literal notranslate"><span class="pre">local</span></code> to your forked network, add the following config:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">&lt;ecosystem-name&gt;</span><span class="p">:</span>
+</span><span data-line="2"><span class="w">  </span><span class="nt">default_network</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;network-name&gt;_fork</span>
+</span></pre></div>
+</div>
+<p>Where <code class="docutils literal notranslate"><span class="pre">ecosystem-name</span></code> is the ecosystem containing the network and <code class="docutils literal notranslate"><span class="pre">network-name</span></code> is the network you are forking.</p>
+</section>
+<section id="forked-context">
+<h2>Forked Context<a class="headerlink" href="#forked-context" title="Link to this heading"></a></h2>
+<p>If you are already connected to a live network and wish to temporarily fork it, use the <a class="reference external" href="../methoddocs/managers.html#ape.managers.networks.NetworkManager.fork">fork() context manager</a>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">networks</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">ethereum</span><span class="o">.</span><span class="n">mainnet</span><span class="o">.</span><span class="n">use_provider</span><span class="p">(</span><span class="s2">&quot;alchemy&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">alchemy</span><span class="p">:</span>
+</span><span data-line="4">    <span class="c1"># Connect to live network</span>
+</span><span data-line="5">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Connected to: </span><span class="si">{</span><span class="n">alchemy</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="6">    
+</span><span data-line="7">    <span class="c1"># Create a fork of the current network using the specified fork provider</span>
+</span><span data-line="8">    <span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">fork</span><span class="p">(</span><span class="n">provider_name</span><span class="o">=</span><span class="s2">&quot;foundry&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fork</span><span class="p">:</span>
+</span><span data-line="9">        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Now using fork: </span><span class="si">{</span><span class="n">fork</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="10">        
+</span><span data-line="11">    <span class="c1"># You can specify a block number (using the configured default fork provider)</span>
+</span><span data-line="12">    <span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">fork</span><span class="p">(</span><span class="n">provider_name</span><span class="o">=</span><span class="s2">&quot;foundry&quot;</span><span class="p">,</span> <span class="n">block_number</span><span class="o">=</span><span class="mi">17000000</span><span class="p">)</span> <span class="k">as</span> <span class="n">fork</span><span class="p">:</span>
+</span><span data-line="13">        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Using fork at block </span><span class="si">{</span><span class="n">fork</span><span class="o">.</span><span class="n">chain</span><span class="o">.</span><span class="n">blocks</span><span class="o">.</span><span class="n">height</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span></pre></div>
+</div>
+</section>
+<section id="time-travel-in-forks">
+<h2>Time Travel in Forks<a class="headerlink" href="#time-travel-in-forks" title="Link to this heading"></a></h2>
+<p>One powerful feature of forking is the ability to manipulate block timestamps for testing time-dependent contracts:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">networks</span><span class="p">,</span> <span class="n">chain</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">ethereum</span><span class="o">.</span><span class="n">mainnet</span><span class="o">.</span><span class="n">fork</span><span class="p">()</span> <span class="k">as</span> <span class="n">provider</span><span class="p">:</span>
+</span><span data-line="4">    <span class="c1"># Advance time by 7 days</span>
+</span><span data-line="5">    <span class="n">chain</span><span class="o">.</span><span class="n">pending_timestamp</span> <span class="o">+=</span> <span class="mi">7</span> <span class="o">*</span> <span class="mi">24</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">60</span>
+</span><span data-line="6">    
+</span><span data-line="7">    <span class="c1"># Now you can test time-sensitive contract behavior</span>
+</span><span data-line="8">    <span class="n">my_contract</span><span class="o">.</span><span class="n">check_time_dependent_function</span><span class="p">()</span>
+</span></pre></div>
+</div>
+<p>Learn more about the fork context manager <a class="reference external" href="./networks.html#forked-context">here</a>.</p>
+</section>
+</section>
+
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"><div class="navigation-prev">
+    <a href="networks.html">
+      <i class="i-lucide chevron-left"></i>
+      <div class="page-info">
+        <span>Previous</span><div class="title">Networks</div></div>
+    </a>
+  </div><div class="navigation-next">
+    <a href="publishing.html">
+      <div class="page-info">
+        <span>Next</span>
+        <div class="title">Publishing</div>
+      </div>
+      <i class="i-lucide chevron-right"></i>
+    </a>
+  </div></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2024, ApeWorX LTD</p>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials"></div>
+    </div>
+  </div>
+</footer>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script data-domain="docs.apeworx.io" defer="defer" src="https://plausible.io/js/script.js"></script>
+      <script src="../_static/shibuya.js?v=cac61aee"></script></body>
+</html>
