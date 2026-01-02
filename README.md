@@ -4,6 +4,7 @@
 [![Contributing][contributing-badge]][contributing-url]
 [![Discord chat][discord-badge]][discord-url]
 [![Twitter][twitter-badge]][twitter-url]
+[![DeepWiki][deepwiki-badge]][deepwiki-url]
 
 # Overview
 
@@ -136,6 +137,8 @@ Install 3rd party plugins at your own risk.
 [console-guide]: https://docs.apeworx.io/ape/stable/userguides/console.html
 [contributing-badge]: https://img.shields.io/badge/CONTRIBUTING-guidelines-brightgreen?style=flat-square
 [contributing-url]: https://github.com/ApeWorX/ape?tab=contributing-ov-file
+[deepwiki-badge]: https://deepwiki.com/badge.svg
+[deepwiki-url]: https://deepwiki.com/ApeWorX/ape
 [discord-badge]: https://img.shields.io/discord/922917176040640612.svg?logo=discord&style=flat-square
 [discord-url]: https://discord.gg/apeworx
 [license-badge]: https://img.shields.io/github/license/ApeWorX/ape?color=blue
