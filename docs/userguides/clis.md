@@ -109,16 +109,16 @@ from ape.cli import ConnectedProviderCommand
 def cli():
     pass
 
- @cli.command(cls=ConnectedProviderCommand)
+@cli.command(cls=ConnectedProviderCommand)
 def cmd_1(network, provider):
    click.echo(network.name)
    click.echo(provider.is_connected)  # True
 
- @cli.command(cls=ConnectedProviderCommand)
+@cli.command(cls=ConnectedProviderCommand)
 def cmd_2(provider):
    click.echo(provider.is_connected)  # True
 
- @cli.command(cls=ConnectedProviderCommand)
+@cli.command(cls=ConnectedProviderCommand)
 def cmd_3():
    click.echo("Using params from ConnectedProviderCommand is optional")
 ```
@@ -150,7 +150,7 @@ def cmd(account):
 ```
 
 And when invoking the command from the CLI, it would look like the following:
-(where `<prefix>` is either `ape run` for scripts or `ape <custom-plugin-cmd>` for plugins)
+(where `<prefix>` is either `ape run` for scripts or `ape <plugin-name>` for plugin CLI extensions)
 
 ```shell
 <prefix> cmd  # Use the default account.
