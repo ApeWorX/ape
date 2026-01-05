@@ -31,31 +31,13 @@ jobs:
         python-version: "3.10"
 
     - name: Build Docs
-      run: uv run --group docs sphinx-ape build --mode "${{ github.event_name }}"
+      run: uv sync
 
-    - name: Doctesting
-      run: uv run --group docs sphinx-ape test
+    - name: Add venv to PATH
+      run: echo "${{ github.workspace }}/.venv/bin" >> $GITHUB_PATH
+      # NOTE: Otherwise the next action nukes the path when it starts
 
-    - name: Commit and publish documentation changes to gh-pages branch
-      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' || github.event_name == 'release' }}
-      run: |
-        uv run --group docs sphinx-ape publish --skip-push --repo ${{ github.repository }}
-        cd gh-pages
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        git add .
-        git commit -m "Update documentation" -a || true
-
-    - name: Push changes
-      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' || github.event_name == 'release' }}
-      uses: ad-m/github-push-action@master
+    - name: Ape Docs
+      uses: apeworx/sphinx-ape@main
       with:
-        branch: gh-pages
-        directory: gh-pages
-        github_token: ${{ inputs.github-token }}
-
-# TODO: Figure out why this doesn't work??
-#    - name: Ape Docs
-#      uses: apeworx/sphinx-ape@main
-#      with:
-#        github-token: ${{ secrets.GITHUB_TOKEN }}
+        github-token: ${{ secrets.GITHUB_TOKEN }}
