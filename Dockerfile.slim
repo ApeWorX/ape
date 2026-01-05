@@ -4,13 +4,10 @@
 ARG PYTHON_VERSION="3.11"
 
 # Start with given Python version
-FROM python:${PYTHON_VERSION}-slim AS builder
+FROM python:${PYTHON_VERSION} AS builder
 
 # Install uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/
-
-# NOTE: Need `gcc` for installing c ffi wheels
-RUN apt-get update && apt-get -y install gcc
 
 # Change the working directory to a temp directory for building wheels
 WORKDIR /wheels
