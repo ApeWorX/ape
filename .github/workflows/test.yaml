@@ -30,7 +30,7 @@ jobs:
           run: uv run --group lint ruff format --check .
 
         - name: Run mdformat
-          run: uv run --group lint mdformat --check .
+          run: uv run --group lint mdformat --check *.md docs/**/*.md
 
     type-check:
         runs-on: ubuntu-latest
