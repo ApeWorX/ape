@@ -1,36 +1,186 @@
 [build-system]
-requires = ["setuptools>=75.0.0", "wheel", "setuptools_scm[toml]>=5.0"]
+requires = ["setuptools>=75", "wheel", "setuptools_scm[toml]>=5"]
+build-backend = "setuptools.build_meta"
 
-[tool.ape]
-name = "ape"
-contracts_folder = "tests/functional/data/contracts"
+[project.urls]
+Homepage = "https://apeworx.io/framework"
+Repository = "https://github.com/ApeWorX/ape.git"
+Issues = "https://github.com/ApeWorX/ape/issues"
+Documentation = "https://docs.apeworx.io/ape/stable"
+Funding = "https://github.com/sponsors/ApeWorX"
+"Twitter / X" =  "https://x.com/ApeFramework"
 
-[[tool.ape.dependencies]]
-name = "openzeppelin"
-version = "4.9.6"
-github = "OpenZeppelin/openzeppelin-contracts"
+[project]
+name = "eth-ape"
+dynamic = [ "version" ]
+license = "Apache-2.0"
+description = "Ape Framework: Build and explore on-chain with Python"
+keywords = ["ape", "crypto", "ethereum", "devtool", "defi", "nft"]
+readme = "README.md"
+authors = [
+    { name = "ApeWorX Ltd.", email="admin@apeworx.io"},
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Natural Language :: English",
+    "Operating System :: MacOS",
+    "Operating System :: POSIX",
+    "Operating System :: Microsoft :: Windows",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+]
+requires-python = ">=3.10,<4"
+dependencies = [
+    "click>=8.1.6,<8.2",
+    "ijson>=3.1.4,<4",
+    "ipython>=8.18.1,<9",
+    "lazyasd>=0.1.4",
+    "asttokens>=2.4.1,<3",  # Peer dependency; w/o pin container build fails.
+    "cchecksum>=0.0.3,<1",
+    # Pandas peer-dep: Numpy 2.0 causes issues for some users.
+    "numpy<2",
+    "packaging>=23.0,<24",
+    "pandas>=2.2.2,<3",
+    "pluggy>=1.3,<2",
+    "pydantic>=2.10,<3",
+    "pydantic-settings>=2.5.2,<3",
+    "pytest>=8.0,<9.0",
+    "python-dateutil>=2.8.2,<3",
+    "PyYAML>=5.1,<7",
+    "requests>=2.28.1,<3",
+    "rich>=13.9,<14",
+    "SQLAlchemy>=1.4.35",
+    "toml; python_version<'3.11'",
+    "tqdm>=4.67,<5.0",
+    "traitlets>=5.3.0",
+    "urllib3>=2.3,<3",
+    "watchdog>=3.0,<4",
+    # ** Dependencies maintained by Ethereum Foundation **
+    "eth-abi>=5.1.0,<6",
+    "eth-account>=0.11.3,<0.14",
+    "eth-typing>=3.5.2,<6",
+    "eth-utils>=2.1.0,<6",
+    "hexbytes>=1.2.0,<2",
+    "py-geth>=6.2.0,<7",
+    "trie>=3.0.1,<4",  # Peer: stricter pin needed for uv support.
+    "web3[tester]>=7.12.1,<8",
+    # ** Dependencies maintained by ApeWorX **
+    "ethpm-types>=0.6.28,<0.7",
+    "eip712>=0.3.0,<0.4",
+    "eth_pydantic_types>=0.2.1,<0.3",
+    "evmchains>=0.1.0,<0.2",
+    "evm-trace>=0.2.6,<0.3",
+]
 
-[[tool.ape.dependencies]]
-name = "openzeppelin"
-version = "5.2.0"
-github = "OpenZeppelin/openzeppelin-contracts"
+[project.scripts]
+ape = "ape._cli:cli"
 
-[tool.ape.test]
-show_internal = true
+[project.entry-points.pytest11]
+ape_test = "ape.pytest.plugin"
 
-[tool.mypy]
-exclude = ["build/", "dist/", "docs/", "tests/integration/cli/projects/", "venv/", ".venv/"]
-check_untyped_defs = true
-plugins = ["pydantic.mypy"]
+[project.entry-points.ape_cli_subcommands]
+ape_accounts = "ape_accounts._cli:cli"
+ape_cache = "ape_cache._cli:cli"
+ape_compile = "ape_compile._cli:cli"
+ape_console = "ape_console._cli:cli"
+ape_plugins = "ape_plugins._cli:cli"
+ape_run = "ape_run._cli:cli"
+ape_networks = "ape_networks._cli:cli"
+ape_test = "ape_test._cli:cli"
+ape_init = "ape_init._cli:cli"
+ape_pm = "ape_pm._cli:cli"
+
+[project.optional-dependencies]
+# NOTE: These are plugins that someone can install to get up and running quickly w/ Ape
+#       They should be kept up to date with what works and what doesn't out of the box
+#       Usage example: `uv tool install --from eth-ape[recommended-plugins] ape`
+recommended-plugins = [
+    "ape-alchemy",
+    "ape-ens",
+    "ape-etherscan",
+    "ape-foundry",
+    "ape-hardhat",
+    "ape-infura",
+    "ape-solidity",
+    "ape-template",
+    "ape-tokens",
+    "ape-vyper",
+]
+
+[dependency-groups]
+test = [  # `test` GitHub Action jobs use this
+    "pytest-xdist>=3.6.1,<4",  # Multi-process runner
+    "pytest-cov>=4.0.0,<5",  # Coverage analyzer plugin
+    "pytest-mock",  # For creating mocks
+    "pytest-benchmark",  # For performance tests
+    "pytest-rerunfailures",  # For flakey tests
+    "pytest-timeout>=2.2.0,<3",  # For avoiding timing out during tests
+    "hypothesis>=6.2.0,<7.0",  # Strategy-based fuzzer
+    "hypothesis-jsonschema==0.19.0",  # JSON Schema fuzzer extension
+    "ape-vyper>=0.8.9,<0.9",  # Needed for compiling test contracts
+    "vyper>=0.4.3,<0.5",  # Avoid having to download Vyper binaries
+    "ape-solidity>=0.8.5,<0.9",  # Needed for compiling test contracts
+]
+lint = [  # `lint` GitHub Action jobs use this
+    "ruff>=0.12.0",  # Unified linter and formatter
+    "mypy>=1.16.1,<1.17.0",  # Static type analyzer
+    "types-PyYAML",  # Needed due to mypy typeshed
+    "types-requests",  # Needed due to mypy typeshed
+    "types-setuptools",  # Needed due to mypy typeshed
+    "pandas-stubs>=2.2.1.240316",  # Needed due to mypy typeshed
+    "types-toml",  # Needed due to mypy typeshed
+    "types-SQLAlchemy>=1.4.49",  # Needed due to mypy typeshed
+    "types-python-dateutil",  # Needed due to mypy typeshed
+    "mdformat>=0.7.22",  # Auto-formatter for markdown
+    "mdformat-gfm>=0.3.5",  # Needed for formatting GitHub-flavored markdown
+    "mdformat-frontmatter>=0.4.1",  # Needed for frontmatters-style headers in issue templates
+    "mdformat-pyproject>=0.0.2",  # Allows configuring in pyproject.toml
+]
+docs = [  # `docs` GitHub Action jobs use this
+    "sphinx-ape",
+]
+dev = [
+    # NOTE: Include all groups for local development
+    {include-group = "test"},
+    {include-group = "lint"},
+    {include-group = "docs"},
+    "commitlint",  # Semantic commit linting
+    "pre-commit",  # Ensure that linters are run prior to committing
+    "pytest-watch",  # `ptw` test watcher/runner
+    "ipdb",  # Debugger (Must use `export PYTHONBREAKPOINT=ipdb.set_trace`)
+]
+
+[tool.setuptools.packages.find]
+where = [ "src" ]
+
+[tool.setuptools.package-data]
+"*" = [ "py.typed" ]
 
 [tool.setuptools_scm]
 # The fallback version is so that CI/CD systems will use a more accurate version.
 # Otherwise, you may have issues with plugins' pinning Ape and not using the expected version.
 # This version is purposely set to really high minor so that it should always work
 # with newer, stricter plugin releases.
-# NOTE: This should be bumped with every minor release!
+# NOTE: This should be bumped with every new minor release! (e.g. 0.8 => 0.9)
 fallback_version = "0.8.999"
 write_to = "src/ape/version.py"
+
+[tool.mypy]
+exclude = [
+    "build/",
+    "dist/",
+    "docs/",
+    "tests/integration/cli/projects/",
+    "venv/",
+    ".venv/",
+]
+check_untyped_defs = true
+plugins = ["pydantic.mypy"]
 
 [tool.pytest.ini_options]
 norecursedirs = "projects"
@@ -74,17 +224,17 @@ select = [
 ignore = [
     "E501",
 
-    # Specific bugbear issues 
+    # Specific bugbear issues
     "B904",     # Use 'raise from' in except blocks
     "B006",     # Mutable default arguments
     "B007",     # Loop control variable not used within loop body
     "B012",     # Jump statements in finally blocks
     "B028",     # No explicit stacklevel in warnings
-    
+
     # FIXME/TODO comments - these are intentional markers for future work
     "FIX002",   # Line contains TODO
     "FIX004",   # Line contains HACK
-    
+
     # Code structure preferences
     "SIM102",   # Use a single if statement instead of nested if statements
     "SIM105",   # Use contextlib.suppress instead of try-except-pass
@@ -95,17 +245,17 @@ ignore = [
     "SIM116",   # Use dictionary instead of if-statements
     "SIM117",   # Multiple with statements
     "B018",     # Useless expression
-    
+
     # Return statement style
     "RET501",   # Do not explicitly return None
     "RET502",   # Implicit return at the end of function able to return non-None value
-    "RET503",   # Missing explicit return at the end of function able to return non-None value 
+    "RET503",   # Missing explicit return at the end of function able to return non-None value
     "RET504",   # Unnecessary assignment before return
     "RET505",   # Unnecessary else after return
     "RET506",   # Unnecessary else after raise
     "RET507",   # Unnecessary else after continue
     "RET508",   # Unnecessary else after break
-    
+
     # Security issues (allow common patterns in the codebase)
     "S101",     # Use of assert (many asserts are used for type checking)
     "S102",     # Use of exec (needed in some specific places)
@@ -168,3 +318,21 @@ docstring-code-format = true
 
 [tool.mdformat]
 number = true
+
+# NOTE: These config options only used for testing Ape
+[tool.ape]
+name = "ape"
+contracts_folder = "tests/functional/data/contracts"
+
+[[tool.ape.dependencies]]
+name = "openzeppelin"
+version = "4.9.6"
+github = "OpenZeppelin/openzeppelin-contracts"
+
+[[tool.ape.dependencies]]
+name = "openzeppelin"
+version = "5.2.0"
+github = "OpenZeppelin/openzeppelin-contracts"
+
+[tool.ape.test]
+show_internal = true
