@@ -33,11 +33,18 @@ jobs:
         with:
           fetch-depth: 0  # Needed for setuptools-scm
 
+      # NOTE: We need to store `uv.lock` for building with
+      - uses: astral-sh/setup-uv@v7
+      - uses: actions/cache@v5
+        with:
+          path: uv.lock
+          key: ${{ matrix.python-version }}-uv-lock
+      - run: uv lock --python ${{ matrix.python-version }}
+
       - name: Get version from setuptools-scm
         id: version
         run: |
-          pip install setuptools-scm
-          VERSION=$(python -m setuptools_scm)
+          VERSION=$(uvx setuptools-scm)
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
       - name: Check if default Python version
