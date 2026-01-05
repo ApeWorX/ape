@@ -33,7 +33,33 @@ jobs:
     - name: Install Dependencies
       run: uv sync --group docs
 
-    - name: Ape Docs
-      uses: apeworx/sphinx-ape@main
+    - name: Build Docs
+      run: sphinx-ape build --mode "${{ github.event_name }}"
+
+    - name: Doctesting
+      run: sphinx-ape test
+
+    - name: Commit and publish documentation changes to gh-pages branch
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' || github.event_name == 'release' }}
+      run: |
+        sphinx-ape publish --skip-push --repo ${{ github.repository }}
+        cd gh-pages
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add .
+        git commit -m "Update documentation" -a || true
+      shell: bash
+
+    - name: Push changes
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' || github.event_name == 'release' }}
+      uses: ad-m/github-push-action@master
       with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
+        branch: gh-pages
+        directory: gh-pages
+        github_token: ${{ inputs.github-token }}
+
+# TODO: Figure out why this doesn't work??
+#    - name: Ape Docs
+#      uses: apeworx/sphinx-ape@main
+#      with:
+#        github-token: ${{ secrets.GITHUB_TOKEN }}
