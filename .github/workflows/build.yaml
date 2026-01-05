@@ -66,7 +66,7 @@ jobs:
             suffix=-slim
           # NOTE: `latest=false` lets us manage it better here
           tags: |
-            # For default Python version:
+            # For default Python version (unprefixed convenience tags)
             # - 'latest-slim' on push to main
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' && steps.is-default.outputs.value == 'true' }}
             # - 'stable-slim' on release
@@ -96,10 +96,6 @@ jobs:
             org.opencontainers.image.revision=${{ github.sha }}
             org.opencontainers.image.authors=ApeWorX LTD
             org.opencontainers.image.base.name=python:${{ matrix.python-version }}-slim
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
-            type=ref,event=tag
-            type=raw,value=stable,enable=${{ startsWith(github.ref, 'refs/tags/') }}
-            type=ref,event=pr
 
       - name: Build and push (if required) slim
         id: build-slim
@@ -124,8 +120,9 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           flavor: |
             latest=false
+          # NOTE: `latest=false` lets us manage it better here
           tags: |
-            # For default Python version:
+            # For default Python version (unprefixed convenience tags)
             # - 'latest' on push to main
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' && steps.is-default.outputs.value == 'true' }}
             # - 'stable' on release
@@ -133,7 +130,7 @@ jobs:
             # - version tag (e.g., v0.8.43) on release
             type=ref,event=tag,enable=${{ steps.is-default.outputs.value == 'true' }}
 
-            # For all Python versions:
+            # For all Python versions (including default)
             # - 'python3.x-latest' on push to main
             type=raw,value=python${{ matrix.python-version }}-latest,enable=${{ github.ref == 'refs/heads/main' }}
             # - 'python3.x-stable' on release
