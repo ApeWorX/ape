@@ -1,47 +1,58 @@
-#---------------------------------------------------------------------------------------------
-# See LICENSE in the project root for license information.
-#---------------------------------------------------------------------------------------------
-
+#----------------------------------------------------------#
+# See LICENSE in the project root for license information. #
+#----------------------------------------------------------#
 ARG PYTHON_VERSION="3.11"
 
-FROM python:${PYTHON_VERSION} AS builder
+# Start with given Python version
+FROM python:${PYTHON_VERSION}-slim AS builder
 
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/
+
+# NOTE: Need `gcc` for installing c ffi wheels
+RUN apt-get update && apt-get -y install gcc
+
+# Change the working directory to a temp directory for building wheels
 WORKDIR /wheels
 
-RUN pip install --upgrade pip \
-    && pip install wheel
+# Only copy dependency files first (locked deps change less often)
+# NOTE: In CI, you need to cache `uv.lock` (or create it if it doesn't exist)
+COPY pyproject.toml uv.lock ./
 
-COPY . .
+# NOTE: Needed to mock version for `setuptools-scm` (pass at build time)
+ARG APE_VERSION
+ENV SETUPTOOLS_SCM_PRETEND_VERSION_FOR_ETH_APE=${APE_VERSION}
 
-RUN pip wheel .
+# NOTE: link mode "copy" silences warnings about hard links in other commands
+ENV UV_LINK_MODE=copy
+
+# Install dependencies first
+# NOTE: --compile-bytecode improves load speed of dependencies
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-install-project --no-editable --compile-bytecode
+
+# Now copy Ape's source code over
+COPY src src
+
+# Install Ape using pre-installed dependencies
+# NOTE: --compile-bytecode improves load speed of dependencies
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-editable --compile-bytecode
 
 FROM python:${PYTHON_VERSION}-slim
 
-# See http://label-schema.org for metadata schema
-# TODO: Add `build-date` and `version`
-LABEL org.opencontainers.image.title="ape" \
-    org.opencontainers.image.description="Ape Framework" \
-    org.opencontainers.image.url="https://apeworx.io/framework" \
-    org.opencontainers.image.documentation="https://docs.apeworx.io/ape/stable/userguides/quickstart.html\#installation" \
-    org.opencontainers.image.source="https://github.com/ApeWorX/ape" \
-    org.opencontainers.image.vendor="ApeWorX" \
-    org.opencontainers.image.licenses="Apache-2.0" \
-    org.opencontainers.image.version="${VERSION:-latest}" \
-    org.opencontainers.image.created="${BUILD_DATE}" \
-    org.opencontainers.image.revision="${VCS_REF}" \
-    org.opencontainers.image.authors="ApeWorX" \
-    org.opencontainers.image.base.name="python:${PYTHON_VERSION}-slim"
-
-
+# NOTE: Add a bespoke user to run commands with
 RUN useradd --create-home --shell /bin/bash harambe
-COPY --from=builder /wheels/*.whl /wheels/
+WORKDIR /home/harambe
 
-RUN pip install --upgrade pip
-RUN pip install /wheels/*.whl
+COPY --from=builder --chown=harambe:harambe /wheels/.venv /wheels/.venv
 
+# NOTE: Switch non-root user for additional security
+USER harambe
+
+# Add the virtual environment to PATH so Ape is callable
+ENV PATH="/wheels/.venv/bin:$PATH"
 RUN ape --version
 
-WORKDIR /home/harambe/project
-RUN chown --recursive harambe:harambe /home/harambe
-USER harambe
 ENTRYPOINT ["ape"]
+CMD ["--help"]

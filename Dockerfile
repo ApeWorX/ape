@@ -1,31 +1,34 @@
 #---------------------------------------------------------------------------------------------
 # See LICENSE in the project root for license information.
 #---------------------------------------------------------------------------------------------
-
 ARG SLIM_IMAGE
-ARG PYTHON_VERSION="3.11"
-FROM python:${PYTHON_VERSION} AS builder
+FROM ${SLIM_IMAGE} AS builder
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/
 
 WORKDIR /wheels
 
-RUN pip install --upgrade pip \
-    && pip install wheel
+# Add the extras by installing them directly
+# NOTE: Parse them from the already-installed Ape's "recommended-plugins" extra
+RUN --mount=type=cache,target=/root/.cache/uv \
+    RECOMMENDED_PLUGINS=$(uv run python -c "\
+from importlib.metadata import metadata; \
+print(*(r[4:].split(';')[0].strip() \
+for r in (metadata('eth-ape').get_all('Requires-Dist') or []) \
+if 'recommended-plugins' in r))") && \
+    ape plugins install $RECOMMENDED_PLUGINS
 
-COPY . .
+FROM ${SLIM_IMAGE}
 
-COPY ./recommended-plugins.txt ./recommended-plugins.txt
+WORKDIR /home/harambe
 
-RUN pip wheel .[recommended-plugins] --wheel-dir=/wheels
-
-FROM ${SLIM_IMAGE} AS ape_slim
-
-USER root
-
-COPY --from=builder /wheels/*.whl /wheels/
-
-RUN pip install --upgrade pip
-RUN pip install /wheels/*.whl
+COPY --from=builder --chown=harambe:harambe /wheels/.venv /wheels/.venv
 
 USER harambe
 
+# Add the virtual environment to PATH so Ape is callable
+ENV PATH="/wheels/.venv/bin:$PATH"
 RUN ape --version
+RUN ape plugins list
+
+# NOTE: Don't override ENTRYPOINT
