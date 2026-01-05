@@ -48,7 +48,6 @@ jobs:
         git config --local user.name "GitHub Action"
         git add .
         git commit -m "Update documentation" -a || true
-      shell: bash
 
     - name: Push changes
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' || github.event_name == 'release' }}
