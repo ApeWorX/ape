@@ -26,6 +26,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        target: ["slim", "full"]
 
     steps:
       - name: Checkout repository
@@ -67,84 +68,14 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Generate Docker metadata (slim)
-        id: meta-slim
+      - name: Generate Docker metadata
+        id: meta
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           flavor: |
             latest=false
-            suffix=-slim
-          # NOTE: `latest=false` lets us manage it better here
-          tags: |
-            # For default Python version (unprefixed convenience tags)
-            # - 'latest-slim' on push to main
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' && steps.is-default.outputs.value == 'true' }}
-            # - 'stable-slim' on release
-            type=raw,value=stable,enable=${{ github.event_name == 'release' && steps.is-default.outputs.value == 'true' }}
-            # - version tag (e.g., v0.8.43-slim) on release
-            type=ref,event=tag,enable=${{ steps.is-default.outputs.value == 'true' }}
-
-            # For all Python versions (including default):
-            # - 'python3.x-latest-slim' on push to main
-            type=raw,value=python${{ matrix.python-version }}-latest,enable=${{ github.ref == 'refs/heads/main' }}
-            # - 'python3.x-stable-slim' on release
-            type=raw,value=python${{ matrix.python-version }}-stable,enable=${{ github.event_name == 'release' }}
-            # - 'python3.x-v*-slim' on release
-            type=ref,event=tag,prefix=python${{ matrix.python-version }}-,enable=${{ github.event_name == 'release' }}
-
-            # PR tags for testing (not pushed)
-            type=ref,event=pr,prefix=python${{ matrix.python-version }}-pr-
-          labels: |
-            org.opencontainers.image.title=ape
-            org.opencontainers.image.description=Build and explore on-chain with Python
-            org.opencontainers.image.url=https://apeworx.io/framework
-            org.opencontainers.image.documentation=https://docs.apeworx.io/ape/stable/userguides/quickstart
-            org.opencontainers.image.source=https://github.com/ApeWorX/ape
-            org.opencontainers.image.vendor=ApeWorX LTD
-            org.opencontainers.image.licenses=Apache-2.0
-            org.opencontainers.image.version=${{ steps.version.outputs.version }}
-            org.opencontainers.image.revision=${{ github.sha }}
-            org.opencontainers.image.authors=ApeWorX LTD
-            org.opencontainers.image.base.name=python:${{ matrix.python-version }}-slim
-
-      - name: Build and push (if required) slim image
-        id: build-slim
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: ./Dockerfile.slim
-          build-args: |
-            PYTHON_VERSION=${{ matrix.python-version }}
-            APE_VERSION=${{ steps.version.outputs.version }}
-          push: ${{ github.event_name != 'pull_request' }}
-          load: ${{ github.event_name == 'pull_request' }}
-          tags: ${{ steps.meta-slim.outputs.tags }}
-          labels: ${{ steps.meta-slim.outputs.labels }}
-          cache-from: type=gha,scope=slim-py${{ matrix.python-version }}
-          cache-to: ${{ github.event_name != 'pull_request' && format('type=gha,mode=max,scope=slim-py{0}', matrix.python-version) || '' }}
-          platforms: ${{ github.event_name != 'pull_request' && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
-
-      # For PRs, we need to use the local image tag instead of the registry digest
-      - name: Determine slim image reference
-        id: slim-ref
-        run: |
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            # Use first tag from metadata for local reference
-            FIRST_TAG=$(echo "${{ steps.meta-slim.outputs.tags }}" | head -n1)
-            echo "image=$FIRST_TAG" >> $GITHUB_OUTPUT
-          else
-            # Use registry digest for pushed images
-            echo "image=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build-slim.outputs.digest }}" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Generate Docker metadata (full)
-        id: meta-full
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          flavor: |
-            latest=false
+            suffix=${{ matrix.target == 'slim' && '-slim' || ''}}
           # NOTE: `latest=false` lets us manage it better here
           tags: |
             # For default Python version (unprefixed convenience tags)
@@ -155,7 +86,7 @@ jobs:
             # - version tag (e.g., v0.8.43) on release
             type=ref,event=tag,enable=${{ steps.is-default.outputs.value == 'true' }}
 
-            # For all Python versions (including default)
+            # For all Python versions (including default):
             # - 'python3.x-latest' on push to main
             type=raw,value=python${{ matrix.python-version }}-latest,enable=${{ github.ref == 'refs/heads/main' }}
             # - 'python3.x-stable' on release
@@ -178,40 +109,24 @@ jobs:
             org.opencontainers.image.authors=ApeWorX LTD
             org.opencontainers.image.base.name=python:${{ matrix.python-version }}-slim
 
-      - name: Build and push (if required) full image (with recommended plugins)
-        id: build-full
+      - name: Build and push (if required) slim image
+        id: build
         uses: docker/build-push-action@v6
         with:
           context: .
           file: ./Dockerfile
+          target: ${{ matrix.target }}
           build-args: |
-            SLIM_IMAGE=${{ steps.slim-ref.outputs.image }}
+            PYTHON_VERSION=${{ matrix.python-version }}
+            APE_VERSION=${{ steps.version.outputs.version }}
           push: ${{ github.event_name != 'pull_request' }}
-          load: ${{ github.event_name == 'pull_request' }}
-          tags: ${{ steps.meta-full.outputs.tags }}
-          labels: ${{ steps.meta-full.outputs.labels }}
-          cache-from: type=gha,scope=full-py${{ matrix.python-version }}
-          cache-to: ${{ github.event_name != 'pull_request' && format('type=gha,mode=max,scope=full-py{0}', matrix.python-version) || '' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=build-py${{ matrix.python-version }}
           platforms: ${{ github.event_name != 'pull_request' && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
 
-      - name: Summary
-        run: |
-          echo "## Docker Build Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Python Version:** ${{ matrix.python-version }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Ape Version:** ${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Slim Image Tags" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          echo "${{ steps.meta-slim.outputs.tags }}" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Full Image Tags" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          echo "${{ steps.meta-full.outputs.tags }}" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-
       - name: Run container retention policy
+        if: ${{ github.event_name != 'pull_request' }}
         # TODO: Use `v3` when available
         uses: snok/container-retention-policy@v3.0.1
         with:
