@@ -97,7 +97,7 @@ jobs:
             type=ref,event=pr,prefix=python${{ matrix.python-version }}-pr-
           labels: |
             org.opencontainers.image.title=ape
-            org.opencontainers.image.description="Ape Framework: Build and explore on-chain with Python"
+            org.opencontainers.image.description=Build and explore on-chain with Python
             org.opencontainers.image.url=https://apeworx.io/framework
             org.opencontainers.image.documentation=https://docs.apeworx.io/ape/stable/userguides/quickstart
             org.opencontainers.image.source=https://github.com/ApeWorX/ape
@@ -167,7 +167,7 @@ jobs:
             type=ref,event=pr,prefix=python${{ matrix.python-version }}-pr-
           labels: |
             org.opencontainers.image.title=ape
-            org.opencontainers.image.description="Ape Framework: Build and explore on-chain with Python (with recommended plugins)"
+            org.opencontainers.image.description=Build and explore on-chain with Python
             org.opencontainers.image.url=https://apeworx.io/framework
             org.opencontainers.image.documentation=https://docs.apeworx.io/ape/stable/userguides/quickstart
             org.opencontainers.image.source=https://github.com/ApeWorX/ape
