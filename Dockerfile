@@ -14,7 +14,8 @@ FROM python:${PYTHON_VERSION} AS slim-builder
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/
 
 # Change the working directory to a temp directory for building wheels
-WORKDIR /wheels
+# NOTE: **Must** use our final workdir or else the hash bangs in the scripts don't work
+WORKDIR /home/harambe/project
 
 # Only copy dependency files first (locked deps change less often)
 # NOTE: In CI, you need to cache `uv.lock` (or create it if it doesn't exist)
@@ -46,15 +47,16 @@ FROM python:${PYTHON_VERSION}-slim AS slim
 
 # NOTE: Add a bespoke user to run commands with
 RUN useradd --create-home --shell /bin/bash harambe
-WORKDIR /home/harambe
+WORKDIR /home/harambe/project
 
-COPY --from=slim-builder --chown=harambe:harambe /wheels/.venv /wheels/.venv
+COPY --from=slim-builder --chown=harambe:harambe \
+    /home/harambe/project/.venv /home/harambe/project/.venv
 
 # NOTE: Switch non-root user for additional security
 USER harambe
 
 # Add the virtual environment to PATH so Ape is callable
-ENV PATH="/wheels/.venv/bin:$PATH"
+ENV PATH="/home/harambe/project/.venv/bin:$PATH"
 RUN ape --version
 
 ENTRYPOINT ["ape"]
@@ -72,8 +74,14 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 
 FROM slim AS full
 
-COPY --from=full-builder --chown=harambe:harambe /wheels/.venv /wheels/.venv
+# Install anvil (for the Foundry plugin to be useful)
+# NOTE: Adds 33MB to build
+COPY --from=ghcr.io/foundry-rs/foundry:latest \
+    /usr/local/bin/anvil /home/harambe/.local/bin/anvil
+
+COPY --from=full-builder --chown=harambe:harambe \
+    /home/harambe/project/.venv /home/harambe/project/.venv
 
 RUN ape plugins list
 
-# NOTE: Use same ENTRYPOINT and CMD as slim
+# NOTE: Use same WORKDIR, USER, ENTRYPOINT and CMD as slim
