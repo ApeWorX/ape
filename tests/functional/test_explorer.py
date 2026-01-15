@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 import pytest
 
@@ -17,7 +17,7 @@ class MyExplorer(ExplorerAPI):
     def get_address_url(self, address: "AddressType") -> str:
         return ""
 
-    def get_contract_type(self, address: "AddressType") -> Optional["ContractType"]:
+    def get_contract_type(self, address: "AddressType") -> "ContractType | None":
         return None
 
     def publish_contract(self, address: "AddressType"):

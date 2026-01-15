@@ -7,7 +7,7 @@ import time
 from collections.abc import Callable, Sequence
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any
 
 import pytest
 from click.testing import CliRunner

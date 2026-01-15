@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 import pytest
 
@@ -90,7 +90,7 @@ def test_isolation_snapshot_id_types(snapshot_id, fixtures):
         restore_call_count = 0
         restore_called_with = []
 
-        def take_snapshot(self) -> Optional["SnapshotID"]:
+        def take_snapshot(self) -> "SnapshotID | None":
             self.take_call_count += 1
             return snapshot_id
 
@@ -114,7 +114,7 @@ def test_isolation_when_snapshot_fails_avoids_restore(mocker, fixtures):
     class IsolationManagerFailingAtSnapshotting(IsolationManager):
         take_called = False
 
-        def take_snapshot(self) -> Optional["SnapshotID"]:
+        def take_snapshot(self) -> "SnapshotID | None":
             self.take_called = True
             raise NotImplementedError()
 
@@ -139,7 +139,7 @@ def test_isolation_restore_fails_avoids_snapshot_next_time(fixtures):
         take_called = False
         restore_called = False
 
-        def take_snapshot(self) -> Optional["SnapshotID"]:
+        def take_snapshot(self) -> "SnapshotID | None":
             self.take_called = True
             chain_snapshots[self.provider.chain_id] = ["123"]
             return "123"
@@ -186,7 +186,7 @@ def test_isolation_supported_flag_set_after_successful_snapshot(fixtures):
         take_called = False
         restore_called = False
 
-        def take_snapshot(self) -> Optional["SnapshotID"]:
+        def take_snapshot(self) -> "SnapshotID | None":
             self.take_called = True
             return 123
 
