@@ -1,7 +1,9 @@
+import pytest
 from tests.conftest import geth_process_test
 
 
 @geth_process_test
+@pytest.mark.timeout(360)
 def test_get_code(mocker, chain, geth_contract, mock_sepolia):
     # NOTE: Using mock_sepolia because code doesn't get cached in local networks.
     actual = chain.get_code(geth_contract.address)
