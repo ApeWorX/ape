@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from eth_pydantic_types import HexBytes
 
@@ -47,7 +47,7 @@ def test_provider_not_supports_get_storage(
         times_get_storage_was_called: int = 0
 
         def get_storage(  # type: ignore[empty-body]
-            self, address: "AddressType", slot: int, block_id: Optional["BlockID"] = None
+            self, address: "AddressType", slot: int, block_id: "BlockID | None" = None
         ) -> "HexBytes":
             self.times_get_storage_was_called += 1
             raise NotImplementedError()

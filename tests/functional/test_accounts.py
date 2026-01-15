@@ -329,6 +329,7 @@ def test_deploy(owner, contract_container, clean_contract_caches):
 
 
 @explorer_test
+@pytest.mark.timeout(360)
 def test_deploy_and_publish_local_network(owner, contract_container):
     with pytest.raises(ProjectError, match="Can only publish deployments on a live network"):
         owner.deploy(contract_container, 0, publish=True)

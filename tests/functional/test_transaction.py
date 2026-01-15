@@ -469,7 +469,7 @@ def test_override_annotated_fields():
         def serialize_transaction(self) -> bytes:
             return b""
 
-        chain_id: int | None = None  # The base type is `Optional[HexInt]`.
+        chain_id: int | None = None  # The base type is `HexInt | None`.
 
     chain_id = 123123123123123123123123123123
     tx_type = 120

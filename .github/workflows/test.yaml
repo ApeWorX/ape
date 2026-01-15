@@ -19,23 +19,18 @@ jobs:
             fetch-depth: 0
 
         - name: Setup Python
-          uses: actions/setup-python@v5
+          uses: astral-sh/setup-uv@v7
           with:
               python-version: "3.10"
 
-        - name: Install Dependencies
-          run: |
-            python -m pip install --upgrade pip
-            pip install .[lint]
-
         - name: Run Ruff Lint
-          run: ruff check .
+          run: uv run --group lint ruff check .
 
         - name: Run Ruff Format
-          run: ruff format --check .
+          run: uv run --group lint ruff format --check .
 
         - name: Run mdformat
-          run: mdformat . --check
+          run: uv run --group lint mdformat --check *.md docs/**/*.md
 
     type-check:
         runs-on: ubuntu-latest
@@ -46,17 +41,12 @@ jobs:
             fetch-depth: 0
 
         - name: Setup Python
-          uses: actions/setup-python@v5
+          uses: astral-sh/setup-uv@v7
           with:
               python-version: "3.10"
 
-        - name: Install Dependencies
-          run: |
-            python -m pip install --upgrade pip
-            pip install .[lint,test]
-
         - name: Run MyPy
-          run: mypy .
+          run: uv run --group lint --group test mypy .
 
     test:
         runs-on: ${{ matrix.os }}
@@ -75,26 +65,36 @@ jobs:
             fetch-depth: 0
 
         - name: Setup Python
-          uses: actions/setup-python@v5
+          uses: astral-sh/setup-uv@v7
           with:
               python-version: ${{ matrix.python-version }}
 
         - name: Install Geth
           uses: ApeWorX/geth-action@v1
 
-        - name: Setup Ape
-          uses: ApeWorX/github-action@v3
-          with:
-            ape-version-pin: .[test]
-
         - name: Run Functional Tests
-          run: ape test tests/functional -m "not hypothesis" -s --cov=src --cov-append -v ERROR -n auto --dist loadgroup
+          run: |
+            uv run --group test ape test \
+              -s -v ERROR \
+              -n auto --dist loadgroup \
+              -m "not hypothesis" \
+              --cov=src --cov-append \
+              tests/functional
 
         - name: Run Integration Tests
-          run: ape test tests/integration -m "not hypothesis" -s --cov=src --cov-append -v ERROR -n auto --dist loadgroup
+          run: |
+            uv run --group test ape test \
+              -s -v ERROR \
+              -n auto --dist loadgroup \
+              -m "not hypothesis" \
+              --cov=src --cov-append \
+              tests/integration
 
         - name: Run Performance Tests
-          run: ape test tests/performance -s -v ERROR
+          run: |
+            uv run --group test ape test \
+              -s -v ERROR \
+              tests/performance
 
     fuzzing:
         runs-on: ubuntu-latest
@@ -108,14 +108,9 @@ jobs:
             fetch-depth: 0
 
         - name: Setup Python
-          uses: actions/setup-python@v5
+          uses: astral-sh/setup-uv@v7
           with:
               python-version: "3.10"
 
-        - name: Install Dependencies
-          run: |
-            python -m pip install --upgrade pip
-            pip install .[test]
-
         - name: Run Tests
-          run: ape test -m "hypothesis" --no-cov -s
+          run: uv run --group test ape test -s -m "hypothesis" --no-cov

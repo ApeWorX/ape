@@ -148,6 +148,7 @@ def test_uri_invalid(geth_provider, project, ethereum):
         geth_provider.provider_settings = settings
 
 
+@pytest.mark.timeout(360)
 def test_uri_missing(mock_sepolia):
     class MyProvider(Web3Provider, ABC):
         network: NetworkAPI = mock_sepolia

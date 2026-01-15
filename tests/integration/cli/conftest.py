@@ -1,7 +1,6 @@
 from importlib import import_module
 from pathlib import Path
 from shutil import copytree
-from typing import Optional
 
 import pytest
 
