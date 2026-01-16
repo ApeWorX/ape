@@ -21,10 +21,6 @@ WORKDIR /home/harambe/project
 # NOTE: In CI, you need to cache `uv.lock` (or create it if it doesn't exist)
 COPY pyproject.toml uv.lock ./
 
-# NOTE: Needed to mock version for `setuptools-scm` (pass at build time)
-ARG APE_VERSION
-ENV SETUPTOOLS_SCM_PRETEND_VERSION_FOR_ETH_APE=${APE_VERSION}
-
 # NOTE: link mode "copy" silences warnings about hard links in other commands
 ENV UV_LINK_MODE=copy
 
@@ -32,6 +28,10 @@ ENV UV_LINK_MODE=copy
 # NOTE: --compile-bytecode improves load speed of dependencies
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-install-project --no-editable --compile-bytecode
+
+# NOTE: Needed to mock version for `setuptools-scm` (pass at build time)
+ARG APE_VERSION
+ENV SETUPTOOLS_SCM_PRETEND_VERSION_FOR_ETH_APE=${APE_VERSION}
 
 # Now copy Ape's source code over
 COPY src src
