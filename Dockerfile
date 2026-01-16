@@ -21,24 +21,24 @@ WORKDIR /home/harambe/project
 # NOTE: In CI, you need to cache `uv.lock` (or create it if it doesn't exist)
 COPY pyproject.toml uv.lock ./
 
+# UV Configurations
+# NOTE: use system python (better for our images, that inherit from `python:$VERSION`)
+ENV UV_MANAGED_PYTHON=false
+# NOTE: skip installing dev-only dependencies
+ENV UV_NO_DEV=true
+# NOTE: use `uv.lock` that we loaded into build
+ENV UV_FROZEN=true
+# NOTE: installs everything as non-editable (faster)
+ENV UV_NO_EDITABLE=true
+# NOTE: improves load speed of dependencies
+ENV UV_COMPILE_BYTECODE=true
 # NOTE: link mode "copy" silences warnings about hard links in other commands
 ENV UV_LINK_MODE=copy
 
 # Install dependencies first
-# --no-managed-python to use system python
-# --no-dev to skip installing dev-only dependencies
-# --frozen to use `uv.lock` (that we loaded before)
-# --no-editable installs everything as non-edtiable (faster)
-# --compile-bytecode improves load speed of dependencies
-# --no-install-project so that we have our dependencies built first (speeds up incremental builds)
+# NOTE: --no-install-project so that we have our dependencies built first (speeds up incremental builds)
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync \
-        --no-managed-python \
-        --no-dev \
-        --frozen \
-        --no-editable \
-        --compile-bytecode \
-        --no-install-project
+    uv sync --no-install-project
 
 # NOTE: Needed to mock version for `setuptools-scm` (pass at build time)
 ARG APE_VERSION
@@ -49,12 +49,7 @@ COPY src src
 
 # Install Ape using pre-installed dependencies
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync \
-        --no-managed-python \
-        --no-dev \
-        --frozen \
-        --no-editable \
-        --compile-bytecode
+    uv sync
 
 # Stage 2: Slim image (ape core only)
 
@@ -83,13 +78,7 @@ FROM slim-builder AS full-builder
 
 # Install recommended plugins
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync \
-        --no-managed-python \
-        --no-dev \
-        --frozen \
-        --no-editable \
-        --compile-bytecode \
-        --extra recommended-plugins
+    uv sync --extra recommended-plugins
 
 # Stage 4: Full image (slim with recommended plugins from full-builder)
 
