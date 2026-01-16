@@ -25,9 +25,20 @@ COPY pyproject.toml uv.lock ./
 ENV UV_LINK_MODE=copy
 
 # Install dependencies first
-# NOTE: --compile-bytecode improves load speed of dependencies
+# --no-managed-python to use system python
+# --no-dev to skip installing dev-only dependencies
+# --frozen to use `uv.lock` (that we loaded before)
+# --no-editable installs everything as non-edtiable (faster)
+# --compile-bytecode improves load speed of dependencies
+# --no-install-project so that we have our dependencies built first (speeds up incremental builds)
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen --no-install-project --no-editable --compile-bytecode
+    uv sync \
+        --no-managed-python \
+        --no-dev \
+        --frozen \
+        --no-editable \
+        --compile-bytecode \
+        --no-install-project
 
 # NOTE: Needed to mock version for `setuptools-scm` (pass at build time)
 ARG APE_VERSION
@@ -37,9 +48,13 @@ ENV SETUPTOOLS_SCM_PRETEND_VERSION_FOR_ETH_APE=${APE_VERSION}
 COPY src src
 
 # Install Ape using pre-installed dependencies
-# NOTE: --compile-bytecode improves load speed of dependencies
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen --no-editable --compile-bytecode
+    uv sync \
+        --no-managed-python \
+        --no-dev \
+        --frozen \
+        --no-editable \
+        --compile-bytecode
 
 # Stage 2: Slim image (ape core only)
 
@@ -68,7 +83,13 @@ FROM slim-builder AS full-builder
 
 # Install recommended plugins
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen --no-editable --compile-bytecode --extra recommended-plugins
+    uv sync \
+        --no-managed-python \
+        --no-dev \
+        --frozen \
+        --no-editable \
+        --compile-bytecode \
+        --extra recommended-plugins
 
 # Stage 4: Full image (slim with recommended plugins from full-builder)
 
