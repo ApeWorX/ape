@@ -97,7 +97,7 @@ FROM slim AS full
 
 # Install anvil (for the Foundry plugin to be useful)
 # NOTE: Adds 33MB to build
-COPY --from=ghcr.io/foundry-rs/foundry:latest \
+COPY --from=ghcr.io/foundry-rs/foundry:stable \
     /usr/local/bin/anvil /home/harambe/.local/bin/anvil
 
 COPY --from=full-builder --chown=harambe:harambe \
