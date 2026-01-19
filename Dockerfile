@@ -58,6 +58,7 @@ FROM python:${PYTHON_VERSION}-slim AS slim
 # NOTE: Add a bespoke user to run commands with
 RUN useradd --create-home --shell /bin/bash harambe
 WORKDIR /home/harambe/project
+RUN chown harambe:harambe .
 
 COPY --from=slim-builder --chown=harambe:harambe \
     /home/harambe/project/.venv /home/harambe/project/.venv
