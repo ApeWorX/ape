@@ -354,7 +354,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
             raise TypeError(
                 "contract argument must be a ContractContainer type, "
                 "such as 'project.MyContract' where 'MyContract' is the name of "
-                "a contract in your project."
+                f"a contract in your project. Got type={type(contract)}"
             )
 
         bytecode = contract.contract_type.deployment_bytecode
