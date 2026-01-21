@@ -9,6 +9,7 @@ class TestModifier(str, Enum):
     These will be automatically parsed into `ContractTestModule.modifiers`
     and `BaseContractTest.modifiers`, for use in modifying test handling.
     """
+
     # Test result checking modifiers
     CHECK_REVERTS = "custom:ape-check-reverts"
     CHECK_EMITS = "custom:ape-check-emits"

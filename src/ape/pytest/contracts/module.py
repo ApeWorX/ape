@@ -12,7 +12,6 @@ if TYPE_CHECKING:
     from ethpm_types import ContractType
     from ethpm_types.abi import MethodABI
 
-
     from .base import BaseTestItem
 
 

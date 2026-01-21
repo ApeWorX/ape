@@ -8,6 +8,7 @@ from ape.exceptions import ConfigError
 if TYPE_CHECKING:
     from pytest import Collector
 
+
 def pytest_addoption(parser):
     def add_option(*names, **kwargs):
         try:
