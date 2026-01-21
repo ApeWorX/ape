@@ -924,11 +924,12 @@ class ChainManager(BaseManager):
                 receipt = contract.fooBar(sender=owner)
         """
 
-        snapshot = None
         try:
             snapshot = self.snapshot()
         except APINotImplementedError:
-            logger.warning("Provider does not support snapshotting.")
+            logger.error("Failed to create snapsho: Provider does not support snapshotting.")
+            snapshot = None
+
         pending = self.pending_timestamp
 
         start_ecosystem_name = self.provider.network.ecosystem.name
@@ -937,30 +938,31 @@ class ChainManager(BaseManager):
 
         try:
             yield
-        finally:
-            if snapshot is None:
-                logger.error("Failed to create snapshot.")
-                return
+        except Exception:
+            pass  # NOTE: Handle cleanup after any exceptions in yielded context
 
-            end_ecosystem_name = self.provider.network.ecosystem.name
-            end_network_name = self.provider.network.name
-            end_provider_name = self.provider.name
+        if snapshot is None:
+            return
 
-            if (
-                start_ecosystem_name != end_ecosystem_name
-                or start_network_name != end_network_name
-                or start_provider_name != end_provider_name
-            ):
-                logger.warning("Provider changed before isolation completed.")
-                return
+        end_ecosystem_name = self.provider.network.ecosystem.name
+        end_network_name = self.provider.network.name
+        end_provider_name = self.provider.name
 
-            self.chain_manager.restore(snapshot)
+        if (
+            start_ecosystem_name != end_ecosystem_name
+            or start_network_name != end_network_name
+            or start_provider_name != end_provider_name
+        ):
+            logger.warning("Provider changed before isolation completed.")
+            return
 
-            try:
-                self.pending_timestamp = pending
-            except APINotImplementedError:
-                # Provider does not support time travel.
-                pass
+        self.chain_manager.restore(snapshot)
+
+        try:
+            self.pending_timestamp = pending
+        except APINotImplementedError:
+            # Provider does not support time travel.
+            pass
 
     def mine(
         self,
