@@ -1,7 +1,12 @@
 import sys
 from pathlib import Path
+from typing import TYPE_CHECKING
+
 
 from ape.exceptions import ConfigError
+
+if TYPE_CHECKING:
+    from pytest import Collector
 
 
 def pytest_addoption(parser):
@@ -116,3 +121,23 @@ def pytest_configure(config):
     config.addinivalue_line(
         "markers", "use_network(choice): Run this test using the given network choice."
     )
+
+
+# NOTE: Below is done to support contract-based compiled tests
+def pytest_collect_file(parent, file_path) -> "Collector | None":
+    # NOTE: Skip common files we know should not be used with this collector
+    if file_path.suffix in (".py", ".md", ".json"):
+        return None
+
+    # NOTE: Avoid capturing "foundry tests", which follow a paradigm of `.t.sol`
+    elif len(file_path.suffixes) != 1:
+        return None
+
+    # NOTE: All "contract tests" must match `test*.ext`,
+    #       where `.ext` is supported by a registered compiler
+    elif not file_path.name.startswith("test"):
+        return None
+
+    from .contracts.collector import ContractTestCollector
+
+    return ContractTestCollector.from_parent(parent, path=file_path)
