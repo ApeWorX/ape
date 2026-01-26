@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING, Any
 
+from hypothesis import Phase
 import pytest
 from _pytest.fixtures import TopRequest
 
@@ -56,7 +57,11 @@ class BaseTestItem(pytest.Item, ManagerAccessMixin):
 
     @property
     def hypothesis_settings(self) -> "HypothesisSettings":
-        settings_kwargs: dict = {}
+        settings_kwargs: dict = {
+            # TODO: This really doesn't work well with shrinking, try to make it?
+            #       (runs a *lot* faster without shrinking)
+            "phases": [Phase.explicit, Phase.reuse, Phase.generate],
+        }
 
         if max_examples := self.modifiers.get(TestModifier.FUZZ_MAX_EXAMPLES):
             settings_kwargs["max_examples"] = max_examples
@@ -118,7 +123,7 @@ class BaseTestItem(pytest.Item, ManagerAccessMixin):
         elif abi_type.name == "executor":
             return self.executor
 
-        elif fixture_value := self.get_fixture_value(abi_type.name):
+        elif (fixture_value := self.get_fixture_value(abi_type.name)) is not None:
             return fixture_value
 
         # NOTE: Returning a Hypothesis strategy automatically converts to a fuzz tests
