@@ -2,8 +2,9 @@ from collections.abc import Callable
 from types import new_class
 from typing import TYPE_CHECKING, Any
 
+
+from ape.contracts.base import ContractInstance
 from ape.utils import cached_property
-from eth_abi.tools import get_abi_strategy
 from hypothesis import strategies as st
 from hypothesis.stateful import (
     Bundle,
@@ -16,6 +17,7 @@ from hypothesis.stateful import (
     rule,
     run_state_machine_as_test,
 )
+
 
 from .base import BaseTestItem
 from .types import TestModifier
@@ -79,14 +81,34 @@ class StatefulTestItem(BaseTestItem):
 
         return bundle_names
 
-    def call_method(self, abi: "MethodABI") -> Callable:
-        if abi.stateMutability == "nonpayable":
+    def get_call_args(self, abi: "MethodABI") -> dict:
+        call_args = {}
 
-            def wrapped_method(_: RuleBasedStateMachine, **kwargs):
+        for ipt in abi.inputs:
+            if ipt.name in self.bundles:
+                call_args[ipt.name] = None  # Placeholder for `rule`
+
+            elif isinstance(value := self.get_value(ipt), st.SearchStrategy):
+                call_args[ipt.name] = None  # Placeholder for `rule`
+
+            else:
+                call_args[ipt.name] = value
+
+        return call_args
+
+    def call_method(self, abi: "MethodABI") -> Callable:
+        call_args = self.get_call_args(abi)
+
+        if abi.stateMutability == "nonpayable":  # (e.g. `initializes`, `rule`)
+            # NOTE: This is passed through to another class instance, `self` is treated differently
+            def wrapped_method(self: RuleBasedStateMachine, **kwargs):
                 method = self.instance._mutable_methods_[abi.name]
-                # TODO: Do we do proper lookup by name for value location?
+
+                # NOTE: Maintain proper ordering from `call_args`
+                args = {k: kwargs.get(k, v) for k, v in call_args.items()}
+
                 # TODO: How to handle providing other txn_kwargs like `value=`?
-                receipt = method(*kwargs.values(), sender=self.executor)
+                receipt = method(*args.values(), sender=self.executor)
 
                 if isinstance(result := receipt.return_value, list):
                     return multiple(*result)
@@ -95,10 +117,14 @@ class StatefulTestItem(BaseTestItem):
                 return result or None
 
         else:  # view/pure (e.g. `invariant`)
-
-            def wrapped_method(_: RuleBasedStateMachine, **kwargs):
+            # NOTE: This is passed through to another class instance, `self` is treated differently
+            def wrapped_method(self: RuleBasedStateMachine, **kwargs):
                 method = self.instance._view_methods_[abi.name]
-                if isinstance(result := method(*kwargs.values()), list):
+
+                # NOTE: Maintain proper ordering from `call_args`
+                args = {k: kwargs.get(k, v) for k, v in call_args.items()}
+
+                if isinstance(result := method(*args.values()), list):
                     return multiple(*result)
 
                 # NOTE: Avoid returning empty tuple, when `None` expected
@@ -113,8 +139,9 @@ class StatefulTestItem(BaseTestItem):
         for abi in self.contract_type.mutable_methods:
             if abi.name.startswith("initialize"):
                 if (target := self.get_target(abi)) is None:
+                    loc = f"{self.path}:{self.contract_type.name}.{abi.name}"
                     raise AssertionError(
-                        f"'{self.path}:{abi.name}' needs to target a bundle w/ `@custom:ape-stateful-targets`"
+                        f"'{loc}' needs to target a bundle using `@custom:ape-stateful-targets`"
                     )
 
                 initializers[abi.name] = initialize(target=target)(self.call_method(abi))
@@ -123,27 +150,32 @@ class StatefulTestItem(BaseTestItem):
 
     @cached_property
     def rules(self) -> dict[str, Rule]:
-        # TODO: Support preconditions?
         rules: dict[str, Rule] = {}
         for abi in self.contract_type.mutable_methods:
             if abi.name.startswith("rule"):
                 decorator_args = {}
+
+                if (target := self.get_target(abi)) is not None:
+                    decorator_args["target"] = target
+
                 for ipt in abi.inputs:
                     if (bundle := self.bundles.get(ipt.name)) is not None:
                         if ipt.name in self.consumes(abi):
                             bundle = consumes(bundle)
 
                         if "[" in ipt.canonical_type:
-                            # TODO: Figure out how to specify max array size for vyper
+                            # TODO: Figure out if static or dynamic array?
+                            # TODO: Figure out how to specify max array size for vyper?
                             bundle = st.lists(bundle, max_size=10)
 
                         decorator_args[ipt.name] = bundle
 
-                    else:
-                        decorator_args[ipt.name] = get_abi_strategy(ipt.canonical_type)
+                    elif isinstance(strategy := self.get_value(ipt), st.SearchStrategy):
+                        decorator_args[ipt.name] = strategy
 
-                if (target := self.get_target(abi)) is not None:
-                    decorator_args["target"] = target
+                    # else: else we don't want add a non-strategy to the decorator
+
+                    # TODO: Support preconditions?
 
                 rules[abi.name] = rule(**decorator_args)(self.call_method(abi))
 
@@ -160,6 +192,24 @@ class StatefulTestItem(BaseTestItem):
 
     @cached_property
     def state_machine(self) -> type[RuleBasedStateMachine]:
+        chain_manager = self.chain_manager
+
+        class StatefulTestCase(RuleBasedStateMachine):
+            # Necessary **read-only** attributes for our test to use
+            contract_type = self.contract_type
+            executor = self.executor
+
+            @cached_property
+            def instance(self) -> "ContractInstance":
+                if hasattr(instance := self.executor.deploy(self.contract_type), "setUp"):
+                    instance.setUp(sender=self.executor)
+
+                self.snapshot = chain_manager.snapshot()
+                return instance
+
+            def teardown(self):
+                chain_manager.restore(self.snapshot)
+
         def add_fields(ns):
             ns.update(self.bundles)
             ns.update(self.initializers)
@@ -168,7 +218,7 @@ class StatefulTestItem(BaseTestItem):
 
         return new_class(
             self.name,
-            (RuleBasedStateMachine,),
+            (StatefulTestCase, RuleBasedStateMachine),
             exec_body=add_fields,
         )
 
