@@ -11,9 +11,13 @@ from .types import TestModifier
 from .base import BaseTestItem
 
 if TYPE_CHECKING:
-    from ethpm_types.abi import MethodABI, ABIType
+    from ethpm_types.abi import ABIType
 
-    from ape.contracts import ContractMethodHandler
+    from ape.api.accounts import TestAccountAPI
+    from ape.contracts import ContractInstance
+    from ethpm_types.abi import MethodABI
+
+    from ape.contracts.base import ContractTransactionHandler
 
 
 class ContractTestItem(BaseTestItem):
@@ -30,8 +34,49 @@ class ContractTestItem(BaseTestItem):
         self.parametrized_args = parametrized_args or {}
 
     @cached_property
-    def method(self) -> "ContractMethodHandler":
-        return getattr(self.instance, self.abi.name)
+    def executor(self) -> "TestAccountAPI":
+        return self.load_executor(self.modifiers.get(TestModifier.TEST_EXECUTOR))
+
+    @property
+    def contract(self) -> "ContractInstance":
+        return self.chain_manager.contracts.instance_at(
+            self.executor.address,
+            contract_type=self.contract_type,
+        )
+
+    @property
+    def call_context(self) -> dict:
+        return {
+            "msg": type(
+                "Msg",
+                (object,),
+                {"sender": self.executor},
+            ),
+        }
+
+    @property
+    def method(self) -> "ContractTransactionHandler":
+        return getattr(self.contract, self.abi.name)
+
+    def execute_test(self, *call_args):
+        assert self.executor.delegate == self.delegate, "Why does this not raise when it should?"
+
+        # TODO: Control snapshot of start via `TestModifier.TEST_AFTER`?
+        with self.chain_manager.isolate():
+            if raw_revert_msg := self.modifiers.get(TestModifier.CHECK_REVERTS):
+                reverts_message = self.eval_arg(raw_revert_msg)
+                with RevertsContextManager(reverts_message):
+                    self.method(*call_args, sender=self.executor)
+
+            else:
+                # NOTE: Let revert bubble up naturally
+                receipt = self.method(*call_args, sender=self.executor)
+
+                if raw_event_logs := self.modifiers.get(TestModifier.CHECK_EMITS):
+                    expected_events = list(map(self.eval_arg, raw_event_logs))
+                    assert receipt.events == expected_events
+
+                # TODO: Test reporting functionality?
 
     def get_value(self, abi_type: "ABIType") -> Any:
         # NOTE: Overrides BaseTestItem impl to also check parametrized case args
@@ -55,36 +100,18 @@ class ContractTestItem(BaseTestItem):
         return eval(raw_arg, self.call_context, self.call_args)
 
     def runtest(self):
+        """Collect call args and execute test. Convert to fuzz test if applicable."""
+
         given_args: dict[str, SearchStrategy] = {}
-        for arg_name in (call_args := self.call_args):
-            if isinstance(arg := call_args[arg_name], SearchStrategy):
+        for arg_name, arg in self.call_args.items():
+            if isinstance(arg, SearchStrategy):
                 given_args[arg_name] = arg
-                call_args[arg_name] = None  # NOTE: Placeholder for later update
 
         def test_case(**kwargs):
-            # NOTE: We need to retain ordering using the original dict
-            args = {k: v if v is not None else kwargs[k] for k, v in call_args.items()}
-
-            if raw_revert_msg := self.modifiers.get(TestModifier.CHECK_REVERTS):
-                reverts_message = self.eval_arg(raw_revert_msg)
-                with RevertsContextManager(reverts_message):
-                    self.method(
-                        *args.values(),
-                        sender=self.executor,
-                    )
-
-            else:
-                # NOTE: Let revert bubble up naturally
-                receipt = self.method(
-                    *args.values(),
-                    sender=self.executor,
-                )
-
-                if raw_event_logs := self.modifiers.get(TestModifier.CHECK_EMITS):
-                    expected_events = list(map(self.eval_arg, raw_event_logs))
-                    assert receipt.events == expected_events
-
-                # TODO: Test reporting functionality?
+            # NOTE: Retain ordering from original call args,
+            #       but update SearchStrategy for concrete example
+            args = {k: kwargs.get(k, v) for k, v in self.call_args.items()}
+            self.execute_test(*args.values())
 
         if given_args:
             # NOTE: Re-write as a fuzzing case (leveraging Hypothesis integration)

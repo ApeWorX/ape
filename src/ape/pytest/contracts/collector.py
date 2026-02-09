@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 
 
 class ContractTestCollector(pytest.File, ManagerAccessMixin):
-    """Collect 1 (or more) Contract Tests from compiling file with a supported compiler."""
+    """Collect Contract Type(s) into Module(s) from compiling file with a supported compiler."""
 
     # TODO: `.compile_settings -> dict` to add test-only remappings
     # TODO: Add `.local_project` to compiler settings
@@ -25,13 +25,15 @@ class ContractTestCollector(pytest.File, ManagerAccessMixin):
 
         from .module import ContractTestModule
 
-        for contract_type in compiler.compile(
-            [self.path],
-            # TODO: Use `settings=self.compile_settings` for test-only compile settings?
-            #       Allows configuring extra test-only deps (e.g. `from ape.test import VM`)
-        ):
-            yield ContractTestModule.from_parent(
-                self,
-                name=contract_type.name,
-                contract_type=contract_type,
-            )
+        with self.chain_manager.contracts.use_temporary_caches():
+            for contract_type in compiler.compile(
+                [self.path],
+                # TODO: Use `settings=self.compile_settings` for test-only compile settings?
+                #       Allows configuring extra test-only deps (e.g. `from ape.project import IContract`)
+            ):
+                # TODO: Migrate Stateful testing detection here? Might make more sense
+                yield ContractTestModule.from_parent(
+                    self,
+                    name=contract_type.name,
+                    contract_type=contract_type,
+                )

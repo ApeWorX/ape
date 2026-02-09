@@ -22,11 +22,11 @@ class ContractTestModule(pytest.Collector, ManagerAccessMixin):
 
     @cached_property
     def contract_modifiers(self) -> dict[TestModifier, Any]:
-        return TestModifier.parse_modifier_args(self.contract_type.devdoc)
+        return TestModifier.parse_modifier_args(self.contract_type.devdoc or {})
 
     def get_method_modifiers(self, abi: "MethodABI") -> dict[TestModifier, Any]:
         modifiers = TestModifier.parse_modifier_args(
-            self.contract_type.devdoc.get("methods", {}).get(abi.selector, {})
+            (self.contract_type.devdoc or {}).get("methods", {}).get(abi.selector, {})
         )
         # NOTE: Cascade such that method-level overrides contract-level
         modifiers.update({k: v for k, v in self.contract_modifiers.items() if k not in modifiers})
@@ -60,7 +60,7 @@ class ContractTestModule(pytest.Collector, ManagerAccessMixin):
                         parametrized_str = "-".join(map(str, case_args))
                         yield ContractTestItem.from_parent(
                             self,
-                            name=f"{self.name}.{abi.name}[{parametrized_str}]",
+                            name=f"{abi.name}[{parametrized_str}]",
                             contract_type=self.contract_type,
                             modifiers=modifiers,
                             parametrized_args=dict(
@@ -72,7 +72,7 @@ class ContractTestModule(pytest.Collector, ManagerAccessMixin):
                 else:
                     yield ContractTestItem.from_parent(
                         self,
-                        name=f"{self.name}.{abi.name}",
+                        name=abi.name,
                         contract_type=self.contract_type,
                         modifiers=modifiers,
                         abi=abi,

@@ -1,3 +1,4 @@
+from datetime import datetime
 from enum import Enum
 from typing import Any
 
@@ -9,6 +10,12 @@ class TestModifier(str, Enum):
     These will be automatically parsed into `ContractTestModule.modifiers`
     and `BaseContractTest.modifiers`, for use in modifying test handling.
     """
+
+    # Test execution modifiers
+    TEST_AFTER = "custom:ape-test-after"
+    TEST_EXECUTOR = "custom:ape-test-executor"
+    TEST_STARTS_AT = "custom:ape-test-starts-at"
+    TEST_BLOCK_HEIGHT = "custom:ape-test-block-height"
 
     # Test result checking modifiers
     CHECK_REVERTS = "custom:ape-check-reverts"
@@ -83,6 +90,19 @@ class TestModifier(str, Enum):
 
     def parse_args(self, args: str) -> Any:
         match self:
+            case TestModifier.TEST_AFTER:
+                return args  # Should be a test's name
+
+            case TestModifier.TEST_EXECUTOR:
+                return args  # Should resolve to an address
+
+            case TestModifier.TEST_STARTS_AT:
+                # TODO: Support timedelta? timestamp?
+                return datetime.fromisoformat(args)
+
+            case TestModifier.TEST_BLOCK_HEIGHT:
+                return int(args)
+
             case TestModifier.CHECK_REVERTS:
                 return args
 
