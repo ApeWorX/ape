@@ -12,10 +12,10 @@ In order to write a smart contract test that will execute using our ape test run
 that follow a specific naming convention:
 
 ```
-{config.test_folder}/
+tests/  # ...or value of `[tool.ape.test_folder]` e.g. `test/`
   .../  # NOTE: Can have any amount of subfolders in an Ape test suite
-    test*{.ext}
-    # `.ext` must be registered by supported compiler in your installed plugins
+    test*.ext
+    ... # NOTE: Can have as many Contract Tests as you'd like
 ```
 
 ```{important}
@@ -67,19 +67,52 @@ such as [cheatcodes](https://getfoundry.sh/forge/tests/cheatcodes).
 
 Note that you will have to [configure any dependencies](../config.html#dependencies)
 in your project's config first.
-Also note that certain features (such as `forge-std`'s cheatcodes) will **only** work
-on a supported node plugin (e.g. `anvil` w/ [`ape-foundry`](https://github.com/ApeWorX/ape-foundry)).
 
 Ape's contract test feature only makes miminal assumptions on how you write your tests,
 and doesn't impose a particular plugin configuration to function.
 ```
 
-### Pre-test Setup
+### Test Lifcycle
 
-If your contract test module contains the special function `setUp`,
-the test will be executed from a snapshot after deployment **that includes executing `setUp`**.
-This mimics the same behavior from foundry where the initial state of a test starts after `setUp`.
-However note that due to the snapshotting behavior, this feature is slightly more performant.
+Ape becomes aware of Contract Tests during test collection by compiling all test files first.
+If there is an error during compilation, it will raise that as a collection error,
+and show you the bug in your contract which you must fix in order to execute **any** test(s).
+Depending on the style of test (Functional or Stateful),
+it will have slightly different handling after it is compiled.
+
+Tests are then analyzed to check for modifiers that affect how they might execute.
+If a modifier exists that modifies the test setup, those settings are modified prior to executing.
+After that, the testing harness is setup to execute the test, using the compiled contract type.
+If a test is a Functional Test (has `test*` methods), then there will be one harness per method.
+
+What happens next is that the contracts are not actually deployed into the test environment!
+The test's code is actually executed (by the `test-executor`) **under it's own account**.
+We make use of Ape's [delegate feature](./accounts.html#signing-authorizations-eip-7702)
+in order to have a test account "execute" the commands in the test via native delegatecall.
+All contract method invocations are performed actually performed **directly by this account**,
+and if any reverts occur during those invocations it will raise a test failure.
+
+Lastly, tests with post-execution checks will have their side effects analyzed to see if they pass.
+When these phases are all complete, then we pass over these results to pytest's reporting system.
+The collection of all test reports gets reported like normal to your terminal screen.
+
+```{caution}
+Due to the use of delegated execution, storage modifications in constructors will be ignored.
+If you you wish to mimic the use of Foundry's special `setUp` method for shared test setup,
+instead consider using [fixtures](#accessing-fixtures-from-ape) as they are better for this use case.
+
+While tests **can** have shared state, please keep in mind that chain snapshotting will affect the
+state of your tests in very unpredictible ways.
+It is much easier just to use [fixtures](#accessing-fixtures-from-ape).
+```
+
+```{important}
+Contract tests **do not** have a `vm.prank` equivalent which allows
+switching execution context during a test.
+However, through the use of snapshot control and the `test-executor` modifier,
+it is possible to obtain the same result by spliting up test sections
+into multiple tests that execute in a specific order.
+```
 
 ### Accessing Fixtures from Ape
 
@@ -170,14 +203,14 @@ _Used to check for specific **side effects** of running the test._
   ```
 
   ```{note}
-  `{expected error}` **MUST** be a string literal (like in our example), hex bytesvalue,
-  or it should `eval` in test context to a custom error type e.g. `my_contract.CustomError()`.
+  `{expected error}` **MUST** be a string literal (like in our example), bytes value (in hex),
+  or it should `eval` in test context to a custom error type e.g. `my_contract.CustomError(arg=...)`.
   ```
 
 - `@custom:ape-check-emits {expected logs...}`
 
-  Check that after the test _succeeds_, the exact set of event logs in (the `eval` of)
-  `{expected logs...}` is emitted from running the test (must match **all** emitted logs).
+  Check that after the test _succeeds_, the set of event logs emitted during the entire test case
+  matches **all** of the logs in (the `eval` of) `{expected logs...}`.
 
   Example:
 
@@ -200,11 +233,12 @@ _Used to check for specific **side effects** of running the test._
   ```
 
   ```{caution}
-  Each case **MUST** use the `-` character prepended to the case to separate them.
+  Each log item **MUST** use the `-` character prepended to the item in order to separate them.
   ```
 
   ```{note}
-  Similar to Ape, we can omit arguments in the mock log objects and it will match any value.
+  Similar to normal Ape usage, we can omit arguments in the log object comparisons and it will
+  fuzzy-match any value that the real log may have.
   ```
 
 #### Test Harness Setup
@@ -261,7 +295,7 @@ _Configures the runner for [Property Testing](#property-testing)_
   ```
 
   ```{note}
-  `max_examples` is similar to the `runs` configuration settings from Foundry.
+  `fuzzer-max-examples` is similar to the `runs` configuration settings from Foundry.
   ```
 
 - `@custom:ape-fuzzer-deadline {milliseconds}`
@@ -284,7 +318,7 @@ _Configures the runner for [Stateful Testing](#stateful-testing)_
   ```
 
   ```{note}
-  `max_examples` is similar to the `depth` configuration settings from Foundry.
+  `stateful-step-count` is similar to the `depth` configuration settings from Foundry.
   ```
 
 - `@custom:ape-stateful-bundles <space separated bundle names>`
@@ -299,12 +333,12 @@ _Configures the runner for [Stateful Testing](#stateful-testing)_
   contract StatefulTest {
       // ...
 
-      function rule_use_bundle_item(item_id: uint256) external {
+      function rule_use_bundle_item(uint256 item_id) external {
           // Do something with `item_id`...
       }
 
       // NOTE: When the Bundle name is an array of items, it pulls multiple
-      function rule_use_bundle_item(item_id: uint256[]) external {
+      function rule_use_bundle_item(uint256[] item_id) external {
           // Do something with each `item_id`...
       }
 
@@ -319,15 +353,15 @@ _Configures the runner for [Stateful Testing](#stateful-testing)_
 
 - `@custom:ape-stateful-targets <bundle name>`
 
-  The Bundle to add the return value(s) of the resulting `rule` or `initialize` method,
-  to be accessed by subsequent `rule` invocations when the Bundle is used as an argument.
+  Adds the return value(s) from invoking the associated `rule` or `initialize` method to the given
+  Bundle, to be accessed by subsequent `rule` invocations when the Bundle is used as an argument.
 
   To push values into a Bundle, do:
 
   ```solidity
   /// @custom:ape-stateful-bundles item_id
   contract StatefulTest {
-      // NOTE: When return value is an array of items, it pushes multiple items into the bundle
+      // NOTE: Arrays push multiple items into Bundle `item_id`
       /// @custom:ape-stateful-targets item_id
       function initialize_bundle_item() external returns (uint256[2]) {
           // Adds `1` and `2` to the Bundle `item_id`, only once at start of test
@@ -351,8 +385,8 @@ _Configures the runner for [Stateful Testing](#stateful-testing)_
 
 - `@custom:ape-stateful-consumes <bundle name>`
 
-  Whether the Bundle argument should "consume" the value (e.g. remove the value from the Bundle),
-  when accessed by a `rule` invocation with that Bundle as an argument.
+  If invoking the` rule` should "consume" the value (e.g. remove the value from the Bundle),
+  when accessing the Bundle via argument name.
 
   To consume values from a Bundle, do:
 
@@ -361,7 +395,7 @@ _Configures the runner for [Stateful Testing](#stateful-testing)_
   contract StatefulTest {
       // ...
 
-      // NOTE: The uint256 value is removed from `item_id` after executing this rule
+      // NOTE: The value is removed from `item_id` after executing this rule
       /// @custom:ape-stateful-targets item_id
       function rule_use_bundle_item(uint256 item_id) external {
           // ...
@@ -381,42 +415,36 @@ _Configures the runner for [Stateful Testing](#stateful-testing)_
 "Property Tests" (also known as "Fuzz Tests" in Foundry) are tests that for the most part look like
 normal tests, except that there are extra argument(s) given which do not match a known fixture (or
 args in the `parametrizes` modifier). The presence of these extra argument(s) turn the single test
-invocation in a series of invocations (configured by the `max_examples`
+invocation into a series of invocations (configured by the `fuzzer-max-examples`
 [Property Test modifier](#property-test-settings)) where the value for each extra argument is
-pulled at random from a "Strategy", which describes the range of all possible values that type can
-have.
+pulled at random from a "Strategy", which describes the range of all possible values that argument
+can have.
 
 This adds an extra dimension to your testing, and often finds less obvious errors and bugs in your code,
 so it is a good recommendation to add this to your project.
 For example, say you have a "normal" contract test that looks like the following:
 
 ```solidity
-function test_minting_works(
-    IERC20 token, address executor
-) external {
-    // NOTE: `executor` is the account executing our test
-    //       (by default, same as `msg.sender`)
-    require(token.balanceOf(executor) == 0);
+function test_minting_works(IERC20 token) external {
+    // NOTE: `address(this)` is actually the account executing our test
+    require(token.balanceOf(address(this)) == 0);
 
-    // NOTE: The default "sender" for a mutable call is actually the test itself!
-    //       (without using `vm.prank` mocking to impersonate a different account)
-    token.mint(executor, 1000)
-    require(token.balanceOf(executor) == 1000);
+    // NOTE: The "sender" for a mutable call is actually the test itself!
+    token.mint(address(this), 1000)
+    require(token.balanceOf(address(this)) == 1000);
 }
 ```
 
 This test case demonstrates that a specific scenario works,
-minting 1000 tokens to the `executor` address fixture leads to that account's balance increasing by 1000 tokens.
+minting 1000 tokens to the test's address, increasing it's balance by 1000 tokens.
 
-To rewrite this as a Property Test, we would change `executor` to a new `address` variable named `acct`
-(which doesn't match a fixture in our test suite),
-and then add a parameter `amt` that will randomize the amount of tokens minted to `acct`.
+To rewrite this as a Property Test, we can add a new `address` argument named `acct`
+(which doesn't match another fixture in our test suite),
+and then add another argument `amt` that will randomize the amount of tokens minted to `acct`.
+
 Our new Property Test would look like:
 
 ```
-// NOTE: This modifier is not necessary to make it a Property Test, but
-//       it is often useful to control the number of examples per test.
-/// @custom:ape-fuzzer-max-examples 100
 function test_minting_works(
     IERC20 token, address acct, uint256 amt
 ) external {
@@ -429,11 +457,11 @@ function test_minting_works(
 
 Invoking this test might find an example where `acct` is not an allowed target for `token.mint`,
 or `amt` is not an allowed amount of tokens to issue to `acct`.
-This is kind of a contrived example, so it may yield pretty unexepected results,
-however thanks to the power of Hypothesis and fixtures in Ape's Contract Testing feature,
-we can actually **control the Strategy** of the values that we pull from (for `acct` and `amt`).
+But this is kind of a contrived example, so we are probably not going to find interesting results.
+However, thanks to the power of Hypothesis and fixtures in Ape's Contract Testing feature,
+we can actually **control the Strategy** of the values that we pull in our test (for `acct` and `amt`).
 
-Let use a fixture to define some custom strategies in our `conftest.py` for these variable names:
+Let use a fixture to define some _custom strategies_ in our `conftest.py` for these variable names:
 
 ```py
 from eth_abi.tools import get_abi_strategy
@@ -441,34 +469,40 @@ from hypothesis import strategies as st
 
 
 @pytest.fixture(scope="session")
+def investors():
+    # NOTE: Our list of investors with balances at TGE
+    return ["0x...", ...]
+
+
+@pytest.fixture(scope="session")
 def acct(investors):
-    # NOTE: Only get addresses that are **NOT** investors
+    # Filter out addresses that are **NOT** investors
     return get_abi_strategy("address").filter(lambda a: a not in investors)
 
 
 @pytest.fixture(scope="session")
-def amt(TOTAL_SUPPLY):
-    # NOTE: Only select values for `amt` in test case,
-    #       from the range `[0, TOTAL_SUPPLY]`
-    return st.integers(min_value=0, max_value=TOTAL_SUPPLY)
+def amt():
+    # Only select values from the range `(0, MAX_SUPPLY]`
+    return st.integers(min_value=1, max_value=MAX_SUPPLY)
 ```
 
 This can **drastically improve** the effectiveness of your Property Tests, as you can create
-complex custom strategies that will find more relevant input scenarios more quickly!
+complex custom strategies that will find more relevant input scenarios much more quickly!
 
 _See [Adapting Strategies](https://hypothesis.readthedocs.io/en/latest/tutorial/adapting-strategies.html)
 and [Custom Strategies](https://hypothesis.readthedocs.io/en/latest/tutorial/custom-strategies.html) from
 to learn more about strategies customization._
 
 ```{important}
-Defining custom fuzzer strategies is more performant than the use of `vm.assume` cheatcode.
-Because strategies define **the range of valid inputs** to pull from, they don't have to "reject"
-invalid inputs that you wish to skip, because they are **never generated** in the first place!
+Defining custom fuzzer strategies is **much** more performant than the use of `vm.assume` cheatcode.
+Because strategies define **the range of possible values** to select from, they don't have to "reject"
+invalid values that you wish to skip, because those values are **never generated** in the first place!
 ```
 
 ```{note}
 Hypothesis comes out of the box with support for "coverage expansion" behavior,
 similar to Foundry's "coverage-guided fuzzing" concept.
+
 Hypothesis's backend (which is [configurable](https://hypothesis.readthedocs.io/en/latest/extensions.html#alternative-backends)
 for different scenarios like longer-term testing, SMT solving, etc.) will try and maximize the "coverage" of tests
 (Property or Stateful) by picking new, unique inputs every time the test is executed.
@@ -482,42 +516,41 @@ and let the selection of the appropiate "value distributions" be up to Hypothesi
 ### Stateful Testing
 
 ```{important}
-Any "normal" tests (functions that start with `test`) in the test module will prevent registering
-the module as a Stateful Test.
+Any "normal" tests (functions that start with `test*`) in the test module will be ignored when
+the contract is registered as a Stateful Test.
 
-The stateful test runner will **only** register a Stateful Test using the following `external` /
+The stateful test runner will register a contract as Stateful Test using the following `external` /
 `public` methods with the below naming conventions (and associated state mutability):
 
-| function prefix |      state mutability     |
-| :-------------: | :-----------------------: |
-|   `initialize`  |   `nonpayable` (default)  |
-|      `rule`     |   `nonpayable` (default)  |
-|   `invariant`   |       `view` / `pure`     |
+| function prefix |      state mutability     | # required |
+| :-------------: | :-----------------------: | :--------: |
+|   `initialize`  |   `nonpayable` (default)  |    none    |
+|      `rule`     |   `nonpayable` (default)  | at least 1 |
+|   `invariant`   |       `view` / `pure`     |    none    |
 ```
 
 Sometimes, you have tests that require testing even more complex or interdependent behavior than
 Property tests allow. Stateful Testing (also known as Invariant Testing) allows the generation of
 complex scenarios where a randomized sequence of calls to different "rules" (functions that start
 with `rule*`), each with potentially random arguments selected to be called with, can potentially
-trigger more state-dependent logic than otherwise would get triggered by a single invocation by a
-Property Test case.
+trigger more state-dependent logic than otherwise would get triggered in a Property Test case.
 
-However, this requires a more complicated setup where a full test file is required to describe all
+However, this requires a more complicated setup where a full contract gets used to describe all
 of the possibilities and rules for the test. For example, let's say we have a scenario where we
 want to test the transfer logic of a token. We might want to explore what happens when we allow
 different token holders to transfer tokens to each other. But to do that, we need a way to
 introduce the concept of being a "holder" to our test, because if we just let the runner pick an
-address at random (using the basic `address` Strategy) then the likelihood of selecting a holder
-becomes astronomically small, leading to ineffective tests!
+address at random (using the basic `address` Strategy) then the likelihood of selecting an actual
+"holder" (from all possible addresses) becomes astronomically small, leading to an ineffective test!
 
 #### Bundles
 
 Thankfully, Hypothesis's Stateful Test feature has the concept of "Bundles", which are buckets of
-items that we can use in our Stateful Test as a strategy to select values from that matter to our
+items that we can use in our Stateful Test as a Strategy to select values from which matter in our
 test. In this case, we want our `holder` Bundle to **only** contain addresses that **already** have
 a balance. We can also use "initializers" (functions that start with `initialize*`) to pre-fill
-Bundles so that our tests can start off accessing values from our Bundle which exist at the start
-of the test (due to specific deployment or `setUp` logic).
+Bundles so that our tests immediately start off with values in our Bundle that may exist from the
+start of the test (due to specific deployment arguments of a given fixture, or pre-existing state).
 
 Such a case might look like:
 
@@ -547,23 +580,31 @@ contract TokenTest is Test {
         return initial_holders;
     }
 
+    // NOTE: This rule gets executed as an item from the `holder` Bundle
+    /// @custom:ape-test-executor holder
     // The return value(s) from this function will be added to the `holder` Bundle too
     /// @custom:ape-stateful-targets holder
     function rule_transfer(
-        IERC20 token, address holder, address account, uint256 bips
+        IERC20 token, address account, uint256 bips
     ) external {
         // NOTE: Get a portion of holder's balance by multiplying by our `bips` strategy
         //       (`bips` is a custom strategy, an integer that ranges from 0 to 10,000)
-        uint256 amount = token.balanceOf(holder) * bips / 10000;
+        uint256 amount = token.balanceOf(address(this)) * bips / 10000;
 
         // Send that holder some of our tokens
-        vm.prank(holder);
         token.transfer(account, amount);
 
         // NOTE: Adds `account` to Bundle `holder` (unless already in it)
         return account;
     }
 }
+```
+
+```{important}
+Even in Stateful Tests, it is **not** a good idea to use storage in your tests.
+Rules in tests get executed according in the context of `test-executor`, and if there are multiple
+executors used in a test, there will actually be **multiple copies** of the test contract at once,
+meaning contract storage **only updates** for the specific executor's account that executes the rule.
 ```
 
 Notice at the top, we use the `@custom:ape-stateful-bundles` modifier to create the Bundle
