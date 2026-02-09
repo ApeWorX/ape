@@ -6,16 +6,16 @@ contract BasicTest {
         require(1 + 1 == 2, "We can do tests in solidity!");
     }
 
-    function test_using_fixtures(address[] calldata accounts, address executor) external {
+    function test_using_fixtures(address[] calldata accounts) external {
         for (uint256 idx = 0; idx < accounts.length; idx++) {
             require(accounts[idx].balance >= 10 ** 18);
         }
 
-        require(executor == msg.sender);
+        require(msg.sender == tx.origin && msg.sender == address(this));
 
         bool executor_in_accounts = false;
         for (uint256 idx = 0; idx < accounts.length; idx++) {
-            if (executor == accounts[idx]) {
+            if (msg.sender == accounts[idx]) {
                 executor_in_accounts = true;
                 break;
             }

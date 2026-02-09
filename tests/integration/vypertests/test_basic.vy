@@ -7,7 +7,7 @@ def test_it_works():
 
 
 @external
-def test_using_fixtures(accounts: DynArray[address, 10], executor: address):
+def test_using_fixtures(accounts: DynArray[address, 10]):
     """
     @notice
         Test cases can use args to access Python fixtures from your Ape test suite.
@@ -26,7 +26,7 @@ def test_using_fixtures(accounts: DynArray[address, 10], executor: address):
     for a: address in accounts:
         assert a.balance >= 10 ** 18
 
-    # NOTE: the `executor` fixture is actually the caller of the test
-    assert executor == msg.sender
-    # NOTE: the `executor` fixture is in the `accounts` fixture
-    assert executor in accounts
+    assert msg.sender == self and tx.origin == msg.sender
+
+    # NOTE: executor is in the `accounts` fixture
+    assert self in accounts
