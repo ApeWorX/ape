@@ -11,3 +11,8 @@ def openzeppelin(project):
 @pytest.fixture()
 def token(openzeppelin, accounts):
     return openzeppelin.ERC20Mock.deploy(sender=accounts[-1])
+
+
+@pytest.fixture(scope="session")
+def other(accounts):
+    return accounts[1]

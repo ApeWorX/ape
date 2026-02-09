@@ -10,18 +10,18 @@ contract CheckerTest {
     }
 
     /// @custom:ape-check-emits
-    /// - token.Approval(owner=self, spender=executor, value=100_000)
-    /// - token.Approval(spender=executor, value=10_000)
-    /// - token.Approval(owner=self, spender=executor)
-    /// - token.Approval(owner=self, value=100)
+    /// - token.Approval(owner=msg.sender, spender=other, value=100_000)
+    /// - token.Approval(spender=other, value=10_000)
+    /// - token.Approval(owner=msg.sender, spender=other)
+    /// - token.Approval(owner=msg.sender, value=100)
     /// - token.Approval(value=10)
     /// - token.Approval()
-    function test_emits(IERC20 token, address executor) external {
-        token.approve(executor, 100_000);
-        token.approve(executor, 10_000);
-        token.approve(executor, 1_000);
-        token.approve(executor, 100);
-        token.approve(executor, 10);
-        token.approve(executor, 1);
+    function test_emits(IERC20 token, address other) external {
+        token.approve(other, 100_000);
+        token.approve(other, 10_000);
+        token.approve(other, 1_000);
+        token.approve(other, 100);
+        token.approve(other, 10);
+        token.approve(other, 1);
     }
 }
