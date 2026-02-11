@@ -781,10 +781,10 @@ class Web3Provider(ProviderAPI, ABC):
 
             vm_err = self.get_virtual_machine_error(
                 err,
-                trace=lambda: _lazy_call_trace.trace,
+                trace=lambda: None if skip_trace else _lazy_call_trace.trace,
                 contract_address=contract_address,
-                source_traceback=lambda: _lazy_call_trace.source_traceback,
-                set_ape_traceback=raise_on_revert,
+                source_traceback=lambda: None if skip_trace else _lazy_call_trace.source_traceback,
+                set_ape_traceback=raise_on_revert and not skip_trace,
             )
             if raise_on_revert:
                 raise vm_err.with_ape_traceback() from err
