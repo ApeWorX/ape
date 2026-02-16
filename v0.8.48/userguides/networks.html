@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en" data-accent-color="lime" data-content_root="../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Networks - ape documentation</title><link rel="shortcut icon" href="../_static/favicon.ico"/><link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Forking Networks" href="forking_networks.html" /><link rel="prev" title="Reverts" href="reverts.html" />
+      <link rel="canonical" href="ape/userguides/networks.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=e1a1ceaf" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=44020203" />
+    <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    <meta property="og:type" content="website"/>
+  <meta property="og:url" content="ape/userguides/networks.html"/>
+  <meta property="og:title" content="Networks"/>
+    <meta name="twitter:card" content="summary"/>
+  </head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="../index.html">
+      <img class="light-logo" src="../_static/logo_grey.svg" alt="ape" height="28" loading="lazy" />
+      <img class="dark-logo" src="../_static/logo_green.svg" alt="ape" height="28" loading="lazy" />
+      <strong>ape</strong>
+    </a>
+    <div class="sy-head-nav" id="head-nav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials"></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="head-nav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2"></span>
+          <span class="hamburger_3"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading" aria-level="3"><span class="caption-text">User Guides</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="projects.html">Developing Projects with Ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Configure Ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installing_plugins.html">Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="accounts.html">Accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="compile.html">Compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contracts.html">Contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="testing.html">Testing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reverts.html">Reverts</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="forking_networks.html">Forking Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="publishing.html">Publishing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="proxy.html">Proxy Contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contract_metadata.html">Contract Creation Metadata</a></li>
+<li class="toctree-l1"><a class="reference internal" href="console.html">Console</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scripts.html">Scripting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transactions.html">Transactions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trace.html">Traces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="logging.html">Logging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="data.html">Querying Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="clis.html">CLIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="developing_plugins.html">Developing Plugins</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">CLI Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../commands/accounts.html">accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/compile.html">compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/console.html">console</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/init.html">init</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/networks.html">networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/plugins.html">plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/pm.html">pm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/run.html">run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands/test.html">test</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Core Python Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape.html">ape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/api.html">ape.api</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/cli.html">ape.cli</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/contracts.html">ape.contracts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/exceptions.html">ape.exceptions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/managers.html">ape.managers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/plugins.html">ape.plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/types.html">ape.types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/utils.html">ape.utils</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Plugin Python Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_accounts.html">ape-accounts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_compile.html">ape-compile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_ethereum.html">ape-ethereum</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_ethereum.html#module-ape_ethereum.multicall">ape-ethereum.multicall</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_node.html">ape-node</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_pm.html">ape-pm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methoddocs/ape_test.html">ape-test</a></li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#selecting-a-network">Selecting a Network</a></li>
+<li><a class="reference internal" href="#l2-networks">L2 Networks</a><ul>
+<li><a class="reference internal" href="#configuring-l2-networks">Configuring L2 Networks</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#evmchains-networks">evmchains Networks</a></li>
+<li><a class="reference internal" href="#custom-network-connection">Custom Network Connection</a><ul>
+<li><a class="reference internal" href="#custom-networks-by-config">Custom Networks By Config</a><ul>
+<li><a class="reference internal" href="#rpc-url">RPC URL</a></li>
+<li><a class="reference internal" href="#forking-custom-networks">Forking Custom Networks</a></li>
+<li><a class="reference internal" href="#explorer-url">Explorer URL</a></li>
+<li><a class="reference internal" href="#block-time-transaction-type-and-more-config">Block time, transaction type, and more config</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#custom-networks-by-cli">Custom Networks by CLI</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#configuring-networks">Configuring Networks</a></li>
+<li><a class="reference internal" href="#request-headers">Request Headers</a></li>
+<li><a class="reference internal" href="#local-network">Local Network</a><ul>
+<li><a class="reference internal" href="#ethereum-tester">Ethereum Tester</a></li>
+<li><a class="reference internal" href="#local-node">Local Node</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#live-networks">Live Networks</a></li>
+<li><a class="reference internal" href="#network-config">Network Config</a></li>
+<li><a class="reference internal" href="#running-a-network-process">Running a Network Process</a></li>
+<li><a class="reference internal" href="#provider-interaction">Provider Interaction</a></li>
+<li><a class="reference internal" href="#provider-context-manager">Provider Context Manager</a><ul>
+<li><a class="reference internal" href="#forked-context">Forked Context</a></li>
+</ul>
+</li>
+</ul>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6">
+<div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../index.html"><span itemprop="name">ape</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">Networks</strong>
+        <meta itemprop="position" content="2" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+  <div class="copy-page-wrapper relative pb-4 lg:absolute lg:top-8 lg:right-6 xl:right-12">
+  <div id="copy-page-trigger">
+    <button
+      type="button"
+      class="js-copy px-3 py-1 inline-flex items-center gap-1"
+      data-url="ape/_sources/userguides/networks.md.txt"
+    >
+      <i class="i-lucide" data-icon="copy"></i>
+      <span>Copy page</span>
+    </button>
+    <button class="js-menu px-2 py-1" type="button" aria-label="More actions"
+      aria-haspopup="menu" aria-expanded="false" aria-controls="copy-page-content">
+      <i class="i-lucide chevron-down"></i>
+    </button>
+  </div>
+  <div id="copy-page-content" role="menu" aria-orientation="vertical" aria-hidden="true">
+    <div role="presentation">
+      <div class="flex flex-col" role="group">
+        <button class="js-copy" type="button" role="menuitem"
+          data-url="ape/_sources/userguides/networks.md.txt">
+          <span class="iconify-icon">
+            <i class="i-lucide" data-icon="copy"></i>
+          </span>
+          <span>Copy page</span>
+        </button>
+        <a role="menuitem" href="ape/_sources/userguides/networks.md.txt" target="_blank" rel="nofollow"><iconify-icon icon="bi:markdown"></iconify-icon>
+            <span>View as Markdown</span></a><a role="menuitem" href="https://chatgpt.com/?hints=search&q=Read%20ape/_sources/userguides/networks.md.txt%20so%20I%20can%20ask%20questions%20about%20it." target="_blank" rel="nofollow">
+          <iconify-icon icon="bi:openai"></iconify-icon>
+          <span>Open in ChatGPT</span>
+        </a><a role="menuitem" href="https://claude.ai/new?q=Read%20ape/_sources/userguides/networks.md.txt%20so%20I%20can%20ask%20questions%20about%20it." target="_blank" rel="nofollow">
+          <iconify-icon icon="bi:claude"></iconify-icon>
+          <span>Open in Claude</span>
+        </a></div>
+    </div>
+  </div>
+</div><article class="yue" role="main">
+          <section id="networks">
+<h1>Networks<a class="headerlink" href="#networks" title="Link to this heading"></a></h1>
+<p>When interacting with a blockchain, you will have to select an ecosystem (e.g. Ethereum, Arbitrum, or Fantom), a network (e.g. Mainnet or Sepolia) and a provider (e.g. Eth-Tester, Node (Geth), or Alchemy).
+The <code class="docutils literal notranslate"><span class="pre">ape-ethereum</span></code> ecosystem and network(s) plugin comes with Ape and can be used for handling EVM-like behavior.
+Networks are part of ecosystems and typically defined in plugins or custom-network configurations.
+However, Ape works out-of-the-box (in a limited way) with any network defined in the <a class="reference external" href="https://github.com/ApeWorX/evmchains">evmchains</a> library.</p>
+<section id="selecting-a-network">
+<h2>Selecting a Network<a class="headerlink" href="#selecting-a-network" title="Link to this heading"></a></h2>
+<p>Before discussing how to add custom networks or install L2 network plugins, you need to know how to specify the network choice.
+No matter what type of network you are using in Ape, you specify the network using a “network choice” triplet value:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="s2">&quot;&lt;ecosystem-name&gt;:&lt;network-name&gt;:&lt;provider-name&gt;&quot;</span>
+</span></pre></div>
+</div>
+<p>Where <code class="docutils literal notranslate"><span class="pre">ecosystem-name</span></code> refers to the ecosystem, e.g. <code class="docutils literal notranslate"><span class="pre">ethereum</span></code>, <code class="docutils literal notranslate"><span class="pre">polygon</span></code>, <code class="docutils literal notranslate"><span class="pre">fantom</span></code>, or any valid ecosystem plugin name.
+The <code class="docutils literal notranslate"><span class="pre">network-name</span></code> refers to a network such as <code class="docutils literal notranslate"><span class="pre">mainnet</span></code>, <code class="docutils literal notranslate"><span class="pre">local</span></code>, or something else defined by your ecosystem or custom network config.
+And <code class="docutils literal notranslate"><span class="pre">provider-name</span></code> refers to the provider plugin in Ape, such as <code class="docutils literal notranslate"><span class="pre">node</span></code> for a generic node or <code class="docutils literal notranslate"><span class="pre">foundry</span></code> if the network is more Anvil-based, or a different plugin altogether.</p>
+<p>Commonly, the network triplet value is specified via the <code class="docutils literal notranslate"><span class="pre">--network</span></code> option in Ape CLI commands.
+The following is a list of common Ape commands that can use the <code class="docutils literal notranslate"><span class="pre">--network</span></code> option:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--network<span class="w"> </span>ethereum:local:foundry
+</span><span data-line="2">ape<span class="w"> </span>console<span class="w"> </span>--network<span class="w"> </span>arbitrum:testnet:alchemy<span class="w"> </span><span class="c1"># NOTICE: All networks, even from other ecosystems, use this.</span>
+</span></pre></div>
+</div>
+<p>To see all networks that work with the <code class="docutils literal notranslate"><span class="pre">--network</span></code> flag (besides those <em>only</em> defined in <code class="docutils literal notranslate"><span class="pre">evmchains</span></code>), run the command:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>networks<span class="w"> </span>list
+</span></pre></div>
+</div>
+<p>You can also use the <code class="docutils literal notranslate"><span class="pre">--network</span></code> option on scripts that use the <code class="docutils literal notranslate"><span class="pre">main()</span></code> method approach or scripts that implement that <code class="docutils literal notranslate"><span class="pre">ConnectedProviderCommand</span></code> command type.
+See <a class="reference external" href="./scripts.html">the scripting guide</a> to learn more about scripts and how to add the network option.</p>
+<p>Also, you can omit values to use defaults.
+For example, the default ecosystem is <code class="docutils literal notranslate"><span class="pre">ethereum</span></code> and the default network is <code class="docutils literal notranslate"><span class="pre">local</span></code>, so you can do:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>run<span class="w"> </span>&lt;custom-cmd&gt;<span class="w"> </span>--network<span class="w"> </span>::foundry
+</span></pre></div>
+</div>
+<p>as a short-cut for <code class="docutils literal notranslate"><span class="pre">ethereum:local:foundry</span></code>.
+(note: <code class="docutils literal notranslate"><span class="pre">&lt;custom-command&gt;</span></code> refers to the name of a script that uses the network option or is a <code class="docutils literal notranslate"><span class="pre">ConnectedProviderCommand</span></code>.
+See the <a class="reference external" href="./scripts.html">scripting guide</a> for more information).</p>
+<p>Next, we will talk about how to add additional networks to your Ape environment.</p>
+</section>
+<section id="l2-networks">
+<h2>L2 Networks<a class="headerlink" href="#l2-networks" title="Link to this heading"></a></h2>
+<p>Common L2 networks, such as Arbitrum, Polygon, Optimism, Fantom, or Base, have ApeWorX-maintained (trusted) plugins that override the Ethereum ecosystem API class and change any defaults that are needed.
+You can install these plugins by doing:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>plugins<span class="w"> </span>install<span class="w"> </span>arbitrum<span class="w"> </span>polygon<span class="w"> </span>optimism<span class="w"> </span>fantom<span class="w"> </span>base
+</span></pre></div>
+</div>
+<p>Ape supports many L2 networks with their own plugins that contain ecosystem-specific customizations:</p>
+<div class="table-wrapper colwidths-auto docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Network</p></th>
+<th class="head"><p>Plugin Name</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Arbitrum</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">ape-arbitrum</span></code></p></td>
+<td><p>Arbitrum One, Nova, and related networks</p></td>
+</tr>
+<tr class="row-odd"><td><p>Avalanche</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">ape-avalanche</span></code></p></td>
+<td><p>Avalanche C-Chain and subnets</p></td>
+</tr>
+<tr class="row-even"><td><p>Base</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">ape-base</span></code></p></td>
+<td><p>Base mainnet and testnet</p></td>
+</tr>
+<tr class="row-odd"><td><p>Blast</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">ape-blast</span></code></p></td>
+<td><p>Blast L2 network</p></td>
+</tr>
+<tr class="row-even"><td><p>Fantom</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">ape-fantom</span></code></p></td>
+<td><p>Fantom Opera and testnet</p></td>
+</tr>
+<tr class="row-odd"><td><p>Gnosis</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">ape-gnosis</span></code></p></td>
+<td><p>Gnosis Chain (formerly xDai)</p></td>
+</tr>
+<tr class="row-even"><td><p>Polygon</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">ape-polygon</span></code></p></td>
+<td><p>Polygon PoS and zkEVM networks</p></td>
+</tr>
+<tr class="row-odd"><td><p>Optimism</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">ape-optimism</span></code></p></td>
+<td><p>Optimism and OP Stack networks</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Each plugin does different things.
+In general, L2 plugins are very small and override the Ethereum ecosystem class to modify chain-specific behaviors.</p>
+<section id="configuring-l2-networks">
+<h3>Configuring L2 Networks<a class="headerlink" href="#configuring-l2-networks" title="Link to this heading"></a></h3>
+<p>Most L2 networks follow Ethereum’s conventions but may have different transaction behavior. You can override specific settings:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">arbitrum</span><span class="p">:</span>
+</span><span data-line="2"><span class="w">  </span><span class="c1"># Configure network-specific settings</span>
+</span><span data-line="3"><span class="w">  </span><span class="nt">mainnet</span><span class="p">:</span>
+</span><span data-line="4"><span class="w">    </span><span class="nt">transaction_acceptance_timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">300</span><span class="w">  </span><span class="c1"># 5 minutes</span>
+</span><span data-line="5"><span class="w">    </span><span class="nt">default_provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">alchemy</span>
+</span><span data-line="6"><span class="w">    </span>
+</span><span data-line="7"><span class="w">  </span><span class="c1"># Configure provider-specific settings</span>
+</span><span data-line="8"><span class="w">  </span><span class="nt">sepolia</span><span class="p">:</span>
+</span><span data-line="9"><span class="w">    </span><span class="nt">gas_limit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">100000000</span><span class="w">  </span><span class="c1"># Higher gas limit for Arbitrum testnet</span>
+</span></pre></div>
+</div>
+<p>Here are some examples of changes L2 plugins make that allow improved support for these networks:</p>
+<ol class="arabic simple">
+<li><p>Networks that don’t support EIP-1559 transactions use Static-fee transaction types by default whereas <code class="docutils literal notranslate"><span class="pre">ape-ethereum</span></code> will use EIP-1559 transactions by default.</p></li>
+<li><p>Some networks, such as <code class="docutils literal notranslate"><span class="pre">ape-arbitrum</span></code>, have unique transaction types (and receipt types!) that are handled in the plugin.
+This logic does not have to live in the base <code class="docutils literal notranslate"><span class="pre">ape-ethereum</span></code> plugin but can live in the network’s custom plugin.</p></li>
+<li><p>Fee token information: When displaying gas reports or other data, network plugins can use the correct fee-token symbols, such as Polygon MATIC.</p></li>
+</ol>
+<p>Here is a list of all L2 network plugins supported by Ape:</p>
+<div class="table-wrapper colwidths-auto docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>GitHub</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>ape-arbitrum</p></td>
+<td><p><a class="reference external" href="https://github.com/ApeWorX/ape-arbitrum">ApeWorX/ape-arbitrum</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>ape-avalanche</p></td>
+<td><p><a class="reference external" href="https://github.com/ApeWorX/ape-avalanche">ApeWorX/ape-avalanche</a></p></td>
+</tr>
+<tr class="row-even"><td><p>ape-base</p></td>
+<td><p><a class="reference external" href="https://github.com/ApeWorX/ape-base">ApeWorX/ape-base</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>ape-blast</p></td>
+<td><p><a class="reference external" href="https://github.com/ApeWorX/ape-blast">ApeWorX/ape-base</a></p></td>
+</tr>
+<tr class="row-even"><td><p>ape-bsc</p></td>
+<td><p><a class="reference external" href="https://github.com/ApeWorX/ape-bsc">ApeWorX/ape-base</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>ape-fantom</p></td>
+<td><p><a class="reference external" href="https://github.com/ApeWorX/ape-fantom">ApeWorX/ape-fantom</a></p></td>
+</tr>
+<tr class="row-even"><td><p>ape-optimism</p></td>
+<td><p><a class="reference external" href="https://github.com/ApeWorX/ape-optimism">ApeWorX/ape-optimism</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>ape-polygon</p></td>
+<td><p><a class="reference external" href="https://github.com/ApeWorX/ape-polygon">ApeWorX/ape-polygon</a></p></td>
+</tr>
+<tr class="row-even"><td><p>ape-polygon-zkevm</p></td>
+<td><p><a class="reference external" href="https://github.com/ApeWorX/ape-polygon-zkevm">ApeWorX/ape-polygon-zkevm</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you are connecting an L2 network or any other network that does not have a plugin, you can use the custom network support, which is described in the <a class="reference external" href="#custom-network-connection">next section</a>.</p>
+</div>
+<p>Once you have the L2 network plugin installed, you can configure its node’s URI by setting the values in the <code class="docutils literal notranslate"><span class="pre">node</span></code> core plugin via your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">node</span><span class="p">:</span>
+</span><span data-line="2"><span class="w">  </span><span class="nt">&lt;ecosystem-name&gt;</span><span class="p">:</span>
+</span><span data-line="3"><span class="w">    </span><span class="nt">&lt;network-name&gt;</span><span class="p">:</span>
+</span><span data-line="4"><span class="w">      </span><span class="nt">uri</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://path.to.node.example.com</span>
+</span></pre></div>
+</div>
+<p>To see proper ecosystem and network names needed for configuration, run the command:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>networks<span class="w"> </span>list
+</span></pre></div>
+</div>
+<p>In the remainder of this guide, any example below using Ethereum, you can replace with an L2 ecosystem’s name and network combination.</p>
+</section>
+</section>
+<section id="evmchains-networks">
+<h2>evmchains Networks<a class="headerlink" href="#evmchains-networks" title="Link to this heading"></a></h2>
+<p>If a network is in the <a class="reference external" href="https://github.com/ApeWorX/evmchains">evmchains</a> library, it will work in Ape automatically, even without a plugin or any custom configuration for that network.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>console<span class="w"> </span>--network<span class="w"> </span>moonbeam
+</span></pre></div>
+</div>
+<p>This works because the <code class="docutils literal notranslate"><span class="pre">moonbeam</span></code> network data is available in the <code class="docutils literal notranslate"><span class="pre">evmchains</span></code> library, and Ape is able to look it up.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Support for networks from evm-chains alone may be limited and require additional configuration to work in production use-cases.</p>
+</div>
+</section>
+<section id="custom-network-connection">
+<h2>Custom Network Connection<a class="headerlink" href="#custom-network-connection" title="Link to this heading"></a></h2>
+<p>You can add custom networks to Ape without creating a plugin.
+The two ways to do this are:</p>
+<ol class="arabic simple">
+<li><p>Create custom network configurations in your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file (typically your global one).</p></li>
+<li><p>Use the <code class="docutils literal notranslate"><span class="pre">--network</span></code> flag with a raw URI string.</p></li>
+</ol>
+<section id="custom-networks-by-config">
+<h3>Custom Networks By Config<a class="headerlink" href="#custom-networks-by-config" title="Link to this heading"></a></h3>
+<p>The most familiar way to use custom networks (non-plugin-based networks) in Ape is to use the <code class="docutils literal notranslate"><span class="pre">networks:</span> <span class="pre">custom</span></code> configuration.
+Generally, you want to use the global <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code>, which is located in your <code class="docutils literal notranslate"><span class="pre">$HOME/.ape/</span></code> directory.
+By configuring networks globally, you can share them across all your projects.
+More information about configuring Ape (in general) can be found <a class="reference external" href="./config.html">here</a>.</p>
+<p>To add custom networks to your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file, follow this pattern:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">networks</span><span class="p">:</span>
+</span><span data-line="2"><span class="w">  </span><span class="nt">custom</span><span class="p">:</span>
+</span><span data-line="3"><span class="w">     </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mainnet</span><span class="w">                   </span><span class="c1"># Required</span>
+</span><span data-line="4"><span class="w">       </span><span class="nt">chain_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">109</span><span class="w">                   </span><span class="c1"># Required</span>
+</span><span data-line="5"><span class="w">       </span><span class="nt">ecosystem</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">shibarium</span><span class="w">            </span><span class="c1"># The ecosystem name, can either be new or an existing</span>
+</span><span data-line="6"><span class="w">       </span><span class="nt">base_ecosystem_plugin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">polygon</span><span class="w">  </span><span class="c1"># The ecosystem base-class, defaults to the default ecosystem</span>
+</span><span data-line="7"><span class="w">       </span><span class="nt">default_provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">node</span><span class="w">          </span><span class="c1"># Default is the generic node provider</span>
+</span><span data-line="8"><span class="w">       </span><span class="nt">block_time</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span><span class="w">                   </span><span class="c1"># Block time in seconds (optional)</span>
+</span><span data-line="9"><span class="w">       </span><span class="nt">transaction_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span><span class="w">             </span><span class="c1"># Default transaction type (optional)</span>
+</span><span data-line="10"><span class="w">       </span><span class="nt">gas_limit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30000000</span><span class="w">             </span><span class="c1"># Default gas limit (optional)</span>
+</span></pre></div>
+</div>
+<p>The following paragraphs explain the different parameters of the custom network config.</p>
+<p><strong>name</strong>: The <code class="docutils literal notranslate"><span class="pre">name</span></code> of the network is the same identifier you use in the network triplet for the “network” (second) section.
+Read more on the network option <a class="reference external" href="#selecting-a-network">here</a>.</p>
+<p><strong>chain_id</strong>: The chain ID is required for config-based custom networks.
+It ensures you are on the correct network when making transactions and is very important!</p>
+<p><strong>ecosystem</strong>: Specify your custom network’s ecosystem.
+This can either be an existing ecosystem or a new name entirely.
+Recall, you refer to your network via the network-triplet <code class="docutils literal notranslate"><span class="pre">ecosystem:network:provider</span></code> option-str.
+The ecosystem class is largely responsible for decoding and encoding data to-and-fro the blockchain but also contains all the networks.
+More information about the EcosystemAPI can be found <a class="reference external" href="../methoddocs/api.html#ape.api.networks.EcosystemAPI">here</a>.
+If your custom network is part of a new ecosystem, such as Shibarium, use the name of the new ecosystem, e.g. <code class="docutils literal notranslate"><span class="pre">&quot;shibarium&quot;</span></code>.
+You may want to also adjust the <code class="docutils literal notranslate"><span class="pre">base_ecosystem_plugin</span></code> config to change the base-class used.</p>
+<p><strong>base_ecosystem_plugin</strong>: The plugin that defines the base-class to your custom ecosystem containing your custom network(s).
+If your custom network’s ecosystem matches closer to another L2 instead of Ethereum, use that ecosystem name as your <code class="docutils literal notranslate"><span class="pre">base_ecosystem_plugin</span></code> in your custom network config.
+For example, take note that <code class="docutils literal notranslate"><span class="pre">&quot;ethereum&quot;</span></code> assumes EIP-1559 exists (unless configured otherwise).
+If your custom network is closer to Fantom, Polygon, Avalanche, or any other L2, you may want to consider using one of those plugins as the <code class="docutils literal notranslate"><span class="pre">base_ecosystem_plugin</span></code> to your custom network.
+Alternatively, you can configure your custom network the same way you configure any other network in the config (see <a class="reference external" href="#block-time-transaction-type-and-more-config">this section</a>).</p>
+<p><strong>default_provider</strong>: The default provider is the provider class used for making the connection to your custom network, unless you specify a different provider (hence the <code class="docutils literal notranslate"><span class="pre">default_</span></code>).
+Generally, you won’t change this and can use the default EVM node provider.
+Many provider plugins won’t function here, such as <code class="docutils literal notranslate"><span class="pre">ape-infura</span></code> or <code class="docutils literal notranslate"><span class="pre">ape-alchemy</span></code>.
+If you are using one of their networks, it is best to edit and use the plugins directly.
+If you are using a developer-node remotely, such as a custom Anvil node, you can specify the default provider to be <code class="docutils literal notranslate"><span class="pre">foundry</span></code> instead.
+However, take care in making sure you set up Foundry to correctly connect to your node.
+Likewise, when using the default Ethereum node provider, you will need to tell it the RPC URL.</p>
+<section id="rpc-url">
+<h4>RPC URL<a class="headerlink" href="#rpc-url" title="Link to this heading"></a></h4>
+<p>To configure the RPC URL for a custom network, use the configuration of the provider.
+For example, if the RPC URL is <code class="docutils literal notranslate"><span class="pre">https://apenet.example.com/rpc</span></code>, configure it by doing:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">default_ecosystem</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">shibarium</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="nt">networks</span><span class="p">:</span>
+</span><span data-line="4"><span class="w">  </span><span class="nt">custom</span><span class="p">:</span>
+</span><span data-line="5"><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mainnet</span>
+</span><span data-line="6"><span class="w">      </span><span class="nt">ecosystem</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">shibarium</span>
+</span><span data-line="7"><span class="w">      </span><span class="nt">base_ecosystem_plugin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">polygon</span><span class="w">  </span><span class="c1"># Closest base class.</span>
+</span><span data-line="8"><span class="w">      </span><span class="nt">chain_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">109</span><span class="w">  </span><span class="c1"># This must be correct or txns will fail.</span>
+</span><span data-line="9">
+</span><span data-line="10"><span class="nt">node</span><span class="p">:</span>
+</span><span data-line="11"><span class="w">  </span><span class="nt">shibarium</span><span class="p">:</span>
+</span><span data-line="12"><span class="w">    </span><span class="nt">mainnet</span><span class="p">:</span>
+</span><span data-line="13"><span class="w">      </span><span class="nt">uri</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://www.shibrpc.com</span>
+</span></pre></div>
+</div>
+<p>Now, when using <code class="docutils literal notranslate"><span class="pre">ethereum:apenet:node</span></code>, it will connect to the RPC URL <code class="docutils literal notranslate"><span class="pre">https://apenet.example.com/rpc</span></code>.</p>
+</section>
+<section id="forking-custom-networks">
+<h4>Forking Custom Networks<a class="headerlink" href="#forking-custom-networks" title="Link to this heading"></a></h4>
+<p>You can fork custom networks using providers that support forking, such as <code class="docutils literal notranslate"><span class="pre">ape-foundry</span></code> or <code class="docutils literal notranslate"><span class="pre">ape-hardhat</span></code>.
+To fork a custom network, first ensure the custom network is set-up by following the sections above.
+Once you can successfully connect to a custom network in Ape, you can fork it.</p>
+<p>To fork the network, launch an Ape command with the <code class="docutils literal notranslate"><span class="pre">--network</span></code> option with your custom network name suffixed with <code class="docutils literal notranslate"><span class="pre">-fork</span></code> and use one of the forking providers (such as <code class="docutils literal notranslate"><span class="pre">ape-foundry</span></code>):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">ape</span> <span class="o">&lt;</span><span class="n">cmd</span><span class="o">&gt;</span> <span class="o">--</span><span class="n">network</span> <span class="n">shibarium</span><span class="p">:</span><span class="n">puppynet</span><span class="o">-</span><span class="n">fork</span><span class="p">:</span><span class="n">foundry</span>
+</span></pre></div>
+</div>
+<p>Configure the forked network in the plugin the same way you configure other forked networks:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">foundry</span><span class="p">:</span>
+</span><span data-line="2"><span class="w">  </span><span class="nt">fork</span><span class="p">:</span>
+</span><span data-line="3"><span class="w">    </span><span class="nt">shibarium</span><span class="p">:</span>
+</span><span data-line="4"><span class="w">      </span><span class="nt">puppynet</span><span class="p">:</span>
+</span><span data-line="5"><span class="w">        </span><span class="nt">block_number</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">500</span>
+</span></pre></div>
+</div>
+</section>
+<section id="explorer-url">
+<h4>Explorer URL<a class="headerlink" href="#explorer-url" title="Link to this heading"></a></h4>
+<p>To configure explorer URLs for your custom network, use the explorer’s plugin config.
+For example, let’s say you added the following network:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">networks</span><span class="p">:</span>
+</span><span data-line="2"><span class="w">  </span><span class="nt">custom</span><span class="p">:</span>
+</span><span data-line="3"><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">customnetwork</span>
+</span><span data-line="4"><span class="w">      </span><span class="nt">chain_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">31337</span>
+</span><span data-line="5"><span class="w">      </span><span class="nt">default_provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">node</span>
+</span></pre></div>
+</div>
+<p>To add a corresponding entry in <code class="docutils literal notranslate"><span class="pre">ape-etherscan</span></code> (assuming you are using <code class="docutils literal notranslate"><span class="pre">ape-etherscan</span></code> as your explorer plugin), add the following to your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">etherscan</span><span class="p">:</span>
+</span><span data-line="2"><span class="w">  </span><span class="nt">ethereum</span><span class="p">:</span>
+</span><span data-line="3"><span class="w">    </span><span class="nt">rate_limit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">15</span><span class="w">  </span><span class="c1"># Configure a rate limit that makes sense for retry logic.</span>
+</span><span data-line="4">
+</span><span data-line="5"><span class="w">    </span><span class="c1"># The name of the entry is the same as your custom network!</span>
+</span><span data-line="6"><span class="w">    </span><span class="nt">customnetwork</span><span class="p">:</span>
+</span><span data-line="7"><span class="w">      </span><span class="nt">uri</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://custom.scan</span><span class="w">              </span><span class="c1"># URL used for showing transactions</span>
+</span><span data-line="8"><span class="w">      </span><span class="nt">api_uri</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://api.custom.scan/api</span><span class="w">  </span><span class="c1"># URL used for making API requests.</span>
+</span></pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Every explorer plugin may be different in how you configure custom networks.
+Consult the plugin’s README to clarify.</p>
+</div>
+</section>
+<section id="block-time-transaction-type-and-more-config">
+<h4>Block time, transaction type, and more config<a class="headerlink" href="#block-time-transaction-type-and-more-config" title="Link to this heading"></a></h4>
+<p>Configuring network properties in Ape is the same regardless of whether it is custom or not.
+As you saw above, we set the RPC URL of the custom network the same as if a plugin existed for that network.
+The same is true for network config properties such as <code class="docutils literal notranslate"><span class="pre">block_time</span></code>, <code class="docutils literal notranslate"><span class="pre">default_transaction_type</span></code>, <code class="docutils literal notranslate"><span class="pre">transaction_acceptance_timeout</span></code> and more.</p>
+<p>For example, let’s say I want to change the default transaction type for the <code class="docutils literal notranslate"><span class="pre">apenet</span></code> custom network (defined in examples above).
+I do this the same way as if I were changing the default transaction type on mainnet.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">ethereum</span><span class="p">:</span>
+</span><span data-line="2"><span class="w">  </span><span class="nt">apenet</span><span class="p">:</span>
+</span><span data-line="3"><span class="w">    </span><span class="nt">default_transaction_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span><span class="w">  </span><span class="c1"># Use static-fee transactions for my custom network!</span>
+</span></pre></div>
+</div>
+<p>For a full list of network configurations like this (for both custom and plugin-based networks), <a class="reference external" href="#configuring-networks">see this section</a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This also works if configuring a custom ecosystem.</p>
+</div>
+<p>If using a custom ecosystem, use the custom ecosystem name as the top-level config key instead:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">networks</span><span class="p">:</span>
+</span><span data-line="2"><span class="w">  </span><span class="nt">custom</span><span class="p">:</span>
+</span><span data-line="3"><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mainnet</span>
+</span><span data-line="4"><span class="w">      </span><span class="nt">ecosystem</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">shibarium</span>
+</span><span data-line="5"><span class="w">      </span><span class="nt">base_ecosystem_plugin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">polygon</span><span class="w">  </span><span class="c1"># Closest base class.</span>
+</span><span data-line="6"><span class="w">      </span><span class="nt">chain_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">109</span><span class="w">  </span><span class="c1"># This must be correct or txns will fail.</span>
+</span><span data-line="7">
+</span><span data-line="8"><span class="nt">shibarium</span><span class="p">:</span>
+</span><span data-line="9"><span class="w">  </span><span class="nt">mainnet</span><span class="p">:</span>
+</span><span data-line="10"><span class="w">    </span><span class="nt">default_transaction_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span><span class="w">  </span><span class="c1"># Use static-fee transactions for Shibarium.</span>
+</span></pre></div>
+</div>
+</section>
+</section>
+<section id="custom-networks-by-cli">
+<h3>Custom Networks by CLI<a class="headerlink" href="#custom-networks-by-cli" title="Link to this heading"></a></h3>
+<p>Ape also lets you connect to custom networks on-the-fly!
+If you would like to connect to a URI using an existing ecosystem plugin, you can specify a URI in the provider-section for the <code class="docutils literal notranslate"><span class="pre">--network</span></code> option:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>run<span class="w"> </span>script<span class="w"> </span>--network<span class="w"> </span>&lt;ecosystem-name&gt;:&lt;network-name&gt;:https://foo.bar
+</span></pre></div>
+</div>
+<p>Additionally, if you want to connect to an unknown ecosystem or network, you can use the URI by itself.
+This uses the default Ethereum ecosystem class.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>run<span class="w"> </span>script<span class="w"> </span>--network<span class="w"> </span>https://foo.bar
+</span></pre></div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>The recommended approach is to use an L2 plugin when one exists, as it will integrate better in the Ape ecosystem.</p>
+</div>
+<p>Here are some general reason why Network plugins are recommended:</p>
+<ol class="arabic simple">
+<li><p>You may need to integrate with other plugins, such as explorer plugins for getting contract types.</p></li>
+<li><p>Some chains may not implement EIP-1559 or may have forked from a specific configuration.</p></li>
+<li><p>Response differences in uncommon blocks, such as the <code class="docutils literal notranslate"><span class="pre">&quot;pending&quot;</span></code> block or the genesis block.</p></li>
+<li><p>Revert messages and exception-handling differences.</p></li>
+<li><p>You can handle chain differences such as different transaction types in Arbitrum, non-EVM chains and behaviors like Starknet.</p></li>
+</ol>
+</section>
+</section>
+<section id="configuring-networks">
+<h2>Configuring Networks<a class="headerlink" href="#configuring-networks" title="Link to this heading"></a></h2>
+<p>Change network defaults using your project’s <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file.
+The following configuration changes the default ecosystem, network, and provider such that if you omitted the <code class="docutils literal notranslate"><span class="pre">--network</span></code> option on connected-provider commands, it would use the value <code class="docutils literal notranslate"><span class="pre">&lt;ecosystem-name&gt;:&lt;network-name&gt;:&lt;provider-name&gt;</span></code>.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">default_ecosystem</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;ecosystem-name&gt;</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="nt">&lt;ecosystem-name&gt;</span><span class="p">:</span>
+</span><span data-line="4"><span class="w">  </span><span class="nt">default_network</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;network-name&gt;</span>
+</span><span data-line="5"><span class="w">  </span><span class="nt">&lt;network-name&gt;</span><span class="p">:</span>
+</span><span data-line="6"><span class="w">    </span><span class="nt">default_provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;provider-name&gt;</span>
+</span></pre></div>
+</div>
+<p>As mentioned <a class="reference external" href="#l2-networks">above</a>, ecosystems and networks typically come from plugins and their names and values are defined in those plugins.
+The ecosystem name goes in placeholder <code class="docutils literal notranslate"><span class="pre">&lt;ecosystem-name&gt;</span></code> and the network names go in place for <code class="docutils literal notranslate"><span class="pre">&lt;network-name&gt;</span></code>.</p>
+<p><strong>If you are unsure of the values to place here, run the following command</strong>:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>networks<span class="w"> </span>list
+</span></pre></div>
+</div>
+<p>This command lists all the ecosystem names and networks names installed currently in Ape.
+Place the identical name in the config to configure that ecosystem or network.</p>
+<p>You may also configure a specific gas limit for a given network:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">&lt;ecosystem-name&gt;</span><span class="p">:</span>
+</span><span data-line="2"><span class="w">  </span><span class="nt">default_network</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;network-name&gt;</span>
+</span><span data-line="3"><span class="w">  </span><span class="nt">&lt;network-name&gt;</span><span class="p">:</span>
+</span><span data-line="4"><span class="w">    </span><span class="nt">gas_limit</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;max&quot;</span>
+</span></pre></div>
+</div>
+<p>You may use one of:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code> - gas limit is estimated for each transaction</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;max&quot;</span></code> - the maximum block gas limit is used</p></li>
+<li><p>A number or numeric string, base 10 or 16 (e.g. <code class="docutils literal notranslate"><span class="pre">1234</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;1234&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">0x1234</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;0x1234&quot;</span></code>)</p></li>
+</ul>
+<p>For the local network configuration, the default is <code class="docutils literal notranslate"><span class="pre">&quot;max&quot;</span></code>. Otherwise, it is <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code>.</p>
+</section>
+<section id="request-headers">
+<h2>Request Headers<a class="headerlink" href="#request-headers" title="Link to this heading"></a></h2>
+<p>There are several layers of request-header configuration.
+They get merged into each-other in this order, with the exception being <code class="docutils literal notranslate"><span class="pre">User-Agent</span></code>, which has an append-behavior.</p>
+<ul class="simple">
+<li><p>Default Ape headers (includes <code class="docutils literal notranslate"><span class="pre">User-Agent</span></code>)</p></li>
+<li><p>Top-level configuration for headers (using <code class="docutils literal notranslate"><span class="pre">request_headers:</span></code> key)</p></li>
+<li><p>Per-ecosystem configuration</p></li>
+<li><p>Per-network configuration</p></li>
+<li><p>Per-provider configuration</p></li>
+</ul>
+<p>Use the top-level <code class="docutils literal notranslate"><span class="pre">request_headers:</span></code> config to specify headers for every request.
+Use ecosystem-level specification for only requests made when connected to that ecosystem.
+Network and provider configurations work similarly; they are only used when connecting to that network or provider.</p>
+<p>Here is an example using each layer:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">request_headers</span><span class="p">:</span>
+</span><span data-line="2"><span class="w">  </span><span class="nt">Top-Level</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;UseThisOnEveryRequest&quot;</span>
+</span><span data-line="3">
+</span><span data-line="4"><span class="nt">ethereum</span><span class="p">:</span>
+</span><span data-line="5"><span class="w">  </span><span class="nt">request_headers</span><span class="p">:</span>
+</span><span data-line="6"><span class="w">    </span><span class="nt">Ecosystem-Level</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;UseThisOnEveryEthereumRequest&quot;</span>
+</span><span data-line="7"><span class="w">  </span>
+</span><span data-line="8"><span class="w">  </span><span class="nt">mainnet</span><span class="p">:</span>
+</span><span data-line="9"><span class="w">    </span><span class="nt">request_headers</span><span class="p">:</span>
+</span><span data-line="10"><span class="w">      </span><span class="nt">Network-Level</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;UseThisOnAllRequestsToEthereumMainnet&quot;</span>
+</span><span data-line="11">
+</span><span data-line="12"><span class="nt">node</span><span class="p">:</span>
+</span><span data-line="13"><span class="w">  </span><span class="nt">request_headers</span><span class="p">:</span>
+</span><span data-line="14"><span class="w">    </span><span class="nt">Provider-Level</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;UseThisOnAllRequestsUsingNodeProvider&quot;</span>
+</span></pre></div>
+</div>
+<p>When using <code class="docutils literal notranslate"><span class="pre">User-Agent</span></code>, it will not override Ape’s default <code class="docutils literal notranslate"><span class="pre">User-Agent</span></code> nor will each layer override each-other’s.
+Instead, they are carefully appended to each other, allowing you to have a very customizable <code class="docutils literal notranslate"><span class="pre">User-Agent</span></code>.</p>
+</section>
+<section id="local-network">
+<h2>Local Network<a class="headerlink" href="#local-network" title="Link to this heading"></a></h2>
+<p>The default network in Ape is the local network (keyword <code class="docutils literal notranslate"><span class="pre">&quot;local&quot;</span></code>).
+It is meant for running tests and debugging contracts.
+Out-of-the-box, Ape ships with two development providers you can use for the <code class="docutils literal notranslate"><span class="pre">local</span></code> network:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/ethereum/eth-tester">EthTester</a></p></li>
+<li><p>An Ephemeral Node (defaults to Geth) process</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--network<span class="w"> </span>::test<span class="w">  </span><span class="c1"># Launch an Ethereum Tester in-process node.</span>
+</span><span data-line="2">ape<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--network<span class="w"> </span>::node<span class="w">  </span><span class="c1"># Launch a local development node (e.g. geth) process.</span>
+</span></pre></div>
+</div>
+<p>To learn more about testing in ape, follow <a class="reference external" href="./testing.html">this guide</a>.</p>
+<section id="ethereum-tester">
+<h3>Ethereum Tester<a class="headerlink" href="#ethereum-tester" title="Link to this heading"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">ethereum:local:test</span></code> is an in-process Pythonic Ethereum tester node, which is fast but limited in its feature-set.
+It is the default tester node in Ape because it doesn’t require any additional dependencies, such as <code class="docutils literal notranslate"><span class="pre">geth</span></code>.</p>
+</section>
+<section id="local-node">
+<h3>Local Node<a class="headerlink" href="#local-node" title="Link to this heading"></a></h3>
+<p>Using <code class="docutils literal notranslate"><span class="pre">ethereum:local:node</span></code>, you are telling Ape to use node software in <code class="docutils literal notranslate"><span class="pre">--dev</span></code> mode e.g. <code class="docutils literal notranslate"><span class="pre">geth</span> <span class="pre">--dev</span></code> or <code class="docutils literal notranslate"><span class="pre">reth</span> <span class="pre">--dev</span></code>.
+By default, Ape will use <code class="docutils literal notranslate"><span class="pre">geth</span> <span class="pre">--dev</span></code> unless geth is not installed, than it will search for others.</p>
+<p>To use specific node software, configure it directly in Ape.
+Here is an <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> example for how to do that:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">node</span><span class="p">:</span>
+</span><span data-line="2"><span class="w">  </span><span class="nt">executable</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">$HOME/RustProjects/reth/target/release/reth node</span>
+</span></pre></div>
+</div>
+<p>In this case, <code class="docutils literal notranslate"><span class="pre">reth</span></code> was built locally is in the repository’s <code class="docutils literal notranslate"><span class="pre">target</span></code> directory.
+Link to the <code class="docutils literal notranslate"><span class="pre">reth</span></code> binary so <code class="docutils literal notranslate"><span class="pre">ape</span></code> launches and uses your local <code class="docutils literal notranslate"><span class="pre">reth</span></code> node.</p>
+</section>
+</section>
+<section id="live-networks">
+<h2>Live Networks<a class="headerlink" href="#live-networks" title="Link to this heading"></a></h2>
+<p>Use the core plugin <code class="docutils literal notranslate"><span class="pre">ape-node</span></code> to connect to local or remote nodes via URI.
+The node plugin is abstract in that it represents any node.
+However, it will work best when connected to a geth node.
+To configure network URIs in <code class="docutils literal notranslate"><span class="pre">node</span></code>, you can use the <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">node</span><span class="p">:</span>
+</span><span data-line="2"><span class="w">  </span><span class="c1"># When managing or running a node, configure an IPC path globally (optional)</span>
+</span><span data-line="3"><span class="w">  </span><span class="nt">ipc_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">path/to/geth.ipc</span>
+</span><span data-line="4">
+</span><span data-line="5"><span class="w">  </span><span class="nt">ethereum</span><span class="p">:</span>
+</span><span data-line="6"><span class="w">    </span><span class="nt">mainnet</span><span class="p">:</span>
+</span><span data-line="7"><span class="w">      </span><span class="c1"># For `uri`, you can use either HTTP, WS, or IPC values.</span>
+</span><span data-line="8"><span class="w">      </span><span class="c1"># **Most often, you only need HTTP!**</span>
+</span><span data-line="9"><span class="w">      </span><span class="nt">uri</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://foo.node.example.com</span>
+</span><span data-line="10"><span class="w">      </span><span class="c1"># uri: wss://bar.feed.example.com</span>
+</span><span data-line="11"><span class="w">      </span><span class="c1"># uri: path/to/mainnet/geth.ipc</span>
+</span><span data-line="12"><span class="w">      </span>
+</span><span data-line="13"><span class="w">      </span><span class="c1"># For strict HTTP connections, you can configure a http_uri directly.</span>
+</span><span data-line="14"><span class="w">      </span><span class="nt">http_uri</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://foo.node.example.com</span>
+</span><span data-line="15">
+</span><span data-line="16"><span class="w">      </span><span class="c1"># You can also configure a websockets URI (used by Silverback SDK).</span>
+</span><span data-line="17"><span class="w">      </span><span class="nt">ws_uri</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">wss://bar.feed.example.com</span>
+</span><span data-line="18"><span class="w">    </span>
+</span><span data-line="19"><span class="w">      </span><span class="c1"># Specify per-network IPC paths as well.</span>
+</span><span data-line="20"><span class="w">      </span><span class="nt">ipc_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">path/to/mainnet/geth.ipc</span>
+</span></pre></div>
+</div>
+</section>
+<section id="network-config">
+<h2>Network Config<a class="headerlink" href="#network-config" title="Link to this heading"></a></h2>
+<p>There are many ways to configure your networks.
+Most of the time, Ape and its L2 plugins configure the best defaults automatically.
+Thus, you most likely won’t need to modify these configurations.
+However, you do need to configure these if you wish to stray from a network’s defaults.
+The following example shows how to do this.
+(note: even though this example uses <code class="docutils literal notranslate"><span class="pre">ethereum:mainnet</span></code>, you can use any of the L2 networks mentioned above, as they all have these config properties).</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">ethereum</span><span class="p">:</span>
+</span><span data-line="2"><span class="w">  </span><span class="nt">mainnet</span><span class="p">:</span>
+</span><span data-line="3"><span class="w">    </span><span class="c1"># Ethereum mainnet in Ape uses EIP-1559 by default,</span>
+</span><span data-line="4"><span class="w">    </span><span class="c1"># but we can change that here. Note: most plugins</span>
+</span><span data-line="5"><span class="w">    </span><span class="c1"># use type 0 by default already, so you don&#39;t need</span>
+</span><span data-line="6"><span class="w">    </span><span class="c1"># to change this if using an `ape-&lt;l2&gt;` plugin.</span>
+</span><span data-line="7"><span class="w">    </span><span class="nt">default_transaction_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
+</span><span data-line="8">
+</span><span data-line="9"><span class="w">    </span><span class="c1"># The amount of time to wait for a transaction to be</span>
+</span><span data-line="10"><span class="w">    </span><span class="c1"># accepted after sending it before raising an error.</span>
+</span><span data-line="11"><span class="w">    </span><span class="c1"># Most networks use 120 seconds (2 minutes).</span>
+</span><span data-line="12"><span class="w">    </span><span class="nt">transaction_acceptance_timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">60</span>
+</span><span data-line="13">
+</span><span data-line="14"><span class="w">    </span><span class="c1"># The amount of times to retry fetching a receipt. This is useful</span>
+</span><span data-line="15"><span class="w">    </span><span class="c1"># because decentralized systems may show the transaction accepted</span>
+</span><span data-line="16"><span class="w">    </span><span class="c1"># on some nodes but not on others, and potentially RPC requests</span>
+</span><span data-line="17"><span class="w">    </span><span class="c1"># won&#39;t return a receipt immediately after sending its transaction.</span>
+</span><span data-line="18"><span class="w">    </span><span class="c1"># This config accounts for such delay. The default is `20`.</span>
+</span><span data-line="19"><span class="w">    </span><span class="nt">max_receipt_retries</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
+</span><span data-line="20">
+</span><span data-line="21"><span class="w">    </span><span class="c1"># Set a gas limit here, or use the default of &quot;auto&quot; which</span>
+</span><span data-line="22"><span class="w">    </span><span class="c1"># estimates gas. Note: local networks tend to use &quot;max&quot; here</span>
+</span><span data-line="23"><span class="w">    </span><span class="c1"># by default.</span>
+</span><span data-line="24"><span class="w">    </span><span class="nt">gas_limit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">auto</span>
+</span><span data-line="25">
+</span><span data-line="26"><span class="w">    </span><span class="c1"># Base-fee multipliers are useful for times when the base fee changes</span>
+</span><span data-line="27"><span class="w">    </span><span class="c1"># before a transaction is sent but after the base fee was derived,</span>
+</span><span data-line="28"><span class="w">    </span><span class="c1"># thus causing rejection. A multiplier reduces the chance of</span>
+</span><span data-line="29"><span class="w">    </span><span class="c1"># rejection. The default for live networks is `1.4` times the base fee.</span>
+</span><span data-line="30"><span class="w">    </span><span class="nt">base_fee_multiplier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.2</span>
+</span><span data-line="31">
+</span><span data-line="32"><span class="w">    </span><span class="c1"># The block time helps Ape make decisions about</span>
+</span><span data-line="33"><span class="w">    </span><span class="c1"># polling chain data.</span>
+</span><span data-line="34"><span class="w">    </span><span class="nt">block_time</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
+</span></pre></div>
+</div>
+</section>
+<section id="running-a-network-process">
+<h2>Running a Network Process<a class="headerlink" href="#running-a-network-process" title="Link to this heading"></a></h2>
+<p>To run a network with a process, use the <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">networks</span> <span class="pre">run</span></code> command:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>networks<span class="w"> </span>run
+</span></pre></div>
+</div>
+<p>This launches a development node in the current working terminal session.
+To continue developing, you will have to launch a new terminal session.
+Alternatively, you can use the <code class="docutils literal notranslate"><span class="pre">--background</span></code> flag to background the process:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>networks<span class="w"> </span>run<span class="w"> </span>--background
+</span></pre></div>
+</div>
+<p>By default, <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">networks</span> <span class="pre">run</span></code> runs a development Node (geth) process.
+To use a different network, such as <code class="docutils literal notranslate"><span class="pre">hardhat</span></code> or Anvil nodes, use the <code class="docutils literal notranslate"><span class="pre">--network</span></code> flag:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>networks<span class="w"> </span>run<span class="w"> </span>--network<span class="w"> </span>ethereum:local:foundry
+</span></pre></div>
+</div>
+<p>To configure the network’s block time, use the <code class="docutils literal notranslate"><span class="pre">--block-time</span></code> option.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>networks<span class="w"> </span>run<span class="w"> </span>--network<span class="w"> </span>ethereum:local:foundry<span class="w"> </span>--block-time<span class="w"> </span><span class="m">10</span>
+</span></pre></div>
+</div>
+<p>Once you are done with your node, you can simply exit the process to tear it down.
+Or, if you used <code class="docutils literal notranslate"><span class="pre">--background</span></code> or lost the process some other way, you can stop the node using the <code class="docutils literal notranslate"><span class="pre">kill</span></code> command:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>networks<span class="w"> </span><span class="nb">kill</span><span class="w"> </span>--all
+</span></pre></div>
+</div>
+<p>To list all running networks, use the <code class="docutils literal notranslate"><span class="pre">list</span> <span class="pre">--running</span></code> command:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>networks<span class="w"> </span>list<span class="w"> </span>--running
+</span></pre></div>
+</div>
+</section>
+<section id="provider-interaction">
+<h2>Provider Interaction<a class="headerlink" href="#provider-interaction" title="Link to this heading"></a></h2>
+<p>Once you are connected to a network, you now have access to a <code class="docutils literal notranslate"><span class="pre">.provider</span></code>.
+The provider class is what higher level Manager classes in Ape use to interface with the blockchain.
+You can call methods directly from the provider, like this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">chain</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="n">block</span> <span class="o">=</span> <span class="n">chain</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">get_block</span><span class="p">(</span><span class="s2">&quot;latest&quot;</span><span class="p">)</span>
+</span></pre></div>
+</div>
+</section>
+<section id="provider-context-manager">
+<h2>Provider Context Manager<a class="headerlink" href="#provider-context-manager" title="Link to this heading"></a></h2>
+<p>Use the <a class="reference external" href="../methoddocs/api.html#ape.api.networks.ProviderContextManager">ProviderContextManager</a> to change the network-context in Python.
+When entering a network for the first time, it will connect to that network.
+<strong>You do not need to call <code class="docutils literal notranslate"><span class="pre">.connect()</span></code> or <code class="docutils literal notranslate"><span class="pre">.disconnect()</span></code> manually</strong>.</p>
+<p>For example, if you are using a script with a default network connection, you can change connection in the middle of the script by using the provider context manager:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">chain</span><span class="p">,</span> <span class="n">networks</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+</span><span data-line="4">    <span class="n">start_provider</span> <span class="o">=</span> <span class="n">chain</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">name</span>
+</span><span data-line="5">    <span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">ethereum</span><span class="o">.</span><span class="n">mainnet</span><span class="o">.</span><span class="n">use_provider</span><span class="p">(</span><span class="s2">&quot;node&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">provider</span><span class="p">:</span>
+</span><span data-line="6">        <span class="c1"># We are using a different provider than the one we started with.</span>
+</span><span data-line="7">        <span class="k">assert</span> <span class="n">start_provider</span> <span class="o">!=</span> <span class="n">provider</span><span class="o">.</span><span class="n">name</span>
+</span></pre></div>
+</div>
+<p>Jump between networks to simulate multi-chain behavior.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">click</span>
+</span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">networks</span>
+</span><span data-line="3">
+</span><span data-line="4"><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
+</span><span data-line="5"><span class="k">def</span><span class="w"> </span><span class="nf">cli</span><span class="p">():</span>
+</span><span data-line="6">    <span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">polygon</span><span class="o">.</span><span class="n">mainnet</span><span class="o">.</span><span class="n">use_provider</span><span class="p">(</span><span class="s2">&quot;node&quot;</span><span class="p">):</span>
+</span><span data-line="7">        <span class="o">...</span>
+</span><span data-line="8">    <span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">ethereum</span><span class="o">.</span><span class="n">mainnet</span><span class="o">.</span><span class="n">use_provider</span><span class="p">(</span><span class="s2">&quot;node&quot;</span><span class="p">):</span>
+</span><span data-line="9">        <span class="o">...</span>
+</span></pre></div>
+</div>
+<p>The argument to <a class="reference external" href="../methoddocs/api.html#ape.api.networks.NetworkAPI.use_provider">use_provider()</a> is the name of the provider you want to use.
+You can also tell Ape to use the default provider by calling method <a class="reference external" href="../methoddocs/api.html#ape.api.networks.NetworkAPI.use_default_provider">use_default_provider()</a> instead.
+This will use whatever provider is set as default for your ecosystem / network combination (via one of your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> files).</p>
+<p>For example, let’s say I have a default provider set like this:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">arbitrum</span><span class="p">:</span>
+</span><span data-line="2"><span class="w">  </span><span class="nt">mainnet</span><span class="p">:</span>
+</span><span data-line="3"><span class="w">    </span><span class="nt">default_provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">alchemy</span>
+</span></pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">ape</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="c1"># Use the provider configured as the default for the arbitrum::mainnet network.</span>
+</span><span data-line="4"><span class="c1"># In this case, it will use the &quot;alchemy&quot; provider.</span>
+</span><span data-line="5"><span class="k">with</span> <span class="n">ape</span><span class="o">.</span><span class="n">networks</span><span class="o">.</span><span class="n">arbitrum</span><span class="o">.</span><span class="n">mainnet</span><span class="o">.</span><span class="n">use_default_provider</span><span class="p">():</span>
+</span><span data-line="6">    <span class="o">...</span>
+</span></pre></div>
+</div>
+<p>You can also use the <a class="reference external" href="../methoddocs/managers.html#ape.managers.networks.NetworkManager.parse_network_choice">parse_network_choice()</a> method when working with network choice strings:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">networks</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="c1"># Same as doing `networks.ethereum.local.use_provider(&quot;test&quot;)`.</span>
+</span><span data-line="4"><span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">parse_network_choice</span><span class="p">(</span><span class="s2">&quot;ethereum:local:test&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">provider</span><span class="p">:</span>
+</span><span data-line="5">    <span class="nb">print</span><span class="p">(</span><span class="n">provider</span><span class="p">)</span>
+</span></pre></div>
+</div>
+<p><strong>A note about disconnect</strong>: Providers do not disconnect until the very end of your Python session.
+This is so you can easily switch network contexts in a bridge or multi-chain environment, which happens in fixtures and other sessions out of Ape’s control.
+However, sometimes you may definitely want your temporary network session to end before continuing, in which case you can use the <code class="docutils literal notranslate"><span class="pre">disconnect_after=True</span></code> kwarg:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">networks</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">parse_network_choice</span><span class="p">(</span><span class="s2">&quot;ethereum:local:foundry&quot;</span><span class="p">,</span> <span class="n">disconnect_after</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">provider</span><span class="p">:</span>
+</span><span data-line="4">    <span class="nb">print</span><span class="p">(</span><span class="n">provider</span><span class="p">)</span>
+</span></pre></div>
+</div>
+<section id="forked-context">
+<h3>Forked Context<a class="headerlink" href="#forked-context" title="Link to this heading"></a></h3>
+<p>Using the <code class="docutils literal notranslate"><span class="pre">networks.fork()</span></code> method, you can achieve similar effects to using a forked network with <code class="docutils literal notranslate"><span class="pre">disconnect_after=True</span></code>.
+For example, let’s say we are running the following script on the network <code class="docutils literal notranslate"><span class="pre">ethereum:mainnet</span></code>.
+We can switch to a forked network by doing this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">networks</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+</span><span data-line="4">    <span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">fork</span><span class="p">(</span><span class="n">provider_name</span><span class="o">=</span><span class="s2">&quot;foundry&quot;</span><span class="p">):</span>
+</span><span data-line="5">        <span class="o">...</span>
+</span><span data-line="6">        <span class="c1"># Do stuff on a local, forked version of mainnet</span>
+</span><span data-line="7">
+</span><span data-line="8">    <span class="c1"># Switch back to mainnet.</span>
+</span></pre></div>
+</div>
+<p>Learn more about forking networks in the <a class="reference external" href="./forking_networks.html">forked-networks guide</a>.</p>
+</section>
+</section>
+</section>
+
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"><div class="navigation-prev">
+    <a href="reverts.html">
+      <i class="i-lucide chevron-left"></i>
+      <div class="page-info">
+        <span>Previous</span><div class="title">Reverts</div></div>
+    </a>
+  </div><div class="navigation-next">
+    <a href="forking_networks.html">
+      <div class="page-info">
+        <span>Next</span>
+        <div class="title">Forking Networks</div>
+      </div>
+      <i class="i-lucide chevron-right"></i>
+    </a>
+  </div></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2026, ApeWorX LTD</p>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials"></div>
+    </div>
+  </div>
+</footer>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script data-domain="docs.apeworx.io" defer="defer" src="https://plausible.io/js/script.js"></script>
+      <script src="../_static/shibuya.js?v=cac61aee"></script></body>
+</html>
