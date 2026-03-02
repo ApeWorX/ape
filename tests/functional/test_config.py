@@ -362,6 +362,14 @@ def test_ethereum_network_configs(config, project):
         assert actual.sepolia.block_time == 15
 
 
+def test_ethereum_local_network_config_override(project, config, ethereum):
+    eth_config = {"ethereum": {"local": {"default_provider": "node"}}}
+    with project.temp_config(**eth_config):
+        actual = config.get_config("ethereum")
+        assert actual.local.default_provider == "node"
+        assert ethereum.local.config.default_provider == "node"
+
+
 def test_network_gas_limit_default(config):
     eth_config = config.get_config("ethereum")
 

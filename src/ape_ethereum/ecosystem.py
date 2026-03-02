@@ -283,11 +283,22 @@ class BaseEthereumConfig(PluginConfig):
     @computed_field  # type: ignore[misc]
     @cached_property
     def local(self) -> NetworkConfig:
-        return create_local_network_config(
+        default_local = create_local_network_config(
             default_provider="test",
             default_transaction_type=self.DEFAULT_TRANSACTION_TYPE,
             gas_limit=self.DEFAULT_LOCAL_GAS_LIMIT,
         )
+        if not (override := (self.__pydantic_extra__ or {}).get("local")):
+            return default_local
+
+        if isinstance(override, NetworkConfig):
+            return override
+
+        if isinstance(override, dict):
+            data = merge_configs(default_local.model_dump(by_alias=True), override)
+            return NetworkConfig.model_validate(data)
+
+        return default_local
 
     @only_raise_attribute_error
     def __getattr__(self, key: str) -> Any:
