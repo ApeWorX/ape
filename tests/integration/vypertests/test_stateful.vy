@@ -4,12 +4,11 @@
 @custom:ape-stateful-bundles a b c
 """
 
-secret: public(uint256)
 
-
-@external
-def setUp():
-    self.secret = 703895692105206524502680346056234
+interface Secret:
+    def add(a: uint256): nonpayable
+    def sub(a: uint256, b: uint256): nonpayable
+    def check(): view
 
 
 @external
@@ -31,7 +30,7 @@ def initialize_bundleA() -> DynArray[uint256, 10]:
 
 
 @external
-def rule_add(a: uint256) -> uint256:
+def rule_add(secret: Secret, a: uint256) -> uint256:
     """
     @notice
         A rule is an action that MAY be called by the test harness as one step in the test.
@@ -43,17 +42,16 @@ def rule_add(a: uint256) -> uint256:
 
         If you wish to avoid calling a rule except under a particular scenario, add a precondition.
 
-    @custom:ape-stateful-precondition self.secret() + a + b < 2**256
     @custom:ape-stateful-targets b
     """
-    # NOTE: Due to precondition, will **never** fail
-    self.secret += a
+
+    extcall secret.add(a)
 
     return a % 100
 
 
 @external
-def rule_subtract(a: DynArray[uint256, 10], b: uint256):
+def rule_subtract(secret: Secret, a: DynArray[uint256, 10], b: uint256):
     """
     @notice
         If a failure occurs when executing a rule, that will automatically raise a test failure.
@@ -69,22 +67,6 @@ def rule_subtract(a: DynArray[uint256, 10], b: uint256):
 
     @custom:ape-stateful-consumes b
     """
-    # NOTE: This will likely fail after a few calls
 
     for val: uint256 in a:
-        self.secret -= val % b
-
-
-
-@view
-@external
-def invariant_secret_not_found():
-    """
-    @notice
-        An invariant is called after every rule invocation, to check consistency of internal state.
-        If it fails, it will automatically raise a test failure, likely indicating a legitimate bug.
-
-    @dev
-        An invariant **MUST** be `view`/`pure` mutability or it will be ignored.
-    """
-    assert self.secret != 2378945823475283674509246524589
+        extcall secret.sub(val, b)

@@ -3,7 +3,7 @@ from ethereum.ercs import IERC20
 
 @external
 def test_it_raises():
-    """ @custom:ape-check-reverts "It works!" """
+    """ @custom:ape-check-reverts It works!"""
     assert False, "It works!"
 
 

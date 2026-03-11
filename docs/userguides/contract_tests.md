@@ -396,7 +396,7 @@ _Configures the runner for [Stateful Testing](#stateful-testing)_
       // ...
 
       // NOTE: The value is removed from `item_id` after executing this rule
-      /// @custom:ape-stateful-targets item_id
+      /// @custom:ape-stateful-consumes item_id
       function rule_use_bundle_item(uint256 item_id) external {
           // ...
       }
@@ -426,25 +426,24 @@ For example, say you have a "normal" contract test that looks like the following
 
 ```solidity
 function test_minting_works(IERC20 token) external {
-    // NOTE: `address(this)` is actually the account executing our test
-    require(token.balanceOf(address(this)) == 0);
+    require(token.balanceOf(msg.sender) == 0);
 
-    // NOTE: The "sender" for a mutable call is actually the test itself!
-    token.mint(address(this), 1000)
-    require(token.balanceOf(address(this)) == 1000);
+    token.mint(1000);  // Mint 1000 tokens to self
+    // NOTE: `msg.sender` is the same as `address(this)`
+    require(token.balanceOf(msg.sender) == 1000);
 }
 ```
 
 This test case demonstrates that a specific scenario works,
-minting 1000 tokens to the test's address, increasing it's balance by 1000 tokens.
+minting 1000 tokens to the executor's address, increasing it's balance by 1000 tokens.
 
 To rewrite this as a Property Test, we can add a new `address` argument named `acct`
-(which doesn't match another fixture in our test suite),
+(which doesn't match another fixture from our test suite),
 and then add another argument `amt` that will randomize the amount of tokens minted to `acct`.
 
 Our new Property Test would look like:
 
-```
+```solidity
 function test_minting_works(
     IERC20 token, address acct, uint256 amt
 ) external {
@@ -457,11 +456,13 @@ function test_minting_works(
 
 Invoking this test might find an example where `acct` is not an allowed target for `token.mint`,
 or `amt` is not an allowed amount of tokens to issue to `acct`.
-But this is kind of a contrived example, so we are probably not going to find interesting results.
+But knowing that the range of possible values for `acct` and `amt` is extremely large,
+we are probably not going to find any interesting results from running this test.
 However, thanks to the power of Hypothesis and fixtures in Ape's Contract Testing feature,
-we can actually **control the Strategy** of the values that we pull in our test (for `acct` and `amt`).
+we can actually **control the Strategy** of the values that we pull in our test (for `acct` and `amt`),
+in order to limit the range of these arguments to where more interesting values might be!
 
-Let use a fixture to define some _custom strategies_ in our `conftest.py` for these variable names:
+Lets use a fixture to define some _custom strategies_ in our `conftest.py` for these variable names:
 
 ```py
 from eth_abi.tools import get_abi_strategy
@@ -487,16 +488,17 @@ def amt():
 ```
 
 This can **drastically improve** the effectiveness of your Property Tests, as you can create
-complex custom strategies that will find more relevant input scenarios much more quickly!
+custom strategies that will find more complex and relevant input scenarios much more quickly!
 
 _See [Adapting Strategies](https://hypothesis.readthedocs.io/en/latest/tutorial/adapting-strategies.html)
 and [Custom Strategies](https://hypothesis.readthedocs.io/en/latest/tutorial/custom-strategies.html) from
 to learn more about strategies customization._
 
 ```{important}
-Defining custom fuzzer strategies is **much** more performant than the use of `vm.assume` cheatcode.
-Because strategies define **the range of possible values** to select from, they don't have to "reject"
-invalid values that you wish to skip, because those values are **never generated** in the first place!
+Defining custom fuzzer strategies is **much** more performant than rejecting irrelevant inputs
+(e.g. the use of `vm.assume` cheatcode in Foundry).
+Since strategies define the **allowed range of values** to select from, they don't have to "reject"
+values that you know you should skip, because those values are **never generated** in the first place!
 ```
 
 ```{note}
@@ -515,6 +517,20 @@ and let the selection of the appropiate "value distributions" be up to Hypothesi
 
 ### Stateful Testing
 
+Sometimes, you have tests that require testing even more complex or state-dependent behavior than
+Property tests allow. Stateful Testing (also known as Invariant Testing) allows the generation of
+complex scenarios where a randomized sequence of calls to different "rules" (functions that start
+with `rule*`), each with potentially random arguments selected to be called with, can potentially
+unlock more state-dependent logic than otherwise would be available during a Property Test case.
+
+However, this requires a more complicated setup where a full contract gets used to describe all
+of the possibilities and rules for the test. For example, let's say we have a scenario where we
+want to test the transfer logic of a token. We might want to explore what happens when we allow
+different token holders to transfer tokens to each other. But to do that, we need a way to
+introduce the concept of being a "holder" to our test, because if we just let the runner pick an
+address at random (using the basic `address` Strategy) then the likelihood of selecting an actual
+"holder" (from all possible addresses) becomes astronomically small, leading to an ineffective test!
+
 ```{important}
 Any "normal" tests (functions that start with `test*`) in the test module will be ignored when
 the contract is registered as a Stateful Test.
@@ -528,20 +544,6 @@ The stateful test runner will register a contract as Stateful Test using the fol
 |      `rule`     |   `nonpayable` (default)  | at least 1 |
 |   `invariant`   |       `view` / `pure`     |    none    |
 ```
-
-Sometimes, you have tests that require testing even more complex or interdependent behavior than
-Property tests allow. Stateful Testing (also known as Invariant Testing) allows the generation of
-complex scenarios where a randomized sequence of calls to different "rules" (functions that start
-with `rule*`), each with potentially random arguments selected to be called with, can potentially
-trigger more state-dependent logic than otherwise would get triggered in a Property Test case.
-
-However, this requires a more complicated setup where a full contract gets used to describe all
-of the possibilities and rules for the test. For example, let's say we have a scenario where we
-want to test the transfer logic of a token. We might want to explore what happens when we allow
-different token holders to transfer tokens to each other. But to do that, we need a way to
-introduce the concept of being a "holder" to our test, because if we just let the runner pick an
-address at random (using the basic `address` Strategy) then the likelihood of selecting an actual
-"holder" (from all possible addresses) becomes astronomically small, leading to an ineffective test!
 
 #### Bundles
 
@@ -605,6 +607,8 @@ Even in Stateful Tests, it is **not** a good idea to use storage in your tests.
 Rules in tests get executed according in the context of `test-executor`, and if there are multiple
 executors used in a test, there will actually be **multiple copies** of the test contract at once,
 meaning contract storage **only updates** for the specific executor's account that executes the rule.
+
+Use [Fixtures](#accessing-fixtures-from-ape) to create shared test setup that rules can use.
 ```
 
 Notice at the top, we use the `@custom:ape-stateful-bundles` modifier to create the Bundle
@@ -612,7 +616,7 @@ Notice at the top, we use the `@custom:ape-stateful-bundles` modifier to create 
 Then we wrote two functions that target this bundle (via `@custom:ape-stateful-targets`):
 `initialize_holders`, which pre-fills this Bundle with the holders at the time of `token`'s
 deployment from our fixtures, and `rule_transfer`, which sends a varying amount of tokens from
-a `holder` to another address `account`, which then gets added to our Bundle.
+a `holder` to a non-`holder` address `account`, and then adds `account` to our `holder` Bundle.
 
 Thanks to the use of Bundles, we can now ensure that during our test, we only get **relevant** holders
 as an input to our transfer rule, meaning we will no longer be randomly selecting 0 balance holders.
@@ -626,18 +630,18 @@ We can indicate this behavior through the use of `@custom:ape-stateful-consumes`
 
     /// @custom:ape-stateful-consumes holder
     /// @custom:ape-stateful-targets holder
-    function rule_transfer(
-        IERC20 token, address holder, address account, uint256 bips
+    function rule_transfer_all(
+        IERC20 token, address holder, address account
     ) external {
-        // ...
+        // Sends entire balance of `holder` to `account`.
     }
 
     // ...
 ```
 
 By adding that we are "consuming" the value provided via `holder`, then each invocation of the rule
-will remove the holder from the Bundle used by future invocations of the same rule.
-But because we are also adding a new value to the bundle when the rule is executed,
+will actually remove the value `holder` from the Bundle, preventing it's use in further rule invocations.
+Because we are also adding a new value to the bundle when the rule is executed,
 we can keep the Bundle full of relevant values to select from for each step in the test!
 
 #### Invariants
@@ -668,7 +672,7 @@ ever disagrees with `TOTAL_SUPPLY`, then it will show the sequnce of steps viola
 
 You might imagine even more complex invariants that require stateful handling inside your test.
 A common technique is to use "shadow variables", which are storage variables inside your test that
-maintain values useful to checking your invariants, for instance "the sum of all `balanceOf` balances".
+maintains values useful to checking your invariants, for instance "the sum of all `balanceOf` balances".
 
 Here's how you might employ a shadow variable in practice, first by initializing it during `setUp`,
 then by checking inside one of your `invariant*` functions:

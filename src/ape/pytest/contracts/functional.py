@@ -2,10 +2,10 @@ from typing import TYPE_CHECKING, Any
 
 from hypothesis.strategies import SearchStrategy
 
+from ape.pytest.contextmanagers import RevertsContextManager
 from ape.utils import cached_property
 from hypothesis import given
 
-from ..contextmanagers import RevertsContextManager
 
 from .types import TestModifier
 from .base import BaseTestItem
@@ -58,26 +58,6 @@ class ContractTestItem(BaseTestItem):
     def method(self) -> "ContractTransactionHandler":
         return getattr(self.contract, self.abi.name)
 
-    def execute_test(self, *call_args):
-        assert self.executor.delegate == self.delegate, "Why does this not raise when it should?"
-
-        # TODO: Control snapshot of start via `TestModifier.TEST_AFTER`?
-        with self.chain_manager.isolate():
-            if raw_revert_msg := self.modifiers.get(TestModifier.CHECK_REVERTS):
-                reverts_message = self.eval_arg(raw_revert_msg)
-                with RevertsContextManager(reverts_message):
-                    self.method(*call_args, sender=self.executor)
-
-            else:
-                # NOTE: Let revert bubble up naturally
-                receipt = self.method(*call_args, sender=self.executor)
-
-                if raw_event_logs := self.modifiers.get(TestModifier.CHECK_EMITS):
-                    expected_events = list(map(self.eval_arg, raw_event_logs))
-                    assert receipt.events == expected_events
-
-                # TODO: Test reporting functionality?
-
     def get_value(self, abi_type: "ABIType") -> Any:
         # NOTE: Overrides BaseTestItem impl to also check parametrized case args
         if parameterized_value := self.parametrized_args.get(abi_type.name):
@@ -94,10 +74,31 @@ class ContractTestItem(BaseTestItem):
 
         return {ipt.name: self.get_value(ipt) for ipt in self.abi.inputs if ipt.name is not None}
 
-    def eval_arg(self, raw_arg: str) -> Any:
+    def eval_arg(self, raw_arg: str, **call_args) -> Any:
         # Just eval the whole string w/ global/local context from case
         # NOTE: This is potentially dangerous, but only run on your own tests!
-        return eval(raw_arg, self.call_context, self.call_args)
+        return eval(raw_arg, self.call_context, call_args)
+
+    def execute_test(self, **given_kwargs):
+        # NOTE: Retain ordering from original call args,
+        #       but update SearchStrategy for concrete example
+        call_args = {k: given_kwargs.get(k, v) for k, v in self.call_args.items()}
+        calldata = self.method.encode_input(*call_args.values())
+
+        with self.executor.delegate_to(self.delegate, receiver=0x1) as delegate:
+            breakpoint()
+            if raw_revert_msg := self.modifiers.get(TestModifier.CHECK_REVERTS):
+                with RevertsContextManager(raw_revert_msg):
+                    delegate(data=calldata)
+
+            else:
+                receipt = delegate(data=calldata)
+
+                if raw_event_logs := self.modifiers.get(TestModifier.CHECK_EMITS):
+                    expected_events = list(map(lambda r: self.eval_arg(r, **call_args), raw_event_logs))
+                    assert receipt.events == expected_events
+
+            # TODO: Test reporting functionality?
 
     def runtest(self):
         """Collect call args and execute test. Convert to fuzz test if applicable."""
@@ -107,14 +108,10 @@ class ContractTestItem(BaseTestItem):
             if isinstance(arg, SearchStrategy):
                 given_args[arg_name] = arg
 
-        def test_case(**kwargs):
-            # NOTE: Retain ordering from original call args,
-            #       but update SearchStrategy for concrete example
-            args = {k: kwargs.get(k, v) for k, v in self.call_args.items()}
-            self.execute_test(*args.values())
+        test_case = self.execute_test
 
         if given_args:
             # NOTE: Re-write as a fuzzing case (leveraging Hypothesis integration)
-            test_case = given(**given_args)(self.hypothesis_settings(test_case))
+            test_case = self.hypothesis_settings(given(**given_args)(test_case))
 
         test_case()

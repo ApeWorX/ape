@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     from ethpm_types.abi import ABIType
     from hypothesis import settings as HypothesisSettings
     from _pytest.nodes import Node
+    from _pytest._code.code import ExceptionInfo, TracebackStyle, TerminalRepr
 
     from ape.contracts.base import ContractInstance
     from ape.api.accounts import TestAccountAPI
@@ -51,6 +52,7 @@ class BaseTestItem(pytest.Item, ManagerAccessMixin):
         self._fixtureinfo = fixtureinfo
         self.fixturenames = fixtureinfo.names_closure
 
+    # TODO: This is not caching properly...
     def get_fixture_value(self, fixture_name: str) -> Any | None:
         # NOTE: Use `_ispytest=True` to avoid `PytestDeprecationWarning`
         # TODO: Refactor to `SubRequest` (avoid typing error below)
@@ -96,6 +98,9 @@ class BaseTestItem(pytest.Item, ManagerAccessMixin):
 
     @cached_property
     def delegate(self) -> "ContractInstance":
+        if not self.contract_type.get_runtime_bytecode():
+            raise AssertionError(f"'{self.contract_type.name}' does not provide a runtime.")
+
         return self.default_executor.deploy(self.contract_type)
 
     def load_executor(self, executor_id: str | None) -> "TestAccountAPI":
@@ -115,14 +120,6 @@ class BaseTestItem(pytest.Item, ManagerAccessMixin):
                 f"Fixture '{executor_id}' type must be a test account, not '{type(executor)}'."
             )
 
-        if not self.contract_type.get_runtime_bytecode():
-            raise AssertionError(f"'{self.contract_type.name}' does not provide a runtime.")
-
-        # NOTE: "Caches" code delegations
-        if executor.delegate != self.delegate:
-            # NOTE: By default, `.set_delegate` targets `self` as receiver, which will fail
-            executor.set_delegate(self.delegate, receiver=0x1)
-
         return executor
 
     @property
@@ -137,3 +134,16 @@ class BaseTestItem(pytest.Item, ManagerAccessMixin):
 
         snapshot = self._snapshots[self.parent] = self.chain_manager.snapshot()
         return snapshot
+
+    def repr_failure(
+        self,
+        excinfo: "ExceptionInfo",
+        style: "TracebackStyle | None" = None,
+    ) -> "TerminalRepr | str":
+        from ape.exceptions import TransactionError
+
+        if (excinfo.errisinstance(TransactionError)) and excinfo.value.source_traceback:
+            # NOTE: Change the traceback to show the error using the contract's source
+            excinfo._traceback = excinfo.value.source_traceback
+        
+        return super().repr_failure(excinfo, style)

@@ -4,9 +4,9 @@ pragma solidity ^0.8;
 import {IERC20} from "openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract CheckerTest {
-    /// @custom:ape-check-reverts "This error gets raised"
-    function test_reverts_with() external {
-        revert("This error gets raised");
+    /// @custom:ape-check-reverts It works!
+    function test_it_raises() external {
+        revert("It works!");
     }
 
     /// @custom:ape-check-emits
