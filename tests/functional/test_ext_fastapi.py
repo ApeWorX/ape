@@ -6,7 +6,7 @@ import pytest
 # Skip the entire module if fastapi is not installed.
 fastapi = pytest.importorskip("fastapi")
 
-from fastapi import FastAPI, Query  # noqa: E402
+from fastapi import FastAPI  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 
 from ape.ext.fastapi import network_context  # noqa: E402
@@ -15,6 +15,7 @@ from ape.ext.fastapi import network_context  # noqa: E402
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _make_app_and_client(handler):
     app = FastAPI()
@@ -32,6 +33,7 @@ def _mock_network_ctx():
 # ---------------------------------------------------------------------------
 # Test 1 — decorator adds ecosystem/network to signature automatically
 # ---------------------------------------------------------------------------
+
 
 class TestSignaturePatch:
     def test_ecosystem_and_network_added_when_not_in_original(self):
@@ -70,6 +72,7 @@ class TestSignaturePatch:
 # Test 2 — network context is entered with the correct choice string
 # ---------------------------------------------------------------------------
 
+
 class TestNetworkContextEntered:
     def test_correct_choice_string_passed_to_parse_network_choice(self):
 
@@ -107,6 +110,7 @@ class TestNetworkContextEntered:
 # ---------------------------------------------------------------------------
 # Test 3 — kwargs passed to original function
 # ---------------------------------------------------------------------------
+
 
 class TestKwargsBehaviour:
     def test_ecosystem_network_stripped_when_not_in_original_signature(self):
@@ -151,6 +155,7 @@ class TestKwargsBehaviour:
 # ---------------------------------------------------------------------------
 # Test 4 — functools.wraps preserves original function metadata
 # ---------------------------------------------------------------------------
+
 
 class TestWrapsMetadata:
     def test_function_name_preserved(self):

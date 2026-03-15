@@ -66,8 +66,7 @@ def network_context() -> Callable:
             from fastapi import Query
         except ImportError as e:
             raise ImportError(
-                "fastapi is required to use ape.ext.fastapi. "
-                "Install it with: pip install fastapi"
+                "fastapi is required to use ape.ext.fastapi. Install it with: pip install fastapi"
             ) from e
 
         original_sig = inspect.signature(func)
@@ -104,7 +103,7 @@ def network_context() -> Callable:
                     break
 
             new_params = existing[:insert_at] + extra_params + existing[insert_at:]
-            wrapper.__signature__ = original_sig.replace(parameters=new_params)
+            wrapper.__signature__ = original_sig.replace(parameters=new_params)  # type: ignore[attr-defined]
 
         return wrapper
 
