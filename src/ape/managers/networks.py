@@ -399,6 +399,11 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
 
         if uri := self.provider.connection_str:
             fork_settings["upstream_provider"] = uri
+            headers = self.get_request_headers(
+                self.ecosystem.name, self.network.name, self.provider.name
+            )
+            if headers:
+                fork_settings["upstream_provider_request_headers"] = dict(headers)
 
         _dict_overlay(
             provider_settings,
