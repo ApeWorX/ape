@@ -266,27 +266,33 @@ class KeyfileAccount(AccountAPI):
         return public_key
 
     def unlock(self, passphrase: str | None = None):
-        if not passphrase:
-            # Check if environment variable is available
-            env_variable = f"APE_ACCOUNTS_{self.alias}_PASSPHRASE"
-            passphrase = environ.get(env_variable, None)
+        private_key: bytes = b""
+        if passphrase:
+            # NOTE: Try only once, if it fails it was given incorrectly and we should not prompt
+            private_key = self.__decrypt_keyfile(passphrase)
 
-            if passphrase:
-                # Passphrase found in environment variable
-                logger.info(
-                    f"Using passphrase for account '{self.alias}' from environment variable"
-                )
-            else:
-                # Passphrase not found, prompt for it
-                passphrase = self._prompt_for_passphrase(
-                    f"Enter passphrase to permanently unlock '{self.alias}'"
-                )
+        elif passphrase := environ.get(f"APE_ACCOUNTS_{self.alias}_PASSPHRASE"):
+            logger.info(f"Using passphrase for account '{self.alias}' from environment variable")
+            # NOTE: Try only once, if it fails then we are non-interactive, so we can't prompt
+            private_key = self.__decrypt_keyfile(passphrase)
 
-        if passphrase is None:
-            raise AccountsError("Passphrase can't be 'None'")
+        attempts = 1
+        while not private_key:
+            # Passphrase not found, prompt for it up to 3 times.
+            passphrase = self._prompt_for_passphrase(
+                f"Enter passphrase to permanently unlock '{self.alias}'"
+            )
+            try:
+                private_key = self.__decrypt_keyfile(passphrase)
 
-        # Rest of the code to unlock the account using the passphrase
-        self.__cached_signer = ApeSigner(private_key=self.__decrypt_keyfile(passphrase))
+            except InvalidPasswordError:
+                if attempts < 3:
+                    logger.error("Invalid password")
+                    attempts += 1
+                else:
+                    raise
+
+        self.__cached_signer = ApeSigner(private_key=private_key)
         self.locked = False
 
     def lock(self):
