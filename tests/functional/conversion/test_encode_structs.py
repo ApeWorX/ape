@@ -5,6 +5,7 @@ from eth_pydantic_types import HexBytes
 from ethpm_types import BaseModel
 from ethpm_types.abi import MethodABI
 
+from ape.exceptions import MissingStructFieldError
 from ape.types.address import AddressType
 
 ABI = MethodABI.model_validate(
@@ -99,3 +100,21 @@ def test_encode_struct_using_object_with_more_fields(sender, ethereum):
     obj = SimilarStruct(a=1, b=HexBytes("0x02"), c=True, d=ADDRESS, e="foobar")
     actual = ethereum.encode_calldata(ABI, obj)
     assert actual == EXPECTED
+
+
+def test_encode_struct_missing_fields(ethereum):
+    data = {"a": 1, "b": HexBytes("0x02")}  # Missing "c" and "d".
+    with pytest.raises(MissingStructFieldError) as err:
+        ethereum.encode_calldata(ABI, data)
+
+    assert err.value.fields == ["c", "d"]
+    assert "Struct data missing required fields 'c', 'd'" in str(err.value)
+
+
+def test_encode_struct_missing_single_field(ethereum):
+    data = {"a": 1, "b": HexBytes("0x02"), "c": True}  # Missing "d".
+    with pytest.raises(MissingStructFieldError) as err:
+        ethereum.encode_calldata(ABI, data)
+
+    assert err.value.fields == ["d"]
+    assert "Struct data missing required field 'd'" in str(err.value)

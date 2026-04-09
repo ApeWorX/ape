@@ -15,6 +15,7 @@ from eth_pydantic_types.utils import validate_bytes_size
 from eth_utils import decode_hex
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, EventABIType, MethodABI
 
+from ape.exceptions import MissingStructFieldError
 from ape.logging import logger
 from ape.utils.basemodel import ManagerAccessMixin
 
@@ -130,6 +131,10 @@ class StructParser:
             and not isinstance(value, tuple)
         ):
             if isinstance(value, dict):
+                missing = [m.name for m in _type.components if m.name not in value]
+                if missing:
+                    raise MissingStructFieldError(missing)
+
                 return tuple(
                     (
                         self._encode(m, value[m.name])
