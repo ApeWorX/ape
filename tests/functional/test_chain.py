@@ -4,8 +4,78 @@ from datetime import datetime, timedelta
 import pytest
 
 from ape.exceptions import APINotImplementedError, ChainError, UnknownSnapshotError
-from ape.managers.chain import AccountHistory
+from ape.managers.chain import AccountHistory, ChainIdCache
 from ape.types.address import AddressType
+
+
+class TestChainIdCache:
+    @staticmethod
+    def _make_provider(mocker, network_name, provider_name, chain_id, is_local):
+        network = mocker.MagicMock()
+        network.name = network_name
+        network.is_local = is_local
+        provider = mocker.MagicMock()
+        provider.network = network
+        provider.name = provider_name
+        chain_id_prop = mocker.PropertyMock(return_value=chain_id)
+        type(provider).chain_id = chain_id_prop
+        provider.chain_id_prop = chain_id_prop
+        return provider
+
+    def test_local_networks_namespaced_by_provider(self, mocker):
+        test_provider = self._make_provider(mocker, "local", "test", 1337, is_local=True)
+        foundry_provider = self._make_provider(mocker, "local", "foundry", 31337, is_local=True)
+        cache = ChainIdCache()
+
+        assert cache.get_for_provider(test_provider) == 1337
+        assert cache.get_for_provider(foundry_provider) == 31337
+        assert cache.get_for_provider(test_provider) == 1337
+
+    def test_named_networks_keyed_by_network_name(self, mocker):
+        infura = self._make_provider(mocker, "mainnet", "infura", 1, is_local=False)
+        alchemy = self._make_provider(mocker, "mainnet", "alchemy", 1, is_local=False)
+        cache = ChainIdCache()
+
+        assert cache.get_for_provider(infura) == 1
+        assert cache.get_for_provider(alchemy) == 1
+        assert alchemy.chain_id_prop.call_count == 0
+
+    def test_clear_forces_reread(self, mocker):
+        provider = self._make_provider(mocker, "local", "foundry", 31337, is_local=True)
+        cache = ChainIdCache()
+
+        cache.get_for_provider(provider)
+        assert provider.chain_id_prop.call_count == 1
+        cache.get_for_provider(provider)
+        assert provider.chain_id_prop.call_count == 1  # cached
+
+        cache.clear()
+        cache.get_for_provider(provider)
+        assert provider.chain_id_prop.call_count == 2  # re-queried after clear
+
+    def test_behaves_like_a_dict(self, mocker):
+        cache = ChainIdCache()
+        cache["local:test"] = 1337
+        cache["local:foundry"] = 31337
+
+        assert cache["local:test"] == 1337
+        assert cache["local:foundry"] == 31337
+        assert "local:test" in cache
+        assert dict(cache) == {"local:test": 1337, "local:foundry": 31337}
+
+        assert cache.pop("local:test") == 1337
+        assert "local:test" not in cache
+
+        cache.clear()
+        assert cache == {}
+
+    def test_get_for_provider_honours_preseeded_entries(self, mocker):
+        provider = self._make_provider(mocker, "local", "foundry", 31337, is_local=True)
+        cache = ChainIdCache()
+        cache[ChainIdCache.key_for(provider)] = 99999
+
+        assert cache.get_for_provider(provider) == 99999
+        assert provider.chain_id_prop.call_count == 0
 
 
 def test_snapshot_and_restore(chain, owner, receiver, vyper_contract_instance):
