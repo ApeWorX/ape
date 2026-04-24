@@ -285,12 +285,12 @@ class KeyfileAccount(AccountAPI):
             try:
                 private_key = self.__decrypt_keyfile(passphrase)
 
-            except InvalidPasswordError:
+            except InvalidPasswordError as err:
                 if attempts < 3:
                     logger.error("Invalid password")
                     attempts += 1
                 else:
-                    raise
+                    raise AccountsError(f"Failed to unlock after {attempts} attempts.") from err
 
         self.__cached_signer = ApeSigner(private_key=private_key)
         self.locked = False
