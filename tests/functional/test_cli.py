@@ -873,6 +873,7 @@ def test_get_param_from_ctx(mocker):
 
 def test_parse_network_when_interactive_and_no_param(mocker):
     ctx = mocker.MagicMock()
+    ctx.meta = {}
     ctx.params = {"interactive": True}
     ctx.parent = None
     network_ctx = parse_network(ctx)
@@ -883,6 +884,7 @@ def test_parse_network_when_interactive_and_no_param(mocker):
 
 def test_parse_network_when_interactive_and_str_param(mocker):
     ctx = mocker.MagicMock()
+    ctx.meta = {}
     ctx.params = {"interactive": True, "network": "ethereum:local:test"}
     network_ctx = parse_network(ctx)
     assert network_ctx is not None
@@ -892,6 +894,7 @@ def test_parse_network_when_interactive_and_str_param(mocker):
 
 def test_parse_network_when_interactive_and_class_param(mocker, eth_tester_provider):
     ctx = mocker.MagicMock()
+    ctx.meta = {}
     ctx.params = {"interactive": True, "network": eth_tester_provider}
     network_ctx = parse_network(ctx)
     assert network_ctx is not None
@@ -901,6 +904,7 @@ def test_parse_network_when_interactive_and_class_param(mocker, eth_tester_provi
 
 def test_parse_network_when_explicit_none(mocker):
     ctx = mocker.MagicMock()
+    ctx.meta = {}
     ctx.params = {"network": _NONE_NETWORK}
     network_ctx = parse_network(ctx)
     assert network_ctx is None

@@ -45,9 +45,9 @@ def test_deploy_wrong_number_of_arguments(
         contract_container.deploy(sender=not_owner)
 
 
-def test_deploy_and_publish_local_network(owner, contract_container):
+def test_deploy_and_publish_local_network(owner, minimal_proxy_container):
     with pytest.raises(ProjectError, match="Can only publish deployments on a live network"):
-        contract_container.deploy(0, sender=owner, publish=True)
+        minimal_proxy_container.deploy(sender=owner, publish=True)
 
 
 def test_deploy_and_publish_live_network_no_explorer(owner, contract_container, dummy_live_network):
