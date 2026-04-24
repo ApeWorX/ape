@@ -1348,8 +1348,9 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
             raise err
 
         for contract_err in options:
-            if contract_err.abi and contract_err.abi.signature == signature:
-                return contract_err
+            if abi := getattr(contract_err, "abi", None):
+                if abi.signature == signature:
+                    return contract_err
 
         raise err
 
