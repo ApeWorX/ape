@@ -21,7 +21,7 @@ from eth_utils import to_hex
 from ethpm_types import MethodABI
 from pydantic import Field, computed_field, field_serializer, model_validator
 
-from ape.api.networks import NetworkAPI
+from ape.api.networks import NetworkAPI, ProviderContextManager
 from ape.api.query import BlockTransactionQuery
 from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.exceptions import (
@@ -310,6 +310,38 @@ class ProviderAPI(BaseInterfaceModel):
         """
         Disconnect from a provider, such as tear-down a process or quit an HTTP session.
         """
+
+    def connection(
+        self,
+        disconnect_after: bool = False,
+        disconnect_on_exit: bool = True,
+    ) -> ProviderContextManager:
+        """
+        Use this provider in a temporary context. Connects on enter and disconnects
+        on exit. Equivalent to :meth:`~ape.managers.networks.NetworkManager.parse_network_choice`
+        but for a provider instance that has already been resolved.
+
+        Usage example::
+
+            provider = networks.ethereum.mainnet.get_provider("infura")
+            with provider.connection():
+                ...
+
+        Args:
+            disconnect_after (bool): Set to ``True`` to force a disconnect after ending
+              the context. Defaults to ``False`` so the connection can be reused, such
+              as in a multi-chain scenario.
+            disconnect_on_exit (bool): Whether to disconnect on the exit of the python
+              session. Defaults to ``True``.
+
+        Returns:
+            :class:`~ape.api.networks.ProviderContextManager`
+        """
+        return ProviderContextManager(
+            provider=self,
+            disconnect_after=disconnect_after,
+            disconnect_on_exit=disconnect_on_exit,
+        )
 
     @property
     def ipc_path(self) -> Path | None:
