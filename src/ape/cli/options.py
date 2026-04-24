@@ -322,6 +322,9 @@ def _get_requested_networks(function, network_object_names):
     return [x for x in command_kwargs if x in network_object_names]
 
 
+NETWORK_META_KEY = "__ape_network__"
+
+
 def _update_context_with_network(ctx, provider, requested_network_objects):
     choice_classes = {
         "ecosystem": provider.network.ecosystem,
@@ -336,22 +339,12 @@ def _update_context_with_network(ctx, provider, requested_network_objects):
         ctx.params[item] = instance
 
     if isinstance(ctx.command, ConnectedProviderCommand):
-        # Place all values, regardless of request in
-        # the context. This helps the Ape CLI backend.
-        if ctx.obj is None:
-            # Happens when using commands that don't use the
-            # Ape context or any context.
-            ctx.obj = {}
-
-        for choice, obj in choice_classes.items():
-            try:
-                ctx.obj[choice] = obj
-            except Exception:
-                # This would only happen if using an unusual context object.
-                raise Abort(
-                    "Cannot use connected-provider command type(s) "
-                    "with non key-settable context object."
-                )
+        # Place all values, regardless of request, in ``ctx.meta`` so that
+        # ``parse_network`` (and ``ctx.obj`` consumers that use
+        # :meth:`click.Context.ensure_object`) can all coexist. ``ctx.obj`` is
+        # owned by the caller's code; ``ctx.meta`` is Click's cross-cutting
+        # scratch space and is safe for us to write to.
+        ctx.meta.setdefault(NETWORK_META_KEY, {}).update(choice_classes)
 
 
 def _get_provider(value, default, keep_as_choice_str):

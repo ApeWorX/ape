@@ -28,9 +28,18 @@ def get_param_from_ctx(ctx: "Context", param: str) -> Any | None:
 
 def parse_network(ctx: "Context") -> "ProviderContextManager | None":
     from ape.api.providers import ProviderAPI
+    from ape.cli.options import NETWORK_META_KEY
     from ape.utils.basemodel import ManagerAccessMixin as access
 
     interactive = get_param_from_ctx(ctx, "interactive")
+
+    # Handle if already parsed by the network_option callback. Preferred
+    # location is ``ctx.meta`` so we don't collide with user-owned ``ctx.obj``
+    # (e.g. when a command chains ``click.make_pass_decorator(...)`` that
+    # replaces ``ctx.obj`` with a typed container).
+    network_meta = ctx.meta.get(NETWORK_META_KEY)
+    if network_meta and (provider := network_meta.get("provider")) is not None:
+        return provider.network.use_provider(provider, disconnect_on_exit=not interactive)
 
     # Handle if already parsed (as when using network-option)
     if ctx.obj and "provider" in ctx.obj:
