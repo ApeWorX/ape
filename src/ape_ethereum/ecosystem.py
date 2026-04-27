@@ -36,7 +36,6 @@ from ape.exceptions import (
     CustomError,
     DecodingError,
     SignatureError,
-    TransactionError,
 )
 from ape.logging import logger
 from ape.managers.config import merge_configs
@@ -561,19 +560,18 @@ class Ethereum(EcosystemAPI):
                         pass
 
         # safe >=1.1.0 provides `masterCopy()` (0xa619486e), which is also stored in slot 0
-        if re.match(r".*a619486e.*", code):  # NOTE: Such a short sequence can have false positives
+        if "a619486e" in code:
             slot_0 = self.provider.get_storage(address, 0)
-            # Slot value is "address-like" heuristic (all contract addresses have >12 nonzero bytes)
-            # NOTE: Farming an address with 8 leading zeros is pretty improbable
+            # "Address-like" heuristic: 12 leading zero bytes, and the trailing 20 bytes
+            # contain >=12 non-zero bytes. Vanity addresses with that many zeros are rare.
             if all(b == 0 for b in slot_0[:-20]) and sum(1 for b in slot_0[-20:] if b > 0) >= 12:
-                # Slot is "address-like", so convert it
                 target = self.conversion_manager.convert(slot_0[-20:], AddressType)
 
                 try:
                     # call `masterCopy()` and check that target matches return value
                     singleton = ContractCall(MASTER_COPY_ABI, address)(skip_trace=True)
 
-                except TransactionError:
+                except Exception:
                     pass
 
                 else:
