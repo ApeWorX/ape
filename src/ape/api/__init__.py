@@ -35,7 +35,13 @@ def __getattr__(name: str):
 
         return getattr(explorer_module, name)
 
-    elif name in ("BlockAPI, ProviderAPI, SubprocessProvider, TestProviderAPI, UpstreamProvider"):
+    elif name in (
+        "BlockAPI",
+        "ProviderAPI",
+        "SubprocessProvider",
+        "TestProviderAPI",
+        "UpstreamProvider",
+    ):
         import ape.api.providers as provider_module
 
         return getattr(provider_module, name)
