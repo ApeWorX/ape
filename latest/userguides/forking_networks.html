@@ -208,6 +208,10 @@ Some options are:</p>
 <li><p><a class="reference external" href="https://github.com/ApeWorX/ape-foundry">ApeWorX/ape-foundry</a></p></li>
 <li><p><a class="reference external" href="https://github.com/ApeWorX/ape-hardhat">ApeWorX/ape-hardhat</a></p></li>
 </ol>
+<p>If your upstream RPC requires custom HTTP headers, such as an <code class="docutils literal notranslate"><span class="pre">Authorization:</span> <span class="pre">Bearer</span> <span class="pre">...</span></code>
+token, configure them using Ape’s standard <code class="docutils literal notranslate"><span class="pre">request_headers</span></code> settings on the upstream
+ecosystem, network, or provider. Ape forwards those headers in the fork configuration so
+fork-capable provider plugins can pass them through to their backend process.</p>
 <p>You can install one of these plugins by doing:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>plugins<span class="w"> </span>install<span class="w"> </span>&lt;foundry<span class="p">|</span>hardhat&gt;
 </span></pre></div>
