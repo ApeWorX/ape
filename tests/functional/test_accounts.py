@@ -613,8 +613,11 @@ def test_unlock_from_prompt_retries_and_succeeds(runner, keyfile_account):
 
 
 def test_unlock_from_prompt_fails_after_three_attempts(runner, keyfile_account):
-    with pytest.raises(AccountsError, match="Invalid password"):
-        keyfile_account.unlock()
+    with runner.isolation(
+        input=f"{INVALID_PASSPHRASE}\n{INVALID_PASSPHRASE}\n{INVALID_PASSPHRASE}\n"
+    ):
+        with pytest.raises(AccountsError, match="Failed to unlock after 3 attempts."):
+            keyfile_account.unlock()
 
     assert keyfile_account.locked
 
