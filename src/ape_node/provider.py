@@ -698,7 +698,9 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
                 if txn.gas_limit > block_gas_limit:
                     txn.gas_limit = block_gas_limit
                 elif txn.gas_limit == block_gas_limit:
-                    txn.gas_limit -= 1
+                    limit = txn.gas_limit or 0
+                    txn.gas_limit = limit + 1
+
                 else:
                     # Raise whatever error it is. I am not sure how this is possible!
                     raise

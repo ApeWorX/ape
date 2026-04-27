@@ -48,6 +48,18 @@ class ApeException(Exception):
     """
 
 
+class MissingStructFieldError(ApeException, KeyError):
+    """
+    Raised when a dict is missing a required field for a struct.
+    """
+
+    def __init__(self, fields: list[str]):
+        self.fields = fields
+        fields_str = ", ".join(f"'{f}'" for f in fields)
+        noun = "field" if len(fields) == 1 else "fields"
+        super().__init__(f"Struct data missing required {noun} {fields_str}.")
+
+
 class ApeIndexError(ApeException, IndexError):
     """
     An exception that is also an IndexError.

@@ -39,6 +39,7 @@ from ape.utils.misc import ZERO_ADDRESS, is_evm_precompile, is_zero_hex, log_ins
 if TYPE_CHECKING:
     from rich.console import Console as RichConsole
 
+    from ape.api.providers import ProviderAPI
     from ape.types import BlockID, ContractCode, GasReport, SnapshotID, SourceTraceback
 
 
@@ -698,6 +699,33 @@ class ReportManager(BaseManager):
         return get_rich_console(*args, **kwargs)
 
 
+class ChainIdCache(dict):
+    """
+    A cache of ``chain_id`` keyed by the active network (and, for local
+    networks, also by the provider name).
+    """
+
+    @staticmethod
+    def key_for(provider: "ProviderAPI") -> str:
+        """Return the cache key for ``provider``.
+
+        Named networks key by ``network.name`` (chain_id is a network
+        invariant). Local networks additionally disambiguate by provider name
+        so ape-test (``local:test`` → 1337) and ape-foundry
+        (``local:foundry`` → 31337) don't overwrite each other.
+        """
+        network = provider.network
+        return f"{network.name}:{provider.name}" if network.is_local else network.name
+
+    def get_for_provider(self, provider: "ProviderAPI") -> int:
+        """Return the chain id for ``provider``, querying and caching if unseen."""
+        key = self.key_for(provider)
+        if key not in self:
+            self[key] = provider.chain_id
+
+        return self[key]
+
+
 class ChainManager(BaseManager):
     """
     A class for managing the state of the active blockchain.
@@ -710,7 +738,7 @@ class ChainManager(BaseManager):
     """
 
     _snapshots: defaultdict = defaultdict(list)  # chain_id -> snapshots
-    _chain_id_map: dict[str, int] = {}
+    _chain_id_cache: ChainIdCache = ChainIdCache()
     _block_container_map: dict[int, BlockContainer] = {}
     _transaction_history_map: dict[int, TransactionHistory] = {}
     _reports: ReportManager = ReportManager()
@@ -756,11 +784,7 @@ class ChainManager(BaseManager):
         The blockchain ID.
         See `ChainList <https://chainlist.org/>`__ for a comprehensive list of IDs.
         """
-        network_name = self.provider.network.name
-        if network_name not in self._chain_id_map:
-            self._chain_id_map[network_name] = self.provider.chain_id
-
-        return self._chain_id_map[network_name]
+        return self._chain_id_cache.get_for_provider(self.provider)
 
     @property
     def gas_price(self) -> int:
