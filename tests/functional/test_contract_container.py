@@ -50,26 +50,28 @@ def test_deploy_and_publish_local_network(owner, minimal_proxy_container):
         minimal_proxy_container.deploy(sender=owner, publish=True)
 
 
-def test_deploy_and_publish_live_network_no_explorer(owner, contract_container, dummy_live_network):
+def test_deploy_and_publish_live_network_no_explorer(
+    owner, minimal_proxy_container, dummy_live_network
+):
     dummy_live_network.__dict__["explorer"] = None
     expected_message = "Unable to publish contract - no explorer plugin installed."
     with pytest.raises(NetworkError, match=expected_message):
-        contract_container.deploy(0, sender=owner, publish=True, required_confirmations=0)
+        minimal_proxy_container.deploy(sender=owner, publish=True, required_confirmations=0)
 
 
 @explorer_test
 def test_deploy_and_publish(
-    owner, contract_container, dummy_live_network_with_explorer, mock_explorer
+    owner, minimal_proxy_container, dummy_live_network_with_explorer, mock_explorer
 ):
-    contract = contract_container.deploy(0, sender=owner, publish=True, required_confirmations=0)
+    contract = minimal_proxy_container.deploy(sender=owner, publish=True, required_confirmations=0)
     mock_explorer.publish_contract.assert_called_once_with(contract.address)
 
 
 @explorer_test
 def test_deploy_and_not_publish(
-    owner, contract_container, dummy_live_network_with_explorer, mock_explorer
+    owner, minimal_proxy_container, dummy_live_network_with_explorer, mock_explorer
 ):
-    contract_container.deploy(0, sender=owner, publish=False, required_confirmations=0)
+    minimal_proxy_container.deploy(sender=owner, publish=False, required_confirmations=0)
     assert not mock_explorer.call_count
 
 
