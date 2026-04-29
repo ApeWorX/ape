@@ -77,11 +77,11 @@ class ApeDataCache(CacheDirectory, Generic[_BASE_MODEL]):
         except KeyError:
             return False
 
-    def get_type(self, key: str) -> _BASE_MODEL | None:
+    def get_type(self, key: str, fetch_from_disk: bool = True) -> _BASE_MODEL | None:
         if model := self.memory.get(key):
             return model
 
-        elif self._read_from_disk:
+        elif fetch_from_disk and self._read_from_disk:
             if data := self.get_data(key):
                 # Found on disk.
                 model = self._model_type.model_validate(data)
@@ -566,10 +566,8 @@ class ContractCache(BaseManager):
             return None
 
         if not replace:
-            cached_contract_type = (
-                self.contract_types[address_key]
-                if fetch_from_disk
-                else self.contract_types.memory.get(address_key)
+            cached_contract_type = self.contract_types.get_type(
+                address_key, fetch_from_disk=fetch_from_disk
             )
             if contract_type := cached_contract_type:
                 # The ContractType was previously cached.

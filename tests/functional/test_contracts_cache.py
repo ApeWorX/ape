@@ -179,22 +179,22 @@ def test_instance_at_replace(chain, contract_instance):
 
 
 def test_instance_at_fetch_from_disk_false(mocker, chain, contract_instance):
-    # When fetch_from_disk=False, the disk-aware cache read is bypassed so the
-    # disk-cached ABI is not merged into the returned contract type.
+    # When fetch_from_disk=False, get_type is called with fetch_from_disk=False
+    # so the on-disk ABI is not loaded and merged into the returned contract type.
     address = str(contract_instance.address)
-
-    # `get_type` reads memory then disk; bypassing it goes to memory only.
     spy = mocker.spy(chain.contracts.contract_types, "get_type")
 
-    # Default fetch_from_disk=True hits the disk-aware getter.
     chain.contracts.instance_at(address)
-    assert any(address in call.args for call in spy.call_args_list)
+    default_calls = [c for c in spy.call_args_list if address in c.args]
+    assert default_calls
+    assert all(c.kwargs.get("fetch_from_disk", True) for c in default_calls)
 
     spy.reset_mock()
 
-    # fetch_from_disk=False skips the disk-aware getter for this address.
     chain.contracts.instance_at(address, fetch_from_disk=False)
-    assert not any(address in call.args for call in spy.call_args_list)
+    skip_calls = [c for c in spy.call_args_list if address in c.args]
+    assert skip_calls
+    assert all(c.kwargs.get("fetch_from_disk", True) is False for c in skip_calls)
 
 
 def test_instance_at_skip_proxy(mocker, chain, vyper_contract_instance, owner):
