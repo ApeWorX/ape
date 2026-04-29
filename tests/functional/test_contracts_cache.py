@@ -170,9 +170,7 @@ def test_instance_at_replace(chain, contract_instance):
         chain.contracts.contract_types[address] = real_ct
 
         # replace=True: the cached value is overwritten, no merge.
-        replaced = chain.contracts.instance_at(
-            address, contract_type=replacement, replace=True
-        )
+        replaced = chain.contracts.instance_at(address, contract_type=replacement, replace=True)
         assert replaced.contract_type.name == replacement.name
         assert len(replaced.contract_type.abi) < len(real_ct.abi)
         assert chain.contracts.contract_types[address].name == replacement.name
