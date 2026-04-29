@@ -2,7 +2,7 @@
 
 [Brownie is no longer actively maintained. The Brownie README directs Python Ethereum developers to Ape Framework.](https://github.com/eth-brownie/brownie#readme) This guide documents a practical migration path for Brownie projects moving to Ape and references [ApeWorX/ape issue #640](https://github.com/ApeWorX/ape/issues/640), which originally tracked Brownie project migration support.
 
-# Automated Migration with ApeShift
+## Automated Migration with ApeShift
 
 Run ApeShift to apply deterministic Brownie-to-Ape rewrites, validation, reports, and manual-review TODOs.
 
@@ -11,6 +11,11 @@ npx apeshift migrate .
 ```
 
 ApeShift is published in the Codemod registry: https://app.codemod.com/registry/apeshift
+
+> **Note on tooling:** ApeShift is distributed through the Codemod registry, which uses npm packaging for codemod distribution.
+> The migration itself operates on Python files using ast-grep rules that parse and transform Python AST directly.
+> No JavaScript runtime is involved in the user's Python project code.
+> A Python-native wrapper may be added in the future.
 
 ## Imports
 
@@ -24,7 +29,7 @@ from brownie import accounts, config, SimpleStorage, network
 from ape import accounts, config, networks, project
 ```
 
-Official docs: https://docs.apeworx.io/ape/stable/userguides/contracts.html
+Official docs: [Contracts](./contracts.html)
 
 ## Accounts
 
@@ -42,7 +47,7 @@ if networks.provider.network.name == "development":
 return accounts.add(config["wallets"]["from_key"])  # TODO(apeshift): accounts.add(key) not valid in Ape; use accounts.load("account-name") after: ape accounts import <name>
 ```
 
-Official docs: https://docs.apeworx.io/ape/stable/userguides/accounts.html
+Official docs: [Accounts](./accounts.html)
 
 ## Contract Deployment and Transactions
 
@@ -68,7 +73,7 @@ tx = fund_me.fund({"from": account, "value": entrance_fee})
 tx = fund_me.fund(sender=account, value=entrance_fee)
 ```
 
-Official docs: https://docs.apeworx.io/ape/stable/userguides/contracts.html
+Official docs: [Contracts](./contracts.html)
 
 ## Networks
 
@@ -82,7 +87,7 @@ print(f"The active network is {network.show_active()}")
 print(f"The active network is {networks.provider.network.name}")
 ```
 
-Official docs: https://docs.apeworx.io/ape/stable/userguides/networks.html
+Official docs: [Networks](./networks.html)
 
 ## Testing and Reverts
 
@@ -110,7 +115,67 @@ with pytest.raises(ContractLogicError):
     fund_me.withdraw(sender=bad_actor)
 ```
 
-Official docs: https://docs.apeworx.io/ape/latest/userguides/testing.html
+Official docs: [Testing](./testing.html)
+
+## Testing: pytest Fixtures
+
+Ape tests use pytest fixtures from the `ape-test` plugin.
+In Ape, contract types are not injected as pytest fixtures.
+Use the `project` fixture and access contracts as `project.ContractName`.
+
+Remove Brownie's `fn_isolation` fixture when migrating tests:
+
+```python
+# Before
+@pytest.fixture(autouse=True)
+def isolate(fn_isolation):
+    pass
+
+# After
+# Remove entirely — Ape handles test isolation through its pytest plugin.
+```
+
+Use Ape's `accounts` fixture with `project` for deployments:
+
+```python
+# Before
+def test_deploy(Token, accounts):
+    account = accounts[0]
+    token = Token.deploy({"from": account})
+
+# After
+def test_deploy(project, accounts):
+    account = accounts[0]
+    token = project.Token.deploy(sender=account)
+```
+
+Update contract fixture patterns the same way:
+
+```python
+# Before
+@pytest.fixture
+def token(Token, accounts):
+    return Token.deploy({"from": accounts[0]})
+
+# After
+@pytest.fixture
+def token(project, accounts):
+    return project.Token.deploy(sender=accounts[0])
+```
+
+If tests manually use chain snapshots, `chain.snapshot()` remains similar, but Brownie's `chain.revert()` should become Ape's `chain.restore()`.
+
+```python
+# Before
+chain.snapshot()
+chain.revert()
+
+# After
+chain.snapshot()
+chain.restore()
+```
+
+Official docs: [Testing](./testing.html)
 
 ## Config Files
 
@@ -148,7 +213,7 @@ networks:
     verify: false
 ```
 
-Official docs: https://docs.apeworx.io/ape/stable/userguides/config.html
+Official docs: [Config](./config.html)
 
 ## Real-World Results
 
