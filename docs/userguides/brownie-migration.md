@@ -175,6 +175,23 @@ chain.snapshot()
 chain.restore()
 ```
 
+Brownie provides a `web3` pytest fixture for direct Web3.py access in tests.
+Ape does not provide a `web3` fixture.
+
+If direct Web3 access is needed, use the active provider:
+
+```python
+# Before
+def test_block_number(web3):
+    assert web3.eth.block_number >= 0
+
+# After
+from ape import networks
+
+def test_block_number():
+    assert networks.provider.web3.eth.block_number >= 0
+```
+
 Official docs: [Testing](./testing.html)
 
 ## Config Files
