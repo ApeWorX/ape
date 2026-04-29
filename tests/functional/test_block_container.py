@@ -139,7 +139,7 @@ def test_poll_blocks_reorg(chain_that_mined_5, eth_tester_provider, owner, PollD
 
 
 def test_poll_blocks_timeout(
-    vyper_contract_instance, chain_that_mined_5, eth_tester_provider, owner, PollDaemon
+    minimal_proxy, chain_that_mined_5, eth_tester_provider, owner, PollDaemon
 ):
     poller = chain_that_mined_5.blocks.poll_blocks(new_block_timeout=1)
 
@@ -149,7 +149,7 @@ def test_poll_blocks_timeout(
 
 
 def test_poll_blocks_reorg_with_timeout(
-    vyper_contract_instance, chain_that_mined_5, eth_tester_provider, owner, PollDaemon, ape_caplog
+    minimal_proxy, chain_that_mined_5, eth_tester_provider, owner, PollDaemon, ape_caplog
 ):
     blocks: Queue = Queue(maxsize=6)
     poller = chain_that_mined_5.blocks.poll_blocks(new_block_timeout=1)

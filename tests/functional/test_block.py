@@ -11,7 +11,7 @@ def block(chain):
     return chain.blocks.head
 
 
-def test_block(eth_tester_provider, vyper_contract_instance):
+def test_block(eth_tester_provider, minimal_proxy):
     data = eth_tester_provider.web3.eth.get_block("latest")
     actual = Block.model_validate(data)
     assert actual.hash == data["hash"]
