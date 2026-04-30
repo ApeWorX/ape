@@ -7,7 +7,7 @@
 Run ApeShift to apply deterministic Brownie-to-Ape rewrites, validation, reports, and manual-review TODOs.
 
 ```bash
-npx apeshift migrate .
+npx codemod apeshift migrate .
 ```
 
 ApeShift is published in the Codemod registry: https://app.codemod.com/registry/apeshift
