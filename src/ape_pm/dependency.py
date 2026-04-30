@@ -139,7 +139,7 @@ class GithubDependency(DependencyAPI):
 
     scheme: str = "https"
     """
-    Either HTTPS or SSH; only used with `ref:`.
+    Either HTTPS or SSH; only used with ``ref``.
     """
 
     # Exists as property so can be changed for testing.
