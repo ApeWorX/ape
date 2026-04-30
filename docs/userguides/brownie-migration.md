@@ -1,4 +1,4 @@
-# Brownie to Ape migration
+# Brownie to Ape Migration
 
 [Brownie is no longer actively maintained. The Brownie README directs Python Ethereum developers to Ape Framework.](https://github.com/eth-brownie/brownie#readme) This guide documents a practical migration path for Brownie projects moving to Ape and references [ApeWorX/ape issue #640](https://github.com/ApeWorX/ape/issues/640), which originally tracked Brownie project migration support.
 
