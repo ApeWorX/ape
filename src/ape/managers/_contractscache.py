@@ -77,11 +77,11 @@ class ApeDataCache(CacheDirectory, Generic[_BASE_MODEL]):
         except KeyError:
             return False
 
-    def get_type(self, key: str) -> _BASE_MODEL | None:
+    def get_type(self, key: str, fetch_from_disk: bool = True) -> _BASE_MODEL | None:
         if model := self.memory.get(key):
             return model
 
-        elif self._read_from_disk:
+        elif fetch_from_disk and self._read_from_disk:
             if data := self.get_data(key):
                 # Found on disk.
                 model = self._model_type.model_validate(data)
@@ -520,8 +520,10 @@ class ContractCache(BaseManager):
         address: AddressType,
         default: ContractType | None = None,
         fetch_from_explorer: bool = True,
+        fetch_from_disk: bool = True,
         proxy_info: ProxyInfoAPI | None = None,
         detect_proxy: bool = True,
+        replace: bool = False,
     ) -> ContractType | None:
         """
         Get a contract type by address.
@@ -536,9 +538,18 @@ class ContractCache(BaseManager):
             fetch_from_explorer (bool): Set to ``False`` to avoid fetching from an
               explorer. Defaults to ``True``. Only fetches if it needs to (uses disk
               & memory caching otherwise).
+            fetch_from_disk (bool): Set to ``False`` to avoid reading (and merging)
+              the disk-cached ABI for this address. Defaults to ``True``.
             proxy_info (ProxyInfoAPI | None): Pass in the proxy info, if it is known,
               to avoid the potentially expensive look-up.
             detect_proxy (bool): Set to ``False`` to avoid detecting if it is a proxy.
+            replace (bool): Set to ``True`` to overwrite the cached contract type
+              instead of merging with it. Useful when a cached ABI is corrupt.
+              When ``True`` and only ``default`` is given, the cache is replaced
+              with ``default``. When ``True`` and ``fetch_from_explorer`` is also
+              ``True``, the cache is replaced with the explorer result (or the
+              merge of the explorer result and ``default``, when both are present).
+              Defaults to ``False``.
 
         Returns:
             ContractType | None: The contract type if it was able to get one,
@@ -554,18 +565,23 @@ class ContractCache(BaseManager):
             # In this case, it at least _looked_ like an address.
             return None
 
-        if contract_type := self.contract_types[address_key]:
-            # The ContractType was previously cached.
-            if default and default != contract_type:
-                # The given default ContractType is different than the cached one.
-                # Merge the two and cache the merged result.
-                combined_contract_type = _merge_contract_types(contract_type, default)
-                self.contract_types[address_key] = combined_contract_type
-                return combined_contract_type
+        if not replace:
+            cached_contract_type = self.contract_types.get_type(
+                address_key, fetch_from_disk=fetch_from_disk
+            )
+            if contract_type := cached_contract_type:
+                # The ContractType was previously cached.
+                if default and default != contract_type:
+                    # The given default ContractType is different than the cached one.
+                    # Merge the two and cache the merged result.
+                    combined_contract_type = _merge_contract_types(contract_type, default)
+                    self.contract_types[address_key] = combined_contract_type
+                    return combined_contract_type
 
-            return contract_type
+                return contract_type
 
-        # Contract is not cached yet. Check broader sources, such as an explorer.
+        # Either no cached entry, or `replace=True` so we ignore the cache.
+        # Check broader sources, such as an explorer.
         if not proxy_info and detect_proxy:
             # Proxy info not provided. Attempt to detect.
             if not (proxy_info := self.proxy_infos[address_key]):
@@ -578,6 +594,7 @@ class ContractCache(BaseManager):
                 proxy_info,
                 fetch_from_explorer=fetch_from_explorer,
                 default=default,
+                replace=replace,
             ):
                 # `proxy_contract_type` is one of the following:
                 # 1. A ContractType with the combined proxy and implementation ABIs
@@ -585,9 +602,15 @@ class ContractCache(BaseManager):
                 # 3. Proxy only ABI (e.g. unverified implementation ContractType)
                 return proxy_contract_type
 
+        contract_type = None
         # Also gets cached to disk for faster lookup next time.
         if fetch_from_explorer:
             contract_type = self._get_contract_type_from_explorer(address_key)
+
+        # When replacing with both an explorer result and a default, merge them
+        # into the new cached value (rather than dropping the default).
+        if replace and contract_type and default and contract_type != default:
+            contract_type = _merge_contract_types(contract_type, default)
 
         # Cache locally for faster in-session look-up.
         if contract_type:
@@ -604,6 +627,7 @@ class ContractCache(BaseManager):
         proxy_info: ProxyInfoAPI,
         fetch_from_explorer: bool = True,
         default: ContractType | None = None,
+        replace: bool = False,
     ) -> ContractType | None:
         """
         Combines the discoverable ABIs from the proxy contract and its implementation.
@@ -612,9 +636,10 @@ class ContractCache(BaseManager):
             proxy_info.target,
             fetch_from_explorer=fetch_from_explorer,
             default=default,
+            replace=replace,
         )
         proxy_contract_type = self._get_contract_type(
-            address, fetch_from_explorer=fetch_from_explorer
+            address, fetch_from_explorer=fetch_from_explorer, replace=replace
         )
         if proxy_contract_type is not None and implementation_contract_type is not None:
             combined_contract = _get_combined_contract_type(
@@ -644,15 +669,17 @@ class ContractCache(BaseManager):
         address: AddressType,
         fetch_from_explorer: bool = True,
         default: ContractType | None = None,
+        replace: bool = False,
     ) -> ContractType | None:
         """
         Get the _exact_ ContractType for a given address. For proxy contracts, returns
         the proxy ABIs if there are any and not the implementation ABIs.
         """
-        if contract_type := self.contract_types[address]:
-            return contract_type
+        if not replace:
+            if contract_type := self.contract_types[address]:
+                return contract_type
 
-        elif fetch_from_explorer:
+        if fetch_from_explorer:
             return self._get_contract_type_from_explorer(address)
 
         return default
@@ -678,8 +705,10 @@ class ContractCache(BaseManager):
         txn_hash: "str | HexBytes | None" = None,
         abi: list[ABI] | dict | str | Path | None = None,
         fetch_from_explorer: bool = True,
+        fetch_from_disk: bool = True,
         proxy_info: ProxyInfoAPI | None = None,
         detect_proxy: bool = True,
+        replace: bool = False,
     ) -> ContractInstance:
         """
         Get a contract at the given address. If the contract type of the contract is known,
@@ -704,9 +733,16 @@ class ContractCache(BaseManager):
             fetch_from_explorer (bool): Set to ``False`` to avoid fetching from the explorer.
               Defaults to ``True``. Won't fetch unless it needs to (uses disk & memory caching
               first).
+            fetch_from_disk (bool): Set to ``False`` to avoid reading (and merging) the
+              disk-cached ABI for this address. Defaults to ``True``.
             proxy_info (ProxyInfoAPI | None): Pass in the proxy info, if it is known, to avoid
               the potentially expensive look-up.
             detect_proxy (bool): Set to ``False`` to avoid detecting if the contract is a proxy.
+            replace (bool): Set to ``True`` to overwrite a (possibly corrupt) cached
+              contract type rather than merging with it. With only ``contract_type``
+              given, the cache is replaced with that. With ``fetch_from_explorer=True``
+              and no ``contract_type``, the cache is replaced with the explorer result.
+              With both, the cache is replaced with their merge. Defaults to ``False``.
 
         Returns:
             :class:`~ape.contracts.base.ContractInstance`
@@ -732,8 +768,10 @@ class ContractCache(BaseManager):
                 contract_address,
                 default=contract_type,
                 fetch_from_explorer=fetch_from_explorer,
+                fetch_from_disk=fetch_from_disk,
                 proxy_info=proxy_info,
                 detect_proxy=detect_proxy,
+                replace=replace,
             )
         except Exception as err:
             if contract_type or abi:

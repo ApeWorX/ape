@@ -152,6 +152,49 @@ def test_instance_at_provide_proxy(mocker, chain, vyper_contract_instance, owner
             assert proxy.address != arg
 
 
+def test_instance_at_replace(chain, contract_instance):
+    # replace=True overwrites the cached contract type instead of merging with it.
+    # Useful when the cached ABI is corrupt.
+    address = str(contract_instance.address)
+    real_ct = contract_instance.contract_type
+    replacement = ContractType(contractName="Replacement", abi=[])
+
+    with chain.contracts.use_temporary_caches():
+        chain.contracts.contract_types[address] = real_ct
+
+        # Default behavior: a different `contract_type` is merged with the cache.
+        merged = chain.contracts.instance_at(address, contract_type=replacement)
+        assert len(merged.contract_type.abi) >= len(real_ct.abi)
+
+        # Restore the "corrupt"/original cached value to test replace.
+        chain.contracts.contract_types[address] = real_ct
+
+        # replace=True: the cached value is overwritten, no merge.
+        replaced = chain.contracts.instance_at(address, contract_type=replacement, replace=True)
+        assert replaced.contract_type.name == replacement.name
+        assert len(replaced.contract_type.abi) < len(real_ct.abi)
+        assert chain.contracts.contract_types[address].name == replacement.name
+
+
+def test_instance_at_fetch_from_disk_false(mocker, chain, contract_instance):
+    # When fetch_from_disk=False, get_type is called with fetch_from_disk=False
+    # so the on-disk ABI is not loaded and merged into the returned contract type.
+    address = str(contract_instance.address)
+    spy = mocker.spy(chain.contracts.contract_types, "get_type")
+
+    chain.contracts.instance_at(address)
+    default_calls = [c for c in spy.call_args_list if address in c.args]
+    assert default_calls
+    assert all(c.kwargs.get("fetch_from_disk", True) for c in default_calls)
+
+    spy.reset_mock()
+
+    chain.contracts.instance_at(address, fetch_from_disk=False)
+    skip_calls = [c for c in spy.call_args_list if address in c.args]
+    assert skip_calls
+    assert all(c.kwargs.get("fetch_from_disk", True) is False for c in skip_calls)
+
+
 def test_instance_at_skip_proxy(mocker, chain, vyper_contract_instance, owner):
     address = vyper_contract_instance.address
     del chain.contracts[address]
