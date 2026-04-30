@@ -234,24 +234,24 @@ Official docs: [Config](./config.html)
 
 ## Real-World Results
 
-| Repo | Files | Patterns Before | Patterns After | Auto% | FP | FN | Syntax OK | Runtime Safe | Classification |
-|------|-------|----------------|----------------|-------|----|----|-----------|--------------|----------------|
-| brownie_simple_storage | 4 | 12 | 1 | 92% | 0 | 0 | ✅ | ✅ | PASS |
-| brownie_fund_me | 7 | 23 | 1 | 96% | 0 | 1 | ✅ | ✅ | DEPENDENCY_SOURCE_LAYOUT_BLOCKED |
-| chainlink-mix | 21 | 104 | 4 | 96% | 0 | 7 | ✅ | ✅ | DEPENDENCY_SOURCE_LAYOUT_BLOCKED |
-| brownie-nft-course | 18 | 76 | 11 | 86% | 0 | 3 | ✅ | ✅ | DEPENDENCY_SOURCE_LAYOUT_BLOCKED |
-| token-mix | 6 | 64 | 2 | 97% | 0 | 0 | ✅ | ✅ | PROJECT_TEST_SETUP_REVIEW |
-| **Combined** | 56 | 279 | 19 | 93% | **0** | 11 | ✅ | ✅ | |
+| Repo                   | Files | Patterns Before | Patterns After | Auto% | FP    | FN  | Syntax OK | Runtime Safe | Classification                   |
+| ---------------------- | ----- | --------------- | -------------- | ----- | ----- | --- | --------- | ------------ | -------------------------------- |
+| brownie_simple_storage | 4     | 12              | 1              | 92%   | 0     | 0   | ✅        | ✅           | PASS                             |
+| brownie_fund_me        | 7     | 23              | 1              | 96%   | 0     | 1   | ✅        | ✅           | DEPENDENCY_SOURCE_LAYOUT_BLOCKED |
+| chainlink-mix          | 21    | 104             | 4              | 96%   | 0     | 7   | ✅        | ✅           | DEPENDENCY_SOURCE_LAYOUT_BLOCKED |
+| brownie-nft-course     | 18    | 76              | 11             | 86%   | 0     | 3   | ✅        | ✅           | DEPENDENCY_SOURCE_LAYOUT_BLOCKED |
+| token-mix              | 6     | 64              | 2              | 97%   | 0     | 0   | ✅        | ✅           | PROJECT_TEST_SETUP_REVIEW        |
+| **Combined**           | 56    | 279             | 19             | 93%   | **0** | 11  | ✅        | ✅           |                                  |
 
 Real Ape runtime validation was also run locally with Ape 0.8.48:
 
-| Repo | Ape Compile | Ape Test | Notes |
-|------|-------------|----------|-------|
-| brownie_simple_storage | ✅ PASS | ✅ 2 passed | Fully validated |
-| brownie_fund_me | ❌ FAIL | ❌ 2 failed | Chainlink dependency source layout unresolved |
-| chainlink-mix | ❌ FAIL | ❌ collection error | Chainlink dependency source layout and import-time provider access unresolved |
-| brownie-nft-course | ❌ FAIL | ❌ collection error | Chainlink/OpenZeppelin dependency source layout unresolved |
-| token-mix | ✅ PASS | ❌ collection error | Brownie `fn_isolation` fixture requires Ape pytest isolation fixture migration |
+| Repo                   | Ape Compile | Ape Test            | Notes                                                                          |
+| ---------------------- | ----------- | ------------------- | ------------------------------------------------------------------------------ |
+| brownie_simple_storage | ✅ PASS     | ✅ 2 passed         | Fully validated                                                                |
+| brownie_fund_me        | ❌ FAIL     | ❌ 2 failed         | Chainlink dependency source layout unresolved                                  |
+| chainlink-mix          | ❌ FAIL     | ❌ collection error | Chainlink dependency source layout and import-time provider access unresolved  |
+| brownie-nft-course     | ❌ FAIL     | ❌ collection error | Chainlink/OpenZeppelin dependency source layout unresolved                     |
+| token-mix              | ✅ PASS     | ❌ collection error | Brownie `fn_isolation` fixture requires Ape pytest isolation fixture migration |
 
 ## What Remains Manual
 
@@ -259,5 +259,6 @@ Real Ape runtime validation was also run locally with Ape 0.8.48:
 2. `accounts.load()` aliases require a human to choose and import the account name.
 3. Complex event filters receive TODO comments with exact guidance.
 4. `from brownie.network import priority_fee` receives a TODO because Ape has no safe deterministic equivalent.
- 
- 
+
+�
+�
