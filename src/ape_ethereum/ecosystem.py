@@ -58,6 +58,7 @@ from ape.utils.misc import (
     ZERO_ADDRESS,
 )
 from ape_ethereum.proxies import (
+    GET_APP_ABI,
     IMPLEMENTATION_ABI,
     MASTER_COPY_ABI,
     PROXY_TYPE_ABI,
@@ -512,6 +513,7 @@ class Ethereum(EcosystemAPI):
             ProxyType.OpenZeppelin: str_to_slot("org.zeppelinos.proxy.implementation"),
             ProxyType.UUPS: str_to_slot("PROXIABLE"),
         }
+        get_storage_supported = True
         for _type, slot in slots.items():
             try:
                 # TODO perf: use a batch call here when ape adds support
@@ -519,6 +521,7 @@ class Ethereum(EcosystemAPI):
             except NotImplementedError:
                 # Break early on not-implemented error rather than attempting
                 # to try more proxy types.
+                get_storage_supported = False
                 break
 
             if sum(storage) == 0:
@@ -530,6 +533,31 @@ class Ethereum(EcosystemAPI):
                 target = ContractCall(IMPLEMENTATION_ABI, target)(skip_trace=True)
 
             return ProxyInfo(type=_type, target=target, abi=IMPLEMENTATION_ABI)
+
+        # aragonOS AppProxyUpgradeable: kernel + appId stored at fixed slots; the
+        # implementation is resolved through Kernel.getApp(APP_BASES_NAMESPACE, appId).
+        if get_storage_supported:
+            kernel_storage = self.provider.get_storage(
+                address, str_to_slot("aragonOS.appStorage.kernel")
+            )
+            if sum(kernel_storage) != 0:
+                kernel = self.conversion_manager.convert(kernel_storage[-20:], AddressType)
+                app_id = self.provider.get_storage(
+                    address, str_to_slot("aragonOS.appStorage.appId")
+                )
+                if sum(app_id) != 0:
+                    try:
+                        target = ContractCall(GET_APP_ABI, kernel)(
+                            keccak(text="base"), bytes(app_id), skip_trace=True
+                        )
+                        if target != ZERO_ADDRESS:
+                            return ProxyInfo(
+                                type=ProxyType.AragonAppUpgradeable,
+                                target=target,
+                                abi=GET_APP_ABI,
+                            )
+                    except ApeException:
+                        pass
 
         # safe >=1.1.0 provides `masterCopy()`, which is also stored in slot 0
         # call it and check that target matches
