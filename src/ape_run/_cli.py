@@ -158,7 +158,8 @@ class ScriptCommand(click.MultiCommand):
 
         else:
             if relative_filepath not in self._has_warned_missing_hook:
-                logger.warning(f"No 'main' method or 'cli' command in script: {relative_filepath}")
+                # Not a script solely to be run by Ape; ignore.
+                logger.debug(f"No 'main' method or 'cli' command in script: {relative_filepath}")
                 self._has_warned_missing_hook.add(relative_filepath)
 
             @click.command(
