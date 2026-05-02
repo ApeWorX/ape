@@ -238,18 +238,18 @@ ApeShift was validated against 9 real-world Brownie repositories across
 different sizes and dependency profiles. All Python migrations produced
 0 false positives and 0 false negatives.
 
-| Repository | Python Files | Patterns Detected | Transforms Applied | FP | FN | Syntax OK | ape compile |
-|---|---|---|---|---|---|---|---|
-| PatrickAlphaC/brownie_simple_storage | 4 | 12 | 12 | 0 | 0 | ✅ | ✅ PASS |
-| brownie-mix/token-mix | 6 | 64 | 64 | 0 | 0 | ✅ | ✅ PASS |
-| brownie-mix/vyper-token-mix | 5 | 10 | 265 | 0 | 0 | ✅ | ✅ PASS |
-| brownie-mix/github-actions-mix | 2 | 2 | 0 | 0 | 0 | ✅ | ✅ PASS |
-| curvefi/curve-dao-contracts | 222 | 385 | 5,687 | 0 | 0 | ✅ | ✅ PASS |
-| brownie-mix/upgrades-mix | 7 | 7 | 67 | 0 | 0 | ✅ | see note |
-| smartcontractkit/chainlink-mix | 21 | 104 | — | 0 | 0 | ✅ | see note |
-| PatrickAlphaC/brownie_fund_me | 7 | 23 | — | 0 | 0 | ✅ | see note |
-| PatrickAlphaC/nft-mix | 18 | 76 | — | 0 | 0 | ✅ | see note |
-| **Combined** | **292** | **683** | **6,095+** | **0** | **0** | ✅ | |
+| Repository                           | Python Files | Patterns Detected | Transforms Applied | FP    | FN    | Syntax OK | ape compile |
+| ------------------------------------ | ------------ | ----------------- | ------------------ | ----- | ----- | --------- | ----------- |
+| PatrickAlphaC/brownie_simple_storage | 4            | 12                | 12                 | 0     | 0     | ✅        | ✅ PASS     |
+| brownie-mix/token-mix                | 6            | 64                | 64                 | 0     | 0     | ✅        | ✅ PASS     |
+| brownie-mix/vyper-token-mix          | 5            | 10                | 265                | 0     | 0     | ✅        | ✅ PASS     |
+| brownie-mix/github-actions-mix       | 2            | 2                 | 0                  | 0     | 0     | ✅        | ✅ PASS     |
+| curvefi/curve-dao-contracts          | 222          | 385               | 5,687              | 0     | 0     | ✅        | ✅ PASS     |
+| brownie-mix/upgrades-mix             | 7            | 7                 | 67                 | 0     | 0     | ✅        | see note    |
+| smartcontractkit/chainlink-mix       | 21           | 104               | —                  | 0     | 0     | ✅        | see note    |
+| PatrickAlphaC/brownie_fund_me        | 7            | 23                | —                  | 0     | 0     | ✅        | see note    |
+| PatrickAlphaC/nft-mix                | 18           | 76                | —                  | 0     | 0     | ✅        | see note    |
+| **Combined**                         | **292**      | **683**           | **6,095+**         | **0** | **0** | ✅        |             |
 
 The largest test — curvefi/curve-dao-contracts — had 222 Python files and
 385 detected Brownie patterns, resulting in 5,687 individual transforms
