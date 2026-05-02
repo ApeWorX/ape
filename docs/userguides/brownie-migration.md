@@ -2,22 +2,9 @@
 
 [Brownie is no longer actively maintained. The Brownie README directs Python Ethereum developers to Ape Framework.](https://github.com/eth-brownie/brownie#readme) This guide documents a practical migration path for Brownie projects moving to Ape and references [ApeWorX/ape issue #640](https://github.com/ApeWorX/ape/issues/640), which originally tracked Brownie project migration support.
 
-## Automated Migration with ApeShift
+## Migration
 
-Run ApeShift to apply deterministic Brownie-to-Ape rewrites, validation, reports, and manual-review TODOs.
-
-```bash
-npx apeshift migrate .
-```
-
-ApeShift is published in the Codemod registry: https://app.codemod.com/registry/apeshift
-
-> **Note on tooling:** ApeShift is distributed through the Codemod registry, which uses npm packaging for codemod distribution.
-> The migration itself operates on Python files using ast-grep rules that parse and transform Python AST directly.
-> No JavaScript runtime is involved in the user's Python project code.
-> A Python-native wrapper may be added in the future.
-
-## Imports
+### Imports
 
 Brownie scripts often import accounts, contracts, config, and networks from `brownie`. Migrated Ape scripts import public Ape APIs and access contracts through `project`.
 
@@ -31,7 +18,7 @@ from ape import accounts, config, networks, project
 
 Official docs: [Contracts](./contracts.html)
 
-## Accounts
+### Accounts
 
 Use `accounts.test_accounts` for local generated accounts and `accounts.load()` for named account aliases. The alias must be imported by the user before live-network use.
 
@@ -49,7 +36,7 @@ return accounts.add(config["wallets"]["from_key"])  # TODO(apeshift): accounts.a
 
 Official docs: [Accounts](./accounts.html)
 
-## Contract Deployment and Transactions
+### Contract Deployment and Transactions
 
 Brownie transaction dictionaries become explicit Ape keyword arguments such as `sender=` and `value=`.
 
@@ -75,7 +62,7 @@ tx = fund_me.fund(sender=account, value=entrance_fee)
 
 Official docs: [Contracts](./contracts.html)
 
-## Networks
+### Networks
 
 Brownie's active-network helper maps to Ape's active provider network metadata.
 
@@ -89,7 +76,7 @@ print(f"The active network is {networks.provider.network.name}")
 
 Official docs: [Networks](./networks.html)
 
-## Testing and Reverts
+### Testing and Reverts
 
 Brownie revert helpers and exceptions map to Ape testing helpers and exceptions.
 
@@ -117,7 +104,7 @@ with pytest.raises(ContractLogicError):
 
 Official docs: [Testing](./testing.html)
 
-## Testing: pytest Fixtures
+### Testing: pytest Fixtures
 
 Ape tests use pytest fixtures from the `ape-test` plugin.
 In Ape, contract types are not injected as pytest fixtures.
@@ -194,7 +181,7 @@ def test_block_number():
 
 Official docs: [Testing](./testing.html)
 
-## Config Files
+### Config Files
 
 Brownie configuration values should move into Ape's `ape-config.yaml` structure. Wallet private keys are not copied into config; import an Ape account alias instead.
 
@@ -231,31 +218,3 @@ networks:
 ```
 
 Official docs: [Config](./config.html)
-
-## Real-World Results
-
-| Repo | Files | Patterns Before | Patterns After | Auto% | FP | FN | Syntax OK | Runtime Safe | Classification |
-|------|-------|----------------|----------------|-------|----|----|-----------|--------------|----------------|
-| brownie_simple_storage | 4 | 12 | 1 | 92% | 0 | 0 | ✅ | ✅ | PASS |
-| brownie_fund_me | 7 | 23 | 1 | 96% | 0 | 1 | ✅ | ✅ | DEPENDENCY_SOURCE_LAYOUT_BLOCKED |
-| chainlink-mix | 21 | 104 | 4 | 96% | 0 | 7 | ✅ | ✅ | DEPENDENCY_SOURCE_LAYOUT_BLOCKED |
-| brownie-nft-course | 18 | 76 | 11 | 86% | 0 | 3 | ✅ | ✅ | DEPENDENCY_SOURCE_LAYOUT_BLOCKED |
-| token-mix | 6 | 64 | 2 | 97% | 0 | 0 | ✅ | ✅ | PROJECT_TEST_SETUP_REVIEW |
-| **Combined** | 56 | 279 | 19 | 93% | **0** | 11 | ✅ | ✅ | |
-
-Real Ape runtime validation was also run locally with Ape 0.8.48:
-
-| Repo | Ape Compile | Ape Test | Notes |
-|------|-------------|----------|-------|
-| brownie_simple_storage | ✅ PASS | ✅ 2 passed | Fully validated |
-| brownie_fund_me | ❌ FAIL | ❌ 2 failed | Chainlink dependency source layout unresolved |
-| chainlink-mix | ❌ FAIL | ❌ collection error | Chainlink dependency source layout and import-time provider access unresolved |
-| brownie-nft-course | ❌ FAIL | ❌ collection error | Chainlink/OpenZeppelin dependency source layout unresolved |
-| token-mix | ✅ PASS | ❌ collection error | Brownie `fn_isolation` fixture requires Ape pytest isolation fixture migration |
-
-## What Remains Manual
-
-1. `web3.eth.contract(...)` is deterministically rewritten to `Contract(address, abi=...)` with a TODO if the ABI source is unclear.
-2. `accounts.load()` aliases require a human to choose and import the account name.
-3. Complex event filters receive TODO comments with exact guidance.
-4. `from brownie.network import priority_fee` receives a TODO because Ape has no safe deterministic equivalent.
