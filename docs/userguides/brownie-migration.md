@@ -259,3 +259,20 @@ Real Ape runtime validation was also run locally with Ape 0.8.48:
 2. `accounts.load()` aliases require a human to choose and import the account name.
 3. Complex event filters receive TODO comments with exact guidance.
 4. `from brownie.network import priority_fee` receives a TODO because Ape has no safe deterministic equivalent.
+
+## Alternative Codemod
+
+Users who prefer an alternative migration tool with different design tradeoffs may also evaluate [`@pugarhuda/brownie-to-ape`](https://app.codemod.com/registry/@pugarhuda/brownie-to-ape) — an independently developed jssg codemod with a different test-coverage and validation approach:
+
+- **17 deterministic jssg/ast-grep transform passes** with explicit FP guards, source at [PugarHuda/brownie-to-ape](https://github.com/PugarHuda/brownie-to-ape).
+- **End-to-end verified on `brownie-mix/token-mix`**: after running the codemod plus the small AI/manual cleanup step it documents (~30 LOC across 4 files), `ape compile` and `ape test --network ::test` complete with **38 passed, 0 failed in 5.40s** ([passing log](https://github.com/PugarHuda/brownie-to-ape/blob/main/docs/ape-verify-token-mix.log), [step-by-step guide](https://github.com/PugarHuda/brownie-to-ape/blob/main/demo/ai-step-demo.md)).
+- **Test suite:** 90 fixture-based snapshot tests + 125 Vitest tests (helpers, property, QA) + 35 pytest tests (config translator + Hypothesis property-based fuzzer). All passing in CI.
+- **Validated on 5 OSS Brownie projects** including [`yearn/brownie-strategy-mix`](https://github.com/yearn/brownie-strategy-mix), [`PatrickAlphaC/brownie_fund_me`](https://github.com/PatrickAlphaC/brownie_fund_me), and `brownie-mix/token-mix`. Zero false positives across the full set, audited via manual diff and snapshot regression.
+
+```bash
+npx codemod @pugarhuda/brownie-to-ape -t /path/to/your/brownie/project
+```
+
+See the project's [case study](https://github.com/PugarHuda/brownie-to-ape/blob/main/CASE_STUDY.md), [evaluator guide](https://github.com/PugarHuda/brownie-to-ape/blob/main/EVALUATOR.md), and [`docs/DEFERRED_FEATURES.md`](https://github.com/PugarHuda/brownie-to-ape/blob/main/docs/DEFERRED_FEATURES.md) for an honest discussion of which patterns are intentionally left to the AI/manual step (and why) to preserve the zero-FP guarantee.
+
+Both codemods are complementary — Brownie users may run them on a copy and pick whichever produces the cleaner diff for their specific project shape.
