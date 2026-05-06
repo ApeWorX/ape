@@ -256,3 +256,17 @@ ethereum:
 ```
 
 Official docs: [Config](./config.html)
+
+## Automated Migration with ApeShift
+
+ApeShift applies deterministic Brownie-to-Ape rewrites, validation, reports, and manual-review TODOs.
+
+```bash
+npx codemod apeshift -t ./my-brownie-project
+```
+
+ApeShift is published in the Codemod registry: https://app.codemod.com/registry/apeshift
+
+```{warning}
+ApeShift is an unaudited third-party tool not officially built or supported by the ApeWorX team. Use it with caution.
+```
