@@ -152,6 +152,49 @@ def test_instance_at_provide_proxy(mocker, chain, vyper_contract_instance, owner
             assert proxy.address != arg
 
 
+def test_instance_at_replace(chain, contract_instance):
+    # replace=True overwrites the cached contract type instead of merging with it.
+    # Useful when the cached ABI is corrupt.
+    address = str(contract_instance.address)
+    real_ct = contract_instance.contract_type
+    replacement = ContractType(contractName="Replacement", abi=[])
+
+    with chain.contracts.use_temporary_caches():
+        chain.contracts.contract_types[address] = real_ct
+
+        # Default behavior: a different `contract_type` is merged with the cache.
+        merged = chain.contracts.instance_at(address, contract_type=replacement)
+        assert len(merged.contract_type.abi) >= len(real_ct.abi)
+
+        # Restore the "corrupt"/original cached value to test replace.
+        chain.contracts.contract_types[address] = real_ct
+
+        # replace=True: the cached value is overwritten, no merge.
+        replaced = chain.contracts.instance_at(address, contract_type=replacement, replace=True)
+        assert replaced.contract_type.name == replacement.name
+        assert len(replaced.contract_type.abi) < len(real_ct.abi)
+        assert chain.contracts.contract_types[address].name == replacement.name
+
+
+def test_instance_at_fetch_from_disk_false(mocker, chain, contract_instance):
+    # When fetch_from_disk=False, get_type is called with fetch_from_disk=False
+    # so the on-disk ABI is not loaded and merged into the returned contract type.
+    address = str(contract_instance.address)
+    spy = mocker.spy(chain.contracts.contract_types, "get_type")
+
+    chain.contracts.instance_at(address)
+    default_calls = [c for c in spy.call_args_list if address in c.args]
+    assert default_calls
+    assert all(c.kwargs.get("fetch_from_disk", True) for c in default_calls)
+
+    spy.reset_mock()
+
+    chain.contracts.instance_at(address, fetch_from_disk=False)
+    skip_calls = [c for c in spy.call_args_list if address in c.args]
+    assert skip_calls
+    assert all(c.kwargs.get("fetch_from_disk", True) is False for c in skip_calls)
+
+
 def test_instance_at_skip_proxy(mocker, chain, vyper_contract_instance, owner):
     address = vyper_contract_instance.address
     del chain.contracts[address]
@@ -383,8 +426,10 @@ def test_get_attempts_to_convert(chain):
 
 
 @explorer_test
-def test_get_attempts_explorer(mock_explorer, create_mock_sepolia, chain, owner, project):
-    contract = owner.deploy(project.VyDefault)
+def test_get_attempts_explorer(
+    mock_explorer, create_mock_sepolia, chain, owner, minimal_proxy_container
+):
+    contract = owner.deploy(minimal_proxy_container)
 
     def get_contract_type(addr):
         if addr == contract.address:
@@ -398,7 +443,7 @@ def test_get_attempts_explorer(mock_explorer, create_mock_sepolia, chain, owner,
         mock_explorer.get_contract_type.side_effect = get_contract_type
         network.__dict__["explorer"] = mock_explorer
         try:
-            actual = chain.contracts.get(contract.address)
+            actual = chain.contracts.get(contract.address, detect_proxy=False)
         finally:
             network.__dict__["explorer"] = None
 
@@ -409,9 +454,9 @@ def test_get_attempts_explorer(mock_explorer, create_mock_sepolia, chain, owner,
 
 @explorer_test
 def test_get_attempts_explorer_logs_errors_from_explorer(
-    mock_explorer, create_mock_sepolia, chain, owner, project, ape_caplog
+    mock_explorer, create_mock_sepolia, chain, owner, minimal_proxy_container, ape_caplog
 ):
-    contract = owner.deploy(project.VyDefault)
+    contract = owner.deploy(minimal_proxy_container)
     check_error_str = "__CHECK_FOR_THIS_ERROR__"
     expected_log = (
         f"Attempted to retrieve contract type from explorer 'mock' "
@@ -430,7 +475,7 @@ def test_get_attempts_explorer_logs_errors_from_explorer(
         mock_explorer.get_contract_type.side_effect = get_contract_type
         network.__dict__["explorer"] = mock_explorer
         try:
-            actual = chain.contracts.get(contract.address)
+            actual = chain.contracts.get(contract.address, detect_proxy=False)
         finally:
             network.__dict__["explorer"] = None
 
@@ -441,9 +486,9 @@ def test_get_attempts_explorer_logs_errors_from_explorer(
 
 @explorer_test
 def test_get_attempts_explorer_logs_rate_limit_error_from_explorer(
-    mock_explorer, create_mock_sepolia, chain, owner, project, ape_caplog
+    mock_explorer, create_mock_sepolia, chain, owner, minimal_proxy_container, ape_caplog
 ):
-    contract = owner.deploy(project.VyDefault)
+    contract = owner.deploy(minimal_proxy_container)
 
     # For rate limit errors, we don't show anything else,
     # as it may be confusing.
@@ -463,7 +508,7 @@ def test_get_attempts_explorer_logs_rate_limit_error_from_explorer(
         network.__dict__["explorer"] = mock_explorer
         try:
             with logger.at_level(LogLevel.INFO):
-                actual = chain.contracts.get(contract.address)
+                actual = chain.contracts.get(contract.address, detect_proxy=False)
         finally:
             network.__dict__["explorer"] = None
 

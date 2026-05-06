@@ -620,12 +620,12 @@ def mock_sepolia(create_mock_sepolia):
 
 
 @pytest.fixture
-def create_mock_sepolia(ethereum, eth_tester_provider, vyper_contract_instance):
+def create_mock_sepolia(ethereum, eth_tester_provider, minimal_proxy):
     @contextmanager
     def fn():
         # Ensuring contract exists before hack.
         # This allows the network to be past genesis which is more realistic.
-        _ = vyper_contract_instance
+        _ = minimal_proxy
         eth_tester_provider.network.name = "sepolia"
         yield eth_tester_provider.network
         eth_tester_provider.network.name = LOCAL_NETWORK_NAME

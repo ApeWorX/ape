@@ -39,6 +39,38 @@ def test_fork_upstream_provider(networks, mock_geth_sepolia, geth_provider, mock
             del geth_provider.provider_settings["uri"]
 
 
+@geth_process_test
+def test_fork_upstream_provider_request_headers(
+    project, networks, mock_geth_sepolia, mock_fork_provider
+):
+    config = {
+        "request_headers": {"X-Top-Level": "base"},
+        "ethereum": {
+            "request_headers": {"X-Ecosystem": "ethereum"},
+            "sepolia": {
+                "request_headers": {
+                    "Authorization": "Bearer test-token",
+                    "X-Network": "sepolia",
+                }
+            },
+        },
+        "node": {"request_headers": {"X-Provider": "node"}},
+    }
+    with project.temp_config(**config):
+        with networks.fork():
+            call = mock_fork_provider.partial_call
+
+    settings = call[1]["provider_settings"]["fork"]["ethereum"]["sepolia"]
+    headers = settings["upstream_provider_request_headers"]
+    assert headers["Authorization"] == "Bearer test-token"
+    assert headers["X-Top-Level"] == "base"
+    assert headers["X-Ecosystem"] == "ethereum"
+    assert headers["X-Network"] == "sepolia"
+    assert headers["X-Provider"] == "node"
+    assert headers["Content-Type"] == "application/json"
+    assert headers["User-Agent"].startswith("Ape/")
+
+
 # NOTE: Test is flakey because random URLs may be offline when test runs; avoid CI failure.
 @pytest.mark.flaky(reruns=5)
 @geth_process_test

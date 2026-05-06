@@ -9,6 +9,7 @@
         - accounts
         - compile
         - contracts
+        - brownie-migration
         - testing
         - reverts
         - networks

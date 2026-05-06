@@ -200,13 +200,13 @@ def test_history_getitem_receipt(chain, vyper_contract_instance, owner):
     assert actual.receiver == expected.receiver
 
 
-def test_history_getitem_account(chain, vyper_contract_instance, owner):
+def test_history_getitem_account(chain, minimal_proxy, owner):
     actual = chain.history[owner.address]
     assert isinstance(actual, AccountHistory)
     assert actual.address == owner.address
 
 
-def test_history_getitem_account_ens(mocker, chain, vyper_contract_instance, owner):
+def test_history_getitem_account_ens(mocker, chain, minimal_proxy, owner):
     conversion_spy = mocker.spy(chain.history.conversion_manager, "convert")
     value = "this will not work, but would if given ens and using ape-ens"
     expected_err = rf"'{value}' is not a known address or transaction hash\."

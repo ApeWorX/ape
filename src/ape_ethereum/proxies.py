@@ -106,7 +106,7 @@ def _make_minimal_proxy(address: str = MINIMAL_PROXY_TARGET_PLACEHOLDER) -> Cont
     address = address.replace("0x", "")
     code = cast(HexStr, MINIMAL_PROXY_BYTES.replace(MINIMAL_PROXY_TARGET_PLACEHOLDER, address))
     bytecode = {"bytecode": code}
-    contract_type = ContractType(abi=[], deploymentBytecode=bytecode)
+    contract_type = ContractType(contractName="MinimalProxy", abi=[], deploymentBytecode=bytecode)
     return ContractContainer(contract_type=contract_type)
 
 

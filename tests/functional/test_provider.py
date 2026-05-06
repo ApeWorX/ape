@@ -40,7 +40,7 @@ def test_uri(eth_tester_provider):
 
 
 @pytest.mark.parametrize("block_id", (0, "0", "0x0", HexStr("0x0")))
-def test_get_block(eth_tester_provider, block_id, vyper_contract_instance, owner):
+def test_get_block(eth_tester_provider, block_id, minimal_proxy, owner):
     block = eth_tester_provider.get_block(block_id)
 
     # Each parameter is the same as requesting the first block.
@@ -425,7 +425,7 @@ def test_send_transaction_when_no_error_and_receipt_fails(
     mock_transaction,
     eth_tester_provider,
     owner,
-    vyper_contract_instance,
+    minimal_proxy,
 ):
     start_web3 = eth_tester_provider._web3
     eth_tester_provider._web3 = mock_web3
@@ -447,7 +447,7 @@ def test_send_transaction_when_no_error_and_receipt_fails(
             "txnHash": to_hex(tx_hash),
             "status": TransactionStatusEnum.FAILING.value,
             "sender": owner.address,
-            "receiver": vyper_contract_instance.address,
+            "receiver": minimal_proxy.address,
             "input": b"",
             "gasUsed": 123,
             "gasLimit": 100,

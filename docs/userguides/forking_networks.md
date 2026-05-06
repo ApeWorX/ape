@@ -7,6 +7,11 @@ Some options are:
 1. [ApeWorX/ape-foundry](https://github.com/ApeWorX/ape-foundry)
 2. [ApeWorX/ape-hardhat](https://github.com/ApeWorX/ape-hardhat)
 
+If your upstream RPC requires custom HTTP headers, such as an `Authorization: Bearer ...`
+token, configure them using Ape's standard `request_headers` settings on the upstream
+ecosystem, network, or provider. Ape forwards those headers in the fork configuration so
+fork-capable provider plugins can pass them through to their backend process.
+
 You can install one of these plugins by doing:
 
 ```shell
