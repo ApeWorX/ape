@@ -83,3 +83,20 @@ def test_delegate(project, geth_contract, owner, ethereum):
     assert actual is not None
     assert actual.type == ProxyType.Delegate
     assert actual.target == target
+
+
+@geth_process_test
+def test_aragon_app_upgradeable(project, geth_contract, owner, ethereum):
+    from eth_utils import keccak
+
+    target = geth_contract.address
+    kernel = owner.deploy(project.AragonKernelMock)
+    app_id = keccak(text="ape.test.aragon.app")
+    namespace = keccak(text="base")
+    kernel.setApp(namespace, app_id, target, sender=owner)
+
+    contract_instance = owner.deploy(project.AragonAppProxyUpgradeable, kernel.address, app_id)
+    actual = ethereum.get_proxy_info(contract_instance.address)
+    assert actual is not None
+    assert actual.type == ProxyType.AragonAppUpgradeable
+    assert actual.target == target
