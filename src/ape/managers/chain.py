@@ -832,9 +832,7 @@ class ChainManager(BaseManager):
         """
         Search for a block closest to time ``time``.
 
-        ```{important}
-        This method returns the closest block at or after ``time``.
-        ```
+        **IMPORTANT**: This method returns the closest block at or after ``time``.
 
         Args:
             time: (datetime | int): Time of block to search for.
@@ -843,7 +841,7 @@ class ChainManager(BaseManager):
                 Defaults to the configured block time for this chain.
 
         Returns:
-            (~:class:`BlockAPI`): The first block mined at or after ``time`` .
+            :class:`~ape.api.providers.BlockAPI`: The first block mined at or after ``time``.
         """
 
         if isinstance(time, datetime):
