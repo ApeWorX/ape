@@ -21,13 +21,15 @@ def contract_with_call_depth_geth(
     and is used for any testing that requires nested calls, such as
     call trees or event-name clashes.
     """
-    return owner.deploy(project.ContractA, middle_contract_geth, leaf_contract_geth)
+    return owner.deploy(
+        project.ContractA, middle_contract_geth, leaf_contract_geth, required_confirmations=0
+    )
 
 
 @pytest.fixture
 def error_contract_geth(owner, project, geth_provider):
     _ = geth_provider  # Ensure uses geth
-    return owner.deploy(project.HasError, 1)
+    return owner.deploy(project.HasError, 1, required_confirmations=0)
 
 
 @pytest.fixture
@@ -35,7 +37,7 @@ def leaf_contract_geth(project, geth_provider, owner):
     """
     The last contract called by `contract_with_call_depth`.
     """
-    return owner.deploy(project.ContractC)
+    return owner.deploy(project.ContractC, required_confirmations=0)
 
 
 @pytest.fixture
@@ -43,7 +45,7 @@ def middle_contract_geth(project, geth_provider, owner, leaf_contract_geth):
     """
     The middle contract called by `contract_with_call_depth`.
     """
-    return owner.deploy(project.ContractB, leaf_contract_geth)
+    return owner.deploy(project.ContractB, leaf_contract_geth, required_confirmations=0)
 
 
 @pytest.fixture
@@ -83,7 +85,12 @@ def custom_network_connection(
     data["networks"]["custom"][0]["chain_id"] = geth_provider.chain_id
 
     config = {
-        ethereum.name: {custom_network_name_0: {"default_transaction_type": 0}},
+        ethereum.name: {
+            custom_network_name_0: {
+                "default_transaction_type": 0,
+                "required_confirmations": 0,
+            }
+        },
         geth_provider.name: {ethereum.name: {custom_network_name_0: {"uri": geth_provider.uri}}},
         **data,
     }

@@ -599,7 +599,14 @@ def custom_network_chain_id_1():
 
 @pytest.fixture
 def custom_network(ethereum, project, custom_networks_config_dict):
-    with project.temp_config(**custom_networks_config_dict):
+    config = {
+        **custom_networks_config_dict,
+        ethereum.name: {
+            CUSTOM_NETWORK_0: {"required_confirmations": 0},
+            CUSTOM_NETWORK_1: {"required_confirmations": 0},
+        },
+    }
+    with project.temp_config(**config):
         yield ethereum.apenet
 
 
@@ -646,4 +653,4 @@ def empty_project():
 
 @pytest.fixture
 def geth_contract(geth_account, project, geth_provider):
-    return geth_account.deploy(project.SolidityContract, 0)
+    return geth_account.deploy(project.SolidityContract, 0, required_confirmations=0)
