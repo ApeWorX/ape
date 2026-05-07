@@ -406,11 +406,15 @@ def use_debug(logger):
 
 
 @pytest.fixture
-def dummy_live_network(chain):
-    original_network = chain.provider.network.name
-    chain.provider.network.name = "sepolia"
-    yield chain.provider.network
-    chain.provider.network.name = original_network
+def dummy_live_network(chain, project):
+    network = chain.provider.network
+    original_network = network.name
+    network.name = "sepolia"
+    try:
+        with project.temp_config(ethereum={"sepolia": {"required_confirmations": 0}}):
+            yield network
+    finally:
+        network.name = original_network
 
 
 @pytest.fixture
@@ -620,15 +624,19 @@ def mock_sepolia(create_mock_sepolia):
 
 
 @pytest.fixture
-def create_mock_sepolia(ethereum, eth_tester_provider, minimal_proxy):
+def create_mock_sepolia(ethereum, eth_tester_provider, minimal_proxy, project):
     @contextmanager
     def fn():
         # Ensuring contract exists before hack.
         # This allows the network to be past genesis which is more realistic.
         _ = minimal_proxy
-        eth_tester_provider.network.name = "sepolia"
-        yield eth_tester_provider.network
-        eth_tester_provider.network.name = LOCAL_NETWORK_NAME
+        network = eth_tester_provider.network
+        network.name = "sepolia"
+        try:
+            with project.temp_config(ethereum={"sepolia": {"required_confirmations": 0}}):
+                yield network
+        finally:
+            network.name = LOCAL_NETWORK_NAME
 
     return fn
 
