@@ -73,6 +73,9 @@ jobs:
               enable-cache: true
               cache-dependency-glob: pyproject.toml
 
+        - name: Install Test Environment
+          run: uv sync --no-default-groups --group test
+
         - name: Install Geth
           uses: ApeWorX/geth-action@v1
 
@@ -85,11 +88,11 @@ jobs:
               ${{ runner.os }}-ape-packages-
 
         - name: Install Project Dependencies
-          run: uv run --group test ape pm install
+          run: uv run --no-sync ape pm install
 
         - name: Run Functional Tests
           run: |
-            uv run --group test ape test \
+            uv run --no-sync ape test \
               -s -v ERROR \
               -n auto --dist loadgroup \
               -m "not hypothesis" \
@@ -98,7 +101,7 @@ jobs:
 
         - name: Run Integration Tests
           run: |
-            uv run --group test ape test \
+            uv run --no-sync ape test \
               -s -v ERROR \
               -n auto --dist loadgroup \
               -m "not hypothesis" \
@@ -107,7 +110,7 @@ jobs:
 
         - name: Run Performance Tests
           run: |
-            uv run --group test ape test \
+            uv run --no-sync ape test \
               -s -v ERROR \
               tests/performance
 
@@ -127,5 +130,8 @@ jobs:
               enable-cache: true
               cache-dependency-glob: pyproject.toml
 
+        - name: Install Test Environment
+          run: uv sync --no-default-groups --group test
+
         - name: Run Tests
-          run: uv run --group test ape test -s -m "hypothesis" --no-cov
+          run: uv run --no-sync ape test -s -m "hypothesis" --no-cov
