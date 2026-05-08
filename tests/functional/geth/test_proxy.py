@@ -63,6 +63,17 @@ def test_gnosis_safe(project, geth_contract, owner, ethereum, chain):
 
 
 @geth_process_test
+def test_gnosis_safe_v150(project, geth_contract, owner, ethereum):
+    target = geth_contract.address
+    proxy_instance = owner.deploy(project.SafeProxyV150, target)
+
+    actual = ethereum.get_proxy_info(proxy_instance.address)
+    assert actual is not None
+    assert actual.type == ProxyType.GnosisSafe
+    assert actual.target == target
+
+
+@geth_process_test
 def test_openzeppelin(project, geth_contract, owner, ethereum, sender):
     constructor_contract = owner.deploy(project.SolFallbackAndReceive)
     target = geth_contract.address

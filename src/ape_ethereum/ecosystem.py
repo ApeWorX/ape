@@ -559,22 +559,33 @@ class Ethereum(EcosystemAPI):
                     except ApeException:
                         pass
 
-        # safe >=1.1.0 provides `masterCopy()`, which is also stored in slot 0
-        # call it and check that target matches
-        try:
-            singleton = ContractCall(MASTER_COPY_ABI, address)(skip_trace=True)
-            slot_0 = self.provider.get_storage(address, 0)
-            target = self.conversion_manager.convert(slot_0[-20:], AddressType)
-            # NOTE: `target` is set in initialized proxies
-            if target != ZERO_ADDRESS and target == singleton:
-                return ProxyInfo(type=ProxyType.GnosisSafe, target=target, abi=MASTER_COPY_ABI)
+        # Safe >1.0.0 provides `masterCopy()`, which is also stored in slot 0.
+        # Check the bytecode marker first to avoid an extra call for most non-Safe contracts.
+        master_copy_selector = self.get_method_selector(MASTER_COPY_ABI).hex()
+        safe_master_copy_markers = (
+            # Safe v1.1.0 through v1.4.1 compares calldata against a padded PUSH32.
+            f"7f{master_copy_selector}{'00' * 28}",
+            # Optimized builds may reconstruct the same padded selector with PUSH4 + SHL.
+            "63530ca43760e11b14",
+            # Safe v1.5.0+ compares the first 4 calldata bytes against a PUSH4.
+            f"63{master_copy_selector}",
+        )
+        if any(marker in code for marker in safe_master_copy_markers):
+            try:
+                slot_0 = self.provider.get_storage(address, 0)
+                target = self.conversion_manager.convert(slot_0[-20:], AddressType)
+                # NOTE: `target` is set in initialized proxies
+                if target != ZERO_ADDRESS and target == ContractCall(MASTER_COPY_ABI, address)(
+                    skip_trace=True
+                ):
+                    return ProxyInfo(type=ProxyType.GnosisSafe, target=target, abi=MASTER_COPY_ABI)
 
-        except ApeException:
-            pass
+            except ApeException:
+                pass
 
         # eip-897 delegate proxy, read `proxyType()` and `implementation()`
         # perf: only make a call when a proxyType() selector is mentioned in the code
-        eip897_pattern = b"\x63" + keccak(text="proxyType()")[:4]
+        eip897_pattern = b"\x63" + self.get_method_selector(PROXY_TYPE_ABI)
         if eip897_pattern.hex() in code:
             try:
                 proxy_type = ContractCall(PROXY_TYPE_ABI, address)(skip_trace=True)
