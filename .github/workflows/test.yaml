@@ -23,6 +23,8 @@ jobs:
           uses: astral-sh/setup-uv@v7
           with:
               python-version: "3.10"
+              enable-cache: true
+              cache-dependency-glob: pyproject.toml
 
         - name: Run Ruff Lint
           run: uv run --group lint ruff check .
@@ -43,6 +45,8 @@ jobs:
           uses: astral-sh/setup-uv@v7
           with:
               python-version: "3.10"
+              enable-cache: true
+              cache-dependency-glob: pyproject.toml
 
         - name: Run MyPy
           run: uv run --group lint --group test mypy .
@@ -66,6 +70,8 @@ jobs:
           uses: astral-sh/setup-uv@v7
           with:
               python-version: ${{ matrix.python-version }}
+              enable-cache: true
+              cache-dependency-glob: pyproject.toml
 
         - name: Install Geth
           uses: ApeWorX/geth-action@v1
@@ -118,6 +124,8 @@ jobs:
           uses: astral-sh/setup-uv@v7
           with:
               python-version: "3.10"
+              enable-cache: true
+              cache-dependency-glob: pyproject.toml
 
         - name: Run Tests
           run: uv run --group test ape test -s -m "hypothesis" --no-cov

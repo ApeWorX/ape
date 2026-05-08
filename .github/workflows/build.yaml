@@ -40,6 +40,9 @@ jobs:
 
       # NOTE: We need to store `uv.lock` for building with
       - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: pyproject.toml
       - uses: actions/cache@v5
         with:
           path: uv.lock
