@@ -100,7 +100,7 @@ jobs:
             versions = sorted(compiler.get_versions(paths)) if compiler else []
             print('Installing Solidity compilers:', ', '.join(versions) or 'none')
             for version in versions:
-                install_solc(version, show_progress=True)
+                install_solc(version, show_progress=False)
             "
 
         - name: Cache Ape Packages
