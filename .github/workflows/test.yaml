@@ -69,6 +69,9 @@ jobs:
         - name: Install Geth
           uses: ApeWorX/geth-action@v1
 
+        - name: Install Project Dependencies
+          run: uv run --group test ape pm install
+
         - name: Run Functional Tests
           run: |
             uv run --group test ape test \
