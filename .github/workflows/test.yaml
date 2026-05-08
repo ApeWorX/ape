@@ -92,12 +92,17 @@ jobs:
             uv run --no-sync python -c "
             from pathlib import Path
 
-            import ape
-            from solcx import install_solc
+            from ape_solidity._utils import get_pragma_spec_from_path, select_version
+            from solcx import get_installable_solc_versions, install_solc
 
-            compiler = ape.compilers.registered_compilers.get('.sol')
-            paths = Path('tests').rglob('*.sol')
-            versions = sorted(compiler.get_versions(paths)) if compiler else []
+            installable_versions = get_installable_solc_versions()
+            versions = set()
+            for path in Path('tests').rglob('*.sol'):
+                pragma_spec = get_pragma_spec_from_path(path)
+                if pragma_spec and (version := select_version(pragma_spec, installable_versions)):
+                    versions.add(str(version))
+
+            versions = sorted(versions)
             print('Installing Solidity compilers:', ', '.join(versions) or 'none')
             for version in versions:
                 install_solc(version, show_progress=False)
