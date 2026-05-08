@@ -396,7 +396,7 @@ class CacheDirectory:
 
         self._path = path
 
-    def __getitem__(self, key: str) -> dict:
+    def __getitem__(self, key: str) -> dict | None:
         """
         Get the data from ``base_path / <key>.json``.
 
@@ -405,7 +405,7 @@ class CacheDirectory:
         """
         return self.get_data(key)
 
-    def __setitem__(self, key: str, value: dict):
+    def __setitem__(self, key: str, value: dict | None):
         """
         Cache the given data to ``base_path / <key>.json``.
 
@@ -427,14 +427,14 @@ class CacheDirectory:
     def get_file(self, key: str) -> Path:
         return self._path / f"{key}.json"
 
-    def cache_data(self, key: str, data: dict):
+    def cache_data(self, key: str, data: dict | None):
         json_str = json.dumps(data)
         file = self.get_file(key)
         file.unlink(missing_ok=True)
         file.parent.mkdir(parents=True, exist_ok=True)
         file.write_text(json_str)
 
-    def get_data(self, key: str) -> dict:
+    def get_data(self, key: str) -> dict | None:
         file = self.get_file(key)
         if not file.is_file():
             return {}
