@@ -27,13 +27,13 @@ jobs:
               cache-dependency-glob: pyproject.toml
 
         - name: Run Ruff Lint
-          run: uv run --group lint ruff check .
+          run: uv run --only-group style ruff check .
 
         - name: Run Ruff Format
-          run: uv run --group lint ruff format --check .
+          run: uv run --only-group style ruff format --check .
 
         - name: Run mdformat
-          run: uv run --group lint mdformat --check *.md docs/**/*.md
+          run: uv run --only-group style mdformat --check *.md docs/**/*.md
 
     type-check:
         runs-on: ubuntu-latest
