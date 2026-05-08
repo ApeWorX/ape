@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 from eth_pydantic_types import HexBytes
 
 from ape_ethereum.proxies import ProxyType
+from ape_ethereum.utils import strip_compiler_metadata, strip_push_data
 from ape_test.provider import LocalProvider
 
 if TYPE_CHECKING:
@@ -11,6 +12,46 @@ if TYPE_CHECKING:
 """
 NOTE: Most proxy tests are in `geth/test_proxy.py`.
 """
+
+
+def test_strip_compiler_metadata_solidity():
+    metadata = b"\xa2\x64ipfs\x58\x22\x12\x20" + (b"\x01" * 32) + b"\x64solc" + b"\x43\x00\x08\x12"
+    bytecode = b"\x00\xf4" + metadata + len(metadata).to_bytes(2, "big")
+
+    assert strip_compiler_metadata(bytecode) == b"\x00\xf4"
+
+
+def test_strip_compiler_metadata_vyper():
+    metadata = b"\xa1\x65vyper\x83\x00\x03\x09"
+    bytecode = b"\x00\xf4" + metadata + len(metadata).to_bytes(2, "big")
+
+    assert strip_compiler_metadata(bytecode) == b"\x00\xf4"
+
+
+def test_strip_compiler_metadata_leaves_non_metadata():
+    bytecode = bytes.fromhex("00a165627a7a72305820f4")
+
+    assert strip_compiler_metadata(bytecode) == bytecode
+
+
+def test_strip_compiler_metadata_leaves_unknown_cbor_tail():
+    tail = b"\xa1\x63foo\x01"
+    bytecode = b"\x00\xf4" + tail + len(tail).to_bytes(2, "big")
+
+    assert strip_compiler_metadata(bytecode) == bytecode
+
+
+def test_strip_push_data():
+    assert strip_push_data(bytes.fromhex("61f4ff5ff4")) == bytes.fromhex("615ff4")
+
+
+def test_composed_bytecode_strippers_ignore_push_data_and_compiler_metadata():
+    metadata = b"\xa1\x65vyper\x83\x00\x03\x09"
+    bytecode = b"\x00" + metadata + len(metadata).to_bytes(2, "big")
+
+    assert 0xF4 in strip_push_data(strip_compiler_metadata(b"\xf4"))
+    assert 0xF4 not in strip_push_data(strip_compiler_metadata(bytes.fromhex("61f4ff")))
+    assert 0xF4 not in strip_push_data(strip_compiler_metadata(bytecode))
 
 
 def test_minimal_proxy(ethereum, minimal_proxy_container, chain, owner):

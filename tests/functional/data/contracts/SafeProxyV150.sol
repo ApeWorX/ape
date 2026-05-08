@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 
-pragma solidity >=0.7.0 <0.9.0;
+pragma solidity >=0.7.0 <0.8.0;
 
 
 // Copied from https://github.com/safe-global/safe-smart-account/blob/v1.5.0/contracts/proxies/SafeProxy.sol
