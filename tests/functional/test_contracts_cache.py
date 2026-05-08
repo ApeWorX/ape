@@ -212,6 +212,70 @@ def test_instance_at_skip_proxy(mocker, chain, vyper_contract_instance, owner):
             assert address != arg
 
 
+def test_get_caches_proxy_info_no_hit(mocker, chain, vyper_contract_instance, ethereum):
+    address = vyper_contract_instance.address
+    with chain.contracts.use_temporary_caches():
+        ecosystem_type = type(ethereum)
+        get_proxy_info = ecosystem_type.get_proxy_info
+        proxy_detection_spy = mocker.patch.object(
+            ecosystem_type,
+            "get_proxy_info",
+            autospec=True,
+            side_effect=lambda ecosystem, address: get_proxy_info(ecosystem, address),
+        )
+
+        assert chain.contracts.get(address, fetch_from_explorer=False) is None
+        assert proxy_detection_spy.call_count == 1
+        cached_proxy_info = chain.contracts.proxy_infos.get_entry(address)
+        assert cached_proxy_info.exists is True
+        assert cached_proxy_info.value is None
+
+        assert chain.contracts.get(address, fetch_from_explorer=False) is None
+        assert proxy_detection_spy.call_count == 1
+
+
+def test_cache_proxy_info_no_hit_live_network(chain, clean_contract_caches, dummy_live_network):
+    address = "0x4a986a6dca6dbF99Bc3D17F8d71aFB0D60E740F9"
+    cache = chain.contracts.proxy_infos
+
+    try:
+        chain.contracts.cache_proxy_info_no_hit(address)
+        assert cache.get_file(address).is_file()
+        assert cache.get_data(address) is None
+
+        cache.clear_memory()
+        cached_proxy_info = cache.get_entry(address)
+        assert cached_proxy_info.exists is True
+        assert cached_proxy_info.value is None
+        assert cache[address] is None
+
+    finally:
+        del cache[address]
+
+
+def test_cache_proxy_info_loads_existing_disk_model(
+    chain, clean_contract_caches, dummy_live_network
+):
+    address = "0x4a986a6dca6dbF99Bc3D17F8d71aFB0D60E740F9"
+    target = "0xBEbeBeBEbeBebeBeBEBEbebEBeBeBebeBeBebebe"
+    cache = chain.contracts.proxy_infos
+    proxy_info = ProxyInfo(type=ProxyType.Minimal, target=target)
+
+    try:
+        cache.cache_data(address, proxy_info.model_dump(mode="json"))
+        cache.clear_memory()
+
+        cached_proxy_info = cache.get_entry(address)
+        assert cached_proxy_info.exists is True
+        assert cached_proxy_info.value is not None
+        assert cached_proxy_info.value.target == target
+        assert cached_proxy_info.value.type_name == "Minimal"
+        assert cache[address] == cached_proxy_info.value
+
+    finally:
+        del cache[address]
+
+
 def test_cache_deployment_live_network(
     chain,
     project,
@@ -661,12 +725,15 @@ def test_clear_local_caches(chain, vyper_contract_instance, project, owner):
     chain.contracts.blueprints[address] = vyper_contract_instance.contract_type
     # Ensure proxy exists.
     proxy = project.SimpleProxy.deploy(address, sender=owner)
+    # Ensure proxy no-hit exists.
+    chain.contracts.cache_proxy_info_no_hit(address)
     # Ensure creation exists.
     _ = chain.contracts.get_creation_metadata(address)
 
     # Test setup verification.
     assert address in chain.contracts.contract_types, "Setup failed - no contract type(s) cached"
     assert proxy.address in chain.contracts.proxy_infos, "Setup failed - no proxy cached"
+    assert chain.contracts.proxy_infos.get_entry(address).exists, "Setup failed - no proxy no-hit"
     assert address in chain.contracts.contract_creations, "Setup failed - no creation(s) cached"
 
     # This is the method we are testing.
