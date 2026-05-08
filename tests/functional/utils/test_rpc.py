@@ -1,6 +1,22 @@
 import pytest
 
-from ape.utils.rpc import RPCHeaders
+from ape.utils.rpc import RPCHeaders, stream_response
+
+
+def test_stream_response(mocker):
+    expected = b"".join(bytes([i]) * 128 for i in range(256))
+    response = mocker.MagicMock()
+    response.headers = {"content-length": str(len(expected))}
+    response.iter_content.return_value = [expected[:1024], expected[1024:]]
+
+    get = mocker.patch("ape.utils.rpc.requests.get", return_value=response)
+
+    actual = stream_response("https://example.com/package.zip")
+
+    get.assert_called_once_with("https://example.com/package.zip", stream=True)
+    response.raise_for_status.assert_called_once_with()
+    response.iter_content.assert_called_once_with(chunk_size=2**16)
+    assert actual == expected
 
 
 class TestRPCHeaders:
