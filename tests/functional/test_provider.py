@@ -260,12 +260,12 @@ def test_get_contract_logs_single_log(chain, contract_instance, owner, eth_teste
 
 
 def test_poll_logs_forwards_multiple_addresses(mocker, contract_instance, owner, geth_provider):
+    from ape_ethereum.provider import Web3Provider
+
     block_number = 0
     mock_block = mocker.MagicMock(number=block_number)
-    mocker.patch.object(
-        "ape_ethereum.provider.Web3Provider.poll_blocks",
-        return_value=iter([mock_block]),
-    )
+    # NOTE: need to patch source, which is parent class
+    mocker.patch.object(Web3Provider, "poll_blocks", return_value=iter([mock_block]))
     get_contract_logs_spy = mocker.patch.object(
         geth_provider,
         "get_contract_logs",
