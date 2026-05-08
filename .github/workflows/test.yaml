@@ -56,6 +56,7 @@ jobs:
                 python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
 
         env:
+          COVERAGE_ARGS: ${{ matrix.os == 'ubuntu-latest' && matrix.python-version == '3.11' && '--cov=src --cov-append' || '--no-cov' }}
           GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
         steps:
@@ -86,7 +87,7 @@ jobs:
               -s -v ERROR \
               -n auto --dist loadgroup \
               -m "not hypothesis" \
-              --cov=src --cov-append \
+              $COVERAGE_ARGS \
               tests/functional
 
         - name: Run Integration Tests
@@ -95,7 +96,7 @@ jobs:
               -s -v ERROR \
               -n auto --dist loadgroup \
               -m "not hypothesis" \
-              --cov=src --cov-append \
+              $COVERAGE_ARGS \
               tests/integration
 
         - name: Run Performance Tests
