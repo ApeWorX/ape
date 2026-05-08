@@ -79,6 +79,30 @@ jobs:
         - name: Install Geth
           uses: ApeWorX/geth-action@v1
 
+        - name: Cache Solidity Compilers
+          uses: actions/cache@v5
+          with:
+            path: ~/.solcx
+            key: ${{ runner.os }}-solcx-${{ hashFiles('pyproject.toml', 'tests/**/*.sol') }}
+            restore-keys: |
+              ${{ runner.os }}-solcx-
+
+        - name: Install Solidity Compilers
+          run: |
+            uv run --no-sync python -c "
+            from pathlib import Path
+
+            import ape
+            from solcx import install_solc
+
+            compiler = ape.compilers.registered_compilers.get('.sol')
+            paths = Path('tests').rglob('*.sol')
+            versions = sorted(compiler.get_versions(paths)) if compiler else []
+            print('Installing Solidity compilers:', ', '.join(versions) or 'none')
+            for version in versions:
+                install_solc(version, show_progress=True)
+            "
+
         - name: Cache Ape Packages
           uses: actions/cache@v5
           with:
