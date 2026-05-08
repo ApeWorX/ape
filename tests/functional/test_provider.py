@@ -267,7 +267,7 @@ def test_poll_logs_forwards_multiple_addresses(mocker, contract_instance, owner,
     # NOTE: need to patch source, which is parent class
     mocker.patch.object(Web3Provider, "poll_blocks", return_value=iter([mock_block]))
     get_contract_logs_spy = mocker.patch.object(
-        geth_provider,
+        Web3Provider,
         "get_contract_logs",
         return_value=iter([]),
     )
