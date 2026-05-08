@@ -69,6 +69,14 @@ jobs:
         - name: Install Geth
           uses: ApeWorX/geth-action@v1
 
+        - name: Cache Ape Packages
+          uses: actions/cache@v4
+          with:
+            path: ~/.ape/packages
+            key: ${{ runner.os }}-ape-packages-${{ hashFiles('pyproject.toml') }}
+            restore-keys: |
+              ${{ runner.os }}-ape-packages-
+
         - name: Install Project Dependencies
           run: uv run --group test ape pm install
 
