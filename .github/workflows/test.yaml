@@ -2,6 +2,9 @@ on: ["push", "pull_request"]
 
 name: Test
 
+env:
+  SETUPTOOLS_SCM_PRETEND_VERSION_FOR_ETH_APE: "0.8.999"
+
 concurrency:
   # Cancel older, in-progress jobs from the same PR, same workflow.
   # use run_id if the job is triggered by a push to ensure
@@ -15,8 +18,6 @@ jobs:
 
         steps:
         - uses: actions/checkout@v5
-          with:
-            fetch-depth: 0
 
         - name: Setup Python
           uses: astral-sh/setup-uv@v7
@@ -37,8 +38,6 @@ jobs:
 
         steps:
         - uses: actions/checkout@v5
-          with:
-            fetch-depth: 0
 
         - name: Setup Python
           uses: astral-sh/setup-uv@v7
@@ -61,8 +60,6 @@ jobs:
 
         steps:
         - uses: actions/checkout@v5
-          with:
-            fetch-depth: 0
 
         - name: Setup Python
           uses: astral-sh/setup-uv@v7
@@ -104,8 +101,6 @@ jobs:
 
         steps:
         - uses: actions/checkout@v5
-          with:
-            fetch-depth: 0
 
         - name: Setup Python
           uses: astral-sh/setup-uv@v7
