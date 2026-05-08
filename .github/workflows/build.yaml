@@ -122,7 +122,8 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha,scope=build-py${{ matrix.python-version }}
+          cache-from: type=gha,scope=build-py${{ matrix.python-version }}-${{ matrix.target }}
+          cache-to: type=gha,mode=max,scope=build-py${{ matrix.python-version }}-${{ matrix.target }}
           platforms: ${{ github.event_name != 'pull_request' && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
 
       - name: Run container retention policy
