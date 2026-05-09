@@ -90,10 +90,23 @@ jobs:
         - name: Install Solidity Compilers
           run: |
             uv run --no-sync python -c "
+            import re
             from pathlib import Path
 
-            from ape_solidity._utils import get_pragma_spec_from_path, select_version
+            from ape.utils import pragma_str_to_specifier_set
             from solcx import get_installable_solc_versions, install_solc
+
+            def get_pragma_spec_from_path(path):
+                source = path.read_text(encoding='utf8')
+                pragma_match = next(
+                    re.finditer(r'(?:\n|^)\s*pragma\s*solidity\s*([^;\n]*)', source),
+                    None,
+                )
+                return pragma_str_to_specifier_set(pragma_match.groups()[0]) if pragma_match else None
+
+            def select_version(pragma_spec, options):
+                choices = sorted(pragma_spec.filter(options), reverse=True)
+                return choices[0] if choices else None
 
             installable_versions = get_installable_solc_versions()
             versions = set()
