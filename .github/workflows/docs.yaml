@@ -29,6 +29,8 @@ jobs:
       uses: astral-sh/setup-uv@v7
       with:
         python-version: "3.10"
+        enable-cache: true
+        cache-dependency-glob: pyproject.toml
 
     - name: Build Docs
       run: uv sync
