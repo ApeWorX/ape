@@ -2,6 +2,9 @@ on: ["push", "pull_request"]
 
 name: Test
 
+env:
+  SETUPTOOLS_SCM_PRETEND_VERSION_FOR_ETH_APE: "0.8.999"
+
 concurrency:
   # Cancel older, in-progress jobs from the same PR, same workflow.
   # use run_id if the job is triggered by a push to ensure
@@ -15,35 +18,35 @@ jobs:
 
         steps:
         - uses: actions/checkout@v5
-          with:
-            fetch-depth: 0
 
         - name: Setup Python
           uses: astral-sh/setup-uv@v7
           with:
               python-version: "3.10"
+              enable-cache: true
+              cache-dependency-glob: pyproject.toml
 
         - name: Run Ruff Lint
-          run: uv run --group lint ruff check .
+          run: uv run --only-group style ruff check .
 
         - name: Run Ruff Format
-          run: uv run --group lint ruff format --check .
+          run: uv run --only-group style ruff format --check .
 
         - name: Run mdformat
-          run: uv run --group lint mdformat --check *.md docs/**/*.md
+          run: uv run --only-group style mdformat --check *.md docs/**/*.md
 
     type-check:
         runs-on: ubuntu-latest
 
         steps:
         - uses: actions/checkout@v5
-          with:
-            fetch-depth: 0
 
         - name: Setup Python
           uses: astral-sh/setup-uv@v7
           with:
               python-version: "3.10"
+              enable-cache: true
+              cache-dependency-glob: pyproject.toml
 
         - name: Run MyPy
           run: uv run --group lint --group test mypy .
@@ -57,42 +60,99 @@ jobs:
                 python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
 
         env:
+          COVERAGE_ARGS: ${{ matrix.os == 'ubuntu-latest' && matrix.python-version == '3.11' && '--cov=src --cov-append' || '--no-cov' }}
           GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
         steps:
         - uses: actions/checkout@v5
-          with:
-            fetch-depth: 0
 
         - name: Setup Python
           uses: astral-sh/setup-uv@v7
           with:
               python-version: ${{ matrix.python-version }}
+              enable-cache: true
+              cache-dependency-glob: pyproject.toml
+
+        - name: Install Test Environment
+          run: uv sync --no-default-groups --group test
 
         - name: Install Geth
           uses: ApeWorX/geth-action@v1
 
+        - name: Cache Solidity Compilers
+          uses: actions/cache@v5
+          with:
+            path: ~/.solcx
+            key: ${{ runner.os }}-solcx-${{ hashFiles('pyproject.toml', 'tests/**/*.sol') }}
+            restore-keys: |
+              ${{ runner.os }}-solcx-
+
+        - name: Install Solidity Compilers
+          run: |
+            uv run --no-sync python -c "
+            import re
+            from pathlib import Path
+
+            from ape.utils import pragma_str_to_specifier_set
+            from solcx import get_installable_solc_versions, install_solc
+
+            def get_pragma_spec_from_path(path):
+                source = path.read_text(encoding='utf8')
+                pragma_match = next(
+                    re.finditer(r'(?:\n|^)\s*pragma\s*solidity\s*([^;\n]*)', source),
+                    None,
+                )
+                return pragma_str_to_specifier_set(pragma_match.groups()[0]) if pragma_match else None
+
+            def select_version(pragma_spec, options):
+                choices = sorted(pragma_spec.filter(options), reverse=True)
+                return choices[0] if choices else None
+
+            installable_versions = get_installable_solc_versions()
+            versions = set()
+            for path in Path('tests').rglob('*.sol'):
+                pragma_spec = get_pragma_spec_from_path(path)
+                if pragma_spec and (version := select_version(pragma_spec, installable_versions)):
+                    versions.add(str(version))
+
+            versions = sorted(versions)
+            print('Installing Solidity compilers:', ', '.join(versions) or 'none')
+            for version in versions:
+                install_solc(version, show_progress=False)
+            "
+
+        - name: Cache Ape Packages
+          uses: actions/cache@v5
+          with:
+            path: ~/.ape/packages
+            key: ${{ runner.os }}-ape-packages-${{ hashFiles('pyproject.toml') }}
+            restore-keys: |
+              ${{ runner.os }}-ape-packages-
+
+        - name: Install Project Dependencies
+          run: uv run --no-sync ape pm install
+
         - name: Run Functional Tests
           run: |
-            uv run --group test ape test \
+            uv run --no-sync ape test \
               -s -v ERROR \
               -n auto --dist loadgroup \
               -m "not hypothesis" \
-              --cov=src --cov-append \
+              $COVERAGE_ARGS \
               tests/functional
 
         - name: Run Integration Tests
           run: |
-            uv run --group test ape test \
+            uv run --no-sync ape test \
               -s -v ERROR \
               -n auto --dist loadgroup \
               -m "not hypothesis" \
-              --cov=src --cov-append \
+              $COVERAGE_ARGS \
               tests/integration
 
         - name: Run Performance Tests
           run: |
-            uv run --group test ape test \
+            uv run --no-sync ape test \
               -s -v ERROR \
               tests/performance
 
@@ -104,13 +164,16 @@ jobs:
 
         steps:
         - uses: actions/checkout@v5
-          with:
-            fetch-depth: 0
 
         - name: Setup Python
           uses: astral-sh/setup-uv@v7
           with:
               python-version: "3.10"
+              enable-cache: true
+              cache-dependency-glob: pyproject.toml
+
+        - name: Install Test Environment
+          run: uv sync --no-default-groups --group test
 
         - name: Run Tests
-          run: uv run --group test ape test -s -m "hypothesis" --no-cov
+          run: uv run --no-sync ape test -s -m "hypothesis" --no-cov
