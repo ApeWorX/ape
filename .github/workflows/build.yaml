@@ -13,6 +13,10 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -36,10 +40,15 @@ jobs:
 
       # NOTE: We need to store `uv.lock` for building with
       - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: pyproject.toml
       - uses: actions/cache@v5
         with:
           path: uv.lock
-          key: ${{ matrix.python-version }}-uv-lock
+          key: ${{ matrix.python-version }}-uv-lock-${{ hashFiles('pyproject.toml') }}
+          restore-keys: |
+            ${{ matrix.python-version }}-uv-lock-
       - run: uv lock --python ${{ matrix.python-version }}
 
       - name: Get version from setuptools-scm
@@ -122,7 +131,8 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha,scope=build-py${{ matrix.python-version }}
+          cache-from: type=gha,scope=build-py${{ matrix.python-version }}-${{ matrix.target }}
+          cache-to: type=gha,mode=max,scope=build-py${{ matrix.python-version }}-${{ matrix.target }}
           platforms: ${{ github.event_name != 'pull_request' && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
 
       - name: Run container retention policy

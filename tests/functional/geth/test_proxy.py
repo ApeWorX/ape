@@ -39,16 +39,18 @@ def test_uups_proxy(project, geth_contract, owner, ethereum):
 
 
 @geth_process_test
-def test_gnosis_safe(project, geth_contract, owner, ethereum, chain):
+def test_gnosis_safe(project, geth_contract, owner, ethereum, chain, mocker):
     # Setup a proxy contract.
     target = geth_contract.address
     proxy_instance = owner.deploy(project.SafeProxy, target)
 
     # (test)
+    storage_spy = mocker.spy(chain.provider.web3.eth, "get_storage_at")
     actual = ethereum.get_proxy_info(proxy_instance.address)
     assert actual is not None
     assert actual.type == ProxyType.GnosisSafe
     assert actual.target == target
+    assert storage_spy.call_count == 1
 
     # Ensure we can call the proxy-method.
     assert proxy_instance.masterCopy()
@@ -60,6 +62,27 @@ def test_gnosis_safe(project, geth_contract, owner, ethereum, chain):
     proxy_instance_ref_2 = chain.contracts.instance_at(proxy_instance.address)
     assert proxy_instance_ref_2.masterCopy()
     assert isinstance(proxy_instance_ref_2.myNumber(), int)
+
+
+@geth_process_test
+def test_non_proxy_without_delegatecall_skips_storage(geth_contract, ethereum, chain, mocker):
+    storage_spy = mocker.spy(chain.provider.web3.eth, "get_storage_at")
+
+    actual = ethereum.get_proxy_info(geth_contract.address)
+
+    assert actual is None
+    assert storage_spy.call_count == 0
+
+
+@geth_process_test
+def test_gnosis_safe_v150(project, geth_contract, owner, ethereum):
+    target = geth_contract.address
+    proxy_instance = owner.deploy(project.SafeProxyV150, target)
+
+    actual = ethereum.get_proxy_info(proxy_instance.address)
+    assert actual is not None
+    assert actual.type == ProxyType.GnosisSafe
+    assert actual.target == target
 
 
 @geth_process_test
