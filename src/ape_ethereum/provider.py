@@ -1104,7 +1104,7 @@ class Web3Provider(ProviderAPI, ABC):
     def poll_logs(
         self,
         stop_block: int | None = None,
-        address: "AddressType | None" = None,
+        address: "list[AddressType] | AddressType | None" = None,
         topics: list[str | list[str]] | None = None,
         required_confirmations: int | None = None,
         new_block_timeout: int | None = None,
@@ -1128,7 +1128,7 @@ class Web3Provider(ProviderAPI, ABC):
                 "events": events,
             }
             if address is not None:
-                log_params["addresses"] = [address]
+                log_params["addresses"] = address if isinstance(address, list) else [address]
             if topics is not None:
                 log_params["topic_filter"] = topics
 
