@@ -607,6 +607,23 @@ def test_unlock_from_prompt_and_sign_message(runner, keyfile_account, message):
         assert keyfile_account.check_signature(message, signature)
 
 
+def test_unlock_from_prompt_retries_and_succeeds(runner, keyfile_account):
+    with runner.isolation(input=f"{INVALID_PASSPHRASE}\n{INVALID_PASSPHRASE}\n{PASSPHRASE}\n"):
+        keyfile_account.unlock()
+
+    assert not keyfile_account.locked
+
+
+def test_unlock_from_prompt_fails_after_three_attempts(runner, keyfile_account):
+    with runner.isolation(
+        input=f"{INVALID_PASSPHRASE}\n{INVALID_PASSPHRASE}\n{INVALID_PASSPHRASE}\n"
+    ):
+        with pytest.raises(AccountsError, match="Failed to unlock after 3 attempts."):
+            keyfile_account.unlock()
+
+    assert keyfile_account.locked
+
+
 def test_unlock_with_passphrase_and_sign_transaction(runner, keyfile_account, receiver):
     keyfile_account.unlock(passphrase=PASSPHRASE)
     # y: yes, sign (note: unlocking makes the key available but is not the same as autosign).

@@ -68,6 +68,9 @@ class ProxyType(IntEnum):
     # https://eips.ethereum.org/EIPS/eip-7702
     SetCode = auto()  # eip-7702 delegate (special EOA state)
 
+    # https://github.com/aragon/aragonOS/blob/master/contracts/apps/AppProxyUpgradeable.sol
+    AragonAppUpgradeable = auto()  # aragonOS upgradeable app proxy
+
 
 class ProxyInfo(ProxyInfoAPI):
     type: ProxyType
@@ -98,6 +101,14 @@ IMPLEMENTATION_ABI = MethodABI(
     type="function",
     name="implementation",
     stateMutability="view",
+    outputs=[ABIType(type="address")],
+)
+# aragonOS Kernel.getApp(namespace, name) -> implementation address.
+GET_APP_ABI = MethodABI(
+    type="function",
+    name="getApp",
+    stateMutability="view",
+    inputs=[ABIType(type="bytes32"), ABIType(type="bytes32")],
     outputs=[ABIType(type="address")],
 )
 

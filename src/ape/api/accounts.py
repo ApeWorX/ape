@@ -538,8 +538,8 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         doing a critical action temporarily, such as using an EIP7702 delegate module.
 
         Args:
-            new_delegate (`:class:~ape.contracts.ContractInstance`):
-                The contract instance to override the `delegate` with.
+            new_delegate (:class:`~ape.contracts.ContractInstance`):
+                The contract instance to override the ``delegate`` with.
             set_txn_kwargs (dict | None): Additional transaction kwargs passed to
               :meth:`~ape.api.networks.EcosystemAPI.create_transaction` for the
               :meth:`AccountAPI.set_delegate` method, such as ``gas``, ``max_fee``, or
@@ -556,8 +556,8 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
               kwargs, see :class:`~ape.api.transactions.TransactionAPI`.
 
         Returns:
-            `:class:~ape.contracts.ContractInstance`:
-                The contract instance of this account with the interface of `contract`.
+            :class:`~ape.contracts.ContractInstance`:
+                The contract instance of this account with the interface of ``contract``.
         """
         set_txn_kwargs = {**txn_kwargs, **(set_txn_kwargs or {})}
         existing_delegate = self.delegate

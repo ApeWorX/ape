@@ -5,7 +5,7 @@ from tests.conftest import geth_process_test
 
 
 @pytest.fixture
-def mock_geth_sepolia(ethereum, geth_provider, geth_contract):
+def mock_geth_sepolia(ethereum, geth_provider, geth_contract, project):
     """
     Temporarily tricks Ape into thinking the local network
     is Sepolia so we can test features that require a live
@@ -14,9 +14,13 @@ def mock_geth_sepolia(ethereum, geth_provider, geth_contract):
     # Ensuring contract exists before hack.
     # This allows the network to be past genesis which is more realistic.
     _ = geth_contract
-    geth_provider.network.name = "sepolia"
-    yield geth_provider.network
-    geth_provider.network.name = LOCAL_NETWORK_NAME
+    network = geth_provider.network
+    network.name = "sepolia"
+    try:
+        with project.temp_config(ethereum={"sepolia": {"required_confirmations": 0}}):
+            yield network
+    finally:
+        network.name = LOCAL_NETWORK_NAME
 
 
 @geth_process_test

@@ -58,6 +58,7 @@ from ape.utils.misc import (
     ZERO_ADDRESS,
 )
 from ape_ethereum.proxies import (
+    GET_APP_ABI,
     IMPLEMENTATION_ABI,
     MASTER_COPY_ABI,
     PROXY_TYPE_ABI,
@@ -77,6 +78,7 @@ from ape_ethereum.transactions import (
     TransactionStatusEnum,
     TransactionType,
 )
+from ape_ethereum.utils import strip_compiler_metadata, strip_push_data
 
 if TYPE_CHECKING:
     from ethpm_types import ContractType
@@ -471,12 +473,12 @@ class Ethereum(EcosystemAPI):
 
     def get_proxy_info(self, address: AddressType) -> ProxyInfo | None:
         contract_code = self.chain_manager.get_code(address)
-        if isinstance(contract_code, bytes):
-            contract_code = to_hex(contract_code)
+        code_bytes = HexBytes(contract_code)
 
-        if not (code := contract_code[2:]):
+        if not code_bytes:
             return None
 
+        code = code_bytes.hex()
         patterns = {
             ProxyType.Minimal: r"^363d3d373d3d3d363d73(.{40})5af43d82803e903d91602b57fd5bf3",
             ProxyType.ZeroAge: r"^3d3d3d3d363d3d37363d73(.{40})5af43d3d93803e602a57fd5bf3",
@@ -496,57 +498,10 @@ class Ethereum(EcosystemAPI):
                 target = self.conversion_manager.convert(match.group(1), AddressType)
                 return ProxyInfo(type=type_, target=target)
 
-        sequence_pattern = r"363d3d373d3d3d363d30545af43d82803e903d91601857fd5bf3"
-        if re.match(sequence_pattern, code):
-            # the implementation is stored in the slot matching proxy address
-            slot = self.provider.get_storage(address, address)
-            target = self.conversion_manager.convert(slot[-20:], AddressType)
-            return ProxyInfo(type=ProxyType.Sequence, target=target)
-
-        def str_to_slot(text):
-            return int(to_hex(keccak(text=text)), 16)
-
-        slots = {
-            ProxyType.Standard: str_to_slot("eip1967.proxy.implementation") - 1,
-            ProxyType.Beacon: str_to_slot("eip1967.proxy.beacon") - 1,
-            ProxyType.OpenZeppelin: str_to_slot("org.zeppelinos.proxy.implementation"),
-            ProxyType.UUPS: str_to_slot("PROXIABLE"),
-        }
-        for _type, slot in slots.items():
-            try:
-                # TODO perf: use a batch call here when ape adds support
-                storage = self.provider.get_storage(address, slot)
-            except NotImplementedError:
-                # Break early on not-implemented error rather than attempting
-                # to try more proxy types.
-                break
-
-            if sum(storage) == 0:
-                continue
-
-            target = self.conversion_manager.convert(storage[-20:], AddressType)
-            # read `target.implementation()`
-            if _type == ProxyType.Beacon:
-                target = ContractCall(IMPLEMENTATION_ABI, target)(skip_trace=True)
-
-            return ProxyInfo(type=_type, target=target, abi=IMPLEMENTATION_ABI)
-
-        # safe >=1.1.0 provides `masterCopy()`, which is also stored in slot 0
-        # call it and check that target matches
-        try:
-            singleton = ContractCall(MASTER_COPY_ABI, address)(skip_trace=True)
-            slot_0 = self.provider.get_storage(address, 0)
-            target = self.conversion_manager.convert(slot_0[-20:], AddressType)
-            # NOTE: `target` is set in initialized proxies
-            if target != ZERO_ADDRESS and target == singleton:
-                return ProxyInfo(type=ProxyType.GnosisSafe, target=target, abi=MASTER_COPY_ABI)
-
-        except ApeException:
-            pass
-
-        # eip-897 delegate proxy, read `proxyType()` and `implementation()`
-        # perf: only make a call when a proxyType() selector is mentioned in the code
-        eip897_pattern = b"\x63" + keccak(text="proxyType()")[:4]
+        # eip-897 delegate proxy, read `proxyType()` and `implementation()`.
+        # Proxy type 1 is a forwarding proxy and may not have an executable
+        # DELEGATECALL opcode, so handle EIP-897 before the opcode gate.
+        eip897_pattern = b"\x63" + self.get_method_selector(PROXY_TYPE_ABI)
         if eip897_pattern.hex() in code:
             try:
                 proxy_type = ContractCall(PROXY_TYPE_ABI, address)(skip_trace=True)
@@ -560,6 +515,99 @@ class Ethereum(EcosystemAPI):
 
             except (ApeException, ValueError):
                 pass
+
+        # Remaining proxy types delegate calls to their implementation. If
+        # runtime bytecode has no executable DELEGATECALL opcode, avoid storage
+        # probes and calls entirely.
+        opcodes = strip_push_data(strip_compiler_metadata(code_bytes))
+        if 0xF4 not in opcodes:
+            return None
+
+        sequence_pattern = r"363d3d373d3d3d363d30545af43d82803e903d91601857fd5bf3"
+        if re.match(sequence_pattern, code):
+            # the implementation is stored in the slot matching proxy address
+            slot = self.provider.get_storage(address, address)
+            target = self.conversion_manager.convert(slot[-20:], AddressType)
+            return ProxyInfo(type=ProxyType.Sequence, target=target)
+
+        # Safe >1.0.0 provides `masterCopy()`, which is also stored in slot 0.
+        # Check the bytecode marker first to avoid unrelated storage checks and calls.
+        master_copy_selector = self.get_method_selector(MASTER_COPY_ABI).hex()
+        safe_master_copy_markers = (
+            # Safe v1.1.0 through v1.4.1 compares calldata against a padded PUSH32.
+            f"7f{master_copy_selector}{'00' * 28}",
+            # Optimized builds may reconstruct the same padded selector with PUSH4 + SHL.
+            "63530ca43760e11b14",
+            # Safe v1.5.0+ compares the first 4 calldata bytes against a PUSH4.
+            f"63{master_copy_selector}",
+        )
+        if any(marker in code for marker in safe_master_copy_markers):
+            try:
+                slot_0 = self.provider.get_storage(address, 0)
+                target = self.conversion_manager.convert(slot_0[-20:], AddressType)
+                # NOTE: `target` is set in initialized proxies
+                if target != ZERO_ADDRESS and target == ContractCall(MASTER_COPY_ABI, address)(
+                    skip_trace=True
+                ):
+                    return ProxyInfo(type=ProxyType.GnosisSafe, target=target, abi=MASTER_COPY_ABI)
+
+            except ApeException:
+                pass
+
+        def str_to_slot(text):
+            return int(to_hex(keccak(text=text)), 16)
+
+        slots = {
+            ProxyType.Standard: str_to_slot("eip1967.proxy.implementation") - 1,
+            ProxyType.Beacon: str_to_slot("eip1967.proxy.beacon") - 1,
+            ProxyType.OpenZeppelin: str_to_slot("org.zeppelinos.proxy.implementation"),
+            ProxyType.UUPS: str_to_slot("PROXIABLE"),
+        }
+        get_storage_supported = True
+        for _type, slot in slots.items():
+            try:
+                # TODO perf: use a batch call here when ape adds support
+                storage = self.provider.get_storage(address, slot)
+            except NotImplementedError:
+                # Break early on not-implemented error rather than attempting
+                # to try more proxy types.
+                get_storage_supported = False
+                break
+
+            if sum(storage) == 0:
+                continue
+
+            target = self.conversion_manager.convert(storage[-20:], AddressType)
+            # read `target.implementation()`
+            if _type == ProxyType.Beacon:
+                target = ContractCall(IMPLEMENTATION_ABI, target)(skip_trace=True)
+
+            return ProxyInfo(type=_type, target=target, abi=IMPLEMENTATION_ABI)
+
+        # aragonOS AppProxyUpgradeable: kernel + appId stored at fixed slots; the
+        # implementation is resolved through Kernel.getApp(APP_BASES_NAMESPACE, appId).
+        if get_storage_supported:
+            kernel_storage = self.provider.get_storage(
+                address, str_to_slot("aragonOS.appStorage.kernel")
+            )
+            if sum(kernel_storage) != 0:
+                kernel = self.conversion_manager.convert(kernel_storage[-20:], AddressType)
+                app_id = self.provider.get_storage(
+                    address, str_to_slot("aragonOS.appStorage.appId")
+                )
+                if sum(app_id) != 0:
+                    try:
+                        target = ContractCall(GET_APP_ABI, kernel)(
+                            keccak(text="base"), bytes(app_id), skip_trace=True
+                        )
+                        if target != ZERO_ADDRESS:
+                            return ProxyInfo(
+                                type=ProxyType.AragonAppUpgradeable,
+                                target=target,
+                                abi=GET_APP_ABI,
+                            )
+                    except ApeException:
+                        pass
 
         return None
 
