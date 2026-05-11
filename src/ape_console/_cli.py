@@ -219,6 +219,9 @@ def console(
 
 
 def _create_namespace(**values) -> dict:
+    # NOTE: Clean up to prevent conflict w/ constructor
+    values["self_"] = values.pop("self")
+
     # Abstracted for testing purposes.
     return ApeConsoleNamespace(**values)
 
