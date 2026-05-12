@@ -8,14 +8,12 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     permissions:
+      contents: read
       id-token: write
 
     steps:
     - uses: actions/checkout@v5
     - uses: astral-sh/setup-uv@v7
-      with:
-        enable-cache: true
-        cache-dependency-glob: pyproject.toml
 
     - name: Build Package
       run: uv build

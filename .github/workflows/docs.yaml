@@ -17,6 +17,36 @@ concurrency:
 
 jobs:
   docs:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+    - uses: actions/checkout@v5
+
+    - name: Setup Python
+      uses: astral-sh/setup-uv@v7
+      with:
+        python-version: "3.10"
+        enable-cache: true
+        cache-dependency-glob: pyproject.toml
+
+    - name: Build Docs
+      run: uv sync
+
+    - name: Add venv to PATH
+      run: echo "${{ github.workspace }}/.venv/bin" >> $GITHUB_PATH
+      # NOTE: Otherwise the next action nukes the path when it starts
+
+    - name: Ape Docs
+      uses: apeworx/sphinx-ape@main
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+
+  publish-docs:
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
 
     permissions:
