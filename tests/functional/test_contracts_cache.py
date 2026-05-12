@@ -394,9 +394,9 @@ def test_get_multiple(vyper_contract_instance, solidity_contract_instance, chain
 
 
 def test_get_multiple_no_addresses(chain, ape_caplog):
-    with ape_caplog.at_level(LogLevel.WARNING):
+    with ape_caplog.at_level(LogLevel.DEBUG):
         contract_map = chain.contracts.get_multiple([])
-        assert "WARNING" in ape_caplog.records[-1].levelname
+        assert "DEBUG" in ape_caplog.records[-1].levelname
         assert "No addresses provided." in ape_caplog.messages[-1]
 
     assert not contract_map
