@@ -137,8 +137,7 @@ class CacheQueryProvider(QueryAPI):
         )
 
         if not database_file.is_file():
-            # NOTE: Raising `info` here hints user that they can initialize the cache db
-            logger.info("`ape-cache` database has not been initialized")
+            logger.debug("`ape-cache` database has not been initialized")
             self.database_bypass = True
             return None
 
