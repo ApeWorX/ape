@@ -158,6 +158,10 @@ class ApeConsoleNamespace(dict):
             func_spec = inspect.getfullargspec(ape_init_extras)
             init_kwargs: dict[str, Any] = {k: self._get_from_ape(k) for k in func_spec.args}
             extras = ape_init_extras(**init_kwargs)
+            if inspect.iscoroutine(extras):
+                from ape.utils import run_until_complete
+
+                extras = run_until_complete(extras)
 
             if isinstance(extras, dict):
                 all_extras.update(extras)
