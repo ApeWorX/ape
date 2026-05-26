@@ -450,7 +450,9 @@ class ContractManager(BaseManager):
             if check_for_changes and self._detect_change(source_id):
                 compiled = {
                     ct.name: ct
-                    for ct in self.compiler_manager.compile(source_id, project=self.project)
+                    for ct in self.compiler_manager.compile(
+                        self.project.path / source_id, project=self.project
+                    )
                     if ct.name
                 }
                 if compiled:

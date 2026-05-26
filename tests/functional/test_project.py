@@ -1108,6 +1108,24 @@ class TestContractManager:
         new_count = len(small_temp_project.contracts)
         assert new_count == count - 1
 
+    def test_get_after_change_from_other_cwd(self, small_temp_project):
+        # Regression: getting a contract whose source has changed must not
+        # depend on cwd happening to equal the project root.
+        small_temp_project.load_contracts(use_cache=False)
+        source_path = small_temp_project.contracts_folder / "Other.json"
+        source_path.write_text(source_path.read_text(encoding="utf8") + "\n", encoding="utf8")
+
+        original_cwd = Path.cwd()
+        with create_tempdir() as elsewhere:
+            os.chdir(elsewhere)
+            try:
+                actual = small_temp_project.contracts.get("Other")
+            finally:
+                os.chdir(original_cwd)
+
+        assert isinstance(actual, ContractContainer)
+        assert actual.contract_type.name == "Other"
+
 
 class TestDeploymentManager:
     def test_track(self, project, owner):
