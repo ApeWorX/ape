@@ -92,3 +92,22 @@ def ape_init_extras(project):
             extras.__dict__[f"_{scope}_path"] = extras_file
             extras.__dict__.pop(f"_{scope}_extras", None)
             assert extras["foo"] is LocalProject
+
+    @pytest.mark.parametrize("scope", ("local", "global"))
+    def test_extras_async_ape_init_extras(self, scope):
+        """
+        ``ape_init_extras`` is allowed to be defined as an ``async`` function;
+        it gets awaited before its result is merged into the namespace.
+        """
+        extras = ApeConsoleNamespace()
+        _ = getattr(extras, f"_{scope}_path")
+        extras_content = """
+async def ape_init_extras(project):
+    return {"foo": type(project)}
+"""
+        with create_tempdir() as temp:
+            extras_file = temp / CONSOLE_EXTRAS_FILENAME
+            extras_file.write_text(extras_content)
+            extras.__dict__[f"_{scope}_path"] = extras_file
+            extras.__dict__.pop(f"_{scope}_extras", None)
+            assert extras["foo"] is LocalProject

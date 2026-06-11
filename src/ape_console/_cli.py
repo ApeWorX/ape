@@ -157,7 +157,12 @@ class ApeConsoleNamespace(dict):
         if ape_init_extras is not None:
             func_spec = inspect.getfullargspec(ape_init_extras)
             init_kwargs: dict[str, Any] = {k: self._get_from_ape(k) for k in func_spec.args}
+
             extras = ape_init_extras(**init_kwargs)
+            if inspect.iscoroutine(extras):
+                from IPython.core.async_helpers import get_asyncio_loop
+
+                extras = get_asyncio_loop().run_until_complete(extras)
 
             if isinstance(extras, dict):
                 all_extras.update(extras)
