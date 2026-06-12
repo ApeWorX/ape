@@ -138,7 +138,7 @@ jobs:
       - name: Run container retention policy
         if: ${{ github.event_name != 'pull_request' }}
         # TODO: Use `v3` when available
-        uses: snok/container-retention-policy@v3.0.1
+        uses: snok/container-retention-policy@v3.1.0
         with:
           account: ApeWorX
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -264,7 +264,7 @@ jobs:
 
       - name: Run container retention policy
         # TODO: Use `v3` when available
-        uses: snok/container-retention-policy@v3.0.1
+        uses: snok/container-retention-policy@v3.1.0
         with:
           account: ApeWorX
           token: ${{ secrets.GITHUB_TOKEN }}
