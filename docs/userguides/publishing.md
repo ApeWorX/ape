@@ -42,12 +42,15 @@ For more information on accessing contract instances, follow [this guide](./cont
 
 ## Publishing to Explorer
 
-If you want to publish your contracts to an explorer, you can use the [publish_contract](../methoddocs/api.html#ape.explorers.ExplorerAPI.publish_contract) on the `ExplorerAPI`.
+If you want to publish your contracts to an explorer, use the
+[publish_contract](../methoddocs/api.html#ape.explorers.ExplorerAPI.publish_contract) method on
+an `ExplorerAPI`. A network's explorers are ordered by preference, so index `0` selects the
+preferred explorer.
 
 ```python
 from ape import networks
 
-networks.provider.network.explorer.publish_contract("0x123...")
+networks.provider.network.explorers[0].publish_contract("0x123...")
 ```
 
 If you want to automatically publish the source code upon deployment, you can use the `publish=` kwarg on the `deploy` methods:

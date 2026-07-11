@@ -13,7 +13,7 @@ def test_struct_input(
 
 
 def test_call_contract_not_found(mocker, method_abi_with_struct_input, networks):
-    (networks.ethereum.local.__dict__ or {}).pop("explorer", None)
+    (networks.ethereum.local.__dict__ or {}).pop("explorers", None)
     contract = mocker.MagicMock()
     contract.address = ZERO_ADDRESS
     contract.is_contract = False
@@ -25,7 +25,7 @@ def test_call_contract_not_found(mocker, method_abi_with_struct_input, networks)
 
 
 def test_transact_contract_not_found(mocker, owner, method_abi_with_struct_input, networks):
-    (networks.ethereum.local.__dict__ or {}).pop("explorer", None)
+    (networks.ethereum.local.__dict__ or {}).pop("explorers", None)
     contract = mocker.MagicMock()
     contract.address = ZERO_ADDRESS
     contract.is_contract = False

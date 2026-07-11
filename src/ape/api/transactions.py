@@ -433,7 +433,8 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
 
     @property
     def _explorer(self) -> "ExplorerAPI | None":
-        return self.provider.network.explorer
+        explorers = self.provider.network.explorers
+        return explorers[0] if explorers else None
 
     @property
     def _block_time(self) -> int:

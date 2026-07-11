@@ -339,7 +339,7 @@ def test_deploy_and_publish_local_network(owner, minimal_proxy_container):
 def test_deploy_and_publish_live_network_no_explorer(
     owner, minimal_proxy_container, dummy_live_network
 ):
-    dummy_live_network.__dict__["explorer"] = None
+    dummy_live_network.__dict__["explorers"] = ()
     expected_message = "Unable to publish contract - no explorer plugin installed."
     with pytest.raises(NetworkError, match=expected_message):
         owner.deploy(minimal_proxy_container, publish=True, required_confirmations=0)
