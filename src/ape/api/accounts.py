@@ -379,7 +379,10 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
 
         if publish:
             self.local_project.deployments.track(instance)
-            self.provider.network.publish_contract(address)
+            try:
+                self.provider.network.publish_contract(address)
+            except Exception as err:
+                logger.error(f"Contract was deployed but explorer verification failed: {err}")
 
         instance.base_path = contract.base_path or self.local_project.path
         return instance
