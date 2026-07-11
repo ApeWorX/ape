@@ -7,7 +7,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=2ceb65ce" />
     <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -203,7 +203,7 @@ data-aria-dark="Switch to auto color mode">
   </div>
 </div><article class="yue" role="main">
           <section id="compile">
-<h1>Compile<a class="headerlink" href="#compile" title="Link to this heading"></a></h1>
+<h1>Compile<a class="headerlink" href="#compile" title="Link to this heading">#</a></h1>
 <p>Compile your project using the following command:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>compile
 </span></pre></div>
@@ -213,7 +213,7 @@ data-aria-dark="Switch to auto color mode">
 </span></pre></div>
 </div>
 <section id="the-json-compiler">
-<h2>The JSON Compiler<a class="headerlink" href="#the-json-compiler" title="Link to this heading"></a></h2>
+<h2>The JSON Compiler<a class="headerlink" href="#the-json-compiler" title="Link to this heading">#</a></h2>
 <p>Ape ships with a compiler that is able to compile <code class="docutils literal notranslate"><span class="pre">.json</span></code> files.
 This compiler is useful for the following:</p>
 <ol class="arabic simple">
@@ -244,13 +244,13 @@ This is useful if you want to use contracts from much larger projects as depende
 </div>
 </section>
 <section id="other-compiler-plugins">
-<h2>Other Compiler Plugins<a class="headerlink" href="#other-compiler-plugins" title="Link to this heading"></a></h2>
+<h2>Other Compiler Plugins<a class="headerlink" href="#other-compiler-plugins" title="Link to this heading">#</a></h2>
 <p>If your project includes Solidity (<code class="docutils literal notranslate"><span class="pre">.sol</span></code>) or Vyper (<code class="docutils literal notranslate"><span class="pre">.vy</span></code>) files, you will have to install additional compilers.
 To include additional compilers in your project, you can add the plugins to the <code class="docutils literal notranslate"><span class="pre">plugins</span></code> list in your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> or install them using the CLI.
 For information on how to configure plugins in your project, follow <a class="reference external" href="./installing_plugins.html">this guide</a>.</p>
 </section>
 <section id="exclude-files">
-<h2>Exclude Files<a class="headerlink" href="#exclude-files" title="Link to this heading"></a></h2>
+<h2>Exclude Files<a class="headerlink" href="#exclude-files" title="Link to this heading">#</a></h2>
 <p>You can configure files to be excluded from compilation.
 By default, Ape excludes known non-contract files such as <code class="docutils literal notranslate"><span class="pre">package.json</span></code>, <code class="docutils literal notranslate"><span class="pre">package-lock.json</span></code>, <code class="docutils literal notranslate"><span class="pre">tsconfig.json</span></code>, or <code class="docutils literal notranslate"><span class="pre">.DS_Store</span></code>.
 To append file-globs to the exclusions list, edit your <code class="docutils literal notranslate"><span class="pre">compile:exclude</span></code> config like this:</p>
@@ -267,7 +267,7 @@ To append file-globs to the exclusions list, edit your <code class="docutils lit
 </div>
 </section>
 <section id="dependencies">
-<h2>Dependencies<a class="headerlink" href="#dependencies" title="Link to this heading"></a></h2>
+<h2>Dependencies<a class="headerlink" href="#dependencies" title="Link to this heading">#</a></h2>
 <p>In Ape, compiler plugins typically let you have dependencies.
 See <a class="reference external" href="./dependencies.html">this guide</a> to learn more about configuring dependencies in Ape.</p>
 <p>To always compile dependencies in Ape during the <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">compile</span></code> command, use the CLI flag <code class="docutils literal notranslate"><span class="pre">--include-dependencies</span></code>:</p>
@@ -281,7 +281,7 @@ See <a class="reference external" href="./dependencies.html">this guide</a> to l
 </div>
 </section>
 <section id="settings">
-<h2>Settings<a class="headerlink" href="#settings" title="Link to this heading"></a></h2>
+<h2>Settings<a class="headerlink" href="#settings" title="Link to this heading">#</a></h2>
 <p>Generally, configure compiler plugins using your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file.</p>
 <p>For example, when using the <code class="docutils literal notranslate"><span class="pre">vyper</span></code> plugin, you can configure settings under the <code class="docutils literal notranslate"><span class="pre">vyper</span></code> key:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">vyper</span><span class="p">:</span>
@@ -312,7 +312,7 @@ This is not limited to compiler settings; you can include other settings, such a
 </div>
 </section>
 <section id="compile-source-code">
-<h2>Compile Source Code<a class="headerlink" href="#compile-source-code" title="Link to this heading"></a></h2>
+<h2>Compile Source Code<a class="headerlink" href="#compile-source-code" title="Link to this heading">#</a></h2>
 <p>Instead of compiling project source files, you can compile code (str) directly:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">compilers</span>
 </span><span data-line="2">
@@ -334,7 +334,7 @@ This is not limited to compiler settings; you can include other settings, such a
 </div>
 </section>
 <section id="output-extra">
-<h2>Output Extra<a class="headerlink" href="#output-extra" title="Link to this heading"></a></h2>
+<h2>Output Extra<a class="headerlink" href="#output-extra" title="Link to this heading">#</a></h2>
 <p>Sometimes, there are extra output styles you may want.
 For example, to output minified ABI JSONs, use the following config:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">compile</span><span class="p">:</span>

@@ -7,7 +7,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=2ceb65ce" />
     <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -218,7 +218,7 @@ data-aria-dark="Switch to auto color mode">
   </div>
 </div><article class="yue" role="main">
           <section id="dependencies">
-<h1>Dependencies<a class="headerlink" href="#dependencies" title="Link to this heading"></a></h1>
+<h1>Dependencies<a class="headerlink" href="#dependencies" title="Link to this heading">#</a></h1>
 <p>Ape downloads and caches dependencies in the <code class="docutils literal notranslate"><span class="pre">.ape/packages</span></code> folder.
 There are three sub-folders in <code class="docutils literal notranslate"><span class="pre">.ape/packages</span></code> for dependencies:</p>
 <ol class="arabic simple">
@@ -235,11 +235,11 @@ Sometimes, dependencies are only collections of source files not meant to compil
 You can change the settings of a dependency using <code class="docutils literal notranslate"><span class="pre">config_override:</span></code> to compile dependencies after installed, if needed, and the <code class="docutils literal notranslate"><span class="pre">api/</span></code> cache always refers to the latest used during installation or compilation.</p>
 </div>
 <section id="types-of-dependencies">
-<h2>Types of Dependencies<a class="headerlink" href="#types-of-dependencies" title="Link to this heading"></a></h2>
+<h2>Types of Dependencies<a class="headerlink" href="#types-of-dependencies" title="Link to this heading">#</a></h2>
 <p>There are few dependency types that come with Ape.
 The following section highlights how to use each of them and what their differences are.</p>
 <section id="github">
-<h3>GitHub<a class="headerlink" href="#github" title="Link to this heading"></a></h3>
+<h3>GitHub<a class="headerlink" href="#github" title="Link to this heading">#</a></h3>
 <p>You can use dependencies from GitHub.
 For example, a common dependency for Solidity projects is <a class="reference external" href="https://github.com/OpenZeppelin/openzeppelin-contracts">Open Zeppelin</a>.
 To use Open Zeppelin version 4.9.6 in your Ape Solidity project, add the following to your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file:</p>
@@ -279,7 +279,7 @@ Bypass the original failing attempt by including a <code class="docutils literal
 </div>
 </section>
 <section id="pypi">
-<h3>PyPI<a class="headerlink" href="#pypi" title="Link to this heading"></a></h3>
+<h3>PyPI<a class="headerlink" href="#pypi" title="Link to this heading">#</a></h3>
 <p>You can use dependencies from <a class="reference external" href="https://pypi.org/">PyPI</a> by using the <code class="docutils literal notranslate"><span class="pre">pypi:</span></code> key.</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">dependencies</span><span class="p">:</span>
 </span><span data-line="2"><span class="w">   </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">pypi</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">snekmate</span>
@@ -304,7 +304,7 @@ Compilers such as <code class="docutils literal notranslate"><span class="pre">v
 However, the <code class="docutils literal notranslate"><span class="pre">site_package:</span></code> key works great if you already used <code class="docutils literal notranslate"><span class="pre">pip</span></code> to install the dependency, especially if the dependency is not available on <code class="docutils literal notranslate"><span class="pre">PyPI</span></code>.</p>
 </section>
 <section id="local">
-<h3>Local<a class="headerlink" href="#local" title="Link to this heading"></a></h3>
+<h3>Local<a class="headerlink" href="#local" title="Link to this heading">#</a></h3>
 <p>You can use already-downloaded projects as dependencies by referencing them as local dependencies.</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">dependencies</span><span class="p">:</span>
 </span><span data-line="2"><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MyDependency</span>
@@ -327,7 +327,7 @@ To do this, use a local value pointing to the manifest file, like this:</p>
 </div>
 </section>
 <section id="npm">
-<h3>NPM<a class="headerlink" href="#npm" title="Link to this heading"></a></h3>
+<h3>NPM<a class="headerlink" href="#npm" title="Link to this heading">#</a></h3>
 <p>You can use dependencies from NPM.
 This is generally not recommended.
 However, sometimes it is the only way to use a dependency.</p>
@@ -342,10 +342,10 @@ Then, add the following to your config so that Ape can find the dependency:</p>
 </section>
 </section>
 <section id="package-management-cli">
-<h2>Package Management CLI<a class="headerlink" href="#package-management-cli" title="Link to this heading"></a></h2>
+<h2>Package Management CLI<a class="headerlink" href="#package-management-cli" title="Link to this heading">#</a></h2>
 <p>You can also install and / or compile dependencies using the <code class="docutils literal notranslate"><span class="pre">pm</span></code> CLI.</p>
 <section id="list">
-<h3>list<a class="headerlink" href="#list" title="Link to this heading"></a></h3>
+<h3>list<a class="headerlink" href="#list" title="Link to this heading">#</a></h3>
 <p>To list information about installed dependencies, run:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>pm<span class="w"> </span>list
 </span></pre></div>
@@ -357,7 +357,7 @@ Then, add the following to your config so that Ape can find the dependency:</p>
 </div>
 </section>
 <section id="install">
-<h3>install<a class="headerlink" href="#install" title="Link to this heading"></a></h3>
+<h3>install<a class="headerlink" href="#install" title="Link to this heading">#</a></h3>
 <p>To install all dependencies in your project, run:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>pm<span class="w"> </span>install
 </span></pre></div>
@@ -398,7 +398,7 @@ For local dependencies, you give it a path to the local dependency.
 </div>
 </section>
 <section id="uninstall">
-<h3>uninstall<a class="headerlink" href="#uninstall" title="Link to this heading"></a></h3>
+<h3>uninstall<a class="headerlink" href="#uninstall" title="Link to this heading">#</a></h3>
 <p>Remove previously installed packages using the <code class="docutils literal notranslate"><span class="pre">uninstall</span></code> command, providing it either the dependency’s name or package_id:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>pm<span class="w"> </span>uninstall<span class="w"> </span>OpenZeppelin
 </span></pre></div>
@@ -421,7 +421,7 @@ If multiple versions are installed, pass additional arguments specifying the ver
 </div>
 </section>
 <section id="compile">
-<h3>compile<a class="headerlink" href="#compile" title="Link to this heading"></a></h3>
+<h3>compile<a class="headerlink" href="#compile" title="Link to this heading">#</a></h3>
 <p>Dependencies are not compiled when they are installed.
 Dependencies are only compiled if you need them to be.
 This is because often times a dependency will not compile in Ape on its own but its contract types can still be used in your project.
@@ -448,10 +448,10 @@ Otherwise, you just give it the name.</p>
 </section>
 </section>
 <section id="misc">
-<h2>Misc<a class="headerlink" href="#misc" title="Link to this heading"></a></h2>
+<h2>Misc<a class="headerlink" href="#misc" title="Link to this heading">#</a></h2>
 <p>The following guidelines are applicable to <strong>ALL</strong> dependency types.</p>
 <section id="config-override">
-<h3>Config Override<a class="headerlink" href="#config-override" title="Link to this heading"></a></h3>
+<h3>Config Override<a class="headerlink" href="#config-override" title="Link to this heading">#</a></h3>
 <p>To use any extra config item for a dependency, such as configurations for compilers needed during compiling, use the <code class="docutils literal notranslate"><span class="pre">config_override</span></code> setting:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">dependencies</span><span class="p">:</span>
 </span><span data-line="2"><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dependency</span>
@@ -468,7 +468,7 @@ Otherwise, you just give it the name.</p>
 </div>
 </section>
 <section id="custom-contracts-folder">
-<h3>Custom Contracts Folder<a class="headerlink" href="#custom-contracts-folder" title="Link to this heading"></a></h3>
+<h3>Custom Contracts Folder<a class="headerlink" href="#custom-contracts-folder" title="Link to this heading">#</a></h3>
 <p>You can set the name of the dependency’s contracts folder using the <code class="docutils literal notranslate"><span class="pre">config_override</span></code> key, e.g.:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">dependencies</span><span class="p">:</span>
 </span><span data-line="2"><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">DappToolsERC20</span>
@@ -480,7 +480,7 @@ Otherwise, you just give it the name.</p>
 </div>
 </section>
 <section id="file-exclusions">
-<h3>File Exclusions<a class="headerlink" href="#file-exclusions" title="Link to this heading"></a></h3>
+<h3>File Exclusions<a class="headerlink" href="#file-exclusions" title="Link to this heading">#</a></h3>
 <p>To ignore files from a dependency project, use the <code class="docutils literal notranslate"><span class="pre">exclude</span></code> setting in the <code class="docutils literal notranslate"><span class="pre">config_override:compile</span></code> section to specify glob patterns:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">dependencies</span><span class="p">:</span>
 </span><span data-line="2"><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dependency-project-name</span>
@@ -494,7 +494,7 @@ Otherwise, you just give it the name.</p>
 </div>
 </section>
 <section id="solidity-import-remapping">
-<h3>Solidity Import Remapping<a class="headerlink" href="#solidity-import-remapping" title="Link to this heading"></a></h3>
+<h3>Solidity Import Remapping<a class="headerlink" href="#solidity-import-remapping" title="Link to this heading">#</a></h3>
 <p>A common use-case for dependencies involves the Solidity plugin.
 By default, the <code class="docutils literal notranslate"><span class="pre">ape-solidity</span></code> plugin knows to look at installed dependencies for potential remapping-values and will use those when it notices you are importing them.
 For example, if you are using dependencies like:</p>
@@ -519,7 +519,7 @@ You can map to your local install of <code class="docutils literal notranslate">
 </div>
 </section>
 <section id="compiling-dependencies">
-<h3>Compiling Dependencies<a class="headerlink" href="#compiling-dependencies" title="Link to this heading"></a></h3>
+<h3>Compiling Dependencies<a class="headerlink" href="#compiling-dependencies" title="Link to this heading">#</a></h3>
 <p>Sometimes, you may need to access types (such as contract types) from dependencies.
 You can achieve this using the project manager:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">project</span>

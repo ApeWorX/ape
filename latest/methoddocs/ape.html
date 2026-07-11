@@ -7,7 +7,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=2ceb65ce" />
     <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -130,16 +130,16 @@ data-aria-dark="Switch to auto color mode">
       <i class="i-lucide close"></i>
     </button>
     <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
-<li><a class="reference internal" href="#ape.accounts"><code class="docutils literal notranslate">accounts</span></code></a></li>
-<li><a class="reference internal" href="#ape.chain"><code class="docutils literal notranslate">chain</span></code></a></li>
-<li><a class="reference internal" href="#ape.networks"><code class="docutils literal notranslate">networks</span></code></a></li>
-<li><a class="reference internal" href="#ape.project"><code class="docutils literal notranslate">project</span></code></a></li>
-<li><a class="reference internal" href="#ape.config"><code class="docutils literal notranslate">config</span></code></a></li>
-<li><a class="reference internal" href="#ape.Project"><code class="docutils literal notranslate">Project()</span></code></a></li>
-<li><a class="reference internal" href="#ape.Contract"><code class="docutils literal notranslate">Contract()</span></code></a></li>
-<li><a class="reference internal" href="#ape.convert"><code class="docutils literal notranslate">convert()</span></code></a></li>
-<li><a class="reference internal" href="#ape.compilers"><code class="docutils literal notranslate">compilers</span></code></a></li>
-<li><a class="reference internal" href="#ape.reverts"><code class="docutils literal notranslate">reverts()</span></code></a></li>
+<li><a class="reference internal" href="#ape.accounts"><code class="docutils literal notranslate"><span class="pre">ape.accounts</span></code></a></li>
+<li><a class="reference internal" href="#ape.chain"><code class="docutils literal notranslate"><span class="pre">ape.chain</span></code></a></li>
+<li><a class="reference internal" href="#ape.networks"><code class="docutils literal notranslate"><span class="pre">ape.networks</span></code></a></li>
+<li><a class="reference internal" href="#ape.project"><code class="docutils literal notranslate"><span class="pre">ape.project</span></code></a></li>
+<li><a class="reference internal" href="#ape.config"><code class="docutils literal notranslate"><span class="pre">ape.config</span></code></a></li>
+<li><a class="reference internal" href="#ape.Project"><code class="docutils literal notranslate"><span class="pre">ape.Project()</span></code></a></li>
+<li><a class="reference internal" href="#ape.Contract"><code class="docutils literal notranslate"><span class="pre">ape.Contract()</span></code></a></li>
+<li><a class="reference internal" href="#ape.convert"><code class="docutils literal notranslate"><span class="pre">ape.convert()</span></code></a></li>
+<li><a class="reference internal" href="#ape.compilers"><code class="docutils literal notranslate"><span class="pre">ape.compilers</span></code></a></li>
+<li><a class="reference internal" href="#ape.reverts"><code class="docutils literal notranslate"><span class="pre">ape.reverts()</span></code></a></li>
 </ul>
 </div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
   </aside>
@@ -202,45 +202,45 @@ data-aria-dark="Switch to auto color mode">
   </div>
 </div><article class="yue" role="main">
           <section id="ape">
-<h1>ape<a class="headerlink" href="#ape" title="Link to this heading"></a></h1>
+<h1>ape<a class="headerlink" href="#ape" title="Link to this heading">#</a></h1>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.accounts">
-<span class="sig-prename descclassname"><span class="pre">ape.</span></span><span class="sig-name descname"><span class="pre">accounts</span></span><a class="headerlink" href="#ape.accounts" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">ape.</span></span><span class="sig-name descname"><span class="pre">accounts</span></span><a class="headerlink" href="#ape.accounts" title="Link to this definition">#</a></dt>
 <dd><p>Manage accounts.
 See the <a class="reference external" href="../methoddocs/managers.html#ape.managers.accounts.AccountManager">AccountManager</a> for more info.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.chain">
-<span class="sig-prename descclassname"><span class="pre">ape.</span></span><span class="sig-name descname"><span class="pre">chain</span></span><a class="headerlink" href="#ape.chain" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">ape.</span></span><span class="sig-name descname"><span class="pre">chain</span></span><a class="headerlink" href="#ape.chain" title="Link to this definition">#</a></dt>
 <dd><p>Manage the blockchain.
 See the <a class="reference external" href="../methoddocs/managers.html#ape.managers.chain.ChainManager">ChainManager</a> for more info.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.networks">
-<span class="sig-prename descclassname"><span class="pre">ape.</span></span><span class="sig-name descname"><span class="pre">networks</span></span><a class="headerlink" href="#ape.networks" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">ape.</span></span><span class="sig-name descname"><span class="pre">networks</span></span><a class="headerlink" href="#ape.networks" title="Link to this definition">#</a></dt>
 <dd><p>Manage networks.
 See the <a class="reference external" href="../methoddocs/managers.html#ape.managers.networks.NetworkManager">NetworkManager</a> for more info.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.project">
-<span class="sig-prename descclassname"><span class="pre">ape.</span></span><span class="sig-name descname"><span class="pre">project</span></span><a class="headerlink" href="#ape.project" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">ape.</span></span><span class="sig-name descname"><span class="pre">project</span></span><a class="headerlink" href="#ape.project" title="Link to this definition">#</a></dt>
 <dd><p>Access the local project.
 See the <a class="reference external" href="../methoddocs/managers.html#ape.managers.project.ProjectManager">ProjectManager</a> for more info.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.config">
-<span class="sig-prename descclassname"><span class="pre">ape.</span></span><span class="sig-name descname"><span class="pre">config</span></span><a class="headerlink" href="#ape.config" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">ape.</span></span><span class="sig-name descname"><span class="pre">config</span></span><a class="headerlink" href="#ape.config" title="Link to this definition">#</a></dt>
 <dd><p>Access the local project config.
 See the <a class="reference external" href="../methoddocs/managers.html#ape.managers.config.ConfigManager">ConfigManager</a> for more info.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ape.Project">
-<span class="sig-prename descclassname"><span class="pre">ape.</span></span><span class="sig-name descname"><span class="pre">Project</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.Project" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">ape.</span></span><span class="sig-name descname"><span class="pre">Project</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.Project" title="Link to this definition">#</a></dt>
 <dd><p>Instantiate other projects.
 See the <a class="reference external" href="../methoddocs/managers.html#ape.managers.project.ProjectManager">ProjectManager</a> for more info.</p>
 <dl class="field-list simple">
@@ -252,7 +252,7 @@ See the <a class="reference external" href="../methoddocs/managers.html#ape.mana
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ape.Contract">
-<span class="sig-prename descclassname"><span class="pre">ape.</span></span><span class="sig-name descname"><span class="pre">Contract</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contract_type</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.Contract" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">ape.</span></span><span class="sig-name descname"><span class="pre">Contract</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contract_type</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.Contract" title="Link to this definition">#</a></dt>
 <dd><p>Instantiate contract-classes at a given address.
 See the <a class="reference external" href="../methoddocs/contracts.html#ape.contracts.base.ContractInstance">ContractInstance</a> for more info.</p>
 <dl class="field-list simple">
@@ -267,7 +267,7 @@ See the <a class="reference external" href="../methoddocs/contracts.html#ape.con
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ape.convert">
-<span class="sig-prename descclassname"><span class="pre">ape.</span></span><span class="sig-name descname"><span class="pre">convert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to_type</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.convert" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">ape.</span></span><span class="sig-name descname"><span class="pre">convert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to_type</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.convert" title="Link to this definition">#</a></dt>
 <dd><p>Conversion utility.
 See the <a class="reference external" href="../methoddocs/managers.html#ape.managers.converters.ConversionManager">ConversionManager</a> for more info.</p>
 <dl class="field-list simple">
@@ -286,14 +286,14 @@ See the <a class="reference external" href="../methoddocs/managers.html#ape.mana
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.compilers">
-<span class="sig-prename descclassname"><span class="pre">ape.</span></span><span class="sig-name descname"><span class="pre">compilers</span></span><a class="headerlink" href="#ape.compilers" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">ape.</span></span><span class="sig-name descname"><span class="pre">compilers</span></span><a class="headerlink" href="#ape.compilers" title="Link to this definition">#</a></dt>
 <dd><p>Access compiler classes.
 See the <a class="reference external" href="../methoddocs/managers.html#ape.managers.compilers.CompilerManager">CompilerManager</a> for more info.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ape.reverts">
-<span class="sig-prename descclassname"><span class="pre">ape.</span></span><span class="sig-name descname"><span class="pre">reverts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expected_message</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dev_message</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.reverts" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">ape.</span></span><span class="sig-name descname"><span class="pre">reverts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expected_message</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dev_message</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.reverts" title="Link to this definition">#</a></dt>
 <dd><p>Catch contract-revert exceptions.
 Mimics <code class="docutils literal notranslate"><span class="pre">pytest.raises</span></code>.</p>
 <dl class="field-list simple">

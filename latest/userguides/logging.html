@@ -7,7 +7,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=2ceb65ce" />
     <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -198,7 +198,7 @@ data-aria-dark="Switch to auto color mode">
   </div>
 </div><article class="yue" role="main">
           <section id="logging">
-<h1>Logging<a class="headerlink" href="#logging" title="Link to this heading"></a></h1>
+<h1>Logging<a class="headerlink" href="#logging" title="Link to this heading">#</a></h1>
 <p>Ape provides a logger and uses it to show messages throughout the execution of its modules.
 Every CLI command comes with the logger in Ape, even custom user scripts (unless they change the behavior of <code class="docutils literal notranslate"><span class="pre">--verbosity</span></code>).</p>
 <p>The following log levels are available with Ape:</p>
@@ -246,7 +246,7 @@ Every CLI command comes with the logger in Ape, even custom user scripts (unless
 It is shown during <code class="docutils literal notranslate"><span class="pre">INFO</span></code> but not shown if set to <code class="docutils literal notranslate"><span class="pre">WARNING</span></code> or above.</p>
 </div>
 <section id="cli-logging">
-<h2>CLI Logging<a class="headerlink" href="#cli-logging" title="Link to this heading"></a></h2>
+<h2>CLI Logging<a class="headerlink" href="#cli-logging" title="Link to this heading">#</a></h2>
 <p>If you are running into issues and wish to see more information logged, you likely want to run your command with <code class="docutils literal notranslate"><span class="pre">--verbosity</span> <span class="pre">DEBUG</span></code> or <code class="docutils literal notranslate"><span class="pre">-v</span> <span class="pre">debug</span></code>:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>--verbosity<span class="w"> </span>DEBUG<span class="w"> </span>my_cmd<span class="w">  </span><span class="c1"># long form</span>
 </span><span data-line="2">ape<span class="w"> </span>-v<span class="w"> </span>debug<span class="w"> </span>my_cmd<span class="w">           </span><span class="c1"># short form</span>
@@ -267,7 +267,7 @@ To do this, use the <code class="docutils literal notranslate"><span class="pre"
 <strong>This can be useful if you need the output of the CLI for something else.</strong></p>
 </section>
 <section id="python-logging">
-<h2>Python Logging<a class="headerlink" href="#python-logging" title="Link to this heading"></a></h2>
+<h2>Python Logging<a class="headerlink" href="#python-logging" title="Link to this heading">#</a></h2>
 <p>You can also import and use the logger in your own Python scripts or commands:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.logging</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span><span class="p">,</span> <span class="n">LogLevel</span>
 </span><span data-line="2">

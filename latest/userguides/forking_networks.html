@@ -7,7 +7,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=2ceb65ce" />
     <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -202,7 +202,7 @@ data-aria-dark="Switch to auto color mode">
   </div>
 </div><article class="yue" role="main">
           <section id="forking-networks">
-<h1>Forking Networks<a class="headerlink" href="#forking-networks" title="Link to this heading"></a></h1>
+<h1>Forking Networks<a class="headerlink" href="#forking-networks" title="Link to this heading">#</a></h1>
 <p>You can fork live networks in Ape to test against real blockchain state locally.
 To do so, ensure you are using a provider plugin with forking features.
 Some options are:</p>
@@ -219,7 +219,7 @@ fork-capable provider plugins can pass them through to their backend process.</p
 </span></pre></div>
 </div>
 <section id="basic-fork-configuration">
-<h2>Basic Fork Configuration<a class="headerlink" href="#basic-fork-configuration" title="Link to this heading"></a></h2>
+<h2>Basic Fork Configuration<a class="headerlink" href="#basic-fork-configuration" title="Link to this heading">#</a></h2>
 <p>Ensure you have also configured your upstream network (the network you are forking).
 For example, if forking <code class="docutils literal notranslate"><span class="pre">ethereum:mainnet</span></code> and using <code class="docutils literal notranslate"><span class="pre">alchemy</span></code>, set <code class="docutils literal notranslate"><span class="pre">alchemy</span></code> as the default mainnet provider:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">ethereum</span><span class="p">:</span>
@@ -234,7 +234,7 @@ For example, if forking <code class="docutils literal notranslate"><span class="
 <p>Learn more about setting up networks in the <a class="reference external" href="./networks.html">the networks guide</a>.</p>
 </section>
 <section id="advanced-fork-configuration">
-<h2>Advanced Fork Configuration<a class="headerlink" href="#advanced-fork-configuration" title="Link to this heading"></a></h2>
+<h2>Advanced Fork Configuration<a class="headerlink" href="#advanced-fork-configuration" title="Link to this heading">#</a></h2>
 <p>You can configure additional fork options in your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">ethereum</span><span class="p">:</span>
 </span><span data-line="2"><span class="w">  </span><span class="nt">mainnet_fork</span><span class="p">:</span>
@@ -250,7 +250,7 @@ For example, if forking <code class="docutils literal notranslate"><span class="
 </div>
 </section>
 <section id="forking-plugin-networks">
-<h2>Forking Plugin Networks<a class="headerlink" href="#forking-plugin-networks" title="Link to this heading"></a></h2>
+<h2>Forking Plugin Networks<a class="headerlink" href="#forking-plugin-networks" title="Link to this heading">#</a></h2>
 <p>You can also fork L2 plugin networks.
 For example, to fork a network such as Optimism or Arbitrum, install the corresponding plugin:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>plugins<span class="w"> </span>install<span class="w"> </span>optimism
@@ -274,7 +274,7 @@ For example, to fork a network such as Optimism or Arbitrum, install the corresp
 </div>
 </section>
 <section id="configure-default">
-<h2>Configure Default<a class="headerlink" href="#configure-default" title="Link to this heading"></a></h2>
+<h2>Configure Default<a class="headerlink" href="#configure-default" title="Link to this heading">#</a></h2>
 <p>If you want to change the default network from <code class="docutils literal notranslate"><span class="pre">local</span></code> to your forked network, add the following config:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">&lt;ecosystem-name&gt;</span><span class="p">:</span>
 </span><span data-line="2"><span class="w">  </span><span class="nt">default_network</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;network-name&gt;_fork</span>
@@ -283,7 +283,7 @@ For example, to fork a network such as Optimism or Arbitrum, install the corresp
 <p>Where <code class="docutils literal notranslate"><span class="pre">ecosystem-name</span></code> is the ecosystem containing the network and <code class="docutils literal notranslate"><span class="pre">network-name</span></code> is the network you are forking.</p>
 </section>
 <section id="forked-context">
-<h2>Forked Context<a class="headerlink" href="#forked-context" title="Link to this heading"></a></h2>
+<h2>Forked Context<a class="headerlink" href="#forked-context" title="Link to this heading">#</a></h2>
 <p>If you are already connected to a live network and wish to temporarily fork it, use the <a class="reference external" href="../methoddocs/managers.html#ape.managers.networks.NetworkManager.fork">fork() context manager</a>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">networks</span>
 </span><span data-line="2">
@@ -302,7 +302,7 @@ For example, to fork a network such as Optimism or Arbitrum, install the corresp
 </div>
 </section>
 <section id="time-travel-in-forks">
-<h2>Time Travel in Forks<a class="headerlink" href="#time-travel-in-forks" title="Link to this heading"></a></h2>
+<h2>Time Travel in Forks<a class="headerlink" href="#time-travel-in-forks" title="Link to this heading">#</a></h2>
 <p>One powerful feature of forking is the ability to manipulate block timestamps for testing time-dependent contracts:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">networks</span><span class="p">,</span> <span class="n">chain</span>
 </span><span data-line="2">

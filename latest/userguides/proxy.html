@@ -7,7 +7,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=2ceb65ce" />
     <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -198,7 +198,7 @@ data-aria-dark="Switch to auto color mode">
   </div>
 </div><article class="yue" role="main">
           <section id="proxy-contracts">
-<h1>Proxy Contracts<a class="headerlink" href="#proxy-contracts" title="Link to this heading"></a></h1>
+<h1>Proxy Contracts<a class="headerlink" href="#proxy-contracts" title="Link to this heading">#</a></h1>
 <p>Ape is able to detect proxy contracts so that it uses the target interface when interacting with a contract.
 The following proxies are supported in <code class="docutils literal notranslate"><span class="pre">ape-ethereum</span></code>:</p>
 <div class="table-wrapper colwidths-auto docutils container">
@@ -246,7 +246,7 @@ The following proxies are supported in <code class="docutils literal notranslate
 </table>
 </div>
 <section id="automatic-proxy-detection">
-<h2>Automatic Proxy Detection<a class="headerlink" href="#automatic-proxy-detection" title="Link to this heading"></a></h2>
+<h2>Automatic Proxy Detection<a class="headerlink" href="#automatic-proxy-detection" title="Link to this heading">#</a></h2>
 <p>Proxy detection occurs when attempting to retrieve contract types in Ape.
 Ape uses various sources to find contract types, such as explorer APIs.
 See <a class="reference external" href="./contracts.html">this guide</a> to learn more about initializing contracts.</p>
@@ -266,7 +266,7 @@ This allows you to still call methods as you normally do on proxy contracts.</p>
 </div>
 </section>
 <section id="manual-proxy-configuration">
-<h2>Manual Proxy Configuration<a class="headerlink" href="#manual-proxy-configuration" title="Link to this heading"></a></h2>
+<h2>Manual Proxy Configuration<a class="headerlink" href="#manual-proxy-configuration" title="Link to this heading">#</a></h2>
 <p>If you need more control over proxy behavior, you can manually specify proxy information when creating contract instances with <code class="docutils literal notranslate"><span class="pre">ContractContainer.at()</span></code>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">project</span>
 </span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.api.networks</span><span class="w"> </span><span class="kn">import</span> <span class="n">ProxyInfoAPI</span>

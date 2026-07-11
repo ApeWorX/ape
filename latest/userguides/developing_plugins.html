@@ -7,7 +7,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=2ceb65ce" />
     <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -208,7 +208,7 @@ data-aria-dark="Switch to auto color mode">
   </div>
 </div><article class="yue" role="main">
           <section id="developing-plugins">
-<h1>Developing Plugins<a class="headerlink" href="#developing-plugins" title="Link to this heading"></a></h1>
+<h1>Developing Plugins<a class="headerlink" href="#developing-plugins" title="Link to this heading">#</a></h1>
 <p>Your plugin project can be any type of python project, so long as its package name starts with <code class="docutils literal notranslate"><span class="pre">ape-</span></code> (such as <code class="docutils literal notranslate"><span class="pre">ape-ethereum</span></code>).
 The module and plugin directory names must start with <code class="docutils literal notranslate"><span class="pre">ape_</span></code> (such as <code class="docutils literal notranslate"><span class="pre">ape_ethereum</span></code>).
 To create an <code class="docutils literal notranslate"><span class="pre">ape</span></code> plugin, implement one or more API classes from the <code class="docutils literal notranslate"><span class="pre">ape.api</span></code> namespace and/or add key
@@ -222,7 +222,7 @@ This guide is intended to assist in both of those use cases.</p>
 <li><p><a class="reference external" href="https://github.com/apeworx/ape-tokens">the Tokenlists plugin</a>, an example CLI Extension</p></li>
 </ul>
 <section id="initialize-a-plugin-project">
-<h2>Initialize a Plugin Project<a class="headerlink" href="#initialize-a-plugin-project" title="Link to this heading"></a></h2>
+<h2>Initialize a Plugin Project<a class="headerlink" href="#initialize-a-plugin-project" title="Link to this heading">#</a></h2>
 <p>As previously mentioned, a plugin project is merely a python project.
 However, you can optionally use this <a class="reference external" href="https://github.com/ApeWorX/project-template">project template</a> for initializing your plugin.</p>
 <div class="admonition note">
@@ -233,7 +233,7 @@ However, you can optionally use this <a class="reference external" href="https:/
 The template may be good to follow if you want to keep your plugin of similar quality to plugins developed by the ApeWorX team.</p>
 </section>
 <section id="implementing-api-classes">
-<h2>Implementing API Classes<a class="headerlink" href="#implementing-api-classes" title="Link to this heading"></a></h2>
+<h2>Implementing API Classes<a class="headerlink" href="#implementing-api-classes" title="Link to this heading">#</a></h2>
 <p>API classes (classes from the <code class="docutils literal notranslate"><span class="pre">ape.api</span></code> namespace) are primarily composed of abstract methods and properties that plugins must implement.
 A benefit of the plugin system is that each plugin can implement these however they need, so long as they conform to the API interface.
 Two plugins with the same API may do entirely different things and yet be interchangeable in their usage.</p>
@@ -256,7 +256,7 @@ Two plugins with the same API may do entirely different things and yet be interc
 </span></pre></div>
 </div>
 <section id="registering-api-classes">
-<h3>Registering API Classes<a class="headerlink" href="#registering-api-classes" title="Link to this heading"></a></h3>
+<h3>Registering API Classes<a class="headerlink" href="#registering-api-classes" title="Link to this heading">#</a></h3>
 <p>Once you have finished implementing your API classes, you need to register them using the <a class="reference external" href="../methoddocs/plugins.html#ape.plugins.register">&#64;plugins.register</a> method decorator.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">plugins</span>
 </span><span data-line="2">
@@ -280,7 +280,7 @@ This helps Ape register plugins faster, which is required when checking for API 
 </div>
 </section>
 <section id="cli-plugins">
-<h3>CLI Plugins<a class="headerlink" href="#cli-plugins" title="Link to this heading"></a></h3>
+<h3>CLI Plugins<a class="headerlink" href="#cli-plugins" title="Link to this heading">#</a></h3>
 <p>The <code class="docutils literal notranslate"><span class="pre">ape</span></code> CLI is built using the python package <a class="reference external" href="https://palletsprojects.com/p/click/">click</a>.
 To create a CLI plugin, create any type of <code class="docutils literal notranslate"><span class="pre">click</span></code> command (such as a <code class="docutils literal notranslate"><span class="pre">click.group</span></code> or a <code class="docutils literal notranslate"><span class="pre">click.command</span></code>).</p>
 <p><code class="docutils literal notranslate"><span class="pre">_cli.py</span></code>:</p>
@@ -327,7 +327,7 @@ Follow <a class="reference external" href="./clis.html">this guide</a> to learn 
 </section>
 </section>
 <section id="using-plugins">
-<h2>Using Plugins<a class="headerlink" href="#using-plugins" title="Link to this heading"></a></h2>
+<h2>Using Plugins<a class="headerlink" href="#using-plugins" title="Link to this heading">#</a></h2>
 <p>Once you have finished implementing and registering your API classes, they will now be part of <code class="docutils literal notranslate"><span class="pre">ape</span></code>. For example,
 if you implemented the <code class="docutils literal notranslate"><span class="pre">AccountAPI</span></code>, you can now use accounts created from this plugin. The top-level <code class="docutils literal notranslate"><span class="pre">ape</span></code> manager
 classes are indifferent about the source of the plugin.</p>
@@ -371,10 +371,10 @@ classes are indifferent about the source of the plugin.</p>
 </div>
 </section>
 <section id="logging">
-<h2>Logging<a class="headerlink" href="#logging" title="Link to this heading"></a></h2>
+<h2>Logging<a class="headerlink" href="#logging" title="Link to this heading">#</a></h2>
 <p>Use Ape’s logger in your plugin by importing it from the <code class="docutils literal notranslate"><span class="pre">ape.logging</span></code> module or by using it off the CLI context (from using the <code class="docutils literal notranslate"><span class="pre">&#64;ape_cli_context</span></code> decorator).</p>
 <section id="import-the-logger-from-the-logging-module">
-<h3>Import the logger from the logging module<a class="headerlink" href="#import-the-logger-from-the-logging-module" title="Link to this heading"></a></h3>
+<h3>Import the logger from the logging module<a class="headerlink" href="#import-the-logger-from-the-logging-module" title="Link to this heading">#</a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.logging</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;This is a log message&quot;</span><span class="p">)</span>
@@ -382,7 +382,7 @@ classes are indifferent about the source of the plugin.</p>
 </div>
 </section>
 <section id="use-the-logger-from-the-ape-cli-context">
-<h3>Use the logger from the <code class="docutils literal notranslate"><span class="pre">&#64;ape_cli_context</span></code><a class="headerlink" href="#use-the-logger-from-the-ape-cli-context" title="Link to this heading"></a></h3>
+<h3>Use the logger from the <code class="docutils literal notranslate"><span class="pre">&#64;ape_cli_context</span></code><a class="headerlink" href="#use-the-logger-from-the-ape-cli-context" title="Link to this heading">#</a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.cli</span><span class="w"> </span><span class="kn">import</span> <span class="n">ape_cli_context</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="nd">@ape_cli_context</span><span class="p">()</span>

@@ -7,7 +7,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=2ceb65ce" />
     <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -131,62 +131,62 @@ data-aria-dark="Switch to auto color mode">
     </button>
     <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
 <li><a class="reference internal" href="#ape_pm.compiler.InterfaceCompiler"><code class="docutils literal notranslate"><span class="pre">InterfaceCompiler</span></code></a><ul>
-<li><a class="reference internal" href="#ape_pm.compiler.InterfaceCompiler.compile"><code class="docutils literal notranslate">compile()</span></code></a></li>
-<li><a class="reference internal" href="#ape_pm.compiler.InterfaceCompiler.compile_code"><code class="docutils literal notranslate">compile_code()</span></code></a></li>
-<li><a class="reference internal" href="#ape_pm.compiler.InterfaceCompiler.enrich_error"><code class="docutils literal notranslate">enrich_error()</span></code></a></li>
-<li><a class="reference internal" href="#ape_pm.compiler.InterfaceCompiler.get_versions"><code class="docutils literal notranslate">get_versions()</span></code></a></li>
-<li><a class="reference internal" href="#ape_pm.compiler.InterfaceCompiler.name"><code class="docutils literal notranslate">name</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.compiler.InterfaceCompiler.compile"><code class="docutils literal notranslate"><span class="pre">InterfaceCompiler.compile()</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.compiler.InterfaceCompiler.compile_code"><code class="docutils literal notranslate"><span class="pre">InterfaceCompiler.compile_code()</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.compiler.InterfaceCompiler.enrich_error"><code class="docutils literal notranslate"><span class="pre">InterfaceCompiler.enrich_error()</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.compiler.InterfaceCompiler.get_versions"><code class="docutils literal notranslate"><span class="pre">InterfaceCompiler.get_versions()</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.compiler.InterfaceCompiler.name"><code class="docutils literal notranslate"><span class="pre">InterfaceCompiler.name</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#ape_pm.dependency.GithubDependency"><code class="docutils literal notranslate"><span class="pre">GithubDependency</span></code></a><ul>
-<li><a class="reference internal" href="#ape_pm.dependency.GithubDependency.fetch"><code class="docutils literal notranslate">fetch()</span></code></a></li>
-<li><a class="reference internal" href="#ape_pm.dependency.GithubDependency.github"><code class="docutils literal notranslate">github</span></code></a></li>
-<li><a class="reference internal" href="#ape_pm.dependency.GithubDependency.package_id"><code class="docutils literal notranslate">package_id</span></code></a></li>
-<li><a class="reference internal" href="#ape_pm.dependency.GithubDependency.ref"><code class="docutils literal notranslate">ref</span></code></a></li>
-<li><a class="reference internal" href="#ape_pm.dependency.GithubDependency.scheme"><code class="docutils literal notranslate">scheme</span></code></a></li>
-<li><a class="reference internal" href="#ape_pm.dependency.GithubDependency.uri"><code class="docutils literal notranslate">uri</span></code></a></li>
-<li><a class="reference internal" href="#ape_pm.dependency.GithubDependency.version"><code class="docutils literal notranslate">version</span></code></a></li>
-<li><a class="reference internal" href="#ape_pm.dependency.GithubDependency.version_id"><code class="docutils literal notranslate">version_id</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.GithubDependency.fetch"><code class="docutils literal notranslate"><span class="pre">GithubDependency.fetch()</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.GithubDependency.github"><code class="docutils literal notranslate"><span class="pre">GithubDependency.github</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.GithubDependency.package_id"><code class="docutils literal notranslate"><span class="pre">GithubDependency.package_id</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.GithubDependency.ref"><code class="docutils literal notranslate"><span class="pre">GithubDependency.ref</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.GithubDependency.scheme"><code class="docutils literal notranslate"><span class="pre">GithubDependency.scheme</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.GithubDependency.uri"><code class="docutils literal notranslate"><span class="pre">GithubDependency.uri</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.GithubDependency.version"><code class="docutils literal notranslate"><span class="pre">GithubDependency.version</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.GithubDependency.version_id"><code class="docutils literal notranslate"><span class="pre">GithubDependency.version_id</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#ape_pm.dependency.LocalDependency"><code class="docutils literal notranslate"><span class="pre">LocalDependency</span></code></a><ul>
-<li><a class="reference internal" href="#ape_pm.dependency.LocalDependency.fetch"><code class="docutils literal notranslate">fetch()</span></code></a></li>
-<li><a class="reference internal" href="#ape_pm.dependency.LocalDependency.local"><code class="docutils literal notranslate">local</span></code></a></li>
-<li><a class="reference internal" href="#ape_pm.dependency.LocalDependency.package_id"><code class="docutils literal notranslate">package_id</span></code></a></li>
-<li><a class="reference internal" href="#ape_pm.dependency.LocalDependency.uri"><code class="docutils literal notranslate">uri</span></code></a></li>
-<li><a class="reference internal" href="#ape_pm.dependency.LocalDependency.version"><code class="docutils literal notranslate">version</span></code></a></li>
-<li><a class="reference internal" href="#ape_pm.dependency.LocalDependency.version_id"><code class="docutils literal notranslate">version_id</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.LocalDependency.fetch"><code class="docutils literal notranslate"><span class="pre">LocalDependency.fetch()</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.LocalDependency.local"><code class="docutils literal notranslate"><span class="pre">LocalDependency.local</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.LocalDependency.package_id"><code class="docutils literal notranslate"><span class="pre">LocalDependency.package_id</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.LocalDependency.uri"><code class="docutils literal notranslate"><span class="pre">LocalDependency.uri</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.LocalDependency.version"><code class="docutils literal notranslate"><span class="pre">LocalDependency.version</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.LocalDependency.version_id"><code class="docutils literal notranslate"><span class="pre">LocalDependency.version_id</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#ape_pm.dependency.NpmDependency"><code class="docutils literal notranslate"><span class="pre">NpmDependency</span></code></a><ul>
-<li><a class="reference internal" href="#ape_pm.dependency.NpmDependency.fetch"><code class="docutils literal notranslate">fetch()</span></code></a></li>
-<li><a class="reference internal" href="#ape_pm.dependency.NpmDependency.npm"><code class="docutils literal notranslate">npm</span></code></a></li>
-<li><a class="reference internal" href="#ape_pm.dependency.NpmDependency.package_id"><code class="docutils literal notranslate">package_id</span></code></a></li>
-<li><a class="reference internal" href="#ape_pm.dependency.NpmDependency.uri"><code class="docutils literal notranslate">uri</span></code></a></li>
-<li><a class="reference internal" href="#ape_pm.dependency.NpmDependency.version"><code class="docutils literal notranslate">version</span></code></a></li>
-<li><a class="reference internal" href="#ape_pm.dependency.NpmDependency.version_from_installed_package_json"><code class="docutils literal notranslate">version_from_installed_package_json</span></code></a></li>
-<li><a class="reference internal" href="#ape_pm.dependency.NpmDependency.version_from_project_package_json"><code class="docutils literal notranslate">version_from_project_package_json</span></code></a></li>
-<li><a class="reference internal" href="#ape_pm.dependency.NpmDependency.version_id"><code class="docutils literal notranslate">version_id</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.NpmDependency.fetch"><code class="docutils literal notranslate"><span class="pre">NpmDependency.fetch()</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.NpmDependency.npm"><code class="docutils literal notranslate"><span class="pre">NpmDependency.npm</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.NpmDependency.package_id"><code class="docutils literal notranslate"><span class="pre">NpmDependency.package_id</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.NpmDependency.uri"><code class="docutils literal notranslate"><span class="pre">NpmDependency.uri</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.NpmDependency.version"><code class="docutils literal notranslate"><span class="pre">NpmDependency.version</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.NpmDependency.version_from_installed_package_json"><code class="docutils literal notranslate"><span class="pre">NpmDependency.version_from_installed_package_json</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.NpmDependency.version_from_project_package_json"><code class="docutils literal notranslate"><span class="pre">NpmDependency.version_from_project_package_json</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.NpmDependency.version_id"><code class="docutils literal notranslate"><span class="pre">NpmDependency.version_id</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#ape_pm.dependency.PythonDependency"><code class="docutils literal notranslate"><span class="pre">PythonDependency</span></code></a><ul>
-<li><a class="reference internal" href="#ape_pm.dependency.PythonDependency.fetch"><code class="docutils literal notranslate">fetch()</span></code></a></li>
-<li><a class="reference internal" href="#ape_pm.dependency.PythonDependency.package_id"><code class="docutils literal notranslate">package_id</span></code></a></li>
-<li><a class="reference internal" href="#ape_pm.dependency.PythonDependency.pypi"><code class="docutils literal notranslate">pypi</span></code></a></li>
-<li><a class="reference internal" href="#ape_pm.dependency.PythonDependency.site_package"><code class="docutils literal notranslate">site_package</span></code></a></li>
-<li><a class="reference internal" href="#ape_pm.dependency.PythonDependency.uri"><code class="docutils literal notranslate">uri</span></code></a></li>
-<li><a class="reference internal" href="#ape_pm.dependency.PythonDependency.version"><code class="docutils literal notranslate">version</span></code></a></li>
-<li><a class="reference internal" href="#ape_pm.dependency.PythonDependency.version_id"><code class="docutils literal notranslate">version_id</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.PythonDependency.fetch"><code class="docutils literal notranslate"><span class="pre">PythonDependency.fetch()</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.PythonDependency.package_id"><code class="docutils literal notranslate"><span class="pre">PythonDependency.package_id</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.PythonDependency.pypi"><code class="docutils literal notranslate"><span class="pre">PythonDependency.pypi</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.PythonDependency.site_package"><code class="docutils literal notranslate"><span class="pre">PythonDependency.site_package</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.PythonDependency.uri"><code class="docutils literal notranslate"><span class="pre">PythonDependency.uri</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.PythonDependency.version"><code class="docutils literal notranslate"><span class="pre">PythonDependency.version</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.dependency.PythonDependency.version_id"><code class="docutils literal notranslate"><span class="pre">PythonDependency.version_id</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#ape_pm.project.BrownieProject"><code class="docutils literal notranslate"><span class="pre">BrownieProject</span></code></a><ul>
-<li><a class="reference internal" href="#ape_pm.project.BrownieProject.extract_config"><code class="docutils literal notranslate">extract_config()</span></code></a></li>
-<li><a class="reference internal" href="#ape_pm.project.BrownieProject.is_valid"><code class="docutils literal notranslate">is_valid</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.project.BrownieProject.extract_config"><code class="docutils literal notranslate"><span class="pre">BrownieProject.extract_config()</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.project.BrownieProject.is_valid"><code class="docutils literal notranslate"><span class="pre">BrownieProject.is_valid</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#ape_pm.project.FoundryProject"><code class="docutils literal notranslate"><span class="pre">FoundryProject</span></code></a><ul>
-<li><a class="reference internal" href="#ape_pm.project.FoundryProject.extract_config"><code class="docutils literal notranslate">extract_config()</span></code></a></li>
-<li><a class="reference internal" href="#ape_pm.project.FoundryProject.is_valid"><code class="docutils literal notranslate">is_valid</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.project.FoundryProject.extract_config"><code class="docutils literal notranslate"><span class="pre">FoundryProject.extract_config()</span></code></a></li>
+<li><a class="reference internal" href="#ape_pm.project.FoundryProject.is_valid"><code class="docutils literal notranslate"><span class="pre">FoundryProject.is_valid</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -255,16 +255,16 @@ data-aria-dark="Switch to auto color mode">
   </div>
 </div><article class="yue" role="main">
           <section id="module-ape_pm.compiler">
-<span id="ape-pm"></span><h1>ape-pm<a class="headerlink" href="#module-ape_pm.compiler" title="Link to this heading"></a></h1>
+<span id="ape-pm"></span><h1>ape-pm<a class="headerlink" href="#module-ape_pm.compiler" title="Link to this heading">#</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="ape_pm.compiler.InterfaceCompiler">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape_pm.compiler.</span></span><span class="sig-name descname"><span class="pre">InterfaceCompiler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compiler_settings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_pm.compiler.InterfaceCompiler" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape_pm.compiler.</span></span><span class="sig-name descname"><span class="pre">InterfaceCompiler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compiler_settings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_pm.compiler.InterfaceCompiler" title="Link to this definition">#</a></dt>
 <dd><p>A compiler plugin for interface JSONs (ABIs). Also, this
 compiler can “compile” already-compiled <code class="docutils literal notranslate"><span class="pre">ContractType</span></code>
 JSON files.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ape_pm.compiler.InterfaceCompiler.compile">
-<span class="sig-name descname"><span class="pre">compile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contract_filepaths</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">Path</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="managers.html#ape.managers.project.ProjectManager" title="ape.managers.project.ProjectManager"><span class="pre">ProjectManager</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">settings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">ContractType</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape_pm.compiler.InterfaceCompiler.compile" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">compile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contract_filepaths</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">Path</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="managers.html#ape.managers.project.ProjectManager" title="ape.managers.project.ProjectManager"><span class="pre">ProjectManager</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">settings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">ContractType</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape_pm.compiler.InterfaceCompiler.compile" title="Link to this definition">#</a></dt>
 <dd><p>Compile the given source files. All compiler plugins must implement this function.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -284,7 +284,7 @@ project. Dependencies will change this value to their respective projects.</p></
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ape_pm.compiler.InterfaceCompiler.compile_code">
-<span class="sig-name descname"><span class="pre">compile_code</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="managers.html#ape.managers.project.ProjectManager" title="ape.managers.project.ProjectManager"><span class="pre">ProjectManager</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ContractType</span></span></span><a class="headerlink" href="#ape_pm.compiler.InterfaceCompiler.compile_code" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">compile_code</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="managers.html#ape.managers.project.ProjectManager" title="ape.managers.project.ProjectManager"><span class="pre">ProjectManager</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ContractType</span></span></span><a class="headerlink" href="#ape_pm.compiler.InterfaceCompiler.compile_code" title="Link to this definition">#</a></dt>
 <dd><p>Compile a program.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -308,7 +308,7 @@ project. Dependencies will change this value to their respective projects.</p></
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ape_pm.compiler.InterfaceCompiler.enrich_error">
-<span class="sig-name descname"><span class="pre">enrich_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">err</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="exceptions.html#ape.exceptions.ContractLogicError" title="ape.exceptions.ContractLogicError"><span class="pre">ContractLogicError</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="exceptions.html#ape.exceptions.ContractLogicError" title="ape.exceptions.ContractLogicError"><span class="pre">ContractLogicError</span></a></span></span><a class="headerlink" href="#ape_pm.compiler.InterfaceCompiler.enrich_error" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">enrich_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">err</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="exceptions.html#ape.exceptions.ContractLogicError" title="ape.exceptions.ContractLogicError"><span class="pre">ContractLogicError</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="exceptions.html#ape.exceptions.ContractLogicError" title="ape.exceptions.ContractLogicError"><span class="pre">ContractLogicError</span></a></span></span><a class="headerlink" href="#ape_pm.compiler.InterfaceCompiler.enrich_error" title="Link to this definition">#</a></dt>
 <dd><p>Enrich a contract logic error using compiler information, such as
 known PC locations for compiler runtime errors.</p>
 <dl class="field-list simple">
@@ -327,7 +327,7 @@ to enrich.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ape_pm.compiler.InterfaceCompiler.get_versions">
-<span class="sig-name descname"><span class="pre">get_versions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">all_paths</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">Path</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape_pm.compiler.InterfaceCompiler.get_versions" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_versions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">all_paths</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">Path</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape_pm.compiler.InterfaceCompiler.get_versions" title="Link to this definition">#</a></dt>
 <dd><p>Retrieve the set of available compiler versions for this plugin to compile <code class="docutils literal notranslate"><span class="pre">all_paths</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -344,7 +344,7 @@ to enrich.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="ape_pm.compiler.InterfaceCompiler.name">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_pm.compiler.InterfaceCompiler.name" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_pm.compiler.InterfaceCompiler.name" title="Link to this definition">#</a></dt>
 <dd><p>The name of the compiler.</p>
 </dd></dl>
 
@@ -352,7 +352,7 @@ to enrich.</p>
 
 <dl class="py class" id="module-ape_pm.dependency">
 <dt class="sig sig-object py" id="ape_pm.dependency.GithubDependency">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape_pm.dependency.</span></span><span class="sig-name descname"><span class="pre">GithubDependency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name:</span> <span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_override:</span> <span class="pre">dict</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">github:</span> <span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheme:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'https'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_pm.dependency.GithubDependency" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape_pm.dependency.</span></span><span class="sig-name descname"><span class="pre">GithubDependency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name:</span> <span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_override:</span> <span class="pre">dict</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">github:</span> <span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheme:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'https'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_pm.dependency.GithubDependency" title="Link to this definition">#</a></dt>
 <dd><p>A dependency from GitHub. Use the <code class="docutils literal notranslate"><span class="pre">github</span></code> key in your <code class="docutils literal notranslate"><span class="pre">dependencies:</span></code>
 section of your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file to declare a dependency from GitHub.</p>
 <p>Config example:</p>
@@ -364,7 +364,7 @@ section of your <code class="docutils literal notranslate"><span class="pre">ape
 </div>
 <dl class="py method">
 <dt class="sig sig-object py" id="ape_pm.dependency.GithubDependency.fetch">
-<span class="sig-name descname"><span class="pre">fetch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">destination</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_pm.dependency.GithubDependency.fetch" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">fetch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">destination</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_pm.dependency.GithubDependency.fetch" title="Link to this definition">#</a></dt>
 <dd><p>Fetch the dependency. E.g. for GitHub dependency,
 download the files to the destination.</p>
 <dl class="field-list simple">
@@ -377,21 +377,21 @@ files.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape_pm.dependency.GithubDependency.github">
-<span class="sig-name descname"><span class="pre">github</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_pm.dependency.GithubDependency.github" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">github</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_pm.dependency.GithubDependency.github" title="Link to this definition">#</a></dt>
 <dd><p>The Github repo ID e.g. the organization name followed by the repo name,
 such as <code class="docutils literal notranslate"><span class="pre">dapphub/erc20</span></code>.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="ape_pm.dependency.GithubDependency.package_id">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">package_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_pm.dependency.GithubDependency.package_id" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">package_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_pm.dependency.GithubDependency.package_id" title="Link to this definition">#</a></dt>
 <dd><p>The full name of the package, used for storage.
 Example: <code class="docutils literal notranslate"><span class="pre">OpenZeppelin/openzeppelin-contracts</span></code>.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape_pm.dependency.GithubDependency.ref">
-<span class="sig-name descname"><span class="pre">ref</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape_pm.dependency.GithubDependency.ref" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">ref</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape_pm.dependency.GithubDependency.ref" title="Link to this definition">#</a></dt>
 <dd><p>The branch or tag to use. When using this field
 instead of the ‘release’ field, the repository
 gets cloned instead of downloaded via the
@@ -401,19 +401,19 @@ official GitHub release API.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape_pm.dependency.GithubDependency.scheme">
-<span class="sig-name descname"><span class="pre">scheme</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_pm.dependency.GithubDependency.scheme" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">scheme</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_pm.dependency.GithubDependency.scheme" title="Link to this definition">#</a></dt>
 <dd><p>Either HTTPS or SSH; only used with <code class="docutils literal notranslate"><span class="pre">ref</span></code>.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="ape_pm.dependency.GithubDependency.uri">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">uri</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_pm.dependency.GithubDependency.uri" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">uri</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_pm.dependency.GithubDependency.uri" title="Link to this definition">#</a></dt>
 <dd><p>The URI for the package.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape_pm.dependency.GithubDependency.version">
-<span class="sig-name descname"><span class="pre">version</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape_pm.dependency.GithubDependency.version" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">version</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape_pm.dependency.GithubDependency.version" title="Link to this definition">#</a></dt>
 <dd><p>The release version to use. When using this
 field instead of the ‘ref’ field, the GitHub
 release API is used to fetch instead of cloning.</p>
@@ -422,7 +422,7 @@ release API is used to fetch instead of cloning.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="ape_pm.dependency.GithubDependency.version_id">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">version_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_pm.dependency.GithubDependency.version_id" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">version_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_pm.dependency.GithubDependency.version_id" title="Link to this definition">#</a></dt>
 <dd><p>The ID to use as the sub-directory in the download cache.
 Most often, this is either a version number or a branch name.</p>
 </dd></dl>
@@ -431,11 +431,11 @@ Most often, this is either a version number or a branch name.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ape_pm.dependency.LocalDependency">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape_pm.dependency.</span></span><span class="sig-name descname"><span class="pre">LocalDependency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name:</span> <span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_override:</span> <span class="pre">dict</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">local:</span> <span class="pre">~pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_pm.dependency.LocalDependency" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape_pm.dependency.</span></span><span class="sig-name descname"><span class="pre">LocalDependency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name:</span> <span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_override:</span> <span class="pre">dict</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">local:</span> <span class="pre">~pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_pm.dependency.LocalDependency" title="Link to this definition">#</a></dt>
 <dd><p>A dependency located on the local machine.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ape_pm.dependency.LocalDependency.fetch">
-<span class="sig-name descname"><span class="pre">fetch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">destination</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_pm.dependency.LocalDependency.fetch" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">fetch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">destination</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_pm.dependency.LocalDependency.fetch" title="Link to this definition">#</a></dt>
 <dd><p>Fetch the dependency. E.g. for GitHub dependency,
 download the files to the destination.</p>
 <dl class="field-list simple">
@@ -448,32 +448,32 @@ files.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape_pm.dependency.LocalDependency.local">
-<span class="sig-name descname"><span class="pre">local</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Path</span></em><a class="headerlink" href="#ape_pm.dependency.LocalDependency.local" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">local</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Path</span></em><a class="headerlink" href="#ape_pm.dependency.LocalDependency.local" title="Link to this definition">#</a></dt>
 <dd><p>The root path (and API defining key) to the dependency files.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="ape_pm.dependency.LocalDependency.package_id">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">package_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_pm.dependency.LocalDependency.package_id" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">package_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_pm.dependency.LocalDependency.package_id" title="Link to this definition">#</a></dt>
 <dd><p>The full name of the package, used for storage.
 Example: <code class="docutils literal notranslate"><span class="pre">OpenZeppelin/openzeppelin-contracts</span></code>.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="ape_pm.dependency.LocalDependency.uri">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">uri</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_pm.dependency.LocalDependency.uri" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">uri</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_pm.dependency.LocalDependency.uri" title="Link to this definition">#</a></dt>
 <dd><p>The URI for the package.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape_pm.dependency.LocalDependency.version">
-<span class="sig-name descname"><span class="pre">version</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape_pm.dependency.LocalDependency.version" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">version</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape_pm.dependency.LocalDependency.version" title="Link to this definition">#</a></dt>
 <dd><p>Specified version.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="ape_pm.dependency.LocalDependency.version_id">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">version_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_pm.dependency.LocalDependency.version_id" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">version_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_pm.dependency.LocalDependency.version_id" title="Link to this definition">#</a></dt>
 <dd><p>The ID to use as the sub-directory in the download cache.
 Most often, this is either a version number or a branch name.</p>
 </dd></dl>
@@ -482,7 +482,7 @@ Most often, this is either a version number or a branch name.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ape_pm.dependency.NpmDependency">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape_pm.dependency.</span></span><span class="sig-name descname"><span class="pre">NpmDependency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name:</span> <span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_override:</span> <span class="pre">dict</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">npm:</span> <span class="pre">~pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_pm.dependency.NpmDependency" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape_pm.dependency.</span></span><span class="sig-name descname"><span class="pre">NpmDependency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name:</span> <span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_override:</span> <span class="pre">dict</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">npm:</span> <span class="pre">~pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_pm.dependency.NpmDependency" title="Link to this definition">#</a></dt>
 <dd><p>A dependency from the Node Package Manager (NPM).</p>
 <p>Config example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">dependencies</span><span class="p">:</span>
@@ -493,7 +493,7 @@ Most often, this is either a version number or a branch name.</p>
 </div>
 <dl class="py method">
 <dt class="sig sig-object py" id="ape_pm.dependency.NpmDependency.fetch">
-<span class="sig-name descname"><span class="pre">fetch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">destination</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_pm.dependency.NpmDependency.fetch" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">fetch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">destination</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_pm.dependency.NpmDependency.fetch" title="Link to this definition">#</a></dt>
 <dd><p>Fetch the dependency. E.g. for GitHub dependency,
 download the files to the destination.</p>
 <dl class="field-list simple">
@@ -506,7 +506,7 @@ files.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape_pm.dependency.NpmDependency.npm">
-<span class="sig-name descname"><span class="pre">npm</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Path</span></em><a class="headerlink" href="#ape_pm.dependency.NpmDependency.npm" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">npm</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Path</span></em><a class="headerlink" href="#ape_pm.dependency.NpmDependency.npm" title="Link to this definition">#</a></dt>
 <dd><p>The NPM repo ID e.g. the organization name followed by the repo name,
 such as <code class="docutils literal notranslate"><span class="pre">&quot;&#64;gnosis.pm/safe-singleton-factory&quot;</span></code>.
 Note: Resolves to a ‘path’ after serialization.
@@ -515,40 +515,40 @@ The package must already be installed!</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="ape_pm.dependency.NpmDependency.package_id">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">package_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_pm.dependency.NpmDependency.package_id" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">package_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_pm.dependency.NpmDependency.package_id" title="Link to this definition">#</a></dt>
 <dd><p>The full name of the package, used for storage.
 Example: <code class="docutils literal notranslate"><span class="pre">OpenZeppelin/openzeppelin-contracts</span></code>.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="ape_pm.dependency.NpmDependency.uri">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">uri</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_pm.dependency.NpmDependency.uri" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">uri</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_pm.dependency.NpmDependency.uri" title="Link to this definition">#</a></dt>
 <dd><p>The URI for the package.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape_pm.dependency.NpmDependency.version">
-<span class="sig-name descname"><span class="pre">version</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape_pm.dependency.NpmDependency.version" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">version</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape_pm.dependency.NpmDependency.version" title="Link to this definition">#</a></dt>
 <dd><p>Specify the version, if not wanting to use discovered version
 from install.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="ape_pm.dependency.NpmDependency.version_from_installed_package_json">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">version_from_installed_package_json</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape_pm.dependency.NpmDependency.version_from_installed_package_json" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">version_from_installed_package_json</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape_pm.dependency.NpmDependency.version_from_installed_package_json" title="Link to this definition">#</a></dt>
 <dd><p>The version from package.json in the installed package.
 Requires having run <cite>npm install</cite>.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="ape_pm.dependency.NpmDependency.version_from_project_package_json">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">version_from_project_package_json</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape_pm.dependency.NpmDependency.version_from_project_package_json" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">version_from_project_package_json</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape_pm.dependency.NpmDependency.version_from_project_package_json" title="Link to this definition">#</a></dt>
 <dd><p>The version from your project’s package.json, if exists.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="ape_pm.dependency.NpmDependency.version_id">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">version_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_pm.dependency.NpmDependency.version_id" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">version_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_pm.dependency.NpmDependency.version_id" title="Link to this definition">#</a></dt>
 <dd><p>The ID to use as the sub-directory in the download cache.
 Most often, this is either a version number or a branch name.</p>
 </dd></dl>
@@ -557,11 +557,11 @@ Most often, this is either a version number or a branch name.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ape_pm.dependency.PythonDependency">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape_pm.dependency.</span></span><span class="sig-name descname"><span class="pre">PythonDependency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name:</span> <span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_override:</span> <span class="pre">dict</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">site_package:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pypi:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_pm.dependency.PythonDependency" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape_pm.dependency.</span></span><span class="sig-name descname"><span class="pre">PythonDependency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name:</span> <span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_override:</span> <span class="pre">dict</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">site_package:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pypi:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_pm.dependency.PythonDependency" title="Link to this definition">#</a></dt>
 <dd><p>A dependency installed from Python tooling, such as <cite>pip</cite>.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ape_pm.dependency.PythonDependency.fetch">
-<span class="sig-name descname"><span class="pre">fetch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">destination</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_pm.dependency.PythonDependency.fetch" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">fetch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">destination</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_pm.dependency.PythonDependency.fetch" title="Link to this definition">#</a></dt>
 <dd><p>Fetch the dependency. E.g. for GitHub dependency,
 download the files to the destination.</p>
 <dl class="field-list simple">
@@ -574,14 +574,14 @@ files.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="ape_pm.dependency.PythonDependency.package_id">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">package_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_pm.dependency.PythonDependency.package_id" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">package_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_pm.dependency.PythonDependency.package_id" title="Link to this definition">#</a></dt>
 <dd><p>The full name of the package, used for storage.
 Example: <code class="docutils literal notranslate"><span class="pre">OpenZeppelin/openzeppelin-contracts</span></code>.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape_pm.dependency.PythonDependency.pypi">
-<span class="sig-name descname"><span class="pre">pypi</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape_pm.dependency.PythonDependency.pypi" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">pypi</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape_pm.dependency.PythonDependency.pypi" title="Link to this definition">#</a></dt>
 <dd><p>The <code class="docutils literal notranslate"><span class="pre">pypi</span></code> reference, such as <code class="docutils literal notranslate"><span class="pre">&quot;snekmate&quot;</span></code>. Cannot use with
 <code class="docutils literal notranslate"><span class="pre">python:</span></code>. When set, downloads the dependency from <code class="docutils literal notranslate"><span class="pre">pypi</span></code>
 using HTTP directly (not <code class="docutils literal notranslate"><span class="pre">pip</span></code>).</p>
@@ -589,7 +589,7 @@ using HTTP directly (not <code class="docutils literal notranslate"><span class=
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape_pm.dependency.PythonDependency.site_package">
-<span class="sig-name descname"><span class="pre">site_package</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape_pm.dependency.PythonDependency.site_package" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">site_package</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape_pm.dependency.PythonDependency.site_package" title="Link to this definition">#</a></dt>
 <dd><p>The Python site-package name, such as <code class="docutils literal notranslate"><span class="pre">&quot;snekmate&quot;</span></code>. Cannot use
 with <code class="docutils literal notranslate"><span class="pre">pypi:</span></code>. Requires the dependency to have been installed
 either via <code class="docutils literal notranslate"><span class="pre">pip</span></code> or something alike.</p>
@@ -597,19 +597,19 @@ either via <code class="docutils literal notranslate"><span class="pre">pip</spa
 
 <dl class="py property">
 <dt class="sig sig-object py" id="ape_pm.dependency.PythonDependency.uri">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">uri</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_pm.dependency.PythonDependency.uri" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">uri</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_pm.dependency.PythonDependency.uri" title="Link to this definition">#</a></dt>
 <dd><p>The URI for the package.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape_pm.dependency.PythonDependency.version">
-<span class="sig-name descname"><span class="pre">version</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape_pm.dependency.PythonDependency.version" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">version</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ape_pm.dependency.PythonDependency.version" title="Link to this definition">#</a></dt>
 <dd><p>Optionally specify the version expected to be installed.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="ape_pm.dependency.PythonDependency.version_id">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">version_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_pm.dependency.PythonDependency.version_id" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">version_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ape_pm.dependency.PythonDependency.version_id" title="Link to this definition">#</a></dt>
 <dd><p>The ID to use as the sub-directory in the download cache.
 Most often, this is either a version number or a branch name.</p>
 </dd></dl>
@@ -618,14 +618,14 @@ Most often, this is either a version number or a branch name.</p>
 
 <dl class="py class" id="module-ape_pm.project">
 <dt class="sig sig-object py" id="ape_pm.project.BrownieProject">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape_pm.project.</span></span><span class="sig-name descname"><span class="pre">BrownieProject</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_pm.project.BrownieProject" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape_pm.project.</span></span><span class="sig-name descname"><span class="pre">BrownieProject</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_pm.project.BrownieProject" title="Link to this definition">#</a></dt>
 <dd><p>Allows traditional Brownie projects to work with Ape.
 This class implements the necessary methods in order
 to detect config settings in a Brownie project and
 treat it like an Ape project.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ape_pm.project.BrownieProject.extract_config">
-<span class="sig-name descname"><span class="pre">extract_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">overrides</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="api.html#ape.api.config.ApeConfig" title="ape.api.config.ApeConfig"><span class="pre">ApeConfig</span></a></span></span><a class="headerlink" href="#ape_pm.project.BrownieProject.extract_config" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">extract_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">overrides</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="api.html#ape.api.config.ApeConfig" title="ape.api.config.ApeConfig"><span class="pre">ApeConfig</span></a></span></span><a class="headerlink" href="#ape_pm.project.BrownieProject.extract_config" title="Link to this definition">#</a></dt>
 <dd><p>Extra configuration from the project so that
 Ape understands the dependencies and how to compile everything.</p>
 <dl class="field-list simple">
@@ -640,7 +640,7 @@ Ape understands the dependencies and how to compile everything.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="ape_pm.project.BrownieProject.is_valid">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_valid</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#ape_pm.project.BrownieProject.is_valid" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_valid</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#ape_pm.project.BrownieProject.is_valid" title="Link to this definition">#</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> when detecting a project of this type.</p>
 </dd></dl>
 
@@ -648,13 +648,13 @@ Ape understands the dependencies and how to compile everything.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ape_pm.project.FoundryProject">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape_pm.project.</span></span><span class="sig-name descname"><span class="pre">FoundryProject</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_pm.project.FoundryProject" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape_pm.project.</span></span><span class="sig-name descname"><span class="pre">FoundryProject</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_pm.project.FoundryProject" title="Link to this definition">#</a></dt>
 <dd><p>Helps Ape read configurations from foundry projects
 and lessens the need of specifying <code class="docutils literal notranslate"><span class="pre">config_override:</span></code>
 for foundry-based dependencies.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ape_pm.project.FoundryProject.extract_config">
-<span class="sig-name descname"><span class="pre">extract_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">overrides</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="api.html#ape.api.config.ApeConfig" title="ape.api.config.ApeConfig"><span class="pre">ApeConfig</span></a></span></span><a class="headerlink" href="#ape_pm.project.FoundryProject.extract_config" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">extract_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">overrides</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="api.html#ape.api.config.ApeConfig" title="ape.api.config.ApeConfig"><span class="pre">ApeConfig</span></a></span></span><a class="headerlink" href="#ape_pm.project.FoundryProject.extract_config" title="Link to this definition">#</a></dt>
 <dd><p>Extra configuration from the project so that
 Ape understands the dependencies and how to compile everything.</p>
 <dl class="field-list simple">
@@ -669,7 +669,7 @@ Ape understands the dependencies and how to compile everything.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="ape_pm.project.FoundryProject.is_valid">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_valid</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#ape_pm.project.FoundryProject.is_valid" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_valid</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#ape_pm.project.FoundryProject.is_valid" title="Link to this definition">#</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> when detecting a project of this type.</p>
 </dd></dl>
 

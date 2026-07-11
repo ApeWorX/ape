@@ -7,7 +7,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=2ceb65ce" />
     <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -202,11 +202,11 @@ data-aria-dark="Switch to auto color mode">
   </div>
 </div><article class="yue" role="main">
           <section id="scripting">
-<h1>Scripting<a class="headerlink" href="#scripting" title="Link to this heading"></a></h1>
+<h1>Scripting<a class="headerlink" href="#scripting" title="Link to this heading">#</a></h1>
 <p>You can write scripts that run using the <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">run</span></code> command.
 The <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">run</span></code> command will register and run Python files defined under the <code class="docutils literal notranslate"><span class="pre">scripts/</span></code> directory that do not start with an <code class="docutils literal notranslate"><span class="pre">_</span></code> underscore.</p>
 <section id="cli-scripts">
-<h2>CLI Scripts<a class="headerlink" href="#cli-scripts" title="Link to this heading"></a></h2>
+<h2>CLI Scripts<a class="headerlink" href="#cli-scripts" title="Link to this heading">#</a></h2>
 <p>Place scripts in your project’s <code class="docutils literal notranslate"><span class="pre">scripts/</span></code> directory.
 Follow <a class="reference external" href="./projects.html">this guide</a> to learn more about the Ape project structure.
 If your scripts take advantage of utilities from our <a class="reference external" href="../methoddocs/cli.html#ape-cli"><code class="docutils literal notranslate"><span class="pre">ape.cli</span></code></a> submodule, you can build a <a class="reference external" href="https://click.palletsprojects.com/">Click</a> command line interface by defining a <code class="docutils literal notranslate"><span class="pre">click.Command</span></code> or <code class="docutils literal notranslate"><span class="pre">click.Group</span></code> object called <code class="docutils literal notranslate"><span class="pre">cli</span></code> in your file:
@@ -254,7 +254,7 @@ For example, assuming we have script <code class="docutils literal notranslate">
 </div>
 </section>
 <section id="multi-network-commands">
-<h2>Multi-Network Commands<a class="headerlink" href="#multi-network-commands" title="Link to this heading"></a></h2>
+<h2>Multi-Network Commands<a class="headerlink" href="#multi-network-commands" title="Link to this heading">#</a></h2>
 <p>Scripts can use the context manager for multi-network functionality.
 Here’s an example of using a multi-network pattern in a script:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">click</span>
@@ -302,7 +302,7 @@ click.echo(f”Using any network-based argument is completely optional.”)</p>
 </span></pre></div>
 </div>
 <section id="multi-network-scripting">
-<h3>Multi-network Scripting<a class="headerlink" href="#multi-network-scripting" title="Link to this heading"></a></h3>
+<h3>Multi-network Scripting<a class="headerlink" href="#multi-network-scripting" title="Link to this heading">#</a></h3>
 <p>Because CLI-based scripts do not automatically connect to the provider before executing, they are ideal for multi-chain use-cases because they allow you to delay and manage the connection(s).
 To learn more about how to control the network-context in Ape Pythonically, see <a class="reference external" href="https://docs.apeworx.io/ape/stable/userguides/networks.html#provider-context-manager">this guide</a>.</p>
 <p>Here is an example of a multi-chain script:</p>
@@ -340,7 +340,7 @@ To learn more about how to control the network-context in Ape Pythonically, see 
 </section>
 </section>
 <section id="main-method-scripts">
-<h2>Main Method Scripts<a class="headerlink" href="#main-method-scripts" title="Link to this heading"></a></h2>
+<h2>Main Method Scripts<a class="headerlink" href="#main-method-scripts" title="Link to this heading">#</a></h2>
 <p>You can also use the main-method approach when defining scripts.
 To do this, define a method named <code class="docutils literal notranslate"><span class="pre">main()</span></code> in your script:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>

@@ -7,7 +7,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=2ceb65ce" />
     <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -200,14 +200,14 @@ data-aria-dark="Switch to auto color mode">
   </div>
 </div><article class="yue" role="main">
           <section id="pm">
-<h1>pm<a class="headerlink" href="#pm" title="Link to this heading"></a></h1>
+<h1>pm<a class="headerlink" href="#pm" title="Link to this heading">#</a></h1>
 <p>Package management tools</p>
 <p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">pm<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
 </span></pre></div>
 </div>
 <section id="pm-compile">
-<h2>compile<a class="headerlink" href="#pm-compile" title="Link to this heading"></a></h2>
+<h2>compile<a class="headerlink" href="#pm-compile" title="Link to this heading">#</a></h2>
 <p>Compile a package</p>
 <p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">pm<span class="w"> </span>compile<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span><span class="o">[</span>NAME<span class="o">]</span>
@@ -216,38 +216,38 @@ data-aria-dark="Switch to auto color mode">
 <p class="rubric">Options</p>
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-pm-compile-v">
-<span id="cmdoption-pm-compile-verbosity"></span><span class="sig-name descname"><span class="pre">-v</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--verbosity</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;LVL&gt;</span></span><a class="headerlink" href="#cmdoption-pm-compile-v" title="Link to this definition"></a></dt>
+<span id="cmdoption-pm-compile-verbosity"></span><span class="sig-name descname"><span class="pre">-v</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--verbosity</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;LVL&gt;</span></span><a class="headerlink" href="#cmdoption-pm-compile-v" title="Link to this definition">#</a></dt>
 <dd><p>One of ERROR, WARNING, SUCCESS, INFO, or DEBUG</p>
 </dd></dl>
 
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-pm-compile-version">
-<span class="sig-name descname"><span class="pre">--version</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;VERSION&gt;</span></span><a class="headerlink" href="#cmdoption-pm-compile-version" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">--version</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;VERSION&gt;</span></span><a class="headerlink" href="#cmdoption-pm-compile-version" title="Link to this definition">#</a></dt>
 <dd><p>The dependency version</p>
 </dd></dl>
 
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-pm-compile-f">
-<span id="cmdoption-pm-compile-force"></span><span class="sig-name descname"><span class="pre">-f</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--force</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-pm-compile-f" title="Link to this definition"></a></dt>
+<span id="cmdoption-pm-compile-force"></span><span class="sig-name descname"><span class="pre">-f</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--force</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-pm-compile-f" title="Link to this definition">#</a></dt>
 <dd><p>Force a re-compile</p>
 </dd></dl>
 
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-pm-compile-config-override">
-<span class="sig-name descname"><span class="pre">--config-override</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;&quot;KEY&quot;:</span> <span class="pre">&quot;VAL&quot;&gt;</span></span><a class="headerlink" href="#cmdoption-pm-compile-config-override" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">--config-override</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;&quot;KEY&quot;:</span> <span class="pre">&quot;VAL&quot;&gt;</span></span><a class="headerlink" href="#cmdoption-pm-compile-config-override" title="Link to this definition">#</a></dt>
 <dd><p>Config override mappings</p>
 </dd></dl>
 
 <p class="rubric">Arguments</p>
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-pm-compile-arg-NAME">
-<span class="sig-name descname"><span class="pre">NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-pm-compile-arg-NAME" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-pm-compile-arg-NAME" title="Link to this definition">#</a></dt>
 <dd><p>Optional argument</p>
 </dd></dl>
 
 </section>
 <section id="pm-install">
-<h2>install<a class="headerlink" href="#pm-install" title="Link to this heading"></a></h2>
+<h2>install<a class="headerlink" href="#pm-install" title="Link to this heading">#</a></h2>
 <p>Download and cache packages</p>
 <p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">pm<span class="w"> </span>install<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span><span class="o">[</span>PACKAGE<span class="o">]</span>
@@ -256,62 +256,62 @@ data-aria-dark="Switch to auto color mode">
 <p class="rubric">Options</p>
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-pm-install-v">
-<span id="cmdoption-pm-install-verbosity"></span><span class="sig-name descname"><span class="pre">-v</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--verbosity</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;LVL&gt;</span></span><a class="headerlink" href="#cmdoption-pm-install-v" title="Link to this definition"></a></dt>
+<span id="cmdoption-pm-install-verbosity"></span><span class="sig-name descname"><span class="pre">-v</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--verbosity</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;LVL&gt;</span></span><a class="headerlink" href="#cmdoption-pm-install-v" title="Link to this definition">#</a></dt>
 <dd><p>One of ERROR, WARNING, SUCCESS, INFO, or DEBUG</p>
 </dd></dl>
 
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-pm-install-name">
-<span class="sig-name descname"><span class="pre">--name</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;NAME&gt;</span></span><a class="headerlink" href="#cmdoption-pm-install-name" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">--name</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;NAME&gt;</span></span><a class="headerlink" href="#cmdoption-pm-install-name" title="Link to this definition">#</a></dt>
 <dd><p>The name of the dependency</p>
 </dd></dl>
 
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-pm-install-version">
-<span class="sig-name descname"><span class="pre">--version</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;VERSION&gt;</span></span><a class="headerlink" href="#cmdoption-pm-install-version" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">--version</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;VERSION&gt;</span></span><a class="headerlink" href="#cmdoption-pm-install-version" title="Link to this definition">#</a></dt>
 <dd><p>The dependency’s version</p>
 </dd></dl>
 
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-pm-install-ref">
-<span class="sig-name descname"><span class="pre">--ref</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;REF&gt;</span></span><a class="headerlink" href="#cmdoption-pm-install-ref" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">--ref</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;REF&gt;</span></span><a class="headerlink" href="#cmdoption-pm-install-ref" title="Link to this definition">#</a></dt>
 <dd><p>A reference flag, used for GitHub branches or tags instead of version</p>
 </dd></dl>
 
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-pm-install-scheme">
-<span class="sig-name descname"><span class="pre">--scheme</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;scheme&gt;</span></span><a class="headerlink" href="#cmdoption-pm-install-scheme" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">--scheme</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;scheme&gt;</span></span><a class="headerlink" href="#cmdoption-pm-install-scheme" title="Link to this definition">#</a></dt>
 <dd><p>Scheme to use</p>
 </dd></dl>
 
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-pm-install-f">
-<span id="cmdoption-pm-install-force"></span><span class="sig-name descname"><span class="pre">-f</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--force</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-pm-install-f" title="Link to this definition"></a></dt>
+<span id="cmdoption-pm-install-force"></span><span class="sig-name descname"><span class="pre">-f</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--force</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-pm-install-f" title="Link to this definition">#</a></dt>
 <dd><p>Force a re-install</p>
 </dd></dl>
 
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-pm-install-config-override">
-<span class="sig-name descname"><span class="pre">--config-override</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;&quot;KEY&quot;:</span> <span class="pre">&quot;VAL&quot;&gt;</span></span><a class="headerlink" href="#cmdoption-pm-install-config-override" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">--config-override</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;&quot;KEY&quot;:</span> <span class="pre">&quot;VAL&quot;&gt;</span></span><a class="headerlink" href="#cmdoption-pm-install-config-override" title="Link to this definition">#</a></dt>
 <dd><p>Config override mappings</p>
 </dd></dl>
 
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-pm-install-no-recurse">
-<span class="sig-name descname"><span class="pre">--no-recurse</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-pm-install-no-recurse" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">--no-recurse</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-pm-install-no-recurse" title="Link to this definition">#</a></dt>
 <dd><p>Avoids installing dependencies of dependencies</p>
 </dd></dl>
 
 <p class="rubric">Arguments</p>
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-pm-install-arg-PACKAGE">
-<span class="sig-name descname"><span class="pre">PACKAGE</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-pm-install-arg-PACKAGE" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">PACKAGE</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-pm-install-arg-PACKAGE" title="Link to this definition">#</a></dt>
 <dd><p>Optional argument</p>
 </dd></dl>
 
 </section>
 <section id="pm-list">
-<h2>list<a class="headerlink" href="#pm-list" title="Link to this heading"></a></h2>
+<h2>list<a class="headerlink" href="#pm-list" title="Link to this heading">#</a></h2>
 <p>List installed packages</p>
 <p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">pm<span class="w"> </span>list<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
@@ -320,19 +320,19 @@ data-aria-dark="Switch to auto color mode">
 <p class="rubric">Options</p>
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-pm-list-v">
-<span id="cmdoption-pm-list-verbosity"></span><span class="sig-name descname"><span class="pre">-v</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--verbosity</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;LVL&gt;</span></span><a class="headerlink" href="#cmdoption-pm-list-v" title="Link to this definition"></a></dt>
+<span id="cmdoption-pm-list-verbosity"></span><span class="sig-name descname"><span class="pre">-v</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--verbosity</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;LVL&gt;</span></span><a class="headerlink" href="#cmdoption-pm-list-v" title="Link to this definition">#</a></dt>
 <dd><p>One of ERROR, WARNING, SUCCESS, INFO, or DEBUG</p>
 </dd></dl>
 
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-pm-list-all">
-<span class="sig-name descname"><span class="pre">--all</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-pm-list-all" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">--all</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-pm-list-all" title="Link to this definition">#</a></dt>
 <dd><p>List all installed dependencies</p>
 </dd></dl>
 
 </section>
 <section id="pm-uninstall">
-<h2>uninstall<a class="headerlink" href="#pm-uninstall" title="Link to this heading"></a></h2>
+<h2>uninstall<a class="headerlink" href="#pm-uninstall" title="Link to this heading">#</a></h2>
 <p>Uninstall a package</p>
 <p>This command removes a package from the installed packages.</p>
 <p>If specific versions are provided, only those versions of the package will be
@@ -351,26 +351,26 @@ versions to remove. You can also choose to remove all versions of the package.</
 <p class="rubric">Options</p>
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-pm-uninstall-v">
-<span id="cmdoption-pm-uninstall-verbosity"></span><span class="sig-name descname"><span class="pre">-v</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--verbosity</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;LVL&gt;</span></span><a class="headerlink" href="#cmdoption-pm-uninstall-v" title="Link to this definition"></a></dt>
+<span id="cmdoption-pm-uninstall-verbosity"></span><span class="sig-name descname"><span class="pre">-v</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--verbosity</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;LVL&gt;</span></span><a class="headerlink" href="#cmdoption-pm-uninstall-v" title="Link to this definition">#</a></dt>
 <dd><p>One of ERROR, WARNING, SUCCESS, INFO, or DEBUG</p>
 </dd></dl>
 
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-pm-uninstall-y">
-<span id="cmdoption-pm-uninstall-yes"></span><span class="sig-name descname"><span class="pre">-y</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--yes</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-pm-uninstall-y" title="Link to this definition"></a></dt>
+<span id="cmdoption-pm-uninstall-yes"></span><span class="sig-name descname"><span class="pre">-y</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--yes</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-pm-uninstall-y" title="Link to this definition">#</a></dt>
 <dd><p>Automatically confirm the removal of the package(s)</p>
 </dd></dl>
 
 <p class="rubric">Arguments</p>
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-pm-uninstall-arg-NAME">
-<span class="sig-name descname"><span class="pre">NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-pm-uninstall-arg-NAME" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-pm-uninstall-arg-NAME" title="Link to this definition">#</a></dt>
 <dd><p>Optional argument</p>
 </dd></dl>
 
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-pm-uninstall-arg-VERSIONS">
-<span class="sig-name descname"><span class="pre">VERSIONS</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-pm-uninstall-arg-VERSIONS" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">VERSIONS</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-pm-uninstall-arg-VERSIONS" title="Link to this definition">#</a></dt>
 <dd><p>Optional argument(s)</p>
 </dd></dl>
 

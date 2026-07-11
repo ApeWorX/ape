@@ -7,7 +7,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=2ceb65ce" />
     <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -200,14 +200,14 @@ data-aria-dark="Switch to auto color mode">
   </div>
 </div><article class="yue" role="main">
           <section id="networks">
-<h1>networks<a class="headerlink" href="#networks" title="Link to this heading"></a></h1>
+<h1>networks<a class="headerlink" href="#networks" title="Link to this heading">#</a></h1>
 <p>Command-line helper for managing networks.</p>
 <p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">networks<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
 </span></pre></div>
 </div>
 <section id="networks-kill">
-<h2>kill<a class="headerlink" href="#networks-kill" title="Link to this heading"></a></h2>
+<h2>kill<a class="headerlink" href="#networks-kill" title="Link to this heading">#</a></h2>
 <p>Stop node processes</p>
 <p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">networks<span class="w"> </span><span class="nb">kill</span><span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span><span class="o">[</span>PROCESS_IDS<span class="o">]</span>...
@@ -216,19 +216,19 @@ data-aria-dark="Switch to auto color mode">
 <p class="rubric">Options</p>
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-networks-kill-v">
-<span id="cmdoption-networks-kill-verbosity"></span><span class="sig-name descname"><span class="pre">-v</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--verbosity</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;LVL&gt;</span></span><a class="headerlink" href="#cmdoption-networks-kill-v" title="Link to this definition"></a></dt>
+<span id="cmdoption-networks-kill-verbosity"></span><span class="sig-name descname"><span class="pre">-v</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--verbosity</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;LVL&gt;</span></span><a class="headerlink" href="#cmdoption-networks-kill-v" title="Link to this definition">#</a></dt>
 <dd><p>One of ERROR, WARNING, SUCCESS, INFO, or DEBUG</p>
 </dd></dl>
 
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-networks-kill-all">
-<span class="sig-name descname"><span class="pre">--all</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-networks-kill-all" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">--all</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-networks-kill-all" title="Link to this definition">#</a></dt>
 <dd><p>Kill all running processes</p>
 </dd></dl>
 
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-networks-kill-network">
-<span class="sig-name descname"><span class="pre">--network</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;network&gt;</span></span><a class="headerlink" href="#cmdoption-networks-kill-network" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">--network</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;network&gt;</span></span><a class="headerlink" href="#cmdoption-networks-kill-network" title="Link to this definition">#</a></dt>
 <dd><p>Override the default network and provider. (see <cite>ape networks list</cite> for options)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Options<span class="colon">:</span></dt>
@@ -240,13 +240,13 @@ data-aria-dark="Switch to auto color mode">
 <p class="rubric">Arguments</p>
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-networks-kill-arg-PROCESS_IDS">
-<span class="sig-name descname"><span class="pre">PROCESS_IDS</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-networks-kill-arg-PROCESS_IDS" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">PROCESS_IDS</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-networks-kill-arg-PROCESS_IDS" title="Link to this definition">#</a></dt>
 <dd><p>Optional argument(s)</p>
 </dd></dl>
 
 </section>
 <section id="networks-list">
-<h2>list<a class="headerlink" href="#networks-list" title="Link to this heading"></a></h2>
+<h2>list<a class="headerlink" href="#networks-list" title="Link to this heading">#</a></h2>
 <p>List all the registered ecosystems, networks, and providers.</p>
 <p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">networks<span class="w"> </span>list<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
@@ -255,13 +255,13 @@ data-aria-dark="Switch to auto color mode">
 <p class="rubric">Options</p>
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-networks-list-v">
-<span id="cmdoption-networks-list-verbosity"></span><span class="sig-name descname"><span class="pre">-v</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--verbosity</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;LVL&gt;</span></span><a class="headerlink" href="#cmdoption-networks-list-v" title="Link to this definition"></a></dt>
+<span id="cmdoption-networks-list-verbosity"></span><span class="sig-name descname"><span class="pre">-v</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--verbosity</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;LVL&gt;</span></span><a class="headerlink" href="#cmdoption-networks-list-v" title="Link to this definition">#</a></dt>
 <dd><p>One of ERROR, WARNING, SUCCESS, INFO, or DEBUG</p>
 </dd></dl>
 
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-networks-list-format">
-<span class="sig-name descname"><span class="pre">--format</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;output_format&gt;</span></span><a class="headerlink" href="#cmdoption-networks-list-format" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">--format</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;output_format&gt;</span></span><a class="headerlink" href="#cmdoption-networks-list-format" title="Link to this definition">#</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Options<span class="colon">:</span></dt>
 <dd class="field-odd"><p>TREE | YAML</p>
@@ -271,29 +271,29 @@ data-aria-dark="Switch to auto color mode">
 
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-networks-list-ecosystem">
-<span class="sig-name descname"><span class="pre">--ecosystem</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;ecosystem_filter&gt;</span></span><a class="headerlink" href="#cmdoption-networks-list-ecosystem" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">--ecosystem</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;ecosystem_filter&gt;</span></span><a class="headerlink" href="#cmdoption-networks-list-ecosystem" title="Link to this definition">#</a></dt>
 <dd><p>Filter the results by ecosystem</p>
 <dl class="field-list simple">
 <dt class="field-odd">Options<span class="colon">:</span></dt>
-<dd class="field-odd"><p>scroll | moonbeam | gnosis | crossfi | fantom | arbitrum | soneium | mantle | zksync | fraxtal | ethereum | geist | monad | berachain | blast | sophon | bsc | cronos | shape | shibarium | bttc | apechain | wemix | world-chain | zetachain | polygon-zkevm | abstract | avalanche | base | swellchain | oort | kroma | astar | cronos-zkevm | rootstock | filecoin | celo | unichain | sonic | linea | lumia | xmtp | polynomial | flow-evm | xai | taiko | metis | palm | optimism | zora | lens | rise | polygon</p>
+<dd class="field-odd"><p>zksync | fraxtal | swellchain | lumia | crossfi | kroma | abstract | cronos | taiko | mantle | blast | shape | rise | sonic | base | gnosis | bttc | berachain | oort | rootstock | zetachain | moonbeam | ethereum | bsc | sophon | optimism | linea | xai | polygon | world-chain | lens | unichain | celo | cronos-zkevm | metis | apechain | flow-evm | soneium | zora | arbitrum | avalanche | xmtp | filecoin | fantom | palm | astar | wemix | scroll | monad | shibarium | polygon-zkevm | polynomial | geist</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-networks-list-network">
-<span class="sig-name descname"><span class="pre">--network</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;network_filter&gt;</span></span><a class="headerlink" href="#cmdoption-networks-list-network" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">--network</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;network_filter&gt;</span></span><a class="headerlink" href="#cmdoption-networks-list-network" title="Link to this definition">#</a></dt>
 <dd><p>Filter the results by network</p>
 <dl class="field-list simple">
 <dt class="field-odd">Options<span class="colon">:</span></dt>
-<dd class="field-odd"><p>moonbase | alfajores-fork | mumbai-fork | fuji | minato | puppynet-fork | cardona | sepolia-fork | opbnb-testnet-fork | mumbai | cardona-fork | alfajores | testnet | opbnb | local | hoodi | curtis | fuji-fork | polter | nova | chiado | holesky | curtis-fork | amoy | chiado-fork | hekla | moonriver | minato-fork | prism | sepolia | bepolia | hoodi-fork | amoy-fork | moonriver-fork | calibration-fork | goerli-fork | beam-fork | polter-fork | mainnet-fork | goerli | donau | puppynet | hekla-fork | dev-fork | testnet-fork | nova-fork | mainnet | calibration | bepolia-fork | dev | beam | blaze-fork | opbnb-testnet | opbnb-fork | donau-fork | holesky-fork | blaze | moonbase-fork | prism-fork</p>
+<dd class="field-odd"><p>nova | amoy-fork | mainnet | puppynet | donau | amoy | fuji-fork | calibration | sepolia | testnet | opbnb-testnet | beam | chiado | sepolia-fork | opbnb | testnet-fork | calibration-fork | blaze-fork | cardona | bepolia | dev-fork | mumbai-fork | polter | moonbase | alfajores | moonriver | moonriver-fork | minato-fork | beam-fork | alfajores-fork | goerli | holesky | curtis-fork | prism | dev | fuji | bepolia-fork | mumbai | hekla-fork | nova-fork | curtis | mainnet-fork | opbnb-fork | opbnb-testnet-fork | goerli-fork | hoodi | blaze | holesky-fork | polter-fork | chiado-fork | cardona-fork | hekla | hoodi-fork | moonbase-fork | minato | puppynet-fork | prism-fork | donau-fork | local</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-networks-list-provider">
-<span class="sig-name descname"><span class="pre">--provider</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;provider_filter&gt;</span></span><a class="headerlink" href="#cmdoption-networks-list-provider" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">--provider</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;provider_filter&gt;</span></span><a class="headerlink" href="#cmdoption-networks-list-provider" title="Link to this definition">#</a></dt>
 <dd><p>Filter the results by provider</p>
 <dl class="field-list simple">
 <dt class="field-odd">Options<span class="colon">:</span></dt>
@@ -304,13 +304,13 @@ data-aria-dark="Switch to auto color mode">
 
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-networks-list-running">
-<span class="sig-name descname"><span class="pre">--running</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-networks-list-running" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">--running</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-networks-list-running" title="Link to this definition">#</a></dt>
 <dd><p>List running networks</p>
 </dd></dl>
 
 </section>
 <section id="networks-ping">
-<h2>ping<a class="headerlink" href="#networks-ping" title="Link to this heading"></a></h2>
+<h2>ping<a class="headerlink" href="#networks-ping" title="Link to this heading">#</a></h2>
 <p>Check if a provider is available</p>
 <p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">networks<span class="w"> </span>ping<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
@@ -319,13 +319,13 @@ data-aria-dark="Switch to auto color mode">
 <p class="rubric">Options</p>
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-networks-ping-v">
-<span id="cmdoption-networks-ping-verbosity"></span><span class="sig-name descname"><span class="pre">-v</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--verbosity</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;LVL&gt;</span></span><a class="headerlink" href="#cmdoption-networks-ping-v" title="Link to this definition"></a></dt>
+<span id="cmdoption-networks-ping-verbosity"></span><span class="sig-name descname"><span class="pre">-v</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--verbosity</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;LVL&gt;</span></span><a class="headerlink" href="#cmdoption-networks-ping-v" title="Link to this definition">#</a></dt>
 <dd><p>One of ERROR, WARNING, SUCCESS, INFO, or DEBUG</p>
 </dd></dl>
 
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-networks-ping-network">
-<span class="sig-name descname"><span class="pre">--network</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;network&gt;</span></span><a class="headerlink" href="#cmdoption-networks-ping-network" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">--network</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;network&gt;</span></span><a class="headerlink" href="#cmdoption-networks-ping-network" title="Link to this definition">#</a></dt>
 <dd><p>Override the default network and provider. (see <cite>ape networks list</cite> for options)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Options<span class="colon">:</span></dt>
@@ -336,7 +336,7 @@ data-aria-dark="Switch to auto color mode">
 
 </section>
 <section id="networks-run">
-<h2>run<a class="headerlink" href="#networks-run" title="Link to this heading"></a></h2>
+<h2>run<a class="headerlink" href="#networks-run" title="Link to this heading">#</a></h2>
 <p>Start a subprocess node as if running independently
 and stream stdout and stderr.</p>
 <p class="rubric">Usage</p>
@@ -346,13 +346,13 @@ and stream stdout and stderr.</p>
 <p class="rubric">Options</p>
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-networks-run-v">
-<span id="cmdoption-networks-run-verbosity"></span><span class="sig-name descname"><span class="pre">-v</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--verbosity</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;LVL&gt;</span></span><a class="headerlink" href="#cmdoption-networks-run-v" title="Link to this definition"></a></dt>
+<span id="cmdoption-networks-run-verbosity"></span><span class="sig-name descname"><span class="pre">-v</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--verbosity</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;LVL&gt;</span></span><a class="headerlink" href="#cmdoption-networks-run-v" title="Link to this definition">#</a></dt>
 <dd><p>One of ERROR, WARNING, SUCCESS, INFO, or DEBUG</p>
 </dd></dl>
 
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-networks-run-network">
-<span class="sig-name descname"><span class="pre">--network</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;network&gt;</span></span><a class="headerlink" href="#cmdoption-networks-run-network" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">--network</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;network&gt;</span></span><a class="headerlink" href="#cmdoption-networks-run-network" title="Link to this definition">#</a></dt>
 <dd><p>Override the default network and provider. (see <cite>ape networks list</cite> for options)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Options<span class="colon">:</span></dt>
@@ -363,19 +363,19 @@ and stream stdout and stderr.</p>
 
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-networks-run-block-time">
-<span class="sig-name descname"><span class="pre">--block-time</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;block_time&gt;</span></span><a class="headerlink" href="#cmdoption-networks-run-block-time" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">--block-time</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;block_time&gt;</span></span><a class="headerlink" href="#cmdoption-networks-run-block-time" title="Link to this definition">#</a></dt>
 <dd><p>Block time in seconds</p>
 </dd></dl>
 
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-networks-run-background">
-<span class="sig-name descname"><span class="pre">--background</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-networks-run-background" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">--background</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-networks-run-background" title="Link to this definition">#</a></dt>
 <dd><p>Run in the background</p>
 </dd></dl>
 
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-networks-run-provider-settings">
-<span class="sig-name descname"><span class="pre">--provider-settings</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;provider_settings&gt;</span></span><a class="headerlink" href="#cmdoption-networks-run-provider-settings" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">--provider-settings</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;provider_settings&gt;</span></span><a class="headerlink" href="#cmdoption-networks-run-provider-settings" title="Link to this definition">#</a></dt>
 <dd><p>Override the default provide settings.</p>
 </dd></dl>
 

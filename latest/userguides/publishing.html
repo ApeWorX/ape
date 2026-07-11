@@ -7,7 +7,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=2ceb65ce" />
     <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -199,11 +199,11 @@ data-aria-dark="Switch to auto color mode">
   </div>
 </div><article class="yue" role="main">
           <section id="publishing">
-<h1>Publishing<a class="headerlink" href="#publishing" title="Link to this heading"></a></h1>
+<h1>Publishing<a class="headerlink" href="#publishing" title="Link to this heading">#</a></h1>
 <p>Publishing smart-contract packages using Ape is influenced from <a class="reference external" href="https://eips.ethereum.org/EIPS/eip-2678">EIP-2678</a> and uses the <a class="reference external" href="https://github.com/ApeWorX/ethpm-types">ethpm-types</a> Python package extensively (which is also managed by the ApeWorX organization).
 This guide exists to walk through the steps of publishing your project.</p>
 <section id="compilation">
-<h2>Compilation<a class="headerlink" href="#compilation" title="Link to this heading"></a></h2>
+<h2>Compilation<a class="headerlink" href="#compilation" title="Link to this heading">#</a></h2>
 <p>First, your project must compile.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>compile
 </span></pre></div>
@@ -212,7 +212,7 @@ This guide exists to walk through the steps of publishing your project.</p>
 Once your project has successfully compiled, you will have the start of your <code class="docutils literal notranslate"><span class="pre">PackageManifest</span></code> generated in your project’s <code class="docutils literal notranslate"><span class="pre">.build/</span></code> directory.</p>
 </section>
 <section id="tracking-deployments">
-<h2>Tracking Deployments<a class="headerlink" href="#tracking-deployments" title="Link to this heading"></a></h2>
+<h2>Tracking Deployments<a class="headerlink" href="#tracking-deployments" title="Link to this heading">#</a></h2>
 <p>If your project contains deployments that you wish to include in its package manifest, use the <a class="reference external" href="../methoddocs/managers.html#ape.managers.project.manager.DeploymentManager.track">project.deployments.track</a> method.
 Example:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">project</span>
@@ -234,7 +234,7 @@ Example:</p>
 <p>For more information on accessing contract instances, follow <a class="reference external" href="./contracts.html">this guide</a>.</p>
 </section>
 <section id="publishing-to-explorer">
-<h2>Publishing to Explorer<a class="headerlink" href="#publishing-to-explorer" title="Link to this heading"></a></h2>
+<h2>Publishing to Explorer<a class="headerlink" href="#publishing-to-explorer" title="Link to this heading">#</a></h2>
 <p>If you want to publish your contracts to an explorer, you can use the <a class="reference external" href="../methoddocs/api.html#ape.explorers.ExplorerAPI.publish_contract">publish_contract</a> on the <code class="docutils literal notranslate"><span class="pre">ExplorerAPI</span></code>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">networks</span>
 </span><span data-line="2">

@@ -7,7 +7,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=2ceb65ce" />
     <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -199,7 +199,7 @@ data-aria-dark="Switch to auto color mode">
   </div>
 </div><article class="yue" role="main">
           <section id="reverts">
-<h1>Reverts<a class="headerlink" href="#reverts" title="Link to this heading"></a></h1>
+<h1>Reverts<a class="headerlink" href="#reverts" title="Link to this heading">#</a></h1>
 <p>Reverts occur when a transaction or call fails for any reason.
 In the case of EVM networks, reverts result in funds being returned to the sender (besides network-fees) and contract state changes unwinding.
 Typically, in smart-contracts, user-defined reverts occur from <code class="docutils literal notranslate"><span class="pre">assert</span></code> statements in Vyper and <code class="docutils literal notranslate"><span class="pre">require</span></code> statements in Solidity.</p>
@@ -264,7 +264,7 @@ Calling it may look like:</p>
 </span></pre></div>
 </div>
 <section id="dev-messages">
-<h2>Dev Messages<a class="headerlink" href="#dev-messages" title="Link to this heading"></a></h2>
+<h2>Dev Messages<a class="headerlink" href="#dev-messages" title="Link to this heading">#</a></h2>
 <p>Dev messages allow smart-contract authors to save gas by avoiding revert-messages.
 If you are using a provider that supports tracing features and a compiler that can detect <code class="docutils literal notranslate"><span class="pre">dev</span></code> messages, and you encounter a revert without a revert-message but it has a dev-message, Ape will show the dev-message:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">assert</span> <span class="n">msg</span><span class="o">.</span><span class="n">sender</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">owner</span>  <span class="c1"># dev: !authorized&quot;</span>
@@ -277,7 +277,7 @@ If you are using a provider that supports tracing features and a compiler that c
 </div>
 </section>
 <section id="custom-errors">
-<h2>Custom Errors<a class="headerlink" href="#custom-errors" title="Link to this heading"></a></h2>
+<h2>Custom Errors<a class="headerlink" href="#custom-errors" title="Link to this heading">#</a></h2>
 <p>As of Solidity 0.8.4, custom errors have been introduced to the ABI.
 In Ape, custom errors are available on contract-instances.
 For example, if you have a contract like:</p>
@@ -306,7 +306,7 @@ For example, if you have a contract like:</p>
 </div>
 </section>
 <section id="built-in-errors">
-<h2>Built-in Errors<a class="headerlink" href="#built-in-errors" title="Link to this heading"></a></h2>
+<h2>Built-in Errors<a class="headerlink" href="#built-in-errors" title="Link to this heading">#</a></h2>
 <p>Besides user-defined <code class="docutils literal notranslate"><span class="pre">ContractLogicError</span></code>s, there are also builtin-errors from compilers, such as bounds-checking of arrays or paying a non-payable method, etc.
 These are also <code class="docutils literal notranslate"><span class="pre">ContractLogicError</span></code> sub-classes.
 Sometimes, compiler plugins such as <code class="docutils literal notranslate"><span class="pre">ape-vyper</span></code> or <code class="docutils literal notranslate"><span class="pre">ape-solidity</span></code> export these error classes for you to use.</p>

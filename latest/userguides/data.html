@@ -7,7 +7,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=2ceb65ce" />
     <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -199,13 +199,13 @@ data-aria-dark="Switch to auto color mode">
   </div>
 </div><article class="yue" role="main">
           <section id="querying-data">
-<h1>Querying Data<a class="headerlink" href="#querying-data" title="Link to this heading"></a></h1>
+<h1>Querying Data<a class="headerlink" href="#querying-data" title="Link to this heading">#</a></h1>
 <p>Ape has advanced features for querying large amounts of on-chain data.
 Ape provides this support through a number of standardized methods for working with data,
 routed through our query management system, which incorporates data from many sources in
 your set of installed plugins.</p>
 <section id="getting-block-data">
-<h2>Getting Block Data<a class="headerlink" href="#getting-block-data" title="Link to this heading"></a></h2>
+<h2>Getting Block Data<a class="headerlink" href="#getting-block-data" title="Link to this heading">#</a></h2>
 <p>Use <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">console</span></code> to connect to a network:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>console<span class="w"> </span>--network<span class="w"> </span>ethereum:mainnet:infura
 </span></pre></div>
@@ -227,7 +227,7 @@ your set of installed plugins.</p>
 </div>
 </section>
 <section id="getting-account-transaction-data">
-<h2>Getting Account Transaction Data<a class="headerlink" href="#getting-account-transaction-data" title="Link to this heading"></a></h2>
+<h2>Getting Account Transaction Data<a class="headerlink" href="#getting-account-transaction-data" title="Link to this heading">#</a></h2>
 <p>Each account within Ape fetches and stores transactional data that you can query.
 To work with an account’s transaction history:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">chain</span>
@@ -245,7 +245,7 @@ To work with an account’s transaction history:</p>
 </div>
 </section>
 <section id="getting-contract-event-data">
-<h2>Getting Contract Event Data<a class="headerlink" href="#getting-contract-event-data" title="Link to this heading"></a></h2>
+<h2>Getting Contract Event Data<a class="headerlink" href="#getting-contract-event-data" title="Link to this heading">#</a></h2>
 <p>On a deployed contract, you can query event history:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="c1"># Query all fields from a specific event</span>
 </span><span data-line="2"><span class="n">df</span> <span class="o">=</span> <span class="n">contract_instance</span><span class="o">.</span><span class="n">FooHappened</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">)</span>

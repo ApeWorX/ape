@@ -7,7 +7,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=2ceb65ce" />
     <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -213,7 +213,7 @@ data-aria-dark="Switch to auto color mode">
 <a class="reference external" href="https://twitter.com/ApeFramework"><img alt="Twitter" src="https://img.shields.io/twitter/follow/ApeFramework" /></a>
 <a class="reference external" href="https://deepwiki.com/ApeWorX/ape"><img alt="DeepWiki" src="https://deepwiki.com/badge.svg" /></a></p>
 <section id="overview">
-<h1>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h1>
+<h1>Overview<a class="headerlink" href="#overview" title="Link to this heading">#</a></h1>
 <p><a class="reference external" href="https://apeworx.io/framework/">Ape Framework</a> is an easy-to-use Web3 development tool.
 Users can compile, test, and interact with smart contracts all in one command line session.
 With our <a class="reference external" href="#plugin-system">modular plugin system</a>, Ape supports multiple contract languages and chains.</p>
@@ -221,12 +221,12 @@ With our <a class="reference external" href="#plugin-system">modular plugin syst
 <p>Join our <a class="reference external" href="https://discord.gg/apeworx">ApeWorX Discord server</a> to stay up to date on new releases, plugins, and tutorials.</p>
 <p>If you want to get started now, see the <a class="reference external" href="#quickstart">Quickstart</a> section.</p>
 <section id="documentation">
-<h2>Documentation<a class="headerlink" href="#documentation" title="Link to this heading"></a></h2>
+<h2>Documentation<a class="headerlink" href="#documentation" title="Link to this heading">#</a></h2>
 <p>Read our <a class="reference external" href="https://docs.apeworx.io/ape/stable/">technical documentation</a> to get a deeper understanding of our open source Framework.</p>
 <p>Read our <a class="reference external" href="https://academy.apeworx.io/">academic platform</a> which will help you master Ape Framework with tutorials and challenges.</p>
 </section>
 <section id="prerequisite">
-<h2>Prerequisite<a class="headerlink" href="#prerequisite" title="Link to this heading"></a></h2>
+<h2>Prerequisite<a class="headerlink" href="#prerequisite" title="Link to this heading">#</a></h2>
 <p>In the latest release, Ape requires:</p>
 <ul class="simple">
 <li><p>Linux or macOS</p></li>
@@ -236,10 +236,10 @@ With our <a class="reference external" href="#plugin-system">modular plugin syst
 <p>Check your python version in a terminal with <code class="docutils literal notranslate"><span class="pre">python3</span> <span class="pre">--version</span></code>.</p>
 </section>
 <section id="installation">
-<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h2>
+<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading">#</a></h2>
 <p>There are three ways to install ape: <code class="docutils literal notranslate"><span class="pre">pipx</span></code>, <code class="docutils literal notranslate"><span class="pre">pip</span></code>, or <code class="docutils literal notranslate"><span class="pre">Docker</span></code>.</p>
 <section id="considerations-for-installing">
-<h3>Considerations for Installing<a class="headerlink" href="#considerations-for-installing" title="Link to this heading"></a></h3>
+<h3>Considerations for Installing<a class="headerlink" href="#considerations-for-installing" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p>If using <code class="docutils literal notranslate"><span class="pre">pip</span></code>, we advise using the most up-to-date version of <code class="docutils literal notranslate"><span class="pre">pip</span></code> to increase the chance of a successful installation.</p>
 <ul>
@@ -253,14 +253,14 @@ With our <a class="reference external" href="#plugin-system">modular plugin syst
 </ul>
 </section>
 <section id="installing-with-pipx-or-pip">
-<h3>Installing with <code class="docutils literal notranslate"><span class="pre">pipx</span></code> or <code class="docutils literal notranslate"><span class="pre">pip</span></code><a class="headerlink" href="#installing-with-pipx-or-pip" title="Link to this heading"></a></h3>
+<h3>Installing with <code class="docutils literal notranslate"><span class="pre">pipx</span></code> or <code class="docutils literal notranslate"><span class="pre">pip</span></code><a class="headerlink" href="#installing-with-pipx-or-pip" title="Link to this heading">#</a></h3>
 <ol class="arabic simple">
 <li><p>Install <code class="docutils literal notranslate"><span class="pre">pipx</span></code> via their <a class="reference external" href="https://pypa.github.io/pipx/">installation instructions</a> or <code class="docutils literal notranslate"><span class="pre">pip</span></code> via their <a class="reference external" href="https://pip.pypa.io/en/stable/cli/pip_install/">installation instructions</a>.</p></li>
 <li><p>Install <strong><code class="docutils literal notranslate"><span class="pre">ape</span></code></strong> via <code class="docutils literal notranslate"><span class="pre">pipx</span> <span class="pre">install</span> <span class="pre">eth-ape</span></code> or <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">eth-ape</span></code>.</p></li>
 </ol>
 </section>
 <section id="installing-with-docker">
-<h3>Installing with <code class="docutils literal notranslate"><span class="pre">docker</span></code><a class="headerlink" href="#installing-with-docker" title="Link to this heading"></a></h3>
+<h3>Installing with <code class="docutils literal notranslate"><span class="pre">docker</span></code><a class="headerlink" href="#installing-with-docker" title="Link to this heading">#</a></h3>
 <p>Ape can also run in a docker container.</p>
 <p>You can pull our images from <a class="reference external" href="https://ghcr.io/apeworx/ape">ghcr</a>.
 This image is built using our <code class="docutils literal notranslate"><span class="pre">recommended-plugins</span></code> extra, so it is a great starting point for running ape in a containerized environment.</p>
@@ -295,7 +295,7 @@ The above command requires the full install which includes <code class="docutils
 </section>
 </section>
 <section id="quickstart">
-<h2>Quickstart<a class="headerlink" href="#quickstart" title="Link to this heading"></a></h2>
+<h2>Quickstart<a class="headerlink" href="#quickstart" title="Link to this heading">#</a></h2>
 <p>After you have installed Ape, run <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">--version</span></code> to verify the installation was successful.</p>
 <p>You can interact with Ape using the <a class="reference external" href="https://docs.apeworx.io/ape/stable/userguides/clis.html">command line</a> or the <a class="reference external" href="https://docs.apeworx.io/ape/stable/userguides/console.html">Ape console</a>.</p>
 <p>See the following user-guides for more in-depth tutorials:</p>
@@ -311,7 +311,7 @@ The above command requires the full install which includes <code class="docutils
 </ul>
 </section>
 <section id="plugin-system">
-<h2>Plugin System<a class="headerlink" href="#plugin-system" title="Link to this heading"></a></h2>
+<h2>Plugin System<a class="headerlink" href="#plugin-system" title="Link to this heading">#</a></h2>
 <p>Ape’s modular plugin system allows users to have an interoperable experience with Web3.</p>
 <ul class="simple">
 <li><p>Learn about <strong>installing</strong> plugins from following this <a class="reference external" href="https://docs.apeworx.io/ape/stable/userguides/installing_plugins.html">installing user guide</a>.</p></li>

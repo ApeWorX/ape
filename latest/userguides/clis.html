@@ -7,7 +7,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=2ceb65ce" />
     <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -200,7 +200,7 @@ data-aria-dark="Switch to auto color mode">
   </div>
 </div><article class="yue" role="main">
           <section id="clis">
-<h1>CLIs<a class="headerlink" href="#clis" title="Link to this heading"></a></h1>
+<h1>CLIs<a class="headerlink" href="#clis" title="Link to this heading">#</a></h1>
 <p>Ape uses the <a class="reference external" href="https://click.palletsprojects.com/en/8.1.x/">click framework</a> for handling all CLI functionality.
 There are CLIs found in a couple areas in the Ape framework:</p>
 <ol class="arabic simple">
@@ -214,7 +214,7 @@ You can read more about plugin development and CLIs in the <a class="reference e
 You can read more about scripting and CLIs in the <a class="reference external" href="./scripts.html">scripting guide</a>.</p>
 <p>This guide is for showcasing utilities that ship with Ape to assist in your CLI development endeavors.</p>
 <section id="ape-context-decorator">
-<h2>Ape Context Decorator<a class="headerlink" href="#ape-context-decorator" title="Link to this heading"></a></h2>
+<h2>Ape Context Decorator<a class="headerlink" href="#ape-context-decorator" title="Link to this heading">#</a></h2>
 <p>The <a class="reference external" href="../methoddocs/cli.html#ape.cli.options.ape_cli_context">&#64;ape_cli_context</a> gives you access to all the root Ape objects (<code class="docutils literal notranslate"><span class="pre">accounts</span></code>, <code class="docutils literal notranslate"><span class="pre">networks</span></code> etc.), the ape logger, and an <a class="reference external" href="../methoddocs/cli.html#ape.cli.options.ApeCliContextObject.abort">abort</a> method for stopping execution of your CLI gracefully.
 Here is an example using all of those features from the <code class="docutils literal notranslate"><span class="pre">cli_ctx</span></code>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">click</span>
@@ -256,7 +256,7 @@ Here is an example using all of those features from the <code class="docutils li
 </div>
 </section>
 <section id="network-tools">
-<h2>Network Tools<a class="headerlink" href="#network-tools" title="Link to this heading"></a></h2>
+<h2>Network Tools<a class="headerlink" href="#network-tools" title="Link to this heading">#</a></h2>
 <p>The <a class="reference external" href="../methoddocs/cli.html#ape.cli.options.network_option">&#64;network_option()</a> allows you to select an ecosystem, network, and provider.
 To specify the network option, use values like:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">--network<span class="w"> </span>ethereum
@@ -312,7 +312,7 @@ Additionally, specify <code class="docutils literal notranslate"><span class="pr
 </div>
 </section>
 <section id="account-tools">
-<h2>Account Tools<a class="headerlink" href="#account-tools" title="Link to this heading"></a></h2>
+<h2>Account Tools<a class="headerlink" href="#account-tools" title="Link to this heading">#</a></h2>
 <p>Use the <a class="reference external" href="../methoddocs/cli.html#ape.cli.options.account_option">&#64;account_option()</a> for adding an option to your CLIs to select an account.
 This option does several things:</p>
 <ol class="arabic simple">
@@ -402,7 +402,7 @@ Use <code class="docutils literal notranslate"><span class="pre">account_type</s
 </div>
 </section>
 <section id="contract-file-paths">
-<h2>Contract File Paths<a class="headerlink" href="#contract-file-paths" title="Link to this heading"></a></h2>
+<h2>Contract File Paths<a class="headerlink" href="#contract-file-paths" title="Link to this heading">#</a></h2>
 <p>Does your CLI interact with contract source files?
 (Think <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">compile</span></code>).</p>
 <p>If so, use the <code class="docutils literal notranslate"><span class="pre">&#64;contract_file_paths_argument()</span></code> decorator in your CLI.</p>

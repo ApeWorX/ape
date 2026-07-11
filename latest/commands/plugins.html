@@ -7,7 +7,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=2ceb65ce" />
     <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -201,14 +201,14 @@ data-aria-dark="Switch to auto color mode">
   </div>
 </div><article class="yue" role="main">
           <section id="plugins">
-<h1>plugins<a class="headerlink" href="#plugins" title="Link to this heading"></a></h1>
+<h1>plugins<a class="headerlink" href="#plugins" title="Link to this heading">#</a></h1>
 <p>Command-line helper for managing plugins.</p>
 <p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">plugins<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
 </span></pre></div>
 </div>
 <section id="plugins-change-version">
-<h2>change-version<a class="headerlink" href="#plugins-change-version" title="Link to this heading"></a></h2>
+<h2>change-version<a class="headerlink" href="#plugins-change-version" title="Link to this heading">#</a></h2>
 <p>Change ape and all plugins version</p>
 <p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">plugins<span class="w"> </span>change-version<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>VERSION
@@ -217,13 +217,13 @@ data-aria-dark="Switch to auto color mode">
 <p class="rubric">Arguments</p>
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-plugins-change-version-arg-VERSION">
-<span class="sig-name descname"><span class="pre">VERSION</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-plugins-change-version-arg-VERSION" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">VERSION</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-plugins-change-version-arg-VERSION" title="Link to this definition">#</a></dt>
 <dd><p>Required argument</p>
 </dd></dl>
 
 </section>
 <section id="plugins-install">
-<h2>install<a class="headerlink" href="#plugins-install" title="Link to this heading"></a></h2>
+<h2>install<a class="headerlink" href="#plugins-install" title="Link to this heading">#</a></h2>
 <p>Install plugins</p>
 <p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">plugins<span class="w"> </span>install<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>PLUGIN-NAMES<span class="w"> </span>or<span class="w"> </span>path/to/project-dir
@@ -232,38 +232,38 @@ data-aria-dark="Switch to auto color mode">
 <p class="rubric">Options</p>
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-plugins-install-v">
-<span id="cmdoption-plugins-install-verbosity"></span><span class="sig-name descname"><span class="pre">-v</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--verbosity</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;LVL&gt;</span></span><a class="headerlink" href="#cmdoption-plugins-install-v" title="Link to this definition"></a></dt>
+<span id="cmdoption-plugins-install-verbosity"></span><span class="sig-name descname"><span class="pre">-v</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--verbosity</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;LVL&gt;</span></span><a class="headerlink" href="#cmdoption-plugins-install-v" title="Link to this definition">#</a></dt>
 <dd><p>One of ERROR, WARNING, SUCCESS, INFO, or DEBUG</p>
 </dd></dl>
 
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-plugins-install-y">
-<span id="cmdoption-plugins-install-yes"></span><span class="sig-name descname"><span class="pre">-y</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--yes</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-plugins-install-y" title="Link to this definition"></a></dt>
+<span id="cmdoption-plugins-install-yes"></span><span class="sig-name descname"><span class="pre">-y</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--yes</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-plugins-install-y" title="Link to this definition">#</a></dt>
 <dd><p>Don’t ask for confirmation to install the plugins</p>
 </dd></dl>
 
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-plugins-install-U">
-<span id="cmdoption-plugins-install-upgrade"></span><span class="sig-name descname"><span class="pre">-U</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--upgrade</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-plugins-install-U" title="Link to this definition"></a></dt>
+<span id="cmdoption-plugins-install-upgrade"></span><span class="sig-name descname"><span class="pre">-U</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--upgrade</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-plugins-install-U" title="Link to this definition">#</a></dt>
 <dd><p>Upgrade the plugin to the newest available version</p>
 </dd></dl>
 
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-plugins-install-python">
-<span class="sig-name descname"><span class="pre">--python</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;python&gt;</span></span><a class="headerlink" href="#cmdoption-plugins-install-python" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">--python</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;python&gt;</span></span><a class="headerlink" href="#cmdoption-plugins-install-python" title="Link to this definition">#</a></dt>
 <dd><p>Specify the virtualenv location</p>
 </dd></dl>
 
 <p class="rubric">Arguments</p>
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-plugins-install-arg-PLUGIN-NAMES">
-<span class="sig-name descname"><span class="pre">PLUGIN-NAMES</span></span><span class="sig-prename descclassname"> <span class="pre">or</span> <span class="pre">path/to/project-dir</span></span><a class="headerlink" href="#cmdoption-plugins-install-arg-PLUGIN-NAMES" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">PLUGIN-NAMES</span></span><span class="sig-prename descclassname"> <span class="pre">or</span> <span class="pre">path/to/project-dir</span></span><a class="headerlink" href="#cmdoption-plugins-install-arg-PLUGIN-NAMES" title="Link to this definition">#</a></dt>
 <dd><p>Optional argument(s)</p>
 </dd></dl>
 
 </section>
 <section id="plugins-list">
-<h2>list<a class="headerlink" href="#plugins-list" title="Link to this heading"></a></h2>
+<h2>list<a class="headerlink" href="#plugins-list" title="Link to this heading">#</a></h2>
 <p>Display plugins</p>
 <p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">plugins<span class="w"> </span>list<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
@@ -272,19 +272,19 @@ data-aria-dark="Switch to auto color mode">
 <p class="rubric">Options</p>
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-plugins-list-v">
-<span id="cmdoption-plugins-list-verbosity"></span><span class="sig-name descname"><span class="pre">-v</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--verbosity</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;LVL&gt;</span></span><a class="headerlink" href="#cmdoption-plugins-list-v" title="Link to this definition"></a></dt>
+<span id="cmdoption-plugins-list-verbosity"></span><span class="sig-name descname"><span class="pre">-v</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--verbosity</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;LVL&gt;</span></span><a class="headerlink" href="#cmdoption-plugins-list-v" title="Link to this definition">#</a></dt>
 <dd><p>One of ERROR, WARNING, SUCCESS, INFO, or DEBUG</p>
 </dd></dl>
 
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-plugins-list-a">
-<span id="cmdoption-plugins-list-all"></span><span class="sig-name descname"><span class="pre">-a</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--all</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-plugins-list-a" title="Link to this definition"></a></dt>
+<span id="cmdoption-plugins-list-all"></span><span class="sig-name descname"><span class="pre">-a</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--all</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-plugins-list-a" title="Link to this definition">#</a></dt>
 <dd><p>Display all plugins installed and available (including Core)</p>
 </dd></dl>
 
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-plugins-list-format">
-<span class="sig-name descname"><span class="pre">--format</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;output_format&gt;</span></span><a class="headerlink" href="#cmdoption-plugins-list-format" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">--format</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;output_format&gt;</span></span><a class="headerlink" href="#cmdoption-plugins-list-format" title="Link to this definition">#</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Options<span class="colon">:</span></dt>
 <dd class="field-odd"><p>default | prefixed | freeze</p>
@@ -294,13 +294,13 @@ data-aria-dark="Switch to auto color mode">
 
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-plugins-list-exclude-version">
-<span class="sig-name descname"><span class="pre">--exclude-version</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-plugins-list-exclude-version" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">--exclude-version</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-plugins-list-exclude-version" title="Link to this definition">#</a></dt>
 <dd><p>Do not include plugin versions in output</p>
 </dd></dl>
 
 </section>
 <section id="plugins-uninstall">
-<h2>uninstall<a class="headerlink" href="#plugins-uninstall" title="Link to this heading"></a></h2>
+<h2>uninstall<a class="headerlink" href="#plugins-uninstall" title="Link to this heading">#</a></h2>
 <p>Uninstall plugins</p>
 <p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">plugins<span class="w"> </span>uninstall<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>PLUGIN-NAMES<span class="w"> </span>or<span class="w"> </span>path/to/project-dir
@@ -309,32 +309,32 @@ data-aria-dark="Switch to auto color mode">
 <p class="rubric">Options</p>
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-plugins-uninstall-v">
-<span id="cmdoption-plugins-uninstall-verbosity"></span><span class="sig-name descname"><span class="pre">-v</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--verbosity</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;LVL&gt;</span></span><a class="headerlink" href="#cmdoption-plugins-uninstall-v" title="Link to this definition"></a></dt>
+<span id="cmdoption-plugins-uninstall-verbosity"></span><span class="sig-name descname"><span class="pre">-v</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--verbosity</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;LVL&gt;</span></span><a class="headerlink" href="#cmdoption-plugins-uninstall-v" title="Link to this definition">#</a></dt>
 <dd><p>One of ERROR, WARNING, SUCCESS, INFO, or DEBUG</p>
 </dd></dl>
 
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-plugins-uninstall-y">
-<span id="cmdoption-plugins-uninstall-yes"></span><span class="sig-name descname"><span class="pre">-y</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--yes</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-plugins-uninstall-y" title="Link to this definition"></a></dt>
+<span id="cmdoption-plugins-uninstall-yes"></span><span class="sig-name descname"><span class="pre">-y</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--yes</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-plugins-uninstall-y" title="Link to this definition">#</a></dt>
 <dd><p>Don’t ask for confirmation to install the plugins</p>
 </dd></dl>
 
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-plugins-uninstall-python">
-<span class="sig-name descname"><span class="pre">--python</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;python&gt;</span></span><a class="headerlink" href="#cmdoption-plugins-uninstall-python" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">--python</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;python&gt;</span></span><a class="headerlink" href="#cmdoption-plugins-uninstall-python" title="Link to this definition">#</a></dt>
 <dd><p>Specify the virtualenv location</p>
 </dd></dl>
 
 <p class="rubric">Arguments</p>
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-plugins-uninstall-arg-PLUGIN-NAMES">
-<span class="sig-name descname"><span class="pre">PLUGIN-NAMES</span></span><span class="sig-prename descclassname"> <span class="pre">or</span> <span class="pre">path/to/project-dir</span></span><a class="headerlink" href="#cmdoption-plugins-uninstall-arg-PLUGIN-NAMES" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">PLUGIN-NAMES</span></span><span class="sig-prename descclassname"> <span class="pre">or</span> <span class="pre">path/to/project-dir</span></span><a class="headerlink" href="#cmdoption-plugins-uninstall-arg-PLUGIN-NAMES" title="Link to this definition">#</a></dt>
 <dd><p>Optional argument(s)</p>
 </dd></dl>
 
 </section>
 <section id="plugins-update">
-<h2>update<a class="headerlink" href="#plugins-update" title="Link to this heading"></a></h2>
+<h2>update<a class="headerlink" href="#plugins-update" title="Link to this heading">#</a></h2>
 <p>Update Ape and all plugins to the next version</p>
 <p class="rubric">Usage</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">plugins<span class="w"> </span>update<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>

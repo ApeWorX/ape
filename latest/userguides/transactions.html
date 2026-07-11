@@ -7,7 +7,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=2ceb65ce" />
     <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -210,11 +210,11 @@ data-aria-dark="Switch to auto color mode">
   </div>
 </div><article class="yue" role="main">
           <section id="transactions">
-<h1>Transactions<a class="headerlink" href="#transactions" title="Link to this heading"></a></h1>
+<h1>Transactions<a class="headerlink" href="#transactions" title="Link to this heading">#</a></h1>
 <p>Regardless of how you are using <code class="docutils literal notranslate"><span class="pre">ape</span></code>, you will likely be making transactions.
 There are various types of transactions you can make with <code class="docutils literal notranslate"><span class="pre">ape</span></code>. A simple example is deploying a contract.</p>
 <section id="transfer">
-<h2>Transfer<a class="headerlink" href="#transfer" title="Link to this heading"></a></h2>
+<h2>Transfer<a class="headerlink" href="#transfer" title="Link to this heading">#</a></h2>
 <p>One of the simplest ways to transact in Ape is to use the <a class="reference external" href="../methoddocs/api.html?highlight=accountapi#ape.api.accounts.AccountAPI.transfer">the transfer method</a>.
 Transfers are transactions that send the base-currency (e.g. Ether) from one account to another.</p>
 <p>The following is a simple guide to transferring ETH.</p>
@@ -238,7 +238,7 @@ Any additional kwargs are passed to the transaction, such as <code class="docuti
 <p>Learn more about accounts (necessary for <code class="docutils literal notranslate"><span class="pre">.transfer()</span></code>) by following the <a class="reference external" href="./accounts.html">Accounts Guide</a>.</p>
 </section>
 <section id="deployment">
-<h2>Deployment<a class="headerlink" href="#deployment" title="Link to this heading"></a></h2>
+<h2>Deployment<a class="headerlink" href="#deployment" title="Link to this heading">#</a></h2>
 <p>Deploying a smart contract is a unique type of transaction where we don’t necessarily care about the receipt as much
 as we care about the contract instance. That is why the return value from
 <a class="reference external" href="../methoddocs/api.html?highlight=accountapi#ape.api.accounts.AccountAPI.deploy">the deploy method</a> is a
@@ -253,7 +253,7 @@ as we care about the contract instance. That is why the return value from
 </span></pre></div>
 </div>
 <section id="deployment-from-ape-console">
-<h3>Deployment from Ape Console<a class="headerlink" href="#deployment-from-ape-console" title="Link to this heading"></a></h3>
+<h3>Deployment from Ape Console<a class="headerlink" href="#deployment-from-ape-console" title="Link to this heading">#</a></h3>
 <p>Deploying from <a class="reference external" href="./console.html">ape console</a> allows you to interact with a contract in real time. You can also use the <code class="docutils literal notranslate"><span class="pre">--network</span></code> flag to connect a live network.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>console<span class="w"> </span>--network<span class="w"> </span>ethereum:sepolia:alchemy
 </span></pre></div>
@@ -267,7 +267,7 @@ as we care about the contract instance. That is why the return value from
 <p>For an in depth tutorial on how to deploy, please visit <a class="reference external" href="https://academy.apeworx.io/">ApeAcademy</a>.</p>
 </section>
 <section id="deployment-metadata">
-<h3>Deployment Metadata<a class="headerlink" href="#deployment-metadata" title="Link to this heading"></a></h3>
+<h3>Deployment Metadata<a class="headerlink" href="#deployment-metadata" title="Link to this heading">#</a></h3>
 <p>To get the receipt of a <code class="docutils literal notranslate"><span class="pre">deploy</span></code> transaction, use the <a class="reference external" href="../methoddocs/contracts.html#ape.contracts.base.ContractInstance.creation_metadata">ContractInstance.creation_metadata</a> property:</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -288,7 +288,7 @@ Learn more about creation metadata in the <a class="reference external" href="./
 </section>
 </section>
 <section id="dynamic-fee-transactions">
-<h2>Dynamic-Fee Transactions<a class="headerlink" href="#dynamic-fee-transactions" title="Link to this heading"></a></h2>
+<h2>Dynamic-Fee Transactions<a class="headerlink" href="#dynamic-fee-transactions" title="Link to this heading">#</a></h2>
 <p>Before <a class="reference external" href="https://eips.ethereum.org/EIPS/eip-1559">EIP-1559</a>, all transactions used a <code class="docutils literal notranslate"><span class="pre">gas_price</span></code>.
 After the London fork of Ethereum, the <code class="docutils literal notranslate"><span class="pre">gas_price</span></code> got broken up into two values, <code class="docutils literal notranslate"><span class="pre">max_fee</span></code> and <code class="docutils literal notranslate"><span class="pre">max_priority_fee</span></code>.
 The <code class="docutils literal notranslate"><span class="pre">ape</span></code> framework supports both types of transactions. By default, transactions use the dynamic-fee model.
@@ -313,7 +313,7 @@ the value returned from the
 property.</p>
 </section>
 <section id="static-fee-transactions">
-<h2>Static-Fee Transactions<a class="headerlink" href="#static-fee-transactions" title="Link to this heading"></a></h2>
+<h2>Static-Fee Transactions<a class="headerlink" href="#static-fee-transactions" title="Link to this heading">#</a></h2>
 <p>Static-fee transactions are the transactions that Ethereum used before the London-fork
 (before <a class="reference external" href="https://eips.ethereum.org/EIPS/eip-1559">EIP-1559</a>).
 <strong>However, some applications may still require using static-fee transactions.</strong></p>
@@ -333,7 +333,7 @@ argument <code class="docutils literal notranslate"><span class="pre">type</span
 <p>When declaring <code class="docutils literal notranslate"><span class="pre">type=&quot;0x0&quot;</span></code> and <em>not</em> specifying a <code class="docutils literal notranslate"><span class="pre">gas_price</span></code>, the <code class="docutils literal notranslate"><span class="pre">gas_price</span></code> gets set using the provider’s estimation.</p>
 </section>
 <section id="access-list-transactions">
-<h2>Access List Transactions<a class="headerlink" href="#access-list-transactions" title="Link to this heading"></a></h2>
+<h2>Access List Transactions<a class="headerlink" href="#access-list-transactions" title="Link to this heading">#</a></h2>
 <p>Utilizing <a class="reference external" href="https://eips.ethereum.org/EIPS/eip-2930">EIP-2930</a>, you can also make access-list transactions using Ape.
 Access-list transactions are static-fee transactions except you can optionally specify an access list.
 Access-lists make contract-interaction more predictable and optimized.
@@ -349,7 +349,7 @@ You can also use Access-lists in Dynamic-fee transactions.</p>
 </div>
 </section>
 <section id="payable-transactions">
-<h2>Payable Transactions<a class="headerlink" href="#payable-transactions" title="Link to this heading"></a></h2>
+<h2>Payable Transactions<a class="headerlink" href="#payable-transactions" title="Link to this heading">#</a></h2>
 <p>To add value to a transaction, use the <code class="docutils literal notranslate"><span class="pre">value=</span></code> kwarg when transacting in Ape.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">contract</span><span class="o">.</span><span class="n">fundMyContract</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="s2">&quot;1 ether&quot;</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">sender</span><span class="p">)</span>
 </span></pre></div>
@@ -358,7 +358,7 @@ You can also use Access-lists in Dynamic-fee transactions.</p>
 You would do this if <code class="docutils literal notranslate"><span class="pre">fundMyContract</span></code> was a <code class="docutils literal notranslate"><span class="pre">&quot;payable&quot;</span></code> method, e.g. marked <code class="docutils literal notranslate"><span class="pre">&#64;payable</span></code> in Vyper.</p>
 </section>
 <section id="transaction-logs">
-<h2>Transaction Logs<a class="headerlink" href="#transaction-logs" title="Link to this heading"></a></h2>
+<h2>Transaction Logs<a class="headerlink" href="#transaction-logs" title="Link to this heading">#</a></h2>
 <p>In Ape, you can easily get all the events on a receipt.
 Use the <code class="docutils literal notranslate"><span class="pre">.events</span></code> property to access the (<a class="reference external" href="../methoddocs/types.html#ape.types.ContractLog">ContractLog</a>) objects.
 Each object represents an event emitted from the call.</p>
@@ -388,7 +388,7 @@ Each object represents an event emitted from the call.</p>
 <p>Otherwise, you will get an <code class="docutils literal notranslate"><span class="pre">AttributeError</span></code>.</p>
 </section>
 <section id="transaction-acceptance-timeout">
-<h2>Transaction Acceptance Timeout<a class="headerlink" href="#transaction-acceptance-timeout" title="Link to this heading"></a></h2>
+<h2>Transaction Acceptance Timeout<a class="headerlink" href="#transaction-acceptance-timeout" title="Link to this heading">#</a></h2>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>For longer running scripts, you may need to increase the transaction acceptance timeout.</p>
@@ -402,13 +402,13 @@ In your <code class="docutils literal notranslate"><span class="pre">ape-config.
 </div>
 </section>
 <section id="traces">
-<h2>Traces<a class="headerlink" href="#traces" title="Link to this heading"></a></h2>
+<h2>Traces<a class="headerlink" href="#traces" title="Link to this heading">#</a></h2>
 <p>Transaction traces are the steps in the contract the transaction took.
 Traces both power a myriad of features in Ape as well are themselves a tool for developers to use to debug transactions.
 To learn more about traces, see the <a class="reference external" href="./trace.html">traces userguide</a>.</p>
 </section>
 <section id="estimate-gas-cost">
-<h2>Estimate Gas Cost<a class="headerlink" href="#estimate-gas-cost" title="Link to this heading"></a></h2>
+<h2>Estimate Gas Cost<a class="headerlink" href="#estimate-gas-cost" title="Link to this heading">#</a></h2>
 <p>To estimate the gas cost on a transaction or call without sending it, use the <code class="docutils literal notranslate"><span class="pre">estimate_gas_cost()</span></code> method from the contract’s transaction / call handler:
 (Assume I have a contract instance named <code class="docutils literal notranslate"><span class="pre">contract_a</span></code> that has a method named <code class="docutils literal notranslate"><span class="pre">methodToCall</span></code>)</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">txn_cost</span> <span class="o">=</span> <span class="n">contract_a</span><span class="o">.</span><span class="n">myMutableMethod</span><span class="o">.</span><span class="n">estimate_gas_cost</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;me&quot;</span><span class="p">))</span>

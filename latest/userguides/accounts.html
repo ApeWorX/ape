@@ -7,7 +7,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=2ceb65ce" />
     <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -221,7 +221,7 @@ data-aria-dark="Switch to auto color mode">
   </div>
 </div><article class="yue" role="main">
           <section id="accounts">
-<h1>Accounts<a class="headerlink" href="#accounts" title="Link to this heading"></a></h1>
+<h1>Accounts<a class="headerlink" href="#accounts" title="Link to this heading">#</a></h1>
 <p>Accounts in Ape come from <a class="reference external" href="../methoddocs/api.html#ape.api.accounts.AccountAPI">AccountAPI</a> implementations (e.g. from plugins).
 There are typically two types of accounts:</p>
 <ol class="arabic simple">
@@ -232,10 +232,10 @@ There are typically two types of accounts:</p>
 Live network accounts are for interacting with live blockchains and should be secured.</p>
 <p>To learn more about Ethereum accounts, see <a class="reference external" href="https://ethereum.org/en/developers/docs/accounts/">the Ethereum documentation</a>.</p>
 <section id="test-accounts">
-<h2>Test Accounts<a class="headerlink" href="#test-accounts" title="Link to this heading"></a></h2>
+<h2>Test Accounts<a class="headerlink" href="#test-accounts" title="Link to this heading">#</a></h2>
 <p>Ape ships with pytest fixtures to assist in writing your tests.</p>
 <section id="use-test-accounts-in-tests">
-<h3>Use test accounts in tests<a class="headerlink" href="#use-test-accounts-in-tests" title="Link to this heading"></a></h3>
+<h3>Use test accounts in tests<a class="headerlink" href="#use-test-accounts-in-tests" title="Link to this heading">#</a></h3>
 <p>Pre-funded test accounts are accessible via the <a class="reference external" href="./testing.html#accounts-fixture">accounts fixture</a>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">def</span><span class="w"> </span><span class="nf">test_my_contract_method</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
 </span><span data-line="2">    <span class="n">sender</span> <span class="o">=</span> <span class="n">accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -244,7 +244,7 @@ Live network accounts are for interacting with live blockchains and should be se
 </div>
 </section>
 <section id="use-test-accounts-outside-of-tests">
-<h3>Use test accounts outside of tests<a class="headerlink" href="#use-test-accounts-outside-of-tests" title="Link to this heading"></a></h3>
+<h3>Use test accounts outside of tests<a class="headerlink" href="#use-test-accounts-outside-of-tests" title="Link to this heading">#</a></h3>
 <p>To access the same prefunded accounts in your scripts or console, use the root <code class="docutils literal notranslate"><span class="pre">accounts</span></code> object and the <a class="reference external" href="../methoddocs/managers.html#ape.managers.accounts.AccountManager.test_accounts">test_accounts</a> property:</p>
 <div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">accounts</span>
 </span><span data-line="2">
@@ -272,7 +272,7 @@ Live network accounts are for interacting with live blockchains and should be se
 <p>The accounts generated from this seed are solely for testing and debugging purposes.</p>
 </section>
 <section id="creating-new-test-accounts">
-<h3>Creating new test accounts<a class="headerlink" href="#creating-new-test-accounts" title="Link to this heading"></a></h3>
+<h3>Creating new test accounts<a class="headerlink" href="#creating-new-test-accounts" title="Link to this heading">#</a></h3>
 <p>You can create a new test account by doing the following:</p>
 <div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">accounts</span>
 </span><span data-line="2">
@@ -290,7 +290,7 @@ Live network accounts are for interacting with live blockchains and should be se
 </div>
 </section>
 <section id="default-sender-support">
-<h3>Default Sender Support<a class="headerlink" href="#default-sender-support" title="Link to this heading"></a></h3>
+<h3>Default Sender Support<a class="headerlink" href="#default-sender-support" title="Link to this heading">#</a></h3>
 <p>In order to eliminate the usage of sender in contract calls, you can use <code class="docutils literal notranslate"><span class="pre">use_sender</span></code> context manager.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">with</span> <span class="n">accounts</span><span class="o">.</span><span class="n">use_sender</span><span class="p">(</span><span class="mi">0</span><span class="p">):</span> <span class="c1"># Use first account from test mnemonic</span>
 </span><span data-line="2">  <span class="n">contract</span><span class="o">.</span><span class="n">myFunction</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
@@ -305,12 +305,12 @@ Live network accounts are for interacting with live blockchains and should be se
 </section>
 </section>
 <section id="live-network-accounts">
-<h2>Live Network Accounts<a class="headerlink" href="#live-network-accounts" title="Link to this heading"></a></h2>
+<h2>Live Network Accounts<a class="headerlink" href="#live-network-accounts" title="Link to this heading">#</a></h2>
 <p>When using live networks, you need to get your accounts into Ape.
 To get your accounts in Ape, you must use an <code class="docutils literal notranslate"><span class="pre">accounts</span></code> plugin.
 Ape ships with a keyfile-based account plugin, but you can use any account plugin such as <code class="docutils literal notranslate"><span class="pre">ape-ledger</span></code>, <code class="docutils literal notranslate"><span class="pre">ape-trezor</span></code>, or a third-party plugin.</p>
 <section id="keyfile-accounts">
-<h3>Keyfile Accounts<a class="headerlink" href="#keyfile-accounts" title="Link to this heading"></a></h3>
+<h3>Keyfile Accounts<a class="headerlink" href="#keyfile-accounts" title="Link to this heading">#</a></h3>
 <p>Ape ships with a keyfile-based account plugin that lets you import and generate accounts.
 The premise of the plugin is that accounts are stored locally on your computer in the <code class="docutils literal notranslate"><span class="pre">$HOME/.ape/accounts</span></code> directory following the <code class="docutils literal notranslate"><span class="pre">keyfile</span></code> structure.
 Under-the-hood, this structure comes from the <a class="reference external" href="https://github.com/ethereum/eth-keyfile">eth-keyfile library</a> via the <a class="reference external" href="https://eth-account.readthedocs.io/en/stable/eth_account.html">eth-account</a> package.
@@ -320,7 +320,7 @@ The keyfile stores the private key in an encrypted-at-rest state, which maximize
 When signing a message or transaction using an account from <code class="docutils literal notranslate"><span class="pre">ape-accounts</span></code>, you will be prompted to enter the passphrase you specified when importing or generating that account.</p>
 <p>All the available CLI commands for this account’s plugin can be found <a class="reference external" href="../commands/accounts.html">here</a>.</p>
 <section id="generating-new-accounts">
-<h4>Generating New Accounts<a class="headerlink" href="#generating-new-accounts" title="Link to this heading"></a></h4>
+<h4>Generating New Accounts<a class="headerlink" href="#generating-new-accounts" title="Link to this heading">#</a></h4>
 <p>You can <a class="reference external" href="../commands/accounts.html#accounts-generate">generate</a> an account:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>accounts<span class="w"> </span>generate<span class="w"> </span>&lt;ALIAS&gt;
 </span></pre></div>
@@ -360,7 +360,7 @@ You can use all of these together or separately to control the way Ape creates a
 <p>See the <a class="reference external" href="../methoddocs/ape_accounts.html#ape_accounts.generate_account">documentation for <code class="docutils literal notranslate"><span class="pre">generate_account()</span></code></a> for more options.</p>
 </section>
 <section id="importing-existing-accounts">
-<h4>Importing Existing Accounts<a class="headerlink" href="#importing-existing-accounts" title="Link to this heading"></a></h4>
+<h4>Importing Existing Accounts<a class="headerlink" href="#importing-existing-accounts" title="Link to this heading">#</a></h4>
 <p>If you already have an account and wish to import it into Ape (say, from Metamask), you can use the <a class="reference external" href="../commands/accounts.html#accounts-import">import command</a>:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>accounts<span class="w"> </span>import<span class="w"> </span>&lt;ALIAS&gt;
 </span></pre></div>
@@ -406,7 +406,7 @@ If you do not use the <code class="docutils literal notranslate"><span class="pr
 </div>
 </section>
 <section id="exporting-accounts">
-<h4>Exporting Accounts<a class="headerlink" href="#exporting-accounts" title="Link to this heading"></a></h4>
+<h4>Exporting Accounts<a class="headerlink" href="#exporting-accounts" title="Link to this heading">#</a></h4>
 <p>You can also <a class="reference external" href="../commands/accounts.html#accounts-export">export</a> the private key of an account:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>accounts<span class="w"> </span><span class="nb">export</span><span class="w"> </span>&lt;ALIAS&gt;
 </span></pre></div>
@@ -423,7 +423,7 @@ Then, in your scripts, you can <a class="reference external" href="../methoddocs
 </section>
 </section>
 <section id="id1">
-<h3>Default Sender Support<a class="headerlink" href="#id1" title="Link to this heading"></a></h3>
+<h3>Default Sender Support<a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
 <p>In order to reduce repetition of adding <code class="docutils literal notranslate"><span class="pre">sender</span></code> in your contract calls, you can use <code class="docutils literal notranslate"><span class="pre">use_sender</span></code> context manager.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">with</span> <span class="n">accounts</span><span class="o">.</span><span class="n">use_sender</span><span class="p">(</span><span class="mi">0</span><span class="p">):</span>
 </span><span data-line="2">  <span class="n">contract</span><span class="o">.</span><span class="n">myFunction</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
@@ -441,7 +441,7 @@ Then, in your scripts, you can <a class="reference external" href="../methoddocs
 </section>
 </section>
 <section id="signing-messages">
-<h2>Signing Messages<a class="headerlink" href="#signing-messages" title="Link to this heading"></a></h2>
+<h2>Signing Messages<a class="headerlink" href="#signing-messages" title="Link to this heading">#</a></h2>
 <p>You can sign messages with your accounts in Ape.
 To do this, use the <a class="reference external" href="../methoddocs/api.html#ape.api.accounts.AccountAPI.sign_message">sign_message</a> API.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">accounts</span>
@@ -466,7 +466,7 @@ However, you can also provide other types, such as a <code class="docutils liter
 </span></pre></div>
 </div>
 <section id="eip-712">
-<h3>EIP-712<a class="headerlink" href="#eip-712" title="Link to this heading"></a></h3>
+<h3>EIP-712<a class="headerlink" href="#eip-712" title="Link to this heading">#</a></h3>
 <p>Some account plugins are able to sign EIP-712 structured message types by utilizing the <code class="docutils literal notranslate"><span class="pre">eip712</span></code> package.
 Here is an example with custom EIP-712 classes:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">accounts</span>
@@ -500,7 +500,7 @@ Here is an example with custom EIP-712 classes:</p>
 </div>
 </section>
 <section id="verifying-signature">
-<h3>Verifying Signature<a class="headerlink" href="#verifying-signature" title="Link to this heading"></a></h3>
+<h3>Verifying Signature<a class="headerlink" href="#verifying-signature" title="Link to this heading">#</a></h3>
 <p>Verify the signatures on your signed messages by using the <a class="reference external" href="../methoddocs/types.html#ape.types.signatures.recover_signer">recover_signer</a> function or the <a class="reference external" href="../methoddocs/api.html#ape.api.accounts.AccountAPI.check_signature">check_signature</a> function:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">accounts</span>
 </span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.types.signatures</span><span class="w"> </span><span class="kn">import</span> <span class="n">recover_signer</span>
@@ -520,7 +520,7 @@ Here is an example with custom EIP-712 classes:</p>
 </div>
 </section>
 <section id="signing-authorizations-eip-7702">
-<h3>Signing Authorizations (EIP-7702)<a class="headerlink" href="#signing-authorizations-eip-7702" title="Link to this heading"></a></h3>
+<h3>Signing Authorizations (EIP-7702)<a class="headerlink" href="#signing-authorizations-eip-7702" title="Link to this heading">#</a></h3>
 <p>If supported by your current ecosystem and account plugins, Ape exposes the capability to set delegate contracts for EOAs via <a class="reference external" href="https://eips.ethereum.org/EIPS/eip-7702">EIP-7702</a> signed <code class="docutils literal notranslate"><span class="pre">SetCode</span></code> Authorizations.
 To sign an Authorization, use <code class="docutils literal notranslate"><span class="pre">account.sign_authorization</span></code> as follows:</p>
 <div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape_ethereum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Authorization</span>
@@ -573,7 +573,7 @@ Ape exposes a <a class="reference external" href="../commands/accounts.html#acco
 </section>
 </section>
 <section id="automation">
-<h2>Automation<a class="headerlink" href="#automation" title="Link to this heading"></a></h2>
+<h2>Automation<a class="headerlink" href="#automation" title="Link to this heading">#</a></h2>
 <p>If you use your keyfile accounts in automation, such as CI/CD, you may need to programmatically unlock them and enable auto-sign.
 To do this, use a special environment variable for the account’s passphrase:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nb">export</span><span class="w"> </span>APE_ACCOUNTS_&lt;alias&gt;_PASSPHRASE<span class="o">=</span><span class="s2">&quot;a&quot;</span>
@@ -598,7 +598,7 @@ Now, you can use your account to make any transactions without subsequently prov
 </div>
 </section>
 <section id="hardware-wallets">
-<h2>Hardware Wallets<a class="headerlink" href="#hardware-wallets" title="Link to this heading"></a></h2>
+<h2>Hardware Wallets<a class="headerlink" href="#hardware-wallets" title="Link to this heading">#</a></h2>
 <p>Because of the plugin system in Ape, we are able to support other types of accounts including hardware wallet accounts.
 Check out these plugins:</p>
 <ul class="simple">

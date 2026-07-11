@@ -7,7 +7,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=2ceb65ce" />
     <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -209,7 +209,7 @@ data-aria-dark="Switch to auto color mode">
   </div>
 </div><article class="yue" role="main">
           <section id="configure-ape">
-<h1>Configure Ape<a class="headerlink" href="#configure-ape" title="Link to this heading"></a></h1>
+<h1>Configure Ape<a class="headerlink" href="#configure-ape" title="Link to this heading">#</a></h1>
 <p>You can configure Ape using a <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code> file and the prefix <code class="docutils literal notranslate"><span class="pre">tool.ape</span></code> or any configuration file named <code class="docutils literal notranslate"><span class="pre">ape-config.[yaml|yml|json]</span></code>.
 There are two locations you can place config files.</p>
 <ol class="arabic simple">
@@ -303,7 +303,7 @@ Simply include environment variables (with the <code class="docutils literal not
 <p>Using environment variables assists in keeping secrets out of your config files.
 However, the primary config should be file-driven and environment variables should only be used when necessary.</p>
 <section id="base-path">
-<h2>Base Path<a class="headerlink" href="#base-path" title="Link to this heading"></a></h2>
+<h2>Base Path<a class="headerlink" href="#base-path" title="Link to this heading">#</a></h2>
 <p>Change the base path if it is different from your project root.
 For example, imagine a project structure like:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1">project
@@ -325,7 +325,7 @@ For example, imagine a project structure like:</p>
 Some dependencies, such as python-based ones like <code class="docutils literal notranslate"><span class="pre">snekmate</span></code>, use this structure.</p>
 </section>
 <section id="contracts-folder">
-<h2>Contracts Folder<a class="headerlink" href="#contracts-folder" title="Link to this heading"></a></h2>
+<h2>Contracts Folder<a class="headerlink" href="#contracts-folder" title="Link to this heading">#</a></h2>
 <p>Specify a different path to your <code class="docutils literal notranslate"><span class="pre">contracts/</span></code> directory.
 This is useful when using a different naming convention, such as <code class="docutils literal notranslate"><span class="pre">src/</span></code> rather than <code class="docutils literal notranslate"><span class="pre">contracts/</span></code>.</p>
 <div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[tool.ape]</span>
@@ -343,7 +343,7 @@ This is useful for projects that compile contracts outside their directory.</p>
 </div>
 </section>
 <section id="default-ecosystem">
-<h2>Default Ecosystem<a class="headerlink" href="#default-ecosystem" title="Link to this heading"></a></h2>
+<h2>Default Ecosystem<a class="headerlink" href="#default-ecosystem" title="Link to this heading">#</a></h2>
 <p>You can change the default ecosystem by including the following:</p>
 <div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[tool.ape]</span>
 </span><span data-line="2"><span class="n">default_ecosystem</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;fantom&quot;</span>
@@ -356,7 +356,7 @@ This is useful for projects that compile contracts outside their directory.</p>
 <p>The default ecosystem is <code class="docutils literal notranslate"><span class="pre">ethereum</span></code>.</p>
 </section>
 <section id="dependencies">
-<h2>Dependencies<a class="headerlink" href="#dependencies" title="Link to this heading"></a></h2>
+<h2>Dependencies<a class="headerlink" href="#dependencies" title="Link to this heading">#</a></h2>
 <p>Configure dependencies for your ape project.
 To learn more about dependencies, see <a class="reference external" href="./dependencies.html">this guide</a>.</p>
 <p>A simple example of configuring dependencies looks like this:</p>
@@ -375,7 +375,7 @@ To learn more about dependencies, see <a class="reference external" href="./depe
 </div>
 </section>
 <section id="deployments">
-<h2>Deployments<a class="headerlink" href="#deployments" title="Link to this heading"></a></h2>
+<h2>Deployments<a class="headerlink" href="#deployments" title="Link to this heading">#</a></h2>
 <p>Set deployments that were made outside of Ape in your <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> to create past-deployment-based contract instances in Ape:
 (See <a class="reference external" href="./contracts.html#from-previous-deployment">this example</a> for more information on this feature).</p>
 <p>Config example:</p>
@@ -411,7 +411,7 @@ To learn more about dependencies, see <a class="reference external" href="./depe
 </div>
 </section>
 <section id="name">
-<h2>Name<a class="headerlink" href="#name" title="Link to this heading"></a></h2>
+<h2>Name<a class="headerlink" href="#name" title="Link to this heading">#</a></h2>
 <p>Configure the name of the project:</p>
 <div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[tool.ape]</span>
 </span><span data-line="2"><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;ape-project&quot;</span>
@@ -428,7 +428,7 @@ To learn more about dependencies, see <a class="reference external" href="./depe
 </div>
 </section>
 <section id="networks">
-<h2>Networks<a class="headerlink" href="#networks" title="Link to this heading"></a></h2>
+<h2>Networks<a class="headerlink" href="#networks" title="Link to this heading">#</a></h2>
 <p>Set default network and network providers:</p>
 <div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[tool.ape.ethereum]</span>
 </span><span data-line="2"><span class="n">default_network</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;mainnet-fork&quot;</span>
@@ -469,7 +469,7 @@ To learn more about dependencies, see <a class="reference external" href="./depe
 <p>For the local network configuration, the default is <code class="docutils literal notranslate"><span class="pre">&quot;max&quot;</span></code>. Otherwise, it is <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code>.</p>
 </section>
 <section id="node">
-<h2>Node<a class="headerlink" href="#node" title="Link to this heading"></a></h2>
+<h2>Node<a class="headerlink" href="#node" title="Link to this heading">#</a></h2>
 <p>When using the <code class="docutils literal notranslate"><span class="pre">node</span></code> provider, you can customize its settings.
 For example, to change the URI for an Ethereum network, do:</p>
 <div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[tool.ape.node.ethereum.mainnet]</span>
@@ -491,7 +491,7 @@ For example, to change the URI for an Ethereum network, do:</p>
 <p>For more information on networking as a whole, see <a class="reference external" href="./networks.html">this guide</a>.</p>
 </section>
 <section id="plugins">
-<h2>Plugins<a class="headerlink" href="#plugins" title="Link to this heading"></a></h2>
+<h2>Plugins<a class="headerlink" href="#plugins" title="Link to this heading">#</a></h2>
 <p>Set which <code class="docutils literal notranslate"><span class="pre">ape</span></code> plugins you want to always use.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -518,7 +518,7 @@ For example, to change the URI for an Ethereum network, do:</p>
 </div>
 </section>
 <section id="request-headers">
-<h2>Request Headers<a class="headerlink" href="#request-headers" title="Link to this heading"></a></h2>
+<h2>Request Headers<a class="headerlink" href="#request-headers" title="Link to this heading">#</a></h2>
 <p>For Ape’s HTTP usage, such as requests made via <code class="docutils literal notranslate"><span class="pre">web3.py</span></code>, optionally specify extra request headers.</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">request_headers</span><span class="p">:</span>
 </span><span data-line="2"><span class="w">  </span><span class="c1"># NOTE: Only using Content-Type as an example; can be any header key/value.</span>
@@ -547,7 +547,7 @@ For example, to change the URI for an Ethereum network, do:</p>
 <p>To learn more about how request headers work in Ape, see <a class="reference external" href="./networks.html#request-headers">this section of the Networking guide</a>.</p>
 </section>
 <section id="testing">
-<h2>Testing<a class="headerlink" href="#testing" title="Link to this heading"></a></h2>
+<h2>Testing<a class="headerlink" href="#testing" title="Link to this heading">#</a></h2>
 <p>Configure your test accounts:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">test</span><span class="p">:</span>
 </span><span data-line="2"><span class="w">  </span><span class="nt">mnemonic</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test test test test test test test test test test test junk</span>
@@ -556,7 +556,7 @@ For example, to change the URI for an Ethereum network, do:</p>
 </div>
 </section>
 <section id="plugin-settings">
-<h2>Plugin Settings<a class="headerlink" href="#plugin-settings" title="Link to this heading"></a></h2>
+<h2>Plugin Settings<a class="headerlink" href="#plugin-settings" title="Link to this heading">#</a></h2>
 <p>To configure a plugin, use the name of the plugin followed by any of the plugin’s settings.
 For example, to configure the <code class="docutils literal notranslate"><span class="pre">ape-solidity</span></code> plugin, you would do:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">solidity</span><span class="p">:</span>
@@ -565,7 +565,7 @@ For example, to configure the <code class="docutils literal notranslate"><span c
 </div>
 </section>
 <section id="non-plugin-settings">
-<h2>Non-plugin settings<a class="headerlink" href="#non-plugin-settings" title="Link to this heading"></a></h2>
+<h2>Non-plugin settings<a class="headerlink" href="#non-plugin-settings" title="Link to this heading">#</a></h2>
 <p>Projects can use their own settings.
 Meaning, you can put whatever data you want in an <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file and read it in Ape.</p>
 <div class="admonition note">

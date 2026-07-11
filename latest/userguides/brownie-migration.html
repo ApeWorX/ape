@@ -7,7 +7,7 @@
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=e1a1ceaf" />
-    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=9454f7d5" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=2ceb65ce" />
     <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -204,10 +204,10 @@ data-aria-dark="Switch to auto color mode">
   </div>
 </div><article class="yue" role="main">
           <section id="brownie-to-ape-migration">
-<h1>Brownie to Ape Migration<a class="headerlink" href="#brownie-to-ape-migration" title="Link to this heading"></a></h1>
+<h1>Brownie to Ape Migration<a class="headerlink" href="#brownie-to-ape-migration" title="Link to this heading">#</a></h1>
 <p><a class="reference external" href="https://github.com/eth-brownie/brownie#readme">Brownie is no longer actively maintained. The Brownie README directs Python Ethereum developers to Ape Framework.</a> This guide documents a practical migration path for Brownie projects moving to Ape and references <a class="reference external" href="https://github.com/ApeWorX/ape/issues/640">ApeWorX/ape issue #640</a>, which originally tracked Brownie project migration support.</p>
 <section id="imports">
-<h2>Imports<a class="headerlink" href="#imports" title="Link to this heading"></a></h2>
+<h2>Imports<a class="headerlink" href="#imports" title="Link to this heading">#</a></h2>
 <p>Brownie scripts often import accounts, contracts, config, and networks from <code class="docutils literal notranslate"><span class="pre">brownie</span></code>. Migrated Ape scripts import public Ape APIs and access contracts through <code class="docutils literal notranslate"><span class="pre">project</span></code>.</p>
 <p>Brownie:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">brownie</span><span class="w"> </span><span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">SimpleStorage</span><span class="p">,</span> <span class="n">network</span>
@@ -219,7 +219,7 @@ data-aria-dark="Switch to auto color mode">
 </div>
 </section>
 <section id="accounts">
-<h2>Accounts<a class="headerlink" href="#accounts" title="Link to this heading"></a></h2>
+<h2>Accounts<a class="headerlink" href="#accounts" title="Link to this heading">#</a></h2>
 <p>Use <code class="docutils literal notranslate"><span class="pre">accounts.test_accounts</span></code> for local generated accounts and <code class="docutils literal notranslate"><span class="pre">accounts.load()</span></code> for named account aliases. The alias must be imported by the user before live-network use.</p>
 <p>Brownie:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">if</span> <span class="n">network</span><span class="o">.</span><span class="n">show_active</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;development&quot;</span><span class="p">:</span>
@@ -238,7 +238,7 @@ data-aria-dark="Switch to auto color mode">
 <p>Official docs: <a class="reference external" href="./accounts.html">Accounts</a></p>
 </section>
 <section id="contract-deployment-and-transactions">
-<h2>Contract Deployment and Transactions<a class="headerlink" href="#contract-deployment-and-transactions" title="Link to this heading"></a></h2>
+<h2>Contract Deployment and Transactions<a class="headerlink" href="#contract-deployment-and-transactions" title="Link to this heading">#</a></h2>
 <p>Brownie transaction dictionaries become explicit Ape keyword arguments such as <code class="docutils literal notranslate"><span class="pre">sender=</span></code> and <code class="docutils literal notranslate"><span class="pre">value=</span></code>.</p>
 <p>Brownie:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">simple_storage</span> <span class="o">=</span> <span class="n">SimpleStorage</span><span class="o">.</span><span class="n">deploy</span><span class="p">({</span><span class="s2">&quot;from&quot;</span><span class="p">:</span> <span class="n">account</span><span class="p">})</span>
@@ -262,7 +262,7 @@ data-aria-dark="Switch to auto color mode">
 <p>Official docs: <a class="reference external" href="./contracts.html">Contracts</a></p>
 </section>
 <section id="networks">
-<h2>Networks<a class="headerlink" href="#networks" title="Link to this heading"></a></h2>
+<h2>Networks<a class="headerlink" href="#networks" title="Link to this heading">#</a></h2>
 <p>Brownie’s active-network helper maps to Ape’s active provider network metadata.</p>
 <p>Brownie:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The active network is </span><span class="si">{</span><span class="n">network</span><span class="o">.</span><span class="n">show_active</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -275,7 +275,7 @@ data-aria-dark="Switch to auto color mode">
 <p>Official docs: <a class="reference external" href="./networks.html">Networks</a></p>
 </section>
 <section id="testing-and-reverts">
-<h2>Testing and Reverts<a class="headerlink" href="#testing-and-reverts" title="Link to this heading"></a></h2>
+<h2>Testing and Reverts<a class="headerlink" href="#testing-and-reverts" title="Link to this heading">#</a></h2>
 <p>Brownie revert helpers and exceptions map to Ape testing helpers and exceptions.</p>
 <p>Brownie:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">with</span> <span class="n">brownie</span><span class="o">.</span><span class="n">reverts</span><span class="p">(</span><span class="s2">&quot;Ownable: caller is not the owner&quot;</span><span class="p">):</span>
@@ -303,7 +303,7 @@ data-aria-dark="Switch to auto color mode">
 <p>Official docs: <a class="reference external" href="./testing.html">Testing</a></p>
 </section>
 <section id="testing-pytest-fixtures">
-<h2>Testing: pytest Fixtures<a class="headerlink" href="#testing-pytest-fixtures" title="Link to this heading"></a></h2>
+<h2>Testing: pytest Fixtures<a class="headerlink" href="#testing-pytest-fixtures" title="Link to this heading">#</a></h2>
 <p>Ape tests use pytest fixtures from the <code class="docutils literal notranslate"><span class="pre">ape-test</span></code> plugin.
 In Ape, contract types are not injected as pytest fixtures.
 Use the <code class="docutils literal notranslate"><span class="pre">project</span></code> fixture and access contracts as <code class="docutils literal notranslate"><span class="pre">project.ContractName</span></code>.</p>
@@ -367,7 +367,7 @@ Ape does not provide a <code class="docutils literal notranslate"><span class="p
 <p>Official docs: <a class="reference external" href="./testing.html">Testing</a></p>
 </section>
 <section id="config-files">
-<h2>Config Files<a class="headerlink" href="#config-files" title="Link to this heading"></a></h2>
+<h2>Config Files<a class="headerlink" href="#config-files" title="Link to this heading">#</a></h2>
 <p>Brownie configuration values should move into Ape’s <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> structure. Wallet private keys are not copied into config; import an Ape account alias instead with <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">accounts</span> <span class="pre">import</span> <span class="pre">&lt;alias&gt;</span></code> and use <code class="docutils literal notranslate"><span class="pre">accounts.load(&quot;&lt;alias&gt;&quot;)</span></code> from scripts.</p>
 <p>Brownie (<code class="docutils literal notranslate"><span class="pre">brownie-config.yaml</span></code>):</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">dependencies</span><span class="p">:</span>
@@ -398,7 +398,7 @@ Ape does not provide a <code class="docutils literal notranslate"><span class="p
 <p>Official docs: <a class="reference external" href="./config.html">Config</a></p>
 </section>
 <section id="automated-migration-with-apeshift">
-<h2>Automated Migration with ApeShift<a class="headerlink" href="#automated-migration-with-apeshift" title="Link to this heading"></a></h2>
+<h2>Automated Migration with ApeShift<a class="headerlink" href="#automated-migration-with-apeshift" title="Link to this heading">#</a></h2>
 <p>ApeShift applies deterministic Brownie-to-Ape rewrites, validation, reports, and manual-review TODOs.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">npx<span class="w"> </span>codemod<span class="w"> </span>apeshift<span class="w"> </span>-t<span class="w"> </span>./my-brownie-project
 </span></pre></div>
