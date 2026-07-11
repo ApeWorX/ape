@@ -316,6 +316,7 @@ class ContractCache(BaseManager):
         Args:
             address (AddressType): The address to remove from the cache.
         """
+        address = self.conversion_manager.convert(address, AddressType)
         del self.contract_types[address]
         self._delete_proxy(address)
         del self.contract_creations[address]

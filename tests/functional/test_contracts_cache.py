@@ -692,6 +692,22 @@ def test_delete_contract(vyper_contract_instance, chain):
         _ = chain.contracts[vyper_contract_instance.address]
 
 
+def test_delete_contract_normalizes_proxy_info_no_hit(
+    chain, clean_contract_caches, dummy_live_network
+):
+    address = "0x4a986a6dca6dbF99Bc3D17F8d71aFB0D60E740F9"
+    cache = chain.contracts.proxy_infos
+
+    chain.contracts.cache_proxy_info_no_hit(address)
+    assert cache.get_entry(address).exists is True
+    assert cache.get_file(address).is_file()
+
+    del chain.contracts[address.lower()]
+
+    assert cache.get_entry(address).exists is False
+    assert cache.get_file(address).is_file() is False
+
+
 def test_delete_proxy(vyper_contract_instance, chain, ethereum, owner):
     address = vyper_contract_instance.address
     container = _make_minimal_proxy(address=address.lower())
