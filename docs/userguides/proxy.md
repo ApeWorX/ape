@@ -40,6 +40,16 @@ This allows you to still call methods as you normally do on proxy contracts.
 my_contract.my_method(sender=account)
 ```
 
+Ape caches proxy detection results on live networks, including when no proxy is found.
+If an address becomes a proxy after it was previously checked, delete its cached contract data
+before loading it again:
+
+```python
+from ape import chain
+
+del chain.contracts["0x..."]
+```
+
 ## Manual Proxy Configuration
 
 If you need more control over proxy behavior, you can manually specify proxy information when creating contract instances with `ContractContainer.at()`:
