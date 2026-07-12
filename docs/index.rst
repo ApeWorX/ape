@@ -11,6 +11,7 @@
         - contracts
         - brownie-migration
         - testing
+        - contract_tests
         - reverts
         - networks
         - forking_networks
