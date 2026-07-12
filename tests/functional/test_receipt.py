@@ -5,7 +5,7 @@ from eth_utils import to_hex
 from rich.table import Table
 from rich.tree import Tree
 
-from ape.exceptions import ContractLogicError, OutOfGasError
+from ape.exceptions import APINotImplementedError, ContractLogicError, OutOfGasError
 from ape.utils import ManagerAccessMixin
 from ape_ethereum.transactions import DynamicFeeTransaction, Receipt, TransactionStatusEnum
 
@@ -37,6 +37,48 @@ def test_receipt_properties(chain, invoke_receipt):
     assert invoke_receipt.block_number == chain.blocks.head.number
     assert invoke_receipt.timestamp == chain.blocks.head.timestamp
     assert invoke_receipt.datetime == chain.blocks.head.datetime
+
+
+def test_log_submission_uses_next_explorer_for_transaction_url(mocker, invoke_receipt):
+    unsupported = mocker.MagicMock(name="unsupported")
+    unsupported.get_transaction_url.side_effect = APINotImplementedError()
+    supported = mocker.MagicMock(name="supported")
+    supported.get_transaction_url.return_value = "https://explorer.example/tx/0x123"
+    network = invoke_receipt.provider.network
+    original_explorers = network.__dict__.get("explorers")
+    network.__dict__["explorers"] = (unsupported, supported)
+    log = mocker.patch("ape.api.transactions.logger.info")
+
+    try:
+        invoke_receipt._log_submission()
+    finally:
+        if original_explorers is None:
+            network.__dict__.pop("explorers", None)
+        else:
+            network.__dict__["explorers"] = original_explorers
+
+    unsupported.get_transaction_url.assert_called_once_with(invoke_receipt.txn_hash)
+    supported.get_transaction_url.assert_called_once_with(invoke_receipt.txn_hash)
+    log.assert_called_once_with("Submitted https://explorer.example/tx/0x123")
+
+
+def test_log_submission_uses_hash_when_no_explorer_supports_transaction_url(mocker, invoke_receipt):
+    unsupported = mocker.MagicMock(name="unsupported")
+    unsupported.get_transaction_url.side_effect = APINotImplementedError()
+    network = invoke_receipt.provider.network
+    original_explorers = network.__dict__.get("explorers")
+    network.__dict__["explorers"] = (unsupported,)
+    log = mocker.patch("ape.api.transactions.logger.info")
+
+    try:
+        invoke_receipt._log_submission()
+    finally:
+        if original_explorers is None:
+            network.__dict__.pop("explorers", None)
+        else:
+            network.__dict__["explorers"] = original_explorers
+
+    log.assert_called_once_with(f"Submitted {invoke_receipt.txn_hash}")
 
 
 def test_show_trace(trace_print_capture, invoke_receipt):

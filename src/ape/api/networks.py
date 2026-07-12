@@ -611,8 +611,8 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
         data["providers"] = []
         network = self[network_name]
 
-        if network.explorer:
-            data["explorer"] = str(network.explorer.name)
+        if network.explorers:
+            data["explorer"] = str(network.explorers[0].name)
 
         for provider_name in network.providers:
             if provider_filter and provider_name not in provider_filter:
@@ -1034,16 +1034,21 @@ class NetworkAPI(BaseInterfaceModel):
         )
 
     @cached_property
-    def explorer(self) -> "ExplorerAPI | None":
+    def explorers(self) -> tuple["ExplorerAPI", ...]:
         """
-        The block-explorer for the given network.
+        The block-explorers for the given network, in lookup order.
+
+        Sourcify is preferred when installed and supported because it does not
+        require authentication. Otherwise, plugin registration order is preserved.
 
         Returns:
-            :class:`ape.api.explorers.ExplorerAPI`, optional
+            tuple[:class:`ape.api.explorers.ExplorerAPI`, ...]
         """
         chain_id = (
             None if self.network_manager.active_provider is None else self.chain_manager.chain_id
         )
+        explorer_types: list[tuple[str, type[ExplorerAPI]]] = []
+        seen_plugins: set[str] = set()
         for plugin_name, plugin_tuple in self._plugin_explorers:
             ecosystem_name, network_name, explorer_class = plugin_tuple
 
@@ -1055,17 +1060,24 @@ class NetworkAPI(BaseInterfaceModel):
                 and self.name in plugin_config[self.ecosystem.name]
             )
 
-            # Return the first registered explorer (skipping any others)
-            if self.ecosystem.name == ecosystem_name and (
+            is_match = self.ecosystem.name == ecosystem_name and (
                 self.name == network_name or has_explorer_config
-            ):
-                return explorer_class(name=plugin_name, network=self)
-
-            elif chain_id is not None and explorer_class.supports_chain(chain_id):
+            )
+            if not is_match and chain_id is not None:
                 # NOTE: Adhoc networks will likely reach here.
-                return explorer_class(name=plugin_name, network=self)
+                is_match = explorer_class.supports_chain(chain_id)
 
-        return None  # May not have an block explorer
+            if is_match and plugin_name not in seen_plugins:
+                explorer_types.append((plugin_name, explorer_class))
+                seen_plugins.add(plugin_name)
+
+        # Stable-sort Sourcify ahead of the existing plugin registration order.
+        explorer_types.sort(key=lambda item: item[0].lower() != "sourcify")
+        explorers = tuple(
+            explorer_class(name=plugin_name, network=self)
+            for plugin_name, explorer_class in explorer_types
+        )
+        return explorers
 
     @property
     def _plugin_explorers(self) -> list[tuple]:
@@ -1390,11 +1402,12 @@ class NetworkAPI(BaseInterfaceModel):
         Args:
             address (:class:`~ape.types.address.AddressType`): The address of the contract.
         """
-        if not self.explorer:
+        if not self.explorers:
             raise NetworkError("Unable to publish contract - no explorer plugin installed.")
 
-        logger.info(f"Publishing and verifying contract using '{self.explorer.name}'.")
-        self.explorer.publish_contract(address)
+        explorer = self.explorers[0]
+        logger.info(f"Publishing and verifying contract using '{explorer.name}'.")
+        explorer.publish_contract(address)
 
     def verify_chain_id(self, chain_id: int):
         """

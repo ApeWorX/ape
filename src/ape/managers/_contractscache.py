@@ -454,7 +454,7 @@ class ContractCache(BaseManager):
         if not contract_type:
             # Create error message from custom exception cls.
             err = ContractNotFoundError(
-                address, self.provider.network.explorer is not None, self.provider.network_choice
+                address, bool(self.provider.network.explorers), self.provider.network_choice
             )
             # Must raise KeyError.
             raise KeyError(str(err))
@@ -825,7 +825,7 @@ class ContractCache(BaseManager):
         if not contract_type:
             raise ContractNotFoundError(
                 contract_address,
-                self.provider.network.explorer is not None,
+                bool(self.provider.network.explorers),
                 self.provider.network_choice,
             )
 
@@ -922,45 +922,44 @@ class ContractCache(BaseManager):
         self.deployments.clear_local()
 
     def _get_contract_type_from_explorer(self, address: AddressType) -> ContractType | None:
-        if not self.provider.network.explorer:
-            return None
+        for explorer in self.provider.network.explorers:
+            try:
+                contract_type = explorer.get_contract_type(address)
+            except Exception as err:
+                if "rate limit" in str(err).lower():
+                    # Don't show any additional error message during rate limit errors,
+                    # if it can be helped, as it may scare users into thinking their
+                    # contracts are not verified.
+                    message = str(err)
+                else:
+                    # Carefully word this message in a way that doesn't hint at
+                    # any one specific reason, such as un-verified source code,
+                    # which is potentially a scare for users.
+                    message = (
+                        f"Attempted to retrieve contract type from explorer '{explorer.name}' "
+                        f"from address '{address}' but encountered an exception: {err}\n"
+                    )
 
-        try:
-            contract_type = self.provider.network.explorer.get_contract_type(address)
-        except Exception as err:
-            explorer_name = self.provider.network.explorer.name
-            if "rate limit" in str(err).lower():
-                # Don't show any additional error message during rate limit errors,
-                # if it can be helped, as it may scare users into thinking their
-                # contracts are not verified.
-                message = str(err)
-            else:
-                # Carefully word this message in a way that doesn't hint at
-                # any one specific reason, such as un-verified source code,
-                # which is potentially a scare for users.
-                message = (
-                    f"Attempted to retrieve contract type from explorer '{explorer_name}' "
-                    f"from address '{address}' but encountered an exception: {err}\n"
-                )
+                logger.error(message)
+                continue
 
-            logger.error(message)
-            return None
+            if not contract_type:
+                continue
 
-        if contract_type:
             # Cache contract so faster look-up next time.
             if not isinstance(contract_type, ContractType):
-                explorer_name = self.provider.network.explorer.name
                 wrong_type = type(contract_type)
                 wrong_type_str = getattr(wrong_type, "__name__", f"{wrong_type}")
                 logger.warning(
-                    f"Explorer '{explorer_name}' returned unexpected "
+                    f"Explorer '{explorer.name}' returned unexpected "
                     f"type '{wrong_type_str}' ContractType."
                 )
-                return None
+                continue
 
             self.contract_types[address] = contract_type
+            return contract_type
 
-        return contract_type
+        return None
 
 
 def _get_combined_contract_type(

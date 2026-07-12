@@ -1,3 +1,5 @@
+from unittest import mock
+
 import pytest
 from ethpm_types import ContractType
 
@@ -87,7 +89,7 @@ def test_instance_at_uses_given_contract_type_when_retrieval_fails(mocker, chain
 
 @explorer_test
 def test_instance_at_contract_type_not_found_local_network(chain, eth_tester_provider):
-    eth_tester_provider.network.__dict__["explorer"] = None
+    eth_tester_provider.network.__dict__["explorers"] = ()
     new_address = "0x4a986a6dca6dbF99Bc3D17F8d71aFB0D60E740F9"
     expected = rf"Failed to get contract type for address '{new_address}'."
     with pytest.raises(ContractNotFoundError, match=expected):
@@ -96,7 +98,7 @@ def test_instance_at_contract_type_not_found_local_network(chain, eth_tester_pro
 
 @explorer_test
 def test_instance_at_contract_type_not_found_live_network(chain, eth_tester_provider):
-    eth_tester_provider.network.__dict__["explorer"] = None
+    eth_tester_provider.network.__dict__["explorers"] = ()
     real_name = eth_tester_provider.network.name
     eth_tester_provider.network.name = "sepolia"
     try:
@@ -260,7 +262,7 @@ def test_cache_default_contract_type_when_used(solidity_contract_instance, chain
 
 @explorer_test
 def test_contracts_getitem_contract_not_found(chain, eth_tester_provider):
-    eth_tester_provider.network.__dict__["explorer"] = None
+    eth_tester_provider.network.__dict__["explorers"] = ()
     new_address = "0x4a986a6dca6dbF99Bc3D17F8d71aFB0D60E740F9"
     real_name = eth_tester_provider.network.name
     eth_tester_provider.network.name = "sepolia"
@@ -441,15 +443,130 @@ def test_get_attempts_explorer(
     with create_mock_sepolia() as network:
         del chain.contracts[contract.address]
         mock_explorer.get_contract_type.side_effect = get_contract_type
-        network.__dict__["explorer"] = mock_explorer
+        network.__dict__["explorers"] = (mock_explorer,)
         try:
             actual = chain.contracts.get(contract.address, detect_proxy=False)
         finally:
-            network.__dict__["explorer"] = None
+            network.__dict__["explorers"] = ()
 
         assert actual == contract.contract_type
         assert mock_explorer.get_contract_type.call_count > 0
         mock_explorer.get_contract_type.reset_mock()
+
+
+@explorer_test
+def test_get_attempts_explorer_fallback_and_caches(
+    mocker, create_mock_sepolia, chain, owner, minimal_proxy_container
+):
+    contract = owner.deploy(minimal_proxy_container)
+    sourcify = mocker.MagicMock(name="sourcify")
+    sourcify.name = "sourcify"
+    sourcify.get_contract_type.return_value = None
+    etherscan = mocker.MagicMock(name="etherscan")
+    etherscan.name = "etherscan"
+    etherscan.get_contract_type.return_value = contract.contract_type
+
+    with create_mock_sepolia() as network:
+        del chain.contracts[contract.address]
+        network.__dict__.pop("explorers", None)
+        mocker.patch(
+            "ape.api.networks.NetworkAPI.explorers",
+            new_callable=mock.PropertyMock,
+            return_value=(sourcify, etherscan),
+        )
+        actual = chain.contracts.get(contract.address, detect_proxy=False)
+        cached = chain.contracts.get(contract.address, detect_proxy=False)
+
+    assert actual == cached == contract.contract_type
+    sourcify.get_contract_type.assert_called_once_with(contract.address)
+    etherscan.get_contract_type.assert_called_once_with(contract.address)
+
+
+@explorer_test
+def test_get_attempts_explorer_fallback_after_error(
+    mocker,
+    create_mock_sepolia,
+    chain,
+    owner,
+    minimal_proxy_container,
+    ape_caplog,
+):
+    contract = owner.deploy(minimal_proxy_container)
+    sourcify = mocker.MagicMock(name="sourcify")
+    sourcify.name = "sourcify"
+    sourcify.get_contract_type.side_effect = ValueError("Sourcify unavailable")
+    etherscan = mocker.MagicMock(name="etherscan")
+    etherscan.name = "etherscan"
+    etherscan.get_contract_type.return_value = contract.contract_type
+
+    with create_mock_sepolia() as network:
+        del chain.contracts[contract.address]
+        network.__dict__.pop("explorers", None)
+        mocker.patch(
+            "ape.api.networks.NetworkAPI.explorers",
+            new_callable=mock.PropertyMock,
+            return_value=(sourcify, etherscan),
+        )
+        actual = chain.contracts.get(contract.address, detect_proxy=False)
+
+    assert actual == contract.contract_type
+    assert "explorer 'sourcify'" in ape_caplog.head
+    assert "Sourcify unavailable" in ape_caplog.head
+    sourcify.get_contract_type.assert_called_once_with(contract.address)
+    etherscan.get_contract_type.assert_called_once_with(contract.address)
+
+
+@explorer_test
+def test_get_attempts_explorer_stops_after_first_success(
+    mocker, create_mock_sepolia, chain, owner, minimal_proxy_container
+):
+    contract = owner.deploy(minimal_proxy_container)
+    sourcify = mocker.MagicMock(name="sourcify")
+    sourcify.name = "sourcify"
+    sourcify.get_contract_type.return_value = contract.contract_type
+    etherscan = mocker.MagicMock(name="etherscan")
+    etherscan.name = "etherscan"
+
+    with create_mock_sepolia() as network:
+        del chain.contracts[contract.address]
+        network.__dict__.pop("explorers", None)
+        mocker.patch(
+            "ape.api.networks.NetworkAPI.explorers",
+            new_callable=mock.PropertyMock,
+            return_value=(sourcify, etherscan),
+        )
+        actual = chain.contracts.get(contract.address, detect_proxy=False)
+
+    assert actual == contract.contract_type
+    sourcify.get_contract_type.assert_called_once_with(contract.address)
+    etherscan.get_contract_type.assert_not_called()
+
+
+@explorer_test
+def test_get_attempts_explorer_all_miss(
+    mocker, create_mock_sepolia, chain, owner, minimal_proxy_container
+):
+    contract = owner.deploy(minimal_proxy_container)
+    sourcify = mocker.MagicMock(name="sourcify")
+    sourcify.name = "sourcify"
+    sourcify.get_contract_type.return_value = None
+    etherscan = mocker.MagicMock(name="etherscan")
+    etherscan.name = "etherscan"
+    etherscan.get_contract_type.return_value = None
+
+    with create_mock_sepolia() as network:
+        del chain.contracts[contract.address]
+        network.__dict__.pop("explorers", None)
+        mocker.patch(
+            "ape.api.networks.NetworkAPI.explorers",
+            new_callable=mock.PropertyMock,
+            return_value=(sourcify, etherscan),
+        )
+        actual = chain.contracts.get(contract.address, detect_proxy=False)
+
+    assert actual is None
+    sourcify.get_contract_type.assert_called_once_with(contract.address)
+    etherscan.get_contract_type.assert_called_once_with(contract.address)
 
 
 @explorer_test
@@ -473,11 +590,11 @@ def test_get_attempts_explorer_logs_errors_from_explorer(
     with create_mock_sepolia() as network:
         del chain.contracts[contract.address]
         mock_explorer.get_contract_type.side_effect = get_contract_type
-        network.__dict__["explorer"] = mock_explorer
+        network.__dict__["explorers"] = (mock_explorer,)
         try:
             actual = chain.contracts.get(contract.address, detect_proxy=False)
         finally:
-            network.__dict__["explorer"] = None
+            network.__dict__["explorers"] = ()
 
         assert expected_log in ape_caplog.head
         assert actual is None
@@ -505,12 +622,12 @@ def test_get_attempts_explorer_logs_rate_limit_error_from_explorer(
         del chain.contracts[contract.address]
 
         mock_explorer.get_contract_type.side_effect = get_contract_type
-        network.__dict__["explorer"] = mock_explorer
+        network.__dict__["explorers"] = (mock_explorer,)
         try:
             with logger.at_level(LogLevel.INFO):
                 actual = chain.contracts.get(contract.address, detect_proxy=False)
         finally:
-            network.__dict__["explorer"] = None
+            network.__dict__["explorers"] = ()
 
         assert check_error_str in ape_caplog.head
         assert actual is None
@@ -536,7 +653,7 @@ def test_get_proxy(chain, owner, minimal_proxy_container, vyper_contract_instanc
         del chain.contracts[placeholder]
 
     minimal_proxy = owner.deploy(minimal_proxy_container, sender=owner)
-    chain.provider.network.__dict__["explorer"] = None  # Ensure no explorer, messes up test.
+    chain.provider.network.__dict__["explorers"] = ()  # Ensure no explorer, messes up test.
 
     actual = chain.contracts.get(minimal_proxy.address)
     assert actual == minimal_proxy.contract_type
@@ -551,7 +668,7 @@ def test_get_proxy_implementation_missing(chain, owner, project):
 
     proxy_container = _make_minimal_proxy(placeholder.address)
     minimal_proxy = owner.deploy(proxy_container, sender=owner)
-    chain.provider.network.__dict__["explorer"] = None  # Ensure no explorer, messes up test.
+    chain.provider.network.__dict__["explorers"] = ()  # Ensure no explorer, messes up test.
 
     if minimal_proxy.address in chain.contracts:
         # Delete the proxy but make sure it does not delete the implementation!
@@ -569,7 +686,7 @@ def test_get_proxy_pass_proxy_info(chain, owner, minimal_proxy_container, ethere
         del chain.contracts[placeholder]
 
     minimal_proxy = owner.deploy(minimal_proxy_container, sender=owner)
-    chain.provider.network.__dict__["explorer"] = None  # Ensure no explorer, messes up test.
+    chain.provider.network.__dict__["explorers"] = ()  # Ensure no explorer, messes up test.
     info = ethereum.get_proxy_info(minimal_proxy.address)
     assert info
 
@@ -592,7 +709,7 @@ def test_get_proxy_pass_proxy_info_and_no_explorer(
     Tests the condition of both passing `proxy_info=` and setting `use_explorer=False`
     when getting the ContractType of a proxy.
     """
-    explorer = dummy_live_network_with_explorer.explorer
+    explorer = dummy_live_network_with_explorer.explorers[0]
     placeholder = "0xBEbeBeBEbeBebeBeBEBEbebEBeBeBebeBeBebebe"
     if placeholder in chain.contracts:
         del chain.contracts[placeholder]
