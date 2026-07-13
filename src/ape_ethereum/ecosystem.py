@@ -285,10 +285,25 @@ class BaseEthereumConfig(PluginConfig):
     @computed_field  # type: ignore[misc]
     @cached_property
     def local(self) -> NetworkConfig:
-        return create_local_network_config(
+        default_config = create_local_network_config(
             default_provider="test",
             default_transaction_type=self.DEFAULT_TRANSACTION_TYPE,
             gas_limit=self.DEFAULT_LOCAL_GAS_LIMIT,
+        )
+        configured_local: dict[str, Any] | NetworkConfig | None = PluginConfig.get(
+            self, LOCAL_NETWORK_NAME
+        )
+        if configured_local is None:
+            return default_config
+
+        if isinstance(configured_local, NetworkConfig):
+            configured_local = configured_local.model_dump(by_alias=True)
+
+        if not isinstance(configured_local, dict):
+            return default_config
+
+        return NetworkConfig.model_validate(
+            merge_configs(default_config.model_dump(by_alias=True), configured_local)
         )
 
     @only_raise_attribute_error

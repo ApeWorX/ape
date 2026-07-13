@@ -477,7 +477,7 @@ class ContractCache(BaseManager):
             contract types.
         """
         if not addresses:
-            logger.warning("No addresses provided.")
+            logger.debug("No addresses provided.")
             return {}
 
         def get_contract_type(addr: AddressType):
@@ -485,7 +485,7 @@ class ContractCache(BaseManager):
             ct = self.get(addr)
 
             if not ct:
-                logger.warning(f"Failed to locate contract at '{addr}'.")
+                logger.debug(f"Failed to locate contract at '{addr}'.")
                 return addr, None
             else:
                 return addr, ct
@@ -661,7 +661,7 @@ class ContractCache(BaseManager):
             self.contract_types[address] = proxy_contract_type
             return proxy_contract_type
 
-        logger.warning(f"Unable to determine the ContractType for the proxy at '{address}'.")
+        logger.debug(f"Unable to determine the ContractType for the proxy at '{address}'.")
         return None
 
     def _get_contract_type(
