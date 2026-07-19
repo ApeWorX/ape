@@ -230,8 +230,19 @@ class ContractMethodHandler(ManagerAccessMixin):
 
         return "\n\n".join(numeric_infos)
 
+    def _can_encode(self, abi: "MethodABI", args: tuple | list) -> bool:
+        # Probe whether args encode against this overload's input types. Used only to pick
+        # among same-arity overloads; encoding is pure (no network), and a conversion or
+        # encoding failure means the args do not fit this overload.
+        try:
+            arguments = self.conversion_manager.convert_method_args(abi, args)
+            self.provider.network.ecosystem.encode_calldata(abi, *arguments)
+        except Exception:
+            return False
+        return True
+
     def encode_input(self, *args) -> HexBytes:
-        selected_abi = _select_method_abi(self.abis, args)
+        selected_abi = _select_method_abi(self.abis, args, encode_check=self._can_encode)
         arguments = self.conversion_manager.convert_method_args(selected_abi, args)
         ecosystem = self.provider.network.ecosystem
         encoded_calldata = ecosystem.encode_calldata(selected_abi, *arguments)
@@ -293,7 +304,7 @@ class ContractMethodHandler(ManagerAccessMixin):
 class ContractCallHandler(ContractMethodHandler):
     def __call__(self, *args, **kwargs) -> Any:
         self._validate_is_contract()
-        selected_abi = _select_method_abi(self.abis, args)
+        selected_abi = _select_method_abi(self.abis, args, encode_check=self._can_encode)
         arguments = self.conversion_manager.convert_method_args(selected_abi, args)
 
         return ContractCall(
@@ -347,23 +358,31 @@ class ContractCallHandler(ContractMethodHandler):
             reported in the fee-currency's smallest unit, e.g. Wei.
         """
 
-        selected_abi = _select_method_abi(self.abis, args)
+        selected_abi = _select_method_abi(self.abis, args, encode_check=self._can_encode)
         arguments = self.conversion_manager.convert_method_args(selected_abi, args)
         return self.transact.estimate_gas_cost(*arguments, **kwargs)
 
 
-def _select_method_abi(abis: list["MethodABI"], args: tuple | list) -> "MethodABI":
+def _select_method_abi(
+    abis: list["MethodABI"],
+    args: tuple | list,
+    encode_check: "Callable[[MethodABI, tuple | list], bool] | None" = None,
+) -> "MethodABI":
     args = args or []
-    selected_abi = None
-    for abi in abis:
-        inputs = abi.inputs or []
-        if len(args) == len(inputs):
-            selected_abi = abi
-
-    if not selected_abi:
+    matching_abis = [abi for abi in abis if len(abi.inputs or []) == len(args)]
+    if not matching_abis:
         raise ArgumentsLengthError(len(args), inputs=abis)
 
-    return selected_abi
+    # When overloads share the same argument count, the count alone cannot tell them apart.
+    # Prefer the overload whose input types the given args actually encode to, so e.g. a list
+    # selects getUpdateFee(bytes[]) over getUpdateFee(uint256) (#2670). Fall back to the last
+    # match (the prior behavior) when there is a single candidate, no probe, or none fits.
+    if len(matching_abis) > 1 and encode_check is not None:
+        for abi in matching_abis:
+            if encode_check(abi, args):
+                return abi
+
+    return matching_abis[-1]
 
 
 class ContractTransaction(ManagerAccessMixin):
@@ -455,7 +474,7 @@ class ContractTransactionHandler(ContractMethodHandler):
             int: The estimated cost of gas to execute the transaction
             reported in the fee-currency's smallest unit, e.g. Wei.
         """
-        selected_abi = _select_method_abi(self.abis, args)
+        selected_abi = _select_method_abi(self.abis, args, encode_check=self._can_encode)
         arguments = self.conversion_manager.convert_method_args(selected_abi, args)
         txn = self.as_transaction(*arguments, **kwargs)
         return self.provider.estimate_gas_cost(txn)
@@ -480,7 +499,7 @@ class ContractTransactionHandler(ContractMethodHandler):
 
     def _as_transaction(self, *args) -> ContractTransaction:
         self._validate_is_contract()
-        selected_abi = _select_method_abi(self.abis, args)
+        selected_abi = _select_method_abi(self.abis, args, encode_check=self._can_encode)
         return ContractTransaction(
             abi=selected_abi,
             address=self.contract.address,

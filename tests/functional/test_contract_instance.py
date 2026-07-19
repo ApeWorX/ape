@@ -874,6 +874,47 @@ def test_encode_input_transaction(contract_instance, calldata):
     assert actual == expected
 
 
+def test_encode_input_overloaded_selects_convertible_overload(eth_tester_provider, chain):
+    # Regression for #2670: when overloads share the same argument count, the arg count
+    # cannot tell them apart. An empty list is convertible to bytes[] but not uint256, so
+    # the bytes[] overload must be selected rather than the last-declared one. Encoding is
+    # pure (no deploy), so a hand-crafted ABI at an arbitrary address exercises the path.
+    ecosystem = eth_tester_provider.network.ecosystem
+    bytes_input = {
+        "type": "function",
+        "name": "getUpdateFee",
+        "stateMutability": "view",
+        "inputs": [{"name": "updateData", "type": "bytes[]"}],
+        "outputs": [{"name": "", "type": "uint256"}],
+    }
+    uint_input = {
+        "type": "function",
+        "name": "getUpdateFee",
+        "stateMutability": "view",
+        "inputs": [{"name": "updateDataSize", "type": "uint256"}],
+        "outputs": [{"name": "", "type": "uint256"}],
+    }
+
+    def selector_for(handler):
+        bytes_abi = next(a for a in handler.abis if a.inputs[0].canonical_type == "bytes[]")
+        return ecosystem.get_method_selector(bytes_abi)
+
+    # Both declaration orders must resolve to the bytes[] overload for a list argument.
+    for order, address in (
+        ([bytes_input, uint_input], "0x8250f4aF4B972684F7b336503E2D6dFeDeB1487a"),
+        ([uint_input, bytes_input], "0x1111111111111111111111111111111111111111"),
+    ):
+        contract = chain.contracts.instance_at(
+            address,
+            abi=order,
+            detect_proxy=False,
+            fetch_from_explorer=False,
+            fetch_from_disk=False,
+        )
+        calldata = contract.getUpdateFee.encode_input([])
+        assert calldata[:4] == selector_for(contract.getUpdateFee)
+
+
 def test_decode_input_call(contract_instance, calldata):
     method = contract_instance.setNumber.call
     actual = method.decode_input(calldata)
