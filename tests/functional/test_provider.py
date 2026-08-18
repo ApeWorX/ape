@@ -585,6 +585,44 @@ def test_base_fee(eth_tester_provider):
     assert "baseFeePerGas" in actual
 
 
+def test_send_call_when_base_fee_exceeds_1_gwei(eth_tester_provider, owner, ethereum):
+    """
+    View eth_call on ethereum:local:test must still work after the block
+    base fee exceeds eth-tester's hardcoded 1 gwei max_fee_per_gas default.
+    """
+    one_gwei = 10**9
+
+    # Empty mined blocks lower the fee; fill a block so EIP-1559 raises it.
+    # Initcode expands memory far enough that gas_used exceeds the EIP-1559 target.
+    # Use latest (the block eth_call validates against), not pending.
+    for _ in range(8):
+        if eth_tester_provider.get_block("latest").base_fee > one_gwei:
+            break
+
+        burn = ethereum.create_transaction(
+            sender=owner.address,
+            # PUSH3 0x316200 MLOAD POP STOP — ~20M gas via memory expansion
+            data=b"\x62\x31\x62\x00\x51\x50\x00",
+            gas_limit=eth_tester_provider.max_gas,
+            raise_on_revert=False,
+        )
+        owner.call(burn)
+    else:
+        pytest.fail("Could not raise latest base fee above 1 gwei")
+
+    assert eth_tester_provider.get_block("latest").base_fee > one_gwei
+
+    # Stale 1 gwei max fee, same default eth-tester applies when fee fields are dropped.
+    txn = ethereum.create_transaction(
+        sender=owner.address,
+        receiver=owner.address,
+        max_fee=one_gwei,
+        max_priority_fee=0,
+    )
+    result = eth_tester_provider.send_call(txn)
+    assert result == HexBytes("0x")
+
+
 def test_has_poa_history_block_data(mock_web3, ethereum, eth_tester_provider):
     class PluginProvider(EthereumNodeProvider):
         pass

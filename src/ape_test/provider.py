@@ -316,7 +316,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         **kwargs,
     ) -> HexBytes:
         # NOTE: Using JSON mode since used as request data.
-        data = txn.model_dump(mode="json", exclude_none=True)
+        data = txn.model_dump(by_alias=True, mode="json", exclude_none=True)
 
         state = kwargs.pop("state_override", None)
         call_kwargs: dict = {"block_identifier": block_id, "state_override": state}
@@ -328,6 +328,11 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         data.pop("maxFeePerGas", None)
         data.pop("maxPriorityFeePerGas", None)
         data.pop("signature", None)
+
+        # eth-tester hardcodes max_fee_per_gas=1e9 when fee fields are absent.
+        # Both dynamic-fee keys are required so the backend builds a type-2 call.
+        data["maxFeePerGas"] = self._get_last_base_fee()
+        data["maxPriorityFeePerGas"] = self.priority_fee
 
         tx_params = cast(TxParams, data)
         vm_err = None
