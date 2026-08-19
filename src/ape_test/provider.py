@@ -536,6 +536,14 @@ class LocalProvider(TestProviderAPI, Web3Provider):
 
         raise APINotImplementedError("No base fee found in block.")
 
+    def _block_number_for_backend(self, block_id: "BlockID"):
+        # eth-tester get_block_by_number accepts tags or int, not hex strings.
+        if isinstance(block_id, str) and is_0x_prefixed(block_id):
+            return int(block_id, 16)
+        if isinstance(block_id, str) and block_id.isnumeric():
+            return int(block_id)
+        return block_id
+
     def _get_call_max_fee(self, block_id: "BlockID | None" = None) -> int:
         """A max fee that satisfies eth-tester eth_call at ``block_id``.
 
@@ -547,7 +555,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             if bid is None:
                 continue
             try:
-                fee = self.evm_backend.get_block_by_number(bid).get("base_fee_per_gas")
+                fee = self.evm_backend.get_block_by_number(self._block_number_for_backend(bid)).get("base_fee_per_gas")
             except Exception:
                 continue
             if fee is not None:

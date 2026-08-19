@@ -607,6 +607,26 @@ def test_send_call_when_pending_base_fee_is_below_latest(eth_tester_provider, ow
     assert eth_tester_provider.send_call(txn) == HexBytes("0x")
 
 
+def test_send_call_when_historical_hex_block_id_has_higher_base_fee(eth_tester_provider, owner, ethereum):
+    # eth_call at a hex block_id must cover that historical block base fee.
+    owner.transfer(owner, 1)
+    block_id = eth_tester_provider.get_block("latest").number
+    hist = eth_tester_provider.get_block(block_id).base_fee
+    owner.transfer(owner, 1)
+    latest = eth_tester_provider.get_block("latest").base_fee
+    if latest >= hist:
+        pytest.skip("latest base fee did not drop below historical")
+
+    txn = ethereum.create_transaction(
+        sender=owner.address,
+        receiver=owner.address,
+        max_fee=10**9,
+        max_priority_fee=0,
+    )
+    assert eth_tester_provider.send_call(txn, block_id=block_id) == HexBytes("0x")
+    assert eth_tester_provider.send_call(txn, block_id=to_hex(block_id)) == HexBytes("0x")
+
+
 def test_send_call_when_base_fee_exceeds_1_gwei(eth_tester_provider, owner, ethereum):
     """
     View eth_call on ethereum:local:test must still work after the block
