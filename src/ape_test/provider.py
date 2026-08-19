@@ -331,7 +331,10 @@ class LocalProvider(TestProviderAPI, Web3Provider):
 
         # eth-tester hardcodes max_fee_per_gas=1e9 when fee fields are absent.
         # Both dynamic-fee keys are required so the backend builds a type-2 call.
-        data["maxFeePerGas"] = self._get_last_base_fee()
+        # eth_call validates against the requested block (default latest). Pending
+        # can be lower than latest after genesis or empty blocks, so last/pending
+        # alone is too tight.
+        data["maxFeePerGas"] = self._get_call_max_fee(block_id)
         data["maxPriorityFeePerGas"] = self.priority_fee
 
         tx_params = cast(TxParams, data)
@@ -532,6 +535,25 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             return base_fee
 
         raise APINotImplementedError("No base fee found in block.")
+
+    def _get_call_max_fee(self, block_id: "BlockID | None" = None) -> int:
+        """A max fee that satisfies eth-tester eth_call at ``block_id``.
+
+        Validation uses the requested block's base fee (latest when omitted).
+        Pending can be below that after genesis or empty blocks.
+        """
+        fees: list[int] = []
+        for bid in (block_id, "latest", "pending"):
+            if bid is None:
+                continue
+            try:
+                fee = self.evm_backend.get_block_by_number(bid).get("base_fee_per_gas")
+            except Exception:
+                continue
+            if fee is not None:
+                fees.append(fee)
+
+        return max(fees) if fees else self._get_last_base_fee()
 
     def get_transaction_trace(self, transaction_hash: str, **kwargs) -> "TraceAPI":
         if "call_trace_approach" not in kwargs:
