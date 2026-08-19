@@ -20,6 +20,8 @@ from ape.exceptions import (
     ProviderNotConnectedError,
     SignatureError,
 )
+from ape.logging import LogLevel
+from ape.managers.converters import ConversionManager
 from ape.types.address import AddressType
 from ape_ethereum.transactions import TransactionStatusEnum, TransactionType
 
@@ -874,45 +876,138 @@ def test_encode_input_transaction(contract_instance, calldata):
     assert actual == expected
 
 
-def test_encode_input_overloaded_selects_convertible_overload(eth_tester_provider, chain):
-    # Regression for #2670: when overloads share the same argument count, the arg count
-    # cannot tell them apart. An empty list is convertible to bytes[] but not uint256, so
-    # the bytes[] overload must be selected rather than the last-declared one. Encoding is
-    # pure (no deploy), so a hand-crafted ABI at an arbitrary address exercises the path.
-    ecosystem = eth_tester_provider.network.ecosystem
-    bytes_input = {
-        "type": "function",
-        "name": "getUpdateFee",
-        "stateMutability": "view",
-        "inputs": [{"name": "updateData", "type": "bytes[]"}],
-        "outputs": [{"name": "", "type": "uint256"}],
-    }
-    uint_input = {
-        "type": "function",
-        "name": "getUpdateFee",
-        "stateMutability": "view",
-        "inputs": [{"name": "updateDataSize", "type": "uint256"}],
-        "outputs": [{"name": "", "type": "uint256"}],
-    }
+BYTES_ARRAY_OVERLOAD = [{"name": "updateData", "type": "bytes[]"}]
+UINT_OVERLOAD = [{"name": "updateDataSize", "type": "uint256"}]
+INT_OVERLOAD = [{"name": "updateDataSize", "type": "int256"}]
 
-    def selector_for(handler):
-        bytes_abi = next(a for a in handler.abis if a.inputs[0].canonical_type == "bytes[]")
-        return ecosystem.get_method_selector(bytes_abi)
 
-    # Both declaration orders must resolve to the bytes[] overload for a list argument.
-    for order, address in (
-        ([bytes_input, uint_input], "0x8250f4aF4B972684F7b336503E2D6dFeDeB1487a"),
-        ([uint_input, bytes_input], "0x1111111111111111111111111111111111111111"),
-    ):
-        contract = chain.contracts.instance_at(
+@pytest.fixture
+def overloaded_contract(chain):
+    # Overload selection happens at encode time, which is pure, so a hand-crafted ABI at an
+    # arbitrary address exercises it without deploying anything. Each call needs its own
+    # address because instance_at caches by address.
+    def make(overloads, address):
+        abi = [
+            {
+                "type": "function",
+                "name": "getUpdateFee",
+                "stateMutability": "view",
+                "inputs": inputs,
+                "outputs": [{"name": "", "type": "uint256"}],
+            }
+            for inputs in overloads
+        ]
+        return chain.contracts.instance_at(
             address,
-            abi=order,
+            abi=abi,
             detect_proxy=False,
             fetch_from_explorer=False,
             fetch_from_disk=False,
         )
-        calldata = contract.getUpdateFee.encode_input([])
-        assert calldata[:4] == selector_for(contract.getUpdateFee)
+
+    return make
+
+
+def selector_for(ecosystem, handler, canonical_type):
+    abi = next(a for a in handler.abis if a.inputs[0].canonical_type == canonical_type)
+    return ecosystem.get_method_selector(abi)
+
+
+def test_encode_input_overloaded_selects_convertible_overload(
+    eth_tester_provider, overloaded_contract
+):
+    # Regression for #2670: when overloads share the same argument count, the arg count
+    # cannot tell them apart. An empty list is convertible to bytes[] but not uint256, so
+    # the bytes[] overload must be selected rather than the last-declared one.
+    ecosystem = eth_tester_provider.network.ecosystem
+
+    # Both declaration orders must resolve to the bytes[] overload for a list argument.
+    for overloads, address in (
+        ([BYTES_ARRAY_OVERLOAD, UINT_OVERLOAD], "0x8250f4aF4B972684F7b336503E2D6dFeDeB1487a"),
+        ([UINT_OVERLOAD, BYTES_ARRAY_OVERLOAD], "0x1111111111111111111111111111111111111111"),
+    ):
+        handler = overloaded_contract(overloads, address).getUpdateFee
+        calldata = handler.encode_input([])
+        assert calldata[:4] == selector_for(ecosystem, handler, "bytes[]")
+
+
+def test_encode_input_overloaded_ambiguous_picks_first_declared(
+    eth_tester_provider, overloaded_contract
+):
+    # 1 encodes against both uint256 and int256, so the probe cannot separate them and
+    # selection falls back on declaration order. That choice is arbitrary, but it has to
+    # stay stable, so pin it.
+    ecosystem = eth_tester_provider.network.ecosystem
+
+    for overloads, address in (
+        ([UINT_OVERLOAD, INT_OVERLOAD], "0x2222222222222222222222222222222222222222"),
+        ([INT_OVERLOAD, UINT_OVERLOAD], "0x3333333333333333333333333333333333333333"),
+    ):
+        handler = overloaded_contract(overloads, address).getUpdateFee
+        first_declared = overloads[0][0]["type"]
+        calldata = handler.encode_input(1)
+        assert calldata[:4] == selector_for(ecosystem, handler, first_declared)
+
+
+def test_encode_input_overloaded_out_of_bounds_value(eth_tester_provider, overloaded_contract):
+    # A value that converts fine but is too wide for an overload's type fails at encode time
+    # rather than conversion time, and that is still a no-match, not an error.
+    ecosystem = eth_tester_provider.network.ecosystem
+    small_overload = [{"name": "updateDataSize", "type": "uint8"}]
+    handler = overloaded_contract(
+        [small_overload, UINT_OVERLOAD], "0x7777777777777777777777777777777777777777"
+    ).getUpdateFee
+
+    calldata = handler.encode_input(999999)
+
+    assert calldata[:4] == selector_for(ecosystem, handler, "uint256")
+
+
+def test_encode_input_overloaded_struct_field_mismatch(eth_tester_provider, overloaded_contract):
+    # A dict that is missing an overload's struct fields means the args do not fit that
+    # overload, same as a conversion failure, so the probe must treat it as a no-match
+    # rather than letting the error escape.
+    ecosystem = eth_tester_provider.network.ecosystem
+    ab_struct = [
+        {
+            "name": "data",
+            "type": "tuple",
+            "components": [{"name": "a", "type": "uint256"}, {"name": "b", "type": "uint256"}],
+        }
+    ]
+    x_struct = [{"name": "data", "type": "tuple", "components": [{"name": "x", "type": "uint256"}]}]
+    handler = overloaded_contract(
+        [ab_struct, x_struct], "0x4444444444444444444444444444444444444444"
+    ).getUpdateFee
+
+    calldata = handler.encode_input({"x": 1})
+
+    assert calldata[:4] == selector_for(ecosystem, handler, "(uint256)")
+
+
+def test_can_encode_propagates_unexpected_errors(mocker, eth_tester_provider, overloaded_contract):
+    # The probe only means "these args do not fit this overload". A bug inside conversion is
+    # not that, so it must surface instead of being read as a failed match.
+    handler = overloaded_contract(
+        [BYTES_ARRAY_OVERLOAD, UINT_OVERLOAD], "0x5555555555555555555555555555555555555555"
+    ).getUpdateFee
+    mocker.patch.object(ConversionManager, "convert_method_args", side_effect=RuntimeError("boom"))
+
+    with pytest.raises(RuntimeError, match="boom"):
+        handler._can_encode(handler.abis[0], ([],))
+
+
+def test_can_encode_logs_probe_failure(eth_tester_provider, overloaded_contract, ape_caplog):
+    handler = overloaded_contract(
+        [BYTES_ARRAY_OVERLOAD, UINT_OVERLOAD], "0x6666666666666666666666666666666666666666"
+    ).getUpdateFee
+    uint_abi = next(a for a in handler.abis if a.inputs[0].canonical_type == "uint256")
+
+    with ape_caplog.at_level(LogLevel.DEBUG):
+        assert handler._can_encode(uint_abi, ([],)) is False
+
+    message = next(m for m in ape_caplog.messages if "getUpdateFee(uint256" in m)
+    assert "ConversionError" in message
 
 
 def test_decode_input_call(contract_instance, calldata):
