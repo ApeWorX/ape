@@ -88,7 +88,7 @@ def test_isolation_snapshot_id_types(snapshot_id, fixtures):
     class IsolationManagerWithCustomSnapshot(IsolationManager):
         take_call_count = 0
         restore_call_count = 0
-        restore_called_with = []
+        restore_called_with = []  # noqa: RUF012
 
         def take_snapshot(self) -> "SnapshotID | None":
             self.take_call_count += 1

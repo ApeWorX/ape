@@ -35,7 +35,7 @@ class Deployment(BaseModel):
 class Deployments(DiskCacheableModel):
     """The deployments structured JSON."""
 
-    ecosystems: dict[str, dict[str, dict[str, list[Deployment]]]] = {}
+    ecosystems: dict[str, dict[str, dict[str, list[Deployment]]]] = {}  # noqa: RUF012
 
 
 class DeploymentDiskCache(BaseManager):

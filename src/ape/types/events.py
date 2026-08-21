@@ -97,10 +97,10 @@ class BaseContractLog(BaseInterfaceModel):
     contract_address: AddressType = ZERO_ADDRESS
     """The contract responsible for emitting the log."""
 
-    event_arguments: dict[str, Any] = {}
+    event_arguments: dict[str, Any] = {}  # noqa: RUF012
     """The arguments to the event, including both indexed and non-indexed data."""
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         if self.contract_address != other.contract_address or self.event_name != other.event_name:
             return False
 
@@ -272,7 +272,7 @@ class ContractLog(ExtraAttributesMixin, BaseContractLog):
     def __contains__(self, item: str) -> bool:
         return item in self.event_arguments
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         """
         Check for equality between this instance and another ContractLog instance.
 
@@ -325,7 +325,7 @@ class MockContractLog(BaseContractLog):
     of event arguments between a MockContractLog and a ContractLog instance.
     """
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         if (
             not hasattr(other, "contract_address")
             or not hasattr(other, "event_name")

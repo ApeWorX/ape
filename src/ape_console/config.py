@@ -4,7 +4,7 @@ from ape.api.config import PluginConfig
 
 
 class ConsoleConfig(PluginConfig):
-    plugins: list[str] = []
+    plugins: list[str] = []  # noqa: RUF012
     """Additional IPython plugins to include in your session."""
 
     model_config = SettingsConfigDict(extra="allow", env_prefix="APE_CONSOLE_")

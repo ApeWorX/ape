@@ -54,20 +54,19 @@ def pytest_addoption(parser):
 
 def pytest_configure(config):
     # Do not include ape internals in tracebacks unless explicitly asked
-    if not config.getoption("--show-internal"):
-        if path_str := sys.modules["ape"].__file__:
-            base_path = str(Path(path_str).parent)
+    if not config.getoption("--show-internal") and (path_str := sys.modules["ape"].__file__):
+        base_path = str(Path(path_str).parent)
 
-            def is_module(v):
-                return getattr(v, "__file__", None) and v.__file__.startswith(base_path)
+        def is_module(v):
+            return getattr(v, "__file__", None) and v.__file__.startswith(base_path)
 
-            for module in (v for v in sys.modules.values() if is_module(v)):
-                # NOTE: Using try/except w/ type:ignore (over checking for attr)
-                #   for performance reasons!
-                try:
-                    module.__tracebackhide__ = True  # type: ignore[attr-defined]
-                except AttributeError:
-                    pass
+        for module in (v for v in sys.modules.values() if is_module(v)):
+            # NOTE: Using try/except w/ type:ignore (over checking for attr)
+            #   for performance reasons!
+            try:
+                module.__tracebackhide__ = True  # type: ignore[attr-defined]
+            except AttributeError:
+                pass
 
     if "--help" in config.invocation_params.args:
         # perf: Don't bother setting up runner if only showing help.

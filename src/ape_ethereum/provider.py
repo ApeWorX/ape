@@ -119,7 +119,7 @@ def _post_send_transaction(tx: TransactionAPI, receipt: ReceiptAPI):
         except TransactionNotFound:
             # Receipt never published. Likely failed.
             pass
-        except Exception as err:
+        except Exception as err:  # noqa: BLE001
             # Avoid letting debug logs causes program crashes.
             logger.debug(f"Unable to show debug logs: {err}")
 
@@ -143,7 +143,7 @@ class Web3Provider(ProviderAPI, ABC):
 
     _supports_debug_trace_call: bool | None = None
 
-    _transaction_trace_cache: dict[str, TransactionTrace] = {}
+    _transaction_trace_cache: dict[str, TransactionTrace] = {}  # noqa: RUF012
 
     def __new__(cls, *args, **kwargs):
         # Post-connection ops
@@ -276,10 +276,13 @@ class Web3Provider(ProviderAPI, ABC):
         like `ape-node`, configure your URI and that will
         be returned here instead.
         """
-        if web3 := self._web3:
-            if endpoint_uri := getattr(web3.provider, "endpoint_uri", None):
-                if isinstance(endpoint_uri, str) and validator(endpoint_uri):
-                    return endpoint_uri
+        if (
+            (web3 := self._web3)
+            and (endpoint_uri := getattr(web3.provider, "endpoint_uri", None))
+            and isinstance(endpoint_uri, str)
+            and validator(endpoint_uri)
+        ):
+            return endpoint_uri
 
         return None
 
@@ -337,16 +340,12 @@ class Web3Provider(ProviderAPI, ABC):
 
     @property
     def http_uri(self) -> str | None:
-        if rpc := self._connected_http_uri:
+        if (rpc := self._connected_http_uri) or (rpc := self._configured_http_uri):
             return rpc
 
-        elif rpc := self._configured_http_uri:
+        elif (rpc := self._configured_uri) and _is_http_url(rpc):
+            # "uri" found in config/settings and is WS.
             return rpc
-
-        elif rpc := self._configured_uri:
-            if _is_http_url(rpc):
-                # "uri" found in config/settings and is WS.
-                return rpc
 
         return self._default_http_uri
 
@@ -385,10 +384,9 @@ class Web3Provider(ProviderAPI, ABC):
             # "ws_uri" found in config/settings
             return rpc
 
-        elif rpc := self._configured_uri:
-            if _is_ws_url(rpc):
-                # "uri" found in config/settings and is WS.
-                return rpc
+        elif (rpc := self._configured_uri) and _is_ws_url(rpc):
+            # "uri" found in config/settings and is WS.
+            return rpc
 
         return None
 
@@ -398,10 +396,9 @@ class Web3Provider(ProviderAPI, ABC):
             # "ipc_path" found in config/settings
             return Path(rpc)
 
-        elif rpc := self._configured_uri:
-            if _is_ipc_path(rpc):
-                # "uri" found in config/settings and is IPC.
-                return Path(rpc)
+        elif (rpc := self._configured_uri) and _is_ipc_path(rpc):
+            # "uri" found in config/settings and is IPC.
+            return Path(rpc)
 
         return None
 
@@ -422,7 +419,7 @@ class Web3Provider(ProviderAPI, ABC):
             try:
                 return Web3(HTTPProvider(rpc_uri)).is_connected()
 
-            except Exception:
+            except Exception:  # noqa: BLE001
                 return False
 
         retries = 10
@@ -451,7 +448,7 @@ class Web3Provider(ProviderAPI, ABC):
     def base_fee(self) -> int:
         try:
             fee_history = self._get_fee_history()
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001
             logger.debug(
                 f"Failed using `eth_feeHistory` for network '{self.network_choice}'. Error: {exc}"
             )
@@ -512,7 +509,7 @@ class Web3Provider(ProviderAPI, ABC):
         except NotImplementedError:
             return False
 
-        except Exception:
+        except Exception:  # noqa: BLE001
             # We know tracing works because we didn't get a NotImplementedError.
             return True
 
@@ -729,19 +726,23 @@ class Web3Provider(ProviderAPI, ABC):
         if track_gas and self._test_runner is not None and txn.receiver:
             self._test_runner.gas_tracker.append_gas(trace, txn.receiver)
 
-        if track_coverage and self._test_runner is not None and txn.receiver:
-            if contract_type := self.chain_manager.contracts.get(txn.receiver):
-                if contract_src := self.local_project._create_contract_source(contract_type):
-                    method_id = HexBytes(txn.data)
-                    selector = (
-                        contract_type.methods[method_id].selector
-                        if method_id in contract_type.methods
-                        else None
-                    )
-                    source_traceback = SourceTraceback.create(contract_src, trace, method_id)
-                    self._test_runner.coverage_tracker.cover(
-                        source_traceback, function=selector, contract=contract_type.name
-                    )
+        if (
+            track_coverage
+            and self._test_runner is not None
+            and txn.receiver
+            and (contract_type := self.chain_manager.contracts.get(txn.receiver))
+            and (contract_src := self.local_project._create_contract_source(contract_type))
+        ):
+            method_id = HexBytes(txn.data)
+            selector = (
+                contract_type.methods[method_id].selector
+                if method_id in contract_type.methods
+                else None
+            )
+            source_traceback = SourceTraceback.create(contract_src, trace, method_id)
+            self._test_runner.coverage_tracker.cover(
+                source_traceback, function=selector, contract=contract_type.name
+            )
 
         if show_gas:
             trace.show_gas_report()
@@ -769,15 +770,14 @@ class Web3Provider(ProviderAPI, ABC):
             contract_address = arguments[0].get("to")
             _lazy_call_trace = _LazyCallTrace(arguments)
 
-            if not skip_trace:
-                if address := contract_address:
-                    try:
-                        contract_type = self.chain_manager.contracts.get(address)
-                    except RecursionError:
-                        # Occurs when already in the middle of fetching this contract.
-                        pass
-                    else:
-                        _lazy_call_trace.contract_type = contract_type
+            if not skip_trace and (address := contract_address):
+                try:
+                    contract_type = self.chain_manager.contracts.get(address)
+                except RecursionError:
+                    # Occurs when already in the middle of fetching this contract.
+                    pass
+                else:
+                    _lazy_call_trace.contract_type = contract_type
 
             vm_err = self.get_virtual_machine_error(
                 err,
@@ -1051,7 +1051,7 @@ class Web3Provider(ProviderAPI, ABC):
                 if adjusted_head.number is None or adjusted_head.hash is None:
                     raise ProviderError("Adjusted head block has no number or hash.")
 
-            except Exception:
+            except Exception:  # noqa: BLE001
                 # TODO: I did encounter this sometimes in a re-org, needs better handling
                 # and maybe bubbling up the block number/hash exceptions above.
                 assert_chain_activity()
@@ -1114,9 +1114,8 @@ class Web3Provider(ProviderAPI, ABC):
         if required_confirmations is None:
             required_confirmations = self.network.required_confirmations
 
-        if stop_block is not None:
-            if stop_block <= (self._get_latest_block().number or 0):
-                raise ValueError("'stop' argument must be in the future.")
+        if stop_block is not None and stop_block <= (self._get_latest_block().number or 0):
+            raise ValueError("'stop' argument must be in the future.")
 
         for block in self.poll_blocks(stop_block, required_confirmations, new_block_timeout):
             if block.number is None:
@@ -1193,12 +1192,15 @@ class Web3Provider(ProviderAPI, ABC):
 
             # else: Assume user specified the correct amount or txn will fail and waste gas
 
-        if txn_type is TransactionType.ACCESS_LIST and isinstance(txn, AccessListTransaction):
-            if not txn.access_list:
-                try:
-                    txn.access_list = self.create_access_list(txn)
-                except APINotImplementedError:
-                    pass
+        if (
+            txn_type is TransactionType.ACCESS_LIST
+            and isinstance(txn, AccessListTransaction)
+            and not txn.access_list
+        ):
+            try:
+                txn.access_list = self.create_access_list(txn)
+            except APINotImplementedError:
+                pass
 
         gas_limit = self.network.gas_limit if txn.gas_limit is None else txn.gas_limit
         if gas_limit in (None, "auto") or isinstance(gas_limit, AutoGasLimit):
@@ -1467,7 +1469,7 @@ class Web3Provider(ProviderAPI, ABC):
             # NOTE: For some reason, it comes back with single quotes though.
             try:
                 err_data = json.loads(str(err_data or "").replace("'", '"'))
-            except Exception:
+            except Exception:  # noqa: BLE001
                 return VirtualMachineError(base_err=exception, **kwargs)
 
         if not (err_msg := err_data.get("message")):
@@ -1524,9 +1526,6 @@ class Web3Provider(ProviderAPI, ABC):
                 if trace is not None:
                     if callable(trace):
                         trace = params["trace"] = trace()
-                    else:
-                        trace = trace
-
                     if trace is not None and (revert_message := trace.revert_message):
                         message = revert_message
                         no_reason = False
@@ -1580,7 +1579,7 @@ class EthereumNodeProvider(Web3Provider, ABC):
     name: str = "node"
 
     # NOTE: Appends user-agent to base User-Agent string.
-    request_header: dict = {"User-Agent": f"EthereumNodeProvider/web3.py/{web3_version}"}
+    request_header: dict = {"User-Agent": f"EthereumNodeProvider/web3.py/{web3_version}"}  # noqa: RUF012
 
     @property
     def connection_str(self) -> str:
@@ -1626,7 +1625,7 @@ class EthereumNodeProvider(Web3Provider, ABC):
                 findings = True
                 break
 
-            except Exception:
+            except Exception:  # noqa: BLE001, S112
                 # Some chains are "light" and we may not be able to detect
                 # if it needs PoA middleware.
                 continue
@@ -1817,11 +1816,11 @@ def _is_uri(val: str) -> bool:
 
 
 def _is_http_url(val: str) -> bool:
-    return val.startswith("https://") or val.startswith("http://")
+    return val.startswith(("https://", "http://"))
 
 
 def _is_ws_url(val: str) -> bool:
-    return val.startswith("wss://") or val.startswith("ws://")
+    return val.startswith(("wss://", "ws://"))
 
 
 def _is_ipc_path(val: str | Path) -> bool:
@@ -1847,8 +1846,7 @@ class _LazyCallTrace(ManagerAccessMixin):
             return None
 
         method_id = self._arguments[0].get("data", "")[:10] or None
-        if ct and method_id:
-            if contract_src := self.local_project._create_contract_source(ct):
-                return SourceTraceback.create(contract_src, self.trace, method_id)
+        if ct and method_id and (contract_src := self.local_project._create_contract_source(ct)):
+            return SourceTraceback.create(contract_src, self.trace, method_id)
 
         return None

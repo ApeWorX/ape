@@ -11,7 +11,7 @@ from ape_accounts.accounts import ApeSigner
 
 
 class TestAccountContainer(TestAccountContainerAPI):
-    generated_accounts: list["TestAccount"] = []
+    generated_accounts: list["TestAccount"] = []  # noqa: RUF012
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

@@ -157,7 +157,7 @@ class NetworkConfig(PluginConfig):
     it isn't detected as one.
     """
 
-    request_headers: dict = {}
+    request_headers: dict = {}  # noqa: RUF012
     """Optionally config extra request headers whenever using this network."""
 
     model_config = SettingsConfigDict(extra="allow", env_prefix="APE_ETHEREUM_")
@@ -172,10 +172,7 @@ class NetworkConfig(PluginConfig):
         elif value == "auto":
             return AutoGasLimit()
 
-        elif value in ("auto", "max") or isinstance(value, AutoGasLimit):
-            return value
-
-        elif isinstance(value, int):
+        elif value in ("auto", "max") or isinstance(value, (AutoGasLimit, int)):
             return value
 
         elif isinstance(value, str) and value.isnumeric():
@@ -237,11 +234,11 @@ class BaseEthereumConfig(PluginConfig):
     NETWORKS: ClassVar[dict[str, tuple[int, int]]] = NETWORKS
 
     default_network: str = LOCAL_NETWORK_NAME
-    _forked_configs: dict[str, ForkedNetworkConfig] = {}
-    _custom_networks: dict[str, NetworkConfig] = {}
+    _forked_configs: dict[str, ForkedNetworkConfig] = {}  # noqa: RUF012
+    _custom_networks: dict[str, NetworkConfig] = {}  # noqa: RUF012
 
     # NOTE: This gets appended to Ape's root User-Agent string.
-    request_headers: dict = {}
+    request_headers: dict = {}  # noqa: RUF012
 
     model_config = SettingsConfigDict(extra="allow", env_prefix="APE_ETHEREUM_")
 
@@ -327,9 +324,8 @@ class BaseEthereumConfig(PluginConfig):
 
     def get(self, key: str, default: Any | None = None) -> Any:
         net_key = key.replace("-", "_")
-        if net_key.endswith("_fork"):
-            if cfg := self._get_forked_config(net_key):
-                return cfg
+        if net_key.endswith("_fork") and (cfg := self._get_forked_config(net_key)):
+            return cfg
 
         result: Any
         if result := super().get(key, default=default):
@@ -347,15 +343,14 @@ class BaseEthereumConfig(PluginConfig):
             return self._forked_configs[live_key]
 
         live_cfg: Any
-        if live_cfg := self.get(live_key):
-            if isinstance(live_cfg, NetworkConfig):
-                fork_cfg = create_local_network_config(
-                    use_fork=True,
-                    default_transaction_type=self.DEFAULT_TRANSACTION_TYPE,
-                    gas_limit=self.DEFAULT_LOCAL_GAS_LIMIT,
-                )
-                self._forked_configs[live_key] = fork_cfg
-                return fork_cfg
+        if (live_cfg := self.get(live_key)) and isinstance(live_cfg, NetworkConfig):
+            fork_cfg = create_local_network_config(
+                use_fork=True,
+                default_transaction_type=self.DEFAULT_TRANSACTION_TYPE,
+                gas_limit=self.DEFAULT_LOCAL_GAS_LIMIT,
+            )
+            self._forked_configs[live_key] = fork_cfg
+            return fork_cfg
 
         return None
 
@@ -379,7 +374,7 @@ class Block(BlockAPI):
     base_fee: HexInt = Field(default=0, alias="baseFeePerGas")
     difficulty: HexInt = 0
     total_difficulty: HexInt = Field(default=0, alias="totalDifficulty")
-    uncles: list[HexBytes] = []
+    uncles: list[HexBytes] = []  # noqa: RUF012
 
     # Type re-declares.
     hash: HexBytes | None = None
@@ -770,12 +765,9 @@ class Ethereum(EcosystemAPI):
             for v, t in zip(raw_input_values, input_types, strict=True)
         ]
         arguments = {}
-        index = 0
-        for i, v in zip(abi.inputs, input_values, strict=True):
+        for index, (i, v) in enumerate(zip(abi.inputs, input_values, strict=True)):
             name = i.name or f"{index}"
             arguments[name] = v
-            index += 1
-
         return arguments
 
     def decode_returndata(self, abi: MethodABI, raw_data: bytes) -> tuple[Any, ...]:
@@ -821,7 +813,7 @@ class Ethereum(EcosystemAPI):
             else:
                 try:
                     return ([o for o in output_values[0]],)  # type: ignore[union-attr]
-                except Exception:
+                except Exception:  # noqa: BLE001
                     # On-chains transaction data errors.
                     return (output_values,)
 
@@ -1057,7 +1049,7 @@ class Ethereum(EcosystemAPI):
         }
 
         def get_abi(_topic: HexStr) -> LogInputABICollection | None:
-            return abi_inputs[_topic] if _topic in abi_inputs else None
+            return abi_inputs.get(_topic, None)
 
         for log in logs:
             if log.get("anonymous"):
@@ -1191,7 +1183,7 @@ class Ethereum(EcosystemAPI):
             call["contract_id"] = address = kwargs["contract_address"] = self.decode_address(
                 address
             )
-        except Exception:
+        except Exception:  # noqa: BLE001
             # Tx was made with a weird address.
             call["contract_id"] = address
 
@@ -1205,7 +1197,7 @@ class Ethereum(EcosystemAPI):
 
         try:
             address_int = int(address, 16)
-        except Exception:
+        except Exception:  # noqa: BLE001, S110
             pass
         else:
             # Collapse pre-compile address calls
@@ -1479,7 +1471,7 @@ class Ethereum(EcosystemAPI):
 
         try:
             contract_logs = [log for log in self.decode_logs([log_data], abi)]
-        except Exception as err:
+        except Exception as err:  # noqa: BLE001
             logger.debug(f"Failed decoding logs from trace data: {err}")
             return event
 
@@ -1508,7 +1500,7 @@ class Ethereum(EcosystemAPI):
         if not (contract_type := kwargs.get("contract_type")):
             try:
                 contract_type = self.chain_manager.contracts.get(address)
-            except Exception as err:
+            except Exception as err:  # noqa: BLE001
                 logger.debug(f"Error getting contract type during event enrichment: {err}")
 
         return contract_type
@@ -1525,7 +1517,7 @@ class Ethereum(EcosystemAPI):
         # Use an instance (required for proper error caching).
         try:
             contract = self.chain_manager.contracts.instance_at(address)
-        except Exception:
+        except Exception:  # noqa: BLE001
             return None
 
         selector = data[:4]
@@ -1559,7 +1551,7 @@ class Ethereum(EcosystemAPI):
         try:
             if not (last_addr := next(trace.get_addresses_used(reverse=True), None)):
                 return None
-        except Exception:
+        except Exception:  # noqa: BLE001
             # When unable to get trace-frames properly, such as eth-tester.
             return None
 

@@ -39,8 +39,8 @@ def _use_sender(
 class TestAccountManager(list, ManagerAccessMixin):
     __test__ = False
 
-    _impersonated_accounts: dict[AddressType, ImpersonatedAccount] = {}
-    _accounts_by_index: dict[int, AccountAPI] = {}
+    _impersonated_accounts: dict[AddressType, ImpersonatedAccount] = {}  # noqa: RUF012
+    _accounts_by_index: dict[int, AccountAPI] = {}  # noqa: RUF012
 
     @log_instead_of_fail(default="<TestAccountManager>")
     def __repr__(self) -> str:
@@ -233,7 +233,7 @@ class AccountManager(BaseManager):
         my_accounts = accounts.load("dev")
     """
 
-    _alias_to_account_cache: dict[str, AccountAPI] = {}
+    _alias_to_account_cache: dict[str, AccountAPI] = {}  # noqa: RUF012
 
     @property
     def default_sender(self) -> AccountAPI | None:

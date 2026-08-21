@@ -34,11 +34,7 @@ class HexConverter(ConverterAPI):
     """
 
     def is_convertible(self, value: Any) -> bool:
-        return (
-            (isinstance(value, str) and is_hex(value))
-            or isinstance(value, bytes)
-            or isinstance(value, int)
-        )
+        return (isinstance(value, str) and is_hex(value)) or isinstance(value, (bytes, int))
 
     def convert(self, value: str) -> bytes:
         """
@@ -163,7 +159,7 @@ class IntAddressConverter(ConverterAPI):
     A converter that converts an integer address to an :class:`~ape.types.address.AddressType`.
     """
 
-    _cache: dict[int, AddressType | bool] = {}
+    _cache: dict[int, AddressType | bool] = {}  # noqa: RUF012
 
     def is_convertible(self, value: Any) -> bool:
         if not isinstance(value, int):
@@ -196,7 +192,7 @@ class IntAddressConverter(ConverterAPI):
     def _convert(self, value: int) -> AddressType | bool:
         try:
             val = Address.__eth_pydantic_validate__(value)
-        except Exception:
+        except Exception:  # noqa: BLE001
             return False
 
         return AddressType(to_checksum_address(val))
@@ -382,7 +378,7 @@ class ConversionManager(BaseManager):
         for converter in self._converters[to_type]:
             try:
                 is_convertible = converter.is_convertible(value)
-            except Exception as err:
+            except Exception as err:  # noqa: BLE001
                 # If errors while checking if we can convert, log the error
                 # and assume it's not convertible.
                 converter_name = converter.__class__.__name__
@@ -398,7 +394,7 @@ class ConversionManager(BaseManager):
             except Exception as err:
                 try:
                     error_value = f" '{value}' (type={type(value)}) "
-                except Exception:
+                except Exception:  # noqa: BLE001
                     error_value = " "
 
                 message = f"Failed to convert{error_value}"
@@ -527,7 +523,7 @@ def _get_type_name_from_type(var_type: type) -> str:
         message = "Unable to deduce type name"
         try:
             str_value = f"{var_type}"
-        except Exception:
+        except Exception:  # noqa: BLE001
             str_value = ""
 
         if str_value:

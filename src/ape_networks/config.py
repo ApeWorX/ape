@@ -23,7 +23,7 @@ class CustomNetwork(PluginConfig):
     default_provider: str = "node"
     """The default provider plugin to use. Default is the default node provider."""
 
-    request_header: dict = {}
+    request_header: dict = {}  # noqa: RUF012
     """The HTTP request header."""
 
     model_config = SettingsConfigDict(extra="allow", env_prefix="APE_NETWORKS_")
@@ -37,5 +37,5 @@ class CustomNetwork(PluginConfig):
 
 
 class NetworksConfig(PluginConfig):
-    custom: list[CustomNetwork] = []
+    custom: list[CustomNetwork] = []  # noqa: RUF012
     model_config = SettingsConfigDict(extra="allow", env_prefix="APE_NETWORKS_")

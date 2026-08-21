@@ -128,7 +128,7 @@ class TestStruct:
 
     def test_is_equal(self, struct):
         # Show struct equality works when props are the same.
-        assert struct == struct  # even self
+        assert struct == struct  # even self  # noqa: PLR0124
         new_struct = deepcopy(struct)
         assert struct == new_struct
         # Show changing a property makes them unequal.

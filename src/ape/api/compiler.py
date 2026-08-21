@@ -32,7 +32,7 @@ class CompilerAPI(BaseInterfaceModel):
     this API.
     """
 
-    compiler_settings: dict = {}
+    compiler_settings: dict = {}  # NOTE: Pydantic allows this # noqa: RUF012
     """
     Adhoc compiler settings.
     """
@@ -195,7 +195,7 @@ class CompilerAPI(BaseInterfaceModel):
             self.trace_source(None, None, None)  # type: ignore
         except APINotImplementedError:
             return False
-        except Exception:
+        except Exception:  # noqa: BLE001
             # Task failed successfully.
             return True
 

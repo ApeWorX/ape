@@ -393,10 +393,7 @@ class FixtureMap(dict[Scope, list[str]]):
         True when is a non-function scoped parametrized fixture that hasn't
         fully iterated.
         """
-        if name not in self.parametrized:
-            return False
-
-        elif not (info_ls := self.get_info(name)):
+        if name not in self.parametrized or not (info_ls := self.get_info(name)):
             return False
 
         for info in info_ls:
@@ -613,7 +610,7 @@ class IsolationManager(ManagerAccessMixin):
 
         try:
             snapshot_id = self.take_snapshot()
-        except Exception:
+        except Exception:  # noqa: BLE001
             self.supported = False
         else:
             if snapshot_id is not None:
@@ -662,7 +659,7 @@ class IsolationManager(ManagerAccessMixin):
             )
             # To avoid trying again
             self.supported = False
-        except Exception as err:
+        except Exception as err:  # noqa: BLE001
             logger.error(f"Unhandled error with restoring snapshot: {err}")
 
         self.snapshots.clear_snapshot_id(scope)
@@ -672,8 +669,8 @@ class IsolationManager(ManagerAccessMixin):
 
 
 class ReceiptCapture(ManagerAccessMixin):
-    receipt_map: dict[str, dict[str, "ReceiptAPI"]] = {}
-    enter_blocks: list[int] = []
+    receipt_map: dict[str, dict[str, "ReceiptAPI"]] = {}  # noqa: RUF012
+    enter_blocks: list[int] = []  # noqa: RUF012
 
     def __init__(self, config_wrapper: "ConfigWrapper"):
         self.config_wrapper = config_wrapper
@@ -701,7 +698,7 @@ class ReceiptCapture(ManagerAccessMixin):
         for txn in transactions:
             try:
                 txn_hash = to_hex(txn.txn_hash)
-            except Exception:
+            except Exception:  # noqa: BLE001, S112
                 # Might have been from an impersonated account.
                 # Those txns need to be added separately, same as tracing calls.
                 # Likely, it was already accounted before this point.
@@ -715,10 +712,7 @@ class ReceiptCapture(ManagerAccessMixin):
         except ChainError:
             return
 
-        if not receipt:
-            return
-
-        elif not (contract_address := (receipt.receiver or receipt.contract_address)):
+        if not receipt or not (contract_address := (receipt.receiver or receipt.contract_address)):
             return
 
         elif not (contract_type := self.chain_manager.contracts.get(contract_address)):

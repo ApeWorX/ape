@@ -44,7 +44,7 @@ class GitProcessWrapper:
                 # Often times, `v` is required for tags.
                 try:
                     self.clone(url, target_path, branch=f"v{branch}")
-                except Exception:
+                except Exception:  # noqa: BLE001
                     raise ProjectError(fail_msg)
 
                 # Succeeded when prefixing `v`.
@@ -66,7 +66,7 @@ class _GithubClient:
     # ApeWorX-specific attributes.
     ORGANIZATION_NAME = "ApeWorX"
     FRAMEWORK_NAME = "ape"
-    _repo_cache: dict[str, dict] = {}
+    _repo_cache: dict[str, dict] = {}  # noqa: RUF012
 
     def __init__(self, session: Session | None = None):
         if session:
@@ -75,7 +75,7 @@ class _GithubClient:
 
         else:
             headers = {"Content-Type": "application/json", "User-Agent": USER_AGENT}
-            if auth := os.environ[self.TOKEN_KEY] if self.TOKEN_KEY in os.environ else None:
+            if auth := os.environ.get(self.TOKEN_KEY, None):
                 headers["Authorization"] = f"token {auth}"
 
             session = Session()
@@ -120,7 +120,7 @@ class _GithubClient:
         def _try_get_release(vers):
             try:
                 return self._get_release(org_name, repo_name, vers)
-            except Exception:
+            except Exception:  # noqa: BLE001
                 return None
 
         if release := _try_get_release(version):

@@ -460,12 +460,14 @@ class LocalProvider(TestProviderAPI, Web3Provider):
                 r"timestamp must be strictly later than parent, "
                 r"but is 0 seconds before\.\n- child\s{2}: (\d*)\n- parent : (\d*)\.\s*"
             )
-            if match := re.match(pattern, str(err)):
-                if groups := match.groups():
-                    if groups[0].strip() == groups[1].strip():
-                        # Handle race condition when block headers are the same.
-                        # Treat as noop, same as pre-check.
-                        return
+            if (
+                (match := re.match(pattern, str(err)))
+                and (groups := match.groups())
+                and groups[0].strip() == groups[1].strip()
+            ):
+                # Handle race condition when block headers are the same.
+                # Treat as noop, same as pre-check.
+                return
 
             raise ProviderError(f"Failed to time travel: {err}") from err
 

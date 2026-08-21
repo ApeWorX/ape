@@ -77,8 +77,8 @@ class ProxyInfoAPI(BaseModel):
                 # Not sure.
                 try:
                     model["type_name"] = f"{_type}"
-                except Exception:
-                    pass
+                except Exception as err:  # noqa: BLE001
+                    logger.debug(str(err))
 
         return model
 
@@ -110,7 +110,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
 
     # TODO: In 0.9, make @property that returns value from config,
     #   and use REQUEST_HEADER as plugin-defined constants.
-    request_header: dict = {}
+    request_header: dict = {}  # NOTE: pydantic allows this # noqa: RUF012
     """A shareable HTTP header for network requests."""
 
     fee_token_symbol: str
@@ -280,7 +280,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
             if network_name not in self._networks_from_plugins
         }
         forked_networks: dict[str, ForkedNetworkAPI] = {}
-        for network_name, network in networks.items():
+        for network_name in networks:
             if network_name.endswith("-fork"):
                 # Already a fork.
                 continue
@@ -392,10 +392,9 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
             return network
 
         networks = self.networks
-        if network := self.config.get("default_network"):
+        if (network := self.config.get("default_network")) in networks:
             # Default found in config. Ensure is an installed network.
-            if network in networks:
-                return network
+            return network
 
         if LOCAL_NETWORK_NAME in networks:
             # Default to the LOCAL_NETWORK_NAME, at last resort.
@@ -751,9 +750,10 @@ class ProviderContextManager(ManagerAccessMixin):
             ...
     """
 
-    connected_providers: dict[str, "ProviderAPI"] = {}
-    provider_stack: list[str] = []
-    disconnect_map: dict[str, bool] = {}
+    # NOTE: pydantic v2 allows mutable defaults
+    connected_providers: dict[str, "ProviderAPI"] = {}  # noqa: RUF012
+    provider_stack: list[str] = []  # noqa: RUF012
+    disconnect_map: dict[str, bool] = {}  # noqa: RUF012
 
     # We store a provider object at the class level for use when disconnecting
     # due to an exception, when interactive mode is set. If we don't hold on
@@ -888,7 +888,7 @@ class NetworkAPI(BaseInterfaceModel):
 
     # TODO: In 0.9, make @property that returns value from config,
     #   and use REQUEST_HEADER as plugin-defined constants.
-    request_header: dict = {}
+    request_header: dict = {}  # noqa: RUF012
     """A shareable network HTTP header."""
 
     # See ``.default_provider`` which is the proper field.
@@ -908,11 +908,11 @@ class NetworkAPI(BaseInterfaceModel):
                 f"{self.choice} chain_id={self.chain_id}" if chain_id is not None else self.choice
             )
             return f"<{content}>"
-        except Exception:
+        except Exception:  # noqa: BLE001
             # Don't allow repr to fail.
             try:
                 name = self.name
-            except Exception:
+            except Exception:  # noqa: BLE001
                 name = None
 
             return f"<{name}>" if name else f"{type(self)}"
@@ -1176,7 +1176,7 @@ class NetworkAPI(BaseInterfaceModel):
 
     def _get_plugin_provider_names(self) -> Iterator[str]:
         for _, plugin_tuple in self._get_plugin_providers():
-            ecosystem_name, network_name, provider_class = plugin_tuple
+            _ecosystem_name, _network_name, provider_class = plugin_tuple
             yield provider_class.__module__.split(".")[0].replace("_", "-").replace("ape-", "")
 
     def get_provider(
@@ -1309,7 +1309,7 @@ class NetworkAPI(BaseInterfaceModel):
 
         elif len(self.providers) > 0:
             # No default set anywhere - use the first installed.
-            return list(self.providers)[0]
+            return next(iter(self.providers))
 
         # There are no providers at all for this network.
         return None

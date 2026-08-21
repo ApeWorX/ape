@@ -75,7 +75,7 @@ def _get_unimplemented_methods(api) -> Iterable[str]:
 
 
 class PluginManager:
-    _unimplemented_plugins: list[str] = []
+    _unimplemented_plugins: list[str] = []  # noqa: RUF012
 
     def __init__(self) -> None:
         self.__registered = False

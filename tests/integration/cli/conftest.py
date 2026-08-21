@@ -91,7 +91,7 @@ def project_dir_map():
     """
 
     class ProjectDirCache:
-        project_map: dict[str, Path] = {}
+        project_map: dict[str, Path] = {}  # noqa: RUF012
 
         def load(self, name: str) -> Path:
             base_path = Path(__file__).parent / "projects"

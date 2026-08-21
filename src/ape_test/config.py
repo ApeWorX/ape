@@ -37,7 +37,7 @@ class GasConfig(PluginConfig):
     Configuration related to test gas reports.
     """
 
-    exclude: list[GasExclusion] = []
+    exclude: list[GasExclusion] = []  # noqa: RUF012
     """
     Contract methods patterns to skip. Specify ``contract_name:`` and not
     ``method_name:`` to skip all methods in the contract. Only specify
@@ -46,7 +46,7 @@ class GasConfig(PluginConfig):
     use ``prefix_*`` to skip all items with a certain prefix.
     """
 
-    reports: list[str] = []
+    reports: list[str] = []  # noqa: RUF012
     """
     Report-types to use. Currently, only supports `terminal`.
     """
@@ -117,7 +117,7 @@ class CoverageConfig(PluginConfig):
     Enable reports.
     """
 
-    exclude: list[CoverageExclusion] = []
+    exclude: list[CoverageExclusion] = []  # noqa: RUF012
     """
     Contract methods patterns to skip. Specify ``contract_name:`` and not
     ``method_name:`` to skip all methods in the contract. Only specify

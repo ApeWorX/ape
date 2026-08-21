@@ -66,7 +66,7 @@ class SourceManager(BaseManager):
     _path_cache: list[Path] | None = None
 
     # perf: calculating paths from source Ids can be expensive.
-    _path_to_source_id: dict[Path, str] = {}
+    _path_to_source_id: dict[Path, str] = {}  # noqa: RUF012
 
     def __init__(
         self,
@@ -125,7 +125,7 @@ class SourceManager(BaseManager):
                 if path.is_file():
                     try:
                         text = path.read_text(encoding="utf8")
-                    except Exception:
+                    except Exception:  # noqa: BLE001, S112
                         continue
 
                 else:
@@ -397,11 +397,11 @@ class ContractManager(BaseManager):
         self._compile_missing_contracts(self.sources.paths)
         if contract_types := self.project.manifest.contract_types:
             for ct in contract_types.values():
-                if not ct.name or not ct.source_id:
-                    continue
-
-                # Ensure was not deleted.
-                elif not (self.project.path / ct.source_id).is_file():
+                if (
+                    not ct.name
+                    or not ct.source_id
+                    or not (self.project.path / ct.source_id).is_file()
+                ):
                     continue
 
                 yield ct.name
@@ -561,7 +561,6 @@ class ContractManager(BaseManager):
 
         source_id: str
         if isinstance(path, Path):
-            path = path
             source_id = self.sources._get_source_id(path)
         else:
             source_id = str(path)  # str wrap for mypy
@@ -628,7 +627,7 @@ class Dependency(BaseManager, ExtraAttributesMixin):
     def __ape_extra_attributes__(self) -> Iterator[ExtraModelAttributes]:
         yield ExtraModelAttributes(name="project", attributes=lambda: self.project)
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, Dependency):
             # We can't handle this type.
             # This line causes python to retry from the other end.
@@ -724,11 +723,9 @@ class Dependency(BaseManager, ExtraAttributesMixin):
             # Fails when version ID errors out (bad config / missing required install etc.)
             return False
 
-        if project_path.is_dir():
-            if any(x for x in self.project_path.iterdir() if not x.name.startswith(".")):
-                return True
-
-        return False
+        return project_path.is_dir() and any(
+            x for x in self.project_path.iterdir() if not x.name.startswith(".")
+        )
 
     @property
     def compiled(self) -> bool:
@@ -803,7 +800,7 @@ class Dependency(BaseManager, ExtraAttributesMixin):
                 logger.info(f"Installing {self.clean_package_id} {self.api.version_id}")
                 try:
                     self.api.fetch(self.project_path)
-                except Exception as err:
+                except Exception as err:  # noqa: BLE001
                     raise ProjectError(f"Fetching failed: {err}")
 
                 did_fetch = True
@@ -829,7 +826,7 @@ class Dependency(BaseManager, ExtraAttributesMixin):
                         manifest = PackageManifest.model_validate_json(
                             path.read_text(encoding="utf8")
                         )
-                    except Exception:
+                    except Exception:  # noqa: BLE001, S110
                         # False alarm.
                         pass
                     else:
@@ -984,8 +981,7 @@ class Dependency(BaseManager, ExtraAttributesMixin):
 
         # Unpack dependencies of dependencies (if they aren't already).
         for dependency in self.project.dependencies.specified:
-            for unpacked_dep in dependency._unpack(path, tracked=tracked):
-                yield unpacked_dep
+            yield from dependency._unpack(path, tracked=tracked)
 
 
 def _get_cache_versions_suffix(package_id) -> Path:
@@ -1205,7 +1201,7 @@ class DependencyManager(BaseManager):
     """
 
     # Class-level cache
-    _cache: dict[DependencyAPI, Dependency] = {}
+    _cache: dict[DependencyAPI, Dependency] = {}  # noqa: RUF012
 
     def __init__(self, project: "ProjectManager | None" = None):
         self.project = project or self.local_project
@@ -1326,7 +1322,7 @@ class DependencyManager(BaseManager):
         for api in self.config_apis:
             try:
                 api_version_id = api.version_id
-            except Exception:
+            except Exception:  # noqa: BLE001
                 api_version_id = None
 
             if (name is not None and api.name != name and api.package_id != name) or (
@@ -1435,11 +1431,10 @@ class DependencyManager(BaseManager):
             :class:`~ape.api.projects.DependencyAPI`
         """
         # Check by package ID first.
-        if dependency := self._get_dependency_api_by_package_id(package_id, version=version):
-            return dependency
-
-        elif dependency := self._get_dependency_api_by_package_id(
-            package_id, version=version, attr="name"
+        if (dependency := self._get_dependency_api_by_package_id(package_id, version=version)) or (
+            dependency := self._get_dependency_api_by_package_id(
+                package_id, version=version, attr="name"
+            )
         ):
             return dependency
 
@@ -1471,7 +1466,7 @@ class DependencyManager(BaseManager):
 
         # else: prioritize the local dependencies, as that is most-likely what the user wants.
 
-        return sorted(matching, key=lambda d: d.version_id)[-1] if matching else None
+        return max(matching, key=lambda d: d.version_id) if matching else None
 
     def _get(
         self,
@@ -1492,11 +1487,10 @@ class DependencyManager(BaseManager):
             elif dependency.name == name and dependency.version == version:
                 name_matches.append(dependency)
 
-        if name_matches:
-            if len(name_matches) == 1:
-                # Return match-by-name after full loop in case was checking by
-                # package ID, which is more precise.
-                return name_matches[0]
+        if name_matches and len(name_matches) == 1:
+            # Return match-by-name after full loop in case was checking by
+            # package ID, which is more precise.
+            return name_matches[0]
 
         if name_matches:
             # If one of the matches is in the `.specified` dependencies, use that one.
@@ -1574,10 +1568,7 @@ class DependencyManager(BaseManager):
 
         # Never yield. Check if using short-name.
         for dependency in self.all:
-            if dependency.name != name:
-                continue
-
-            elif dependency.version in versions_yielded:
+            if dependency.name != name or dependency.version in versions_yielded:
                 continue
 
             yield dependency
@@ -1675,7 +1666,7 @@ class DependencyManager(BaseManager):
         name = item.get("name") or f"{item}"  # NOTE: Using 'or' for short-circuit eval
         raise ProjectError(
             f"No installed dependency API that supports '{name}'. "
-            f"Keys={', '.join([x for x in item.keys()])}"
+            f"Keys={', '.join([x for x in item])}"
         )
 
     def add(self, dependency: dict | DependencyAPI) -> Dependency:
@@ -1730,14 +1721,9 @@ class DependencyManager(BaseManager):
             return self.install_dependency(dependency, use_cache=use_cache, recurse=recurse)
 
         # Install all project's.
-        result: list[Dependency] = []
-
-        for dep in self.get_project_dependencies(
-            use_cache=use_cache, allow_install=True, recurse=recurse
-        ):
-            result.append(dep)
-
-        return result
+        return list(
+            self.get_project_dependencies(use_cache=use_cache, allow_install=True, recurse=recurse)
+        )
 
     def install_dependency(
         self,
@@ -1898,19 +1884,14 @@ class Project(ProjectManager):
 
     @property
     def name(self) -> str:
-        if name := self.config.get("name"):
-            return name
-        elif name := self.manifest.name:
+        if (name := self.config.get("name")) or (name := self.manifest.name):
             return name
 
         return f"unknown-project-{random.randint(100_000, 999_999)}"
 
     @property
     def version(self) -> str:
-        if version := self._config_override.get("version"):
-            return version
-
-        elif version := self.manifest.version:
+        if (version := self._config_override.get("version")) or (version := self.manifest.version):
             return version
 
         else:
@@ -2114,7 +2095,7 @@ class Project(ProjectManager):
         # Use Compiler.__hash__ to remove duplicated.
         # Also, sort for consistency.
         compilers = sorted(
-            list({*remaining_existing_compilers, *compiler_data}),
+            {*remaining_existing_compilers, *compiler_data},
             key=lambda x: f"{x.name}@{x.version}",
         )
         self.update_manifest(compilers=compilers)
@@ -2353,7 +2334,7 @@ class MultiProject(ProjectAPI):
     containing an ``ape-config.yaml`` file.
     """
 
-    apis: list[ProjectAPI] = []
+    apis: list[ProjectAPI] = []  # noqa: RUF012
     """
     An ordered list of APIs to use. The last items take precedence as their configs merge.
     """
@@ -2425,7 +2406,7 @@ class LocalProject(Project):
 
             try:
                 src_dict = dict(self.sources.items())
-            except Exception as err:
+            except Exception as err:  # noqa: BLE001
                 logger.error(str(err))
             else:
                 if src_dict and not self.manifest.sources:
@@ -2480,9 +2461,10 @@ class LocalProject(Project):
                 # Possibly, the user does not have compiler plugins installed or working.
                 missing_exts = set()
                 for path in all_files:
-                    if ext := get_full_extension(path):
-                        if ext not in self.compiler_manager.registered_compilers:
-                            missing_exts.add(ext)
+                    if (ext := get_full_extension(path)) and (
+                        ext not in self.compiler_manager.registered_compilers
+                    ):
+                        missing_exts.add(ext)
 
                 if missing_exts:
                     start = "Else, could" if did_append else "Could"
@@ -2527,9 +2509,7 @@ class LocalProject(Project):
             if (self.path / name).is_dir():
                 return self.path / name
 
-        exts_not_json = {
-            k for k in self.compiler_manager.registered_compilers.keys() if k != ".json"
-        }
+        exts_not_json = {k for k in self.compiler_manager.registered_compilers if k != ".json"}
         if not exts_not_json:
             # Not really able to look anywhere else.
             return self.path
@@ -2604,9 +2584,7 @@ class LocalProject(Project):
 
     @property
     def name(self) -> str:
-        if name := self.config.get("name"):
-            return name
-        elif name := self.manifest.name:
+        if (name := self.config.get("name")) or (name := self.manifest.name):
             return name
 
         return self._base_path.name.replace("_", "-").lower()
@@ -2733,9 +2711,8 @@ class LocalProject(Project):
         def copytree(src, dst):
             try:
                 shutil.copytree(src, dst, dirs_exist_ok=True)
-            except Exception as err:
+            except Exception as err:  # noqa: BLE001
                 logger.error(f"Failed to unpack '{src}' to '{dst}': {err}")
-                pass
 
         # Unpack contracts.
         if self.contracts_folder.is_dir():
@@ -2785,7 +2762,7 @@ class LocalProject(Project):
 
         try:
             manifest = _load_manifest(self.manifest_path)
-        except Exception as err:
+        except Exception as err:  # noqa: BLE001
             logger.error(f"__local__.json manifest corrupted! Re-building.\nFull error: {err}.")
             self.manifest_path.unlink(missing_ok=True)
             manifest = PackageManifest()
@@ -2972,7 +2949,7 @@ class LocalProject(Project):
             # Not found in this project's sources.
             try:
                 cwd = Path.cwd()
-            except Exception:
+            except Exception:  # noqa: BLE001
                 # Happens when left in a cleaned-up temp path maybe?
                 cwd = None
 

@@ -207,11 +207,8 @@ class GethDevProcess(BaseGethProcess):
             geth_kwargs.pop("password", None)
 
         # Ensure IPC path has correct name.
-        if ipc_path_kwarg := geth_kwargs.get("ipc_path"):
-            if ipc_path_kwarg.endswith("geth.ipc"):
-                geth_kwargs["ipc_path"] = ipc_path_kwarg.replace(
-                    "geth.ipc", f"{self.process_name}.ipc"
-                )
+        if (ipc_path_kwarg := geth_kwargs.get("ipc_path")) and ipc_path_kwarg.endswith("geth.ipc"):
+            geth_kwargs["ipc_path"] = ipc_path_kwarg.replace("geth.ipc", f"{self.process_name}.ipc")
 
         # Ensure a clean data-dir.
         self._clean()
@@ -422,11 +419,11 @@ class GethDevProcess(BaseGethProcess):
 
 class EthereumNetworkConfig(PluginConfig):
     # Make sure you are running the right networks when you try for these
-    mainnet: dict = {}
-    holesky: dict = {}
-    sepolia: dict = {}
+    mainnet: dict = {}  # noqa: RUF012
+    holesky: dict = {}  # noqa: RUF012
+    sepolia: dict = {}  # noqa: RUF012
     # Make sure to run via `geth --dev` (or similar)
-    local: dict = {**DEFAULT_SETTINGS.copy(), "chain_id": DEFAULT_TEST_CHAIN_ID, "block_time": 0}
+    local: dict = {**DEFAULT_SETTINGS.copy(), "chain_id": DEFAULT_TEST_CHAIN_ID, "block_time": 0}  # noqa: RUF012
 
     model_config = SettingsConfigDict(extra="allow", env_prefix="APE_NODE_")
 
@@ -483,7 +480,7 @@ class EthereumNodeConfig(PluginConfig):
     based on your node's client-version and available RPCs.
     """
 
-    request_headers: dict = {}
+    request_headers: dict = {}  # noqa: RUF012
     """
     Optionally specify request headers to use whenever using this provider.
     """

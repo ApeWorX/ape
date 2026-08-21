@@ -209,10 +209,9 @@ class BaseAddress(BaseInterface):
         tx = self.provider.network.ecosystem.create_transaction(
             receiver=self.address, **converted_kwargs
         )
-        if sender := kwargs.get("sender"):
-            if hasattr(sender, "prepare_transaction"):
-                prepared = sender.prepare_transaction(tx)
-                return (sender.sign_transaction(prepared) or prepared) if sign else prepared
+        if (sender := kwargs.get("sender")) and hasattr(sender, "prepare_transaction"):
+            prepared = sender.prepare_transaction(tx)
+            return (sender.sign_transaction(prepared) or prepared) if sign else prepared
 
         return tx
 

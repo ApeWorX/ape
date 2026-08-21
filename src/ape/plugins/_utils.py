@@ -658,7 +658,7 @@ class PluginGroup(BaseModel):
     """
 
     plugin_type: PluginType
-    plugins: dict[str, PluginMetadata] = {}
+    plugins: dict[str, PluginMetadata] = {}  # noqa: RUF012
 
     def __bool__(self) -> bool:
         return len(self.plugins) > 0

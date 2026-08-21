@@ -269,7 +269,7 @@ class ContractMethodHandler(ManagerAccessMixin):
                 decoded_calldata = self.provider.network.ecosystem.decode_calldata(
                     abi, HexBytes(calldata)
                 )
-            except Exception:
+            except Exception:  # noqa: BLE001, S112
                 continue
 
             if decoded_calldata:
@@ -423,10 +423,9 @@ class ContractTransactionHandler(ContractMethodHandler):
         transaction = contract_transaction.serialize_transaction(*args, **kwargs)
         self.provider.prepare_transaction(transaction)
 
-        if sender := kwargs.get("sender"):
-            if isinstance(sender, AccountAPI):
-                prepped_tx = sender.prepare_transaction(transaction)
-                return (sender.sign_transaction(prepped_tx) or prepped_tx) if sign else prepped_tx
+        if (sender := kwargs.get("sender")) and isinstance(sender, AccountAPI):
+            prepped_tx = sender.prepare_transaction(transaction)
+            return (sender.sign_transaction(prepped_tx) or prepped_tx) if sign else prepped_tx
 
         return transaction
 
@@ -799,7 +798,7 @@ class ContractEvent(BaseInterfaceModel):
             contract = None
             try:
                 contract = self.chain_manager.contracts.instance_at(contract_address)
-            except Exception:
+            except Exception:  # noqa: BLE001, S110
                 pass
 
             # Determine the start block from contract creation metadata
@@ -1196,7 +1195,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
 
     @cached_property
     def _view_methods_(self) -> dict[str, ContractCallHandler]:
-        view_methods: dict[str, list[MethodABI]] = dict()
+        view_methods: dict[str, list[MethodABI]] = {}
 
         for abi in self.contract_type.view_methods:
             if abi.name in view_methods:
@@ -1215,7 +1214,7 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
 
     @cached_property
     def _mutable_methods_(self) -> dict[str, ContractTransactionHandler]:
-        mutable_methods: dict[str, list[MethodABI]] = dict()
+        mutable_methods: dict[str, list[MethodABI]] = {}
 
         for abi in self.contract_type.mutable_methods:
             if abi.name in mutable_methods:
@@ -1348,9 +1347,8 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
             raise err
 
         for contract_err in options:
-            if abi := getattr(contract_err, "abi", None):
-                if abi.signature == signature:
-                    return contract_err
+            if (abi := getattr(contract_err, "abi", None)) and abi.signature == signature:
+                return contract_err
 
         raise err
 
@@ -1703,7 +1701,7 @@ class ContractContainer(ContractTypeWrapper, ExtraAttributesMixin):
             self.local_project.deployments.track(instance)
             try:
                 self.provider.network.publish_contract(address)
-            except Exception as err:
+            except Exception as err:  # noqa: BLE001
                 logger.error(f"Contract was deployed but explorer verification failed: {err}")
 
         instance.base_path = self.base_path or self.local_project.contracts_folder
@@ -1726,7 +1724,7 @@ class ContractContainer(ContractTypeWrapper, ExtraAttributesMixin):
                 try:
                     # Try enrichment again now that the contract type is cached.
                     new_err = self.compiler_manager.enrich_error(err)
-                except Exception:
+                except Exception:  # noqa: BLE001, S110
                     pass
 
                 if new_err:

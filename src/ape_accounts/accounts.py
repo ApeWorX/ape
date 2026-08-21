@@ -46,7 +46,7 @@ class InvalidPasswordError(AccountsError):
 
 
 class AccountContainer(AccountContainerAPI):
-    loaded_accounts: dict[str, "KeyfileAccount"] = {}
+    loaded_accounts: dict[str, "KeyfileAccount"] = {}  # noqa: RUF012
 
     @property
     def _keyfiles(self) -> Iterator[Path]:
@@ -91,11 +91,11 @@ class ApeSigner(AccountAPI):
             chain_id = self.chain_manager.chain_id
 
         signed_authorization = EthAccount.sign_authorization(
-            dict(
-                chainId=chain_id,
-                address=to_canonical_address(address),
-                nonce=nonce or self.nonce,
-            ),
+            {
+                "chainId": chain_id,
+                "address": to_canonical_address(address),
+                "nonce": nonce or self.nonce,
+            },
             self.private_key,
         )
         return MessageSignature(

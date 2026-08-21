@@ -27,7 +27,7 @@ class Config(PluginConfig):
     Configure general compiler settings.
     """
 
-    exclude: set[str | Pattern] = set()
+    exclude: set[str | Pattern] = set()  # noqa: RUF012
     """
     Source exclusion globs or regex patterns across all file types.
     To use regex, start your values with ``r"`` and they'll be turned
@@ -48,7 +48,7 @@ class Config(PluginConfig):
     should configure ``include_dependencies`` to be ``True``.
     """
 
-    output_extra: list[OutputExtras] = []
+    output_extra: list[OutputExtras] = []  # noqa: RUF012
     """
     Extra selections to output. Outputs to ``.build/{key.lower()}``.
     """

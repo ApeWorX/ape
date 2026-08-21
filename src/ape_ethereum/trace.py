@@ -104,7 +104,7 @@ class Trace(TraceAPI):
     def __repr__(self) -> str:
         try:
             return f"{self}"
-        except Exception as err:
+        except Exception as err:  # noqa: BLE001
             # Don't let __repr__ fail.
             logger.debug(f"Problem transaction trace: {err}")
             return "<Trace>"
@@ -160,16 +160,15 @@ class Trace(TraceAPI):
             self._enriched_calltree = {}
 
         # Add top-level data if missing.
-        if not self._enriched_calltree.get("gas_cost"):
-            # Happens on calltrees built from structLogs.
-            if gas_used := self.transaction.get("gas_used"):
-                if "data" in self.transaction:
-                    # Subtract base gas costs.
-                    # (21_000 + 4 gas per 0-byte and 16 gas per non-zero byte).
-                    data_gas = sum(
-                        [4 if x == 0 else 16 for x in HexBytes(self.transaction["data"])]
-                    )
-                    self._enriched_calltree["gas_cost"] = gas_used - 21_000 - data_gas
+        if (
+            not self._enriched_calltree.get("gas_cost")
+            and (gas_used := self.transaction.get("gas_used"))
+            and "data" in self.transaction
+        ):
+            # Subtract base gas costs.
+            # (21_000 + 4 gas per 0-byte and 16 gas per non-zero byte).
+            data_gas = sum([4 if x == 0 else 16 for x in HexBytes(self.transaction["data"])])
+            self._enriched_calltree["gas_cost"] = gas_used - 21_000 - data_gas
 
         return self._enriched_calltree
 
@@ -186,7 +185,7 @@ class Trace(TraceAPI):
         if address := self.transaction.get("to"):
             try:
                 return self.chain_manager.contracts.get(address)
-            except Exception:
+            except Exception:  # noqa: BLE001
                 return None
 
         return None
@@ -197,7 +196,7 @@ class Trace(TraceAPI):
         if ct := self.root_contract_type:
             try:
                 return ct.methods[method_id]
-            except Exception:
+            except Exception:  # noqa: BLE001
                 return None
 
         return None
@@ -252,19 +251,20 @@ class Trace(TraceAPI):
         self, calltree: dict | CallTreeNode
     ) -> tuple[Any | None, ...]:
         num_outputs = 1
-        if raw_return_data := (
-            calltree.get("returndata") if isinstance(calltree, dict) else calltree.returndata
-        ):
-            if abi := self._get_abi(calltree):
-                # Ensure we return a tuple with the correct length, even if fails.
-                num_outputs = len(abi.outputs)
-                try:
-                    return self._ecosystem.decode_returndata(abi, HexBytes(raw_return_data))
-                except Exception as err:
-                    logger.debug(
-                        f"Failed decoding raw returndata: {to_hex(raw_return_data)}. Error: {err}"
-                    )
-                    return tuple([None for _ in range(num_outputs)])
+        if (
+            raw_return_data := (
+                calltree.get("returndata") if isinstance(calltree, dict) else calltree.returndata
+            )
+        ) and (abi := self._get_abi(calltree)):
+            # Ensure we return a tuple with the correct length, even if fails.
+            num_outputs = len(abi.outputs)
+            try:
+                return self._ecosystem.decode_returndata(abi, HexBytes(raw_return_data))
+            except Exception as err:  # noqa: BLE001
+                logger.debug(
+                    f"Failed decoding raw returndata: {to_hex(raw_return_data)}. Error: {err}"
+                )
+                return tuple([None for _ in range(num_outputs)])
 
         return tuple([None for _ in range(num_outputs)])
 
@@ -297,7 +297,7 @@ class Trace(TraceAPI):
     def _last_frame(self) -> dict | None:
         try:
             frame = deque(self.raw_trace_frames, maxlen=1)
-        except Exception as err:
+        except Exception as err:  # noqa: BLE001
             logger.error(f"Failed getting traceback: {err}")
             return None
 
@@ -349,19 +349,20 @@ class Trace(TraceAPI):
         if sender := self.transaction.get("from"):
             console.print(f"tx.origin=[{TraceStyles.CONTRACTS}]{sender}[/]")
 
-        if self.call_trace_approach not in approaches_handling_events and hasattr(
-            self._ecosystem, "_enrich_trace_events"
+        if (
+            self.call_trace_approach not in approaches_handling_events
+            and hasattr(self._ecosystem, "_enrich_trace_events")
+            and (logs := self.transaction.get("logs", []))
         ):
             # We must manually attach the contract logs.
             # NOTE: With these approaches, we don't know where they appear
             #   in the call-tree so we have to put them at the top.
-            if logs := self.transaction.get("logs", []):
-                enriched_events = self._ecosystem._enrich_trace_events(logs)
-                event_trees = _events_to_trees(enriched_events)
-                if event_trees:
-                    console.print()
-                    self.chain_manager._reports.show_events(event_trees, console=console)
-                    console.print()
+            enriched_events = self._ecosystem._enrich_trace_events(logs)
+            event_trees = _events_to_trees(enriched_events)
+            if event_trees:
+                console.print()
+                self.chain_manager._reports.show_events(event_trees, console=console)
+                console.print()
 
         # else: the events are already included in the right spots in the call tree.
 
@@ -461,8 +462,8 @@ class Trace(TraceAPI):
 
 class TransactionTrace(Trace):
     transaction_hash: HexStr
-    debug_trace_transaction_parameters: dict = {"enableMemory": True}
-    _frames: list[dict] = []
+    debug_trace_transaction_parameters: dict = {"enableMemory": True}  # noqa: RUF012
+    _frames: list[dict] = []  # noqa: RUF012
 
     @property
     def raw_trace_frames(self) -> Iterator[dict]:
@@ -531,7 +532,7 @@ class TransactionTrace(Trace):
         for approach, fn in approaches.items():
             try:
                 call = fn()
-            except Exception as err:
+            except Exception as err:  # noqa: BLE001
                 reason_map[approach.name] = f"{err}"
                 continue
 
@@ -595,7 +596,7 @@ class CallTrace(Trace):
     be created near sending the request.
     """
 
-    arguments: list[Any] = []
+    arguments: list[Any] = []  # noqa: RUF012
     """
     Remaining eth-call arguments, minus the transaction.
     """
@@ -631,7 +632,7 @@ class CallTrace(Trace):
 
         try:
             result = self._debug_trace_call()
-        except Exception:
+        except Exception:  # noqa: BLE001
             self._set_supports_trace_call(False)
             return {}
 
@@ -699,9 +700,9 @@ def _events_to_trees(events: list[dict]) -> list[Tree]:
         event_counter[tuple_key].append(evt)
 
     result = []
-    for evt_tup, events in event_counter.items():
-        count = len(events)
-        evt = events[0]
+    for grouped_events in event_counter.values():
+        count = len(grouped_events)
+        evt = grouped_events[0]
         if "name" not in evt and "calldata" not in evt:
             # Not sure; or not worth showing.
             logger.debug(f"Unknown event data: '{evt}'.")

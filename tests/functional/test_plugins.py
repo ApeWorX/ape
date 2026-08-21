@@ -119,9 +119,7 @@ class TestPluginMetadataList:
 
 
 class TestPluginMetadata:
-    @pytest.mark.parametrize(
-        "name", ("ape-foo-bar", "ape-foo-bar", "ape_foo_bar", "foo-bar", "foo_bar")
-    )
+    @pytest.mark.parametrize("name", ("ape-foo-bar", "ape_foo_bar", "foo-bar", "foo_bar"))
     def test_names(self, name):
         metadata = PluginMetadata(name=name)
         assert metadata.name == "foo-bar"
@@ -187,14 +185,14 @@ class TestPluginMetadata:
         assert metadata.name == "foo"
 
     def test_is_available(self):
-        metadata = PluginMetadata(name=list(AVAILABLE_PLUGINS)[0])
+        metadata = PluginMetadata(name=next(iter(AVAILABLE_PLUGINS)))
         assert metadata.is_available
         metadata = PluginMetadata(name="foobar")
         assert not metadata.is_available
 
     @parametrize_pip_cmd
     def test_prepare_install(self, pip_command):
-        metadata = PluginMetadata(name=list(AVAILABLE_PLUGINS)[0], pip_command=pip_command)
+        metadata = PluginMetadata(name=next(iter(AVAILABLE_PLUGINS)), pip_command=pip_command)
         actual = metadata._prepare_install(skip_confirmation=True)
         assert actual is not None
         arguments = actual.get("args", [])
@@ -214,7 +212,7 @@ class TestPluginMetadata:
 
     @parametrize_pip_cmd
     def test_prepare_install_upgrade(self, pip_command):
-        metadata = PluginMetadata(name=list(AVAILABLE_PLUGINS)[0], pip_command=pip_command)
+        metadata = PluginMetadata(name=next(iter(AVAILABLE_PLUGINS)), pip_command=pip_command)
         actual = metadata._prepare_install(upgrade=True, skip_confirmation=True)
         assert actual is not None
         arguments = actual.get("args", [])
@@ -237,7 +235,7 @@ class TestPluginMetadata:
 
     @mark_specifiers_less_than_ape
     def test_prepare_install_version_smaller_than_ape(self, specifier, ape_caplog):
-        metadata = PluginMetadata(name=list(AVAILABLE_PLUGINS)[0], version=specifier)
+        metadata = PluginMetadata(name=next(iter(AVAILABLE_PLUGINS)), version=specifier)
         expected = (
             r"Unable to install plugin\.\n"
             r"Reason: Doing so will downgrade Ape's version\.\n"
@@ -259,7 +257,8 @@ class TestPluginMetadata:
         assert metadata.check_installed()
 
     @pytest.mark.parametrize(
-        "plugin,expected", [(list(INSTALLED_PLUGINS)[0], True), (list(AVAILABLE_PLUGINS)[0], False)]
+        "plugin,expected",
+        [(next(iter(INSTALLED_PLUGINS)), True), (next(iter(AVAILABLE_PLUGINS)), False)],
     )
     def test_check_installed_python_310_or_greater(self, plugin, expected):
         installed = PluginMetadata(name=plugin)
