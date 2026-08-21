@@ -985,6 +985,20 @@ def test_generate_account_invalid_alias(delete_account_after):
             generate_account(used_alias, "asdf1234")
 
 
+def test_generate_account_rejects_path_alias():
+    outside = ape.config.DATA_FOLDER / "pwned_ape_alias.json"
+    if outside.is_file():
+        outside.unlink()
+
+    with pytest.raises(AccountsError, match="single path segment"):
+        generate_account("../pwned_ape_alias", PASSPHRASE)
+
+    with pytest.raises(AccountsError, match="single path segment"):
+        generate_account("nested/alias", PASSPHRASE)
+
+    assert not outside.exists()
+
+
 def test_generate_account_invalid_passphrase():
     with pytest.raises(AccountsError, match="Account file encryption passphrase must be provided."):
         generate_account("invalid-passphrase", "")

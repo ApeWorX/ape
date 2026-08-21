@@ -1,6 +1,7 @@
 """Base non-pydantic validator utils"""
 
 import re
+from pathlib import Path
 from warnings import warn
 
 from eth_utils import is_hex
@@ -25,6 +26,9 @@ def _validate_account_alias(alias: str) -> str:
         raise AliasAlreadyInUseError(alias)
     elif not isinstance(alias, str):
         raise AccountsError(f"Alias must be a str, not '{type(alias)}'.")
+    elif not alias or Path(alias).name != alias:
+        # `_write_and_return_account` joins alias into the accounts data folder.
+        raise AccountsError("Alias must be a single path segment.")
     elif is_hex(alias) and len(alias) >= 42:
         # Prevents private keys from accidentally being stored in plaintext
         # Ref: https://github.com/ApeWorX/ape/issues/1525
