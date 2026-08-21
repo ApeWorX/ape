@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import click
+from eth_abi.exceptions import EncodingError
 from eth_pydantic_types import HexBytes
 from eth_utils import to_hex
 from ethpm_types.abi import EventABI
@@ -26,9 +27,11 @@ from ape.exceptions import (
     ContractDataError,
     ContractLogicError,
     ContractNotFoundError,
+    ConversionError,
     CustomError,
     MethodNonPayableError,
     MissingDeploymentBytecodeError,
+    MissingStructFieldError,
 )
 from ape.logging import get_rich_console, logger
 from ape.types.events import ContractLog, LogFilter, MockContractLog
@@ -230,8 +233,25 @@ class ContractMethodHandler(ManagerAccessMixin):
 
         return "\n\n".join(numeric_infos)
 
+    def _can_encode(self, abi: "MethodABI", args: tuple | list) -> bool:
+        # Probe whether args encode against this overload's input types. Used only to pick
+        # among same-arity overloads; encoding is pure (no network). Only a conversion or
+        # encoding failure means the args do not fit this overload. Anything else is a real
+        # error and propagates, so a bug in conversion is not silently read as a no-match.
+        try:
+            arguments = self.conversion_manager.convert_method_args(abi, args)
+            self.provider.network.ecosystem.encode_calldata(abi, *arguments)
+        except (ConversionError, MissingStructFieldError, EncodingError) as err:
+            logger.debug(
+                f"Overload '{abi.selector}' does not accept the given arguments "
+                f"({type(err).__name__}: {err})."
+            )
+            return False
+
+        return True
+
     def encode_input(self, *args) -> HexBytes:
-        selected_abi = _select_method_abi(self.abis, args)
+        selected_abi = _select_method_abi(self.abis, args, encode_check=self._can_encode)
         arguments = self.conversion_manager.convert_method_args(selected_abi, args)
         ecosystem = self.provider.network.ecosystem
         encoded_calldata = ecosystem.encode_calldata(selected_abi, *arguments)
@@ -293,7 +313,7 @@ class ContractMethodHandler(ManagerAccessMixin):
 class ContractCallHandler(ContractMethodHandler):
     def __call__(self, *args, **kwargs) -> Any:
         self._validate_is_contract()
-        selected_abi = _select_method_abi(self.abis, args)
+        selected_abi = _select_method_abi(self.abis, args, encode_check=self._can_encode)
         arguments = self.conversion_manager.convert_method_args(selected_abi, args)
 
         return ContractCall(
@@ -347,23 +367,46 @@ class ContractCallHandler(ContractMethodHandler):
             reported in the fee-currency's smallest unit, e.g. Wei.
         """
 
-        selected_abi = _select_method_abi(self.abis, args)
+        selected_abi = _select_method_abi(self.abis, args, encode_check=self._can_encode)
         arguments = self.conversion_manager.convert_method_args(selected_abi, args)
         return self.transact.estimate_gas_cost(*arguments, **kwargs)
 
 
-def _select_method_abi(abis: list["MethodABI"], args: tuple | list) -> "MethodABI":
-    args = args or []
-    selected_abi = None
-    for abi in abis:
-        inputs = abi.inputs or []
-        if len(args) == len(inputs):
-            selected_abi = abi
+def _select_method_abi(
+    abis: list["MethodABI"],
+    args: tuple | list,
+    encode_check: "Callable[[MethodABI, tuple | list], bool] | None" = None,
+) -> "MethodABI":
+    """
+    Pick the overload to call for ``args``.
 
-    if not selected_abi:
+    Selection rules, in order:
+
+    1. Only overloads whose input count matches ``len(args)`` are candidates. No candidate
+       raises :class:`~ape.exceptions.ArgumentsLengthError`.
+    2. With more than one candidate and an ``encode_check``, the first candidate (in ABI
+       declaration order) whose input types the args encode to wins. This is a behavior
+       change: selection used to be by count alone, so an ambiguous overload set resolved
+       to the last declared one regardless of the argument types (#2670). Encoding is pure,
+       so the probe costs no network calls.
+    3. Otherwise (a single candidate, no ``encode_check``, or no candidate the args fit) the
+       last matching overload wins, which is the prior behavior.
+
+    When several overloads all accept the same args, e.g. ``1`` against both ``uint256``
+    and ``int256``, rule 2 falls back on ABI declaration order. That is deterministic but
+    arbitrary, since the ABI itself does not say which one the caller meant.
+    """
+    args = args or []
+    matching_abis = [abi for abi in abis if len(abi.inputs or []) == len(args)]
+    if not matching_abis:
         raise ArgumentsLengthError(len(args), inputs=abis)
 
-    return selected_abi
+    if len(matching_abis) > 1 and encode_check is not None:
+        for abi in matching_abis:
+            if encode_check(abi, args):
+                return abi
+
+    return matching_abis[-1]
 
 
 class ContractTransaction(ManagerAccessMixin):
@@ -454,7 +497,7 @@ class ContractTransactionHandler(ContractMethodHandler):
             int: The estimated cost of gas to execute the transaction
             reported in the fee-currency's smallest unit, e.g. Wei.
         """
-        selected_abi = _select_method_abi(self.abis, args)
+        selected_abi = _select_method_abi(self.abis, args, encode_check=self._can_encode)
         arguments = self.conversion_manager.convert_method_args(selected_abi, args)
         txn = self.as_transaction(*arguments, **kwargs)
         return self.provider.estimate_gas_cost(txn)
@@ -479,7 +522,7 @@ class ContractTransactionHandler(ContractMethodHandler):
 
     def _as_transaction(self, *args) -> ContractTransaction:
         self._validate_is_contract()
-        selected_abi = _select_method_abi(self.abis, args)
+        selected_abi = _select_method_abi(self.abis, args, encode_check=self._can_encode)
         return ContractTransaction(
             abi=selected_abi,
             address=self.contract.address,
