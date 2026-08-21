@@ -340,13 +340,13 @@ class SourceTraceback(RootModel[list[ControlFlow]]):
         """
         return self.statements[-1].type if self.statements[-1].type != "source" else None
 
-    def append(self, __object) -> None:
+    def append(self, __object, /) -> None:
         """
         Append the given control flow to this one.
         """
         self.root.append(__object)
 
-    def extend(self, __iterable) -> None:
+    def extend(self, __iterable, /) -> None:
         """
         Append all the control flows from the given traceback to this one.
         """

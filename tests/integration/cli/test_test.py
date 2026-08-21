@@ -63,7 +63,7 @@ def path_check():
     # 'Something something' temp path.
     try:
         os.getcwd()
-    except Exception:
+    except Exception:  # noqa: BLE001
         os.chdir(f"{Path(__file__).parent}")
 
 
@@ -379,7 +379,7 @@ def test_gas_flag_exclusions_set_in_config(
     for _ in range(3):
         try:
             geth_account.transfer(geth_account, "1 wei")  # Force a clean block.
-        except Exception as err:
+        except Exception as err:  # noqa: BLE001
             # Sometimes tests are weird, since running async.
             # So give this a chance a few times before bailing out...
             logger.error(f"Failure bumping block: {err}")

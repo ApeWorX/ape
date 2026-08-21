@@ -525,4 +525,4 @@ def test_watch(mocker):
 
     # NOTE: We had a bug once where the args it received were not strings.
     #   (wasn't deconstructing), so this check is important.
-    run_subprocess_patch.assert_called_once_with(["ape", "test", "-s"])
+    run_subprocess_patch.assert_called_once_with(["ape", "test", "-s"], check=False)

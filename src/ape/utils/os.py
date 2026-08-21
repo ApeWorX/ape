@@ -263,10 +263,7 @@ def path_match(path: str | Path, *exclusions: str) -> bool:
     path_path = Path(path)
 
     for excl in exclusions:
-        if fnmatch(path_str, excl):
-            return True
-
-        elif fnmatch(path_path.name, excl):
+        if fnmatch(path_str, excl) or fnmatch(path_path.name, excl):
             return True
 
         else:

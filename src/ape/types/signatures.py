@@ -45,19 +45,19 @@ def _bytes_to_human_str(bytes_value: bytes) -> str | None:
     try:
         # Try as text
         return bytes_value.decode("utf8")
-    except Exception:
+    except Exception:  # noqa: BLE001, S110
         pass
 
     try:
         # Try as hex
         return to_hex(bytes_value)
-    except Exception:
+    except Exception:  # noqa: BLE001, S110
         pass
 
     try:
         # Try normal str
         return str(bytes_value)
-    except Exception:
+    except Exception:  # noqa: BLE001, S110
         pass
 
     return None

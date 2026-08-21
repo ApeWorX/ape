@@ -6,7 +6,7 @@ from collections.abc import Callable, Iterator, Sequence
 from contextlib import contextmanager
 from enum import IntEnum
 from pathlib import Path
-from typing import IO, TYPE_CHECKING, Any
+from typing import IO, TYPE_CHECKING, Any, ClassVar
 from urllib.parse import urlparse, urlunparse
 
 import click
@@ -43,18 +43,18 @@ logging.Logger.success = success  # type: ignore
 
 
 CLICK_STYLE_KWARGS = {
-    LogLevel.ERROR: dict(fg="bright_red"),
-    LogLevel.WARNING: dict(fg="bright_yellow"),
-    LogLevel.SUCCESS: dict(fg="bright_green"),
-    LogLevel.INFO: dict(fg="blue"),
-    LogLevel.DEBUG: dict(fg="blue"),
+    LogLevel.ERROR: {"fg": "bright_red"},
+    LogLevel.WARNING: {"fg": "bright_yellow"},
+    LogLevel.SUCCESS: {"fg": "bright_green"},
+    LogLevel.INFO: {"fg": "blue"},
+    LogLevel.DEBUG: {"fg": "blue"},
 }
 CLICK_ECHO_KWARGS = {
-    LogLevel.ERROR: dict(err=True),
-    LogLevel.WARNING: dict(err=True),
-    LogLevel.SUCCESS: dict(),
-    LogLevel.INFO: dict(),
-    LogLevel.DEBUG: dict(),
+    LogLevel.ERROR: {"err": True},
+    LogLevel.WARNING: {"err": True},
+    LogLevel.SUCCESS: {},
+    LogLevel.INFO: {},
+    LogLevel.DEBUG: {},
 }
 
 
@@ -65,7 +65,7 @@ def _isatty(stream: IO) -> bool:
     # noinspection PyBroadException
     try:
         return stream.isatty()
-    except Exception:
+    except Exception:  # noqa: BLE001
         return False
 
 
@@ -113,13 +113,13 @@ class ClickHandler(logging.Handler):
                 click.echo(msg, **self.echo_kwargs[level])
             else:
                 click.echo(msg)
-        except Exception:
+        except Exception:  # noqa: BLE001
             self.handleError(record)
 
 
 class ApeLogger:
     _mentioned_verbosity_option = False
-    _extra_loggers: dict[str, logging.Logger] = {}
+    _extra_loggers: ClassVar[dict[str, logging.Logger]] = {}
     DISABLE_LEVEL: int = 100_000
 
     def __init__(
@@ -166,7 +166,7 @@ class ApeLogger:
             if sys.argv[arg_i] == "-v" or sys.argv[arg_i] == "--verbosity":
                 try:
                     level = _get_level(sys.argv[arg_i + 1].upper())
-                except Exception:
+                except Exception:  # noqa: BLE001, S112
                     # Let it fail in a better spot, or is not our level.
                     continue
 
@@ -346,7 +346,7 @@ logger = ApeLogger.create()
 
 
 class _RichConsoleFactory:
-    rich_console_map: dict[str, "RichConsole"] = {}
+    rich_console_map: ClassVar[dict[str, "RichConsole"]] = {}
 
     def get_console(self, file: IO[str] | None = None, **kwargs) -> "RichConsole":
         # Configure custom file console

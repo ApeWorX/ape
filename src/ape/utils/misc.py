@@ -4,7 +4,7 @@ import inspect
 import json
 import sys
 
-if sys.version_info.minor >= 11:
+if sys.version_info >= (3, 11):
     # 3.11 or greater
     # NOTE: type-ignore is for when running mypy on python versions < 3.11
     import tomllib  # type: ignore[import-not-found]
@@ -170,7 +170,7 @@ def get_package_version(obj: Any) -> str:
     elif not isinstance(obj, str):
         try:
             str_value = f"{obj}"
-        except Exception:
+        except Exception:  # noqa: BLE001
             str_value = "<obj>"
 
         logger.warning(f"Type issue: Unknown if properly handled {str_value}")
@@ -223,9 +223,10 @@ def load_config(path: Path, expand_envars=True, must_exist=False) -> dict:
             config = pyproject_toml.get("tool", {}).get("ape", {})
 
             # Utilize [project] for some settings.
-            if project_settings := pyproject_toml.get("project"):
-                if "name" not in config and "name" in project_settings:
-                    config["name"] = project_settings["name"]
+            if (project_settings := pyproject_toml.get("project")) and (
+                "name" not in config and "name" in project_settings
+            ):
+                config["name"] = project_settings["name"]
 
         elif path.suffix in (".json",):
             config = json.loads(contents)
@@ -256,9 +257,7 @@ def gas_estimation_error_message(tx_error: Exception) -> str:
         will likely revert.
     """
     txn_error_text = str(tx_error)
-    if txn_error_text.endswith("."):
-        # Strip period from initial error so it looks better.
-        txn_error_text = txn_error_text[:-1]
+    txn_error_text = txn_error_text.removesuffix(".")
 
     return (
         f"Gas estimation failed: '{txn_error_text}'. This transaction will likely revert. "
@@ -433,7 +432,7 @@ def is_evm_precompile(address: str) -> bool:
     try:
         address = address.replace("0x", "")
         return 0 < sum(int(x) for x in address) < 10
-    except Exception:
+    except Exception:  # noqa: BLE001
         return False
 
 
@@ -456,7 +455,7 @@ def is_zero_hex(address: str) -> bool:
             # "0x" counts as zero.
             return True
 
-    except Exception:
+    except Exception:  # noqa: BLE001
         return False
 
 
@@ -465,7 +464,7 @@ def _dict_overlay(mapping: dict[str, Any], overlay: dict[str, Any], depth: int =
     for key, value in overlay.items():
         if isinstance(value, dict):
             if key not in mapping:
-                mapping[key] = dict()
+                mapping[key] = {}
             _dict_overlay(mapping[key], value, depth + 1)
         else:
             mapping[key] = value
@@ -487,7 +486,7 @@ def log_instead_of_fail(default: Any | None = None):
                 else:
                     return fn(*args, **kwargs)
 
-            except Exception as err:
+            except Exception as err:  # noqa: BLE001
                 logger.error(str(err))
                 if default:
                     return default

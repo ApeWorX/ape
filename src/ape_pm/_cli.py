@@ -147,7 +147,7 @@ def _package_callback(ctx, param, value):
     # Check if is a local package.
     try:
         path = Path(value).absolute()
-    except Exception:
+    except Exception:  # noqa: BLE001, S110
         pass
     else:
         if path.exists():
@@ -230,7 +230,7 @@ def install(cli_ctx, package, name, version, ref, force, config_override, no_rec
 
     try:
         dependency = pm.dependencies.install(**package, use_cache=not force, recurse=not no_recurse)
-    except Exception as err:
+    except Exception as err:  # noqa: BLE001
         cli_ctx.logger.log_error(err)
         sys.exit(1)
 
@@ -320,7 +320,7 @@ def _uninstall(dependency: "Dependency", yes: bool = False) -> bool:
 
     try:
         dependency.uninstall()
-    except Exception as err:
+    except Exception as err:  # noqa: BLE001
         logger.error(f"Failed uninstalling '{key}': {err}")
         return False
 
@@ -376,7 +376,7 @@ def compile(cli_ctx, name, version, force, config_override):
 def _compile_dependency(cli_ctx, dependency: "Dependency", force: bool):
     try:
         result = dependency.compile(use_cache=not force)
-    except Exception as err:
+    except Exception as err:  # noqa: BLE001
         cli_ctx.logger.error(str(err))
     else:
         if result:

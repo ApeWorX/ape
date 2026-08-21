@@ -4,7 +4,7 @@ from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
 from functools import cached_property
 from pathlib import Path
-from typing import TYPE_CHECKING, Generic, TypeVar
+from typing import TYPE_CHECKING, ClassVar, Generic, TypeVar
 
 from ethpm_types import ABI, ContractType
 from ethpm_types.contract_type import ABIList
@@ -81,13 +81,12 @@ class ApeDataCache(CacheDirectory, Generic[_BASE_MODEL]):
         if model := self.memory.get(key):
             return model
 
-        elif fetch_from_disk and self._read_from_disk:
-            if data := self.get_data(key):
-                # Found on disk.
-                model = self._model_type.model_validate(data)
-                # Cache locally for next time.
-                self.memory[key] = model
-                return model
+        elif fetch_from_disk and self._read_from_disk and (data := self.get_data(key)):
+            # Found on disk.
+            model = self._model_type.model_validate(data)
+            # Cache locally for next time.
+            self.memory[key] = model
+            return model
 
         return None
 
@@ -104,11 +103,11 @@ class ContractCache(BaseManager):
     """
 
     # ecosystem_name -> network_name -> cache_name -> cache
-    _caches: dict[str, dict[str, dict[str, ApeDataCache]]] = {}
+    _caches: ClassVar[dict[str, dict[str, dict[str, ApeDataCache]]]] = {}
 
     # chain_id -> address -> custom_err
     # Cached to prevent calling `new_class` multiple times with conflicts.
-    _custom_error_types: dict[int, dict[AddressType, set[type[CustomError]]]] = {}
+    _custom_error_types: ClassVar[dict[int, dict[AddressType, set[type[CustomError]]]]] = {}
 
     @property
     def contract_types(self) -> ApeDataCache[ContractType]:
@@ -256,11 +255,11 @@ class ContractCache(BaseManager):
         Useful for testing.
         """
         caches = self._caches
-        self._caches = {}
+        ContractCache._caches = {}
         with self.deployments.use_temporary_cache():
             yield
 
-        self._caches = caches
+        ContractCache._caches = caches
 
     def _delete_proxy(self, address: AddressType):
         if info := self.proxy_infos[address]:
@@ -583,24 +582,30 @@ class ContractCache(BaseManager):
         # Either no cached entry, or `replace=True` so we ignore the cache.
         # Check broader sources, such as an explorer.
         if not proxy_info and detect_proxy:
-            # Proxy info not provided. Attempt to detect.
-            if not (proxy_info := self.proxy_infos[address_key]):
-                if proxy_info := self.provider.network.ecosystem.get_proxy_info(address_key):
-                    self.proxy_infos[address_key] = proxy_info
+            proxy_info = self.proxy_infos[address_key]
 
-        if proxy_info:
-            if proxy_contract_type := self._get_proxy_contract_type(
+        if (
+            not proxy_info
+            and detect_proxy
+            and (detected_proxy_info := self.provider.network.ecosystem.get_proxy_info(address_key))
+        ):
+            proxy_info = detected_proxy_info
+            self.proxy_infos[address_key] = proxy_info
+
+        if proxy_info and (
+            proxy_contract_type := self._get_proxy_contract_type(
                 address_key,
                 proxy_info,
                 fetch_from_explorer=fetch_from_explorer,
                 default=default,
                 replace=replace,
-            ):
-                # `proxy_contract_type` is one of the following:
-                # 1. A ContractType with the combined proxy and implementation ABIs
-                # 2. Implementation-only ABI ContractType (like forwarder proxies)
-                # 3. Proxy only ABI (e.g. unverified implementation ContractType)
-                return proxy_contract_type
+            )
+        ):
+            # `proxy_contract_type` is one of the following:
+            # 1. A ContractType with the combined proxy and implementation ABIs
+            # 2. Implementation-only ABI ContractType (like forwarder proxies)
+            # 3. Proxy only ABI (e.g. unverified implementation ContractType)
+            return proxy_contract_type
 
         contract_type = None
         # Also gets cached to disk for faster lookup next time.
@@ -675,9 +680,8 @@ class ContractCache(BaseManager):
         Get the _exact_ ContractType for a given address. For proxy contracts, returns
         the proxy ABIs if there are any and not the implementation ABIs.
         """
-        if not replace:
-            if contract_type := self.contract_types[address]:
-                return contract_type
+        if not replace and (contract_type := self.contract_types[address]):
+            return contract_type
 
         if fetch_from_explorer:
             return self._get_contract_type_from_explorer(address)
@@ -751,7 +755,7 @@ class ContractCache(BaseManager):
             prefix = f"Expected type '{ContractType.__name__}' for argument 'contract_type'"
             try:
                 suffix = f"; Given '{type(contract_type).__name__}'."
-            except Exception:
+            except Exception:  # noqa: BLE001
                 suffix = "."
 
             raise TypeError(f"{prefix}{suffix}")
@@ -927,7 +931,7 @@ class ContractCache(BaseManager):
 
         try:
             contract_type = self.provider.network.explorer.get_contract_type(address)
-        except Exception as err:
+        except Exception as err:  # noqa: BLE001
             explorer_name = self.provider.network.explorer.name
             if "rate limit" in str(err).lower():
                 # Don't show any additional error message during rate limit errors,

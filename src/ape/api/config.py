@@ -113,7 +113,7 @@ class PluginConfig(BaseSettings):
         if plugin_name in raw_global_data:
             try:
                 cls.model_validate(raw_global_data[plugin_name])
-            except Exception:
+            except Exception:  # noqa: BLE001
                 if problems := cls._find_plugin_config_problems_from_file(
                     err, ape.config_manager.DATA_FOLDER
                 ):
@@ -425,7 +425,7 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
                 raise ConfigError(f"Invalid ecosystem '{ecosystem_name}' in deployments config.")
 
             ecosystem = self.network_manager.ecosystems[ecosystem_name]
-            for network_name, network_deploys in ecosystem_deploys.items():
+            for network_name in ecosystem_deploys:
                 if network_name not in ecosystem.networks:
                     raise ConfigError(
                         f"Invalid network '{ecosystem_name}:{network_name}' in deployments config."

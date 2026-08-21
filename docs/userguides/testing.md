@@ -51,19 +51,23 @@ import ape
 import pytest
 import re
 
+
 # SETUP PHASE
 # NOTE: More on fixtures is discussed in later sections of this guide!
 @pytest.fixture
 def owner(accounts):
     return accounts[0]
 
+
 @pytest.fixture
 def not_owner(accounts):
     return accounts[1]
 
+
 @pytest.fixture
 def my_contract(owner, project):
     return owner.deploy(project.MyContract)
+
 
 def test_authorization(my_contract, owner, not_owner):
     # INVOCATION PHASE
@@ -73,11 +77,11 @@ def test_authorization(my_contract, owner, not_owner):
     # ASSERTION PHASE
     with ape.reverts("!authorized"):
         my_contract.authorized_method(sender=not_owner)
-        
+
     # You can also test against custom error types
     with ape.reverts(my_contract.Unauthorized):
         my_contract.authorized_method(sender=not_owner)
-        
+
     # Or match error patterns with regex
     with ape.reverts(re.compile(r"^!auth.*")):
         my_contract.authorized_method(sender=not_owner)
@@ -111,6 +115,7 @@ For code readability and sustainability, create your own fixtures using the `acc
 ```python
 import pytest
 
+
 @pytest.fixture
 def owner(accounts):
     return accounts[0]
@@ -121,8 +126,7 @@ def receiver(accounts):
     return accounts[1]
 
 
-def test_my_method(owner, receiver):
-    ...
+def test_my_method(owner, receiver): ...
 ```
 
 You can configure your accounts by changing the `mnemonic`, `number_of_accounts`, and `balance` in the `test` section of your `ape-config.yaml` file:
@@ -208,9 +212,11 @@ You also have access to the `project` you are testing. You will need this to dep
 ```python
 import pytest
 
+
 @pytest.fixture
 def owner(accounts):
     return accounts[0]
+
 
 @pytest.fixture
 def my_contract(project, owner):
@@ -252,6 +258,7 @@ Then, during `test_my_contract_1()`, instead of deploying again, it uses the cac
 ```python
 import pytest
 
+
 @pytest.fixture(scope="session")
 def my_contract(accounts, project):
     owner = accounts[0]
@@ -260,11 +267,13 @@ def my_contract(accounts, project):
     contract.initialize(sender=owner)
     return contract
 
-def test_something_else():
-    ...
+
+def test_something_else(): ...
+
 
 def test_my_contract_0(my_contract):
     my_contract.myMethod()
+
 
 def test_my_contract_1(my_contract):
     my_contract.myMethod()
@@ -292,6 +301,7 @@ If you are using chain-isolation and have a higher-scoped fixture that you know 
 ```python
 import ape
 from ape_tokens import tokens
+
 
 @ape.fixture(scope="session", chain_isolation=False, params=("WETH", "DAI", "BAT"))
 def token_addresses(request):
@@ -408,6 +418,7 @@ From our earlier example we can see this in action:
 ```python
 import ape
 
+
 def test_authorization(my_contract, owner, not_owner):
     my_contract.set_owner(sender=owner)
     assert owner == my_contract.owner()
@@ -451,6 +462,7 @@ Take for example:
 ```python
 # @version 0.4.3
 
+
 @external
 def check_value(_value: uint256) -> bool:
     assert _value != 0  # dev: invalid value
@@ -461,6 +473,7 @@ We can explicitly cause a transaction revert and check the failed line by supply
 
 ```python
 import ape
+
 
 def test_authorization(my_contract, owner):
     with ape.reverts(dev_message="dev: invalid value"):
@@ -516,6 +529,7 @@ Similarly, if you require dev assertions for non-reentrant functions you must be
 def _foo_internal():  # dev: correct location
     pass
 
+
 @external
 @nonreentrant
 def foo():
@@ -535,17 +549,21 @@ We can ensure unauthorized withdraws are disallowed by writing the following tes
 import ape
 import pytest
 
+
 @pytest.fixture
 def owner(accounts):
     return accounts[0]
+
 
 @pytest.fixture
 def hacker(accounts):
     return accounts[1]
 
+
 @pytest.fixture
 def contract(owner, project):
     return owner.deploy(project.MyContract)
+
 
 def test_unauthorized_withdraw(contract, hacker):
     with ape.reverts(contract.Unauthorized, unauth_address=hacker.address):
@@ -557,6 +575,7 @@ You can also use custom error types from the contract container (from `ape.proje
 ```python
 import ape
 
+
 def test_unauthorized(contract, hacker, project):
     with ape.reverts(project.MyContract.Unauthorized, unauth_address=hacker.address):
         contract.withdraw(sender=hacker)
@@ -567,6 +586,7 @@ Here is an example of what that may look like:
 
 ```python
 import ape
+
 
 def test_error_on_deploy(account, project):
     with ape.reverts(project.Token.MyCustomError):
@@ -582,14 +602,15 @@ The address will only exist for transactions that were published (e.g. not for f
 ```python
 import ape
 
+
 def test_error_on_deploy(account):
     # NOTE: We are using `as rev` here to capture the revert info
     # so we can attempt to lookup the contract later.
     with ape.reverts() as rev:
         ape.project.HasError.deploy(sender=account)
-    
+
     assert rev.value.address is not None, "Receipt never found, contract never cached"
-    
+
     # Grab the cached instance using the error's address
     # and assert the custom error this way.
     contract = ape.Contract(rev.value.address)
@@ -605,9 +626,11 @@ To run an entire test using a specific network / provider combination, use the `
 ```python
 import pytest
 
+
 @pytest.mark.use_network("fantom:local:test")
 def test_my_fantom_test(chain):
     assert chain.provider.network.ecosystem.name == "fantom"
+
 
 @pytest.mark.use_network("ethereum:local:test")
 def test_my_ethereum_test(chain):
@@ -627,7 +650,7 @@ def test_my_multichain_test(networks):
 
     # You can also use the context manager like this:
     with networks.parse_network_choice("fantom:local:test") as provider:
-       assert provider.network.ecosystem.name == "fantom"
+        assert provider.network.ecosystem.name == "fantom"
 ```
 
 You can also set the network context in a pytest fixture.
@@ -636,10 +659,12 @@ This is useful if certain fixtures must run in certain networks.
 ```python
 import pytest
 
+
 @pytest.fixture
 def stark_contract(networks, project):
     with networks.parse_network_choice("starknet:local"):
         yield project.MyStarknetContract.deploy()
+
 
 def test_starknet_thing(stark_contract, stark_account):
     # Uses the starknet connection via the stark_contract fixture

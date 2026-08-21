@@ -4,9 +4,10 @@ from contextlib import contextmanager
 from datetime import datetime
 from functools import cached_property, partial, singledispatchmethod
 from statistics import mean, median
-from typing import IO, TYPE_CHECKING, cast
+from typing import IO, TYPE_CHECKING, ClassVar, cast
 
 import pandas as pd
+from pydantic import Field
 from rich.box import SIMPLE
 from rich.table import Table
 
@@ -178,7 +179,7 @@ class BlockContainer(BaseManager):
             columns, self.head.__class__
         )
         extraction = partial(extract_fields, columns=columns)
-        data = map(lambda b: extraction(b), blocks)
+        data = (extraction(b) for b in blocks)
         return pd.DataFrame(columns=columns, data=data)
 
     def range(
@@ -288,13 +289,11 @@ class BlockContainer(BaseManager):
             raise ValueError("'stop' argument must be in the future.")
 
         # Get number of last block with the necessary amount of confirmations.
-        block = None
 
         head_minus_confirms = self.height - required_confirmations
         if start_block is not None and start_block <= head_minus_confirms:
             # Front-load historical blocks.
-            for block in self.range(start_block, head_minus_confirms + 1):
-                yield block
+            yield from self.range(start_block, head_minus_confirms + 1)
 
         yield from self.provider.poll_blocks(
             stop_block=stop_block,
@@ -313,7 +312,7 @@ class AccountHistory(BaseInterfaceModel):
     The address to get history for.
     """
 
-    sessional: list[ReceiptAPI] = []
+    sessional: list[ReceiptAPI] = Field(default_factory=list)
     """
     The receipts from the current Python session.
     """
@@ -402,7 +401,7 @@ class AccountHistory(BaseInterfaceModel):
         txns = self.query_manager.query(query, engine_to_use=engine_to_use)
         columns = validate_and_expand_columns(columns, ReceiptAPI)  # type: ignore
         extraction = partial(extract_fields, columns=columns)
-        data = map(lambda tx: extraction(tx), txns)
+        data = (extraction(tx) for tx in txns)
         return pd.DataFrame(columns=columns, data=data)
 
     def __iter__(self) -> Iterator[ReceiptAPI]:  # type: ignore[override]
@@ -505,8 +504,10 @@ class TransactionHistory(BaseManager):
     A container mapping Transaction History to the transaction from the active session.
     """
 
-    _account_history_cache: dict[AddressType, AccountHistory] = {}
-    _hash_to_receipt_map: dict[str, ReceiptAPI] = {}
+    _account_history_cache: ClassVar[dict[AddressType, AccountHistory]] = {}
+
+    def __init__(self):
+        self._hash_to_receipt_map: dict[str, ReceiptAPI] = {}
 
     @singledispatchmethod
     def __getitem__(self, key):
@@ -533,7 +534,7 @@ class TransactionHistory(BaseManager):
         def _get_receipt() -> ReceiptAPI | None:
             try:
                 return self._get_receipt(account_or_hash)
-            except Exception:
+            except Exception:  # noqa: BLE001
                 return None
 
         is_account = False
@@ -541,7 +542,7 @@ class TransactionHistory(BaseManager):
             # Attempt converting.
             try:
                 account_or_hash = self.conversion_manager.convert(account_or_hash, AddressType)
-            except Exception:
+            except Exception:  # noqa: BLE001, S110
                 # Pretend this never happened.
                 pass
             else:
@@ -661,8 +662,8 @@ class ReportManager(BaseManager):
                     f"{len(gases)}",
                     f"{min(gases)}",
                     f"{max(gases)}",
-                    f"{int(round(mean(gases)))}",
-                    f"{int(round(median(gases)))}",
+                    f"{round(mean(gases))}",
+                    f"{round(median(gases))}",
                 )
 
             if has_at_least_1_row:
@@ -737,12 +738,12 @@ class ChainManager(BaseManager):
         from ape import chain
     """
 
-    _snapshots: defaultdict = defaultdict(list)  # chain_id -> snapshots
+    _snapshots: ClassVar[defaultdict] = defaultdict(list)  # chain_id -> snapshots
     _chain_id_cache: ChainIdCache = ChainIdCache()
-    _block_container_map: dict[int, BlockContainer] = {}
-    _transaction_history_map: dict[int, TransactionHistory] = {}
+    _block_container_map: ClassVar[dict[int, BlockContainer]] = {}
+    _transaction_history_map: ClassVar[dict[int, TransactionHistory]] = {}
     _reports: ReportManager = ReportManager()
-    _code: dict[str, dict[str, dict[AddressType, "ContractCode"]]] = {}
+    _code: ClassVar[dict[str, dict[str, dict[AddressType, "ContractCode"]]]] = {}
 
     @cached_property
     def contracts(self) -> ContractCache:
@@ -960,7 +961,7 @@ class ChainManager(BaseManager):
 
         try:
             yield
-        except Exception:
+        except Exception:  # noqa: BLE001, S110
             pass  # NOTE: Handle cleanup after any exceptions in yielded context
 
         if snapshot is None:
