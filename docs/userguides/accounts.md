@@ -51,7 +51,9 @@ You can also change settings at run-time, such as the mnemonic:
 ```python
 from ape import accounts
 
-accounts.test_accounts.mnemonic = "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat"
+accounts.test_accounts.mnemonic = (
+    "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat"
+)
 print(accounts.test_accounts[0])
 # 0x627306090abaB3A6e1400e9345bC60c78a8BEf57
 ```
@@ -91,14 +93,14 @@ account.balance += int(1e18)  # Gives `account` 1 Ether
 In order to eliminate the usage of sender in contract calls, you can use `use_sender` context manager.
 
 ```python
-with accounts.use_sender(0): # Use first account from test mnemonic
-  contract.myFunction(1)
+with accounts.use_sender(0):  # Use first account from test mnemonic
+    contract.myFunction(1)
 
-with accounts.use_sender("<address>"): # Impersonate an account
-  contract.myFunction(1)
+with accounts.use_sender("<address>"):  # Impersonate an account
+    contract.myFunction(1)
 
-with accounts.use_sender(a): # a is a `TestAccountAPI` object
-  contract.myFunction(1)
+with accounts.use_sender(a):  # a is a `TestAccountAPI` object
+    contract.myFunction(1)
 ```
 
 ## Live Network Accounts
@@ -165,8 +167,8 @@ from ape_accounts import generate_account
 
 account, mnemonic = generate_account("my-account", "mySecureP@ssphrase")
 
-print(f'Save your mnemonic: {mnemonic}')
-print(f'Your new account address is: {account.address}')
+print(f"Save your mnemonic: {mnemonic}")
+print(f"Your new account address is: {account.address}")
 ```
 
 See the [documentation for `generate_account()`](../methoddocs/ape_accounts.html#ape_accounts.generate_account) for more options.
@@ -209,7 +211,7 @@ mnemonic = "test test test test test test test test test test test junk"
 
 account = import_account_from_mnemonic(alias, passphrase, mnemonic)
 
-print(f'Your imported account address is: {account.address}')
+print(f"Your imported account address is: {account.address}")
 ```
 
 Or using a raw private key [using `import_account_from_private_key()`](../methoddocs/ape_accounts.html#ape_accounts.import_account_from_private_key):
@@ -224,7 +226,7 @@ private_key = os.urandom(32).hex()
 
 account = import_account_from_private_key(alias, passphrase, private_key)
 
-print(f'Your imported account address is: {account.address}')
+print(f"Your imported account address is: {account.address}")
 ```
 
 #### Exporting Accounts
@@ -252,16 +254,16 @@ In order to reduce repetition of adding `sender` in your contract calls, you can
 
 ```python
 with accounts.use_sender(0):
-  contract.myFunction(1)
+    contract.myFunction(1)
 
 with accounts.use_sender("<address>"):
-  contract.myFunction(1)
+    contract.myFunction(1)
 
 with accounts.use_sender("<alias>"):
-  contract.myFunction(1)
+    contract.myFunction(1)
 
-with accounts.use_sender(a): # a is a `AccountAPI` object
-  contract.myFunction(1)
+with accounts.use_sender(a):  # a is a `AccountAPI` object
+    contract.myFunction(1)
 ```
 
 ## Signing Messages
@@ -304,9 +306,11 @@ from eip712.messages import EIP712Message, EIP712Domain
 from eth_pydantic_types import abi
 from pydantic import BaseModel
 
+
 class Person(BaseModel):
     name: abi.string
     wallet: abi.address
+
 
 class Mail(EIP712Message):
     eip712_domain = EIP712Domain(
@@ -318,6 +322,7 @@ class Mail(EIP712Message):
 
     sender: Person
     receivers: list[Person]
+
 
 alice = Person(name="Alice", wallet="0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826")
 bob = Person("Bob", "0xB0B0b0b0b0b0B000000000000000000000000000")

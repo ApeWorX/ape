@@ -13,6 +13,7 @@ Follow [this guide](./clis.html) to learn more about what you can do with the ut
 ```python
 import click
 
+
 @click.command()
 def cli():
     print("Hello world!")
@@ -46,16 +47,17 @@ from ape.cli import ConnectedProviderCommand
 @click.command(cls=ConnectedProviderCommand)
 def cli(ecosystem, network, provider):
     click.echo(f"Connected to {ecosystem.name}:{network.name} using provider '{provider.name}'.")
-    
+
     # Access chain and other managers automatically
     from ape import chain
+
     click.echo(f"Current block: {chain.blocks.height}")
+
 
 @click.command(cls=ConnectedProviderCommand)
 def cli(network, provider):
     click.echo(f"You are connected to network '{network.name}'.")
     click.echo(provider.chain_id)
-    
 ```
 
 ## Multi-Network Commands
@@ -122,14 +124,12 @@ Here is an example of a multi-chain script:
 import click
 from ape.cli import ape_cli_context
 
+
 @click.command()
 @ape_cli_context()
 def cli(cli_ctx):
     # There is no connection yet at this point.
-    testnets = {
-        "ethereum": ["sepolia"],
-        "polygon": ["amoy"]
-    }
+    testnets = {"ethereum": ["sepolia"], "polygon": ["amoy"]}
     nm = cli_ctx.network_manager
 
     for ecosystem_name, networks in testnets.items():
@@ -171,6 +171,7 @@ To demonstrate, use the following script:
 ```python
 from ape import networks
 import click
+
 
 def main():
     ecosystem_name = networks.provider.network.ecosystem.name
