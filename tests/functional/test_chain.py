@@ -1,5 +1,5 @@
 from collections import defaultdict
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import pytest
 
@@ -151,11 +151,13 @@ def test_snapshot_and_restore_switched_chains(networks, chain):
     """
     snapshot = chain.snapshot()
     # Switch chains.
-    with networks.ethereum.local.use_provider(
-        "test", provider_settings={"chain_id": 11191919191991918223773}
+    with (
+        networks.ethereum.local.use_provider(
+            "test", provider_settings={"chain_id": 11191919191991918223773}
+        ),
+        pytest.raises(UnknownSnapshotError),
     ):
-        with pytest.raises(UnknownSnapshotError):
-            chain.restore(snapshot)
+        chain.restore(snapshot)
 
 
 def test_isolate(chain, vyper_contract_instance, owner):
@@ -238,7 +240,7 @@ def test_set_pending_timestamp_failure(chain):
         ValueError, match="Cannot give both `timestamp` and `deltatime` arguments together."
     ):
         chain.mine(
-            timestamp=int(datetime.now().timestamp() + timedelta(seconds=10).seconds),
+            timestamp=int(datetime.now(timezone.utc).timestamp() + timedelta(seconds=10).seconds),
             deltatime=10,
         )
 

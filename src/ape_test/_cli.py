@@ -72,7 +72,7 @@ class ApeTestCommand(Command):
 @click.command(
     add_help_option=False,  # NOTE: This allows pass-through to pytest's help
     short_help="Launches pytest and runs the tests for a project",
-    context_settings=dict(ignore_unknown_options=True),
+    context_settings={"ignore_unknown_options": True},
     cls=ApeTestCommand,
 )
 # NOTE: Using '.value' because more performant.

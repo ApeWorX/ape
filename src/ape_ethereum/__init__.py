@@ -107,7 +107,6 @@ __all__ = [
     "SetCodeTransaction",
     "SharedBlobReceipt",
     "SharedBlobTransaction",
-    "SharedBlobTransaction",
     "StaticFeeTransaction",
     "Trace",
     "TransactionStatusEnum",

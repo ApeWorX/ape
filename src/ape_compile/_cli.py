@@ -99,7 +99,7 @@ def cli(
                     c.contract_type.name: c.contract_type
                     for c in dependency.compile(use_cache=use_cache, allow_install=True).values()
                 }
-            except Exception as err:
+            except Exception as err:  # noqa: BLE001
                 msg = f"Dependency '{dependency.name}' not installed. Reason: {err}"
                 cli_ctx.logger.error(msg)
                 errored = True

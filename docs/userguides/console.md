@@ -59,6 +59,7 @@ An example file might look something like this:
 from ape import networks
 from eth_utils import encode_hex, decode_hex
 
+
 def latest(key):
     return getattr(networks.active_provider.get_block("latest"), key)
 ```
@@ -66,11 +67,11 @@ def latest(key):
 Then both imported util functions and `latest()` will be available when you launch the console.
 
 ```python
-In [1]: latest('number')
+In[1]: latest("number")
 Out[1]: 14388241
 
-In [2]: encode_hex(latest('hash'))
-Out[2]: '0x68f768988e9bd4be971d527f72483f321975fa52aff9692b6d0e0af71fb77aaf'
+In[2]: encode_hex(latest("hash"))
+Out[2]: "0x68f768988e9bd4be971d527f72483f321975fa52aff9692b6d0e0af71fb77aaf"
 ```
 
 ### Init Function
@@ -85,7 +86,7 @@ def ape_init_extras(chain):
 Then `web3` will be available to use immediately.
 
 ```python
-In [1]: web3.eth.chain_id
+In[1]: web3.eth.chain_id
 Out[1]: 1
 ```
 

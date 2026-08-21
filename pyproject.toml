@@ -127,21 +127,21 @@ test = [  # `test` GitHub Action jobs use this
     "ape-solidity>=0.8.5,<0.9",  # Needed for compiling test contracts
 ]
 style = [  # `linting` GitHub Action job uses this
-    "ruff>=0.12.0",  # Unified linter and formatter
-    "mdformat>=0.7.22",  # Auto-formatter for markdown
-    "mdformat-gfm>=0.3.5",  # Needed for formatting GitHub-flavored markdown
-    "mdformat-frontmatter>=0.4.1",  # Needed for frontmatters-style headers in issue templates
-    "mdformat-pyproject>=0.0.2",  # Allows configuring in pyproject.toml
+    "ruff>=0.15",  # Unified linter and formatter
+    "mdformat>=1.0",  # Auto-formatter for markdown
+    "mdformat-gfm",  # Needed for formatting GitHub-flavored markdown
+    "mdformat-frontmatter",  # Needed for frontmatters-style headers in issue templates
+    "mdformat-pyproject",  # Allows configuring in pyproject.toml
 ]
 lint = [  # `type-check` GitHub Action job uses this
     {include-group = "style"},
-    "mypy>=1.16.1,<1.17.0",  # Static type analyzer
+    "mypy>=2.3,<3",  # Static type analyzer
     "types-PyYAML",  # Needed due to mypy typeshed
     "types-requests",  # Needed due to mypy typeshed
     "types-setuptools",  # Needed due to mypy typeshed
-    "pandas-stubs>=2.2.1.240316",  # Needed due to mypy typeshed
+    "pandas-stubs",  # Needed due to mypy typeshed
     "types-toml",  # Needed due to mypy typeshed
-    "types-SQLAlchemy>=1.4.49",  # Needed due to mypy typeshed
+    "types-SQLAlchemy",  # Needed due to mypy typeshed
     "types-python-dateutil",  # Needed due to mypy typeshed
 ]
 docs = [  # `docs` GitHub Action jobs use this

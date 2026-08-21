@@ -19,10 +19,11 @@ class JoinableQueue(queue.Queue):
             if isinstance(item, StopIteration) or is_stop_iteration_type:
                 return
 
-            elif isinstance(item, Exception):
-                raise item
-
-            elif isinstance(item, type) and issubclass(item, Exception):
+            elif (
+                isinstance(item, Exception)
+                or isinstance(item, type)
+                and issubclass(item, Exception)
+            ):
                 raise item
 
             yield item

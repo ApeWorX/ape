@@ -84,9 +84,8 @@ def test_revert_unexpected_error(error_contract, not_owner):
     Test when given a different error type than what was raised.
     """
     expected = "Expected error 'OtherError' but was 'Unauthorized'"
-    with pytest.raises(AssertionError, match=expected):
-        with reverts(error_contract.OtherError):
-            error_contract.withdraw(sender=not_owner)
+    with pytest.raises(AssertionError, match=expected), reverts(error_contract.OtherError):
+        error_contract.withdraw(sender=not_owner)
 
 
 def test_revert_error_inputs(error_contract, not_owner):
@@ -105,9 +104,11 @@ def test_revert_error_unexpected_inputs(error_contract, owner, not_owner):
         rf"Expected input 'addr' to be '{owner.address}' but was '{not_owner.address}'\."
         r"\nExpected input 'counter' to be '321' but was '123'\."
     )
-    with pytest.raises(AssertionError, match=expected):
-        with reverts(error_contract.Unauthorized, addr=owner.address, counter=321):
-            error_contract.withdraw(sender=not_owner)
+    with (
+        pytest.raises(AssertionError, match=expected),
+        reverts(error_contract.Unauthorized, addr=owner.address, counter=321),
+    ):
+        error_contract.withdraw(sender=not_owner)
 
 
 def test_revert_fails(owner, reverts_contract_instance):
@@ -115,9 +116,8 @@ def test_revert_fails(owner, reverts_contract_instance):
     Test that ``AssertionError`` is raised if the supplied revert reason does not match the actual
     revert reason.
     """
-    with pytest.raises(AssertionError):
-        with reverts("one"):
-            reverts_contract_instance.revertStrings(0, sender=owner)
+    with pytest.raises(AssertionError), reverts("one"):
+        reverts_contract_instance.revertStrings(0, sender=owner)
 
 
 def test_revert_pattern_fails(owner, reverts_contract_instance):
@@ -125,9 +125,8 @@ def test_revert_pattern_fails(owner, reverts_contract_instance):
     Test that ``AssertionError`` is raised if the actual revert reason does not match the supplied
     revert pattern.
     """
-    with pytest.raises(AssertionError):
-        with reverts(re.compile(r"[^zero]+")):
-            reverts_contract_instance.revertStrings(0, sender=owner)
+    with pytest.raises(AssertionError), reverts(re.compile(r"[^zero]+")):
+        reverts_contract_instance.revertStrings(0, sender=owner)
 
 
 def test_revert_partial_fails(owner, reverts_contract_instance):
@@ -135,6 +134,5 @@ def test_revert_partial_fails(owner, reverts_contract_instance):
     Test that ``AssertionError`` is raised if the supplied revert reason does not match the actual
     revert reason exactly.
     """
-    with pytest.raises(AssertionError):
-        with reverts("ze"):
-            reverts_contract_instance.revertStrings(0, sender=owner)
+    with pytest.raises(AssertionError), reverts("ze"):
+        reverts_contract_instance.revertStrings(0, sender=owner)
