@@ -89,7 +89,7 @@ def _list(cli_ctx, output_format, ecosystem_filter, network_filter, provider_fil
             ecosystem_tree = make_sub_tree(ecosystem, Tree)
             _networks = {n["name"]: n for n in ecosystem["networks"]}
             _networks = {n: _networks[n] for n in sorted(_networks)}
-            for network_name, network in _networks.items():
+            for network in _networks.values():
                 providers = network["providers"]
                 if providers:
                     network_tree = make_sub_tree(network, ecosystem_tree.add)
@@ -112,7 +112,7 @@ def _list(cli_ctx, output_format, ecosystem_filter, network_filter, provider_fil
         except ValueError as err:
             try:
                 data_str = json.dumps(network_data)
-            except Exception:
+            except Exception:  # noqa: BLE001
                 data_str = str(network_data)
 
             raise NetworkError(
@@ -208,7 +208,7 @@ def _run(
         finally:
             try:
                 provider.disconnect()
-            except Exception:
+            except Exception:  # noqa: BLE001
                 # Prevent not being able to CTRL-C.
                 cli_ctx.abort("Terminated")
 
@@ -246,7 +246,7 @@ def kill(cli_ctx, process_ids, kill_all):
         click.echo("Stopped the following node(s):")
         pids_stopped = set()
         for pid, data in processes_killed.items():
-            echo_rich_text(f"\t{repr(data)}")
+            echo_rich_text(f"\t{data!r}")
             pids_stopped.add(pid)
 
         if rest := [pid for pid in process_ids if pid not in pids_stopped]:

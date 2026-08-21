@@ -84,7 +84,7 @@ def validate_cwd(start_dir):
     # TODO: Find root cause and fix there.
     try:
         os.getcwd()
-    except Exception:
+    except Exception:  # noqa: BLE001
         # Change back to project root, hopefully.
         os.chdir(start_dir)
 
@@ -523,7 +523,7 @@ class ApeSubprocessRunner(SubprocessRunner):
         if self.project:
             try:
                 here = os.getcwd()
-            except Exception:
+            except Exception:  # noqa: BLE001
                 here = None
 
             os.chdir(f"{self.project.path}")

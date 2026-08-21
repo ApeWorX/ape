@@ -493,7 +493,7 @@ class LogInputABICollection:
             # Try again with strict=False
             try:
                 data_values = decode(data_abi_types, hex_data, strict=False)
-            except Exception:
+            except Exception:  # noqa: BLE001
                 # Even with strict=False, we failed to decode.
                 # This should be a rare occasion, if it ever happens.
                 logger.warn_from_exception(err, warning_message)

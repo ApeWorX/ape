@@ -1,7 +1,7 @@
 import re
 from re import Pattern
 
-from pydantic import field_serializer, field_validator
+from pydantic import Field, field_serializer, field_validator
 from pydantic_settings import SettingsConfigDict
 
 from ape.api.config import ConfigEnum, PluginConfig
@@ -27,7 +27,7 @@ class Config(PluginConfig):
     Configure general compiler settings.
     """
 
-    exclude: set[str | Pattern] = set()
+    exclude: set[str | Pattern] = Field(default_factory=set)
     """
     Source exclusion globs or regex patterns across all file types.
     To use regex, start your values with ``r"`` and they'll be turned
@@ -48,7 +48,7 @@ class Config(PluginConfig):
     should configure ``include_dependencies`` to be ``True``.
     """
 
-    output_extra: list[OutputExtras] = []
+    output_extra: list[OutputExtras] = Field(default_factory=list)
     """
     Extra selections to output. Outputs to ``.build/{key.lower()}``.
     """
