@@ -302,8 +302,8 @@ you get back a contract instance.</p>
 <p>Usage example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">project</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="n">a</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;alias&quot;</span><span class="p">)</span>  <span class="c1"># Load an account by alias</span>
-</span><span data-line="4"><span class="n">contract</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="p">)</span>  <span class="c1"># The result of &#39;deploy()&#39; is a ContractInstance</span>
+</span><span data-line="3"><span class="n">a</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"alias"</span><span class="p">)</span>  <span class="c1"># Load an account by alias</span>
+</span><span data-line="4"><span class="n">contract</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="p">)</span>  <span class="c1"># The result of 'deploy()' is a ContractInstance</span>
 </span></pre></div>
 </div>
 <dl class="py method">
@@ -457,7 +457,7 @@ are using this class.</p>
 <p>Usage example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">project</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="n">contract_container</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">MyContract</span>  <span class="c1"># Assuming there is a contract named &quot;MyContract&quot;</span>
+</span><span data-line="3"><span class="n">contract_container</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">MyContract</span>  <span class="c1"># Assuming there is a contract named "MyContract"</span>
 </span></pre></div>
 </div>
 <dl class="py method">
@@ -490,7 +490,7 @@ are using this class.</p>
 <p>Usage example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">project</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="n">my_contract</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="o">.</span><span class="n">at</span><span class="p">(</span><span class="s2">&quot;0xAbC1230001112223334445566611855443322111&quot;</span><span class="p">)</span>
+</span><span data-line="3"><span class="n">my_contract</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="o">.</span><span class="n">at</span><span class="p">(</span><span class="s2">"0xAbC1230001112223334445566611855443322111"</span><span class="p">)</span>
 </span></pre></div>
 </div>
 <dl class="field-list simple">
@@ -552,7 +552,7 @@ Defaults to <code class="docutils literal notranslate"><span class="pre">False</
 <p>The types of events on a <a class="reference internal" href="#ape.contracts.base.ContractInstance" title="ape.contracts.base.ContractInstance"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContractInstance</span></code></a>.
 Use the event types via <code class="docutils literal notranslate"><span class="pre">.</span></code> access on the contract instances.</p>
 <p>Usage example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="c1"># &#39;my_contract&#39; refers to a ContractInstance in this case.</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="c1"># 'my_contract' refers to a ContractInstance in this case.</span>
 </span><span data-line="2"><span class="n">my_event_type</span> <span class="o">=</span> <span class="n">my_contract</span><span class="o">.</span><span class="n">MyEvent</span>
 </span></pre></div>
 </div>
@@ -651,7 +651,7 @@ Optionally set a start block to include historical blocks.</p>
 <p><strong>NOTE</strong>: This is a daemon method; it does not terminate unless an exception occurs.</p>
 <p>Usage example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">for</span> <span class="n">new_log</span> <span class="ow">in</span> <span class="n">contract</span><span class="o">.</span><span class="n">MyEvent</span><span class="o">.</span><span class="n">poll_logs</span><span class="p">(</span><span class="n">arg</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-</span><span data-line="2">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;New event log found: block_number=</span><span class="si">{</span><span class="n">new_log</span><span class="o">.</span><span class="n">block_number</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="2">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"New event log found: block_number=</span><span class="si">{</span><span class="n">new_log</span><span class="o">.</span><span class="n">block_number</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </span></pre></div>
 </div>
 <dl class="field-list simple">

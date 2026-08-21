@@ -220,16 +220,18 @@ Using traces, Ape is able to offer features like:</p>
 <p>To learn more about networks in Ape, see the <a class="reference external" href="./networks.html">networks guide</a>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">chain</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="n">tx</span> <span class="o">=</span> <span class="n">chain</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">get_receipt</span><span class="p">(</span><span class="s1">&#39;0xb7d7f1d5ce7743e821d3026647df486f517946ef1342a1ae93c96e4a8016eab7&#39;</span><span class="p">)</span>
-</span><span data-line="4">
-</span><span data-line="5"><span class="c1"># Show the steps the transaction took.</span>
-</span><span data-line="6"><span class="n">tx</span><span class="o">.</span><span class="n">show_trace</span><span class="p">()</span>
+</span><span data-line="3"><span class="n">tx</span> <span class="o">=</span> <span class="n">chain</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">get_receipt</span><span class="p">(</span>
+</span><span data-line="4">    <span class="s2">"0xb7d7f1d5ce7743e821d3026647df486f517946ef1342a1ae93c96e4a8016eab7"</span>
+</span><span data-line="5"><span class="p">)</span>
+</span><span data-line="6">
+</span><span data-line="7"><span class="c1"># Show the steps the transaction took.</span>
+</span><span data-line="8"><span class="n">tx</span><span class="o">.</span><span class="n">show_trace</span><span class="p">()</span>
 </span></pre></div>
 </div>
 <p>You should see a (less-abridged) trace like:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1">Call trace for &#39;0xb7d7f1d5ce7743e821d3026647df486f517946ef1342a1ae93c96e4a8016eab7&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1">Call trace for '0xb7d7f1d5ce7743e821d3026647df486f517946ef1342a1ae93c96e4a8016eab7'
 </span><span data-line="2">tx.origin=0x5668EAd1eDB8E2a4d724C8fb9cB5fFEabEB422dc
-</span><span data-line="3">DSProxy.execute(_target=LoanShifterTaker, _data=0x35..0000) -&gt; &quot;&quot; [1421947 gas]
+</span><span data-line="3">DSProxy.execute(_target=LoanShifterTaker, _data=0x35..0000) -&gt; "" [1421947 gas]
 </span><span data-line="4">└── (delegate) LoanShifterTaker.moveLoan(
 </span><span data-line="5">      _exchangeData=[
 </span><span data-line="6">        0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE,
@@ -247,7 +249,7 @@ Using traces, Ape is able to offer features like:</p>
 </span><span data-line="18">    └── DefisaverLogger.Log(
 </span><span data-line="19">          _contract=DSProxy, 
 </span><span data-line="20">          _caller=tx.origin, 
-</span><span data-line="21">          _logName=&quot;LoanShifter&quot;, 
+</span><span data-line="21">          _logName="LoanShifter", 
 </span><span data-line="22">          _data=0x00..0000
 </span><span data-line="23">        ) [6057 gas]                                                                              
 </span></pre></div>
@@ -258,7 +260,7 @@ This is useful if you want to interact with the trace or change some parameters 
 </span><span data-line="2">
 </span><span data-line="3"><span class="c1"># Change the `debug_traceTransaction` parameter dictionary</span>
 </span><span data-line="4"><span class="n">trace</span> <span class="o">=</span> <span class="n">chain</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">get_transaction_trace</span><span class="p">(</span>
-</span><span data-line="5">    <span class="s2">&quot;0x...&quot;</span><span class="p">,</span> <span class="n">debug_trace_transaction_parameters</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;enableMemory&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
+</span><span data-line="5">    <span class="s2">"0x..."</span><span class="p">,</span> <span class="n">debug_trace_transaction_parameters</span><span class="o">=</span><span class="p">{</span><span class="s2">"enableMemory"</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
 </span><span data-line="6"><span class="p">)</span>
 </span><span data-line="7">
 </span><span data-line="8"><span class="c1"># You can still print the pretty call-trace (as we did in the example above)</span>
@@ -288,7 +290,7 @@ Learn more about testing in Ape in the <a class="reference external" href="./tes
 <p>To view the gas report of a transaction receipt, use the <a class="reference external" href="../methoddocs/api.html?highlight=receiptapi#ape.api.transactions.ReceiptAPI.show_gas_report">ReceiptAPI.show_gas_report()</a> method:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">networks</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="n">txn_hash</span> <span class="o">=</span> <span class="s2">&quot;0x053cba5c12172654d894f66d5670bab6215517a94189a9ffc09bc40a589ec04d&quot;</span>
+</span><span data-line="3"><span class="n">txn_hash</span> <span class="o">=</span> <span class="s2">"0x053cba5c12172654d894f66d5670bab6215517a94189a9ffc09bc40a589ec04d"</span>
 </span><span data-line="4"><span class="n">receipt</span> <span class="o">=</span> <span class="n">networks</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">get_receipt</span><span class="p">(</span><span class="n">txn_hash</span><span class="p">)</span>
 </span><span data-line="5"><span class="n">receipt</span><span class="o">.</span><span class="n">show_gas_report</span><span class="p">()</span>
 </span></pre></div>

@@ -274,7 +274,7 @@ data-aria-dark="Switch to auto color mode">
 <dd><p>Register your plugin to ape. You must call this decorator to get your plugins
 included in ape’s plugin ecosystem.</p>
 <p>Usage example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nd">@plugins</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">plugins</span><span class="o">.</span><span class="n">AccountPlugin</span><span class="p">)</span>  <span class="c1"># &#39;register()&#39; example</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nd">@plugins</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">plugins</span><span class="o">.</span><span class="n">AccountPlugin</span><span class="p">)</span>  <span class="c1"># 'register()' example</span>
 </span><span data-line="2"><span class="k">def</span><span class="w"> </span><span class="nf">account_types</span><span class="p">():</span>
 </span><span data-line="3">    <span class="k">return</span> <span class="n">AccountContainer</span><span class="p">,</span> <span class="n">KeyfileAccount</span>
 </span></pre></div>
@@ -360,7 +360,7 @@ and the compiler class that can be used to compile them.</p>
 <p>Usage example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nd">@plugins</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">plugins</span><span class="o">.</span><span class="n">CompilerPlugin</span><span class="p">)</span>
 </span><span data-line="2"><span class="k">def</span><span class="w"> </span><span class="nf">register_compiler</span><span class="p">():</span>
-</span><span data-line="3">    <span class="k">return</span> <span class="p">(</span><span class="s2">&quot;.json&quot;</span><span class="p">,),</span> <span class="n">InterfaceCompiler</span>
+</span><span data-line="3">    <span class="k">return</span> <span class="p">(</span><span class="s2">".json"</span><span class="p">,),</span> <span class="n">InterfaceCompiler</span>
 </span></pre></div>
 </div>
 <dl class="field-list simple">
@@ -482,7 +482,7 @@ subclasses.</p>
 <p>Usage example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nd">@plugins</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">plugins</span><span class="o">.</span><span class="n">ExplorerPlugin</span><span class="p">)</span>
 </span><span data-line="2"><span class="k">def</span><span class="w"> </span><span class="nf">explorers</span><span class="p">():</span>
-</span><span data-line="3">    <span class="k">yield</span> <span class="s2">&quot;ethereum&quot;</span><span class="p">,</span> <span class="s2">&quot;mainnet&quot;</span><span class="p">,</span> <span class="n">MyBlockExplorer</span>
+</span><span data-line="3">    <span class="k">yield</span> <span class="s2">"ethereum"</span><span class="p">,</span> <span class="s2">"mainnet"</span><span class="p">,</span> <span class="n">MyBlockExplorer</span>
 </span></pre></div>
 </div>
 <dl class="field-list simple">
@@ -513,7 +513,7 @@ networks.</p>
 <p>Usage example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nd">@plugins</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">plugins</span><span class="o">.</span><span class="n">NetworkPlugin</span><span class="p">)</span>
 </span><span data-line="2"><span class="k">def</span><span class="w"> </span><span class="nf">networks</span><span class="p">():</span>
-</span><span data-line="3">    <span class="k">yield</span> <span class="s2">&quot;ethereum&quot;</span><span class="p">,</span> <span class="s2">&quot;ShibaChain&quot;</span><span class="p">,</span> <span class="n">ShibaNetwork</span>
+</span><span data-line="3">    <span class="k">yield</span> <span class="s2">"ethereum"</span><span class="p">,</span> <span class="s2">"ShibaChain"</span><span class="p">,</span> <span class="n">ShibaNetwork</span>
 </span></pre></div>
 </div>
 <dl class="field-list simple">
@@ -545,7 +545,7 @@ include <a class="reference external" href="https://github.com/ApeWorX/ape-infur
 <p>Usage example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nd">@plugins</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">plugins</span><span class="o">.</span><span class="n">ProviderPlugin</span><span class="p">)</span>
 </span><span data-line="2"><span class="k">def</span><span class="w"> </span><span class="nf">providers</span><span class="p">():</span>
-</span><span data-line="3">    <span class="k">yield</span> <span class="s2">&quot;ethereum&quot;</span><span class="p">,</span> <span class="s2">&quot;local&quot;</span><span class="p">,</span> <span class="n">MyProvider</span>
+</span><span data-line="3">    <span class="k">yield</span> <span class="s2">"ethereum"</span><span class="p">,</span> <span class="s2">"local"</span><span class="p">,</span> <span class="n">MyProvider</span>
 </span></pre></div>
 </div>
 <dl class="field-list simple">

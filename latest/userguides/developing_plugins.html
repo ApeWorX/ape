@@ -248,11 +248,11 @@ Two plugins with the same API may do entirely different things and yet be interc
 </span><span data-line="4">
 </span><span data-line="5"><span class="k">class</span><span class="w"> </span><span class="nc">MyProvider</span><span class="p">(</span><span class="n">ProviderAPI</span><span class="p">):</span>
 </span><span data-line="6">    <span class="n">_web3</span><span class="p">:</span> <span class="n">Web3</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># type: ignore</span>
-</span><span data-line="7">    
+</span><span data-line="7">
 </span><span data-line="8">    <span class="k">def</span><span class="w"> </span><span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span data-line="9">        <span class="bp">self</span><span class="o">.</span><span class="n">_web3</span>  <span class="o">=</span> <span class="n">Web3</span><span class="p">(</span><span class="n">HTTPProvider</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="s2">&quot;https://localhost:1337&quot;</span><span class="p">)))</span>
+</span><span data-line="9">        <span class="bp">self</span><span class="o">.</span><span class="n">_web3</span> <span class="o">=</span> <span class="n">Web3</span><span class="p">(</span><span class="n">HTTPProvider</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="s2">"https://localhost:1337"</span><span class="p">)))</span>
 </span><span data-line="10">
-</span><span data-line="11"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Implement rest of abstract methods&quot;&quot;&quot;</span>
+</span><span data-line="11"><span class="w">    </span><span class="sd">"""Implement rest of abstract methods"""</span>
 </span></pre></div>
 </div>
 <section id="registering-api-classes">
@@ -260,14 +260,15 @@ Two plugins with the same API may do entirely different things and yet be interc
 <p>Once you have finished implementing your API classes, you need to register them using the <a class="reference external" href="../methoddocs/plugins.html#ape.plugins.register">&#64;plugins.register</a> method decorator.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">plugins</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="c1"># Here, we register our provider plugin so we can use it in &#39;ape&#39;.</span>
-</span><span data-line="4"><span class="nd">@plugins</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">plugins</span><span class="o">.</span><span class="n">ProviderPlugin</span><span class="p">)</span>
-</span><span data-line="5"><span class="k">def</span><span class="w"> </span><span class="nf">providers</span><span class="p">():</span>
-</span><span data-line="6">    <span class="c1"># NOTE: By keeping this import local, we avoid slower plugin load times.</span>
-</span><span data-line="7">    <span class="kn">from</span><span class="w"> </span><span class="nn">ape_my_plugin.provider</span><span class="w"> </span><span class="kn">import</span> <span class="n">MyProvider</span>
-</span><span data-line="8">    
-</span><span data-line="9">    <span class="c1"># NOTE: &#39;MyProvider&#39; defined in a prior code-block.</span>
-</span><span data-line="10">    <span class="k">yield</span> <span class="s2">&quot;ethereum&quot;</span><span class="p">,</span> <span class="s2">&quot;local&quot;</span><span class="p">,</span> <span class="n">MyProvider</span>
+</span><span data-line="3">
+</span><span data-line="4"><span class="c1"># Here, we register our provider plugin so we can use it in 'ape'.</span>
+</span><span data-line="5"><span class="nd">@plugins</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">plugins</span><span class="o">.</span><span class="n">ProviderPlugin</span><span class="p">)</span>
+</span><span data-line="6"><span class="k">def</span><span class="w"> </span><span class="nf">providers</span><span class="p">():</span>
+</span><span data-line="7">    <span class="c1"># NOTE: By keeping this import local, we avoid slower plugin load times.</span>
+</span><span data-line="8">    <span class="kn">from</span><span class="w"> </span><span class="nn">ape_my_plugin.provider</span><span class="w"> </span><span class="kn">import</span> <span class="n">MyProvider</span>
+</span><span data-line="9">
+</span><span data-line="10">    <span class="c1"># NOTE: 'MyProvider' defined in a prior code-block.</span>
+</span><span data-line="11">    <span class="k">yield</span> <span class="s2">"ethereum"</span><span class="p">,</span> <span class="s2">"local"</span><span class="p">,</span> <span class="n">MyProvider</span>
 </span></pre></div>
 </div>
 <p>This decorator hooks into ape core and ties everything together by looking for all local installed site-packages that start with <code class="docutils literal notranslate"><span class="pre">ape_</span></code>.
@@ -286,25 +287,28 @@ To create a CLI plugin, create any type of <code class="docutils literal notrans
 <p><code class="docutils literal notranslate"><span class="pre">_cli.py</span></code>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">click</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="nd">@click</span><span class="o">.</span><span class="n">group</span>
-</span><span data-line="4"><span class="k">def</span><span class="w"> </span><span class="nf">cli</span><span class="p">():</span>
-</span><span data-line="5"><span class="w">    </span><span class="sd">&quot;&quot;&quot;My custom commands.&quot;&quot;&quot;</span>
-</span><span data-line="6">
+</span><span data-line="3">
+</span><span data-line="4"><span class="nd">@click</span><span class="o">.</span><span class="n">group</span>
+</span><span data-line="5"><span class="k">def</span><span class="w"> </span><span class="nf">cli</span><span class="p">():</span>
+</span><span data-line="6"><span class="w">    </span><span class="sd">"""My custom commands."""</span>
 </span><span data-line="7">
-</span><span data-line="8"><span class="nd">@cli</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
-</span><span data-line="9"><span class="k">def</span><span class="w"> </span><span class="nf">my_sub_cmd</span><span class="p">():</span>
-</span><span data-line="10"><span class="w">    </span><span class="sd">&quot;&quot;&quot;My subcommand.&quot;&quot;&quot;</span>
+</span><span data-line="8">
+</span><span data-line="9"><span class="nd">@cli</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
+</span><span data-line="10"><span class="k">def</span><span class="w"> </span><span class="nf">my_sub_cmd</span><span class="p">():</span>
+</span><span data-line="11"><span class="w">    </span><span class="sd">"""My subcommand."""</span>
 </span></pre></div>
 </div>
 <p>Then, register it using <code class="docutils literal notranslate"><span class="pre">entrypoints</span></code>, which is a built-in python registry of items declared in <code class="docutils literal notranslate"><span class="pre">setup.py</span></code>.</p>
 <p><code class="docutils literal notranslate"><span class="pre">setup.py</span></code>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="o">...</span>
-</span><span data-line="2"><span class="n">entry_points</span><span class="o">=</span><span class="p">{</span>
-</span><span data-line="3">    <span class="s2">&quot;ape_cli_subcommands&quot;</span><span class="p">:</span> <span class="p">[</span>
-</span><span data-line="4">        <span class="s2">&quot;ape_myplugin=ape_myplugin._cli:cli&quot;</span><span class="p">,</span>
-</span><span data-line="5">    <span class="p">],</span>
-</span><span data-line="6"><span class="p">},</span>
-</span><span data-line="7"><span class="o">...</span>
+</span><span data-line="2"><span class="n">entry_points</span> <span class="o">=</span> <span class="p">(</span>
+</span><span data-line="3">    <span class="p">{</span>
+</span><span data-line="4">        <span class="s2">"ape_cli_subcommands"</span><span class="p">:</span> <span class="p">[</span>
+</span><span data-line="5">            <span class="s2">"ape_myplugin=ape_myplugin._cli:cli"</span><span class="p">,</span>
+</span><span data-line="6">        <span class="p">],</span>
+</span><span data-line="7">    <span class="p">},</span>
+</span><span data-line="8"><span class="p">)</span>
+</span><span data-line="9"><span class="o">...</span>
 </span></pre></div>
 </div>
 <div class="admonition note">
@@ -318,10 +322,11 @@ Follow <a class="reference external" href="./clis.html">this guide</a> to learn 
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">click</span>
 </span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.cli</span><span class="w"> </span><span class="kn">import</span> <span class="n">existing_alias_argument</span>
 </span><span data-line="3">
-</span><span data-line="4"><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
-</span><span data-line="5"><span class="nd">@existing_alias_argument</span><span class="p">()</span>
-</span><span data-line="6"><span class="k">def</span><span class="w"> </span><span class="nf">my_cmd</span><span class="p">(</span><span class="n">alias</span><span class="p">):</span>
-</span><span data-line="7">  <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">alias</span><span class="si">}</span><span class="s2"> is an existing account!&quot;</span><span class="p">)</span>
+</span><span data-line="4">
+</span><span data-line="5"><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
+</span><span data-line="6"><span class="nd">@existing_alias_argument</span><span class="p">()</span>
+</span><span data-line="7"><span class="k">def</span><span class="w"> </span><span class="nf">my_cmd</span><span class="p">(</span><span class="n">alias</span><span class="p">):</span>
+</span><span data-line="8">    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">alias</span><span class="si">}</span><span class="s2"> is an existing account!"</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </section>
@@ -334,8 +339,8 @@ classes are indifferent about the source of the plugin.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">accounts</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="c1"># The manager can load accounts from any account-based plugin.</span>
-</span><span data-line="4"><span class="n">my_ledger_account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;ledger_0&quot;</span><span class="p">)</span>  <span class="c1"># Created using the &#39;ape-ledger&#39; plugin</span>
-</span><span data-line="5"><span class="n">my_trezor_account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;trezor_0&quot;</span><span class="p">)</span>  <span class="c1"># Created using the &#39;ape-trezor&#39; plugin</span>
+</span><span data-line="4"><span class="n">my_ledger_account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"ledger_0"</span><span class="p">)</span>  <span class="c1"># Created using the 'ape-ledger' plugin</span>
+</span><span data-line="5"><span class="n">my_trezor_account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"trezor_0"</span><span class="p">)</span>  <span class="c1"># Created using the 'ape-trezor' plugin</span>
 </span></pre></div>
 </div>
 <p>Similarly, if you implemented a <code class="docutils literal notranslate"><span class="pre">ProviderAPI</span></code>, that provider is now accessible in the CLI via the <code class="docutils literal notranslate"><span class="pre">--network</span></code> option:</p>
@@ -358,15 +363,17 @@ classes are indifferent about the source of the plugin.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">click</span>
 </span><span data-line="2">
 </span><span data-line="3">
-</span><span data-line="4"><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="n">short_help</span><span class="o">=</span><span class="s2">&quot;Utilities for my plugin&quot;</span><span class="p">)</span>
+</span><span data-line="4"><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="n">short_help</span><span class="o">=</span><span class="s2">"Utilities for my plugin"</span><span class="p">)</span>
 </span><span data-line="5"><span class="k">def</span><span class="w"> </span><span class="nf">cli</span><span class="p">():</span>
 </span><span data-line="6">    <span class="k">pass</span>
 </span><span data-line="7">
-</span><span data-line="8"><span class="sd">&quot;&quot;&quot; Or &quot;&quot;&quot;</span>
-</span><span data-line="9">
-</span><span data-line="10"><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
-</span><span data-line="11"><span class="k">def</span><span class="w"> </span><span class="nf">cli</span><span class="p">():</span>
-</span><span data-line="12"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Utilities for my plugin&quot;&quot;&quot;</span>
+</span><span data-line="8">
+</span><span data-line="9"><span class="sd">""" Or """</span>
+</span><span data-line="10">
+</span><span data-line="11">
+</span><span data-line="12"><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
+</span><span data-line="13"><span class="k">def</span><span class="w"> </span><span class="nf">cli</span><span class="p">():</span>
+</span><span data-line="14"><span class="w">    </span><span class="sd">"""Utilities for my plugin"""</span>
 </span></pre></div>
 </div>
 </section>
@@ -377,7 +384,7 @@ classes are indifferent about the source of the plugin.</p>
 <h3>Import the logger from the logging module<a class="headerlink" href="#import-the-logger-from-the-logging-module" title="Link to this heading">#</a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.logging</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;This is a log message&quot;</span><span class="p">)</span>
+</span><span data-line="3"><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"This is a log message"</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </section>
@@ -385,9 +392,10 @@ classes are indifferent about the source of the plugin.</p>
 <h3>Use the logger from the <code class="docutils literal notranslate"><span class="pre">&#64;ape_cli_context</span></code><a class="headerlink" href="#use-the-logger-from-the-ape-cli-context" title="Link to this heading">#</a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.cli</span><span class="w"> </span><span class="kn">import</span> <span class="n">ape_cli_context</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="nd">@ape_cli_context</span><span class="p">()</span>
-</span><span data-line="4"><span class="k">def</span><span class="w"> </span><span class="nf">my_command</span><span class="p">(</span><span class="n">cli_ctx</span><span class="p">):</span>
-</span><span data-line="5">  <span class="n">cli_ctx</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;my log message&quot;</span><span class="p">)</span>
+</span><span data-line="3">
+</span><span data-line="4"><span class="nd">@ape_cli_context</span><span class="p">()</span>
+</span><span data-line="5"><span class="k">def</span><span class="w"> </span><span class="nf">my_command</span><span class="p">(</span><span class="n">cli_ctx</span><span class="p">):</span>
+</span><span data-line="6">    <span class="n">cli_ctx</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"my log message"</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </section>

@@ -581,9 +581,9 @@ All containers must subclass <a class="reference internal" href="api.html#ape.ap
 and are treated as singletons.</p>
 <p>Import the accounts manager singleton from the root <code class="docutils literal notranslate"><span class="pre">ape</span></code> namespace.</p>
 <p>Usage example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">accounts</span>  <span class="c1"># &quot;accounts&quot; is the AccountManager singleton</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">accounts</span>  <span class="c1"># "accounts" is the AccountManager singleton</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="n">my_accounts</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;dev&quot;</span><span class="p">)</span>
+</span><span data-line="3"><span class="n">my_accounts</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"dev"</span><span class="p">)</span>
 </span></pre></div>
 </div>
 <dl class="py method">
@@ -700,7 +700,7 @@ are also the subject of a fixture available in the <code class="docutils literal
 number-of-accounts using the <code class="docutils literal notranslate"><span class="pre">test</span></code> section of the <cite>ape-config.yaml</cite> file.</p>
 <p>Usage example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">def</span><span class="w"> </span><span class="nf">test_my_contract</span><span class="p">(</span><span class="n">accounts</span><span class="p">):</span>
-</span><span data-line="2">    <span class="c1"># The &quot;accounts&quot; fixture uses the AccountsManager.test_accounts()</span>
+</span><span data-line="2">    <span class="c1"># The "accounts" fixture uses the AccountsManager.test_accounts()</span>
 </span><span data-line="3">    <span class="n">sender</span> <span class="o">=</span> <span class="n">accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 </span><span data-line="4">    <span class="n">receiver</span> <span class="o">=</span> <span class="n">accounts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 </span><span data-line="5">    <span class="o">...</span>
@@ -717,7 +717,7 @@ number-of-accounts using the <code class="docutils literal notranslate"><span cl
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ape.managers.accounts.TestAccountManager">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.managers.accounts.</span></span><span class="sig-name descname"><span class="pre">TestAccountManager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iterable</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.accounts.TestAccountManager" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.managers.accounts.</span></span><span class="sig-name descname"><span class="pre">TestAccountManager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.accounts.TestAccountManager" title="Link to this definition">#</a></dt>
 <dd><dl class="py method">
 <dt class="sig sig-object py" id="ape.managers.accounts.TestAccountManager.__contains__">
 <span class="sig-name descname"><span class="pre">__contains__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><span class="pre">ChecksumAddress</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_AddressValidator</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#ape.managers.accounts.TestAccountManager.__contains__" title="Link to this definition">#</a></dt>
@@ -807,7 +807,7 @@ Each compiler plugin typically contains a single <a class="reference internal" h
 <p><strong>NOTE</strong>: Typically, users compile their projects using the CLI via <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">compile</span></code>,
 which uses the <a class="reference internal" href="api.html#ape.api.compiler.CompilerAPI" title="ape.api.compiler.CompilerAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">CompilerAPI</span></code></a> under-the-hood.</p>
 <p>Usage example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">compilers</span>  <span class="c1"># &quot;compilers&quot; is the CompilerManager singleton</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">compilers</span>  <span class="c1"># "compilers" is the CompilerManager singleton</span>
 </span></pre></div>
 </div>
 <dl class="py method">
@@ -864,11 +864,11 @@ Ensure the compiler name key is present in the dict for it to work.</p></li>
 <span class="sig-name descname"><span class="pre">compile_source</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">compiler_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ape.managers.project.ProjectManager" title="ape.managers.project.ProjectManager"><span class="pre">ProjectManager</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">settings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="contracts.html#ape.contracts.base.ContractContainer" title="ape.contracts.base.ContractContainer"><span class="pre">ContractContainer</span></a></span></span><a class="headerlink" href="#ape.managers.compilers.CompilerManager.compile_source" title="Link to this definition">#</a></dt>
 <dd><p>Compile the given program.</p>
 <p>Usage example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">code</span> <span class="o">=</span> <span class="s1">&#39;[{&quot;name&quot;:&quot;foo&quot;,&quot;type&quot;:&quot;fallback&quot;, &quot;stateMutability&quot;:&quot;nonpayable&quot;}]&#39;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">code</span> <span class="o">=</span> <span class="s1">'[{"name":"foo","type":"fallback", "stateMutability":"nonpayable"}]'</span>
 </span><span data-line="2"><span class="n">contract_container</span> <span class="o">=</span> <span class="n">compilers</span><span class="o">.</span><span class="n">compile_source</span><span class="p">(</span>
-</span><span data-line="3">    <span class="s2">&quot;ethpm&quot;</span><span class="p">,</span>
+</span><span data-line="3">    <span class="s2">"ethpm"</span><span class="p">,</span>
 </span><span data-line="4">    <span class="n">code</span><span class="p">,</span>
-</span><span data-line="5">    <span class="n">contractName</span><span class="o">=</span><span class="s2">&quot;MyContract&quot;</span><span class="p">,</span>
+</span><span data-line="5">    <span class="n">contractName</span><span class="o">=</span><span class="s2">"MyContract"</span><span class="p">,</span>
 </span><span data-line="6"><span class="p">)</span>
 </span></pre></div>
 </div>
@@ -1043,7 +1043,7 @@ to compiler API classes.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ape.managers.chain.AccountHistory">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.managers.chain.</span></span><span class="sig-name descname"><span class="pre">AccountHistory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><span class="pre">ChecksumAddress</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_AddressValidator</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sessional</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.transactions.ReceiptAPI" title="ape.api.transactions.ReceiptAPI"><span class="pre">ReceiptAPI</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.chain.AccountHistory" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.managers.chain.</span></span><span class="sig-name descname"><span class="pre">AccountHistory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">*,</span> <span class="pre">address:</span> <span class="pre">~eth_typing.evm.Annotated[~eth_typing.evm.ChecksumAddress,</span> <span class="pre">~ape.types.address._AddressValidator],</span> <span class="pre">sessional:</span> <span class="pre">list[~ape.api.transactions.ReceiptAPI]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.chain.AccountHistory" title="Link to this definition">#</a></dt>
 <dd><p>A container mapping account addresses to the transaction from the active session.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.managers.chain.AccountHistory.__iter__">
@@ -1072,7 +1072,7 @@ to compiler API classes.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.managers.chain.AccountHistory.__pydantic_fields__">
-<span class="sig-name descname"><span class="pre">__pydantic_fields__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">FieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'address':</span> <span class="pre">FieldInfo(annotation=NewType,</span> <span class="pre">required=True,</span> <span class="pre">metadata=[&lt;class</span> <span class="pre">'ape.types.address._AddressValidator'&gt;]),</span> <span class="pre">'sessional':</span> <span class="pre">FieldInfo(annotation=list[ReceiptAPI],</span> <span class="pre">required=False,</span> <span class="pre">default=[])}</span></em><a class="headerlink" href="#ape.managers.chain.AccountHistory.__pydantic_fields__" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">__pydantic_fields__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">FieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'address':</span> <span class="pre">FieldInfo(annotation=NewType,</span> <span class="pre">required=True,</span> <span class="pre">metadata=[&lt;class</span> <span class="pre">'ape.types.address._AddressValidator'&gt;]),</span> <span class="pre">'sessional':</span> <span class="pre">FieldInfo(annotation=list[ReceiptAPI],</span> <span class="pre">required=False,</span> <span class="pre">default_factory=list)}</span></em><a class="headerlink" href="#ape.managers.chain.AccountHistory.__pydantic_fields__" title="Link to this definition">#</a></dt>
 <dd><p>A dictionary of field names and their corresponding [<cite>FieldInfo</cite>][pydantic.fields.FieldInfo] objects.
 This replaces <cite>Model.__fields__</cite> from Pydantic V1.</p>
 </dd></dl>
@@ -1085,7 +1085,7 @@ This replaces <cite>Model.__fields__</cite> from Pydantic V1.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.managers.chain.AccountHistory.__signature__">
-<span class="sig-name descname"><span class="pre">__signature__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">Signature</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;Signature</span> <span class="pre">(*,</span> <span class="pre">address:</span> <span class="pre">typing.Annotated[eth_typing.evm.ChecksumAddress,</span> <span class="pre">&lt;class</span> <span class="pre">'ape.types.address._AddressValidator'&gt;],</span> <span class="pre">sessional:</span> <span class="pre">list[ape.api.transactions.ReceiptAPI]</span> <span class="pre">=</span> <span class="pre">[])</span> <span class="pre">-&gt;</span> <span class="pre">None&gt;</span></em><a class="headerlink" href="#ape.managers.chain.AccountHistory.__signature__" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">__signature__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">Signature</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;Signature</span> <span class="pre">(*,</span> <span class="pre">address:</span> <span class="pre">typing.Annotated[eth_typing.evm.ChecksumAddress,</span> <span class="pre">&lt;class</span> <span class="pre">'ape.types.address._AddressValidator'&gt;],</span> <span class="pre">sessional:</span> <span class="pre">list[ape.api.transactions.ReceiptAPI]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;)</span> <span class="pre">-&gt;</span> <span class="pre">None&gt;</span></em><a class="headerlink" href="#ape.managers.chain.AccountHistory.__signature__" title="Link to this definition">#</a></dt>
 <dd><p>The synthesized <cite>__init__</cite> [<cite>Signature</cite>][inspect.Signature] of the model.</p>
 </dd></dl>
 
@@ -1593,7 +1593,7 @@ or a <code class="docutils literal notranslate"><span class="pre">stop_block</sp
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">chain</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="k">for</span> <span class="n">new_block</span> <span class="ow">in</span> <span class="n">chain</span><span class="o">.</span><span class="n">blocks</span><span class="o">.</span><span class="n">poll_blocks</span><span class="p">():</span>
-</span><span data-line="4">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;New block found: number=</span><span class="si">{</span><span class="n">new_block</span><span class="o">.</span><span class="n">number</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="4">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"New block found: number=</span><span class="si">{</span><span class="n">new_block</span><span class="o">.</span><span class="n">number</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </span></pre></div>
 </div>
 <dl class="field-list simple">
@@ -2001,17 +2001,17 @@ when the item fails to convert properly.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">convert</span>
 </span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">AddressType</span>
 </span><span data-line="3">
-</span><span data-line="4"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;1 gwei&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+</span><span data-line="4"><span class="n">convert</span><span class="p">(</span><span class="s2">"1 gwei"</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
 </span><span data-line="5"><span class="c1"># 1000000000</span>
 </span><span data-line="6">
-</span><span data-line="7"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;1 ETH&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+</span><span data-line="7"><span class="n">convert</span><span class="p">(</span><span class="s2">"1 ETH"</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
 </span><span data-line="8"><span class="c1"># 1000000000000000000</span>
 </span><span data-line="9">
-</span><span data-line="10"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;0x283Af0B28c62C092C9727F1Ee09c02CA627EB7F5&quot;</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span>
-</span><span data-line="11"><span class="c1"># HexBytes(&#39;0x283af0b28c62c092c9727f1ee09c02ca627eb7f5&#39;)</span>
+</span><span data-line="10"><span class="n">convert</span><span class="p">(</span><span class="s2">"0x283Af0B28c62C092C9727F1Ee09c02CA627EB7F5"</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span>
+</span><span data-line="11"><span class="c1"># HexBytes('0x283af0b28c62c092c9727f1ee09c02ca627eb7f5')</span>
 </span><span data-line="12">
-</span><span data-line="13"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;vitalik.eth&quot;</span><span class="p">,</span> <span class="n">AddressType</span><span class="p">)</span>  <span class="c1"># with ape-ens plugin installed</span>
-</span><span data-line="14"><span class="c1"># &#39;0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&#39;</span>
+</span><span data-line="13"><span class="n">convert</span><span class="p">(</span><span class="s2">"vitalik.eth"</span><span class="p">,</span> <span class="n">AddressType</span><span class="p">)</span>  <span class="c1"># with ape-ens plugin installed</span>
+</span><span data-line="14"><span class="c1"># '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'</span>
 </span></pre></div>
 </div>
 </dd></dl>
@@ -2093,17 +2093,17 @@ when the item fails to convert properly.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">convert</span>
 </span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">AddressType</span>
 </span><span data-line="3">
-</span><span data-line="4"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;1 gwei&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+</span><span data-line="4"><span class="n">convert</span><span class="p">(</span><span class="s2">"1 gwei"</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
 </span><span data-line="5"><span class="c1"># 1000000000</span>
 </span><span data-line="6">
-</span><span data-line="7"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;1 ETH&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+</span><span data-line="7"><span class="n">convert</span><span class="p">(</span><span class="s2">"1 ETH"</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
 </span><span data-line="8"><span class="c1"># 1000000000000000000</span>
 </span><span data-line="9">
-</span><span data-line="10"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;0x283Af0B28c62C092C9727F1Ee09c02CA627EB7F5&quot;</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span>
-</span><span data-line="11"><span class="c1"># HexBytes(&#39;0x283af0b28c62c092c9727f1ee09c02ca627eb7f5&#39;)</span>
+</span><span data-line="10"><span class="n">convert</span><span class="p">(</span><span class="s2">"0x283Af0B28c62C092C9727F1Ee09c02CA627EB7F5"</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span>
+</span><span data-line="11"><span class="c1"># HexBytes('0x283af0b28c62c092c9727f1ee09c02ca627eb7f5')</span>
 </span><span data-line="12">
-</span><span data-line="13"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;vitalik.eth&quot;</span><span class="p">,</span> <span class="n">AddressType</span><span class="p">)</span>  <span class="c1"># with ape-ens plugin installed</span>
-</span><span data-line="14"><span class="c1"># &#39;0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&#39;</span>
+</span><span data-line="13"><span class="n">convert</span><span class="p">(</span><span class="s2">"vitalik.eth"</span><span class="p">,</span> <span class="n">AddressType</span><span class="p">)</span>  <span class="c1"># with ape-ens plugin installed</span>
+</span><span data-line="14"><span class="c1"># '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'</span>
 </span></pre></div>
 </div>
 </dd></dl>
@@ -2138,7 +2138,7 @@ the root <code class="docutils literal notranslate"><span class="pre">ape</span>
 <p>Usage example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">convert</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="n">amount</span> <span class="o">=</span> <span class="n">convert</span><span class="p">(</span><span class="s2">&quot;1 gwei&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+</span><span data-line="3"><span class="n">amount</span> <span class="o">=</span> <span class="n">convert</span><span class="p">(</span><span class="s2">"1 gwei"</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
 </span></pre></div>
 </div>
 <dl class="py method">
@@ -2318,17 +2318,17 @@ when the item fails to convert properly.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">convert</span>
 </span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">AddressType</span>
 </span><span data-line="3">
-</span><span data-line="4"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;1 gwei&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+</span><span data-line="4"><span class="n">convert</span><span class="p">(</span><span class="s2">"1 gwei"</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
 </span><span data-line="5"><span class="c1"># 1000000000</span>
 </span><span data-line="6">
-</span><span data-line="7"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;1 ETH&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+</span><span data-line="7"><span class="n">convert</span><span class="p">(</span><span class="s2">"1 ETH"</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
 </span><span data-line="8"><span class="c1"># 1000000000000000000</span>
 </span><span data-line="9">
-</span><span data-line="10"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;0x283Af0B28c62C092C9727F1Ee09c02CA627EB7F5&quot;</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span>
-</span><span data-line="11"><span class="c1"># HexBytes(&#39;0x283af0b28c62c092c9727f1ee09c02ca627eb7f5&#39;)</span>
+</span><span data-line="10"><span class="n">convert</span><span class="p">(</span><span class="s2">"0x283Af0B28c62C092C9727F1Ee09c02CA627EB7F5"</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span>
+</span><span data-line="11"><span class="c1"># HexBytes('0x283af0b28c62c092c9727f1ee09c02ca627eb7f5')</span>
 </span><span data-line="12">
-</span><span data-line="13"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;vitalik.eth&quot;</span><span class="p">,</span> <span class="n">AddressType</span><span class="p">)</span>  <span class="c1"># with ape-ens plugin installed</span>
-</span><span data-line="14"><span class="c1"># &#39;0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&#39;</span>
+</span><span data-line="13"><span class="n">convert</span><span class="p">(</span><span class="s2">"vitalik.eth"</span><span class="p">,</span> <span class="n">AddressType</span><span class="p">)</span>  <span class="c1"># with ape-ens plugin installed</span>
+</span><span data-line="14"><span class="c1"># '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'</span>
 </span></pre></div>
 </div>
 </dd></dl>
@@ -2367,17 +2367,17 @@ when the item fails to convert properly.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">convert</span>
 </span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">AddressType</span>
 </span><span data-line="3">
-</span><span data-line="4"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;1 gwei&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+</span><span data-line="4"><span class="n">convert</span><span class="p">(</span><span class="s2">"1 gwei"</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
 </span><span data-line="5"><span class="c1"># 1000000000</span>
 </span><span data-line="6">
-</span><span data-line="7"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;1 ETH&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+</span><span data-line="7"><span class="n">convert</span><span class="p">(</span><span class="s2">"1 ETH"</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
 </span><span data-line="8"><span class="c1"># 1000000000000000000</span>
 </span><span data-line="9">
-</span><span data-line="10"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;0x283Af0B28c62C092C9727F1Ee09c02CA627EB7F5&quot;</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span>
-</span><span data-line="11"><span class="c1"># HexBytes(&#39;0x283af0b28c62c092c9727f1ee09c02ca627eb7f5&#39;)</span>
+</span><span data-line="10"><span class="n">convert</span><span class="p">(</span><span class="s2">"0x283Af0B28c62C092C9727F1Ee09c02CA627EB7F5"</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span>
+</span><span data-line="11"><span class="c1"># HexBytes('0x283af0b28c62c092c9727f1ee09c02ca627eb7f5')</span>
 </span><span data-line="12">
-</span><span data-line="13"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;vitalik.eth&quot;</span><span class="p">,</span> <span class="n">AddressType</span><span class="p">)</span>  <span class="c1"># with ape-ens plugin installed</span>
-</span><span data-line="14"><span class="c1"># &#39;0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&#39;</span>
+</span><span data-line="13"><span class="n">convert</span><span class="p">(</span><span class="s2">"vitalik.eth"</span><span class="p">,</span> <span class="n">AddressType</span><span class="p">)</span>  <span class="c1"># with ape-ens plugin installed</span>
+</span><span data-line="14"><span class="c1"># '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'</span>
 </span></pre></div>
 </div>
 </dd></dl>
@@ -2416,17 +2416,17 @@ when the item fails to convert properly.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">convert</span>
 </span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">AddressType</span>
 </span><span data-line="3">
-</span><span data-line="4"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;1 gwei&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+</span><span data-line="4"><span class="n">convert</span><span class="p">(</span><span class="s2">"1 gwei"</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
 </span><span data-line="5"><span class="c1"># 1000000000</span>
 </span><span data-line="6">
-</span><span data-line="7"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;1 ETH&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+</span><span data-line="7"><span class="n">convert</span><span class="p">(</span><span class="s2">"1 ETH"</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
 </span><span data-line="8"><span class="c1"># 1000000000000000000</span>
 </span><span data-line="9">
-</span><span data-line="10"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;0x283Af0B28c62C092C9727F1Ee09c02CA627EB7F5&quot;</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span>
-</span><span data-line="11"><span class="c1"># HexBytes(&#39;0x283af0b28c62c092c9727f1ee09c02ca627eb7f5&#39;)</span>
+</span><span data-line="10"><span class="n">convert</span><span class="p">(</span><span class="s2">"0x283Af0B28c62C092C9727F1Ee09c02CA627EB7F5"</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span>
+</span><span data-line="11"><span class="c1"># HexBytes('0x283af0b28c62c092c9727f1ee09c02ca627eb7f5')</span>
 </span><span data-line="12">
-</span><span data-line="13"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;vitalik.eth&quot;</span><span class="p">,</span> <span class="n">AddressType</span><span class="p">)</span>  <span class="c1"># with ape-ens plugin installed</span>
-</span><span data-line="14"><span class="c1"># &#39;0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&#39;</span>
+</span><span data-line="13"><span class="n">convert</span><span class="p">(</span><span class="s2">"vitalik.eth"</span><span class="p">,</span> <span class="n">AddressType</span><span class="p">)</span>  <span class="c1"># with ape-ens plugin installed</span>
+</span><span data-line="14"><span class="c1"># '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'</span>
 </span></pre></div>
 </div>
 </dd></dl>
@@ -2465,17 +2465,17 @@ when the item fails to convert properly.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">convert</span>
 </span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">AddressType</span>
 </span><span data-line="3">
-</span><span data-line="4"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;1 gwei&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+</span><span data-line="4"><span class="n">convert</span><span class="p">(</span><span class="s2">"1 gwei"</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
 </span><span data-line="5"><span class="c1"># 1000000000</span>
 </span><span data-line="6">
-</span><span data-line="7"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;1 ETH&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+</span><span data-line="7"><span class="n">convert</span><span class="p">(</span><span class="s2">"1 ETH"</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
 </span><span data-line="8"><span class="c1"># 1000000000000000000</span>
 </span><span data-line="9">
-</span><span data-line="10"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;0x283Af0B28c62C092C9727F1Ee09c02CA627EB7F5&quot;</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span>
-</span><span data-line="11"><span class="c1"># HexBytes(&#39;0x283af0b28c62c092c9727f1ee09c02ca627eb7f5&#39;)</span>
+</span><span data-line="10"><span class="n">convert</span><span class="p">(</span><span class="s2">"0x283Af0B28c62C092C9727F1Ee09c02CA627EB7F5"</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span>
+</span><span data-line="11"><span class="c1"># HexBytes('0x283af0b28c62c092c9727f1ee09c02ca627eb7f5')</span>
 </span><span data-line="12">
-</span><span data-line="13"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;vitalik.eth&quot;</span><span class="p">,</span> <span class="n">AddressType</span><span class="p">)</span>  <span class="c1"># with ape-ens plugin installed</span>
-</span><span data-line="14"><span class="c1"># &#39;0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&#39;</span>
+</span><span data-line="13"><span class="n">convert</span><span class="p">(</span><span class="s2">"vitalik.eth"</span><span class="p">,</span> <span class="n">AddressType</span><span class="p">)</span>  <span class="c1"># with ape-ens plugin installed</span>
+</span><span data-line="14"><span class="c1"># '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'</span>
 </span></pre></div>
 </div>
 </dd></dl>
@@ -2513,17 +2513,17 @@ when the item fails to convert properly.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">convert</span>
 </span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">AddressType</span>
 </span><span data-line="3">
-</span><span data-line="4"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;1 gwei&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+</span><span data-line="4"><span class="n">convert</span><span class="p">(</span><span class="s2">"1 gwei"</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
 </span><span data-line="5"><span class="c1"># 1000000000</span>
 </span><span data-line="6">
-</span><span data-line="7"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;1 ETH&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+</span><span data-line="7"><span class="n">convert</span><span class="p">(</span><span class="s2">"1 ETH"</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
 </span><span data-line="8"><span class="c1"># 1000000000000000000</span>
 </span><span data-line="9">
-</span><span data-line="10"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;0x283Af0B28c62C092C9727F1Ee09c02CA627EB7F5&quot;</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span>
-</span><span data-line="11"><span class="c1"># HexBytes(&#39;0x283af0b28c62c092c9727f1ee09c02ca627eb7f5&#39;)</span>
+</span><span data-line="10"><span class="n">convert</span><span class="p">(</span><span class="s2">"0x283Af0B28c62C092C9727F1Ee09c02CA627EB7F5"</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span>
+</span><span data-line="11"><span class="c1"># HexBytes('0x283af0b28c62c092c9727f1ee09c02ca627eb7f5')</span>
 </span><span data-line="12">
-</span><span data-line="13"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;vitalik.eth&quot;</span><span class="p">,</span> <span class="n">AddressType</span><span class="p">)</span>  <span class="c1"># with ape-ens plugin installed</span>
-</span><span data-line="14"><span class="c1"># &#39;0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&#39;</span>
+</span><span data-line="13"><span class="n">convert</span><span class="p">(</span><span class="s2">"vitalik.eth"</span><span class="p">,</span> <span class="n">AddressType</span><span class="p">)</span>  <span class="c1"># with ape-ens plugin installed</span>
+</span><span data-line="14"><span class="c1"># '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'</span>
 </span></pre></div>
 </div>
 </dd></dl>
@@ -2563,17 +2563,17 @@ when the item fails to convert properly.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">convert</span>
 </span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">AddressType</span>
 </span><span data-line="3">
-</span><span data-line="4"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;1 gwei&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+</span><span data-line="4"><span class="n">convert</span><span class="p">(</span><span class="s2">"1 gwei"</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
 </span><span data-line="5"><span class="c1"># 1000000000</span>
 </span><span data-line="6">
-</span><span data-line="7"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;1 ETH&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+</span><span data-line="7"><span class="n">convert</span><span class="p">(</span><span class="s2">"1 ETH"</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
 </span><span data-line="8"><span class="c1"># 1000000000000000000</span>
 </span><span data-line="9">
-</span><span data-line="10"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;0x283Af0B28c62C092C9727F1Ee09c02CA627EB7F5&quot;</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span>
-</span><span data-line="11"><span class="c1"># HexBytes(&#39;0x283af0b28c62c092c9727f1ee09c02ca627eb7f5&#39;)</span>
+</span><span data-line="10"><span class="n">convert</span><span class="p">(</span><span class="s2">"0x283Af0B28c62C092C9727F1Ee09c02CA627EB7F5"</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span>
+</span><span data-line="11"><span class="c1"># HexBytes('0x283af0b28c62c092c9727f1ee09c02ca627eb7f5')</span>
 </span><span data-line="12">
-</span><span data-line="13"><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;vitalik.eth&quot;</span><span class="p">,</span> <span class="n">AddressType</span><span class="p">)</span>  <span class="c1"># with ape-ens plugin installed</span>
-</span><span data-line="14"><span class="c1"># &#39;0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&#39;</span>
+</span><span data-line="13"><span class="n">convert</span><span class="p">(</span><span class="s2">"vitalik.eth"</span><span class="p">,</span> <span class="n">AddressType</span><span class="p">)</span>  <span class="c1"># with ape-ens plugin installed</span>
+</span><span data-line="14"><span class="c1"># '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'</span>
 </span></pre></div>
 </div>
 </dd></dl>
@@ -2610,8 +2610,8 @@ However, use this singleton for more granular access to networks.</p>
 <p>Usage example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">networks</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="c1"># &quot;networks&quot; is the NetworkManager singleton</span>
-</span><span data-line="4"><span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">ethereum</span><span class="o">.</span><span class="n">mainnet</span><span class="o">.</span><span class="n">use_provider</span><span class="p">(</span><span class="s2">&quot;node&quot;</span><span class="p">):</span>
+</span><span data-line="3"><span class="c1"># "networks" is the NetworkManager singleton</span>
+</span><span data-line="4"><span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">ethereum</span><span class="o">.</span><span class="n">mainnet</span><span class="o">.</span><span class="n">use_provider</span><span class="p">(</span><span class="s2">"node"</span><span class="p">):</span>
 </span><span data-line="5">    <span class="o">...</span>
 </span></pre></div>
 </div>
@@ -2964,7 +2964,7 @@ as the default.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ape.managers.networks.NodeProcessMap">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.managers.networks.</span></span><span class="sig-name descname"><span class="pre">NodeProcessMap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nodes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#ape.managers.networks.NodeProcessData" title="ape.managers.networks.NodeProcessData"><span class="pre">NodeProcessData</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.networks.NodeProcessMap" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.managers.networks.</span></span><span class="sig-name descname"><span class="pre">NodeProcessMap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">*args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nodes:</span> <span class="pre">dict[int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">~ape.managers.networks.NodeProcessData]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.networks.NodeProcessMap" title="Link to this definition">#</a></dt>
 <dd><p>All managed running network subprocesses.</p>
 </dd></dl>
 
@@ -3012,7 +3012,7 @@ Users will not create this class directly but access
 them from <code class="docutils literal notranslate"><span class="pre">project.dependencies</span></code>.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.managers.project.Dependency.__eq__">
-<span class="sig-name descname"><span class="pre">__eq__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#ape.managers.project.Dependency.__eq__" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">__eq__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">object</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#ape.managers.project.Dependency.__eq__" title="Link to this definition">#</a></dt>
 <dd><p>Return self==value.</p>
 </dd></dl>
 
@@ -3463,7 +3463,7 @@ to track as a deployment of the project.</p></li>
 </span><span data-line="4"><span class="n">project</span><span class="o">.</span><span class="n">MyToken</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">sender</span><span class="o">=...</span><span class="p">)</span>
 </span><span data-line="5">
 </span><span data-line="6"><span class="c1"># Interact with projects located elsewhere.</span>
-</span><span data-line="7"><span class="n">other_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="s2">&quot;Path/somewhere/else&quot;</span><span class="p">)</span>
+</span><span data-line="7"><span class="n">other_project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="s2">"Path/somewhere/else"</span><span class="p">)</span>
 </span><span data-line="8"><span class="n">other_project</span><span class="o">.</span><span class="n">TokenSwapper</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">sender</span><span class="o">=...</span><span class="p">)</span>
 </span></pre></div>
 </div>
@@ -3633,7 +3633,7 @@ directory was before calling this method.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ape.managers.project.MultiProject">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.managers.project.</span></span><span class="sig-name descname"><span class="pre">MultiProject</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#ape.api.projects.ProjectAPI" title="ape.api.projects.ProjectAPI"><span class="pre">ProjectAPI</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.project.MultiProject" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.managers.project.</span></span><span class="sig-name descname"><span class="pre">MultiProject</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path:</span> <span class="pre">~pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apis:</span> <span class="pre">list[~ape.api.projects.ProjectAPI]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.project.MultiProject" title="Link to this definition">#</a></dt>
 <dd><p>A project with more than 1 valid project API configs, such as a Foundry project
 containing an <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file.</p>
 <dl class="py attribute">
@@ -3651,7 +3651,7 @@ containing an <code class="docutils literal notranslate"><span class="pre">ape-c
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.managers.project.MultiProject.__pydantic_fields__">
-<span class="sig-name descname"><span class="pre">__pydantic_fields__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">FieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'apis':</span> <span class="pre">FieldInfo(annotation=list[ProjectAPI],</span> <span class="pre">required=False,</span> <span class="pre">default=[]),</span> <span class="pre">'path':</span> <span class="pre">FieldInfo(annotation=Path,</span> <span class="pre">required=True)}</span></em><a class="headerlink" href="#ape.managers.project.MultiProject.__pydantic_fields__" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">__pydantic_fields__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">FieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'apis':</span> <span class="pre">FieldInfo(annotation=list[ProjectAPI],</span> <span class="pre">required=False,</span> <span class="pre">default_factory=list),</span> <span class="pre">'path':</span> <span class="pre">FieldInfo(annotation=Path,</span> <span class="pre">required=True)}</span></em><a class="headerlink" href="#ape.managers.project.MultiProject.__pydantic_fields__" title="Link to this definition">#</a></dt>
 <dd><p>A dictionary of field names and their corresponding [<cite>FieldInfo</cite>][pydantic.fields.FieldInfo] objects.
 This replaces <cite>Model.__fields__</cite> from Pydantic V1.</p>
 </dd></dl>
@@ -3664,7 +3664,7 @@ This replaces <cite>Model.__fields__</cite> from Pydantic V1.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ape.managers.project.MultiProject.__signature__">
-<span class="sig-name descname"><span class="pre">__signature__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">Signature</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;Signature</span> <span class="pre">(*,</span> <span class="pre">path:</span> <span class="pre">pathlib.Path,</span> <span class="pre">apis:</span> <span class="pre">list[ape.api.projects.ProjectAPI]</span> <span class="pre">=</span> <span class="pre">[])</span> <span class="pre">-&gt;</span> <span class="pre">None&gt;</span></em><a class="headerlink" href="#ape.managers.project.MultiProject.__signature__" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">__signature__</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">Signature</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;Signature</span> <span class="pre">(*,</span> <span class="pre">path:</span> <span class="pre">pathlib.Path,</span> <span class="pre">apis:</span> <span class="pre">list[ape.api.projects.ProjectAPI]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;)</span> <span class="pre">-&gt;</span> <span class="pre">None&gt;</span></em><a class="headerlink" href="#ape.managers.project.MultiProject.__signature__" title="Link to this definition">#</a></dt>
 <dd><p>The synthesized <cite>__init__</cite> [<cite>Signature</cite>][inspect.Signature] of the model.</p>
 </dd></dl>
 
@@ -4038,7 +4038,7 @@ query engine is not available for use or is unable to complete the query.</p>
 </dd>
 </dl>
 <p>Usage example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">biggest_block_size</span> <span class="o">=</span> <span class="n">chain</span><span class="o">.</span><span class="n">blocks</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;size&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">biggest_block_size</span> <span class="o">=</span> <span class="n">chain</span><span class="o">.</span><span class="n">blocks</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">"size"</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
 </span></pre></div>
 </div>
 <dl class="py property">

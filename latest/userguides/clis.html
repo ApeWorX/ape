@@ -224,34 +224,37 @@ Here is an example using all of those features from the <code class="docutils li
 </span><span data-line="5"><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
 </span><span data-line="6"><span class="nd">@ape_cli_context</span><span class="p">()</span>
 </span><span data-line="7"><span class="k">def</span><span class="w"> </span><span class="nf">cmd</span><span class="p">(</span><span class="n">cli_ctx</span><span class="p">):</span>
-</span><span data-line="8">    <span class="n">cli_ctx</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Test&quot;</span><span class="p">)</span>
-</span><span data-line="9">    <span class="n">account</span> <span class="o">=</span> <span class="n">cli_ctx</span><span class="o">.</span><span class="n">account_manager</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;metamask&quot;</span><span class="p">)</span>
-</span><span data-line="10">    <span class="n">cli_ctx</span><span class="o">.</span><span class="n">abort</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Bad account: </span><span class="si">{</span><span class="n">account</span><span class="o">.</span><span class="n">address</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="8">    <span class="n">cli_ctx</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Test"</span><span class="p">)</span>
+</span><span data-line="9">    <span class="n">account</span> <span class="o">=</span> <span class="n">cli_ctx</span><span class="o">.</span><span class="n">account_manager</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"metamask"</span><span class="p">)</span>
+</span><span data-line="10">    <span class="n">cli_ctx</span><span class="o">.</span><span class="n">abort</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Bad account: </span><span class="si">{</span><span class="n">account</span><span class="o">.</span><span class="n">address</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </span></pre></div>
 </div>
 <p>In Ape, it is easy to extend the CLI context object and use the extended version in your CLIs:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.cli</span><span class="w"> </span><span class="kn">import</span> <span class="n">ApeCliContextObject</span><span class="p">,</span> <span class="n">ape_cli_context</span>
 </span><span data-line="2"><span class="kn">import</span><span class="w"> </span><span class="nn">click</span>
 </span><span data-line="3">
-</span><span data-line="4"><span class="k">class</span><span class="w"> </span><span class="nc">MyManager</span><span class="p">:</span>
-</span><span data-line="5"><span class="w">   </span><span class="sd">&quot;&quot;&quot;My custom manager.&quot;&quot;&quot;</span>
-</span><span data-line="6">
-</span><span data-line="7"><span class="k">class</span><span class="w"> </span><span class="nc">CustomContext</span><span class="p">(</span><span class="n">ApeCliContextObject</span><span class="p">):</span>
-</span><span data-line="8">   <span class="n">my_manager</span><span class="p">:</span> <span class="n">MyManager</span> <span class="o">=</span> <span class="n">MyManager</span><span class="p">()</span>
-</span><span data-line="9"><span class="w">   </span><span class="sd">&quot;&quot;&quot;Add new managers to your custom context&quot;&quot;&quot;</span>
-</span><span data-line="10">   
-</span><span data-line="11">   <span class="nd">@property</span>
-</span><span data-line="12">   <span class="k">def</span><span class="w"> </span><span class="nf">signer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span data-line="13"><span class="w">      </span><span class="sd">&quot;&quot;&quot;Utilize existing managers in your custom context.&quot;&quot;&quot;</span>
-</span><span data-line="14">      <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">account_manager</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;my_account&quot;</span><span class="p">)</span>
-</span><span data-line="15">
-</span><span data-line="16"><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
-</span><span data-line="17"><span class="nd">@ape_cli_context</span><span class="p">(</span><span class="n">obj_type</span><span class="o">=</span><span class="n">CustomContext</span><span class="p">)</span>
-</span><span data-line="18"><span class="k">def</span><span class="w"> </span><span class="nf">cli</span><span class="p">(</span><span class="n">cli_ctx</span><span class="p">):</span>
-</span><span data-line="19">    <span class="c1"># Access your manager.</span>
-</span><span data-line="20">    <span class="nb">print</span><span class="p">(</span><span class="n">cli_ctx</span><span class="o">.</span><span class="n">my_manager</span><span class="p">)</span>
-</span><span data-line="21">    <span class="c1"># Access other Ape managers.</span>
-</span><span data-line="22">    <span class="nb">print</span><span class="p">(</span><span class="n">cli_ctx</span><span class="o">.</span><span class="n">account_manager</span><span class="p">)</span>
+</span><span data-line="4">
+</span><span data-line="5"><span class="k">class</span><span class="w"> </span><span class="nc">MyManager</span><span class="p">:</span>
+</span><span data-line="6"><span class="w">    </span><span class="sd">"""My custom manager."""</span>
+</span><span data-line="7">
+</span><span data-line="8">
+</span><span data-line="9"><span class="k">class</span><span class="w"> </span><span class="nc">CustomContext</span><span class="p">(</span><span class="n">ApeCliContextObject</span><span class="p">):</span>
+</span><span data-line="10">    <span class="n">my_manager</span><span class="p">:</span> <span class="n">MyManager</span> <span class="o">=</span> <span class="n">MyManager</span><span class="p">()</span>
+</span><span data-line="11"><span class="w">    </span><span class="sd">"""Add new managers to your custom context"""</span>
+</span><span data-line="12">
+</span><span data-line="13">    <span class="nd">@property</span>
+</span><span data-line="14">    <span class="k">def</span><span class="w"> </span><span class="nf">signer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span data-line="15"><span class="w">        </span><span class="sd">"""Utilize existing managers in your custom context."""</span>
+</span><span data-line="16">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">account_manager</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"my_account"</span><span class="p">)</span>
+</span><span data-line="17">
+</span><span data-line="18">
+</span><span data-line="19"><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
+</span><span data-line="20"><span class="nd">@ape_cli_context</span><span class="p">(</span><span class="n">obj_type</span><span class="o">=</span><span class="n">CustomContext</span><span class="p">)</span>
+</span><span data-line="21"><span class="k">def</span><span class="w"> </span><span class="nf">cli</span><span class="p">(</span><span class="n">cli_ctx</span><span class="p">):</span>
+</span><span data-line="22">    <span class="c1"># Access your manager.</span>
+</span><span data-line="23">    <span class="nb">print</span><span class="p">(</span><span class="n">cli_ctx</span><span class="o">.</span><span class="n">my_manager</span><span class="p">)</span>
+</span><span data-line="24">    <span class="c1"># Access other Ape managers.</span>
+</span><span data-line="25">    <span class="nb">print</span><span class="p">(</span><span class="n">cli_ctx</span><span class="o">.</span><span class="n">account_manager</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </section>
@@ -271,19 +274,21 @@ For example, <code class="docutils literal notranslate"><span class="pre">::test
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">click</span>
 </span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.cli</span><span class="w"> </span><span class="kn">import</span> <span class="n">network_option</span>
 </span><span data-line="3">
-</span><span data-line="4"><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
-</span><span data-line="5"><span class="nd">@network_option</span><span class="p">()</span>
-</span><span data-line="6"><span class="k">def</span><span class="w"> </span><span class="nf">cmd</span><span class="p">(</span><span class="n">provider</span><span class="p">):</span>
-</span><span data-line="7">   <span class="c1"># This command only needs the provider.</span>
-</span><span data-line="8">   <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">provider</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-</span><span data-line="9">
-</span><span data-line="10"><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
-</span><span data-line="11"><span class="nd">@network_option</span><span class="p">()</span>
-</span><span data-line="12"><span class="k">def</span><span class="w"> </span><span class="nf">cmd_2</span><span class="p">(</span><span class="n">ecosystem</span><span class="p">,</span> <span class="n">network</span><span class="p">,</span> <span class="n">provider</span><span class="p">):</span>
-</span><span data-line="13">   <span class="c1"># This command uses all parts of the parsed network choice.</span>
-</span><span data-line="14">   <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">ecosystem</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-</span><span data-line="15">   <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">network</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-</span><span data-line="16">   <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">provider</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+</span><span data-line="4">
+</span><span data-line="5"><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
+</span><span data-line="6"><span class="nd">@network_option</span><span class="p">()</span>
+</span><span data-line="7"><span class="k">def</span><span class="w"> </span><span class="nf">cmd</span><span class="p">(</span><span class="n">provider</span><span class="p">):</span>
+</span><span data-line="8">    <span class="c1"># This command only needs the provider.</span>
+</span><span data-line="9">    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">provider</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+</span><span data-line="10">
+</span><span data-line="11">
+</span><span data-line="12"><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
+</span><span data-line="13"><span class="nd">@network_option</span><span class="p">()</span>
+</span><span data-line="14"><span class="k">def</span><span class="w"> </span><span class="nf">cmd_2</span><span class="p">(</span><span class="n">ecosystem</span><span class="p">,</span> <span class="n">network</span><span class="p">,</span> <span class="n">provider</span><span class="p">):</span>
+</span><span data-line="15">    <span class="c1"># This command uses all parts of the parsed network choice.</span>
+</span><span data-line="16">    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">ecosystem</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+</span><span data-line="17">    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">network</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+</span><span data-line="18">    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">provider</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
 </span></pre></div>
 </div>
 <p>The <a class="reference external" href="../methoddocs/cli.html#ape.cli.commands.ConnectedProviderCommand">ConnectedProviderCommand</a> automatically uses the <code class="docutils literal notranslate"><span class="pre">--network</span></code> option and connects to the network before any of your code executes and then disconnects afterward.
@@ -292,22 +297,26 @@ Additionally, specify <code class="docutils literal notranslate"><span class="pr
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">click</span>
 </span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.cli</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConnectedProviderCommand</span>
 </span><span data-line="3">
-</span><span data-line="4"><span class="nd">@click</span><span class="o">.</span><span class="n">group</span><span class="p">()</span>
-</span><span data-line="5"><span class="k">def</span><span class="w"> </span><span class="nf">cli</span><span class="p">():</span>
-</span><span data-line="6">    <span class="k">pass</span>
-</span><span data-line="7">
-</span><span data-line="8"><span class="nd">@cli</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="bp">cls</span><span class="o">=</span><span class="n">ConnectedProviderCommand</span><span class="p">)</span>
-</span><span data-line="9"><span class="k">def</span><span class="w"> </span><span class="nf">cmd_1</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">provider</span><span class="p">):</span>
-</span><span data-line="10">   <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">network</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-</span><span data-line="11">   <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">provider</span><span class="o">.</span><span class="n">is_connected</span><span class="p">)</span>  <span class="c1"># True</span>
-</span><span data-line="12">
-</span><span data-line="13"><span class="nd">@cli</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="bp">cls</span><span class="o">=</span><span class="n">ConnectedProviderCommand</span><span class="p">)</span>
-</span><span data-line="14"><span class="k">def</span><span class="w"> </span><span class="nf">cmd_2</span><span class="p">(</span><span class="n">provider</span><span class="p">):</span>
-</span><span data-line="15">   <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">provider</span><span class="o">.</span><span class="n">is_connected</span><span class="p">)</span>  <span class="c1"># True</span>
-</span><span data-line="16">
-</span><span data-line="17"><span class="nd">@cli</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="bp">cls</span><span class="o">=</span><span class="n">ConnectedProviderCommand</span><span class="p">)</span>
-</span><span data-line="18"><span class="k">def</span><span class="w"> </span><span class="nf">cmd_3</span><span class="p">():</span>
-</span><span data-line="19">   <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s2">&quot;Using params from ConnectedProviderCommand is optional&quot;</span><span class="p">)</span>
+</span><span data-line="4">
+</span><span data-line="5"><span class="nd">@click</span><span class="o">.</span><span class="n">group</span><span class="p">()</span>
+</span><span data-line="6"><span class="k">def</span><span class="w"> </span><span class="nf">cli</span><span class="p">():</span>
+</span><span data-line="7">    <span class="k">pass</span>
+</span><span data-line="8">
+</span><span data-line="9">
+</span><span data-line="10"><span class="nd">@cli</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="bp">cls</span><span class="o">=</span><span class="n">ConnectedProviderCommand</span><span class="p">)</span>
+</span><span data-line="11"><span class="k">def</span><span class="w"> </span><span class="nf">cmd_1</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">provider</span><span class="p">):</span>
+</span><span data-line="12">    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">network</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+</span><span data-line="13">    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">provider</span><span class="o">.</span><span class="n">is_connected</span><span class="p">)</span>  <span class="c1"># True</span>
+</span><span data-line="14">
+</span><span data-line="15">
+</span><span data-line="16"><span class="nd">@cli</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="bp">cls</span><span class="o">=</span><span class="n">ConnectedProviderCommand</span><span class="p">)</span>
+</span><span data-line="17"><span class="k">def</span><span class="w"> </span><span class="nf">cmd_2</span><span class="p">(</span><span class="n">provider</span><span class="p">):</span>
+</span><span data-line="18">    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">provider</span><span class="o">.</span><span class="n">is_connected</span><span class="p">)</span>  <span class="c1"># True</span>
+</span><span data-line="19">
+</span><span data-line="20">
+</span><span data-line="21"><span class="nd">@cli</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="bp">cls</span><span class="o">=</span><span class="n">ConnectedProviderCommand</span><span class="p">)</span>
+</span><span data-line="22"><span class="k">def</span><span class="w"> </span><span class="nf">cmd_3</span><span class="p">():</span>
+</span><span data-line="23">    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s2">"Using params from ConnectedProviderCommand is optional"</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </section>
@@ -339,7 +348,7 @@ Here is an example:</p>
 (where <code class="docutils literal notranslate"><span class="pre">&lt;prefix&gt;</span></code> is either <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">run</span></code> for scripts or <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">&lt;plugin-name&gt;</span></code> for plugin CLI extensions)</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">&lt;prefix&gt;<span class="w"> </span>cmd<span class="w">  </span><span class="c1"># Use the default account.</span>
 </span><span data-line="2">&lt;prefix&gt;<span class="w"> </span>cmd<span class="w"> </span>--account<span class="w"> </span><span class="m">0</span><span class="w">  </span><span class="c1"># Use first account that would show up in `select_account()`.</span>
-</span><span data-line="3">&lt;prefix&gt;<span class="w"> </span>cmd<span class="w"> </span>--account<span class="w"> </span>metamask<span class="w">  </span><span class="c1"># Use account with alias &quot;metamask&quot;.</span>
+</span><span data-line="3">&lt;prefix&gt;<span class="w"> </span>cmd<span class="w"> </span>--account<span class="w"> </span>metamask<span class="w">  </span><span class="c1"># Use account with alias "metamask".</span>
 </span><span data-line="4">&lt;prefix&gt;<span class="w"> </span>cmd<span class="w"> </span>--account<span class="w"> </span>TEST::0<span class="w">  </span><span class="c1"># Use the test account at index 0.</span>
 </span></pre></div>
 </div>
@@ -350,8 +359,8 @@ Here is an example:</p>
 </span><span data-line="4">
 </span><span data-line="5"><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
 </span><span data-line="6"><span class="k">def</span><span class="w"> </span><span class="nf">cmd</span><span class="p">():</span>
-</span><span data-line="7">   <span class="n">account</span> <span class="o">=</span> <span class="n">select_account</span><span class="p">(</span><span class="s2">&quot;Select an account to use&quot;</span><span class="p">)</span>
-</span><span data-line="8">   <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;You selected </span><span class="si">{</span><span class="n">account</span><span class="o">.</span><span class="n">address</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+</span><span data-line="7">    <span class="n">account</span> <span class="o">=</span> <span class="n">select_account</span><span class="p">(</span><span class="s2">"Select an account to use"</span><span class="p">)</span>
+</span><span data-line="8">    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="sa">f</span><span class="s2">"You selected </span><span class="si">{</span><span class="n">account</span><span class="o">.</span><span class="n">address</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
 </span></pre></div>
 </div>
 <p>Similarly, there are a couple custom arguments for aliases alone that are useful when making CLIs for account creation.
@@ -383,21 +392,24 @@ Use <code class="docutils literal notranslate"><span class="pre">account_type</s
 </span><span data-line="4"><span class="kn">from</span><span class="w"> </span><span class="nn">ape_accounts.accounts</span><span class="w"> </span><span class="kn">import</span> <span class="n">KeyfileAccount</span>
 </span><span data-line="5">
 </span><span data-line="6"><span class="c1"># NOTE: This is just an example and not anything specific or recommended.</span>
-</span><span data-line="7"><span class="n">APPLICATION_PREFIX</span> <span class="o">=</span> <span class="s2">&quot;&lt;FOO_BAR&gt;&quot;</span>
+</span><span data-line="7"><span class="n">APPLICATION_PREFIX</span> <span class="o">=</span> <span class="s2">"&lt;FOO_BAR&gt;"</span>
 </span><span data-line="8">
-</span><span data-line="9"><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
-</span><span data-line="10"><span class="nd">@existing_alias_argument</span><span class="p">(</span><span class="n">account_type</span><span class="o">=</span><span class="n">KeyfileAccount</span><span class="p">)</span>
-</span><span data-line="11"><span class="k">def</span><span class="w"> </span><span class="nf">cli_0</span><span class="p">(</span><span class="n">alias</span><span class="p">):</span>
-</span><span data-line="12">   <span class="k">pass</span>
-</span><span data-line="13">
-</span><span data-line="14"><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
-</span><span data-line="15"><span class="nd">@existing_alias_argument</span><span class="p">(</span><span class="n">account_type</span><span class="o">=</span><span class="k">lambda</span> <span class="n">a</span><span class="p">:</span> <span class="n">a</span><span class="o">.</span><span class="n">alias</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">APPLICATION_PREFIX</span><span class="p">))</span>
-</span><span data-line="16"><span class="k">def</span><span class="w"> </span><span class="nf">cli_1</span><span class="p">(</span><span class="n">alias</span><span class="p">):</span>
-</span><span data-line="17">   <span class="k">pass</span>
-</span><span data-line="18">
-</span><span data-line="19"><span class="c1"># Select from the given accounts directly.</span>
-</span><span data-line="20"><span class="n">my_accounts</span> <span class="o">=</span> <span class="p">[</span><span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;me&quot;</span><span class="p">),</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;me2&quot;</span><span class="p">)]</span>
-</span><span data-line="21"><span class="n">selected_account</span> <span class="o">=</span> <span class="n">select_account</span><span class="p">(</span><span class="n">account_type</span><span class="o">=</span><span class="n">my_accounts</span><span class="p">)</span>
+</span><span data-line="9">
+</span><span data-line="10"><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
+</span><span data-line="11"><span class="nd">@existing_alias_argument</span><span class="p">(</span><span class="n">account_type</span><span class="o">=</span><span class="n">KeyfileAccount</span><span class="p">)</span>
+</span><span data-line="12"><span class="k">def</span><span class="w"> </span><span class="nf">cli_0</span><span class="p">(</span><span class="n">alias</span><span class="p">):</span>
+</span><span data-line="13">    <span class="k">pass</span>
+</span><span data-line="14">
+</span><span data-line="15">
+</span><span data-line="16"><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
+</span><span data-line="17"><span class="nd">@existing_alias_argument</span><span class="p">(</span><span class="n">account_type</span><span class="o">=</span><span class="k">lambda</span> <span class="n">a</span><span class="p">:</span> <span class="n">a</span><span class="o">.</span><span class="n">alias</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">APPLICATION_PREFIX</span><span class="p">))</span>
+</span><span data-line="18"><span class="k">def</span><span class="w"> </span><span class="nf">cli_1</span><span class="p">(</span><span class="n">alias</span><span class="p">):</span>
+</span><span data-line="19">    <span class="k">pass</span>
+</span><span data-line="20">
+</span><span data-line="21">
+</span><span data-line="22"><span class="c1"># Select from the given accounts directly.</span>
+</span><span data-line="23"><span class="n">my_accounts</span> <span class="o">=</span> <span class="p">[</span><span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"me"</span><span class="p">),</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"me2"</span><span class="p">)]</span>
+</span><span data-line="24"><span class="n">selected_account</span> <span class="o">=</span> <span class="n">select_account</span><span class="p">(</span><span class="n">account_type</span><span class="o">=</span><span class="n">my_accounts</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </section>
@@ -411,12 +423,13 @@ Use <code class="docutils literal notranslate"><span class="pre">account_type</s
 </span><span data-line="3">
 </span><span data-line="4"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.cli</span><span class="w"> </span><span class="kn">import</span> <span class="n">contract_file_paths_argument</span>
 </span><span data-line="5">
-</span><span data-line="6"><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
-</span><span data-line="7"><span class="nd">@contract_file_paths_argument</span><span class="p">()</span>
-</span><span data-line="8"><span class="k">def</span><span class="w"> </span><span class="nf">cli</span><span class="p">(</span><span class="n">file_paths</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">Path</span><span class="p">]):</span>
-</span><span data-line="9">   <span class="c1"># Loop through all source files given (or all source files in the project).</span>
-</span><span data-line="10">    <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">file_paths</span><span class="p">:</span>
-</span><span data-line="11">        <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Source found: </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="6">
+</span><span data-line="7"><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
+</span><span data-line="8"><span class="nd">@contract_file_paths_argument</span><span class="p">()</span>
+</span><span data-line="9"><span class="k">def</span><span class="w"> </span><span class="nf">cli</span><span class="p">(</span><span class="n">file_paths</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">Path</span><span class="p">]):</span>
+</span><span data-line="10">    <span class="c1"># Loop through all source files given (or all source files in the project).</span>
+</span><span data-line="11">    <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">file_paths</span><span class="p">:</span>
+</span><span data-line="12">        <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Source found: </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </span></pre></div>
 </div>
 <p>When using the <code class="docutils literal notranslate"><span class="pre">&#64;contract_file_paths_argument()</span></code> decorator, you can pass any number of source files as arguments.

@@ -99,7 +99,6 @@ You can also use the [at() method](../methoddocs/contracts.html#ape.contracts.ba
 from ape import project
 
 contract = project.MyContract.at("0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45")
-
 ```
 
 By default, Ape will detect if the contract is a proxy and use the implementation contract's interface. See the [Proxy Contracts guide](./proxy.html) for more details on proxy handling.
@@ -154,8 +153,7 @@ contract = Contract(address, abi="abi.json")
 
 # Using a Python dictionary from JSON:
 contract = Contract(
-    address,
-    abi=[{"name":"foo","type":"fallback", "stateMutability":"nonpayable"}]
+    address, abi=[{"name": "foo", "type": "fallback", "stateMutability": "nonpayable"}]
 )
 ```
 
@@ -172,8 +170,9 @@ You could then refer back to it like so:
 ```python
 from ape import project, chain
 
+
 def main():
-  my_contract = chain.contracts.get_deployments(project.MyContract)[-1]
+    my_contract = chain.contracts.get_deployments(project.MyContract)[-1]
 ```
 
 or
@@ -461,7 +460,7 @@ import ape
 usdc = ape.Contract("0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48")
 
 # ABI type for a hex method ID
-assert usdc.identifier_lookup['0x70a08231'].selector == 'balanceOf(address)'
+assert usdc.identifier_lookup["0x70a08231"].selector == "balanceOf(address)"
 
 # Also, selectors from method and event signatures
 assert usdc.selector_identifiers["balances(address)"] == "0x27e235e3"
@@ -486,8 +485,12 @@ Here is an example of how you can use the multicall module:
 import ape
 from ape_ethereum import multicall
 
-ADDRESSES = ("0xF4b8A02D4e8D76070bD7092B54D2cBbe90fa72e9", "0x80067013d7F7aF4e86b3890489AcAFe79F31a4Cb")
+ADDRESSES = (
+    "0xF4b8A02D4e8D76070bD7092B54D2cBbe90fa72e9",
+    "0x80067013d7F7aF4e86b3890489AcAFe79F31a4Cb",
+)
 POOLS = [ape.project.IPool.at(a) for a in ADDRESSES]
+
 
 def main():
     # Use multi-call.

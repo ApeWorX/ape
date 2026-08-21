@@ -237,7 +237,7 @@ However, Ape works out-of-the-box (in a limited way) with any network defined in
 <h2>Selecting a Network<a class="headerlink" href="#selecting-a-network" title="Link to this heading">#</a></h2>
 <p>Before discussing how to add custom networks or install L2 network plugins, you need to know how to specify the network choice.
 No matter what type of network you are using in Ape, you specify the network using a “network choice” triplet value:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="s2">&quot;&lt;ecosystem-name&gt;:&lt;network-name&gt;:&lt;provider-name&gt;&quot;</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="s2">"&lt;ecosystem-name&gt;:&lt;network-name&gt;:&lt;provider-name&gt;"</span>
 </span></pre></div>
 </div>
 <p>Where <code class="docutils literal notranslate"><span class="pre">ecosystem-name</span></code> refers to the ecosystem, e.g. <code class="docutils literal notranslate"><span class="pre">ethereum</span></code>, <code class="docutils literal notranslate"><span class="pre">polygon</span></code>, <code class="docutils literal notranslate"><span class="pre">fantom</span></code>, or any valid ecosystem plugin name.
@@ -609,7 +609,7 @@ Place the identical name in the config to configure that ecosystem or network.</
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">&lt;ecosystem-name&gt;</span><span class="p">:</span>
 </span><span data-line="2"><span class="w">  </span><span class="nt">default_network</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;network-name&gt;</span>
 </span><span data-line="3"><span class="w">  </span><span class="nt">&lt;network-name&gt;</span><span class="p">:</span>
-</span><span data-line="4"><span class="w">    </span><span class="nt">gas_limit</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;max&quot;</span>
+</span><span data-line="4"><span class="w">    </span><span class="nt">gas_limit</span><span class="p">:</span><span class="w"> </span><span class="s">"max"</span>
 </span></pre></div>
 </div>
 <p>You may use one of:</p>
@@ -636,19 +636,19 @@ Use ecosystem-level specification for only requests made when connected to that 
 Network and provider configurations work similarly; they are only used when connecting to that network or provider.</p>
 <p>Here is an example using each layer:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">request_headers</span><span class="p">:</span>
-</span><span data-line="2"><span class="w">  </span><span class="nt">Top-Level</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;UseThisOnEveryRequest&quot;</span>
+</span><span data-line="2"><span class="w">  </span><span class="nt">Top-Level</span><span class="p">:</span><span class="w"> </span><span class="s">"UseThisOnEveryRequest"</span>
 </span><span data-line="3">
 </span><span data-line="4"><span class="nt">ethereum</span><span class="p">:</span>
 </span><span data-line="5"><span class="w">  </span><span class="nt">request_headers</span><span class="p">:</span>
-</span><span data-line="6"><span class="w">    </span><span class="nt">Ecosystem-Level</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;UseThisOnEveryEthereumRequest&quot;</span>
+</span><span data-line="6"><span class="w">    </span><span class="nt">Ecosystem-Level</span><span class="p">:</span><span class="w"> </span><span class="s">"UseThisOnEveryEthereumRequest"</span>
 </span><span data-line="7"><span class="w">  </span>
 </span><span data-line="8"><span class="w">  </span><span class="nt">mainnet</span><span class="p">:</span>
 </span><span data-line="9"><span class="w">    </span><span class="nt">request_headers</span><span class="p">:</span>
-</span><span data-line="10"><span class="w">      </span><span class="nt">Network-Level</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;UseThisOnAllRequestsToEthereumMainnet&quot;</span>
+</span><span data-line="10"><span class="w">      </span><span class="nt">Network-Level</span><span class="p">:</span><span class="w"> </span><span class="s">"UseThisOnAllRequestsToEthereumMainnet"</span>
 </span><span data-line="11">
 </span><span data-line="12"><span class="nt">node</span><span class="p">:</span>
 </span><span data-line="13"><span class="w">  </span><span class="nt">request_headers</span><span class="p">:</span>
-</span><span data-line="14"><span class="w">    </span><span class="nt">Provider-Level</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;UseThisOnAllRequestsUsingNodeProvider&quot;</span>
+</span><span data-line="14"><span class="w">    </span><span class="nt">Provider-Level</span><span class="p">:</span><span class="w"> </span><span class="s">"UseThisOnAllRequestsUsingNodeProvider"</span>
 </span></pre></div>
 </div>
 <p>When using <code class="docutils literal notranslate"><span class="pre">User-Agent</span></code>, it will not override Ape’s default <code class="docutils literal notranslate"><span class="pre">User-Agent</span></code> nor will each layer override each-other’s.
@@ -728,7 +728,7 @@ The following example shows how to do this.
 </span><span data-line="2"><span class="w">  </span><span class="nt">mainnet</span><span class="p">:</span>
 </span><span data-line="3"><span class="w">    </span><span class="c1"># Ethereum mainnet in Ape uses EIP-1559 by default,</span>
 </span><span data-line="4"><span class="w">    </span><span class="c1"># but we can change that here. Note: most plugins</span>
-</span><span data-line="5"><span class="w">    </span><span class="c1"># use type 0 by default already, so you don&#39;t need</span>
+</span><span data-line="5"><span class="w">    </span><span class="c1"># use type 0 by default already, so you don't need</span>
 </span><span data-line="6"><span class="w">    </span><span class="c1"># to change this if using an `ape-&lt;l2&gt;` plugin.</span>
 </span><span data-line="7"><span class="w">    </span><span class="nt">default_transaction_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
 </span><span data-line="8">
@@ -740,12 +740,12 @@ The following example shows how to do this.
 </span><span data-line="14"><span class="w">    </span><span class="c1"># The amount of times to retry fetching a receipt. This is useful</span>
 </span><span data-line="15"><span class="w">    </span><span class="c1"># because decentralized systems may show the transaction accepted</span>
 </span><span data-line="16"><span class="w">    </span><span class="c1"># on some nodes but not on others, and potentially RPC requests</span>
-</span><span data-line="17"><span class="w">    </span><span class="c1"># won&#39;t return a receipt immediately after sending its transaction.</span>
+</span><span data-line="17"><span class="w">    </span><span class="c1"># won't return a receipt immediately after sending its transaction.</span>
 </span><span data-line="18"><span class="w">    </span><span class="c1"># This config accounts for such delay. The default is `20`.</span>
 </span><span data-line="19"><span class="w">    </span><span class="nt">max_receipt_retries</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
 </span><span data-line="20">
-</span><span data-line="21"><span class="w">    </span><span class="c1"># Set a gas limit here, or use the default of &quot;auto&quot; which</span>
-</span><span data-line="22"><span class="w">    </span><span class="c1"># estimates gas. Note: local networks tend to use &quot;max&quot; here</span>
+</span><span data-line="21"><span class="w">    </span><span class="c1"># Set a gas limit here, or use the default of "auto" which</span>
+</span><span data-line="22"><span class="w">    </span><span class="c1"># estimates gas. Note: local networks tend to use "max" here</span>
 </span><span data-line="23"><span class="w">    </span><span class="c1"># by default.</span>
 </span><span data-line="24"><span class="w">    </span><span class="nt">gas_limit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">auto</span>
 </span><span data-line="25">
@@ -799,7 +799,7 @@ The provider class is what higher level Manager classes in Ape use to interface 
 You can call methods directly from the provider, like this:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">chain</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="n">block</span> <span class="o">=</span> <span class="n">chain</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">get_block</span><span class="p">(</span><span class="s2">&quot;latest&quot;</span><span class="p">)</span>
+</span><span data-line="3"><span class="n">block</span> <span class="o">=</span> <span class="n">chain</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">get_block</span><span class="p">(</span><span class="s2">"latest"</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </section>
@@ -811,23 +811,25 @@ When entering a network for the first time, it will connect to that network.
 <p>For example, if you are using a script with a default network connection, you can change connection in the middle of the script by using the provider context manager:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">chain</span><span class="p">,</span> <span class="n">networks</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
-</span><span data-line="4">    <span class="n">start_provider</span> <span class="o">=</span> <span class="n">chain</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">name</span>
-</span><span data-line="5">    <span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">ethereum</span><span class="o">.</span><span class="n">mainnet</span><span class="o">.</span><span class="n">use_provider</span><span class="p">(</span><span class="s2">&quot;node&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">provider</span><span class="p">:</span>
-</span><span data-line="6">        <span class="c1"># We are using a different provider than the one we started with.</span>
-</span><span data-line="7">        <span class="k">assert</span> <span class="n">start_provider</span> <span class="o">!=</span> <span class="n">provider</span><span class="o">.</span><span class="n">name</span>
+</span><span data-line="3">
+</span><span data-line="4"><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+</span><span data-line="5">    <span class="n">start_provider</span> <span class="o">=</span> <span class="n">chain</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">name</span>
+</span><span data-line="6">    <span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">ethereum</span><span class="o">.</span><span class="n">mainnet</span><span class="o">.</span><span class="n">use_provider</span><span class="p">(</span><span class="s2">"node"</span><span class="p">)</span> <span class="k">as</span> <span class="n">provider</span><span class="p">:</span>
+</span><span data-line="7">        <span class="c1"># We are using a different provider than the one we started with.</span>
+</span><span data-line="8">        <span class="k">assert</span> <span class="n">start_provider</span> <span class="o">!=</span> <span class="n">provider</span><span class="o">.</span><span class="n">name</span>
 </span></pre></div>
 </div>
 <p>Jump between networks to simulate multi-chain behavior.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">click</span>
 </span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">networks</span>
 </span><span data-line="3">
-</span><span data-line="4"><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
-</span><span data-line="5"><span class="k">def</span><span class="w"> </span><span class="nf">cli</span><span class="p">():</span>
-</span><span data-line="6">    <span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">polygon</span><span class="o">.</span><span class="n">mainnet</span><span class="o">.</span><span class="n">use_provider</span><span class="p">(</span><span class="s2">&quot;node&quot;</span><span class="p">):</span>
-</span><span data-line="7">        <span class="o">...</span>
-</span><span data-line="8">    <span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">ethereum</span><span class="o">.</span><span class="n">mainnet</span><span class="o">.</span><span class="n">use_provider</span><span class="p">(</span><span class="s2">&quot;node&quot;</span><span class="p">):</span>
-</span><span data-line="9">        <span class="o">...</span>
+</span><span data-line="4">
+</span><span data-line="5"><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
+</span><span data-line="6"><span class="k">def</span><span class="w"> </span><span class="nf">cli</span><span class="p">():</span>
+</span><span data-line="7">    <span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">polygon</span><span class="o">.</span><span class="n">mainnet</span><span class="o">.</span><span class="n">use_provider</span><span class="p">(</span><span class="s2">"node"</span><span class="p">):</span>
+</span><span data-line="8">        <span class="o">...</span>
+</span><span data-line="9">    <span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">ethereum</span><span class="o">.</span><span class="n">mainnet</span><span class="o">.</span><span class="n">use_provider</span><span class="p">(</span><span class="s2">"node"</span><span class="p">):</span>
+</span><span data-line="10">        <span class="o">...</span>
 </span></pre></div>
 </div>
 <p>The argument to <a class="reference external" href="../methoddocs/api.html#ape.api.networks.NetworkAPI.use_provider">use_provider()</a> is the name of the provider you want to use.
@@ -842,7 +844,7 @@ This will use whatever provider is set as default for your ecosystem / network c
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">ape</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="c1"># Use the provider configured as the default for the arbitrum::mainnet network.</span>
-</span><span data-line="4"><span class="c1"># In this case, it will use the &quot;alchemy&quot; provider.</span>
+</span><span data-line="4"><span class="c1"># In this case, it will use the "alchemy" provider.</span>
 </span><span data-line="5"><span class="k">with</span> <span class="n">ape</span><span class="o">.</span><span class="n">networks</span><span class="o">.</span><span class="n">arbitrum</span><span class="o">.</span><span class="n">mainnet</span><span class="o">.</span><span class="n">use_default_provider</span><span class="p">():</span>
 </span><span data-line="6">    <span class="o">...</span>
 </span></pre></div>
@@ -850,8 +852,8 @@ This will use whatever provider is set as default for your ecosystem / network c
 <p>You can also use the <a class="reference external" href="../methoddocs/managers.html#ape.managers.networks.NetworkManager.parse_network_choice">parse_network_choice()</a> method when working with network choice strings:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">networks</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="c1"># Same as doing `networks.ethereum.local.use_provider(&quot;test&quot;)`.</span>
-</span><span data-line="4"><span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">parse_network_choice</span><span class="p">(</span><span class="s2">&quot;ethereum:local:test&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">provider</span><span class="p">:</span>
+</span><span data-line="3"><span class="c1"># Same as doing `networks.ethereum.local.use_provider("test")`.</span>
+</span><span data-line="4"><span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">parse_network_choice</span><span class="p">(</span><span class="s2">"ethereum:local:test"</span><span class="p">)</span> <span class="k">as</span> <span class="n">provider</span><span class="p">:</span>
 </span><span data-line="5">    <span class="nb">print</span><span class="p">(</span><span class="n">provider</span><span class="p">)</span>
 </span></pre></div>
 </div>
@@ -860,7 +862,7 @@ This is so you can easily switch network contexts in a bridge or multi-chain env
 However, sometimes you may definitely want your temporary network session to end before continuing, in which case you can use the <code class="docutils literal notranslate"><span class="pre">disconnect_after=True</span></code> kwarg:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">networks</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">parse_network_choice</span><span class="p">(</span><span class="s2">&quot;ethereum:local:foundry&quot;</span><span class="p">,</span> <span class="n">disconnect_after</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">provider</span><span class="p">:</span>
+</span><span data-line="3"><span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">parse_network_choice</span><span class="p">(</span><span class="s2">"ethereum:local:foundry"</span><span class="p">,</span> <span class="n">disconnect_after</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">provider</span><span class="p">:</span>
 </span><span data-line="4">    <span class="nb">print</span><span class="p">(</span><span class="n">provider</span><span class="p">)</span>
 </span></pre></div>
 </div>
@@ -871,12 +873,13 @@ For example, let’s say we are running the following script on the network <cod
 We can switch to a forked network by doing this:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">networks</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
-</span><span data-line="4">    <span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">fork</span><span class="p">(</span><span class="n">provider_name</span><span class="o">=</span><span class="s2">&quot;foundry&quot;</span><span class="p">):</span>
-</span><span data-line="5">        <span class="o">...</span>
-</span><span data-line="6">        <span class="c1"># Do stuff on a local, forked version of mainnet</span>
-</span><span data-line="7">
-</span><span data-line="8">    <span class="c1"># Switch back to mainnet.</span>
+</span><span data-line="3">
+</span><span data-line="4"><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+</span><span data-line="5">    <span class="k">with</span> <span class="n">networks</span><span class="o">.</span><span class="n">fork</span><span class="p">(</span><span class="n">provider_name</span><span class="o">=</span><span class="s2">"foundry"</span><span class="p">):</span>
+</span><span data-line="6">        <span class="o">...</span>
+</span><span data-line="7">        <span class="c1"># Do stuff on a local, forked version of mainnet</span>
+</span><span data-line="8">
+</span><span data-line="9">    <span class="c1"># Switch back to mainnet.</span>
 </span></pre></div>
 </div>
 <p>Learn more about forking networks in the <a class="reference external" href="./forking_networks.html">forked-networks guide</a>.</p>

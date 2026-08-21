@@ -204,12 +204,12 @@ data-aria-dark="Switch to auto color mode">
 In the case of EVM networks, reverts result in funds being returned to the sender (besides network-fees) and contract state changes unwinding.
 Typically, in smart-contracts, user-defined reverts occur from <code class="docutils literal notranslate"><span class="pre">assert</span></code> statements in Vyper and <code class="docutils literal notranslate"><span class="pre">require</span></code> statements in Solidity.</p>
 <p>Here is a Vyper example of an <code class="docutils literal notranslate"><span class="pre">assert</span></code> statement:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">assert</span> <span class="n">msg</span><span class="o">.</span><span class="n">sender</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">owner</span><span class="p">,</span> <span class="s2">&quot;!authorized&quot;</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">assert</span> <span class="n">msg</span><span class="o">.</span><span class="n">sender</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">owner</span><span class="p">,</span> <span class="s2">"!authorized"</span>
 </span></pre></div>
 </div>
 <p>The string <code class="docutils literal notranslate"><span class="pre">&quot;!authorized&quot;</span></code> after the assertion is the revert-message that gets forwarded to the user.</p>
 <p>In solidity, a <code class="docutils literal notranslate"><span class="pre">require</span></code> statement looks like:</p>
-<div class="highlight-solidity notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kt">require</span><span class="p">(</span><span class="k">msg.sender</span><span class="w"> </span><span class="o">==</span><span class="w"> </span>owner<span class="p">,</span><span class="w"> </span><span class="s2">&quot;!authorized&quot;</span><span class="p">);</span>
+<div class="highlight-solidity notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kt">require</span><span class="p">(</span><span class="k">msg.sender</span><span class="w"> </span><span class="o">==</span><span class="w"> </span>owner<span class="p">,</span><span class="w"> </span><span class="s2">"!authorized"</span><span class="p">);</span>
 </span></pre></div>
 </div>
 <p>In Ape, reverts automatically become Python exceptions.
@@ -220,12 +220,12 @@ Calling it may look like:</p>
 </span></pre></div>
 </div>
 <p>And when it fails, Ape shows a stacktrace like this:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="w">  </span>File<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$HOME</span><span class="s2">/ApeProjects/ape-project/scripts/fail.py&quot;</span>,<span class="w"> </span>line<span class="w"> </span><span class="m">8</span>,<span class="w"> </span><span class="k">in</span><span class="w"> </span>main
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="w">  </span>File<span class="w"> </span><span class="s2">"</span><span class="nv">$HOME</span><span class="s2">/ApeProjects/ape-project/scripts/fail.py"</span>,<span class="w"> </span>line<span class="w"> </span><span class="m">8</span>,<span class="w"> </span><span class="k">in</span><span class="w"> </span>main
 </span><span data-line="2"><span class="w">    </span><span class="nv">receipt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>contract.setNumber<span class="o">(</span><span class="m">5</span>,<span class="w"> </span><span class="nv">sender</span><span class="o">=</span>not_owner<span class="o">)</span>
 </span><span data-line="3"><span class="w">              </span>^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-</span><span data-line="4"><span class="w">  </span>File<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$HOME</span><span class="s2">/ApeProjects/ape-project/contracts/VyperContract.vy&quot;</span>,<span class="w"> </span>line<span class="w"> </span><span class="m">98</span>,<span class="w"> </span><span class="k">in</span><span class="w"> </span>
+</span><span data-line="4"><span class="w">  </span>File<span class="w"> </span><span class="s2">"</span><span class="nv">$HOME</span><span class="s2">/ApeProjects/ape-project/contracts/VyperContract.vy"</span>,<span class="w"> </span>line<span class="w"> </span><span class="m">98</span>,<span class="w"> </span><span class="k">in</span><span class="w"> </span>
 </span><span data-line="5">setNumber
-</span><span data-line="6"><span class="w">    </span>assert<span class="w"> </span>msg.sender<span class="w"> </span><span class="o">==</span><span class="w"> </span>self.owner,<span class="w"> </span><span class="s2">&quot;!authorized&quot;</span>
+</span><span data-line="6"><span class="w">    </span>assert<span class="w"> </span>msg.sender<span class="w"> </span><span class="o">==</span><span class="w"> </span>self.owner,<span class="w"> </span><span class="s2">"!authorized"</span>
 </span><span data-line="7"><span class="w">    </span>^^^^^^^^^^^^^^^^^^^^^^^
 </span><span data-line="8">
 </span><span data-line="9">ERROR:<span class="w"> </span><span class="o">(</span>ContractLogicError<span class="o">)</span><span class="w"> </span>!authorized
@@ -238,7 +238,7 @@ Calling it may look like:</p>
 </span><span data-line="4">    <span class="n">receipt</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">setNumber</span><span class="p">(</span><span class="mi">123</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">not_owner</span><span class="p">)</span>
 </span><span data-line="5"><span class="k">except</span> <span class="n">ContractLogicError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
 </span><span data-line="6">    <span class="n">receipt</span> <span class="o">=</span> <span class="kc">None</span>
-</span><span data-line="7">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The transaction failed: </span><span class="si">{</span><span class="n">err</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="7">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"The transaction failed: </span><span class="si">{</span><span class="n">err</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </span><span data-line="8"><span class="c1"># continue on!</span>
 </span></pre></div>
 </div>
@@ -247,7 +247,7 @@ Calling it may look like:</p>
 </span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">receipt</span><span class="o">.</span><span class="n">failed</span>
 </span><span data-line="3"><span class="go">True</span>
 </span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="n">receipt</span><span class="o">.</span><span class="n">error</span>
-</span><span data-line="5"><span class="go">ContractLogicError(&#39;!authorized&#39;)</span>
+</span><span data-line="5"><span class="go">ContractLogicError('!authorized')</span>
 </span></pre></div>
 </div>
 <p>This is especially useful when you want to examine the details of a failed transaction without the exception interrupting your workflow. For example, you might want to catch and log transaction failures in a script:</p>
@@ -255,19 +255,19 @@ Calling it may look like:</p>
 </span><span data-line="2">    <span class="c1"># Try to execute a risky transaction</span>
 </span><span data-line="3">    <span class="n">receipt</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">riskFunction</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">account</span><span class="p">,</span> <span class="n">raise_on_revert</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </span><span data-line="4">    <span class="k">if</span> <span class="n">receipt</span><span class="o">.</span><span class="n">failed</span><span class="p">:</span>
-</span><span data-line="5">        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Transaction failed: </span><span class="si">{</span><span class="n">receipt</span><span class="o">.</span><span class="n">error</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="5">        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Transaction failed: </span><span class="si">{</span><span class="n">receipt</span><span class="o">.</span><span class="n">error</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </span><span data-line="6">        <span class="c1"># Perform some fallback action</span>
 </span><span data-line="7">    <span class="k">else</span><span class="p">:</span>
-</span><span data-line="8">        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Transaction succeeded!&quot;</span><span class="p">)</span>
+</span><span data-line="8">        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Transaction succeeded!"</span><span class="p">)</span>
 </span><span data-line="9"><span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-</span><span data-line="10">    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unexpected error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="10">    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unexpected error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </span></pre></div>
 </div>
 <section id="dev-messages">
 <h2>Dev Messages<a class="headerlink" href="#dev-messages" title="Link to this heading">#</a></h2>
 <p>Dev messages allow smart-contract authors to save gas by avoiding revert-messages.
 If you are using a provider that supports tracing features and a compiler that can detect <code class="docutils literal notranslate"><span class="pre">dev</span></code> messages, and you encounter a revert without a revert-message but it has a dev-message, Ape will show the dev-message:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">assert</span> <span class="n">msg</span><span class="o">.</span><span class="n">sender</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">owner</span>  <span class="c1"># dev: !authorized&quot;</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">assert</span> <span class="n">msg</span><span class="o">.</span><span class="n">sender</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">owner</span>  <span class="c1"># dev: !authorized"</span>
 </span></pre></div>
 </div>
 <p>And you will see a similar stacktrace as if you had used a revert-message.</p>
@@ -301,7 +301,7 @@ For example, if you have a contract like:</p>
 </span></pre></div>
 </div>
 <p>When invoking <code class="docutils literal notranslate"><span class="pre">withdraw()</span></code> with an unauthorized account using Ape, you will get an exception similar to those from <code class="docutils literal notranslate"><span class="pre">require()</span></code> statements, a subclass of <code class="docutils literal notranslate"><span class="pre">ContractLogicError</span></code>:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">contract</span><span class="o">.</span><span class="n">withdraw</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">hacker</span><span class="p">)</span>  <span class="c1"># assuming &#39;hacker&#39; refers to the account without authorization.</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">contract</span><span class="o">.</span><span class="n">withdraw</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">hacker</span><span class="p">)</span>  <span class="c1"># assuming 'hacker' refers to the account without authorization.</span>
 </span></pre></div>
 </div>
 </section>
@@ -313,13 +313,13 @@ Sometimes, compiler plugins such as <code class="docutils literal notranslate"><
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">Contract</span>
 </span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">ape_vyper.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">FallbackNotDefinedError</span>
 </span><span data-line="3">
-</span><span data-line="4"><span class="n">my_contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span><span class="s2">&quot;0x...&quot;</span><span class="p">)</span>
-</span><span data-line="5"><span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;test-account&quot;</span><span class="p">)</span>
+</span><span data-line="4"><span class="n">my_contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span><span class="s2">"0x..."</span><span class="p">)</span>
+</span><span data-line="5"><span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"test-account"</span><span class="p">)</span>
 </span><span data-line="6">
 </span><span data-line="7"><span class="k">try</span><span class="p">:</span>
 </span><span data-line="8">    <span class="n">my_contract</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">account</span><span class="p">)</span>
 </span><span data-line="9"><span class="k">except</span> <span class="n">FallbackNotDefinedError</span><span class="p">:</span>
-</span><span data-line="10">    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;fallback not defined&quot;</span><span class="p">)</span>
+</span><span data-line="10">    <span class="nb">print</span><span class="p">(</span><span class="s2">"fallback not defined"</span><span class="p">)</span>
 </span></pre></div>
 </div>
 <p>Next, learn how to test your contracts’ errors using the <code class="docutils literal notranslate"><span class="pre">ape.reverts</span></code> context-manager in the <a class="reference external" href="./testing.html#testing-transaction-reverts">testing guide</a>.</p>

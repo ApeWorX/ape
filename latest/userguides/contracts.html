@@ -254,7 +254,7 @@ Here is a basic example of Python code to deploy a contract:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">project</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="c1"># You need an account to deploy, as it requires a transaction.</span>
-</span><span data-line="4"><span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;&lt;ALIAS&gt;&quot;</span><span class="p">)</span>  <span class="c1"># NOTE: &lt;ALIAS&gt; refers to your account alias!</span>
+</span><span data-line="4"><span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"&lt;ALIAS&gt;"</span><span class="p">)</span>  <span class="c1"># NOTE: &lt;ALIAS&gt; refers to your account alias!</span>
 </span><span data-line="5"><span class="n">contract</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">account</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">account</span><span class="p">)</span>
 </span><span data-line="6">
 </span><span data-line="7"><span class="c1"># NOTE: You can also do it this way:</span>
@@ -268,7 +268,7 @@ That is why, as you can see, the second argument is an <code class="docutils lit
 To avoid naming collisions with other properties on the <code class="docutils literal notranslate"><span class="pre">project</span></code> object, you can alternatively use the <a class="reference external" href="../methoddocs/managers.html#ape.managers.project.manager.ProjectManager.get_contract">get_contract()</a> method to retrieve contract containers.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">project</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="n">contract</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_contract</span><span class="p">(</span><span class="s2">&quot;MyContract&quot;</span><span class="p">)</span>  <span class="c1"># Same as `project.MyContract`.</span>
+</span><span data-line="3"><span class="n">contract</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_contract</span><span class="p">(</span><span class="s2">"MyContract"</span><span class="p">)</span>  <span class="c1"># Same as `project.MyContract`.</span>
 </span></pre></div>
 </div>
 <p>Notice when deploying, we have to specify the <code class="docutils literal notranslate"><span class="pre">sender=</span></code> kwarg because <code class="docutils literal notranslate"><span class="pre">deploy</span></code> operations are transactions.
@@ -299,8 +299,7 @@ More information on publishing contracts can be found in <a class="reference ext
 <p>You can also use the <a class="reference external" href="../methoddocs/contracts.html#ape.contracts.base.ContractContainer.at">at() method</a> from the same top-level project manager when you know the address of an already-deployed contract:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">project</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="n">contract</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="o">.</span><span class="n">at</span><span class="p">(</span><span class="s2">&quot;0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45&quot;</span><span class="p">)</span>
-</span><span data-line="4">
+</span><span data-line="3"><span class="n">contract</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="o">.</span><span class="n">at</span><span class="p">(</span><span class="s2">"0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45"</span><span class="p">)</span>
 </span></pre></div>
 </div>
 <p>By default, Ape will detect if the contract is a proxy and use the implementation contract’s interface. See the <a class="reference external" href="./proxy.html">Proxy Contracts guide</a> for more details on proxy handling.</p>
@@ -310,7 +309,7 @@ More information on publishing contracts can be found in <a class="reference ext
 <p>If you already know the address of a contract, you can create instances of it using the <code class="docutils literal notranslate"><span class="pre">Contract</span></code> top-level factory:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">Contract</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="n">contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span><span class="s2">&quot;0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45&quot;</span><span class="p">)</span>
+</span><span data-line="3"><span class="n">contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span><span class="s2">"0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45"</span><span class="p">)</span>
 </span></pre></div>
 </div>
 <p>If the contract ABI and/or code is cached on disk or in memory (such as from a previous deploy or retrieval), it will use it.
@@ -318,14 +317,14 @@ Otherwise, it will fetch the <code class="docutils literal notranslate"><span cl
 <p>To avoid fetching the contract from an explorer such as Etherscan, use <code class="docutils literal notranslate"><span class="pre">fetch_from_explorer=False</span></code>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">Contract</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="n">contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span><span class="s2">&quot;0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45&quot;</span><span class="p">,</span> <span class="n">fetch_from_explorer</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span><span data-line="3"><span class="n">contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span><span class="s2">"0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45"</span><span class="p">,</span> <span class="n">fetch_from_explorer</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </span></pre></div>
 </div>
 <p>This also avoids checking for an updated <code class="docutils literal notranslate"><span class="pre">ContractType</span></code> and forces Ape to only use types cached to disk or in memory.</p>
 <p>If you have the <a class="reference external" href="https://github.com/ApeWorX/ape-ens">ENS plugin</a> installed, you can use <code class="docutils literal notranslate"><span class="pre">.eth</span></code> domain names as the argument:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">Contract</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="n">contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span><span class="s2">&quot;v2.registry.ychad.eth&quot;</span><span class="p">)</span>
+</span><span data-line="3"><span class="n">contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span><span class="s2">"v2.registry.ychad.eth"</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </section>
@@ -334,21 +333,20 @@ Otherwise, it will fetch the <code class="docutils literal notranslate"><span cl
 <p>You can load contracts using their ABIs:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">Contract</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="n">address</span> <span class="o">=</span> <span class="s2">&quot;0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45&quot;</span>
+</span><span data-line="3"><span class="n">address</span> <span class="o">=</span> <span class="s2">"0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45"</span>
 </span><span data-line="4">
 </span><span data-line="5"><span class="c1"># Using a JSON str:</span>
 </span><span data-line="6"><span class="n">contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span>
-</span><span data-line="7">    <span class="n">address</span><span class="p">,</span> <span class="n">abi</span><span class="o">=</span><span class="s1">&#39;[{&quot;name&quot;:&quot;foo&quot;,&quot;type&quot;:&quot;fallback&quot;, &quot;stateMutability&quot;:&quot;nonpayable&quot;}]&#39;</span>
+</span><span data-line="7">    <span class="n">address</span><span class="p">,</span> <span class="n">abi</span><span class="o">=</span><span class="s1">'[{"name":"foo","type":"fallback", "stateMutability":"nonpayable"}]'</span>
 </span><span data-line="8"><span class="p">)</span>
 </span><span data-line="9">
 </span><span data-line="10"><span class="c1"># Using a JSON file path:</span>
-</span><span data-line="11"><span class="n">contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span><span class="n">address</span><span class="p">,</span> <span class="n">abi</span><span class="o">=</span><span class="s2">&quot;abi.json&quot;</span><span class="p">)</span>
+</span><span data-line="11"><span class="n">contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span><span class="n">address</span><span class="p">,</span> <span class="n">abi</span><span class="o">=</span><span class="s2">"abi.json"</span><span class="p">)</span>
 </span><span data-line="12">
 </span><span data-line="13"><span class="c1"># Using a Python dictionary from JSON:</span>
 </span><span data-line="14"><span class="n">contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span>
-</span><span data-line="15">    <span class="n">address</span><span class="p">,</span>
-</span><span data-line="16">    <span class="n">abi</span><span class="o">=</span><span class="p">[{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span><span class="s2">&quot;foo&quot;</span><span class="p">,</span><span class="s2">&quot;type&quot;</span><span class="p">:</span><span class="s2">&quot;fallback&quot;</span><span class="p">,</span> <span class="s2">&quot;stateMutability&quot;</span><span class="p">:</span><span class="s2">&quot;nonpayable&quot;</span><span class="p">}]</span>
-</span><span data-line="17"><span class="p">)</span>
+</span><span data-line="15">    <span class="n">address</span><span class="p">,</span> <span class="n">abi</span><span class="o">=</span><span class="p">[{</span><span class="s2">"name"</span><span class="p">:</span> <span class="s2">"foo"</span><span class="p">,</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"fallback"</span><span class="p">,</span> <span class="s2">"stateMutability"</span><span class="p">:</span> <span class="s2">"nonpayable"</span><span class="p">}]</span>
+</span><span data-line="16"><span class="p">)</span>
 </span></pre></div>
 </div>
 <p>This will create the Contract instance from the given ABI.</p>
@@ -361,8 +359,9 @@ On live networks, this history of deployments is saved; on local networks, this 
 You could then refer back to it like so:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">project</span><span class="p">,</span> <span class="n">chain</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
-</span><span data-line="4">  <span class="n">my_contract</span> <span class="o">=</span> <span class="n">chain</span><span class="o">.</span><span class="n">contracts</span><span class="o">.</span><span class="n">get_deployments</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+</span><span data-line="3">
+</span><span data-line="4"><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+</span><span data-line="5">    <span class="n">my_contract</span> <span class="o">=</span> <span class="n">chain</span><span class="o">.</span><span class="n">contracts</span><span class="o">.</span><span class="n">get_deployments</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 </span></pre></div>
 </div>
 <p>or</p>
@@ -389,7 +388,7 @@ For example, let’s say you have a Vyper contract containing some functions:</p
 </span><span data-line="7">
 </span><span data-line="8"><span class="nd">@external</span>
 </span><span data-line="9"><span class="k">def</span><span class="w"> </span><span class="nf">set_number</span><span class="p">(</span><span class="nv">num:</span><span class="w"> </span><span class="kt">uint256</span><span class="p">):</span>
-</span><span data-line="10"><span class="w">    </span><span class="k">assert</span><span class="w"> </span><span class="bp">msg.sender</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="na">self</span><span class="p">.</span><span class="n">owner</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;!authorized&quot;</span>
+</span><span data-line="10"><span class="w">    </span><span class="k">assert</span><span class="w"> </span><span class="bp">msg.sender</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="na">self</span><span class="p">.</span><span class="n">owner</span><span class="p">,</span><span class="w"> </span><span class="s2">"!authorized"</span>
 </span><span data-line="11"><span class="w">    </span><span class="na">self</span><span class="p">.</span><span class="n">prevNumber</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="na">self</span><span class="p">.</span><span class="n">myNumber</span>
 </span><span data-line="12"><span class="w">    </span><span class="na">self</span><span class="p">.</span><span class="n">myNumber</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">num</span>
 </span><span data-line="13">
@@ -417,8 +416,8 @@ Payable transactions cost more money, because the contract-logic requires additi
 For this guide, assume we are using the default transaction type in Ape for Ethereum-based networks.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">Contract</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;&lt;ALIAS&gt;&quot;</span><span class="p">)</span>
-</span><span data-line="4"><span class="n">contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span><span class="s2">&quot;0x...&quot;</span><span class="p">)</span>  <span class="c1"># Assume is deployed version of code above</span>
+</span><span data-line="3"><span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"&lt;ALIAS&gt;"</span><span class="p">)</span>
+</span><span data-line="4"><span class="n">contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span><span class="s2">"0x..."</span><span class="p">)</span>  <span class="c1"># Assume is deployed version of code above</span>
 </span><span data-line="5">
 </span><span data-line="6"><span class="c1"># Transaction: Invoke the `set_number()` function, which costs Ether</span>
 </span><span data-line="7"><span class="n">receipt</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">set_number</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">account</span><span class="p">)</span>
@@ -432,10 +431,10 @@ For this guide, assume we are using the default transaction type in Ape for Ethe
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">receipt</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">withdraw</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">account</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mi">123</span><span class="p">)</span>
 </span><span data-line="2"><span class="nb">print</span><span class="p">(</span><span class="n">receipt</span><span class="o">.</span><span class="n">gas_used</span><span class="p">)</span>
 </span><span data-line="3">
-</span><span data-line="4"><span class="c1"># NOTE: You can also use &quot;smart&quot; values such as `&quot;0.1 ether&quot;` or `&quot;100 gwei&quot;`:</span>
-</span><span data-line="5"><span class="n">_</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">withdraw</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">account</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s2">&quot;0.1 ether&quot;</span><span class="p">)</span>
-</span><span data-line="6"><span class="n">_</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">withdraw</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">account</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s2">&quot;100 gwei&quot;</span><span class="p">)</span>
-</span><span data-line="7"><span class="n">_</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">withdraw</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">account</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s2">&quot;1 wei&quot;</span><span class="p">)</span>
+</span><span data-line="4"><span class="c1"># NOTE: You can also use "smart" values such as `"0.1 ether"` or `"100 gwei"`:</span>
+</span><span data-line="5"><span class="n">_</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">withdraw</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">account</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s2">"0.1 ether"</span><span class="p">)</span>
+</span><span data-line="6"><span class="n">_</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">withdraw</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">account</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s2">"100 gwei"</span><span class="p">)</span>
+</span><span data-line="7"><span class="n">_</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">withdraw</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">account</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s2">"1 wei"</span><span class="p">)</span>
 </span></pre></div>
 </div>
 <p>Notice that transacting returns a <a class="reference external" href="../methoddocs/api.html#ape.api.transactions.ReceiptAPI">ReceiptAPI</a> object which contains all the receipt data, such as <code class="docutils literal notranslate"><span class="pre">gas_used</span></code>.</p>
@@ -459,8 +458,8 @@ Since <code class="docutils literal notranslate"><span class="pre">get_static_li
 Here is an example of making a call by checking the result of <code class="docutils literal notranslate"><span class="pre">get_static_list()</span></code>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">Contract</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;&lt;ALIAS&gt;&quot;</span><span class="p">)</span>
-</span><span data-line="4"><span class="n">contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span><span class="s2">&quot;0x...&quot;</span><span class="p">)</span>
+</span><span data-line="3"><span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"&lt;ALIAS&gt;"</span><span class="p">)</span>
+</span><span data-line="4"><span class="n">contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span><span class="s2">"0x..."</span><span class="p">)</span>
 </span><span data-line="5">
 </span><span data-line="6"><span class="c1"># CALL: A sender is not required for calls!</span>
 </span><span data-line="7"><span class="k">assert</span> <span class="n">contract</span><span class="o">.</span><span class="n">get_static_list</span><span class="p">()</span> <span class="o">==</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
@@ -471,13 +470,13 @@ Use <code class="docutils literal notranslate"><span class="pre">decode=False</s
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">Contract</span>
 </span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">eth_pydantic_types</span><span class="w"> </span><span class="kn">import</span> <span class="n">HexBytes</span>
 </span><span data-line="3">
-</span><span data-line="4"><span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;&lt;ALIAS&gt;&quot;</span><span class="p">)</span>
-</span><span data-line="5"><span class="n">contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span><span class="s2">&quot;0x...&quot;</span><span class="p">)</span>
+</span><span data-line="4"><span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"&lt;ALIAS&gt;"</span><span class="p">)</span>
+</span><span data-line="5"><span class="n">contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span><span class="s2">"0x..."</span><span class="p">)</span>
 </span><span data-line="6">
 </span><span data-line="7"><span class="k">assert</span> <span class="n">contract</span><span class="o">.</span><span class="n">get_static_list</span><span class="p">()</span> <span class="o">==</span> <span class="n">HexBytes</span><span class="p">(</span>
-</span><span data-line="8">    <span class="s2">&quot;0x0000000000000000000000000000000000000000000000000000000000000001&quot;</span>
-</span><span data-line="9">    <span class="s2">&quot;0000000000000000000000000000000000000000000000000000000000000002&quot;</span>
-</span><span data-line="10">    <span class="s2">&quot;0000000000000000000000000000000000000000000000000000000000000003&quot;</span>
+</span><span data-line="8">    <span class="s2">"0x0000000000000000000000000000000000000000000000000000000000000001"</span>
+</span><span data-line="9">    <span class="s2">"0000000000000000000000000000000000000000000000000000000000000002"</span>
+</span><span data-line="10">    <span class="s2">"0000000000000000000000000000000000000000000000000000000000000003"</span>
 </span><span data-line="11"><span class="p">)</span>
 </span></pre></div>
 </div>
@@ -495,10 +494,10 @@ Use <code class="docutils literal notranslate"><span class="pre">decode=False</s
 <p>To simulate the transaction without actually modifying any state, use the <code class="docutils literal notranslate"><span class="pre">.call</span></code> method from the contract transaction handler:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">Contract</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="n">contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span><span class="s2">&quot;0x...&quot;</span><span class="p">)</span>
+</span><span data-line="3"><span class="n">contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span><span class="s2">"0x..."</span><span class="p">)</span>
 </span><span data-line="4">
 </span><span data-line="5"><span class="n">result</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">addBalance</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="mi">123</span><span class="p">)</span>
-</span><span data-line="6"><span class="k">assert</span> <span class="n">result</span> <span class="o">==</span> <span class="s2">&quot;123&quot;</span>  <span class="c1"># The return value gets forwarded from the contract.</span>
+</span><span data-line="6"><span class="k">assert</span> <span class="n">result</span> <span class="o">==</span> <span class="s2">"123"</span>  <span class="c1"># The return value gets forwarded from the contract.</span>
 </span></pre></div>
 </div>
 <p>Similarly, you may want to measure a call as if it were a transaction, in which case you can use the <code class="docutils literal notranslate"><span class="pre">.transact</span></code> attribute on the contract call handler:</p>
@@ -511,8 +510,8 @@ Use <code class="docutils literal notranslate"><span class="pre">decode=False</s
 <p>You can treat it like a transaction by doing:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">Contract</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;&lt;ALIAS&gt;&quot;</span><span class="p">)</span>
-</span><span data-line="4"><span class="n">contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span><span class="s2">&quot;0x...&quot;</span><span class="p">)</span>
+</span><span data-line="3"><span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"&lt;ALIAS&gt;"</span><span class="p">)</span>
+</span><span data-line="4"><span class="n">contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span><span class="s2">"0x..."</span><span class="p">)</span>
 </span><span data-line="5">
 </span><span data-line="6"><span class="n">receipt</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">getModifiedBalance</span><span class="o">.</span><span class="n">transact</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">account</span><span class="p">)</span>
 </span><span data-line="7"><span class="k">assert</span> <span class="ow">not</span> <span class="n">receipt</span><span class="o">.</span><span class="n">failed</span>  <span class="c1"># Transactions return `ReceiptAPI` objects.</span>
@@ -525,11 +524,11 @@ Use <code class="docutils literal notranslate"><span class="pre">decode=False</s
 <p>To directly call an address, such as invoking a contract’s <code class="docutils literal notranslate"><span class="pre">fallback</span></code> or <code class="docutils literal notranslate"><span class="pre">receive</span></code> method, call a contract instance directly:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">Contract</span><span class="p">,</span> <span class="n">accounts</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="n">sender</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;&lt;ALIAS&gt;&quot;</span><span class="p">)</span>  <span class="c1"># NOTE: &lt;ALIAS&gt; refers to your account alias!</span>
-</span><span data-line="4"><span class="n">contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span><span class="s2">&quot;0x123...&quot;</span><span class="p">)</span>
+</span><span data-line="3"><span class="n">sender</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"&lt;ALIAS&gt;"</span><span class="p">)</span>  <span class="c1"># NOTE: &lt;ALIAS&gt; refers to your account alias!</span>
+</span><span data-line="4"><span class="n">contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span><span class="s2">"0x123..."</span><span class="p">)</span>
 </span><span data-line="5">
-</span><span data-line="6"><span class="c1"># Call the contract&#39;s fallback method.</span>
-</span><span data-line="7"><span class="n">receipt</span> <span class="o">=</span> <span class="n">contract</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">sender</span><span class="p">,</span> <span class="n">gas</span><span class="o">=</span><span class="mi">40000</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="s2">&quot;0x123&quot;</span><span class="p">)</span>
+</span><span data-line="6"><span class="c1"># Call the contract's fallback method.</span>
+</span><span data-line="7"><span class="n">receipt</span> <span class="o">=</span> <span class="n">contract</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">sender</span><span class="p">,</span> <span class="n">gas</span><span class="o">=</span><span class="mi">40000</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="s2">"0x123"</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </section>
@@ -555,7 +554,7 @@ For example, if you want to create a script that listens to new event logs from 
 you can do:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">for</span> <span class="n">log</span> <span class="ow">in</span> <span class="n">contract_instance</span><span class="o">.</span><span class="n">MyEvent</span><span class="o">.</span><span class="n">poll_logs</span><span class="p">(</span><span class="n">argname</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
 </span><span data-line="2">    <span class="k">assert</span> <span class="n">log</span><span class="o">.</span><span class="n">argname</span> <span class="o">==</span> <span class="mi">1</span>  <span class="c1"># NOTE: we only filter on logs where `log.argname=1`</span>
-</span><span data-line="3">    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;New log received:&quot;</span><span class="p">,</span> <span class="n">log</span><span class="p">)</span>
+</span><span data-line="3">    <span class="nb">print</span><span class="p">(</span><span class="s2">"New log received:"</span><span class="p">,</span> <span class="n">log</span><span class="p">)</span>
 </span></pre></div>
 </div>
 <p>Ape also provides features for collecting historical event logs through it’s data system.
@@ -568,7 +567,7 @@ If you know the method you want to use when decoding or encoding, you can call m
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">Contract</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="c1"># HexBytes(0x3fb5c1cb00000000000000000000000000000000000000000000000000000000000000de)</span>
-</span><span data-line="4"><span class="n">contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span><span class="s2">&quot;0x...&quot;</span><span class="p">)</span>
+</span><span data-line="4"><span class="n">contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span><span class="s2">"0x..."</span><span class="p">)</span>
 </span><span data-line="5"><span class="n">bytes_value</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">my_method</span><span class="o">.</span><span class="n">encode_input</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
 </span></pre></div>
 </div>
@@ -577,8 +576,8 @@ Alternatively, you can decode input:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">eth_pydantic_types</span><span class="w"> </span><span class="kn">import</span> <span class="n">HexBytes</span>
 </span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">Contract</span>
 </span><span data-line="3">
-</span><span data-line="4"><span class="n">contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span><span class="s2">&quot;0x...&quot;</span><span class="p">)</span>
-</span><span data-line="5"><span class="n">selector_str</span><span class="p">,</span> <span class="n">input_dict</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">my_method</span><span class="o">.</span><span class="n">decode_input</span><span class="p">(</span><span class="n">HexBytes</span><span class="p">(</span><span class="s2">&quot;0x123...&quot;</span><span class="p">))</span>
+</span><span data-line="4"><span class="n">contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span><span class="s2">"0x..."</span><span class="p">)</span>
+</span><span data-line="5"><span class="n">selector_str</span><span class="p">,</span> <span class="n">input_dict</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">my_method</span><span class="o">.</span><span class="n">decode_input</span><span class="p">(</span><span class="n">HexBytes</span><span class="p">(</span><span class="s2">"0x123..."</span><span class="p">))</span>
 </span></pre></div>
 </div>
 <p>In the example above, <code class="docutils literal notranslate"><span class="pre">selector_str</span></code> is the string version of the method ID, e.g. <code class="docutils literal notranslate"><span class="pre">my_method(unit256,uint256)</span></code>.
@@ -588,7 +587,7 @@ If an input does not have a name, its key is its stringified input index.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">ape</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="c1"># Fetch a contract</span>
-</span><span data-line="4"><span class="n">contract</span> <span class="o">=</span> <span class="n">ape</span><span class="o">.</span><span class="n">Contract</span><span class="p">(</span><span class="s2">&quot;0x...&quot;</span><span class="p">)</span>
+</span><span data-line="4"><span class="n">contract</span> <span class="o">=</span> <span class="n">ape</span><span class="o">.</span><span class="n">Contract</span><span class="p">(</span><span class="s2">"0x..."</span><span class="p">)</span>
 </span><span data-line="5">
 </span><span data-line="6"><span class="c1"># Alternative, use a contract container from ape.project</span>
 </span><span data-line="7"><span class="c1"># contract = ape.project.MyContract</span>
@@ -606,18 +605,18 @@ A contract instance provides properties to make this easy.
 For instance, if you have a 4-byte hex method ID, you can return the ABI type for that method:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">ape</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="n">usdc</span> <span class="o">=</span> <span class="n">ape</span><span class="o">.</span><span class="n">Contract</span><span class="p">(</span><span class="s2">&quot;0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48&quot;</span><span class="p">)</span>
+</span><span data-line="3"><span class="n">usdc</span> <span class="o">=</span> <span class="n">ape</span><span class="o">.</span><span class="n">Contract</span><span class="p">(</span><span class="s2">"0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"</span><span class="p">)</span>
 </span><span data-line="4">
 </span><span data-line="5"><span class="c1"># ABI type for a hex method ID</span>
-</span><span data-line="6"><span class="k">assert</span> <span class="n">usdc</span><span class="o">.</span><span class="n">identifier_lookup</span><span class="p">[</span><span class="s1">&#39;0x70a08231&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">selector</span> <span class="o">==</span> <span class="s1">&#39;balanceOf(address)&#39;</span>
+</span><span data-line="6"><span class="k">assert</span> <span class="n">usdc</span><span class="o">.</span><span class="n">identifier_lookup</span><span class="p">[</span><span class="s2">"0x70a08231"</span><span class="p">]</span><span class="o">.</span><span class="n">selector</span> <span class="o">==</span> <span class="s2">"balanceOf(address)"</span>
 </span><span data-line="7">
 </span><span data-line="8"><span class="c1"># Also, selectors from method and event signatures</span>
-</span><span data-line="9"><span class="k">assert</span> <span class="n">usdc</span><span class="o">.</span><span class="n">selector_identifiers</span><span class="p">[</span><span class="s2">&quot;balances(address)&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;0x27e235e3&quot;</span>
+</span><span data-line="9"><span class="k">assert</span> <span class="n">usdc</span><span class="o">.</span><span class="n">selector_identifiers</span><span class="p">[</span><span class="s2">"balances(address)"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"0x27e235e3"</span>
 </span><span data-line="10">
 </span><span data-line="11"><span class="c1"># Or dump all selectors and IDs</span>
 </span><span data-line="12"><span class="k">for</span> <span class="n">identifier</span><span class="p">,</span> <span class="n">abi_type</span> <span class="ow">in</span> <span class="n">usdc</span><span class="o">.</span><span class="n">identifier_lookup</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
 </span><span data-line="13">    <span class="nb">print</span><span class="p">(</span><span class="n">identifier</span><span class="p">,</span> <span class="n">abi_type</span><span class="p">)</span>
-</span><span data-line="14">    <span class="c1"># 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef type=&#39;event&#39; name=&#39;Transfer&#39; inputs=...</span>
+</span><span data-line="14">    <span class="c1"># 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef type='event' name='Transfer' inputs=...</span>
 </span><span data-line="15">    <span class="c1"># ...</span>
 </span></pre></div>
 </div>
@@ -631,33 +630,37 @@ Multicall allows you to group function calls and transactions into a single call
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">ape</span>
 </span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">ape_ethereum</span><span class="w"> </span><span class="kn">import</span> <span class="n">multicall</span>
 </span><span data-line="3">
-</span><span data-line="4"><span class="n">ADDRESSES</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;0xF4b8A02D4e8D76070bD7092B54D2cBbe90fa72e9&quot;</span><span class="p">,</span> <span class="s2">&quot;0x80067013d7F7aF4e86b3890489AcAFe79F31a4Cb&quot;</span><span class="p">)</span>
-</span><span data-line="5"><span class="n">POOLS</span> <span class="o">=</span> <span class="p">[</span><span class="n">ape</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">IPool</span><span class="o">.</span><span class="n">at</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">ADDRESSES</span><span class="p">]</span>
-</span><span data-line="6">
-</span><span data-line="7"><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
-</span><span data-line="8">    <span class="c1"># Use multi-call.</span>
-</span><span data-line="9">    <span class="n">call</span> <span class="o">=</span> <span class="n">multicall</span><span class="o">.</span><span class="n">Call</span><span class="p">()</span>
-</span><span data-line="10">    <span class="k">for</span> <span class="n">pool</span> <span class="ow">in</span> <span class="n">POOLS</span><span class="p">:</span>
-</span><span data-line="11">        <span class="c1"># By default allowFailure=True, so the multicall continues even if one call fails</span>
-</span><span data-line="12">        <span class="n">call</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">pool</span><span class="o">.</span><span class="n">getReserves</span><span class="p">)</span>
-</span><span data-line="13">
-</span><span data-line="14">        <span class="c1"># To require a call to succeed (revert entire multicall if this call fails)</span>
-</span><span data-line="15">        <span class="n">call</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">pool</span><span class="o">.</span><span class="n">anotherMethod</span><span class="p">,</span> <span class="n">allowFailure</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-</span><span data-line="16">
-</span><span data-line="17">    <span class="nb">print</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">call</span><span class="p">()))</span>
-</span><span data-line="18">
-</span><span data-line="19">    <span class="c1"># Use multi-transaction.</span>
-</span><span data-line="20">    <span class="n">tx</span> <span class="o">=</span> <span class="n">multicall</span><span class="o">.</span><span class="n">Transaction</span><span class="p">()</span>
-</span><span data-line="21">    <span class="k">for</span> <span class="n">pool</span> <span class="ow">in</span> <span class="n">POOLS</span><span class="p">:</span>
-</span><span data-line="22">        <span class="c1"># Same allowFailure option for transactions</span>
-</span><span data-line="23">        <span class="n">tx</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">pool</span><span class="o">.</span><span class="n">ApplyDiscount</span><span class="p">,</span> <span class="mi">123</span><span class="p">,</span> <span class="n">allowFailure</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span><span data-line="24">
-</span><span data-line="25">        <span class="c1"># For payable functions, you can also specify value</span>
-</span><span data-line="26">        <span class="n">tx</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">pool</span><span class="o">.</span><span class="n">deposit</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
-</span><span data-line="27">
-</span><span data-line="28">    <span class="n">acct</span> <span class="o">=</span> <span class="n">ape</span><span class="o">.</span><span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;signer&quot;</span><span class="p">)</span>
-</span><span data-line="29">    <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">tx</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">acct</span><span class="p">):</span>
-</span><span data-line="30">        <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+</span><span data-line="4"><span class="n">ADDRESSES</span> <span class="o">=</span> <span class="p">(</span>
+</span><span data-line="5">    <span class="s2">"0xF4b8A02D4e8D76070bD7092B54D2cBbe90fa72e9"</span><span class="p">,</span>
+</span><span data-line="6">    <span class="s2">"0x80067013d7F7aF4e86b3890489AcAFe79F31a4Cb"</span><span class="p">,</span>
+</span><span data-line="7"><span class="p">)</span>
+</span><span data-line="8"><span class="n">POOLS</span> <span class="o">=</span> <span class="p">[</span><span class="n">ape</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">IPool</span><span class="o">.</span><span class="n">at</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">ADDRESSES</span><span class="p">]</span>
+</span><span data-line="9">
+</span><span data-line="10">
+</span><span data-line="11"><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+</span><span data-line="12">    <span class="c1"># Use multi-call.</span>
+</span><span data-line="13">    <span class="n">call</span> <span class="o">=</span> <span class="n">multicall</span><span class="o">.</span><span class="n">Call</span><span class="p">()</span>
+</span><span data-line="14">    <span class="k">for</span> <span class="n">pool</span> <span class="ow">in</span> <span class="n">POOLS</span><span class="p">:</span>
+</span><span data-line="15">        <span class="c1"># By default allowFailure=True, so the multicall continues even if one call fails</span>
+</span><span data-line="16">        <span class="n">call</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">pool</span><span class="o">.</span><span class="n">getReserves</span><span class="p">)</span>
+</span><span data-line="17">
+</span><span data-line="18">        <span class="c1"># To require a call to succeed (revert entire multicall if this call fails)</span>
+</span><span data-line="19">        <span class="n">call</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">pool</span><span class="o">.</span><span class="n">anotherMethod</span><span class="p">,</span> <span class="n">allowFailure</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span><span data-line="20">
+</span><span data-line="21">    <span class="nb">print</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">call</span><span class="p">()))</span>
+</span><span data-line="22">
+</span><span data-line="23">    <span class="c1"># Use multi-transaction.</span>
+</span><span data-line="24">    <span class="n">tx</span> <span class="o">=</span> <span class="n">multicall</span><span class="o">.</span><span class="n">Transaction</span><span class="p">()</span>
+</span><span data-line="25">    <span class="k">for</span> <span class="n">pool</span> <span class="ow">in</span> <span class="n">POOLS</span><span class="p">:</span>
+</span><span data-line="26">        <span class="c1"># Same allowFailure option for transactions</span>
+</span><span data-line="27">        <span class="n">tx</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">pool</span><span class="o">.</span><span class="n">ApplyDiscount</span><span class="p">,</span> <span class="mi">123</span><span class="p">,</span> <span class="n">allowFailure</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span data-line="28">
+</span><span data-line="29">        <span class="c1"># For payable functions, you can also specify value</span>
+</span><span data-line="30">        <span class="n">tx</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">pool</span><span class="o">.</span><span class="n">deposit</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+</span><span data-line="31">
+</span><span data-line="32">    <span class="n">acct</span> <span class="o">=</span> <span class="n">ape</span><span class="o">.</span><span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"signer"</span><span class="p">)</span>
+</span><span data-line="33">    <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">tx</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">acct</span><span class="p">):</span>
+</span><span data-line="34">        <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
 </span></pre></div>
 </div>
 <p>When using <code class="docutils literal notranslate"><span class="pre">allowFailure=True</span></code> (the default), if a specific call in the multicall fails, the overall multicall will still succeed and the result for the failed call will be <code class="docutils literal notranslate"><span class="pre">None</span></code>. This is useful when you want to batch multiple calls together and don’t want the entire batch to fail if just one call fails.</p>

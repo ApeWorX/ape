@@ -232,7 +232,7 @@ However, when you include the <code class="docutils literal notranslate"><span c
 </span><span data-line="4"><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hardhat</span>
 </span><span data-line="5"><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ens</span>
 </span><span data-line="6"><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">etherscan</span>
-</span><span data-line="7"><span class="w">    </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&gt;=0.6.2,&lt;0.7&quot;</span>
+</span><span data-line="7"><span class="w">    </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">"&gt;=0.6.2,&lt;0.7"</span>
 </span></pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">name</span></code> field is required.
@@ -242,7 +242,7 @@ Additionally, you may specify a <code class="docutils literal notranslate"><span
 </span></pre></div>
 </div>
 <p>To install plugins individually, run the following command:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>plugins<span class="w"> </span>install<span class="w"> </span>vyper<span class="w"> </span><span class="s2">&quot;solidity&gt;=0.6,&lt;0.7&quot;</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>plugins<span class="w"> </span>install<span class="w"> </span>vyper<span class="w"> </span><span class="s2">"solidity&gt;=0.6,&lt;0.7"</span>
 </span></pre></div>
 </div>
 <p>To install a plugin from a branch that is not yet released, you can use a <code class="docutils literal notranslate"><span class="pre">git+</span></code> prefixed value for the version:</p>
@@ -252,11 +252,11 @@ Additionally, you may specify a <code class="docutils literal notranslate"><span
 </span></pre></div>
 </div>
 <p>Or from the CLI like:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>plugins<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;foobar@git+https://github.com/&lt;owner-of-plugin&gt;/ape-foobar.git@&lt;branch/name&gt;&quot;</span>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>plugins<span class="w"> </span>install<span class="w"> </span><span class="s2">"foobar@git+https://github.com/&lt;owner-of-plugin&gt;/ape-foobar.git@&lt;branch/name&gt;"</span>
 </span></pre></div>
 </div>
 <p>Also, you may omit the <code class="docutils literal notranslate"><span class="pre">foobar&#64;</span></code> prefix and allow Ape to deduce the name:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>plugins<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;git+https://github.com/&lt;owner-of-plugin&gt;/ape-foobar.git@&lt;branch/name&gt;&quot;</span>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>plugins<span class="w"> </span>install<span class="w"> </span><span class="s2">"git+https://github.com/&lt;owner-of-plugin&gt;/ape-foobar.git@&lt;branch/name&gt;"</span>
 </span></pre></div>
 </div>
 </section>

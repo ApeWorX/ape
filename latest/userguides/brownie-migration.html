@@ -222,17 +222,17 @@ data-aria-dark="Switch to auto color mode">
 <h2>Accounts<a class="headerlink" href="#accounts" title="Link to this heading">#</a></h2>
 <p>Use <code class="docutils literal notranslate"><span class="pre">accounts.test_accounts</span></code> for local generated accounts and <code class="docutils literal notranslate"><span class="pre">accounts.load()</span></code> for named account aliases. The alias must be imported by the user before live-network use.</p>
 <p>Brownie:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">if</span> <span class="n">network</span><span class="o">.</span><span class="n">show_active</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;development&quot;</span><span class="p">:</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">if</span> <span class="n">network</span><span class="o">.</span><span class="n">show_active</span><span class="p">()</span> <span class="o">==</span> <span class="s2">"development"</span><span class="p">:</span>
 </span><span data-line="2">    <span class="k">return</span> <span class="n">accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 </span><span data-line="3">
-</span><span data-line="4"><span class="k">return</span> <span class="n">accounts</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;wallets&quot;</span><span class="p">][</span><span class="s2">&quot;from_key&quot;</span><span class="p">])</span>
+</span><span data-line="4"><span class="k">return</span> <span class="n">accounts</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s2">"wallets"</span><span class="p">][</span><span class="s2">"from_key"</span><span class="p">])</span>
 </span></pre></div>
 </div>
 <p>Ape:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">if</span> <span class="ow">not</span> <span class="n">networks</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">is_dev</span><span class="p">:</span>
 </span><span data-line="2">    <span class="k">return</span> <span class="n">accounts</span><span class="o">.</span><span class="n">test_accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 </span><span data-line="3">
-</span><span data-line="4"><span class="k">return</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;&lt;alias&gt;&quot;</span><span class="p">)</span>
+</span><span data-line="4"><span class="k">return</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"&lt;alias&gt;"</span><span class="p">)</span>
 </span></pre></div>
 </div>
 <p>Official docs: <a class="reference external" href="./accounts.html">Accounts</a></p>
@@ -241,8 +241,8 @@ data-aria-dark="Switch to auto color mode">
 <h2>Contract Deployment and Transactions<a class="headerlink" href="#contract-deployment-and-transactions" title="Link to this heading">#</a></h2>
 <p>Brownie transaction dictionaries become explicit Ape keyword arguments such as <code class="docutils literal notranslate"><span class="pre">sender=</span></code> and <code class="docutils literal notranslate"><span class="pre">value=</span></code>.</p>
 <p>Brownie:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">simple_storage</span> <span class="o">=</span> <span class="n">SimpleStorage</span><span class="o">.</span><span class="n">deploy</span><span class="p">({</span><span class="s2">&quot;from&quot;</span><span class="p">:</span> <span class="n">account</span><span class="p">})</span>
-</span><span data-line="2"><span class="n">transaction</span> <span class="o">=</span> <span class="n">simple_storage</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;from&quot;</span><span class="p">:</span> <span class="n">account</span><span class="p">})</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">simple_storage</span> <span class="o">=</span> <span class="n">SimpleStorage</span><span class="o">.</span><span class="n">deploy</span><span class="p">({</span><span class="s2">"from"</span><span class="p">:</span> <span class="n">account</span><span class="p">})</span>
+</span><span data-line="2"><span class="n">transaction</span> <span class="o">=</span> <span class="n">simple_storage</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="p">{</span><span class="s2">"from"</span><span class="p">:</span> <span class="n">account</span><span class="p">})</span>
 </span></pre></div>
 </div>
 <p>Ape:</p>
@@ -252,7 +252,7 @@ data-aria-dark="Switch to auto color mode">
 </div>
 <p>For payable calls:</p>
 <p>Brownie:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">tx</span> <span class="o">=</span> <span class="n">fund_me</span><span class="o">.</span><span class="n">fund</span><span class="p">({</span><span class="s2">&quot;from&quot;</span><span class="p">:</span> <span class="n">account</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="n">entrance_fee</span><span class="p">})</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">tx</span> <span class="o">=</span> <span class="n">fund_me</span><span class="o">.</span><span class="n">fund</span><span class="p">({</span><span class="s2">"from"</span><span class="p">:</span> <span class="n">account</span><span class="p">,</span> <span class="s2">"value"</span><span class="p">:</span> <span class="n">entrance_fee</span><span class="p">})</span>
 </span></pre></div>
 </div>
 <p>Ape:</p>
@@ -265,11 +265,11 @@ data-aria-dark="Switch to auto color mode">
 <h2>Networks<a class="headerlink" href="#networks" title="Link to this heading">#</a></h2>
 <p>Brownie’s active-network helper maps to Ape’s active provider network metadata.</p>
 <p>Brownie:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The active network is </span><span class="si">{</span><span class="n">network</span><span class="o">.</span><span class="n">show_active</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"The active network is </span><span class="si">{</span><span class="n">network</span><span class="o">.</span><span class="n">show_active</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </span></pre></div>
 </div>
 <p>Ape:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The active network is </span><span class="si">{</span><span class="n">networks</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"The active network is </span><span class="si">{</span><span class="n">networks</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </span></pre></div>
 </div>
 <p>Official docs: <a class="reference external" href="./networks.html">Networks</a></p>
@@ -278,19 +278,19 @@ data-aria-dark="Switch to auto color mode">
 <h2>Testing and Reverts<a class="headerlink" href="#testing-and-reverts" title="Link to this heading">#</a></h2>
 <p>Brownie revert helpers and exceptions map to Ape testing helpers and exceptions.</p>
 <p>Brownie:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">with</span> <span class="n">brownie</span><span class="o">.</span><span class="n">reverts</span><span class="p">(</span><span class="s2">&quot;Ownable: caller is not the owner&quot;</span><span class="p">):</span>
-</span><span data-line="2">    <span class="n">fund_me</span><span class="o">.</span><span class="n">withdraw</span><span class="p">({</span><span class="s2">&quot;from&quot;</span><span class="p">:</span> <span class="n">bad_actor</span><span class="p">})</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">with</span> <span class="n">brownie</span><span class="o">.</span><span class="n">reverts</span><span class="p">(</span><span class="s2">"Ownable: caller is not the owner"</span><span class="p">):</span>
+</span><span data-line="2">    <span class="n">fund_me</span><span class="o">.</span><span class="n">withdraw</span><span class="p">({</span><span class="s2">"from"</span><span class="p">:</span> <span class="n">bad_actor</span><span class="p">})</span>
 </span></pre></div>
 </div>
 <p>Ape:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">with</span> <span class="n">ape</span><span class="o">.</span><span class="n">reverts</span><span class="p">(</span><span class="s2">&quot;Ownable: caller is not the owner&quot;</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">with</span> <span class="n">ape</span><span class="o">.</span><span class="n">reverts</span><span class="p">(</span><span class="s2">"Ownable: caller is not the owner"</span><span class="p">):</span>
 </span><span data-line="2">    <span class="n">fund_me</span><span class="o">.</span><span class="n">withdraw</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">bad_actor</span><span class="p">)</span>
 </span></pre></div>
 </div>
 <p>For Brownie tests catching the generic VM error exception:</p>
 <p>Brownie:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">with</span> <span class="n">pytest</span><span class="o">.</span><span class="n">raises</span><span class="p">(</span><span class="n">exceptions</span><span class="o">.</span><span class="n">VirtualMachineError</span><span class="p">):</span>
-</span><span data-line="2">    <span class="n">fund_me</span><span class="o">.</span><span class="n">withdraw</span><span class="p">({</span><span class="s2">&quot;from&quot;</span><span class="p">:</span> <span class="n">bad_actor</span><span class="p">})</span>
+</span><span data-line="2">    <span class="n">fund_me</span><span class="o">.</span><span class="n">withdraw</span><span class="p">({</span><span class="s2">"from"</span><span class="p">:</span> <span class="n">bad_actor</span><span class="p">})</span>
 </span></pre></div>
 </div>
 <p>Ape:</p>
@@ -318,7 +318,7 @@ Use the <code class="docutils literal notranslate"><span class="pre">project</sp
 <p>Brownie:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">def</span><span class="w"> </span><span class="nf">test_deploy</span><span class="p">(</span><span class="n">Token</span><span class="p">,</span> <span class="n">accounts</span><span class="p">):</span>
 </span><span data-line="2">    <span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-</span><span data-line="3">    <span class="n">token</span> <span class="o">=</span> <span class="n">Token</span><span class="o">.</span><span class="n">deploy</span><span class="p">({</span><span class="s2">&quot;from&quot;</span><span class="p">:</span> <span class="n">account</span><span class="p">})</span>
+</span><span data-line="3">    <span class="n">token</span> <span class="o">=</span> <span class="n">Token</span><span class="o">.</span><span class="n">deploy</span><span class="p">({</span><span class="s2">"from"</span><span class="p">:</span> <span class="n">account</span><span class="p">})</span>
 </span></pre></div>
 </div>
 <p>Ape:</p>
@@ -331,7 +331,7 @@ Use the <code class="docutils literal notranslate"><span class="pre">project</sp
 <p>Brownie:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
 </span><span data-line="2"><span class="k">def</span><span class="w"> </span><span class="nf">token</span><span class="p">(</span><span class="n">Token</span><span class="p">,</span> <span class="n">accounts</span><span class="p">):</span>
-</span><span data-line="3">    <span class="k">return</span> <span class="n">Token</span><span class="o">.</span><span class="n">deploy</span><span class="p">({</span><span class="s2">&quot;from&quot;</span><span class="p">:</span> <span class="n">accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">]})</span>
+</span><span data-line="3">    <span class="k">return</span> <span class="n">Token</span><span class="o">.</span><span class="n">deploy</span><span class="p">({</span><span class="s2">"from"</span><span class="p">:</span> <span class="n">accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">]})</span>
 </span></pre></div>
 </div>
 <p>Ape:</p>
@@ -375,7 +375,7 @@ Ape does not provide a <code class="docutils literal notranslate"><span class="p
 </span><span data-line="3"><span class="nt">compiler</span><span class="p">:</span>
 </span><span data-line="4"><span class="w">  </span><span class="nt">solc</span><span class="p">:</span>
 </span><span data-line="5"><span class="w">    </span><span class="nt">remappings</span><span class="p">:</span>
-</span><span data-line="6"><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;@chainlink=smartcontractkit/chainlink-brownie-contracts@1.1.1&quot;</span>
+</span><span data-line="6"><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"@chainlink=smartcontractkit/chainlink-brownie-contracts@1.1.1"</span>
 </span><span data-line="7"><span class="nt">wallets</span><span class="p">:</span>
 </span><span data-line="8"><span class="w">  </span><span class="nt">from_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${PRIVATE_KEY}</span>
 </span><span data-line="9"><span class="nt">networks</span><span class="p">:</span>
@@ -390,7 +390,7 @@ Ape does not provide a <code class="docutils literal notranslate"><span class="p
 </span><span data-line="4"><span class="nt">solidity</span><span class="p">:</span>
 </span><span data-line="5"><span class="w">  </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.8.20</span>
 </span><span data-line="6"><span class="w">  </span><span class="nt">import_remapping</span><span class="p">:</span>
-</span><span data-line="7"><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;@chainlink=smartcontractkit/chainlink-brownie-contracts@1.1.1&quot;</span>
+</span><span data-line="7"><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"@chainlink=smartcontractkit/chainlink-brownie-contracts@1.1.1"</span>
 </span><span data-line="8"><span class="nt">ethereum</span><span class="p">:</span>
 </span><span data-line="9"><span class="w">  </span><span class="nt">default_network</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">local</span>
 </span></pre></div>

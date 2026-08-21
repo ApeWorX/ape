@@ -460,12 +460,12 @@ when creating a <a class="reference internal" href="#ape.cli.choices.output_form
 </span><span data-line="4">
 </span><span data-line="5"><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
 </span><span data-line="6"><span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
-</span><span data-line="7">    <span class="s2">&quot;--choice&quot;</span><span class="p">,</span>
-</span><span data-line="8">    <span class="nb">type</span><span class="o">=</span><span class="n">PromptChoice</span><span class="p">([</span><span class="s2">&quot;foo&quot;</span><span class="p">,</span> <span class="s2">&quot;bar&quot;</span><span class="p">]),</span>
+</span><span data-line="7">    <span class="s2">"--choice"</span><span class="p">,</span>
+</span><span data-line="8">    <span class="nb">type</span><span class="o">=</span><span class="n">PromptChoice</span><span class="p">([</span><span class="s2">"foo"</span><span class="p">,</span> <span class="s2">"bar"</span><span class="p">]),</span>
 </span><span data-line="9">    <span class="n">callback</span><span class="o">=</span><span class="n">choice_callback</span><span class="p">,</span>
 </span><span data-line="10"><span class="p">)</span>
 </span><span data-line="11"><span class="k">def</span><span class="w"> </span><span class="nf">cmd</span><span class="p">(</span><span class="n">choice</span><span class="p">):</span>
-</span><span data-line="12">    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;__expected_</span><span class="si">{</span><span class="n">choice</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="12">    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="sa">f</span><span class="s2">"__expected_</span><span class="si">{</span><span class="n">choice</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </span></pre></div>
 </div>
 <dl class="py method">
@@ -653,7 +653,7 @@ enforce incompatibility with the option strings passed to this function.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">click</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
-</span><span data-line="4"><span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;--option&quot;</span><span class="p">,</span> <span class="bp">cls</span><span class="o">=</span><span class="n">incompatible_with</span><span class="p">([</span><span class="s2">&quot;other_option&quot;</span><span class="p">]))</span>
+</span><span data-line="4"><span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">"--option"</span><span class="p">,</span> <span class="bp">cls</span><span class="o">=</span><span class="n">incompatible_with</span><span class="p">([</span><span class="s2">"other_option"</span><span class="p">]))</span>
 </span><span data-line="5"><span class="k">def</span><span class="w"> </span><span class="nf">cmd</span><span class="p">(</span><span class="n">option</span><span class="p">,</span> <span class="n">other_option</span><span class="p">):</span>
 </span><span data-line="6">    <span class="o">....</span>
 </span></pre></div>

@@ -260,9 +260,11 @@ Live network accounts are for interacting with live blockchains and should be se
 <p>You can also change settings at run-time, such as the mnemonic:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">accounts</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="n">accounts</span><span class="o">.</span><span class="n">test_accounts</span><span class="o">.</span><span class="n">mnemonic</span> <span class="o">=</span> <span class="s2">&quot;candy maple cake sugar pudding cream honey rich smooth crumble sweet treat&quot;</span>
-</span><span data-line="4"><span class="nb">print</span><span class="p">(</span><span class="n">accounts</span><span class="o">.</span><span class="n">test_accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-</span><span data-line="5"><span class="c1"># 0x627306090abaB3A6e1400e9345bC60c78a8BEf57</span>
+</span><span data-line="3"><span class="n">accounts</span><span class="o">.</span><span class="n">test_accounts</span><span class="o">.</span><span class="n">mnemonic</span> <span class="o">=</span> <span class="p">(</span>
+</span><span data-line="4">    <span class="s2">"candy maple cake sugar pudding cream honey rich smooth crumble sweet treat"</span>
+</span><span data-line="5"><span class="p">)</span>
+</span><span data-line="6"><span class="nb">print</span><span class="p">(</span><span class="n">accounts</span><span class="o">.</span><span class="n">test_accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</span><span data-line="7"><span class="c1"># 0x627306090abaB3A6e1400e9345bC60c78a8BEf57</span>
 </span></pre></div>
 </div>
 <div class="admonition warning">
@@ -292,14 +294,14 @@ Live network accounts are for interacting with live blockchains and should be se
 <section id="default-sender-support">
 <h3>Default Sender Support<a class="headerlink" href="#default-sender-support" title="Link to this heading">#</a></h3>
 <p>In order to eliminate the usage of sender in contract calls, you can use <code class="docutils literal notranslate"><span class="pre">use_sender</span></code> context manager.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">with</span> <span class="n">accounts</span><span class="o">.</span><span class="n">use_sender</span><span class="p">(</span><span class="mi">0</span><span class="p">):</span> <span class="c1"># Use first account from test mnemonic</span>
-</span><span data-line="2">  <span class="n">contract</span><span class="o">.</span><span class="n">myFunction</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">with</span> <span class="n">accounts</span><span class="o">.</span><span class="n">use_sender</span><span class="p">(</span><span class="mi">0</span><span class="p">):</span>  <span class="c1"># Use first account from test mnemonic</span>
+</span><span data-line="2">    <span class="n">contract</span><span class="o">.</span><span class="n">myFunction</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 </span><span data-line="3">
-</span><span data-line="4"><span class="k">with</span> <span class="n">accounts</span><span class="o">.</span><span class="n">use_sender</span><span class="p">(</span><span class="s2">&quot;&lt;address&gt;&quot;</span><span class="p">):</span> <span class="c1"># Impersonate an account</span>
-</span><span data-line="5">  <span class="n">contract</span><span class="o">.</span><span class="n">myFunction</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span><span data-line="4"><span class="k">with</span> <span class="n">accounts</span><span class="o">.</span><span class="n">use_sender</span><span class="p">(</span><span class="s2">"&lt;address&gt;"</span><span class="p">):</span>  <span class="c1"># Impersonate an account</span>
+</span><span data-line="5">    <span class="n">contract</span><span class="o">.</span><span class="n">myFunction</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 </span><span data-line="6">
-</span><span data-line="7"><span class="k">with</span> <span class="n">accounts</span><span class="o">.</span><span class="n">use_sender</span><span class="p">(</span><span class="n">a</span><span class="p">):</span> <span class="c1"># a is a `TestAccountAPI` object</span>
-</span><span data-line="8">  <span class="n">contract</span><span class="o">.</span><span class="n">myFunction</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span><span data-line="7"><span class="k">with</span> <span class="n">accounts</span><span class="o">.</span><span class="n">use_sender</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>  <span class="c1"># a is a `TestAccountAPI` object</span>
+</span><span data-line="8">    <span class="n">contract</span><span class="o">.</span><span class="n">myFunction</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </section>
@@ -351,10 +353,10 @@ You can use all of these together or separately to control the way Ape creates a
 <p>This same functionality is also scriptable with the same inputs as the <code class="docutils literal notranslate"><span class="pre">generate</span></code> command:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape_accounts</span><span class="w"> </span><span class="kn">import</span> <span class="n">generate_account</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="n">account</span><span class="p">,</span> <span class="n">mnemonic</span> <span class="o">=</span> <span class="n">generate_account</span><span class="p">(</span><span class="s2">&quot;my-account&quot;</span><span class="p">,</span> <span class="s2">&quot;mySecureP@ssphrase&quot;</span><span class="p">)</span>
+</span><span data-line="3"><span class="n">account</span><span class="p">,</span> <span class="n">mnemonic</span> <span class="o">=</span> <span class="n">generate_account</span><span class="p">(</span><span class="s2">"my-account"</span><span class="p">,</span> <span class="s2">"mySecureP@ssphrase"</span><span class="p">)</span>
 </span><span data-line="4">
-</span><span data-line="5"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Save your mnemonic: </span><span class="si">{</span><span class="n">mnemonic</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-</span><span data-line="6"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Your new account address is: </span><span class="si">{</span><span class="n">account</span><span class="o">.</span><span class="n">address</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</span><span data-line="5"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Save your mnemonic: </span><span class="si">{</span><span class="n">mnemonic</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</span><span data-line="6"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Your new account address is: </span><span class="si">{</span><span class="n">account</span><span class="o">.</span><span class="n">address</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </span></pre></div>
 </div>
 <p>See the <a class="reference external" href="../methoddocs/ape_accounts.html#ape_accounts.generate_account">documentation for <code class="docutils literal notranslate"><span class="pre">generate_account()</span></code></a> for more options.</p>
@@ -382,26 +384,26 @@ If you do not use the <code class="docutils literal notranslate"><span class="pr
 <p>You can import an account programmatically using a seed phrase <a class="reference external" href="../methoddocs/ape_accounts.html#ape_accounts.import_account_from_mnemonic">using <code class="docutils literal notranslate"><span class="pre">import_account_from_mnemonic()</span></code></a>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape_accounts</span><span class="w"> </span><span class="kn">import</span> <span class="n">import_account_from_mnemonic</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="n">alias</span> <span class="o">=</span> <span class="s2">&quot;my-account&quot;</span>
-</span><span data-line="4"><span class="n">passphrase</span> <span class="o">=</span> <span class="s2">&quot;my$ecurePassphrase&quot;</span>
-</span><span data-line="5"><span class="n">mnemonic</span> <span class="o">=</span> <span class="s2">&quot;test test test test test test test test test test test junk&quot;</span>
+</span><span data-line="3"><span class="n">alias</span> <span class="o">=</span> <span class="s2">"my-account"</span>
+</span><span data-line="4"><span class="n">passphrase</span> <span class="o">=</span> <span class="s2">"my$ecurePassphrase"</span>
+</span><span data-line="5"><span class="n">mnemonic</span> <span class="o">=</span> <span class="s2">"test test test test test test test test test test test junk"</span>
 </span><span data-line="6">
 </span><span data-line="7"><span class="n">account</span> <span class="o">=</span> <span class="n">import_account_from_mnemonic</span><span class="p">(</span><span class="n">alias</span><span class="p">,</span> <span class="n">passphrase</span><span class="p">,</span> <span class="n">mnemonic</span><span class="p">)</span>
 </span><span data-line="8">
-</span><span data-line="9"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Your imported account address is: </span><span class="si">{</span><span class="n">account</span><span class="o">.</span><span class="n">address</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</span><span data-line="9"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Your imported account address is: </span><span class="si">{</span><span class="n">account</span><span class="o">.</span><span class="n">address</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </span></pre></div>
 </div>
 <p>Or using a raw private key <a class="reference external" href="../methoddocs/ape_accounts.html#ape_accounts.import_account_from_private_key">using <code class="docutils literal notranslate"><span class="pre">import_account_from_private_key()</span></code></a>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 </span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">ape_accounts</span><span class="w"> </span><span class="kn">import</span> <span class="n">import_account_from_private_key</span>
 </span><span data-line="3">
-</span><span data-line="4"><span class="n">alias</span> <span class="o">=</span> <span class="s2">&quot;my-account&quot;</span>
-</span><span data-line="5"><span class="n">passphrase</span> <span class="o">=</span> <span class="s2">&quot;my SecurePassphrase&quot;</span>
+</span><span data-line="4"><span class="n">alias</span> <span class="o">=</span> <span class="s2">"my-account"</span>
+</span><span data-line="5"><span class="n">passphrase</span> <span class="o">=</span> <span class="s2">"my SecurePassphrase"</span>
 </span><span data-line="6"><span class="n">private_key</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">urandom</span><span class="p">(</span><span class="mi">32</span><span class="p">)</span><span class="o">.</span><span class="n">hex</span><span class="p">()</span>
 </span><span data-line="7">
 </span><span data-line="8"><span class="n">account</span> <span class="o">=</span> <span class="n">import_account_from_private_key</span><span class="p">(</span><span class="n">alias</span><span class="p">,</span> <span class="n">passphrase</span><span class="p">,</span> <span class="n">private_key</span><span class="p">)</span>
 </span><span data-line="9">
-</span><span data-line="10"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Your imported account address is: </span><span class="si">{</span><span class="n">account</span><span class="o">.</span><span class="n">address</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</span><span data-line="10"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Your imported account address is: </span><span class="si">{</span><span class="n">account</span><span class="o">.</span><span class="n">address</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </section>
@@ -417,7 +419,7 @@ You can alternatively load the private key into <a class="reference external" hr
 Then, in your scripts, you can <a class="reference external" href="../methoddocs/managers.html#ape.managers.accounts.AccountManager.load">load</a> an account:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">accounts</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;&lt;ALIAS&gt;&quot;</span><span class="p">)</span>
+</span><span data-line="3"><span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"&lt;ALIAS&gt;"</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </section>
@@ -426,16 +428,16 @@ Then, in your scripts, you can <a class="reference external" href="../methoddocs
 <h3>Default Sender Support<a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
 <p>In order to reduce repetition of adding <code class="docutils literal notranslate"><span class="pre">sender</span></code> in your contract calls, you can use <code class="docutils literal notranslate"><span class="pre">use_sender</span></code> context manager.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">with</span> <span class="n">accounts</span><span class="o">.</span><span class="n">use_sender</span><span class="p">(</span><span class="mi">0</span><span class="p">):</span>
-</span><span data-line="2">  <span class="n">contract</span><span class="o">.</span><span class="n">myFunction</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span><span data-line="2">    <span class="n">contract</span><span class="o">.</span><span class="n">myFunction</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 </span><span data-line="3">
-</span><span data-line="4"><span class="k">with</span> <span class="n">accounts</span><span class="o">.</span><span class="n">use_sender</span><span class="p">(</span><span class="s2">&quot;&lt;address&gt;&quot;</span><span class="p">):</span>
-</span><span data-line="5">  <span class="n">contract</span><span class="o">.</span><span class="n">myFunction</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span><span data-line="4"><span class="k">with</span> <span class="n">accounts</span><span class="o">.</span><span class="n">use_sender</span><span class="p">(</span><span class="s2">"&lt;address&gt;"</span><span class="p">):</span>
+</span><span data-line="5">    <span class="n">contract</span><span class="o">.</span><span class="n">myFunction</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 </span><span data-line="6">
-</span><span data-line="7"><span class="k">with</span> <span class="n">accounts</span><span class="o">.</span><span class="n">use_sender</span><span class="p">(</span><span class="s2">&quot;&lt;alias&gt;&quot;</span><span class="p">):</span>
-</span><span data-line="8">  <span class="n">contract</span><span class="o">.</span><span class="n">myFunction</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span><span data-line="7"><span class="k">with</span> <span class="n">accounts</span><span class="o">.</span><span class="n">use_sender</span><span class="p">(</span><span class="s2">"&lt;alias&gt;"</span><span class="p">):</span>
+</span><span data-line="8">    <span class="n">contract</span><span class="o">.</span><span class="n">myFunction</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 </span><span data-line="9">
-</span><span data-line="10"><span class="k">with</span> <span class="n">accounts</span><span class="o">.</span><span class="n">use_sender</span><span class="p">(</span><span class="n">a</span><span class="p">):</span> <span class="c1"># a is a `AccountAPI` object</span>
-</span><span data-line="11">  <span class="n">contract</span><span class="o">.</span><span class="n">myFunction</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span><span data-line="10"><span class="k">with</span> <span class="n">accounts</span><span class="o">.</span><span class="n">use_sender</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>  <span class="c1"># a is a `AccountAPI` object</span>
+</span><span data-line="11">    <span class="n">contract</span><span class="o">.</span><span class="n">myFunction</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </section>
@@ -447,8 +449,8 @@ To do this, use the <a class="reference external" href="../methoddocs/api.html#a
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">accounts</span>
 </span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">eth_account.messages</span><span class="w"> </span><span class="kn">import</span> <span class="n">encode_defunct</span>
 </span><span data-line="3">
-</span><span data-line="4"><span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;&lt;ALIAS&gt;&quot;</span><span class="p">)</span>
-</span><span data-line="5"><span class="n">message</span> <span class="o">=</span> <span class="n">encode_defunct</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s2">&quot;Hello Apes!&quot;</span><span class="p">)</span>
+</span><span data-line="4"><span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"&lt;ALIAS&gt;"</span><span class="p">)</span>
+</span><span data-line="5"><span class="n">message</span> <span class="o">=</span> <span class="n">encode_defunct</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s2">"Hello Apes!"</span><span class="p">)</span>
 </span><span data-line="6"><span class="n">signature</span> <span class="o">=</span> <span class="n">account</span><span class="o">.</span><span class="n">sign_message</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
 </span></pre></div>
 </div>
@@ -461,8 +463,8 @@ Most Ethereum account plugins, such as <code class="docutils literal notranslate
 However, you can also provide other types, such as a <code class="docutils literal notranslate"><span class="pre">str</span></code> directly:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">accounts</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;&lt;ALIAS&gt;&quot;</span><span class="p">)</span>
-</span><span data-line="4"><span class="n">signature</span> <span class="o">=</span> <span class="n">account</span><span class="o">.</span><span class="n">sign_message</span><span class="p">(</span><span class="s2">&quot;Hello Apes!&quot;</span><span class="p">)</span>
+</span><span data-line="3"><span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"&lt;ALIAS&gt;"</span><span class="p">)</span>
+</span><span data-line="4"><span class="n">signature</span> <span class="o">=</span> <span class="n">account</span><span class="o">.</span><span class="n">sign_message</span><span class="p">(</span><span class="s2">"Hello Apes!"</span><span class="p">)</span>
 </span></pre></div>
 </div>
 <section id="eip-712">
@@ -474,28 +476,31 @@ Here is an example with custom EIP-712 classes:</p>
 </span><span data-line="3"><span class="kn">from</span><span class="w"> </span><span class="nn">eth_pydantic_types</span><span class="w"> </span><span class="kn">import</span> <span class="n">abi</span>
 </span><span data-line="4"><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span>
 </span><span data-line="5">
-</span><span data-line="6"><span class="k">class</span><span class="w"> </span><span class="nc">Person</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-</span><span data-line="7">    <span class="n">name</span><span class="p">:</span> <span class="n">abi</span><span class="o">.</span><span class="n">string</span>
-</span><span data-line="8">    <span class="n">wallet</span><span class="p">:</span> <span class="n">abi</span><span class="o">.</span><span class="n">address</span>
-</span><span data-line="9">
-</span><span data-line="10"><span class="k">class</span><span class="w"> </span><span class="nc">Mail</span><span class="p">(</span><span class="n">EIP712Message</span><span class="p">):</span>
-</span><span data-line="11">    <span class="n">eip712_domain</span> <span class="o">=</span> <span class="n">EIP712Domain</span><span class="p">(</span>
-</span><span data-line="12">        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Ether Mail&quot;</span><span class="p">,</span>
-</span><span data-line="13">        <span class="n">version</span><span class="o">=</span><span class="s2">&quot;1&quot;</span><span class="p">,</span>
-</span><span data-line="14">        <span class="n">verifyingContract</span><span class="o">=</span><span class="s2">&quot;0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC&quot;</span><span class="p">,</span>
-</span><span data-line="15">        <span class="n">chainId</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-</span><span data-line="16">    <span class="p">)</span>
-</span><span data-line="17">
-</span><span data-line="18">    <span class="n">sender</span><span class="p">:</span> <span class="n">Person</span>
-</span><span data-line="19">    <span class="n">receivers</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Person</span><span class="p">]</span>
-</span><span data-line="20">
-</span><span data-line="21"><span class="n">alice</span> <span class="o">=</span> <span class="n">Person</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Alice&quot;</span><span class="p">,</span> <span class="n">wallet</span><span class="o">=</span><span class="s2">&quot;0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826&quot;</span><span class="p">)</span>
-</span><span data-line="22"><span class="n">bob</span> <span class="o">=</span> <span class="n">Person</span><span class="p">(</span><span class="s2">&quot;Bob&quot;</span><span class="p">,</span> <span class="s2">&quot;0xB0B0b0b0b0b0B000000000000000000000000000&quot;</span><span class="p">)</span>
-</span><span data-line="23"><span class="n">charlie</span> <span class="o">=</span> <span class="n">Person</span><span class="p">(</span><span class="s2">&quot;Charlie&quot;</span><span class="p">,</span> <span class="s2">&quot;0xC0C0c0c0c0c0C000000000000000000000000000&quot;</span><span class="p">)</span>
-</span><span data-line="24"><span class="n">message</span> <span class="o">=</span> <span class="n">Mail</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">alice</span><span class="p">,</span> <span class="n">receivers</span><span class="o">=</span><span class="p">[</span><span class="n">bob</span><span class="p">,</span> <span class="n">charlie</span><span class="p">])</span>
-</span><span data-line="25">
-</span><span data-line="26"><span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;&lt;ALIAS&gt;&quot;</span><span class="p">)</span>
-</span><span data-line="27"><span class="n">account</span><span class="o">.</span><span class="n">sign_message</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+</span><span data-line="6">
+</span><span data-line="7"><span class="k">class</span><span class="w"> </span><span class="nc">Person</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+</span><span data-line="8">    <span class="n">name</span><span class="p">:</span> <span class="n">abi</span><span class="o">.</span><span class="n">string</span>
+</span><span data-line="9">    <span class="n">wallet</span><span class="p">:</span> <span class="n">abi</span><span class="o">.</span><span class="n">address</span>
+</span><span data-line="10">
+</span><span data-line="11">
+</span><span data-line="12"><span class="k">class</span><span class="w"> </span><span class="nc">Mail</span><span class="p">(</span><span class="n">EIP712Message</span><span class="p">):</span>
+</span><span data-line="13">    <span class="n">eip712_domain</span> <span class="o">=</span> <span class="n">EIP712Domain</span><span class="p">(</span>
+</span><span data-line="14">        <span class="n">name</span><span class="o">=</span><span class="s2">"Ether Mail"</span><span class="p">,</span>
+</span><span data-line="15">        <span class="n">version</span><span class="o">=</span><span class="s2">"1"</span><span class="p">,</span>
+</span><span data-line="16">        <span class="n">verifyingContract</span><span class="o">=</span><span class="s2">"0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC"</span><span class="p">,</span>
+</span><span data-line="17">        <span class="n">chainId</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+</span><span data-line="18">    <span class="p">)</span>
+</span><span data-line="19">
+</span><span data-line="20">    <span class="n">sender</span><span class="p">:</span> <span class="n">Person</span>
+</span><span data-line="21">    <span class="n">receivers</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Person</span><span class="p">]</span>
+</span><span data-line="22">
+</span><span data-line="23">
+</span><span data-line="24"><span class="n">alice</span> <span class="o">=</span> <span class="n">Person</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"Alice"</span><span class="p">,</span> <span class="n">wallet</span><span class="o">=</span><span class="s2">"0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826"</span><span class="p">)</span>
+</span><span data-line="25"><span class="n">bob</span> <span class="o">=</span> <span class="n">Person</span><span class="p">(</span><span class="s2">"Bob"</span><span class="p">,</span> <span class="s2">"0xB0B0b0b0b0b0B000000000000000000000000000"</span><span class="p">)</span>
+</span><span data-line="26"><span class="n">charlie</span> <span class="o">=</span> <span class="n">Person</span><span class="p">(</span><span class="s2">"Charlie"</span><span class="p">,</span> <span class="s2">"0xC0C0c0c0c0c0C000000000000000000000000000"</span><span class="p">)</span>
+</span><span data-line="27"><span class="n">message</span> <span class="o">=</span> <span class="n">Mail</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">alice</span><span class="p">,</span> <span class="n">receivers</span><span class="o">=</span><span class="p">[</span><span class="n">bob</span><span class="p">,</span> <span class="n">charlie</span><span class="p">])</span>
+</span><span data-line="28">
+</span><span data-line="29"><span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"&lt;ALIAS&gt;"</span><span class="p">)</span>
+</span><span data-line="30"><span class="n">account</span><span class="o">.</span><span class="n">sign_message</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </section>
@@ -506,8 +511,8 @@ Here is an example with custom EIP-712 classes:</p>
 </span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.types.signatures</span><span class="w"> </span><span class="kn">import</span> <span class="n">recover_signer</span>
 </span><span data-line="3"><span class="kn">from</span><span class="w"> </span><span class="nn">eth_account.messages</span><span class="w"> </span><span class="kn">import</span> <span class="n">encode_defunct</span>
 </span><span data-line="4">
-</span><span data-line="5"><span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;&lt;ALIAS&gt;&quot;</span><span class="p">)</span>
-</span><span data-line="6"><span class="n">message</span> <span class="o">=</span> <span class="n">encode_defunct</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s2">&quot;Hello Apes!&quot;</span><span class="p">)</span>
+</span><span data-line="5"><span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"&lt;ALIAS&gt;"</span><span class="p">)</span>
+</span><span data-line="6"><span class="n">message</span> <span class="o">=</span> <span class="n">encode_defunct</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s2">"Hello Apes!"</span><span class="p">)</span>
 </span><span data-line="7"><span class="n">signature</span> <span class="o">=</span> <span class="n">account</span><span class="o">.</span><span class="n">sign_message</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
 </span><span data-line="8">
 </span><span data-line="9"><span class="c1"># Validate the signature by recovering the signer and asserting it is equal to the sender.</span>
@@ -552,11 +557,11 @@ Ape exposes a <a class="reference external" href="../commands/accounts.html#acco
 <p>Ape also exposes the following convenient higher-level API for working with authorizations in a scripting or testing context:</p>
 <div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">assert</span> <span class="ow">not</span> <span class="n">account</span><span class="o">.</span><span class="n">delegate</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="c1"># Set `account`&#39;s `.delegate` to `contract`</span>
+</span><span data-line="3"><span class="c1"># Set `account`'s `.delegate` to `contract`</span>
 </span><span data-line="4"><span class="n">account</span><span class="o">.</span><span class="n">set_delegate</span><span class="p">(</span><span class="n">contract</span><span class="p">)</span>
 </span><span data-line="5"><span class="k">assert</span> <span class="n">account</span><span class="o">.</span><span class="n">delegate</span> <span class="o">==</span> <span class="n">contract</span>
 </span><span data-line="6">
-</span><span data-line="7"><span class="c1"># Remove `account`&#39;s `.delegate`</span>
+</span><span data-line="7"><span class="c1"># Remove `account`'s `.delegate`</span>
 </span><span data-line="8"><span class="n">account</span><span class="o">.</span><span class="n">remove_delegate</span><span class="p">()</span>
 </span><span data-line="9"><span class="k">assert</span> <span class="ow">not</span> <span class="n">account</span><span class="o">.</span><span class="n">delegate</span>
 </span><span data-line="10">
@@ -576,7 +581,7 @@ Ape exposes a <a class="reference external" href="../commands/accounts.html#acco
 <h2>Automation<a class="headerlink" href="#automation" title="Link to this heading">#</a></h2>
 <p>If you use your keyfile accounts in automation, such as CI/CD, you may need to programmatically unlock them and enable auto-sign.
 To do this, use a special environment variable for the account’s passphrase:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nb">export</span><span class="w"> </span>APE_ACCOUNTS_&lt;alias&gt;_PASSPHRASE<span class="o">=</span><span class="s2">&quot;a&quot;</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nb">export</span><span class="w"> </span>APE_ACCOUNTS_&lt;alias&gt;_PASSPHRASE<span class="o">=</span><span class="s2">"a"</span>
 </span></pre></div>
 </div>
 <p>Where <code class="docutils literal notranslate"><span class="pre">&lt;alias&gt;</span></code> is the name of the account you want to use.
@@ -584,11 +589,11 @@ Now, you can use your account to make any transactions without subsequently prov
 <div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">accounts</span>
 </span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">eth_account.messages</span><span class="w"> </span><span class="kn">import</span> <span class="n">encode_defunct</span>
 </span><span data-line="3">
-</span><span data-line="4"><span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;&lt;ALIAS&gt;&quot;</span><span class="p">)</span>
+</span><span data-line="4"><span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"&lt;ALIAS&gt;"</span><span class="p">)</span>
 </span><span data-line="5"><span class="n">account</span><span class="o">.</span><span class="n">set_autosign</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
 </span><span data-line="6">
 </span><span data-line="7"><span class="c1"># Now, you will not be prompted to sign messages or transactions</span>
-</span><span data-line="8"><span class="n">message</span> <span class="o">=</span> <span class="n">encode_defunct</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s2">&quot;Hello Apes!&quot;</span><span class="p">)</span>
+</span><span data-line="8"><span class="n">message</span> <span class="o">=</span> <span class="n">encode_defunct</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s2">"Hello Apes!"</span><span class="p">)</span>
 </span><span data-line="9"><span class="n">signature</span> <span class="o">=</span> <span class="n">account</span><span class="o">.</span><span class="n">sign_message</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
 </span></pre></div>
 </div>

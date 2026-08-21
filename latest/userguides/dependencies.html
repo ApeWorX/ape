@@ -335,7 +335,7 @@ However, sometimes it is the only way to use a dependency.</p>
 Then, add the following to your config so that Ape can find the dependency:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">dependencies</span><span class="p">:</span>
 </span><span data-line="2"><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MyDependency</span>
-</span><span data-line="3"><span class="w">    </span><span class="nt">npm</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;@myorg/mydependency&quot;</span>
+</span><span data-line="3"><span class="w">    </span><span class="nt">npm</span><span class="p">:</span><span class="w"> </span><span class="s">"@myorg/mydependency"</span>
 </span><span data-line="4"><span class="w">    </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1.3.0</span>
 </span></pre></div>
 </div>
@@ -371,7 +371,7 @@ Then, add the following to your config so that Ape can find the dependency:</p>
 </span></pre></div>
 </div>
 <p>To install a dependency that is not in your config, you can specify it directly along with <code class="docutils literal notranslate"><span class="pre">--name</span></code> and <code class="docutils literal notranslate"><span class="pre">--version</span></code>:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>pm<span class="w"> </span>install<span class="w"> </span>gh:OpenZeppelin/openzeppelin-contracts<span class="w"> </span>--name<span class="w"> </span>openzeppelin<span class="w"> </span>--version<span class="w"> </span><span class="s2">&quot;4.6.0&quot;</span>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>pm<span class="w"> </span>install<span class="w"> </span>gh:OpenZeppelin/openzeppelin-contracts<span class="w"> </span>--name<span class="w"> </span>openzeppelin<span class="w"> </span>--version<span class="w"> </span><span class="s2">"4.6.0"</span>
 </span></pre></div>
 </div>
 <div class="admonition note">
@@ -384,15 +384,15 @@ For local dependencies, you give it a path to the local dependency.
 <p>To change the config of a dependency when installing, use the <code class="docutils literal notranslate"><span class="pre">--config-override</span></code> CLI option:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>pm<span class="w"> </span>install<span class="w"> </span>gh:OpenZeppelin/openzeppelin-contracts<span class="w"> </span><span class="se">\</span>
 </span><span data-line="2"><span class="w">  </span>--name<span class="w"> </span>openzeppelin<span class="w"> </span><span class="se">\</span>
-</span><span data-line="3"><span class="w">  </span>--version<span class="w"> </span><span class="s2">&quot;4.6.0&quot;</span><span class="w"> </span><span class="se">\</span>
-</span><span data-line="4"><span class="w">  </span>--config-override<span class="w"> </span><span class="s1">&#39;{&quot;solidity&quot;: {&quot;version&quot;: &quot;0.8.12&quot;}}&#39;</span>
+</span><span data-line="3"><span class="w">  </span>--version<span class="w"> </span><span class="s2">"4.6.0"</span><span class="w"> </span><span class="se">\</span>
+</span><span data-line="4"><span class="w">  </span>--config-override<span class="w"> </span><span class="s1">'{"solidity": {"version": "0.8.12"}}'</span>
 </span></pre></div>
 </div>
 <p>You can also use Python to install dependencies, using <code class="docutils literal notranslate"><span class="pre">**kwargs</span></code> as the same fields you put in your <code class="docutils literal notranslate"><span class="pre">dependencies:</span></code> config:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">project</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="n">project</span><span class="o">.</span><span class="n">dependencies</span><span class="o">.</span><span class="n">install</span><span class="p">(</span>
-</span><span data-line="4">   <span class="n">github</span><span class="o">=</span><span class="s2">&quot;OpenZeppelin/openzeppelin-contracts&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;openzeppelin&quot;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s2">&quot;4.9.6&quot;</span>
+</span><span data-line="4">    <span class="n">github</span><span class="o">=</span><span class="s2">"OpenZeppelin/openzeppelin-contracts"</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"openzeppelin"</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s2">"4.9.6"</span>
 </span><span data-line="5"><span class="p">)</span>
 </span></pre></div>
 </div>
@@ -463,7 +463,7 @@ Otherwise, you just give it the name.</p>
 </div>
 <p>This is the same as if these values were in an <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file in the project directly.</p>
 <p>You can also specify <code class="docutils literal notranslate"><span class="pre">--config-override</span></code> in the <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">pm</span> <span class="pre">install</span></code> command to try different settings more ad hoc:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>pm<span class="w"> </span>install<span class="w"> </span>--config-override<span class="w"> </span><span class="s1">&#39;{&quot;solidity&quot;: {&quot;evm_version&quot;: &quot;paris&quot;}}&#39;</span>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>pm<span class="w"> </span>install<span class="w"> </span>--config-override<span class="w"> </span><span class="s1">'{"solidity": {"evm_version": "paris"}}'</span>
 </span></pre></div>
 </div>
 </section>
@@ -489,7 +489,7 @@ Otherwise, you just give it the name.</p>
 </span><span data-line="5"><span class="w">      </span><span class="nt">compile</span><span class="p">:</span>
 </span><span data-line="6"><span class="w">        </span><span class="nt">exclude</span><span class="p">:</span>
 </span><span data-line="7"><span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">package.json</span><span class="w">    </span><span class="c1"># Ignore package.json files.</span>
-</span><span data-line="8"><span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mocks/**/*</span><span class="w">      </span><span class="c1"># Ignore all files in the &#39;mocks&#39; directory</span>
+</span><span data-line="8"><span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mocks/**/*</span><span class="w">      </span><span class="c1"># Ignore all files in the 'mocks' directory</span>
 </span></pre></div>
 </div>
 </section>
@@ -505,7 +505,7 @@ For example, if you are using dependencies like:</p>
 </span></pre></div>
 </div>
 <p>And your source files import from <code class="docutils literal notranslate"><span class="pre">openzeppelin</span></code> this way:</p>
-<div class="highlight-solidity notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kt">import</span><span class="w"> </span><span class="s2">&quot;@openzeppelin/contracts/token/ERC721/ERC721.sol&quot;</span><span class="p">;</span>
+<div class="highlight-solidity notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kt">import</span><span class="w"> </span><span class="s2">"@openzeppelin/contracts/token/ERC721/ERC721.sol"</span><span class="p">;</span>
 </span></pre></div>
 </div>
 <p>Ape knows how to resolve the <code class="docutils literal notranslate"><span class="pre">&#64;openzeppelin</span></code> value and find the correct source.</p>
@@ -514,7 +514,7 @@ For example, let’s say you have downloaded <code class="docutils literal notra
 You can map to your local install of <code class="docutils literal notranslate"><span class="pre">openzeppelin</span></code> this way:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">solidity</span><span class="p">:</span>
 </span><span data-line="2"><span class="w">  </span><span class="nt">import_remapping</span><span class="p">:</span>
-</span><span data-line="3"><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;@openzeppelin=path/to/openzeppelin&quot;</span>
+</span><span data-line="3"><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"@openzeppelin=path/to/openzeppelin"</span>
 </span></pre></div>
 </div>
 </section>
@@ -525,10 +525,10 @@ You can achieve this using the project manager:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">project</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="c1"># NOTE: This will compile the dependency</span>
-</span><span data-line="4"><span class="n">dependency_project</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">dependencies</span><span class="p">[</span><span class="s2">&quot;my_dependency&quot;</span><span class="p">][</span><span class="s2">&quot;1.0.0&quot;</span><span class="p">]</span>
-</span><span data-line="5"><span class="n">dependency_contract</span> <span class="o">=</span> <span class="n">dependency_project</span><span class="o">.</span><span class="n">DependencyContractType</span> 
-</span><span data-line="6"><span class="n">my_account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;alias&quot;</span><span class="p">)</span>
-</span><span data-line="7"><span class="n">deployed_contract</span> <span class="o">=</span> <span class="n">my_account</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">dependency_contract</span><span class="p">,</span> <span class="s2">&quot;argument&quot;</span><span class="p">)</span>
+</span><span data-line="4"><span class="n">dependency_project</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">dependencies</span><span class="p">[</span><span class="s2">"my_dependency"</span><span class="p">][</span><span class="s2">"1.0.0"</span><span class="p">]</span>
+</span><span data-line="5"><span class="n">dependency_contract</span> <span class="o">=</span> <span class="n">dependency_project</span><span class="o">.</span><span class="n">DependencyContractType</span>
+</span><span data-line="6"><span class="n">my_account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"alias"</span><span class="p">)</span>
+</span><span data-line="7"><span class="n">deployed_contract</span> <span class="o">=</span> <span class="n">my_account</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">dependency_contract</span><span class="p">,</span> <span class="s2">"argument"</span><span class="p">)</span>
 </span><span data-line="8"><span class="nb">print</span><span class="p">(</span><span class="n">deployed_contract</span><span class="o">.</span><span class="n">address</span><span class="p">)</span>
 </span></pre></div>
 </div>

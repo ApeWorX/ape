@@ -52,6 +52,7 @@ def is_creator(contract, address) -> bool:
     metadata = contract.creation_metadata
     return metadata and metadata.deployer == address
 
+
 # Historical queries at contract inception
 creation_block = contract.creation_metadata.block
 initial_balance = contract.balance(block_number=creation_block)
@@ -111,13 +112,7 @@ metadata = chain.contracts.get_creation_metadata(address)
 
 # Store custom metadata
 chain.contracts.cache_contract_creation(
-    address, 
-    ContractCreation(
-        txn_hash="0xabc...",
-        block=12345,
-        deployer="0xdef...",
-        factory=None
-    )
+    address, ContractCreation(txn_hash="0xabc...", block=12345, deployer="0xdef...", factory=None)
 )
 ```
 

@@ -280,27 +280,28 @@ If you need to make changes to your contract, you must re-start your console ses
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">networks</span>
 </span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">eth_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">encode_hex</span><span class="p">,</span> <span class="n">decode_hex</span>
 </span><span data-line="3">
-</span><span data-line="4"><span class="k">def</span><span class="w"> </span><span class="nf">latest</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
-</span><span data-line="5">    <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">networks</span><span class="o">.</span><span class="n">active_provider</span><span class="o">.</span><span class="n">get_block</span><span class="p">(</span><span class="s2">&quot;latest&quot;</span><span class="p">),</span> <span class="n">key</span><span class="p">)</span>
+</span><span data-line="4">
+</span><span data-line="5"><span class="k">def</span><span class="w"> </span><span class="nf">latest</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
+</span><span data-line="6">    <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">networks</span><span class="o">.</span><span class="n">active_provider</span><span class="o">.</span><span class="n">get_block</span><span class="p">(</span><span class="s2">"latest"</span><span class="p">),</span> <span class="n">key</span><span class="p">)</span>
 </span></pre></div>
 </div>
 <p>Then both imported util functions and <code class="docutils literal notranslate"><span class="pre">latest()</span></code> will be available when you launch the console.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="n">latest</span><span class="p">(</span><span class="s1">&#39;number&#39;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">In</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="n">latest</span><span class="p">(</span><span class="s2">"number"</span><span class="p">)</span>
 </span><span data-line="2"><span class="n">Out</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="mi">14388241</span>
 </span><span data-line="3">
-</span><span data-line="4"><span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="n">encode_hex</span><span class="p">(</span><span class="n">latest</span><span class="p">(</span><span class="s1">&#39;hash&#39;</span><span class="p">))</span>
-</span><span data-line="5"><span class="n">Out</span><span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="s1">&#39;0x68f768988e9bd4be971d527f72483f321975fa52aff9692b6d0e0af71fb77aaf&#39;</span>
+</span><span data-line="4"><span class="n">In</span><span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="n">encode_hex</span><span class="p">(</span><span class="n">latest</span><span class="p">(</span><span class="s2">"hash"</span><span class="p">))</span>
+</span><span data-line="5"><span class="n">Out</span><span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="s2">"0x68f768988e9bd4be971d527f72483f321975fa52aff9692b6d0e0af71fb77aaf"</span>
 </span></pre></div>
 </div>
 <section id="init-function">
 <h3>Init Function<a class="headerlink" href="#init-function" title="Link to this heading">#</a></h3>
 <p>If you include a function named <code class="docutils literal notranslate"><span class="pre">ape_init_extras</span></code>, it will be executed with the symbols from the existing namespace being provided as keyword arguments. This allows you to alter the scripts namespace using locals already included in the Ape namespace. If you return a <code class="docutils literal notranslate"><span class="pre">dict</span></code>, these values will be added to the console namespace. For example, you could set up an initialized Web3.py object by using one from an existing Ape Provider.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">def</span><span class="w"> </span><span class="nf">ape_init_extras</span><span class="p">(</span><span class="n">chain</span><span class="p">):</span>
-</span><span data-line="2">    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;web3&quot;</span><span class="p">:</span> <span class="n">chain</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">web3</span><span class="p">}</span>
+</span><span data-line="2">    <span class="k">return</span> <span class="p">{</span><span class="s2">"web3"</span><span class="p">:</span> <span class="n">chain</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">web3</span><span class="p">}</span>
 </span></pre></div>
 </div>
 <p>Then <code class="docutils literal notranslate"><span class="pre">web3</span></code> will be available to use immediately.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="n">web3</span><span class="o">.</span><span class="n">eth</span><span class="o">.</span><span class="n">chain_id</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">In</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="n">web3</span><span class="o">.</span><span class="n">eth</span><span class="o">.</span><span class="n">chain_id</span>
 </span><span data-line="2"><span class="n">Out</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="mi">1</span>
 </span></pre></div>
 </div>
@@ -361,16 +362,16 @@ To do this, run the following from <em>any</em> <code class="docutils literal no
 <section id="bal">
 <h3>%bal<a class="headerlink" href="#bal" title="Link to this heading">#</a></h3>
 <p>The <code class="docutils literal notranslate"><span class="pre">%bal</span></code> magic outputs a human-readable balance on an account, contract, address, or account alias.</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">In<span class="w"> </span><span class="o">[</span><span class="m">1</span><span class="o">]</span>:<span class="w"> </span><span class="nv">account</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>accounts.load<span class="o">(</span><span class="s2">&quot;metamask0&quot;</span><span class="o">)</span>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">In<span class="w"> </span><span class="o">[</span><span class="m">1</span><span class="o">]</span>:<span class="w"> </span><span class="nv">account</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>accounts.load<span class="o">(</span><span class="s2">"metamask0"</span><span class="o">)</span>
 </span><span data-line="2">
 </span><span data-line="3">In<span class="w"> </span><span class="o">[</span><span class="m">2</span><span class="o">]</span>:<span class="w"> </span>%bal<span class="w"> </span>account
-</span><span data-line="4">Out<span class="o">[</span><span class="m">2</span><span class="o">]</span>:<span class="w"> </span><span class="s1">&#39;0.00040634 ETH&#39;</span>
+</span><span data-line="4">Out<span class="o">[</span><span class="m">2</span><span class="o">]</span>:<span class="w"> </span><span class="s1">'0.00040634 ETH'</span>
 </span><span data-line="5">
 </span><span data-line="6">In<span class="w"> </span><span class="o">[</span><span class="m">3</span><span class="o">]</span>:<span class="w"> </span>%bal<span class="w"> </span>metamask0
-</span><span data-line="7">Out<span class="o">[</span><span class="m">3</span><span class="o">]</span>:<span class="w"> </span><span class="s1">&#39;0.00040634 ETH&#39;</span>
+</span><span data-line="7">Out<span class="o">[</span><span class="m">3</span><span class="o">]</span>:<span class="w"> </span><span class="s1">'0.00040634 ETH'</span>
 </span><span data-line="8">
 </span><span data-line="9">In<span class="w"> </span><span class="o">[</span><span class="m">4</span><span class="o">]</span>:<span class="w"> </span>%bal<span class="w"> </span>0xE3747e6341E0d3430e6Ea9e2346cdDCc2F8a4b5b
-</span><span data-line="10">Out<span class="o">[</span><span class="m">4</span><span class="o">]</span>:<span class="w"> </span><span class="s1">&#39;0.00040634 ETH&#39;</span>
+</span><span data-line="10">Out<span class="o">[</span><span class="m">4</span><span class="o">]</span>:<span class="w"> </span><span class="s1">'0.00040634 ETH'</span>
 </span></pre></div>
 </div>
 </section>
@@ -380,12 +381,12 @@ To do this, run the following from <em>any</em> <code class="docutils literal no
 <p>You can also use the <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">console</span></code> to execute programs directly from strings.
 This is similar to the <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-c|--code</span></code> option except it will display the output cell.
 Anything available in <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">console</span></code> is also available in <code class="docutils literal notranslate"><span class="pre">ape</span> <span class="pre">console</span> <span class="pre">--code</span></code>.</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>console<span class="w"> </span>-c<span class="w"> </span><span class="s1">&#39;project.name&#39;</span>
-</span><span data-line="2">Out<span class="o">[</span><span class="m">1</span><span class="o">]</span>:<span class="w"> </span><span class="s1">&#39;my-project&#39;</span>
-</span><span data-line="3">ape<span class="w"> </span>console<span class="w"> </span>-c<span class="w"> </span><span class="s1">&#39;x = 3\nx + 1&#39;</span>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>console<span class="w"> </span>-c<span class="w"> </span><span class="s1">'project.name'</span>
+</span><span data-line="2">Out<span class="o">[</span><span class="m">1</span><span class="o">]</span>:<span class="w"> </span><span class="s1">'my-project'</span>
+</span><span data-line="3">ape<span class="w"> </span>console<span class="w"> </span>-c<span class="w"> </span><span class="s1">'x = 3\nx + 1'</span>
 </span><span data-line="4">Out<span class="o">[</span><span class="m">1</span><span class="o">]</span>:<span class="w"> </span><span class="m">4</span>
-</span><span data-line="5">ape<span class="w"> </span>console<span class="w"> </span>-c<span class="w"> </span><span class="s1">&#39;networks.active_provider.name&#39;</span>
-</span><span data-line="6">Out<span class="o">[</span><span class="m">1</span><span class="o">]</span>:<span class="w"> </span><span class="s1">&#39;test&#39;</span>
+</span><span data-line="5">ape<span class="w"> </span>console<span class="w"> </span>-c<span class="w"> </span><span class="s1">'networks.active_provider.name'</span>
+</span><span data-line="6">Out<span class="o">[</span><span class="m">1</span><span class="o">]</span>:<span class="w"> </span><span class="s1">'test'</span>
 </span></pre></div>
 </div>
 </section>

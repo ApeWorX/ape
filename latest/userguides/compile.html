@@ -209,7 +209,7 @@ data-aria-dark="Switch to auto color mode">
 </span></pre></div>
 </div>
 <p>Configure the location Ape looks for contracts by editing the <code class="docutils literal notranslate"><span class="pre">contracts_folder</span></code> key in your project’s <code class="docutils literal notranslate"><span class="pre">ape-config.yaml</span></code> file:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">contracts_folder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">src</span><span class="w">  </span><span class="c1"># Default is &#39;contracts/&#39;</span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">contracts_folder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">src</span><span class="w">  </span><span class="c1"># Default is 'contracts/'</span>
 </span></pre></div>
 </div>
 <section id="the-json-compiler">
@@ -223,7 +223,7 @@ This compiler is useful for the following:</p>
 </span><span data-line="2">
 </span><span data-line="3"><span class="c1"># Comes from a file named `MyInterface.json` in the contracts/ folder.</span>
 </span><span data-line="4"><span class="n">my_interface</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">MyInterface</span>
-</span><span data-line="5"><span class="n">address</span> <span class="o">=</span> <span class="s2">&quot;0x1234556b5Ed9202110D7Ecd637A4581db8b9879F&quot;</span>
+</span><span data-line="5"><span class="n">address</span> <span class="o">=</span> <span class="s2">"0x1234556b5Ed9202110D7Ecd637A4581db8b9879F"</span>
 </span><span data-line="6">
 </span><span data-line="7"><span class="c1"># Instantiate a deployed contract using the local interface.</span>
 </span><span data-line="8"><span class="n">contract</span> <span class="o">=</span> <span class="n">my_interface</span><span class="o">.</span><span class="n">at</span><span class="p">(</span><span class="n">address</span><span class="p">)</span>
@@ -256,13 +256,13 @@ By default, Ape excludes known non-contract files such as <code class="docutils 
 To append file-globs to the exclusions list, edit your <code class="docutils literal notranslate"><span class="pre">compile:exclude</span></code> config like this:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nt">compile</span><span class="p">:</span>
 </span><span data-line="2"><span class="w">  </span><span class="nt">exclude</span><span class="p">:</span>
-</span><span data-line="3"><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;examples&quot;</span><span class="w">  </span><span class="c1"># Exclude all files in the examples/ directory</span>
-</span><span data-line="4"><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;*Mock.sol&quot;</span><span class="w">  </span><span class="c1"># Exclude all files ending in Mock.sol</span>
-</span><span data-line="5"><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">r&quot;(?!.*_mock\.vy$)&quot;</span><span class="w">  </span><span class="c1"># You can also use regex instead of globs (prefix with `r`).</span>
+</span><span data-line="3"><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"examples"</span><span class="w">  </span><span class="c1"># Exclude all files in the examples/ directory</span>
+</span><span data-line="4"><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"*Mock.sol"</span><span class="w">  </span><span class="c1"># Exclude all files ending in Mock.sol</span>
+</span><span data-line="5"><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">r"(?!.*_mock\.vy$)"</span><span class="w">  </span><span class="c1"># You can also use regex instead of globs (prefix with `r`).</span>
 </span></pre></div>
 </div>
 <p>You can also exclude files using the <code class="docutils literal notranslate"><span class="pre">--config-override</span></code> CLI option:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>compile<span class="w"> </span>--config-override<span class="w"> </span><span class="s1">&#39;{&quot;compile&quot;: {&quot;exclude&quot;: [&quot;*Mock.sol&quot;]}}&#39;</span>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>compile<span class="w"> </span>--config-override<span class="w"> </span><span class="s1">'{"compile": {"exclude": ["*Mock.sol"]}}'</span>
 </span></pre></div>
 </div>
 </section>
@@ -290,24 +290,22 @@ See <a class="reference external" href="./dependencies.html">this guide</a> to l
 </div>
 <p>When using the CLI, you can also specify settings using the <code class="docutils literal notranslate"><span class="pre">--config-override</span></code>.
 This is not limited to compiler settings; you can include other settings, such as <code class="docutils literal notranslate"><span class="pre">&quot;contracts_folder&quot;</span></code>, which affects compiling.</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>compile<span class="w"> </span>--config-override<span class="w"> </span><span class="s1">&#39;{&quot;contracts_folder&quot;: &quot;other_contracts&quot;, &quot;vyper&quot;: {&quot;evm_version&quot;: &quot;paris&quot;}, &quot;solidity&quot;: {&quot;evm_version&quot;: &quot;paris&quot;}}&#39;</span>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span data-line="1">ape<span class="w"> </span>compile<span class="w"> </span>--config-override<span class="w"> </span><span class="s1">'{"contracts_folder": "other_contracts", "vyper": {"evm_version": "paris"}, "solidity": {"evm_version": "paris"}}'</span>
 </span></pre></div>
 </div>
 <p>Finally, you can also configure settings in Python code:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 </span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">compilers</span>
 </span><span data-line="3">
-</span><span data-line="4"><span class="n">settings</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;vyper&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="s2">&quot;0.3.7&quot;</span><span class="p">},</span> <span class="s2">&quot;solidity&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="s2">&quot;0.8.0&quot;</span><span class="p">}}</span>
-</span><span data-line="5"><span class="n">compilers</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
-</span><span data-line="6">   <span class="p">[</span><span class="s2">&quot;path/to/contract.vy&quot;</span><span class="p">,</span> <span class="s2">&quot;path/to/contract.sol&quot;</span><span class="p">],</span> <span class="n">settings</span><span class="o">=</span><span class="n">settings</span>
-</span><span data-line="7"><span class="p">)</span>
-</span><span data-line="8">
-</span><span data-line="9"><span class="c1"># Or, more explicitly:</span>
-</span><span data-line="10"><span class="n">vyper</span> <span class="o">=</span> <span class="n">compilers</span><span class="o">.</span><span class="n">get_compiler</span><span class="p">(</span><span class="s2">&quot;vyper&quot;</span><span class="p">,</span> <span class="n">settings</span><span class="o">=</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;vyper&quot;</span><span class="p">])</span>
-</span><span data-line="11"><span class="n">vyper</span><span class="o">.</span><span class="n">compile</span><span class="p">([</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;path/to/contract.vy&quot;</span><span class="p">)])</span>
-</span><span data-line="12">
-</span><span data-line="13"><span class="n">solidity</span> <span class="o">=</span> <span class="n">compilers</span><span class="o">.</span><span class="n">get_compiler</span><span class="p">(</span><span class="s2">&quot;solidity&quot;</span><span class="p">,</span> <span class="n">settings</span><span class="o">=</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;solidity&quot;</span><span class="p">])</span>
-</span><span data-line="14"><span class="n">solidity</span><span class="o">.</span><span class="n">compile</span><span class="p">([</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;path/to/contract.sol&quot;</span><span class="p">)])</span>
+</span><span data-line="4"><span class="n">settings</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"vyper"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"version"</span><span class="p">:</span> <span class="s2">"0.3.7"</span><span class="p">},</span> <span class="s2">"solidity"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"version"</span><span class="p">:</span> <span class="s2">"0.8.0"</span><span class="p">}}</span>
+</span><span data-line="5"><span class="n">compilers</span><span class="o">.</span><span class="n">compile</span><span class="p">([</span><span class="s2">"path/to/contract.vy"</span><span class="p">,</span> <span class="s2">"path/to/contract.sol"</span><span class="p">],</span> <span class="n">settings</span><span class="o">=</span><span class="n">settings</span><span class="p">)</span>
+</span><span data-line="6">
+</span><span data-line="7"><span class="c1"># Or, more explicitly:</span>
+</span><span data-line="8"><span class="n">vyper</span> <span class="o">=</span> <span class="n">compilers</span><span class="o">.</span><span class="n">get_compiler</span><span class="p">(</span><span class="s2">"vyper"</span><span class="p">,</span> <span class="n">settings</span><span class="o">=</span><span class="n">settings</span><span class="p">[</span><span class="s2">"vyper"</span><span class="p">])</span>
+</span><span data-line="9"><span class="n">vyper</span><span class="o">.</span><span class="n">compile</span><span class="p">([</span><span class="n">Path</span><span class="p">(</span><span class="s2">"path/to/contract.vy"</span><span class="p">)])</span>
+</span><span data-line="10">
+</span><span data-line="11"><span class="n">solidity</span> <span class="o">=</span> <span class="n">compilers</span><span class="o">.</span><span class="n">get_compiler</span><span class="p">(</span><span class="s2">"solidity"</span><span class="p">,</span> <span class="n">settings</span><span class="o">=</span><span class="n">settings</span><span class="p">[</span><span class="s2">"solidity"</span><span class="p">])</span>
+</span><span data-line="12"><span class="n">solidity</span><span class="o">.</span><span class="n">compile</span><span class="p">([</span><span class="n">Path</span><span class="p">(</span><span class="s2">"path/to/contract.sol"</span><span class="p">)])</span>
 </span></pre></div>
 </div>
 </section>
@@ -316,15 +314,15 @@ This is not limited to compiler settings; you can include other settings, such a
 <p>Instead of compiling project source files, you can compile code (str) directly:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">accounts</span><span class="p">,</span> <span class="n">compilers</span>
 </span><span data-line="2">
-</span><span data-line="3"><span class="n">CODE</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+</span><span data-line="3"><span class="n">CODE</span> <span class="o">=</span> <span class="s2">"""</span>
 </span><span data-line="4"><span class="s2">   ... source code here</span>
-</span><span data-line="5"><span class="s2">&quot;&quot;&quot;</span>
+</span><span data-line="5"><span class="s2">"""</span>
 </span><span data-line="6">
 </span><span data-line="7"><span class="n">container</span> <span class="o">=</span> <span class="n">compilers</span><span class="o">.</span><span class="n">compile_source</span><span class="p">(</span>
-</span><span data-line="8">   <span class="s2">&quot;vyper&quot;</span><span class="p">,</span>
-</span><span data-line="9">   <span class="n">CODE</span><span class="p">,</span>
-</span><span data-line="10">   <span class="n">settings</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;vyper&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="s2">&quot;0.3.7&quot;</span><span class="p">}},</span> 
-</span><span data-line="11">   <span class="n">contractName</span><span class="o">=</span><span class="s2">&quot;MyContract&quot;</span><span class="p">,</span>
+</span><span data-line="8">    <span class="s2">"vyper"</span><span class="p">,</span>
+</span><span data-line="9">    <span class="n">CODE</span><span class="p">,</span>
+</span><span data-line="10">    <span class="n">settings</span><span class="o">=</span><span class="p">{</span><span class="s2">"vyper"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"version"</span><span class="p">:</span> <span class="s2">"0.3.7"</span><span class="p">}},</span>
+</span><span data-line="11">    <span class="n">contractName</span><span class="o">=</span><span class="s2">"MyContract"</span><span class="p">,</span>
 </span><span data-line="12"><span class="p">)</span>
 </span><span data-line="13">
 </span><span data-line="14"><span class="n">owner</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">test_accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>

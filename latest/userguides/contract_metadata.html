@@ -216,12 +216,12 @@ This data enables contract verification, historical analysis, and audit workflow
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">Contract</span><span class="p">,</span> <span class="n">project</span><span class="p">,</span> <span class="n">accounts</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="c1"># For newly deployed contracts</span>
-</span><span data-line="4"><span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;my-account&quot;</span><span class="p">)</span>
+</span><span data-line="4"><span class="n">account</span> <span class="o">=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"my-account"</span><span class="p">)</span>
 </span><span data-line="5"><span class="n">contract</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">account</span><span class="p">)</span>
 </span><span data-line="6"><span class="n">metadata</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">creation_metadata</span>
 </span><span data-line="7">
 </span><span data-line="8"><span class="c1"># For existing contracts</span>
-</span><span data-line="9"><span class="n">existing_contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span><span class="s2">&quot;0x123abc...&quot;</span><span class="p">)</span>
+</span><span data-line="9"><span class="n">existing_contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span><span class="s2">"0x123abc..."</span><span class="p">)</span>
 </span><span data-line="10"><span class="n">metadata</span> <span class="o">=</span> <span class="n">existing_contract</span><span class="o">.</span><span class="n">creation_metadata</span>
 </span></pre></div>
 </div>
@@ -249,13 +249,14 @@ This data enables contract verification, historical analysis, and audit workflow
 <p>These properties unlock valuable workflows such as:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="c1"># Verify contract ownership</span>
 </span><span data-line="2"><span class="k">def</span><span class="w"> </span><span class="nf">is_creator</span><span class="p">(</span><span class="n">contract</span><span class="p">,</span> <span class="n">address</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-</span><span data-line="3"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if an address is the creator of a contract&quot;&quot;&quot;</span>
+</span><span data-line="3"><span class="w">    </span><span class="sd">"""Check if an address is the creator of a contract"""</span>
 </span><span data-line="4">    <span class="n">metadata</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">creation_metadata</span>
 </span><span data-line="5">    <span class="k">return</span> <span class="n">metadata</span> <span class="ow">and</span> <span class="n">metadata</span><span class="o">.</span><span class="n">deployer</span> <span class="o">==</span> <span class="n">address</span>
 </span><span data-line="6">
-</span><span data-line="7"><span class="c1"># Historical queries at contract inception</span>
-</span><span data-line="8"><span class="n">creation_block</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">creation_metadata</span><span class="o">.</span><span class="n">block</span>
-</span><span data-line="9"><span class="n">initial_balance</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">balance</span><span class="p">(</span><span class="n">block_number</span><span class="o">=</span><span class="n">creation_block</span><span class="p">)</span>
+</span><span data-line="7">
+</span><span data-line="8"><span class="c1"># Historical queries at contract inception</span>
+</span><span data-line="9"><span class="n">creation_block</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">creation_metadata</span><span class="o">.</span><span class="n">block</span>
+</span><span data-line="10"><span class="n">initial_balance</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">balance</span><span class="p">(</span><span class="n">block_number</span><span class="o">=</span><span class="n">creation_block</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </section>
@@ -285,9 +286,9 @@ This approach offers broad compatibility across most networks with explorers but
 If all methods fail, <code class="docutils literal notranslate"><span class="pre">creation_metadata</span></code> returns <code class="docutils literal notranslate"><span class="pre">None</span></code>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">metadata</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">creation_metadata</span>
 </span><span data-line="2"><span class="k">if</span> <span class="n">metadata</span><span class="p">:</span>
-</span><span data-line="3">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Contract deployed by </span><span class="si">{</span><span class="n">metadata</span><span class="o">.</span><span class="n">deployer</span><span class="si">}</span><span class="s2"> in block </span><span class="si">{</span><span class="n">metadata</span><span class="o">.</span><span class="n">block</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="3">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Contract deployed by </span><span class="si">{</span><span class="n">metadata</span><span class="o">.</span><span class="n">deployer</span><span class="si">}</span><span class="s2"> in block </span><span class="si">{</span><span class="n">metadata</span><span class="o">.</span><span class="n">block</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </span><span data-line="4"><span class="k">else</span><span class="p">:</span>
-</span><span data-line="5">    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Creation metadata unavailable&quot;</span><span class="p">)</span>
+</span><span data-line="5">    <span class="nb">print</span><span class="p">(</span><span class="s2">"Creation metadata unavailable"</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </section>
@@ -304,19 +305,13 @@ For permanent networks (not local or fork networks), this data persists on disk 
 </span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">ape.api.query</span><span class="w"> </span><span class="kn">import</span> <span class="n">ContractCreation</span>
 </span><span data-line="3">
 </span><span data-line="4"><span class="c1"># Retrieve metadata programmatically</span>
-</span><span data-line="5"><span class="n">address</span> <span class="o">=</span> <span class="s2">&quot;0x123abc...&quot;</span>
+</span><span data-line="5"><span class="n">address</span> <span class="o">=</span> <span class="s2">"0x123abc..."</span>
 </span><span data-line="6"><span class="n">metadata</span> <span class="o">=</span> <span class="n">chain</span><span class="o">.</span><span class="n">contracts</span><span class="o">.</span><span class="n">get_creation_metadata</span><span class="p">(</span><span class="n">address</span><span class="p">)</span>
 </span><span data-line="7">
 </span><span data-line="8"><span class="c1"># Store custom metadata</span>
 </span><span data-line="9"><span class="n">chain</span><span class="o">.</span><span class="n">contracts</span><span class="o">.</span><span class="n">cache_contract_creation</span><span class="p">(</span>
-</span><span data-line="10">    <span class="n">address</span><span class="p">,</span> 
-</span><span data-line="11">    <span class="n">ContractCreation</span><span class="p">(</span>
-</span><span data-line="12">        <span class="n">txn_hash</span><span class="o">=</span><span class="s2">&quot;0xabc...&quot;</span><span class="p">,</span>
-</span><span data-line="13">        <span class="n">block</span><span class="o">=</span><span class="mi">12345</span><span class="p">,</span>
-</span><span data-line="14">        <span class="n">deployer</span><span class="o">=</span><span class="s2">&quot;0xdef...&quot;</span><span class="p">,</span>
-</span><span data-line="15">        <span class="n">factory</span><span class="o">=</span><span class="kc">None</span>
-</span><span data-line="16">    <span class="p">)</span>
-</span><span data-line="17"><span class="p">)</span>
+</span><span data-line="10">    <span class="n">address</span><span class="p">,</span> <span class="n">ContractCreation</span><span class="p">(</span><span class="n">txn_hash</span><span class="o">=</span><span class="s2">"0xabc..."</span><span class="p">,</span> <span class="n">block</span><span class="o">=</span><span class="mi">12345</span><span class="p">,</span> <span class="n">deployer</span><span class="o">=</span><span class="s2">"0xdef..."</span><span class="p">,</span> <span class="n">factory</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</span><span data-line="11"><span class="p">)</span>
 </span></pre></div>
 </div>
 <p>This level of access is particularly valuable for governance verification systems, contract audit tooling, and detailed deployment reporting.</p>

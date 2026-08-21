@@ -253,7 +253,7 @@ See <a class="reference external" href="./contracts.html">this guide</a> to lear
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">Contract</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="c1"># Automatic proxy detection (default behavior)</span>
-</span><span data-line="4"><span class="n">my_contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span><span class="s2">&quot;0x...&quot;</span><span class="p">)</span>
+</span><span data-line="4"><span class="n">my_contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span><span class="s2">"0x..."</span><span class="p">)</span>
 </span></pre></div>
 </div>
 <p>Ape will check the address you give it and detect if it hosts a proxy contract.
@@ -273,36 +273,30 @@ This allows you to still call methods as you normally do on proxy contracts.</p>
 </span><span data-line="3"><span class="kn">from</span><span class="w"> </span><span class="nn">ape_ethereum.proxies</span><span class="w"> </span><span class="kn">import</span> <span class="n">ProxyInfo</span><span class="p">,</span> <span class="n">ProxyType</span>
 </span><span data-line="4">
 </span><span data-line="5"><span class="c1"># Create proxy info with implementation address</span>
-</span><span data-line="6"><span class="n">proxy_info</span> <span class="o">=</span> <span class="n">ProxyInfo</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="s2">&quot;0x1234567890123456789012345678901234567890&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">ProxyType</span><span class="o">.</span><span class="n">STANDARD</span><span class="p">)</span>
+</span><span data-line="6"><span class="n">proxy_info</span> <span class="o">=</span> <span class="n">ProxyInfo</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="s2">"0x1234567890123456789012345678901234567890"</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">ProxyType</span><span class="o">.</span><span class="n">STANDARD</span><span class="p">)</span>
 </span><span data-line="7">
 </span><span data-line="8"><span class="c1"># Create contract instance with manual proxy configuration</span>
 </span><span data-line="9"><span class="n">contract</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">MyImplementation</span><span class="o">.</span><span class="n">at</span><span class="p">(</span>
-</span><span data-line="10">    <span class="s2">&quot;0xProxyAddress&quot;</span><span class="p">,</span>
+</span><span data-line="10">    <span class="s2">"0xProxyAddress"</span><span class="p">,</span>
 </span><span data-line="11">    <span class="c1"># Provide proxy information manually</span>
 </span><span data-line="12">    <span class="n">proxy_info</span><span class="o">=</span><span class="n">proxy_info</span><span class="p">,</span>
 </span><span data-line="13"><span class="p">)</span>
 </span><span data-line="14">
-</span><span data-line="15"><span class="c1"># Or disable proxy detection entirely if you know it&#39;s not a proxy</span>
-</span><span data-line="16"><span class="n">contract</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="o">.</span><span class="n">at</span><span class="p">(</span>
-</span><span data-line="17">    <span class="s2">&quot;0xAddress&quot;</span><span class="p">,</span>
-</span><span data-line="18">    <span class="n">detect_proxy</span><span class="o">=</span><span class="kc">False</span>
-</span><span data-line="19"><span class="p">)</span>
+</span><span data-line="15"><span class="c1"># Or disable proxy detection entirely if you know it's not a proxy</span>
+</span><span data-line="16"><span class="n">contract</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">MyContract</span><span class="o">.</span><span class="n">at</span><span class="p">(</span><span class="s2">"0xAddress"</span><span class="p">,</span> <span class="n">detect_proxy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </span></pre></div>
 </div>
 <p>You can also use the <code class="docutils literal notranslate"><span class="pre">Contract</span></code> factory with proxy parameters:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">Contract</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="c1"># Disable proxy detection</span>
-</span><span data-line="4"><span class="n">contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span><span class="s2">&quot;0xAddress&quot;</span><span class="p">,</span> <span class="n">detect_proxy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span><span data-line="4"><span class="n">contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span><span class="s2">"0xAddress"</span><span class="p">,</span> <span class="n">detect_proxy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </span><span data-line="5">
 </span><span data-line="6"><span class="c1"># Provide custom proxy info</span>
 </span><span data-line="7"><span class="n">contract</span> <span class="o">=</span> <span class="n">Contract</span><span class="p">(</span>
-</span><span data-line="8">    <span class="s2">&quot;0xProxyAddress&quot;</span><span class="p">,</span> 
-</span><span data-line="9">    <span class="n">proxy_info</span><span class="o">=</span><span class="n">ProxyInfoAPI</span><span class="p">(</span>
-</span><span data-line="10">        <span class="n">target</span><span class="o">=</span><span class="s2">&quot;0xImplementationAddress&quot;</span><span class="p">,</span> 
-</span><span data-line="11">        <span class="n">type_name</span><span class="o">=</span><span class="n">ProxyType</span><span class="o">.</span><span class="n">STANDARD</span>
-</span><span data-line="12">    <span class="p">)</span>
-</span><span data-line="13"><span class="p">)</span>
+</span><span data-line="8">    <span class="s2">"0xProxyAddress"</span><span class="p">,</span>
+</span><span data-line="9">    <span class="n">proxy_info</span><span class="o">=</span><span class="n">ProxyInfoAPI</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="s2">"0xImplementationAddress"</span><span class="p">,</span> <span class="n">type_name</span><span class="o">=</span><span class="n">ProxyType</span><span class="o">.</span><span class="n">STANDARD</span><span class="p">),</span>
+</span><span data-line="10"><span class="p">)</span>
 </span></pre></div>
 </div>
 <p>This is particularly useful when:</p>

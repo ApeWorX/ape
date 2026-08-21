@@ -720,8 +720,8 @@ we can show a more accurate exception message.</p>
 <dd><p>Dig through a nested <code class="docutils literal notranslate"><span class="pre">dict</span></code> using the given keys and return the
 last-found object.</p>
 <p>Usage example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">extract_nested_value</span><span class="p">({</span><span class="s2">&quot;foo&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;bar&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;test&quot;</span><span class="p">:</span> <span class="s2">&quot;VALUE&quot;</span><span class="p">}}},</span> <span class="s2">&quot;foo&quot;</span><span class="p">,</span> <span class="s2">&quot;bar&quot;</span><span class="p">,</span> <span class="s2">&quot;test&quot;</span><span class="p">)</span>
-</span><span data-line="2"><span class="go">&#39;VALUE&#39;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">extract_nested_value</span><span class="p">({</span><span class="s2">"foo"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"bar"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"test"</span><span class="p">:</span> <span class="s2">"VALUE"</span><span class="p">}}},</span> <span class="s2">"foo"</span><span class="p">,</span> <span class="s2">"bar"</span><span class="p">,</span> <span class="s2">"test"</span><span class="p">)</span>
+</span><span data-line="2"><span class="go">'VALUE'</span>
 </span></pre></div>
 </div>
 <dl class="field-list simple">
@@ -1137,11 +1137,11 @@ faster in that case.</p>
 <span class="sig-prename descclassname"><span class="pre">ape.utils.os.</span></span><span class="sig-name descname"><span class="pre">path_match</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">exclusions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#ape.utils.os.path_match" title="Link to this definition">#</a></dt>
 <dd><p>A better glob-matching function. For example:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
-</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">p</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;test/to/.build/me/2/file.json&quot;</span><span class="p">)</span>
-</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;**/.build/**&quot;</span><span class="p">)</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">p</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">"test/to/.build/me/2/file.json"</span><span class="p">)</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">"**/.build/**"</span><span class="p">)</span>
 </span><span data-line="4"><span class="go">False</span>
 </span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">ape.utils.os</span><span class="w"> </span><span class="kn">import</span> <span class="n">path_match</span>
-</span><span data-line="6"><span class="gp">&gt;&gt;&gt; </span><span class="n">path_match</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="s2">&quot;**/.build/**&quot;</span><span class="p">)</span>
+</span><span data-line="6"><span class="gp">&gt;&gt;&gt; </span><span class="n">path_match</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="s2">"**/.build/**"</span><span class="p">)</span>
 </span><span data-line="7"><span class="go">True</span>
 </span></pre></div>
 </div>
@@ -1239,7 +1239,7 @@ warns and returns <code class="docutils literal notranslate"><span class="pre">N
 </span><span data-line="4">
 </span><span data-line="5">
 </span><span data-line="6"><span class="nd">@allow_disconnected</span>
-</span><span data-line="7"><span class="k">def</span><span class="w"> </span><span class="nf">try_snapshot</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;SnapshotID | None&quot;</span><span class="p">:</span>
+</span><span data-line="7"><span class="k">def</span><span class="w"> </span><span class="nf">try_snapshot</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"SnapshotID | None"</span><span class="p">:</span>
 </span><span data-line="8">    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">chain</span><span class="o">.</span><span class="n">snapshot</span><span class="p">()</span>
 </span></pre></div>
 </div>
