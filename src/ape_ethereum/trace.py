@@ -21,7 +21,7 @@ from evm_trace import (
 )
 from evm_trace.gas import merge_reports
 from hexbytes import HexBytes
-from pydantic import field_validator
+from pydantic import Field, PrivateAttr, field_validator
 from rich.tree import Tree
 
 from ape.api.trace import TraceAPI
@@ -462,8 +462,8 @@ class Trace(TraceAPI):
 
 class TransactionTrace(Trace):
     transaction_hash: HexStr
-    debug_trace_transaction_parameters: dict = {"enableMemory": True}  # noqa: RUF012
-    _frames: list[dict] = []  # noqa: RUF012
+    debug_trace_transaction_parameters: dict = Field(default_factory=lambda: {"enableMemory": True})
+    _frames: list[dict] = PrivateAttr(default_factory=list)
 
     @property
     def raw_trace_frames(self) -> Iterator[dict]:
@@ -596,7 +596,7 @@ class CallTrace(Trace):
     be created near sending the request.
     """
 
-    arguments: list[Any] = []  # noqa: RUF012
+    arguments: list[Any] = Field(default_factory=list)
     """
     Remaining eth-call arguments, minus the transaction.
     """

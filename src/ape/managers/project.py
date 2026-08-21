@@ -6,7 +6,7 @@ from contextlib import contextmanager
 from functools import cached_property, singledispatchmethod
 from pathlib import Path
 from re import Pattern
-from typing import Any, cast
+from typing import Any, ClassVar, cast
 
 from eth_typing import HexStr
 from eth_utils import to_hex
@@ -14,6 +14,7 @@ from ethpm_types import ContractInstance as EthPMContractInstance
 from ethpm_types import ContractType, PackageManifest, PackageMeta, Source
 from ethpm_types.source import Compiler, ContractSource
 from ethpm_types.utils import compute_checksum
+from pydantic import Field
 from pydantic_core import Url
 
 from ape.api.projects import ApeProject, DependencyAPI, ProjectAPI
@@ -66,8 +67,6 @@ class SourceManager(BaseManager):
     _path_cache: list[Path] | None = None
 
     # perf: calculating paths from source Ids can be expensive.
-    _path_to_source_id: dict[Path, str] = {}  # noqa: RUF012
-
     def __init__(
         self,
         root_path: Path,
@@ -77,6 +76,7 @@ class SourceManager(BaseManager):
         self.root_path = root_path
         self.get_contracts_path = get_contracts_path
         self.exclude_globs = exclude_globs or set()
+        self._path_to_source_id: dict[Path, str] = {}
         self._sources: dict[str, Source] = {}
         self._exclude_cache: dict[str, bool] = {}
 
@@ -1201,7 +1201,7 @@ class DependencyManager(BaseManager):
     """
 
     # Class-level cache
-    _cache: dict[DependencyAPI, Dependency] = {}  # noqa: RUF012
+    _cache: ClassVar[dict[DependencyAPI, Dependency]] = {}
 
     def __init__(self, project: "ProjectManager | None" = None):
         self.project = project or self.local_project
@@ -2334,7 +2334,7 @@ class MultiProject(ProjectAPI):
     containing an ``ape-config.yaml`` file.
     """
 
-    apis: list[ProjectAPI] = []  # noqa: RUF012
+    apis: list[ProjectAPI] = Field(default_factory=list)
     """
     An ordered list of APIs to use. The last items take precedence as their configs merge.
     """

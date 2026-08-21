@@ -3,10 +3,10 @@ import signal
 from collections.abc import Collection, Iterator
 from functools import cached_property
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from evmchains import PUBLIC_CHAIN_META
-from pydantic import ValidationError
+from pydantic import Field, ValidationError
 
 from ape.api.networks import ProviderContextManager
 from ape.exceptions import EcosystemNotFoundError, NetworkError, NetworkNotFoundError
@@ -81,7 +81,7 @@ class NodeProcessMap(DiskCacheableModel):
     All managed running network subprocesses.
     """
 
-    nodes: dict[int, NodeProcessData] = {}  # noqa: RUF012
+    nodes: dict[int, NodeProcessData] = Field(default_factory=dict)
 
     @property
     def path(self) -> Path:
@@ -182,7 +182,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
 
     # For adhoc adding custom networks, or incorporating some defined
     # in other projects' configs.
-    _custom_networks: list[dict] = []  # noqa: RUF012
+    _custom_networks: ClassVar[list[dict]] = []
 
     @log_instead_of_fail(default="<NetworkManager>")
     def __repr__(self) -> str:
@@ -992,7 +992,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         # NOTE: Called when changing config programmatically.
         self.__dict__.pop("_custom_ecosystems", None)
         self.__dict__.pop("_custom_networks_from_config", None)
-        self._custom_networks = []
+        NetworkManager._custom_networks = []
 
 
 def _validate_filter(arg: list[str] | str | None, options: set[str]):

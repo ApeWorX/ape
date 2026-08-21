@@ -4,7 +4,7 @@ from collections.abc import Iterator
 from functools import cached_property
 from os import environ
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import click
 from eip712.messages import EIP712Message
@@ -46,7 +46,7 @@ class InvalidPasswordError(AccountsError):
 
 
 class AccountContainer(AccountContainerAPI):
-    loaded_accounts: dict[str, "KeyfileAccount"] = {}  # noqa: RUF012
+    loaded_accounts: ClassVar[dict[str, "KeyfileAccount"]] = {}
 
     @property
     def _keyfiles(self) -> Iterator[Path]:

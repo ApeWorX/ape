@@ -13,7 +13,7 @@ from eth_utils import add_0x_prefix, to_hex
 from geth.chain import initialize_chain as initialize_gethdev_chain
 from geth.process import BaseGethProcess
 from geth.wrapper import ALL_APIS, construct_test_chain_kwargs
-from pydantic import field_validator
+from pydantic import Field, field_validator
 from pydantic_settings import SettingsConfigDict
 from requests.exceptions import ConnectionError
 from web3.middleware import ExtraDataToPOAMiddleware
@@ -419,11 +419,17 @@ class GethDevProcess(BaseGethProcess):
 
 class EthereumNetworkConfig(PluginConfig):
     # Make sure you are running the right networks when you try for these
-    mainnet: dict = {}  # noqa: RUF012
-    holesky: dict = {}  # noqa: RUF012
-    sepolia: dict = {}  # noqa: RUF012
+    mainnet: dict = Field(default_factory=dict)
+    holesky: dict = Field(default_factory=dict)
+    sepolia: dict = Field(default_factory=dict)
     # Make sure to run via `geth --dev` (or similar)
-    local: dict = {**DEFAULT_SETTINGS.copy(), "chain_id": DEFAULT_TEST_CHAIN_ID, "block_time": 0}  # noqa: RUF012
+    local: dict = Field(
+        default_factory=lambda: {
+            **DEFAULT_SETTINGS,
+            "chain_id": DEFAULT_TEST_CHAIN_ID,
+            "block_time": 0,
+        }
+    )
 
     model_config = SettingsConfigDict(extra="allow", env_prefix="APE_NODE_")
 
@@ -480,7 +486,7 @@ class EthereumNodeConfig(PluginConfig):
     based on your node's client-version and available RPCs.
     """
 
-    request_headers: dict = {}  # noqa: RUF012
+    request_headers: dict = Field(default_factory=dict)
     """
     Optionally specify request headers to use whenever using this provider.
     """

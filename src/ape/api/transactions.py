@@ -329,7 +329,7 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
     contract_address: AddressType | None = None
     block_number: HexInt
     gas_used: HexInt
-    logs: list[dict] = []  # noqa: RUF012
+    logs: list[dict] = Field(default_factory=list)
     status: HexInt
     txn_hash: HexStr
     transaction: TransactionAPI

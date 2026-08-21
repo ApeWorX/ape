@@ -1,6 +1,8 @@
 from contextlib import contextmanager
 from pathlib import Path
 
+from pydantic import Field
+
 from ape.managers.base import BaseManager
 from ape.types.address import AddressType
 from ape.utils.basemodel import BaseModel, DiskCacheableModel
@@ -35,7 +37,7 @@ class Deployment(BaseModel):
 class Deployments(DiskCacheableModel):
     """The deployments structured JSON."""
 
-    ecosystems: dict[str, dict[str, dict[str, list[Deployment]]]] = {}  # noqa: RUF012
+    ecosystems: dict[str, dict[str, dict[str, list[Deployment]]]] = Field(default_factory=dict)
 
 
 class DeploymentDiskCache(BaseManager):

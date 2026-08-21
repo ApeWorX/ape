@@ -256,12 +256,12 @@ class ProviderAPI(BaseInterfaceModel):
     network: NetworkAPI
     """A reference to the network this provider provides."""
 
-    provider_settings: dict = {}  # noqa: RUF012
+    provider_settings: dict = Field(default_factory=dict)
     """The settings for the provider, as overrides to the configuration."""
 
     # TODO: In 0.9, make @property that returns value from config,
     #   and use REQUEST_HEADER as plugin-defined constants.
-    request_header: dict = {}  # noqa: RUF012
+    request_header: dict = Field(default_factory=dict)
     """A header to set on HTTP/RPC requests."""
 
     block_page_size: int = 100

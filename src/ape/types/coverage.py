@@ -8,7 +8,7 @@ from xml.etree.ElementTree import Element, SubElement, tostring
 
 import requests
 from ethpm_types.source import SourceLocation
-from pydantic import NonNegativeInt, field_validator
+from pydantic import Field, NonNegativeInt, field_validator
 
 from ape.logging import logger
 from ape.utils.basemodel import BaseModel
@@ -169,7 +169,7 @@ class FunctionCoverage(BaseModel):
     The unique name of the function.
     """
 
-    statements: list[CoverageStatement] = []  # noqa: RUF012
+    statements: list[CoverageStatement] = Field(default_factory=list)
     """
     For statement coverage, these are the individual items.
     See :class:`~ape.types.coverage.CoverageStatement` for more details.
@@ -277,7 +277,7 @@ class ContractCoverage(BaseModel):
     The name of the contract.
     """
 
-    functions: list[FunctionCoverage] = []  # noqa: RUF012
+    functions: list[FunctionCoverage] = Field(default_factory=list)
     """
     The coverage of each function individually.
     """
@@ -377,7 +377,7 @@ class ContractSourceCoverage(BaseModel):
     The ID of the source covered.
     """
 
-    contracts: list[ContractCoverage] = []  # noqa: RUF012
+    contracts: list[ContractCoverage] = Field(default_factory=list)
     """
     Coverage for each contract in the source file.
     """
@@ -475,7 +475,7 @@ class CoverageProject(BaseModel):
     The name of the project being covered.
     """
 
-    sources: list[ContractSourceCoverage] = []  # noqa: RUF012
+    sources: list[ContractSourceCoverage] = Field(default_factory=list)
     """
     Coverage for each source in the project.
     """
@@ -574,7 +574,7 @@ class CoverageReport(BaseModel):
     The timestamp the report was generated, in milliseconds.
     """
 
-    projects: list[CoverageProject] = []  # noqa: RUF012
+    projects: list[CoverageProject] = Field(default_factory=list)
     """
     Each project with individual coverage tracked.
     """

@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, NewType
 
-from pydantic import NonNegativeInt, field_validator
+from pydantic import Field, NonNegativeInt, field_validator
 from pydantic_settings import SettingsConfigDict
 
 from ape.api.config import PluginConfig
@@ -37,7 +37,7 @@ class GasConfig(PluginConfig):
     Configuration related to test gas reports.
     """
 
-    exclude: list[GasExclusion] = []  # noqa: RUF012
+    exclude: list[GasExclusion] = Field(default_factory=list)
     """
     Contract methods patterns to skip. Specify ``contract_name:`` and not
     ``method_name:`` to skip all methods in the contract. Only specify
@@ -46,7 +46,7 @@ class GasConfig(PluginConfig):
     use ``prefix_*`` to skip all items with a certain prefix.
     """
 
-    reports: list[str] = []  # noqa: RUF012
+    reports: list[str] = Field(default_factory=list)
     """
     Report-types to use. Currently, only supports `terminal`.
     """
@@ -117,7 +117,7 @@ class CoverageConfig(PluginConfig):
     Enable reports.
     """
 
-    exclude: list[CoverageExclusion] = []  # noqa: RUF012
+    exclude: list[CoverageExclusion] = Field(default_factory=list)
     """
     Contract methods patterns to skip. Specify ``contract_name:`` and not
     ``method_name:`` to skip all methods in the contract. Only specify

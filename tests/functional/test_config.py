@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import pytest
-from pydantic import ValidationError
+from pydantic import Field, ValidationError
 from pydantic_settings import SettingsConfigDict
 
 from ape.api.config import ApeConfig, ConfigEnum, PluginConfig
@@ -461,7 +461,7 @@ def test_from_overrides_updates_when_default_is_empty_dict():
         bar: int = 1
 
     class MyConfig(PluginConfig):
-        sub: dict[str, dict[str, SubConfig]] = {}  # noqa: RUF012
+        sub: dict[str, dict[str, SubConfig]] = Field(default_factory=dict)
 
     overrides = {"sub": {"baz": {"test": {"foo": 5}}}}
     actual = MyConfig.from_overrides(overrides)
@@ -486,7 +486,7 @@ def test_from_overrides_shows_errors_in_project_config():
 def test_plugin_config_with_union_dicts(override_0, override_1):
     class SubConfig(PluginConfig):
         bool_or_dict: bool | dict = True
-        dict_or_bool: dict | bool = {}  # noqa: RUF012
+        dict_or_bool: dict | bool = Field(default_factory=dict)
 
     config = SubConfig.from_overrides({"bool_or_dict": override_0, "dict_or_bool": override_1})
     assert config.bool_or_dict == override_0

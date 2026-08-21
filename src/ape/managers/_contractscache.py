@@ -4,7 +4,7 @@ from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
 from functools import cached_property
 from pathlib import Path
-from typing import TYPE_CHECKING, Generic, TypeVar
+from typing import TYPE_CHECKING, ClassVar, Generic, TypeVar
 
 from ethpm_types import ABI, ContractType
 from ethpm_types.contract_type import ABIList
@@ -103,11 +103,11 @@ class ContractCache(BaseManager):
     """
 
     # ecosystem_name -> network_name -> cache_name -> cache
-    _caches: dict[str, dict[str, dict[str, ApeDataCache]]] = {}  # noqa: RUF012
+    _caches: ClassVar[dict[str, dict[str, dict[str, ApeDataCache]]]] = {}
 
     # chain_id -> address -> custom_err
     # Cached to prevent calling `new_class` multiple times with conflicts.
-    _custom_error_types: dict[int, dict[AddressType, set[type[CustomError]]]] = {}  # noqa: RUF012
+    _custom_error_types: ClassVar[dict[int, dict[AddressType, set[type[CustomError]]]]] = {}
 
     @property
     def contract_types(self) -> ApeDataCache[ContractType]:
@@ -255,11 +255,11 @@ class ContractCache(BaseManager):
         Useful for testing.
         """
         caches = self._caches
-        self._caches = {}
+        ContractCache._caches = {}
         with self.deployments.use_temporary_cache():
             yield
 
-        self._caches = caches
+        ContractCache._caches = caches
 
     def _delete_proxy(self, address: AddressType):
         if info := self.proxy_infos[address]:

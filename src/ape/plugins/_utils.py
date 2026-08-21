@@ -10,7 +10,7 @@ from urllib.parse import urlparse
 import click
 from packaging.specifiers import SpecifierSet
 from packaging.version import Version
-from pydantic import field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
 
 from ape.exceptions import PluginVersionError
 from ape.logging import logger
@@ -658,7 +658,7 @@ class PluginGroup(BaseModel):
     """
 
     plugin_type: PluginType
-    plugins: dict[str, PluginMetadata] = {}  # noqa: RUF012
+    plugins: dict[str, PluginMetadata] = Field(default_factory=dict)
 
     def __bool__(self) -> bool:
         return len(self.plugins) > 0

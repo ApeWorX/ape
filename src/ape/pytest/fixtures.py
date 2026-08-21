@@ -669,11 +669,10 @@ class IsolationManager(ManagerAccessMixin):
 
 
 class ReceiptCapture(ManagerAccessMixin):
-    receipt_map: dict[str, dict[str, "ReceiptAPI"]] = {}  # noqa: RUF012
-    enter_blocks: list[int] = []  # noqa: RUF012
-
     def __init__(self, config_wrapper: "ConfigWrapper"):
         self.config_wrapper = config_wrapper
+        self.receipt_map: dict[str, dict[str, ReceiptAPI]] = {}
+        self.enter_blocks: list[int] = []
 
     def __enter__(self):
         block_number = self._get_block_number()

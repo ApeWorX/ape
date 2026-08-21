@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any, ClassVar
 from eth_pydantic_types import HexBytes
 from eth_utils import keccak
 from evmchains import PUBLIC_CHAIN_META
-from pydantic import model_validator
+from pydantic import Field, model_validator
 
 from ape.exceptions import (
     CustomError,
@@ -110,7 +110,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
 
     # TODO: In 0.9, make @property that returns value from config,
     #   and use REQUEST_HEADER as plugin-defined constants.
-    request_header: dict = {}  # NOTE: pydantic allows this # noqa: RUF012
+    request_header: dict = Field(default_factory=dict)
     """A shareable HTTP header for network requests."""
 
     fee_token_symbol: str
@@ -751,9 +751,9 @@ class ProviderContextManager(ManagerAccessMixin):
     """
 
     # NOTE: pydantic v2 allows mutable defaults
-    connected_providers: dict[str, "ProviderAPI"] = {}  # noqa: RUF012
-    provider_stack: list[str] = []  # noqa: RUF012
-    disconnect_map: dict[str, bool] = {}  # noqa: RUF012
+    connected_providers: ClassVar[dict[str, "ProviderAPI"]] = {}
+    provider_stack: ClassVar[list[str]] = []
+    disconnect_map: ClassVar[dict[str, bool]] = {}
 
     # We store a provider object at the class level for use when disconnecting
     # due to an exception, when interactive mode is set. If we don't hold on
@@ -861,7 +861,7 @@ class ProviderContextManager(ManagerAccessMixin):
             provider.disconnect()
 
         self.network_manager.active_provider = None
-        self.connected_providers = {}
+        ProviderContextManager.connected_providers = {}
 
 
 def _connect_provider(provider: "ProviderAPI") -> "ProviderAPI":
@@ -888,7 +888,7 @@ class NetworkAPI(BaseInterfaceModel):
 
     # TODO: In 0.9, make @property that returns value from config,
     #   and use REQUEST_HEADER as plugin-defined constants.
-    request_header: dict = {}  # noqa: RUF012
+    request_header: dict = Field(default_factory=dict)
     """A shareable network HTTP header."""
 
     # See ``.default_provider`` which is the proper field.

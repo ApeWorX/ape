@@ -2,6 +2,8 @@ from collections.abc import Iterator
 from functools import cached_property
 from typing import cast
 
+from pydantic import Field
+
 from ape.api.accounts import TestAccountAPI, TestAccountContainerAPI
 from ape.exceptions import ProviderNotConnectedError
 from ape.types import AddressType
@@ -11,7 +13,7 @@ from ape_accounts.accounts import ApeSigner
 
 
 class TestAccountContainer(TestAccountContainerAPI):
-    generated_accounts: list["TestAccount"] = []  # noqa: RUF012
+    generated_accounts: list["TestAccount"] = Field(default_factory=list)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

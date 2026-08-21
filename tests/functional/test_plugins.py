@@ -5,7 +5,7 @@ import pytest
 from ape.api import TransactionAPI
 from ape.exceptions import PluginVersionError
 from ape.logging import LogLevel
-from ape.managers.plugins import _get_unimplemented_methods_warning
+from ape.managers.plugins import PluginManager, _get_unimplemented_methods_warning
 from ape.plugins._utils import CORE_PLUGINS as CORE_PLUGINS_LIST
 from ape.plugins._utils import (
     ApePluginsRepr,
@@ -413,6 +413,21 @@ def test_get_unimplemented_methods_warning_list_containing_plugin(abstract_metho
         "Remaining abstract methods: 'serialize_transaction, txn_hash'."
     )
     assert actual == expected
+
+
+def test_warn_not_fully_implemented_error_only_warns_once(mocker, monkeypatch):
+    monkeypatch.setattr(PluginManager, "_unimplemented_plugins", [])
+    warning = mocker.patch("ape.managers.plugins.logger.warning")
+    manager = PluginManager()
+
+    manager._warn_not_fully_implemented_error(TransactionAPI, "incomplete")
+    manager._warn_not_fully_implemented_error(TransactionAPI, "incomplete")
+
+    warning.assert_called_once_with(
+        "'TransactionAPI' from 'incomplete' is not fully implemented. "
+        "Remaining abstract methods: 'serialize_transaction, txn_hash'."
+    )
+    assert manager._unimplemented_plugins == ["incomplete"]
 
 
 def test_core_plugins():

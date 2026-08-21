@@ -4,9 +4,10 @@ from contextlib import contextmanager
 from datetime import datetime
 from functools import cached_property, partial, singledispatchmethod
 from statistics import mean, median
-from typing import IO, TYPE_CHECKING, cast
+from typing import IO, TYPE_CHECKING, ClassVar, cast
 
 import pandas as pd
+from pydantic import Field
 from rich.box import SIMPLE
 from rich.table import Table
 
@@ -311,7 +312,7 @@ class AccountHistory(BaseInterfaceModel):
     The address to get history for.
     """
 
-    sessional: list[ReceiptAPI] = []  # noqa: RUF012
+    sessional: list[ReceiptAPI] = Field(default_factory=list)
     """
     The receipts from the current Python session.
     """
@@ -503,8 +504,10 @@ class TransactionHistory(BaseManager):
     A container mapping Transaction History to the transaction from the active session.
     """
 
-    _account_history_cache: dict[AddressType, AccountHistory] = {}  # noqa: RUF012
-    _hash_to_receipt_map: dict[str, ReceiptAPI] = {}  # noqa: RUF012
+    _account_history_cache: ClassVar[dict[AddressType, AccountHistory]] = {}
+
+    def __init__(self):
+        self._hash_to_receipt_map: dict[str, ReceiptAPI] = {}
 
     @singledispatchmethod
     def __getitem__(self, key):
@@ -735,12 +738,12 @@ class ChainManager(BaseManager):
         from ape import chain
     """
 
-    _snapshots: defaultdict = defaultdict(list)  # chain_id -> snapshots  # noqa: RUF012
+    _snapshots: ClassVar[defaultdict] = defaultdict(list)  # chain_id -> snapshots
     _chain_id_cache: ChainIdCache = ChainIdCache()
-    _block_container_map: dict[int, BlockContainer] = {}  # noqa: RUF012
-    _transaction_history_map: dict[int, TransactionHistory] = {}  # noqa: RUF012
+    _block_container_map: ClassVar[dict[int, BlockContainer]] = {}
+    _transaction_history_map: ClassVar[dict[int, TransactionHistory]] = {}
     _reports: ReportManager = ReportManager()
-    _code: dict[str, dict[str, dict[AddressType, "ContractCode"]]] = {}  # noqa: RUF012
+    _code: ClassVar[dict[str, dict[str, dict[AddressType, "ContractCode"]]]] = {}
 
     @cached_property
     def contracts(self) -> ContractCache:

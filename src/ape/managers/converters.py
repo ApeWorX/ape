@@ -12,6 +12,7 @@ from dateutil.parser import parse
 from eth_pydantic_types import Address, HexBytes
 from eth_typing.evm import ChecksumAddress
 from eth_utils import is_0x_prefixed, is_checksum_address, is_hex, is_hex_address, to_int
+from pydantic import PrivateAttr
 
 from ape.api.address import BaseAddress
 from ape.api.convert import ConverterAPI, ConvertibleAPI
@@ -159,7 +160,7 @@ class IntAddressConverter(ConverterAPI):
     A converter that converts an integer address to an :class:`~ape.types.address.AddressType`.
     """
 
-    _cache: dict[int, AddressType | bool] = {}  # noqa: RUF012
+    _cache: dict[int, AddressType | bool] = PrivateAttr(default_factory=dict)
 
     def is_convertible(self, value: Any) -> bool:
         if not isinstance(value, int):

@@ -1,3 +1,4 @@
+from pydantic import Field
 from pydantic_settings import SettingsConfigDict
 
 from ape.api.config import PluginConfig
@@ -23,7 +24,7 @@ class CustomNetwork(PluginConfig):
     default_provider: str = "node"
     """The default provider plugin to use. Default is the default node provider."""
 
-    request_header: dict = {}  # noqa: RUF012
+    request_header: dict = Field(default_factory=dict)
     """The HTTP request header."""
 
     model_config = SettingsConfigDict(extra="allow", env_prefix="APE_NETWORKS_")
@@ -37,5 +38,5 @@ class CustomNetwork(PluginConfig):
 
 
 class NetworksConfig(PluginConfig):
-    custom: list[CustomNetwork] = []  # noqa: RUF012
+    custom: list[CustomNetwork] = Field(default_factory=list)
     model_config = SettingsConfigDict(extra="allow", env_prefix="APE_NETWORKS_")

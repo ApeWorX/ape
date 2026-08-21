@@ -6,7 +6,7 @@ from collections.abc import Callable, Iterator, Sequence
 from contextlib import contextmanager
 from enum import IntEnum
 from pathlib import Path
-from typing import IO, TYPE_CHECKING, Any
+from typing import IO, TYPE_CHECKING, Any, ClassVar
 from urllib.parse import urlparse, urlunparse
 
 import click
@@ -119,7 +119,7 @@ class ClickHandler(logging.Handler):
 
 class ApeLogger:
     _mentioned_verbosity_option = False
-    _extra_loggers: dict[str, logging.Logger] = {}  # noqa: RUF012
+    _extra_loggers: ClassVar[dict[str, logging.Logger]] = {}
     DISABLE_LEVEL: int = 100_000
 
     def __init__(
@@ -346,7 +346,7 @@ logger = ApeLogger.create()
 
 
 class _RichConsoleFactory:
-    rich_console_map: dict[str, "RichConsole"] = {}  # noqa: RUF012
+    rich_console_map: ClassVar[dict[str, "RichConsole"]] = {}
 
     def get_console(self, file: IO[str] | None = None, **kwargs) -> "RichConsole":
         # Configure custom file console

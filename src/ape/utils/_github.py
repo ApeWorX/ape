@@ -6,7 +6,7 @@ import zipfile
 from collections.abc import Iterator
 from io import BytesIO
 from pathlib import Path
-from typing import Any
+from typing import Any, ClassVar
 
 from requests import HTTPError, Session
 from requests.adapters import HTTPAdapter
@@ -66,7 +66,7 @@ class _GithubClient:
     # ApeWorX-specific attributes.
     ORGANIZATION_NAME = "ApeWorX"
     FRAMEWORK_NAME = "ape"
-    _repo_cache: dict[str, dict] = {}  # noqa: RUF012
+    _repo_cache: ClassVar[dict[str, dict]] = {}
 
     def __init__(self, session: Session | None = None):
         if session:

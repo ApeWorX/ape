@@ -17,6 +17,7 @@ from eth_pydantic_types import HexBytes
 from eth_typing import HexStr
 from eth_utils import add_0x_prefix, is_hex, to_hex
 from evmchains import PUBLIC_CHAIN_META, get_random_rpc
+from pydantic import Field, PrivateAttr
 from pydantic.dataclasses import dataclass
 from requests import HTTPError
 from web3 import HTTPProvider, IPCProvider, Web3
@@ -143,7 +144,7 @@ class Web3Provider(ProviderAPI, ABC):
 
     _supports_debug_trace_call: bool | None = None
 
-    _transaction_trace_cache: dict[str, TransactionTrace] = {}  # noqa: RUF012
+    _transaction_trace_cache: dict[str, TransactionTrace] = PrivateAttr(default_factory=dict)
 
     def __new__(cls, *args, **kwargs):
         # Post-connection ops
@@ -1579,7 +1580,9 @@ class EthereumNodeProvider(Web3Provider, ABC):
     name: str = "node"
 
     # NOTE: Appends user-agent to base User-Agent string.
-    request_header: dict = {"User-Agent": f"EthereumNodeProvider/web3.py/{web3_version}"}  # noqa: RUF012
+    request_header: dict = Field(
+        default_factory=lambda: {"User-Agent": f"EthereumNodeProvider/web3.py/{web3_version}"}
+    )
 
     @property
     def connection_str(self) -> str:

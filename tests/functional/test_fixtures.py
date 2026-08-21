@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 
 import pytest
 
@@ -88,7 +88,7 @@ def test_isolation_snapshot_id_types(snapshot_id, fixtures):
     class IsolationManagerWithCustomSnapshot(IsolationManager):
         take_call_count = 0
         restore_call_count = 0
-        restore_called_with = []  # noqa: RUF012
+        restore_called_with: ClassVar[list] = []
 
         def take_snapshot(self) -> "SnapshotID | None":
             self.take_call_count += 1

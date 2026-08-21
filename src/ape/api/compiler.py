@@ -4,6 +4,8 @@ from functools import cached_property
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from pydantic import Field
+
 from ape.exceptions import APINotImplementedError, ContractLogicError
 from ape.utils.basemodel import BaseInterfaceModel
 from ape.utils.misc import log_instead_of_fail, raises_not_implemented
@@ -32,7 +34,7 @@ class CompilerAPI(BaseInterfaceModel):
     this API.
     """
 
-    compiler_settings: dict = {}  # NOTE: Pydantic allows this # noqa: RUF012
+    compiler_settings: dict = Field(default_factory=dict)
     """
     Adhoc compiler settings.
     """

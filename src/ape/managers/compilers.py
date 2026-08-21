@@ -2,7 +2,7 @@ from collections import defaultdict
 from collections.abc import Iterable, Iterator, Sequence
 from functools import cached_property
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from eth_pydantic_types import HexBytes
 
@@ -40,7 +40,7 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
         from ape import compilers  # "compilers" is the CompilerManager singleton
     """
 
-    _registered_compilers_cache: dict[Path, dict[str, "CompilerAPI"]] = {}  # noqa: RUF012
+    _registered_compilers_cache: ClassVar[dict[Path, dict[str, "CompilerAPI"]]] = {}
 
     @log_instead_of_fail(default="<CompilerManager>")
     def __repr__(self) -> str:

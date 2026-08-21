@@ -22,7 +22,7 @@ from eth_utils import (
     to_hex,
 )
 from ethpm_types.abi import ABIType, ConstructorABI, EventABI, MethodABI
-from pydantic import Field, computed_field, field_validator, model_validator
+from pydantic import Field, PrivateAttr, computed_field, field_validator, model_validator
 from pydantic_settings import SettingsConfigDict
 
 from ape.api.config import PluginConfig
@@ -157,7 +157,7 @@ class NetworkConfig(PluginConfig):
     it isn't detected as one.
     """
 
-    request_headers: dict = {}  # noqa: RUF012
+    request_headers: dict = Field(default_factory=dict)
     """Optionally config extra request headers whenever using this network."""
 
     model_config = SettingsConfigDict(extra="allow", env_prefix="APE_ETHEREUM_")
@@ -234,11 +234,11 @@ class BaseEthereumConfig(PluginConfig):
     NETWORKS: ClassVar[dict[str, tuple[int, int]]] = NETWORKS
 
     default_network: str = LOCAL_NETWORK_NAME
-    _forked_configs: dict[str, ForkedNetworkConfig] = {}  # noqa: RUF012
-    _custom_networks: dict[str, NetworkConfig] = {}  # noqa: RUF012
+    _forked_configs: dict[str, ForkedNetworkConfig] = PrivateAttr(default_factory=dict)
+    _custom_networks: dict[str, NetworkConfig] = PrivateAttr(default_factory=dict)
 
     # NOTE: This gets appended to Ape's root User-Agent string.
-    request_headers: dict = {}  # noqa: RUF012
+    request_headers: dict = Field(default_factory=dict)
 
     model_config = SettingsConfigDict(extra="allow", env_prefix="APE_ETHEREUM_")
 
@@ -374,7 +374,7 @@ class Block(BlockAPI):
     base_fee: HexInt = Field(default=0, alias="baseFeePerGas")
     difficulty: HexInt = 0
     total_difficulty: HexInt = Field(default=0, alias="totalDifficulty")
-    uncles: list[HexBytes] = []  # noqa: RUF012
+    uncles: list[HexBytes] = Field(default_factory=list)
 
     # Type re-declares.
     hash: HexBytes | None = None
