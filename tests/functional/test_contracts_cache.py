@@ -542,6 +542,37 @@ def test_get_proxy(chain, owner, minimal_proxy_container, vyper_contract_instanc
     assert actual == minimal_proxy.contract_type
 
 
+def test_get_non_proxy_does_not_cache_negative_result(chain, mocker):
+    address = "0xBEbeBeBEbeBebeBeBEBEbebEBeBeBebeBeBebebe"
+    del chain.contracts.proxy_infos[address]
+    get_proxy_info = mocker.patch(
+        "ape_ethereum.ecosystem.Ethereum.get_proxy_info", return_value=None
+    )
+
+    chain.contracts.get(address, fetch_from_explorer=False)
+    chain.contracts.get(address, fetch_from_explorer=False)
+
+    assert get_proxy_info.call_count == 2
+    assert address not in chain.contracts.proxy_infos.memory
+
+
+def test_get_proxy_caches_positive_result(chain, mocker):
+    address = "0xBEbeBeBEbeBebeBeBEBEbebEBeBeBebeBeBebebe"
+    target = "0x1234567890123456789012345678901234567890"
+    proxy_info = ProxyInfo(type=ProxyType.Minimal, target=target)
+    del chain.contracts.proxy_infos[address]
+    get_proxy_info = mocker.patch(
+        "ape_ethereum.ecosystem.Ethereum.get_proxy_info", return_value=proxy_info
+    )
+    mocker.patch.object(chain.contracts, "_get_proxy_contract_type", return_value=None)
+
+    chain.contracts.get(address, fetch_from_explorer=False)
+    chain.contracts.get(address, fetch_from_explorer=False)
+
+    get_proxy_info.assert_called_once_with(address)
+    assert chain.contracts.proxy_infos[address] == proxy_info
+
+
 def test_get_proxy_implementation_missing(chain, owner, project):
     """
     Proxy is cached but implementation is missing.

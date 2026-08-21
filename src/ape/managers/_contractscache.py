@@ -581,13 +581,13 @@ class ContractCache(BaseManager):
 
         # Either no cached entry, or `replace=True` so we ignore the cache.
         # Check broader sources, such as an explorer.
+        if not proxy_info and detect_proxy:
+            proxy_info = self.proxy_infos[address_key]
+
         if (
             not proxy_info
             and detect_proxy
-            and (
-                detected_proxy_info := self.proxy_infos[address_key]
-                or self.provider.network.ecosystem.get_proxy_info(address_key)
-            )
+            and (detected_proxy_info := self.provider.network.ecosystem.get_proxy_info(address_key))
         ):
             proxy_info = detected_proxy_info
             self.proxy_infos[address_key] = proxy_info
