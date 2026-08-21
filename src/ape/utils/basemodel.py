@@ -103,7 +103,7 @@ class injected_before_use(property):
         for argument in args:
             try:
                 arg_str = str(argument)
-            except Exception as err:
+            except Exception as err:  # noqa: BLE001
                 logger.debug(f"Failed calling __str__. Exception: {err}")
                 arg_strs.append("<?>")
                 continue
@@ -346,7 +346,7 @@ class ExtraModelAttributes(EthpmTypesBaseModel):
     def __repr__(self) -> str:
         try:
             return f"<ExtraAttributes '{self.name}'>"
-        except Exception:
+        except Exception:  # noqa: BLE001
             # Disallow exceptions in __repr__
             return "<ExtraModelAttributes>"
 
@@ -354,7 +354,7 @@ class ExtraModelAttributes(EthpmTypesBaseModel):
         attrs = self._attrs()
         try:
             name = str(name)
-        except Exception:
+        except Exception:  # noqa: BLE001
             return False
 
         if name in attrs or hasattr(attrs, name):
@@ -500,7 +500,7 @@ def get_attribute_with_extras(obj: Any, name: str, coerce_attr_error: bool = Tru
 
     if not isinstance(obj, ExtraAttributesMixin):
         name = getattr(type(obj), "__name__", "obj")
-        raise AttributeError(f"{name} must use the '{ExtraAttributesMixin.__name__}' mixin'")
+        raise AttributeError(f"{name} must use the '{ExtraAttributesMixin.__name__}' mixin'")  # noqa: TRY004
 
     try:
         res = super(ExtraAttributesMixin, obj).__getattribute__(name)

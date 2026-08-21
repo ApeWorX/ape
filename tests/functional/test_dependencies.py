@@ -298,7 +298,7 @@ def test_unpack(smaller_project):
     with create_tempdir() as tempdir:
         created = list(dep.unpack(tempdir))
         assert len(created) > 0
-        assert any([x.name == "default" for x in created])
+        assert any(x.name == "default" for x in created)
         assert created[0].package_id.endswith("default")
 
         files = [x.name for x in (tempdir / "default" / "local" / "contracts").iterdir()]

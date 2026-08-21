@@ -1,6 +1,7 @@
 from importlib import import_module
 from pathlib import Path
 from shutil import copytree
+from typing import ClassVar
 
 import pytest
 
@@ -91,7 +92,7 @@ def project_dir_map():
     """
 
     class ProjectDirCache:
-        project_map: dict[str, Path] = {}
+        project_map: ClassVar[dict[str, Path]] = {}
 
         def load(self, name: str) -> Path:
             base_path = Path(__file__).parent / "projects"

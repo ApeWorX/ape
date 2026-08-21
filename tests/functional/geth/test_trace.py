@@ -119,9 +119,9 @@ def assert_rich_output(rich_capture: list[str], expected: str):
     assert actual_lines, "No output."
     output = "\n".join(actual_lines)
 
-    for actual, expected in zip(actual_lines, expected_lines, strict=True):
+    for actual, expected_line in zip(actual_lines, expected_lines, strict=True):
         fail_message = f"""\n
-        \tPattern: {expected}\n
+        \tPattern: {expected_line}\n
         \tLine   : {actual}\n
         \n
         Complete output:
@@ -129,10 +129,10 @@ def assert_rich_output(rich_capture: list[str], expected: str):
         """
 
         try:
-            assert re.match(expected, actual), fail_message
+            assert re.match(expected_line, actual), fail_message
         except AssertionError:
             raise  # Let assertion errors raise as normal.
-        except Exception as err:
+        except Exception as err:  # noqa: BLE001
             pytest.fail(f"{fail_message}\n{err}")
 
     actual_len = len(actual_lines)

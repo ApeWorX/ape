@@ -21,7 +21,7 @@ class CurrencyValueComparable(int):
     strings, such as ``"1 ether"``.
     """
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         if isinstance(other, int):
             return super().__eq__(other)
 

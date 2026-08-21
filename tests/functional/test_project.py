@@ -135,7 +135,7 @@ def test_repr():
     assert actual == expected
 
 
-@pytest.mark.parametrize("name", ("contracts", "contracts"))
+@pytest.mark.parametrize("name", ("contracts"))
 def test_contracts_folder_from_config(smaller_project, name):
     with smaller_project.temp_config(contracts_folder=name):
         assert smaller_project.contracts_folder == smaller_project.path / name
@@ -399,7 +399,7 @@ def test_load_contracts(small_temp_project):
     try:
         contract_to_rm = small_temp_project.contracts["Other"]
     except KeyError:
-        existing_contracts = ",".join([k for k in small_temp_project.contracts.keys()])
+        existing_contracts = ",".join([k for k in small_temp_project.contracts])
         pytest.fail(f"Contract named 'Other' not found. Existing contracts: {existing_contracts}")
         return
 
@@ -647,12 +647,12 @@ def test_add_compiler_data(project_with_dependency_config):
         settings={"outputSelection": {"path/to/Bar.vy": "*"}},
     )
     project.add_compiler_data([compiler_3])
-    comp = [c for c in project.manifest.compilers if c.name == "test" and c.version == "2.0.0"][0]
+    comp = next(c for c in project.manifest.compilers if c.name == "test" and c.version == "2.0.0")
     assert "bar" not in comp.contractTypes
     assert "path/to/Bar.vy" not in comp.settings["outputSelection"]
-    new_comp = [c for c in project.manifest.compilers if c.name == "test" and c.version == "3.0.0"][
-        0
-    ]
+    new_comp = next(
+        c for c in project.manifest.compilers if c.name == "test" and c.version == "3.0.0"
+    )
     assert "bar" in new_comp.contractTypes
     assert "path/to/Bar.vy" in new_comp.settings["outputSelection"]
 
@@ -1146,7 +1146,7 @@ class TestDeploymentManager:
 
         bip122_chain_id = to_hex(project.provider.get_block(0).hash)
         expected_uri = f"blockchain://{bip122_chain_id[2:]}/block/"
-        for key in project.deployments.instance_map.keys():
+        for key in project.deployments.instance_map:
             if key.startswith(expected_uri):
                 return
 

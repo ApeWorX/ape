@@ -256,12 +256,12 @@ class ProviderAPI(BaseInterfaceModel):
     network: NetworkAPI
     """A reference to the network this provider provides."""
 
-    provider_settings: dict = {}
+    provider_settings: dict = Field(default_factory=dict)
     """The settings for the provider, as overrides to the configuration."""
 
     # TODO: In 0.9, make @property that returns value from config,
     #   and use REQUEST_HEADER as plugin-defined constants.
-    request_header: dict = {}
+    request_header: dict = Field(default_factory=dict)
     """A header to set on HTTP/RPC requests."""
 
     block_page_size: int = 100
@@ -383,7 +383,7 @@ class ProviderAPI(BaseInterfaceModel):
 
         try:
             chain_id = self.chain_id
-        except Exception:
+        except Exception:  # noqa: BLE001
             if chain_id := self.settings.get("chain_id"):
                 pass
 
@@ -1176,7 +1176,7 @@ class SubprocessProvider(ProviderAPI):
 
         try:
             self.disconnect()
-        except Exception as err:
+        except Exception as err:  # noqa: BLE001
             logger.error(f"Error while disconnecting: {err}")
 
     def disconnect(self):

@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any
 from eth_pydantic_types import HexBytes, HexStr
 from eth_utils import encode_hex, is_hex, keccak, to_hex
 from ethpm_types.abi import EventABI
-from pydantic import BaseModel, field_serializer, field_validator, model_validator
+from pydantic import BaseModel, Field, field_serializer, field_validator, model_validator
 from web3.types import FilterParams
 
 from ape.exceptions import ContractNotFoundError
@@ -97,11 +97,17 @@ class BaseContractLog(BaseInterfaceModel):
     contract_address: AddressType = ZERO_ADDRESS
     """The contract responsible for emitting the log."""
 
-    event_arguments: dict[str, Any] = {}
+    event_arguments: dict[str, Any] = Field(default_factory=dict)
     """The arguments to the event, including both indexed and non-indexed data."""
 
-    def __eq__(self, other: Any) -> bool:
-        if self.contract_address != other.contract_address or self.event_name != other.event_name:
+    def __eq__(self, other: object) -> bool:
+        if (
+            not hasattr(other, "contract_address")
+            or not hasattr(other, "event_name")
+            or not hasattr(other, "event_arguments")
+            or self.contract_address != other.contract_address
+            or self.event_name != other.event_name
+        ):
             return False
 
         for k, v in self.event_arguments.items():
@@ -272,7 +278,7 @@ class ContractLog(ExtraAttributesMixin, BaseContractLog):
     def __contains__(self, item: str) -> bool:
         return item in self.event_arguments
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         """
         Check for equality between this instance and another ContractLog instance.
 
@@ -325,10 +331,11 @@ class MockContractLog(BaseContractLog):
     of event arguments between a MockContractLog and a ContractLog instance.
     """
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         if (
             not hasattr(other, "contract_address")
             or not hasattr(other, "event_name")
+            or not hasattr(other, "event_arguments")
             or self.contract_address != other.contract_address
             or self.event_name != other.event_name
         ):

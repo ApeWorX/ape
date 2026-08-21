@@ -2,7 +2,7 @@ from collections.abc import Generator, Iterable, Iterator
 from functools import cached_property
 from importlib import import_module
 from itertools import chain
-from typing import Any
+from typing import Any, ClassVar
 
 from ape.exceptions import ApeAttributeError
 from ape.logging import logger
@@ -75,7 +75,7 @@ def _get_unimplemented_methods(api) -> Iterable[str]:
 
 
 class PluginManager:
-    _unimplemented_plugins: list[str] = []
+    _unimplemented_plugins: ClassVar[list[str]] = []
 
     def __init__(self) -> None:
         self.__registered = False

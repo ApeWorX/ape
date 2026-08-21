@@ -149,7 +149,7 @@ class CacheQueryProvider(QueryAPI):
             logger.debug(f"Exception when querying:\n{e}")
             return None
 
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.warning(f"Unhandled exception when querying:\n{e}")
             self.database_bypass = True
             return None
@@ -329,8 +329,8 @@ class CacheQueryProvider(QueryAPI):
                 # NOTE: Should be unreachable if estimated correctly
                 raise QueryEngineError(f"Could not perform query:\n{query}")
 
-            yield from map(
-                lambda row: self.provider.network.ecosystem.decode_block(dict(row.items())), result
+            yield from (
+                self.provider.network.ecosystem.decode_block(dict(row.items())) for row in result
             )
 
     @perform_query.register
@@ -344,7 +344,7 @@ class CacheQueryProvider(QueryAPI):
                 # NOTE: Should be unreachable if estimated correctly
                 raise QueryEngineError(f"Could not perform query:\n{query}")
 
-            yield from map(lambda row: dict(row.items()), result)
+            yield from (dict(row.items()) for row in result)
 
     @perform_query.register
     def _perform_contract_events_query(self, query: ContractEventQuery) -> Iterator[ContractLog]:
@@ -360,7 +360,7 @@ class CacheQueryProvider(QueryAPI):
                 # NOTE: Should be unreachable if estimated correctly
                 raise QueryEngineError(f"Could not perform query:\n{query}")
 
-            yield from map(lambda row: ContractLog.model_validate(dict(row.items())), result)
+            yield from (ContractLog.model_validate(dict(row.items())) for row in result)
 
     @singledispatchmethod
     def _cache_update_clause(self, query: QueryType) -> Insert:

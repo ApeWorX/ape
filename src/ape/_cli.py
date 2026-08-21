@@ -64,7 +64,7 @@ class ApeCLI(click.MultiCommand):
                 # NOTE: Avoid issue with empty sections (now Plugins installed)
                 continue
 
-            with formatter.section(gettext(f"{section_name} Commands")):
+            with formatter.section(gettext(f"{section_name} Commands")):  # noqa: INT001
                 formatter.write_dl(deflist)
 
     def invoke(self, ctx) -> Any:
@@ -97,10 +97,9 @@ class ApeCLI(click.MultiCommand):
                 raise Abort.from_ape_exception(err) from err
 
     def _suggest_cmd(self, ctx, usage_error):
-        if usage_error.message is None:
-            raise usage_error
-
-        elif not (match := re.match("No such command '(.*)'.", usage_error.message)):
+        if usage_error.message is None or not (
+            match := re.match("No such command '(.*)'.", usage_error.message)
+        ):
             raise usage_error
 
         groups = match.groups()
@@ -111,11 +110,10 @@ class ApeCLI(click.MultiCommand):
         suggested_commands = difflib.get_close_matches(
             bad_arg, self.list_commands(ctx), cutoff=_DIFFLIB_CUT_OFF
         )
-        if suggested_commands:
-            if bad_arg not in suggested_commands:
-                usage_error.message = (
-                    f"No such command '{bad_arg}'. Did you mean {' or '.join(suggested_commands)}?"
-                )
+        if suggested_commands and bad_arg not in suggested_commands:
+            usage_error.message = (
+                f"No such command '{bad_arg}'. Did you mean {' or '.join(suggested_commands)}?"
+            )
 
         raise usage_error
 
@@ -139,13 +137,13 @@ class ApeCLI(click.MultiCommand):
 
         try:
             return ep.load()
-        except Exception as err:
+        except Exception as err:  # noqa: BLE001
             logger.warn_from_exception(err, f"Unable to load CLI endpoint for plugin 'ape_{name}'")
             # NOTE: don't return anything so Click displays proper error
             return None
 
 
-@click.command(cls=ApeCLI, context_settings=dict(help_option_names=["-h", "--help"]))
+@click.command(cls=ApeCLI, context_settings={"help_option_names": ["-h", "--help"]})
 @ape_cli_context()
 @click.version_option(message="%(version)s", package_name="eth-ape")
 @click.option(

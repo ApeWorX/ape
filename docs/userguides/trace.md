@@ -26,7 +26,9 @@ To learn more about networks in Ape, see the [networks guide](./networks.html).
 ```python
 from ape import chain
 
-tx = chain.provider.get_receipt('0xb7d7f1d5ce7743e821d3026647df486f517946ef1342a1ae93c96e4a8016eab7')
+tx = chain.provider.get_receipt(
+    "0xb7d7f1d5ce7743e821d3026647df486f517946ef1342a1ae93c96e4a8016eab7"
+)
 
 # Show the steps the transaction took.
 tx.show_trace()

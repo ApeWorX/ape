@@ -60,9 +60,8 @@ def test_fork_upstream_provider_request_headers(
         },
         "node": {"request_headers": {"X-Provider": "node"}},
     }
-    with project.temp_config(**config):
-        with networks.fork():
-            call = mock_fork_provider.partial_call
+    with project.temp_config(**config), networks.fork():
+        call = mock_fork_provider.partial_call
 
     settings = call[1]["provider_settings"]["fork"]["ethereum"]["sepolia"]
     headers = settings["upstream_provider_request_headers"]

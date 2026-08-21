@@ -5,7 +5,7 @@ from typing import Any
 
 from ape.utils._github import _GithubClient, github_client
 
-if sys.version_info.minor >= 11:
+if sys.version_info >= (3, 11):
     # 3.11 or greater
     # NOTE: type-ignore is for when running mypy on python versions < 3.11
     import tomllib  # type: ignore[import-not-found]
@@ -42,7 +42,7 @@ class BrownieProject(ProjectAPI):
 
         try:
             brownie_config_data = safe_load(text) or {}
-        except Exception:
+        except Exception:  # noqa: BLE001
             brownie_config_data = {}
 
         contracts_folder = brownie_config_data.get("contracts_folder", "contracts")
@@ -204,12 +204,9 @@ class FoundryProject(ProjectAPI):
 
         for line in content.splitlines():
             line = line.strip()
-            if line.startswith("[submodule"):
-                # Add the submodule we have been building to the list
-                # if it exists. This happens on submodule after the first one.
-                if submodule:
-                    submodules.append(submodule)
-                    submodule = {}
+            if line.startswith("[submodule") and submodule:
+                submodules.append(submodule)
+                submodule = {}
 
             for key in ("path", "url", "release", "branch"):
                 if not line.startswith(f"{key} ="):
@@ -358,4 +355,4 @@ class FoundryProject(ProjectAPI):
                 # Item seems like a dependency but not found in `dependencies`.
                 ape_sol_remappings.add(f_remap)
 
-        return sorted(list(ape_sol_remappings))
+        return sorted(ape_sol_remappings)
