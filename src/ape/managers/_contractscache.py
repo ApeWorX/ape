@@ -584,9 +584,12 @@ class ContractCache(BaseManager):
         if (
             not proxy_info
             and detect_proxy
-            and not (proxy_info := self.proxy_infos[address_key])
-            and (proxy_info := self.provider.network.ecosystem.get_proxy_info(address_key))
+            and (
+                detected_proxy_info := self.proxy_infos[address_key]
+                or self.provider.network.ecosystem.get_proxy_info(address_key)
+            )
         ):
+            proxy_info = detected_proxy_info
             self.proxy_infos[address_key] = proxy_info
 
         if proxy_info and (

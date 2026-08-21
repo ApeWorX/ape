@@ -101,7 +101,13 @@ class BaseContractLog(BaseInterfaceModel):
     """The arguments to the event, including both indexed and non-indexed data."""
 
     def __eq__(self, other: object) -> bool:
-        if self.contract_address != other.contract_address or self.event_name != other.event_name:
+        if (
+            not hasattr(other, "contract_address")
+            or not hasattr(other, "event_name")
+            or not hasattr(other, "event_arguments")
+            or self.contract_address != other.contract_address
+            or self.event_name != other.event_name
+        ):
             return False
 
         for k, v in self.event_arguments.items():
@@ -329,6 +335,7 @@ class MockContractLog(BaseContractLog):
         if (
             not hasattr(other, "contract_address")
             or not hasattr(other, "event_name")
+            or not hasattr(other, "event_arguments")
             or self.contract_address != other.contract_address
             or self.event_name != other.event_name
         ):
