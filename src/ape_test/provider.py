@@ -557,7 +557,9 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             if bid is None:
                 continue
             try:
-                fee = self.evm_backend.get_block_by_number(self._block_number_for_backend(bid)).get("base_fee_per_gas")
+                fee = self.evm_backend.get_block_by_number(self._block_number_for_backend(bid)).get(
+                    "base_fee_per_gas"
+                )
             except (HeaderNotFound, ValidationError):
                 logger.debug("Unable to read base fee for block %r", bid)
                 continue
