@@ -316,7 +316,7 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         **kwargs,
     ) -> HexBytes:
         # NOTE: Using JSON mode since used as request data.
-        data = txn.model_dump(mode="json", exclude_none=True)
+        data = txn.model_dump(by_alias=True, mode="json", exclude_none=True)
 
         state = kwargs.pop("state_override", None)
         call_kwargs: dict = {"block_identifier": block_id, "state_override": state}
@@ -328,6 +328,14 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         data.pop("maxFeePerGas", None)
         data.pop("maxPriorityFeePerGas", None)
         data.pop("signature", None)
+
+        # eth-tester hardcodes max_fee_per_gas=1e9 when fee fields are absent.
+        # Both dynamic-fee keys are required so the backend builds a type-2 call.
+        # eth_call validates against the requested block (default latest). Pending
+        # can be lower than latest after genesis or empty blocks, so last/pending
+        # alone is too tight.
+        data["maxFeePerGas"] = self._get_call_max_fee(block_id)
+        data["maxPriorityFeePerGas"] = self.priority_fee
 
         tx_params = cast(TxParams, data)
         vm_err = None
@@ -529,6 +537,36 @@ class LocalProvider(TestProviderAPI, Web3Provider):
             return base_fee
 
         raise APINotImplementedError("No base fee found in block.")
+
+    def _block_number_for_backend(self, block_id: "BlockID"):
+        # eth-tester get_block_by_number accepts tags or int, not hex strings.
+        if isinstance(block_id, str) and is_0x_prefixed(block_id):
+            return int(block_id, 16)
+        if isinstance(block_id, str) and block_id.isnumeric():
+            return int(block_id)
+        return block_id
+
+    def _get_call_max_fee(self, block_id: "BlockID | None" = None) -> int:
+        """A max fee that satisfies eth-tester eth_call at ``block_id``.
+
+        Validation uses the requested block's base fee (latest when omitted).
+        Pending can be below that after genesis or empty blocks.
+        """
+        fees: list[int] = []
+        for bid in (block_id, "latest", "pending"):
+            if bid is None:
+                continue
+            try:
+                fee = self.evm_backend.get_block_by_number(self._block_number_for_backend(bid)).get(
+                    "base_fee_per_gas"
+                )
+            except (HeaderNotFound, ValidationError):
+                logger.debug("Unable to read base fee for block %r", bid)
+                continue
+            if fee is not None:
+                fees.append(fee)
+
+        return max(fees) if fees else self._get_last_base_fee()
 
     def get_transaction_trace(self, transaction_hash: str, **kwargs) -> "TraceAPI":
         if "call_trace_approach" not in kwargs:
