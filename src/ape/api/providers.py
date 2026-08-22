@@ -909,7 +909,7 @@ class ProviderAPI(BaseInterfaceModel):
     def poll_logs(  # type: ignore[empty-body]
         self,
         stop_block: int | None = None,
-        address: "AddressType | None" = None,
+        address: "list[AddressType] | AddressType | None" = None,
         topics: list[str | list[str]] | None = None,
         required_confirmations: int | None = None,
         new_block_timeout: int | None = None,
@@ -928,7 +928,7 @@ class ProviderAPI(BaseInterfaceModel):
         Args:
             stop_block (Optional[int]): Optionally set a future block number to stop at.
               Defaults to never-ending.
-            address (Optional[str]): The address of the contract to filter logs by.
+            address (Union[list[str], str, None]): The address of the contract(s) to filter logs by.
               Defaults to all addresses.
             topics (Optional[list[Union[str, list[str]]]]): The topics to filter logs by.
               Defaults to all topics.
