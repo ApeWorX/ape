@@ -1,3 +1,6 @@
+import io
+import tarfile
+import zipfile
 from pathlib import Path
 
 import pytest
@@ -6,6 +9,7 @@ from ape.utils.misc import SOURCE_EXCLUDE_PATTERNS
 from ape.utils.os import (
     clean_path,
     create_tempdir,
+    extract_archive,
     get_all_files_in_directory,
     get_full_extension,
     get_relative_path,
@@ -210,3 +214,54 @@ def test_clean_path_not_relative_to_home():
     path = Path(name)
     actual = clean_path(path)
     assert actual == name
+
+
+def test_extract_archive_zip_strips_top_level_dir():
+    with create_tempdir() as path:
+        archive = path / "pkg.zip"
+        dest = path / "out"
+        dest.mkdir()
+        with zipfile.ZipFile(archive, "w") as zf:
+            zf.writestr("pkg/readme.txt", "ok")
+            zf.writestr("pkg/src/__init__.py", "")
+
+        extract_archive(archive, dest)
+        assert (dest / "readme.txt").read_text() == "ok"
+        assert (dest / "src" / "__init__.py").read_text() == ""
+
+
+def test_extract_archive_zip_rejects_parent_escape():
+    with create_tempdir() as path:
+        archive = path / "pkg.zip"
+        dest = path / "out"
+        dest.mkdir()
+        escaped = dest.parent / "escaped.txt"
+        with zipfile.ZipFile(archive, "w") as zf:
+            zf.writestr("pkg/readme.txt", "ok")
+            zf.writestr("pkg/../escaped.txt", "pwned")
+
+        with pytest.raises(ValueError, match="escapes extract destination"):
+            extract_archive(archive, dest)
+
+        assert not escaped.exists()
+
+
+def test_extract_archive_tar_rejects_parent_escape():
+    with create_tempdir() as path:
+        archive = path / "pkg.tar.gz"
+        dest = path / "out"
+        dest.mkdir()
+        escaped = dest.parent / "escaped.txt"
+        with tarfile.open(archive, "w:gz") as tf:
+            readme = path / "readme.txt"
+            readme.write_text("ok")
+            tf.add(readme, arcname="pkg/readme.txt")
+            payload = b"pwned"
+            info = tarfile.TarInfo(name="pkg/../escaped.txt")
+            info.size = len(payload)
+            tf.addfile(info, io.BytesIO(payload))
+
+        with pytest.raises(ValueError, match="escapes extract destination"):
+            extract_archive(archive, dest)
+
+        assert not escaped.exists()
