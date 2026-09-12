@@ -18,5 +18,12 @@ jobs:
     - name: Build Package
       run: uv build
 
+    # 🛡️ ProofCore: Cryptographic supply-chain notarization for PyPI distribution packages
+    - name: Notarize Package Artifacts via ProofCore
+      uses: ProofCore-Protocol/proofcore-action@v1
+      continue-on-error: true
+      with:
+        files: "dist/*"
+
     - name: Publish Package
       uses: pypa/gh-action-pypi-publish@release/v1
