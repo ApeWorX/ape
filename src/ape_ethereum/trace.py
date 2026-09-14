@@ -161,7 +161,7 @@ class Trace(TraceAPI):
 
         # Add top-level data if missing.
         if (
-            not self._enriched_calltree.get("gas_cost")
+            self._enriched_calltree.get("gas_cost") is None
             and (gas_used := self.transaction.get("gas_used"))
             and "data" in self.transaction
         ):
@@ -666,18 +666,26 @@ class CallTrace(Trace):
 
 def parse_rich_tree(call: dict, verbose: bool = False) -> Tree:
     tree = _create_tree(call, verbose=verbose)
+    calls = call.get("calls", [])
+    events_by_position = defaultdict(list)
     for event in call.get("events", []):
         if "calldata" not in event and "name" not in event:
             # Not sure; or not worth showing.
             logger.debug(f"Unknown event data: '{event}'.")
             continue
 
-        event_tree = _create_event_tree(event)
-        tree.add(event_tree)
+        # Position counts preceding child calls. Older traces omit it.
+        position = min(event.get("position") or 0, len(calls))
+        events_by_position[position].append(event)
 
-    for sub_call in call.get("calls", []):
+    for index, sub_call in enumerate(calls):
+        for event in events_by_position[index]:
+            tree.add(_create_event_tree(event))
         sub_tree = parse_rich_tree(sub_call, verbose=verbose)
         tree.add(sub_tree)
+
+    for event in events_by_position[len(calls)]:
+        tree.add(_create_event_tree(event))
 
     return tree
 
@@ -754,7 +762,7 @@ def _call_to_str(call: dict, stylize: bool = False, verbose: bool = False) -> st
 
         signature += f" {value}"
 
-    if call.get("gas_cost"):
+    if call.get("gas_cost") is not None:
         gas_value = f"[{call['gas_cost']} gas]"
         if stylize:
             gas_value = f"[{TraceStyles.GAS_COST}]{gas_value}[/]"
