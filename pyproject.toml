@@ -74,7 +74,7 @@ dependencies = [
     "eip712>=0.3.0,<0.4",
     "eth_pydantic_types>=0.2.1,<0.3",
     "evmchains>=0.1.0,<0.2",
-    "evm-trace>=0.2.6,<0.3",
+    "evm-trace>=0.3.0,<0.4",
 ]
 
 [project.scripts]

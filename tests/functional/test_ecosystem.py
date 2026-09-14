@@ -1190,7 +1190,8 @@ def test_enrich_trace_handles_call_type_enum(ethereum, vyper_contract_instance, 
     assert actual["call_type"] == CallType.CALL.value
 
 
-def test_enrich_trace_handles_events(ethereum, vyper_contract_instance, owner):
+@pytest.mark.parametrize("position", (None, 0, 1))
+def test_enrich_trace_handles_events(ethereum, vyper_contract_instance, owner, position):
     tx = vyper_contract_instance.setNumber(96247783, sender=owner)
 
     # Used Hardhat to get the data.
@@ -1206,6 +1207,9 @@ def test_enrich_trace_handles_events(ethereum, vyper_contract_instance, owner):
             ],
         }
     ]
+
+    if position is not None:
+        events[0]["position"] = position
 
     calldata = "0x3fb5c1cb000000000000000000000000000000000000000000000000000000000000007b"
     call = {
@@ -1235,6 +1239,9 @@ def test_enrich_trace_handles_events(ethereum, vyper_contract_instance, owner):
             },
         }
     ]
+    if position is not None:
+        expected[0]["position"] = position
+
     assert events == expected
 
 

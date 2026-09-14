@@ -1482,7 +1482,11 @@ class Ethereum(EcosystemAPI):
         # Enrich the event-node data using the Ape ContractLog object.
         log: ContractLog = contract_logs[0]
         calldata = self._enrich_calldata_dict(log.event_arguments)
-        return {"name": log.event_name, "calldata": calldata}
+        enriched = {"name": log.event_name, "calldata": calldata}
+        if event.get("position") is not None:
+            enriched["position"] = event["position"]
+
+        return enriched
 
     def _enrich_revert_message(self, call: dict) -> dict:
         returndata = call.get("returndata", "")
