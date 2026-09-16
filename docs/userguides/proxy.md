@@ -70,10 +70,7 @@ contract = project.MyImplementation.at(
 )
 
 # Or disable proxy detection entirely if you know it's not a proxy
-contract = project.MyContract.at(
-    "0xAddress",
-    detect_proxy=False
-)
+contract = project.MyContract.at("0xAddress", detect_proxy=False)
 ```
 
 You can also use the `Contract` factory with proxy parameters:
@@ -86,11 +83,8 @@ contract = Contract("0xAddress", detect_proxy=False)
 
 # Provide custom proxy info
 contract = Contract(
-    "0xProxyAddress", 
-    proxy_info=ProxyInfoAPI(
-        target="0xImplementationAddress", 
-        type_name=ProxyType.STANDARD
-    )
+    "0xProxyAddress",
+    proxy_info=ProxyInfoAPI(target="0xImplementationAddress", type_name=ProxyType.STANDARD),
 )
 ```
 

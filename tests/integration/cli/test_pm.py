@@ -33,7 +33,7 @@ def test_install_path_to_local_package(pm_runner, integ_project):
     name = path.stem
     result = pm_runner.invoke("install", path.as_posix(), "--name", project_name)
     assert result.exit_code == 0, result.output
-    assert f"Package '{path.as_posix()}' installed."
+    assert f"Package '{project_name}@local' installed." in result.output
 
     # Ensure was installed correctly.
     assert integ_project.dependencies[name]["local"]
@@ -77,7 +77,7 @@ def test_install_github_dependency_with_version(pm_runner):
         timeout=300,
     )
     assert result.exit_code == 0, result.output
-    assert "Package 'openzeppelin@4.6.0' installed."
+    assert "Package 'openzeppelin@4.6.0' installed." in result.output
 
 
 @run_once
@@ -93,7 +93,7 @@ def test_install_github_dependency_with_ref(pm_runner):
         timeout=300,
     )
     assert result.exit_code == 0, result.output
-    assert "Package 'OpenZeppelin@master' installed."
+    assert "Package 'OpenZeppelin@master' installed." in result.output
 
 
 @skip_projects_except("with-contracts")
@@ -119,7 +119,7 @@ def test_install_config_override(pm_runner, integ_project):
 @skip_projects_except("with-contracts")
 def test_install_package_id(pm_runner, integ_project):
     pm_runner.project = integ_project
-    package_id = [x for x in integ_project.dependencies][0].package_id
+    package_id = next(iter(integ_project.dependencies)).package_id
     result = pm_runner.invoke("install", package_id)
     assert result.exit_code == 0, result.output
 
@@ -127,7 +127,7 @@ def test_install_package_id(pm_runner, integ_project):
 @skip_projects_except("with-contracts")
 def test_install_name(pm_runner, integ_project):
     pm_runner.project = integ_project
-    name = [x for x in integ_project.dependencies][0].name
+    name = next(iter(integ_project.dependencies)).name
     result = pm_runner.invoke("install", name)
     assert result.exit_code == 0, result.output
 
@@ -135,7 +135,7 @@ def test_install_name(pm_runner, integ_project):
 @skip_projects_except("with-contracts")
 def test_install_name_with_version_in_id(pm_runner, integ_project):
     pm_runner.project = integ_project
-    dependency = [x for x in integ_project.dependencies][0]
+    dependency = next(iter(integ_project.dependencies))
     result = pm_runner.invoke("install", f"{dependency.name}@{dependency.version}")
     assert result.exit_code == 0, result.output
     assert f"Package '{dependency.name}@{dependency.version}' installed." in result.output
@@ -144,7 +144,7 @@ def test_install_name_with_version_in_id(pm_runner, integ_project):
 @skip_projects_except("with-contracts")
 def test_install_name_with_version_flag(pm_runner, integ_project):
     pm_runner.project = integ_project
-    dependency = [x for x in integ_project.dependencies][0]
+    dependency = next(iter(integ_project.dependencies))
     result = pm_runner.invoke("install", f"{dependency.name}", "--version", dependency.version)
     assert result.exit_code == 0, result.output
     assert f"Package '{dependency.name}@{dependency.version}' installed." in result.output

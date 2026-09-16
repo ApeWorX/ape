@@ -2,7 +2,7 @@ from collections import defaultdict
 from collections.abc import Iterable, Iterator, Sequence
 from functools import cached_property
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from eth_pydantic_types import HexBytes
 
@@ -40,7 +40,7 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
         from ape import compilers  # "compilers" is the CompilerManager singleton
     """
 
-    _registered_compilers_cache: dict[Path, dict[str, "CompilerAPI"]] = {}
+    _registered_compilers_cache: ClassVar[dict[Path, dict[str, "CompilerAPI"]]] = {}
 
     @log_instead_of_fail(default="<CompilerManager>")
     def __repr__(self) -> str:
@@ -155,7 +155,7 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
 
                     yield contract
 
-            except Exception as err:
+            except Exception as err:  # noqa: BLE001
                 # One of the compilers failed. Show the error but carry on.
                 logger.log_debug_stack_trace()
                 errors.append(err)
@@ -314,9 +314,7 @@ class CompilerManager(BaseManager, ExtraAttributesMixin):
             :class:`~ape.exceptions.CustomError` | None
         """
         message = err.revert_message
-        if not message.startswith("0x"):
-            return None
-        elif not (address := err.address):
+        if not message.startswith("0x") or not (address := err.address):
             return None
 
         if provider := self.network_manager.active_provider:

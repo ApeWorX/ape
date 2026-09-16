@@ -133,7 +133,7 @@ class PromptChoice(click.ParamType):
 
             return self.choices[choice_index]
 
-        except Exception:
+        except Exception:  # noqa: BLE001
             return self.fail_from_invalid_choice(param)
 
     def fail_from_invalid_choice(self, param):

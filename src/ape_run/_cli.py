@@ -116,7 +116,7 @@ class ScriptCommand(click.MultiCommand):
             with use_scripts_sys_path(filepath.parent.parent):
                 try:
                     cli_ns = run_script_module(filepath)
-                except Exception as e:
+                except Exception as e:  # noqa: BLE001
                     logger.error_from_exception(
                         e, f"Exception while parsing script: {relative_filepath}"
                     )

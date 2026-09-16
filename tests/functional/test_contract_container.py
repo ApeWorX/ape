@@ -7,7 +7,6 @@ from ape.exceptions import (
     ArgumentsLengthError,
     MethodNonPayableError,
     MissingDeploymentBytecodeError,
-    NetworkError,
     ProjectError,
 )
 from ape_ethereum.ecosystem import ProxyType
@@ -51,12 +50,13 @@ def test_deploy_and_publish_local_network(owner, minimal_proxy_container):
 
 
 def test_deploy_and_publish_live_network_no_explorer(
-    owner, minimal_proxy_container, dummy_live_network
+    owner, minimal_proxy_container, dummy_live_network, ape_caplog
 ):
     dummy_live_network.__dict__["explorer"] = None
     expected_message = "Unable to publish contract - no explorer plugin installed."
-    with pytest.raises(NetworkError, match=expected_message):
-        minimal_proxy_container.deploy(sender=owner, publish=True, required_confirmations=0)
+    contract = minimal_proxy_container.deploy(sender=owner, publish=True, required_confirmations=0)
+    assert contract.address
+    assert expected_message in ape_caplog.head
 
 
 @explorer_test
@@ -65,6 +65,23 @@ def test_deploy_and_publish(
 ):
     contract = minimal_proxy_container.deploy(sender=owner, publish=True, required_confirmations=0)
     mock_explorer.publish_contract.assert_called_once_with(contract.address)
+
+
+@explorer_test
+def test_deploy_and_publish_explorer_failure(
+    owner,
+    minimal_proxy_container,
+    dummy_live_network_with_explorer,
+    mock_explorer,
+    ape_caplog,
+):
+    mock_explorer.publish_contract.side_effect = RuntimeError("Verification failed.")
+    contract = minimal_proxy_container.deploy(sender=owner, publish=True, required_confirmations=0)
+    assert contract.address
+    assert (
+        "Contract was deployed but explorer verification failed: Verification failed."
+        in ape_caplog.head
+    )
 
 
 @explorer_test

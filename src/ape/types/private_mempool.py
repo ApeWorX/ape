@@ -332,7 +332,7 @@ class SimulationReport(BaseModel):
         return ecosystem.decode_logs(list(self.transaction_logs), *events)
 
     @property
-    def transaction_logs(self, *events: EventABI) -> Iterator[dict]:
+    def transaction_logs(self) -> Iterator[dict]:
         yield from _get_transaction_logs_from_sim_logs(self.logs or [])
 
 

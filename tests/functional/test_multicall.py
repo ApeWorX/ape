@@ -74,3 +74,40 @@ def test_returndata(returndata_key):
     call = Call()
     call._result = [result]  # type: ignore
     assert call.returnData[0] == output
+
+
+def test_add_overloaded_records_the_encoded_overload(chain, eth_tester_provider):
+    # The recorded ABI decodes the return data, so it has to be the same overload that
+    # encoded the calldata. Both go through type-aware selection or neither does.
+    # bytes[] first so that count-only selection would land on the uint256 overload and
+    # disagree with the calldata.
+    abi = [
+        {
+            "type": "function",
+            "name": "getUpdateFee",
+            "stateMutability": "view",
+            "inputs": [{"name": "updateData", "type": "bytes[]"}],
+            "outputs": [{"name": "", "type": "uint256"}],
+        },
+        {
+            "type": "function",
+            "name": "getUpdateFee",
+            "stateMutability": "view",
+            "inputs": [{"name": "updateDataSize", "type": "uint256"}],
+            "outputs": [{"name": "", "type": "uint256"}],
+        },
+    ]
+    contract = chain.contracts.instance_at(
+        "0x8888888888888888888888888888888888888888",
+        abi=abi,
+        detect_proxy=False,
+        fetch_from_explorer=False,
+        fetch_from_disk=False,
+    )
+    call = Call()
+
+    call.add(contract.getUpdateFee, [])
+
+    ecosystem = eth_tester_provider.network.ecosystem
+    assert call.abis[0].inputs[0].canonical_type == "bytes[]"
+    assert call.calls[0]["callData"][:4] == ecosystem.get_method_selector(call.abis[0])

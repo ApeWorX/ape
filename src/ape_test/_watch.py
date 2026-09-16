@@ -1,7 +1,7 @@
 import threading
 import time
 from collections.abc import Iterable
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from functools import cached_property
 from pathlib import Path
 from subprocess import run as run_subprocess
@@ -46,7 +46,7 @@ def emit_trigger():
     global trigger
 
     with trigger_lock:
-        trigger = datetime.now()
+        trigger = datetime.now(timezone.utc)
 
 
 class EventHandler(events.FileSystemEventHandler):
@@ -79,13 +79,13 @@ class EventHandler(events.FileSystemEventHandler):
 
 
 def _run_ape_test(*pytest_args):
-    return run_subprocess(["ape", "test", *[f"{a}" for a in pytest_args]])
+    return run_subprocess(["ape", "test", *[f"{a}" for a in pytest_args]], check=False)
 
 
 def _run_main_loop(delay: float, *pytest_args: str) -> None:
     global trigger
 
-    now = datetime.now()
+    now = datetime.now(timezone.utc)
     if trigger and now - trigger > timedelta(seconds=delay):
         _run_ape_test(*pytest_args)
 

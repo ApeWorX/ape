@@ -58,9 +58,12 @@ def prettify_function(
         arguments_str = "()"
 
     signature = f"{method}{arguments_str}"
-    if not is_create and returndata not in ((), [], None, {}, ""):
-        if return_str := _get_outputs_str(returndata, stylize=stylize, depth=depth):
-            signature = f"{signature} -> {return_str}"
+    if (
+        not is_create
+        and returndata not in ((), [], None, {}, "")
+        and (return_str := _get_outputs_str(returndata, stylize=stylize, depth=depth))
+    ):
+        signature = f"{signature} -> {return_str}"
 
     if contract:
         signature = f"{contract}.{signature}"
@@ -136,7 +139,7 @@ def prettify_list(
         # Use multi-line if exceeds threshold OR any of the sub-lists use multi-line
         extra_chars_len = (len(sub_lists) - 1) * 2
         use_multiline = len(str(sub_lists)) + extra_chars_len > wrap_threshold or any(
-            ["\n" in ls for ls in sub_lists]
+            "\n" in ls for ls in sub_lists
         )
 
         if not use_multiline:
@@ -147,7 +150,7 @@ def prettify_list(
         num_sub_lists = len(sub_lists)
         index = 0
         spacing = indent * " " * 2
-        for formatted_list in sub_lists:
+        for index, formatted_list in enumerate(sub_lists):
             if "\n" in formatted_list:
                 # Multi-line sub list. Append 1 more spacing to each line.
                 indented_item = f"\n{spacing}".join(formatted_list.splitlines())
@@ -160,7 +163,6 @@ def prettify_list(
                 value = f"{value},"
 
             value = f"{value}\n"
-            index += 1
 
         value = f"{value}]"
         return value
@@ -187,11 +189,10 @@ def prettify_dict(
     length = sum(len(str(v)) for v in [*dictionary.keys(), *dictionary.values()])
     do_wrap = length > wrap_threshold
 
-    index = 0
     end_index = len(dictionary) - 1
     kv_str = "(\n" if do_wrap else "("
 
-    for key, value in dictionary.items():
+    for index, (key, value) in enumerate(dictionary.items()):
         if do_wrap:
             kv_str += indent * " "
 
@@ -205,8 +206,6 @@ def prettify_dict(
 
         if do_wrap:
             kv_str += "\n"
-
-        index += 1
 
     return f"{kv_str})"
 
@@ -279,8 +278,8 @@ def parse_gas_table(report: "GasReport") -> list[Table]:
                 f"{len(gases)}",
                 f"{min(gases)}",
                 f"{max(gases)}",
-                f"{int(round(mean(gases)))}",
-                f"{int(round(median(gases)))}",
+                f"{round(mean(gases))}",
+                f"{round(median(gases))}",
             )
 
         if has_at_least_1_row:
@@ -369,9 +368,7 @@ def _parse_verbose_coverage(coverage: "CoverageReport", statement: bool = True) 
                                 if any(s.hit_count > 0 for s in fn.statements if s.tag == builtin)
                                 else 1
                             )
-                            rows.append(
-                                tuple((name, name, "1", f"{miss}", "0.0%" if miss else "100.0%"))
-                            )
+                            rows.append((name, name, "1", f"{miss}", "0.0%" if miss else "100.0%"))
 
                     else:
                         row = (

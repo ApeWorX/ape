@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import pytest
-from pydantic import ValidationError
+from pydantic import Field, ValidationError
 from pydantic_settings import SettingsConfigDict
 
 from ape.api.config import ApeConfig, ConfigEnum, PluginConfig
@@ -318,20 +318,22 @@ def test_deployments_integer_type_addresses(networks, project):
 
 def test_deployments_bad_ecosystem(project):
     deployments = _create_deployments(ecosystem_name="madeup")
-    with project.temp_config(deployments=deployments):
-        with pytest.raises(
-            ConfigError, match=r"Invalid ecosystem 'madeup' in deployments config\."
-        ):
-            _ = project.config.deployments
+    with (
+        project.temp_config(deployments=deployments),
+        pytest.raises(ConfigError, match=r"Invalid ecosystem 'madeup' in deployments config\."),
+    ):
+        _ = project.config.deployments
 
 
 def test_deployments_bad_network(project):
     deployments = _create_deployments(network_name="madeup")
-    with project.temp_config(deployments=deployments):
-        with pytest.raises(
+    with (
+        project.temp_config(deployments=deployments),
+        pytest.raises(
             ConfigError, match=r"Invalid network 'ethereum:madeup' in deployments config\."
-        ):
-            _ = project.config.deployments
+        ),
+    ):
+        _ = project.config.deployments
 
 
 def _create_deployments(
@@ -405,7 +407,7 @@ def test_network_gas_limit_string_config(gas_limit, project):
         assert actual.local.gas_limit == "max"
 
 
-@pytest.mark.parametrize("gas_limit", (1234, "1234", 0x4D2, "0x4D2"))
+@pytest.mark.parametrize("gas_limit", (1234, "1234", "0x4D2"))
 def test_network_gas_limit_numeric_config(gas_limit, project):
     eth_config = _sepolia_with_gas_limit(gas_limit)
     with project.temp_config(**eth_config):
@@ -459,7 +461,7 @@ def test_from_overrides_updates_when_default_is_empty_dict():
         bar: int = 1
 
     class MyConfig(PluginConfig):
-        sub: dict[str, dict[str, SubConfig]] = {}
+        sub: dict[str, dict[str, SubConfig]] = Field(default_factory=dict)
 
     overrides = {"sub": {"baz": {"test": {"foo": 5}}}}
     actual = MyConfig.from_overrides(overrides)
@@ -484,7 +486,7 @@ def test_from_overrides_shows_errors_in_project_config():
 def test_plugin_config_with_union_dicts(override_0, override_1):
     class SubConfig(PluginConfig):
         bool_or_dict: bool | dict = True
-        dict_or_bool: dict | bool = {}
+        dict_or_bool: dict | bool = Field(default_factory=dict)
 
     config = SubConfig.from_overrides({"bool_or_dict": override_0, "dict_or_bool": override_1})
     assert config.bool_or_dict == override_0
@@ -588,7 +590,7 @@ def test_config_enum():
 
 
 def test_contracts_folder(project):
-    with project.temp_config(**{"contracts_folder": "src"}):
+    with project.temp_config(contracts_folder="src"):
         assert project.contracts_folder.name == "src"
 
 
@@ -601,9 +603,8 @@ def test_contracts_folder_invalid(project):
     """
     Show that we can still attempt to use `.get_config()` when config is invalid.
     """
-    with pytest.raises(ConfigError):
-        with project.temp_config(**{"contracts_folder": {}}):
-            _ = project.contracts_folder
+    with pytest.raises(ConfigError), project.temp_config(contracts_folder={}):
+        _ = project.contracts_folder
 
     # Ensure config is fine _after_ something invalid.
     assert project.contracts_folder

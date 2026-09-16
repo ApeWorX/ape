@@ -338,9 +338,8 @@ def test_ecosystems_when_custom_has_bad_base_ecosystem(
         rf"base-ecosystem class '{eco_plugin_name}'\. "
         rf"Are you missing plugin 'ape-{eco_plugin_name}'\?"
     )
-    with project.temp_config(**data):
-        with pytest.raises(NetworkError, match=expected):
-            _ = networks.ecosystems
+    with project.temp_config(**data), pytest.raises(NetworkError, match=expected):
+        _ = networks.ecosystems
 
 
 def test_fork_network_not_forkable(networks, eth_tester_provider):
@@ -348,9 +347,8 @@ def test_fork_network_not_forkable(networks, eth_tester_provider):
     Show correct failure when trying to fork the local network.
     """
     expected = "Unable to fork network 'local'."
-    with pytest.raises(NetworkError, match=expected):
-        with networks.fork():
-            pass
+    with pytest.raises(NetworkError, match=expected), networks.fork():
+        pass
 
 
 def test_fork_no_providers(networks, mock_sepolia, disable_fork_providers):
@@ -359,9 +357,8 @@ def test_fork_no_providers(networks, mock_sepolia, disable_fork_providers):
     ape-hardhat or ape-foundry installed.
     """
     expected = "No providers for network 'sepolia-fork'."
-    with pytest.raises(NetworkError, match=expected):
-        with networks.fork():
-            pass
+    with pytest.raises(NetworkError, match=expected), networks.fork():
+        pass
 
 
 def test_fork_use_non_existing_provider(networks, mock_sepolia):
@@ -369,9 +366,11 @@ def test_fork_use_non_existing_provider(networks, mock_sepolia):
     Show correct failure when specifying a non-existing provider.
     """
     expected = "No provider named 'NOT_EXISTS' in network 'sepolia-fork' in ecosystem 'ethereum'.*"
-    with pytest.raises(ProviderNotFoundError, match=expected):
-        with networks.fork(provider_name="NOT_EXISTS"):
-            pass
+    with (
+        pytest.raises(ProviderNotFoundError, match=expected),
+        networks.fork(provider_name="NOT_EXISTS"),
+    ):
+        pass
 
 
 def test_fork(networks, mock_sepolia, mock_fork_provider):
@@ -440,9 +439,11 @@ def test_fork_with_negative_block_number(
 
 def test_fork_past_genesis(networks, mock_sepolia, mock_fork_provider, eth_tester_provider):
     block_id = -10_000_000_000
-    with pytest.raises(NetworkError, match="Unable to fork past genesis block."):
-        with networks.fork(block_number=block_id):
-            pass
+    with (
+        pytest.raises(NetworkError, match="Unable to fork past genesis block."),
+        networks.fork(block_number=block_id),
+    ):
+        pass
 
 
 def test_getitem(networks):

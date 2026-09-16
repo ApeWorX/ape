@@ -231,11 +231,11 @@ def test_compile_in_project_where_source_id_matches_local_project(project, compi
         argument = Path(contract.source_id)
 
         # Compile the file with the same name but different content.
-        result = [
+        result = next(
             x
             for x in compilers.compile([argument], project=temp_project)
             if x.name == contract.name
-        ][0]
+        )
 
         # It should reflect the new content and not the one with the same
         # source ID from the local project.
