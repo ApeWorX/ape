@@ -264,6 +264,14 @@ This allows you to still call methods as you normally do on proxy contracts.</p>
 </span><span data-line="3"><span class="n">my_contract</span><span class="o">.</span><span class="n">my_method</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">account</span><span class="p">)</span>
 </span></pre></div>
 </div>
+<p>Ape caches proxy detection results on live networks, including when no proxy is found.
+If an address becomes a proxy after it was previously checked, delete its cached contract data
+before loading it again:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape</span><span class="w"> </span><span class="kn">import</span> <span class="n">chain</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="k">del</span> <span class="n">chain</span><span class="o">.</span><span class="n">contracts</span><span class="p">[</span><span class="s2">"0x..."</span><span class="p">]</span>
+</span></pre></div>
+</div>
 </section>
 <section id="manual-proxy-configuration">
 <h2>Manual Proxy Configuration<a class="headerlink" href="#manual-proxy-configuration" title="Link to this heading">#</a></h2>

@@ -203,6 +203,7 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#ape.managers.chain.ContractCache.cache_contract_type"><code class="docutils literal notranslate"><span class="pre">ContractCache.cache_contract_type()</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.chain.ContractCache.cache_deployment"><code class="docutils literal notranslate"><span class="pre">ContractCache.cache_deployment()</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.chain.ContractCache.cache_proxy_info"><code class="docutils literal notranslate"><span class="pre">ContractCache.cache_proxy_info()</span></code></a></li>
+<li><a class="reference internal" href="#ape.managers.chain.ContractCache.cache_proxy_info_no_hit"><code class="docutils literal notranslate"><span class="pre">ContractCache.cache_proxy_info_no_hit()</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.chain.ContractCache.clear_local_caches"><code class="docutils literal notranslate"><span class="pre">ContractCache.clear_local_caches()</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.chain.ContractCache.deployments"><code class="docutils literal notranslate"><span class="pre">ContractCache.deployments</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.chain.ContractCache.get"><code class="docutils literal notranslate"><span class="pre">ContractCache.get()</span></code></a></li>
@@ -1284,6 +1285,17 @@ deployed proxies. When you deploy a proxy locally, it will also call this method
 <li><p><strong>proxy_info</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ProxyInfo</span></code>) – The proxy info class
 to cache.</p></li>
 </ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.chain.ContractCache.cache_proxy_info_no_hit">
+<span class="sig-name descname"><span class="pre">cache_proxy_info_no_hit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><span class="pre">ChecksumAddress</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_AddressValidator</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.managers.chain.ContractCache.cache_proxy_info_no_hit" title="Link to this definition">#</a></dt>
+<dd><p>Cache that proxy detection found no proxy information for this address.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>address</strong> (<em>AddressType</em>) – The address that is not a proxy.</p>
 </dd>
 </dl>
 </dd></dl>
