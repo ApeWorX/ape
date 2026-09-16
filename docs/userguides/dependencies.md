@@ -209,7 +209,7 @@ You can also use Python to install dependencies, using `**kwargs` as the same fi
 from ape import project
 
 project.dependencies.install(
-   github="OpenZeppelin/openzeppelin-contracts", name="openzeppelin", version="4.9.6"
+    github="OpenZeppelin/openzeppelin-contracts", name="openzeppelin", version="4.9.6"
 )
 ```
 
@@ -367,7 +367,7 @@ from ape import accounts, project
 
 # NOTE: This will compile the dependency
 dependency_project = project.dependencies["my_dependency"]["1.0.0"]
-dependency_contract = dependency_project.DependencyContractType 
+dependency_contract = dependency_project.DependencyContractType
 my_account = accounts.load("alias")
 deployed_contract = my_account.deploy(dependency_contract, "argument")
 print(deployed_contract.address)

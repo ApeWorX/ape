@@ -323,7 +323,7 @@ class PollDaemonThread(threading.Thread):
     def run(self):
         try:
             self._run_until_stop(timeout_iterations=self._max_iterations)
-        except Exception as err:
+        except Exception as err:  # noqa: BLE001
             self._exception = err
 
     def stop(self):

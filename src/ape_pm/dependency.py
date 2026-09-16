@@ -219,7 +219,7 @@ class GithubDependency(DependencyAPI):
             version = self.version or "latest"
             try:
                 self._fetch_version(version, destination)
-            except Exception as err_from_version_approach:
+            except Exception as err_from_version_approach:  # noqa: BLE001
                 logger.warning(
                     f"No official release found for version '{version}'. "
                     "Use `ref:` instead of `version:` for release tags. "
@@ -233,7 +233,7 @@ class GithubDependency(DependencyAPI):
                     shutil.rmtree(destination, onerror=_remove_readonly)
                 try:
                     self._fetch_ref(version, destination)
-                except Exception:
+                except Exception:  # noqa: BLE001
                     # NOTE: Ignore this error, it was merely a last attempt.
                     raise err_from_version_approach
 
@@ -241,14 +241,14 @@ class GithubDependency(DependencyAPI):
         options = _version_to_options(ref)
         attempt = 0
         num_attempts = len(options)
-        for ref in options:
+        for ref_option in options:
             attempt += 1
             try:
                 self._github_client.clone_repo(
                     self.org_name,
                     self.repo_name,
                     destination,
-                    branch=ref,
+                    branch=ref_option,
                     scheme=self.scheme,
                 )
             except Exception:
@@ -398,7 +398,7 @@ def _get_version_from_package_json(
 
     try:
         data = json.loads(package_json.read_text())
-    except Exception as err:
+    except Exception as err:  # noqa: BLE001
         logger.warning(f"Failed to parse package.json: {err}")
         return None
 
@@ -555,10 +555,8 @@ class PythonDependency(DependencyAPI):
 
     @cached_property
     def download_archive_url(self) -> str:
-        if not (version := self.version):
-            if not (version := self.version_from_package_data):
-                # Not sure if this is possible, but just in case API data changes or something.
-                raise ProjectError(f"Unable to find version for package '{self.package_id}'.")
+        if not (version := self.version) and not (version := self.version_from_package_data):
+            raise ProjectError(f"Unable to find version for package '{self.package_id}'.")
 
         releases = self.package_data.get("releases", {})
         if version not in releases:
@@ -596,8 +594,7 @@ class PythonDependency(DependencyAPI):
         with requests.get(download_url, stream=True) as response:
             response.raise_for_status()
             with open(archive_destination, "wb") as file:
-                for chunk in response.iter_content(chunk_size=8192):  # 8 KB
-                    file.write(chunk)
+                file.writelines(response.iter_content(chunk_size=8192))
 
         return archive_destination
 

@@ -4,7 +4,7 @@ from collections.abc import Iterator
 from functools import cached_property
 from os import environ
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import click
 from eip712.messages import EIP712Message
@@ -46,7 +46,7 @@ class InvalidPasswordError(AccountsError):
 
 
 class AccountContainer(AccountContainerAPI):
-    loaded_accounts: dict[str, "KeyfileAccount"] = {}
+    loaded_accounts: ClassVar[dict[str, "KeyfileAccount"]] = {}
 
     @property
     def _keyfiles(self) -> Iterator[Path]:
@@ -91,11 +91,11 @@ class ApeSigner(AccountAPI):
             chain_id = self.chain_manager.chain_id
 
         signed_authorization = EthAccount.sign_authorization(
-            dict(
-                chainId=chain_id,
-                address=to_canonical_address(address),
-                nonce=nonce or self.nonce,
-            ),
+            {
+                "chainId": chain_id,
+                "address": to_canonical_address(address),
+                "nonce": nonce or self.nonce,
+            },
             self.private_key,
         )
         return MessageSignature(

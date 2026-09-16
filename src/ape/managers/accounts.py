@@ -2,7 +2,7 @@ import contextlib
 from collections.abc import Generator, Iterator
 from contextlib import AbstractContextManager as ContextManager
 from functools import cached_property, singledispatchmethod
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 
 from eth_utils import is_hex
 
@@ -39,8 +39,11 @@ def _use_sender(
 class TestAccountManager(list, ManagerAccessMixin):
     __test__ = False
 
-    _impersonated_accounts: dict[AddressType, ImpersonatedAccount] = {}
-    _accounts_by_index: dict[int, AccountAPI] = {}
+    _impersonated_accounts: ClassVar[dict[AddressType, ImpersonatedAccount]] = {}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._accounts_by_index: dict[int, AccountAPI] = {}
 
     @log_instead_of_fail(default="<TestAccountManager>")
     def __repr__(self) -> str:
@@ -233,7 +236,7 @@ class AccountManager(BaseManager):
         my_accounts = accounts.load("dev")
     """
 
-    _alias_to_account_cache: dict[str, AccountAPI] = {}
+    _alias_to_account_cache: ClassVar[dict[str, AccountAPI]] = {}
 
     @property
     def default_sender(self) -> AccountAPI | None:

@@ -51,9 +51,8 @@ class RevertsContextManager(ManagerAccessMixin):
             err_message = "Could not find the source of the revert."
 
             # Attempt to show source traceback so the user can see the real failure.
-            if (info := self.revert_info) and (ex := info.value):
-                if tb := ex.source_traceback:
-                    err_message = f"{err_message}\n{tb}"
+            if (info := self.revert_info) and (ex := info.value) and (tb := ex.source_traceback):
+                err_message = f"{err_message}\n{tb}"
 
             raise AssertionError(err_message)
 
@@ -124,7 +123,7 @@ class RevertsContextManager(ManagerAccessMixin):
             # the expected contract instance (e.g. from the same address).
             # If not address is being compared, this check is skipped.
 
-            raise AssertionError(
+            raise AssertionError(  # noqa: TRY004
                 f"Expected error '{expected_error_cls.__name__}' "
                 f"but was '{type(exception).__name__}'"
             )
@@ -155,12 +154,17 @@ class RevertsContextManager(ManagerAccessMixin):
         self.revert_info = info
         return info
 
-    def __exit__(self, exc_type: type, exc_value: Exception, traceback) -> bool:
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback,
+    ) -> bool:
         if exc_type is None:
             raise AssertionError("Transaction did not revert.")
 
         if not isinstance(exc_value, ContractLogicError):
-            raise AssertionError(
+            raise AssertionError(  # noqa: TRY004
                 f"Transaction did not revert.\n"
                 f"However, an exception of type {type(exc_value)} occurred: {exc_value}."
             ) from exc_value

@@ -1,7 +1,7 @@
 import pytest
 
-import ape.api as api
-import ape.api.providers as providers
+from ape import api
+from ape.api import providers
 
 
 @pytest.mark.parametrize(

@@ -112,9 +112,7 @@ from pathlib import Path
 from ape import compilers
 
 settings = {"vyper": {"version": "0.3.7"}, "solidity": {"version": "0.8.0"}}
-compilers.compile(
-   ["path/to/contract.vy", "path/to/contract.sol"], settings=settings
-)
+compilers.compile(["path/to/contract.vy", "path/to/contract.sol"], settings=settings)
 
 # Or, more explicitly:
 vyper = compilers.get_compiler("vyper", settings=settings["vyper"])
@@ -136,10 +134,10 @@ CODE = """
 """
 
 container = compilers.compile_source(
-   "vyper",
-   CODE,
-   settings={"vyper": {"version": "0.3.7"}}, 
-   contractName="MyContract",
+    "vyper",
+    CODE,
+    settings={"vyper": {"version": "0.3.7"}},
+    contractName="MyContract",
 )
 
 owner = accounts.test_accounts[0]

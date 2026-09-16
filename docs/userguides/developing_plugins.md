@@ -44,9 +44,9 @@ from web3 import Web3, HTTPProvider
 
 class MyProvider(ProviderAPI):
     _web3: Web3 = None  # type: ignore
-    
+
     def connect(self):
-        self._web3  = Web3(HTTPProvider(str("https://localhost:1337")))
+        self._web3 = Web3(HTTPProvider(str("https://localhost:1337")))
 
     """Implement rest of abstract methods"""
 ```
@@ -58,12 +58,13 @@ Once you have finished implementing your API classes, you need to register them 
 ```python
 from ape import plugins
 
+
 # Here, we register our provider plugin so we can use it in 'ape'.
 @plugins.register(plugins.ProviderPlugin)
 def providers():
     # NOTE: By keeping this import local, we avoid slower plugin load times.
     from ape_my_plugin.provider import MyProvider
-    
+
     # NOTE: 'MyProvider' defined in a prior code-block.
     yield "ethereum", "local", MyProvider
 ```
@@ -87,6 +88,7 @@ To create a CLI plugin, create any type of `click` command (such as a `click.gro
 ```python
 import click
 
+
 @click.group
 def cli():
     """My custom commands."""
@@ -103,11 +105,13 @@ Then, register it using `entrypoints`, which is a built-in python registry of it
 
 ```python
 ...
-entry_points={
-    "ape_cli_subcommands": [
-        "ape_myplugin=ape_myplugin._cli:cli",
-    ],
-},
+entry_points = (
+    {
+        "ape_cli_subcommands": [
+            "ape_myplugin=ape_myplugin._cli:cli",
+        ],
+    },
+)
 ...
 ```
 
@@ -125,10 +129,11 @@ Follow [this guide](./clis.html) to learn more about what you can do with the ut
 import click
 from ape.cli import existing_alias_argument
 
+
 @click.command()
 @existing_alias_argument()
 def my_cmd(alias):
-  click.echo(f"{alias} is an existing account!")
+    click.echo(f"{alias} is an existing account!")
 ```
 
 ## Using Plugins
@@ -176,7 +181,9 @@ import click
 def cli():
     pass
 
+
 """ Or """
+
 
 @click.command()
 def cli():
@@ -200,7 +207,8 @@ logger.info("This is a log message")
 ```python
 from ape.cli import ape_cli_context
 
+
 @ape_cli_context()
 def my_command(cli_ctx):
-  cli_ctx.logger.info("my log message")
+    cli_ctx.logger.info("my log message")
 ```

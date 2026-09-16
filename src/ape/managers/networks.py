@@ -3,10 +3,10 @@ import signal
 from collections.abc import Collection, Iterator
 from functools import cached_property
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from evmchains import PUBLIC_CHAIN_META
-from pydantic import ValidationError
+from pydantic import Field, ValidationError
 
 from ape.api.networks import ProviderContextManager
 from ape.exceptions import EcosystemNotFoundError, NetworkError, NetworkNotFoundError
@@ -81,7 +81,7 @@ class NodeProcessMap(DiskCacheableModel):
     All managed running network subprocesses.
     """
 
-    nodes: dict[int, NodeProcessData] = {}
+    nodes: dict[int, NodeProcessData] = Field(default_factory=dict)
 
     @property
     def path(self) -> Path:
@@ -182,7 +182,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
 
     # For adhoc adding custom networks, or incorporating some defined
     # in other projects' configs.
-    _custom_networks: list[dict] = []
+    _custom_networks: ClassVar[list[dict]] = []
 
     @log_instead_of_fail(default="<NetworkManager>")
     def __repr__(self) -> str:
@@ -316,7 +316,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
 
             try:
                 provider = self.get_running_node(pid)
-            except Exception:
+            except Exception:  # noqa: BLE001, S110
                 # Still try to kill the process (below).
                 pass
             else:
@@ -325,7 +325,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
 
             try:
                 os.kill(pid, signal.SIGTERM)
-            except Exception:
+            except Exception:  # noqa: BLE001, S110
                 pass
             else:
                 pids_killed[pid] = data
@@ -441,12 +441,12 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         The set of all provider names in ``ape``.
         """
 
-        return set(
+        return {
             provider
             for ecosystem in self.ecosystems.values()
             for network in ecosystem.networks.values()
             for provider in network.providers
-        )
+        }
 
     @property
     def custom_networks(self) -> list[dict]:
@@ -587,7 +587,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
             name = provider_name
 
         provider_settings: dict = {}
-        if connection_str.startswith("https://") or connection_str.startswith("http://"):
+        if connection_str.startswith(("https://", "http://")):
             provider_settings["uri"] = connection_str
         elif connection_str.endswith(".ipc"):
             provider_settings["ipc_path"] = connection_str
@@ -992,7 +992,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         # NOTE: Called when changing config programmatically.
         self.__dict__.pop("_custom_ecosystems", None)
         self.__dict__.pop("_custom_networks_from_config", None)
-        self._custom_networks = []
+        NetworkManager._custom_networks = []
 
 
 def _validate_filter(arg: list[str] | str | None, options: set[str]):
@@ -1010,9 +1010,7 @@ def _validate_filter(arg: list[str] | str | None, options: set[str]):
 
 def _is_adhoc_url(value: str) -> bool:
     return (
-        value.startswith("http://")
-        or value.startswith("https://")
-        or value.startswith("ws://")
-        or value.startswith("wss://")
-        or (value.endswith(".ipc") and ":" not in value)
+        value.startswith(("http://", "https://", "ws://", "wss://"))
+        or value.endswith(".ipc")
+        and ":" not in value
     )

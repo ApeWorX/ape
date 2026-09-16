@@ -1,9 +1,11 @@
 import json
 import re
+from io import StringIO
 
 import pytest
 from evm_trace import CallTreeNode, CallType
 from hexbytes import HexBytes
+from rich.console import Console
 
 from ape_ethereum.trace import CallTrace, Trace, TraceApproach, TransactionTrace, parse_rich_tree
 from tests.functional.data.python import (
@@ -98,6 +100,45 @@ def test_parse_rich_tree_handle_bad_event_data():
     data = {"events": [{"foo": "I don't know what this is."}]}
     tree = parse_rich_tree(data)
     assert len(tree.children) == 0
+
+
+@pytest.mark.parametrize("final_position", (2, 99))
+def test_parse_rich_tree_event_positions(final_position):
+    data = {
+        "method_id": "root",
+        "events": [
+            {"name": "Before", "position": 0},
+            {"name": "Between", "position": 1},
+            {"name": "AlsoBetween", "position": 1},
+            {"name": "After", "position": final_position},
+            {"name": "Legacy"},
+            {"name": "UnknownPosition", "position": None},
+        ],
+        "calls": [
+            {
+                "method_id": "first",
+                "calls": [{"method_id": "nested"}],
+                "events": [{"name": "NestedAfter", "position": 1}],
+            },
+            {"method_id": "second"},
+        ],
+    }
+    output = StringIO()
+    Console(file=output, color_system=None).print(parse_rich_tree(data))
+    lines = [line.strip(" │├└─") for line in output.getvalue().splitlines() if line.strip()]
+    assert lines == [
+        "root()",
+        "log Before()",
+        "log Legacy()",
+        "log UnknownPosition()",
+        "first()",
+        "nested()",
+        "log NestedAfter()",
+        "log Between()",
+        "log AlsoBetween()",
+        "second()",
+        "log After()",
+    ]
 
 
 def test_get_gas_report(gas_tracker, owner, vyper_contract_instance):
@@ -341,6 +382,17 @@ def test_enriched_calltree_adds_missing_gas(simple_trace_cls):
     trace = trace_cls.model_validate(TRACE_API_DATA)
     actual = trace.enriched_calltree
     assert actual["gas_cost"] == compute_gas
+
+
+@pytest.mark.parametrize("gas_cost", (0, 42))
+def test_enriched_calltree_preserves_known_gas(simple_trace_cls, gas_cost):
+    trace_cls = simple_trace_cls(
+        {**PASSING_TRACE, "gas_cost": gas_cost},
+        tx={"gas_used": 25_000, "data": HexBytes("0x12345678")},
+    )
+    trace = trace_cls.model_validate(TRACE_API_DATA)
+    assert trace.enriched_calltree["gas_cost"] == gas_cost
+    assert f"[{gas_cost} gas]" in str(trace)
 
 
 class TestTraceApproach:

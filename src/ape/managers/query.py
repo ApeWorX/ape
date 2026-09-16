@@ -162,7 +162,7 @@ class QueryManager(ManagerAccessMixin):
 
         else:
             # Get heuristics from all the query engines to perform this query
-            estimates = map(lambda qe: (qe, qe.estimate_query(query)), self.engines.values())
+            estimates = ((qe, qe.estimate_query(query)) for qe in self.engines.values())
 
             # Ignore query engines that can't perform this query
             valid_estimates = filter(lambda qe: qe[1] is not None, estimates)

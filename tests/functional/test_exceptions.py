@@ -118,7 +118,7 @@ class TestTransactionError:
         # Have to raise for sys.exc_info() to be available.
         try:
             raise err
-        except Exception:
+        except Exception:  # noqa: BLE001, S110
             pass
 
         def assert_ape_traceback(err_arg):
@@ -137,7 +137,7 @@ class TestTransactionError:
         )
         try:
             raise err2
-        except Exception:
+        except Exception:  # noqa: BLE001, S110
             pass
 
         # No Ape frames are here.
@@ -147,7 +147,7 @@ class TestTransactionError:
         err3 = ContractLogicError(source_traceback=mock_tb, project=project_with_contract)
         try:
             raise err3
-        except Exception:
+        except Exception:  # noqa: BLE001, S110
             pass
 
         assert_ape_traceback(err3)

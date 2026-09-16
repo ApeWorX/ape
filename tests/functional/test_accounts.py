@@ -17,7 +17,6 @@ from ape.exceptions import (
     AliasAlreadyInUseError,
     MethodNonPayableError,
     MissingDeploymentBytecodeError,
-    NetworkError,
     ProjectError,
     SignatureError,
 )
@@ -149,7 +148,7 @@ def test_sign_message_with_prompts(runner, keyfile_account, message):
 def test_sign_eip712_message_shows_custom_types(signer):
     baz = Baz(addr=signer.address)
     foo = Foo(bar=signer.address, baz=baz)
-    display_msg, msg = _get_signing_message_with_display(foo)
+    display_msg, _msg = _get_signing_message_with_display(foo)
     expected = """
 Signing EIP712 Message
 Domain
@@ -262,9 +261,8 @@ def test_transfer_with_prompts(runner, receiver, keyfile_account):
         assert receipt.receiver == receiver
 
     # "n": don't sign
-    with runner.isolation(input="n\n"):
-        with pytest.raises(SignatureError):
-            keyfile_account.transfer(receiver, "1 gwei")
+    with runner.isolation(input="n\n"), pytest.raises(SignatureError):
+        keyfile_account.transfer(receiver, "1 gwei")
 
 
 def test_transfer_using_type_0(sender, receiver, convert):
@@ -337,12 +335,13 @@ def test_deploy_and_publish_local_network(owner, minimal_proxy_container):
 
 @explorer_test
 def test_deploy_and_publish_live_network_no_explorer(
-    owner, minimal_proxy_container, dummy_live_network
+    owner, minimal_proxy_container, dummy_live_network, ape_caplog
 ):
     dummy_live_network.__dict__["explorers"] = ()
     expected_message = "Unable to publish contract - no explorer plugin installed."
-    with pytest.raises(NetworkError, match=expected_message):
-        owner.deploy(minimal_proxy_container, publish=True, required_confirmations=0)
+    contract = owner.deploy(minimal_proxy_container, publish=True, required_confirmations=0)
+    assert contract.address
+    assert expected_message in ape_caplog.head
 
 
 @explorer_test
@@ -351,6 +350,23 @@ def test_deploy_and_publish(
 ):
     contract = owner.deploy(minimal_proxy_container, publish=True, required_confirmations=0)
     mock_explorer.publish_contract.assert_called_once_with(contract.address)
+
+
+@explorer_test
+def test_deploy_and_publish_explorer_failure(
+    owner,
+    minimal_proxy_container,
+    dummy_live_network_with_explorer,
+    mock_explorer,
+    ape_caplog,
+):
+    mock_explorer.publish_contract.side_effect = RuntimeError("Verification failed.")
+    contract = owner.deploy(minimal_proxy_container, publish=True, required_confirmations=0)
+    assert contract.address
+    assert (
+        "Contract was deployed but explorer verification failed: Verification failed."
+        in ape_caplog.head
+    )
 
 
 @explorer_test
@@ -615,11 +631,13 @@ def test_unlock_from_prompt_retries_and_succeeds(runner, keyfile_account):
 
 
 def test_unlock_from_prompt_fails_after_three_attempts(runner, keyfile_account):
-    with runner.isolation(
-        input=f"{INVALID_PASSPHRASE}\n{INVALID_PASSPHRASE}\n{INVALID_PASSPHRASE}\n"
+    with (
+        runner.isolation(
+            input=f"{INVALID_PASSPHRASE}\n{INVALID_PASSPHRASE}\n{INVALID_PASSPHRASE}\n"
+        ),
+        pytest.raises(AccountsError, match="Failed to unlock after 3 attempts."),
     ):
-        with pytest.raises(AccountsError, match="Failed to unlock after 3 attempts."):
-            keyfile_account.unlock()
+        keyfile_account.unlock()
 
     assert keyfile_account.locked
 
@@ -932,7 +950,7 @@ def test_load_public_key_from_keyfile(runner, keyfile_account):
 
         assert (
             to_hex(keyfile_account.public_key)
-            == "0x8318535b54105d4a7aae60c08fc45f9687181b4fdfc625bd1a753fa7397fed753547f11ca8696646f2f3acb08e31016afac23e630c5d11f59f61fef57b0d2aa5"  # noqa: E501
+            == "0x8318535b54105d4a7aae60c08fc45f9687181b4fdfc625bd1a753fa7397fed753547f11ca8696646f2f3acb08e31016afac23e630c5d11f59f61fef57b0d2aa5"
         )
         # no need for password when loading from the keyfile
         assert keyfile_account.public_key
@@ -967,6 +985,20 @@ def test_generate_account_invalid_alias(delete_account_after):
             generate_account(used_alias, "asdf1234")
 
 
+def test_generate_account_rejects_path_alias():
+    outside = ape.config.DATA_FOLDER / "pwned_ape_alias.json"
+    if outside.is_file():
+        outside.unlink()
+
+    with pytest.raises(AccountsError, match="single path segment"):
+        generate_account("../pwned_ape_alias", PASSPHRASE)
+
+    with pytest.raises(AccountsError, match="single path segment"):
+        generate_account("nested/alias", PASSPHRASE)
+
+    assert not outside.exists()
+
+
 def test_generate_account_invalid_passphrase():
     with pytest.raises(AccountsError, match="Account file encryption passphrase must be provided."):
         generate_account("invalid-passphrase", "")
@@ -977,14 +1009,12 @@ def test_generate_account_invalid_passphrase():
 
 def test_generate_account_insecure_passphrase(delete_account_after):
     short_alias = "shortaccount"
-    with delete_account_after(short_alias):
-        with pytest.warns(UserWarning, match="short"):
-            generate_account(short_alias, "short")
+    with delete_account_after(short_alias), pytest.warns(UserWarning, match="short"):
+        generate_account(short_alias, "short")
 
     simple_alias = "simpleaccount"
-    with delete_account_after(simple_alias):
-        with pytest.warns(UserWarning, match="simple"):
-            generate_account(simple_alias, "simple")
+    with delete_account_after(simple_alias), pytest.warns(UserWarning, match="simple"):
+        generate_account(simple_alias, "simple")
 
 
 def test_import_account_from_mnemonic(delete_account_after):
@@ -1026,14 +1056,12 @@ def test_import_account_from_mnemonic_invalid_passphrase():
 
 def test_import_account_from_mnemonic_insecure_passphrase(delete_account_after):
     short_alias = "iafmshortaccount"
-    with delete_account_after(short_alias):
-        with pytest.warns(UserWarning, match="short"):
-            import_account_from_mnemonic(short_alias, "short", MNEMONIC)
+    with delete_account_after(short_alias), pytest.warns(UserWarning, match="short"):
+        import_account_from_mnemonic(short_alias, "short", MNEMONIC)
 
     simple_alias = "iafmsimpleaccount"
-    with delete_account_after(simple_alias):
-        with pytest.warns(UserWarning, match="simple"):
-            import_account_from_mnemonic(simple_alias, "simple", MNEMONIC)
+    with delete_account_after(simple_alias), pytest.warns(UserWarning, match="simple"):
+        import_account_from_mnemonic(simple_alias, "simple", MNEMONIC)
 
 
 def test_import_account_from_private_key(delete_account_after):
@@ -1081,14 +1109,12 @@ def test_import_account_from_private_key_invalid_passphrase():
 
 def test_import_account_from_private_key_insecure_passphrase(delete_account_after):
     short_alias = "iafpkshortaccount"
-    with delete_account_after(short_alias):
-        with pytest.warns(UserWarning, match="short"):
-            import_account_from_private_key(short_alias, "short", PRIVATE_KEY)
+    with delete_account_after(short_alias), pytest.warns(UserWarning, match="short"):
+        import_account_from_private_key(short_alias, "short", PRIVATE_KEY)
 
     simple_alias = "iafpksimpleaccount"
-    with delete_account_after(simple_alias):
-        with pytest.warns(UserWarning, match="simple"):
-            import_account_from_private_key(simple_alias, "simple", PRIVATE_KEY)
+    with delete_account_after(simple_alias), pytest.warns(UserWarning, match="simple"):
+        import_account_from_private_key(simple_alias, "simple", PRIVATE_KEY)
 
 
 def test_load(account_manager, keyfile_account):

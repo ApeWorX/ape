@@ -321,9 +321,11 @@ def test_poll_logs_timeout(vyper_contract_instance, eth_tester_provider, owner, 
     new_block_timeout = 1
     poller = vyper_contract_instance.NumberChange.poll_logs(new_block_timeout=new_block_timeout)
 
-    with pytest.raises(ProviderError) as err:
-        with PollDaemon("logs-timeout", poller, lambda x: None, lambda: False):
-            time.sleep(1.5)
+    with (
+        pytest.raises(ProviderError) as err,
+        PollDaemon("logs-timeout", poller, lambda x: None, lambda: False),
+    ):
+        time.sleep(1.5)
 
     assert "Timed out waiting for next block" in str(err.value)
 

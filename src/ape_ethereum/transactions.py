@@ -320,14 +320,15 @@ class Receipt(ReceiptAPI):
 
     @cached_property
     def source_traceback(self) -> SourceTraceback:
-        if contract_type := self.contract_type:
-            if contract_src := self.local_project._create_contract_source(contract_type):
-                try:
-                    return SourceTraceback.create(contract_src, self.trace, HexBytes(self.data))
-                except Exception as err:
-                    # Failing to get a traceback should not halt an Ape application.
-                    # Sometimes, a node crashes and we are left with nothing.
-                    logger.error(f"Problem retrieving traceback: {err}")
+        if (contract_type := self.contract_type) and (
+            contract_src := self.local_project._create_contract_source(contract_type)
+        ):
+            try:
+                return SourceTraceback.create(contract_src, self.trace, HexBytes(self.data))
+            except Exception as err:  # noqa: BLE001
+                # Failing to get a traceback should not halt an Ape application.
+                # Sometimes, a node crashes and we are left with nothing.
+                logger.error(f"Problem retrieving traceback: {err}")
 
         return SourceTraceback.model_validate([])
 

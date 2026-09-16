@@ -26,10 +26,7 @@ class WeiConversions(ConverterAPI):
     """Converts units like `1 ether` to 1e18 wei."""
 
     def is_convertible(self, value: str) -> bool:
-        if not isinstance(value, str):
-            return False
-
-        elif " " not in value or len(value.split(" ")) > 2:
+        if not isinstance(value, str) or " " not in value or len(value.split(" ")) > 2:
             return False
 
         val, unit = value.split(" ")

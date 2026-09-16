@@ -47,6 +47,7 @@ The following example demonstrates a simple deployment script:
 ```python
 from ape import accounts, project
 
+
 def deploy():
     account = accounts.load("MyAccount")
     # Assume you have a contract named `MyContract` in your project's contracts folder.
@@ -64,9 +65,9 @@ ape console --network ethereum:sepolia:alchemy
 This will launch an IPython shell:
 
 ```python
-In [1]: dev = accounts.load("dev")
-In [2]: token = dev.deploy(project.Token)
-In [3]: token.contract_method_defined_in_contract()
+In[1]: dev = accounts.load("dev")
+In[2]: token = dev.deploy(project.Token)
+In[3]: token.contract_method_defined_in_contract()
 ```
 
 For an in depth tutorial on how to deploy, please visit [ApeAcademy](https://academy.apeworx.io/).
@@ -104,14 +105,18 @@ Calling certain methods on a deployed-contract is one way to transact.
 
 ```python
 contract = deploy()  # Example from above, that returns a contract instance.
-contract.fundMyContract(value="1 gwei", sender=sender)  # Assuming there is a method named 'fundMyContract' on MyContract.
+contract.fundMyContract(
+    value="1 gwei", sender=sender
+)  # Assuming there is a method named 'fundMyContract' on MyContract.
 ```
 
 In the example above, the call to `fundMyContract()` invokes a dynamic-fee transaction.
 To have more control of the fee-values, you can specify the `max_fee`, the `max_priority_fee`, or both.
 
 ```python
-contract.fundMyContract(value="1 gwei", max_priority_fee="50 gwei", max_fee="100 gwei", sender=sender)
+contract.fundMyContract(
+    value="1 gwei", max_priority_fee="50 gwei", max_fee="100 gwei", sender=sender
+)
 ```
 
 The `max_priority_fee` cannot exceed the `max_fee`, as the `max_fee` includes both the base fee and the priority fee.
