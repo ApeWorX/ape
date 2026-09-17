@@ -259,6 +259,32 @@ def test_get_contract_logs_single_log(chain, contract_instance, owner, eth_teste
     assert topics == expected_topics
 
 
+def test_poll_logs_forwards_multiple_addresses(mocker, contract_instance, owner, geth_provider):
+    from ape_ethereum.provider import Web3Provider
+
+    block_number = 0
+    mock_block = mocker.MagicMock(number=block_number)
+    # NOTE: need to patch source, which is parent class
+    mocker.patch.object(Web3Provider, "poll_blocks", return_value=iter([mock_block]))
+    get_contract_logs_spy = mocker.patch.object(
+        Web3Provider,
+        "get_contract_logs",
+        return_value=iter([]),
+    )
+
+    addresses = [contract_instance.address, owner.address]
+    _ = list(
+        geth_provider.poll_logs(
+            stop_block=block_number + 100,
+            address=addresses,
+            events=[contract_instance.NumberChange.abi],
+        )
+    )
+
+    log_filter = get_contract_logs_spy.call_args.args[0]
+    assert log_filter.addresses == addresses
+
+
 def test_get_contract_logs_single_log_query_multiple_values(
     chain, contract_instance, owner, eth_tester_provider
 ):
