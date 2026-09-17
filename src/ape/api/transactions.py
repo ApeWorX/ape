@@ -13,6 +13,7 @@ from pydantic.fields import Field
 from tqdm import tqdm  # type: ignore
 
 from ape.exceptions import (
+    APINotImplementedError,
     NetworkError,
     ProviderNotConnectedError,
     SignatureError,
@@ -31,7 +32,6 @@ from ape.utils.trace import prettify_function
 if TYPE_CHECKING:
     from ethpm_types.abi import EventABI, MethodABI
 
-    from ape.api.explorers import ExplorerAPI
     from ape.api.providers import BlockAPI
     from ape.api.trace import TraceAPI
     from ape.contracts import ContractEvent
@@ -432,10 +432,6 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
         return self.provider.get_transaction_trace(self.txn_hash)
 
     @property
-    def _explorer(self) -> "ExplorerAPI | None":
-        return self.provider.network.explorer
-
-    @property
     def _block_time(self) -> int:
         return self.provider.network.block_time
 
@@ -529,7 +525,17 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
                 break
 
     def _log_submission(self):
-        if explorer_url := self._explorer and self._explorer.get_transaction_url(self.txn_hash):
+        explorer_url = None
+        for explorer in self.provider.network.explorers:
+            try:
+                explorer_url = explorer.get_transaction_url(self.txn_hash)
+            except APINotImplementedError:
+                continue
+
+            if explorer_url:
+                break
+
+        if explorer_url:
             log_message = f"Submitted {explorer_url}"
         else:
             log_message = f"Submitted {self.txn_hash}"
