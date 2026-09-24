@@ -32,9 +32,9 @@ def test_encode_input_list_for_struct(chain, mocker, owner, method_abi_with_stru
 
 def test_info(contract_instance):
     # The `setNumber()` ABI defined a NatSpec.
-    abi = [x for x in contract_instance.contract_type.abi if getattr(x, "name", "") == "setNumber"][
-        0
-    ]
+    abi = next(
+        x for x in contract_instance.contract_type.abi if getattr(x, "name", "") == "setNumber"
+    )
     handler = ContractMethodHandler(contract=contract_instance, abis=[abi])
     actual = handler.info
     expected_doc = (
@@ -58,9 +58,9 @@ setNumber(uint256 num)
 
 def test_info_no_natspec(project, vyper_contract_instance):
     # The `myNumber()` ABI does not have a natspec.
-    abi = [
+    abi = next(
         x for x in project.VyperContract.contract_type.abi if getattr(x, "name", "") == "myNumber"
-    ][0]
+    )
     handler = ContractMethodHandler(contract=vyper_contract_instance, abis=[abi])
     actual = handler.info
     assert actual == ""

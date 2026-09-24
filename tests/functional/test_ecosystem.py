@@ -1021,9 +1021,8 @@ def test_networks_multiple_networks_with_same_name(custom_networks_config_dict, 
     data["networks"]["custom"][0]["name"] = "foonet"
     data["networks"]["custom"][1]["name"] = "foonet"
     expected = ".*More than one network named 'foonet' in ecosystem 'ethereum'.*"
-    with project.temp_config(**data):
-        with pytest.raises(NetworkError, match=expected):
-            _ = ethereum.networks
+    with project.temp_config(**data), pytest.raises(NetworkError, match=expected):
+        _ = ethereum.networks
 
 
 def test_getattr(ethereum):
@@ -1101,7 +1100,7 @@ def test_default_network_name_when_not_set_and_no_local_uses_only(
         if actual == LOCAL_NETWORK_NAME:
             # For some reason, this test is flake-y. Offer more info
             # to try and debug when this happens (intermittent CI failure).
-            all_nets = ", ".join([x for x in ecosystem.networks.keys()])
+            all_nets = ", ".join([x for x in ecosystem.networks])
             pytest.fail(
                 f"assert '{LOCAL_NETWORK_NAME}' == '{only_network}'. More info below:\n"
                 f"ecosystem_name={ecosystem.name}\n"
@@ -1191,7 +1190,8 @@ def test_enrich_trace_handles_call_type_enum(ethereum, vyper_contract_instance, 
     assert actual["call_type"] == CallType.CALL.value
 
 
-def test_enrich_trace_handles_events(ethereum, vyper_contract_instance, owner):
+@pytest.mark.parametrize("position", (None, 0, 1))
+def test_enrich_trace_handles_events(ethereum, vyper_contract_instance, owner, position):
     tx = vyper_contract_instance.setNumber(96247783, sender=owner)
 
     # Used Hardhat to get the data.
@@ -1207,6 +1207,9 @@ def test_enrich_trace_handles_events(ethereum, vyper_contract_instance, owner):
             ],
         }
     ]
+
+    if position is not None:
+        events[0]["position"] = position
 
     calldata = "0x3fb5c1cb000000000000000000000000000000000000000000000000000000000000007b"
     call = {
@@ -1236,6 +1239,9 @@ def test_enrich_trace_handles_events(ethereum, vyper_contract_instance, owner):
             },
         }
     ]
+    if position is not None:
+        expected[0]["position"] = position
+
     assert events == expected
 
 

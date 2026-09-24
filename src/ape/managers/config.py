@@ -151,7 +151,7 @@ class ConfigManager(ExtraAttributesMixin, BaseManager):
                         dest_path = temp_data_folder / item
                         try:
                             shutil.copytree(path_to_keep, dest_path)
-                        except Exception as err:
+                        except Exception as err:  # noqa: BLE001
                             logger.warning(
                                 f"Problem copying '{dest_path.name}' when making isolated project: {err}"
                             )

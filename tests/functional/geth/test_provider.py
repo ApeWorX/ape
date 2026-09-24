@@ -308,17 +308,21 @@ def test_connect_using_only_ipc_for_uri_already_connected(project, networks, get
     Shows we can remote-connect to a node that is already running when it exposes its IPC path.
     """
     ipc_path = geth_provider.ipc_path
-    with project.temp_config(node={"ethereum": {"local": {"uri": f"{ipc_path}"}}}):
-        with networks.ethereum.local.use_provider("node") as node:
-            assert node.uri == f"{ipc_path}"
+    with (
+        project.temp_config(node={"ethereum": {"local": {"uri": f"{ipc_path}"}}}),
+        networks.ethereum.local.use_provider("node") as node,
+    ):
+        assert node.uri == f"{ipc_path}"
 
 
 @geth_process_test
 def test_connect_using_ipc(process_factory_patch, project, networks, geth_provider):
     ipc_path = geth_provider.ipc_path
-    with project.temp_config(node={"ethereum": {"local": {"uri": f"{ipc_path}"}}}):
-        with networks.ethereum.local.use_provider("node") as node:
-            assert node.uri == f"{ipc_path}"
+    with (
+        project.temp_config(node={"ethereum": {"local": {"uri": f"{ipc_path}"}}}),
+        networks.ethereum.local.use_provider("node") as node,
+    ):
+        assert node.uri == f"{ipc_path}"
 
 
 @geth_process_test
@@ -334,46 +338,45 @@ def test_connect_request_headers(project, geth_provider, networks):
         },
         "node": {"request_headers": {"h3": 3, "USER-AGENT": "custom-geth-client/v100"}},
     }
-    with project.temp_config(**config):
-        with networks.ethereum.local.use_provider("node") as geth:
-            w3_provider = geth.web3.provider
-            if isinstance(w3_provider, AutoProvider):
-                for pot_provider_fn in w3_provider._potential_providers:
-                    pot_provider = pot_provider_fn()
-                    if not isinstance(pot_provider, HTTPProvider):
-                        continue
-                    else:
-                        http_provider = pot_provider
+    with project.temp_config(**config), networks.ethereum.local.use_provider("node") as geth:
+        w3_provider = geth.web3.provider
+        if isinstance(w3_provider, AutoProvider):
+            for pot_provider_fn in w3_provider._potential_providers:
+                pot_provider = pot_provider_fn()
+                if not isinstance(pot_provider, HTTPProvider):
+                    continue
+                else:
+                    http_provider = pot_provider
 
-            elif isinstance(w3_provider, HTTPProvider):
-                http_provider = w3_provider
+        elif isinstance(w3_provider, HTTPProvider):
+            http_provider = w3_provider
 
-            else:
-                pytest.fail("Not using HTTP. Please adjust test.")
+        else:
+            pytest.fail("Not using HTTP. Please adjust test.")
 
-            assert http_provider is not None, "Setup failed - HTTP Provider still None."
+        assert http_provider is not None, "Setup failed - HTTP Provider still None."
 
-            assert isinstance(http_provider._request_kwargs, dict)
-            actual = http_provider._request_kwargs["headers"]
-            assert actual["h0"] == 0  # top-level
-            assert actual["h1"] == 1  # ecosystem
-            assert actual["h2"] == 2  # network
-            assert actual["h3"] == 3  # provider
+        assert isinstance(http_provider._request_kwargs, dict)
+        actual = http_provider._request_kwargs["headers"]
+        assert actual["h0"] == 0  # top-level
+        assert actual["h1"] == 1  # ecosystem
+        assert actual["h2"] == 2  # network
+        assert actual["h3"] == 3  # provider
 
-            # Also, assert Ape's default user-agent strings.
-            assert actual["User-Agent"].startswith("Ape/")
-            assert "Python" in actual["User-Agent"]
-            assert "ape-ethereum" in actual["User-Agent"]
-            assert "web3.py/" in actual["User-Agent"]
+        # Also, assert Ape's default user-agent strings.
+        assert actual["User-Agent"].startswith("Ape/")
+        assert "Python" in actual["User-Agent"]
+        assert "ape-ethereum" in actual["User-Agent"]
+        assert "web3.py/" in actual["User-Agent"]
 
-            # Show other default headers.
-            assert actual["Content-Type"] == "application/json"
+        # Show other default headers.
+        assert actual["Content-Type"] == "application/json"
 
-            # Show appended user-agents strings.
-            assert "myapp/2.0" in actual["User-Agent"]
-            assert "ETH/1.0" in actual["User-Agent"]
-            assert "MyPrivateNetwork/0.0.1" in actual["User-Agent"]
-            assert "custom-geth-client/v100" in actual["User-Agent"]
+        # Show appended user-agents strings.
+        assert "myapp/2.0" in actual["User-Agent"]
+        assert "ETH/1.0" in actual["User-Agent"]
+        assert "MyPrivateNetwork/0.0.1" in actual["User-Agent"]
+        assert "custom-geth-client/v100" in actual["User-Agent"]
 
 
 @geth_process_test
@@ -883,7 +886,7 @@ def test_start(process_factory_patch, convert, project, geth_provider):
     with project.temp_config(test={"balance": amount}):
         try:
             geth_provider.start()
-        except Exception:
+        except Exception:  # noqa: BLE001, S110
             pass  # Exceptions are fine here.
 
     actual = process_factory_patch.call_args[1]["balance"]
@@ -900,7 +903,7 @@ def test_start_from_ws_uri(process_factory_patch, project, geth_provider, key):
         geth_provider.provider_settings = {}
         try:
             geth_provider.start()
-        except Exception:
+        except Exception:  # noqa: BLE001, S110
             pass  # Exceptions are fine here.
 
         geth_provider.provider_settings = settings

@@ -125,7 +125,7 @@ class InterfaceCompiler(CompilerAPI):
 
         try:
             contract = self.chain_manager.contracts.instance_at(address)
-        except Exception:
+        except Exception:  # noqa: BLE001
             return err
 
         if (

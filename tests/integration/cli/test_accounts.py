@@ -116,7 +116,7 @@ def test_import_invalid_private_key(ape_cli, runner):
     result = runner.invoke(
         ape_cli,
         ("accounts", "import", ALIAS),
-        input="\n".join(["0xhello", PASSWORD, PASSWORD]),
+        input=f"0xhello\n{PASSWORD}\n{PASSWORD}",
     )
     assert result.exit_code == 1, result.output
     assert_failure(result, "Key can't be imported: Non-hexadecimal digit found")
@@ -158,7 +158,7 @@ def test_import_mnemonic_default_hdpath(
     result = runner.invoke(
         ape_cli,
         ("accounts", "import", "--use-mnemonic", ALIAS, "-v", "INFO"),
-        input="\n".join([MNEMONIC, PASSWORD, PASSWORD]),
+        input=f"{MNEMONIC}\n{PASSWORD}\n{PASSWORD}",
     )
     assert result.exit_code == 0, result.output
     assert temp_account_mnemonic_default_hdpath.address in result.output
@@ -175,7 +175,7 @@ def test_import_mnemonic_custom_hdpath(
     result = runner.invoke(
         ape_cli,
         ("accounts", "import", ALIAS, "--use-mnemonic", "--hd-path", CUSTOM_HDPATH, "-v", "INFO"),
-        input="\n".join([MNEMONIC, PASSWORD, PASSWORD]),
+        input=f"{MNEMONIC}\n{PASSWORD}\n{PASSWORD}",
     )
     assert result.exit_code == 0, result.output
     assert temp_account_mnemonic_custom_hdpath.address in result.output
@@ -189,7 +189,7 @@ def test_export(ape_cli, runner, temp_keyfile, keyfile_account, accounts):
     result = runner.invoke(
         ape_cli,
         ("accounts", "export", ALIAS, "-v", "INFO"),
-        input="\n".join([PASSWORD, PASSWORD]),
+        input=f"{PASSWORD}\n{PASSWORD}",
     )
     assert result.exit_code == 0, result.output
     # NOTE: temp_keyfile uses the same address as the keyfile account.
@@ -205,7 +205,7 @@ def test_import_invalid_mnemonic(ape_cli, runner):
     result = runner.invoke(
         ape_cli,
         ("accounts", "import", "--use-mnemonic", ALIAS),
-        input="\n".join([INVALID_MNEMONIC, PASSWORD, PASSWORD]),
+        input=f"{INVALID_MNEMONIC}\n{PASSWORD}\n{PASSWORD}",
     )
     assert result.exit_code == 1, result.output
     assert_failure(result, "Seed phrase can't be imported")
@@ -221,7 +221,7 @@ def test_generate_default(ape_cli, runner, temp_keyfile_path):
     result = runner.invoke(
         ape_cli,
         ("accounts", "generate", ALIAS, "-v", "INFO"),
-        input="\n".join(["random entropy", show_mnemonic, PASSWORD, PASSWORD]),
+        input=f"random entropy\n{show_mnemonic}\n{PASSWORD}\n{PASSWORD}",
     )
     assert result.exit_code == 0, result.output
     mnemonic = extract_mnemonic(result.output)
@@ -241,7 +241,7 @@ def test_generate_hide_mnemonic_prompt(ape_cli, runner, temp_keyfile_path):
     result = runner.invoke(
         ape_cli,
         ("accounts", "generate", ALIAS, "-v", "INFO"),
-        input="\n".join(["random entropy", show_mnemonic, PASSWORD, PASSWORD]),
+        input=f"random entropy\n{show_mnemonic}\n{PASSWORD}\n{PASSWORD}",
     )
     assert result.exit_code == 0, result.output
     assert "Newly generated mnemonic is" not in result.output
@@ -257,7 +257,7 @@ def test_generate_hide_mnemonic_option(ape_cli, runner, temp_keyfile_path):
     result = runner.invoke(
         ape_cli,
         ("accounts", "generate", ALIAS, "--hide-mnemonic", "-v", "INFO"),
-        input="\n".join(["random entropy", PASSWORD, PASSWORD]),
+        input=f"random entropy\n{PASSWORD}\n{PASSWORD}",
     )
     assert result.exit_code == 0, result.output
     assert "Newly generated mnemonic is" not in result.output
@@ -275,7 +275,7 @@ def test_generate_24_words(ape_cli, runner, temp_keyfile_path):
     result = runner.invoke(
         ape_cli,
         ("accounts", "generate", ALIAS, "--word-count", word_count, "-v", "INFO"),
-        input="\n".join(["random entropy", show_mnemonic, PASSWORD, PASSWORD]),
+        input=f"random entropy\n{show_mnemonic}\n{PASSWORD}\n{PASSWORD}",
     )
     assert result.exit_code == 0, result.output
     mnemonic = extract_mnemonic(result.output)
@@ -295,7 +295,7 @@ def test_generate_custom_hdpath(ape_cli, runner, temp_keyfile_path):
     result = runner.invoke(
         ape_cli,
         ("accounts", "generate", ALIAS, "--hd-path", CUSTOM_HDPATH, "-v", "INFO"),
-        input="\n".join(["random entropy", show_mnemonic, PASSWORD, PASSWORD]),
+        input=f"random entropy\n{show_mnemonic}\n{PASSWORD}\n{PASSWORD}",
     )
     assert result.exit_code == 0, result.output
     mnemonic = extract_mnemonic(result.output)
@@ -326,7 +326,7 @@ def test_generate_24_words_and_custom_hdpath(ape_cli, runner, temp_keyfile_path)
             "-v",
             "INFO",
         ),
-        input="\n".join(["random entropy", show_mnemonic, PASSWORD, PASSWORD]),
+        input=f"random entropy\n{show_mnemonic}\n{PASSWORD}\n{PASSWORD}",
     )
     assert result.exit_code == 0, result.output
     mnemonic = extract_mnemonic(result.output)
@@ -345,7 +345,7 @@ def test_generate_alias_already_in_use(ape_cli, runner):
         return runner.invoke(
             ape_cli,
             ("accounts", "generate", ALIAS),
-            input="\n".join(["random entropy", show_mnemonic, PASSWORD, PASSWORD]),
+            input=f"random entropy\n{show_mnemonic}\n{PASSWORD}\n{PASSWORD}",
         )
 
     result = invoke_generate()
@@ -426,7 +426,7 @@ def test_authorizations_cli(ape_cli, runner, keyfile_account, geth_contract):
             GETH_URI,
         ),
         catch_exceptions=False,
-        input="\n".join(["y", PASSWORD, "y", "y"]),
+        input=f"y\n{PASSWORD}\ny\ny",
     )
     assert result.exit_code == 0, result.output
 
@@ -457,7 +457,7 @@ def test_authorizations_cli(ape_cli, runner, keyfile_account, geth_contract):
             GETH_URI,
         ),
         catch_exceptions=False,
-        input="\n".join(["y", PASSWORD, "y", "y"]),
+        input=f"y\n{PASSWORD}\ny\ny",
     )
     assert result.exit_code == 0, result.output
 

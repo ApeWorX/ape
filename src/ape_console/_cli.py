@@ -39,7 +39,7 @@ def _code_callback(ctx, param, value) -> list[str]:
 @click.command(
     cls=ConnectedProviderCommand,
     short_help="Load the console",
-    context_settings=dict(ignore_unknown_options=True),
+    context_settings={"ignore_unknown_options": True},
 )
 @ape_cli_context()
 @project_option(hidden=True, type=Path)  # Hidden as mostly used for test purposes.

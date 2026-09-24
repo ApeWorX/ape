@@ -156,7 +156,7 @@ def _import(cli_ctx, alias, import_from_mnemonic, custom_hd_path):
         try:
             passphrase = ask_for_passphrase()
             account = _account_from_mnemonic(alias, passphrase, mnemonic, hd_path=custom_hd_path)
-        except Exception as error:
+        except Exception as error:  # noqa: BLE001
             error_msg = f"{error}".replace(mnemonic, HIDDEN_MESSAGE)
             cli_ctx.abort(f"Seed phrase can't be imported: {error_msg}")
 
@@ -165,7 +165,7 @@ def _import(cli_ctx, alias, import_from_mnemonic, custom_hd_path):
         try:
             passphrase = ask_for_passphrase()
             account = _account_from_key(alias, passphrase, key)
-        except Exception as error:
+        except Exception as error:  # noqa: BLE001
             cli_ctx.abort(f"Key can't be imported: {error}")
 
     if account:

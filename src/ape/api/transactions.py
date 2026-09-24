@@ -4,7 +4,7 @@ from abc import abstractmethod
 from collections.abc import Iterator
 from datetime import datetime as datetime_type
 from functools import cached_property
-from typing import IO, TYPE_CHECKING, Any, NoReturn
+from typing import IO, TYPE_CHECKING, Any
 
 from eth_pydantic_types import HexBytes, HexStr
 from eth_utils import humanize_hexstr, is_hex, to_hex, to_int
@@ -329,7 +329,7 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
     contract_address: AddressType | None = None
     block_number: HexInt
     gas_used: HexInt
-    logs: list[dict] = []
+    logs: list[dict] = Field(default_factory=list)
     status: HexInt
     txn_hash: HexStr
     transaction: TransactionAPI
@@ -483,7 +483,7 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
             list[:class:`~ape.types.ContractLog`]
         """
 
-    def raise_for_status(self) -> NoReturn | None:
+    def raise_for_status(self) -> None:
         """
         Handle provider-specific errors regarding a non-successful
         :class:`~api.providers.TransactionStatusEnum`.

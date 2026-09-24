@@ -603,6 +603,7 @@ For example, if you are using a script with a default network connection, you ca
 ```python
 from ape import chain, networks
 
+
 def main():
     start_provider = chain.provider.name
     with networks.ethereum.mainnet.use_provider("node") as provider:
@@ -615,6 +616,7 @@ Jump between networks to simulate multi-chain behavior.
 ```python
 import click
 from ape import networks
+
 
 @click.command()
 def cli():
@@ -674,6 +676,7 @@ We can switch to a forked network by doing this:
 
 ```python
 from ape import networks
+
 
 def main():
     with networks.fork(provider_name="foundry"):

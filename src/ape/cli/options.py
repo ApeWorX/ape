@@ -270,7 +270,7 @@ def network_option(
             keep_as_choice_str = param.type.base_type is str
             try:
                 provider_obj = _get_provider(value, default, keep_as_choice_str)
-            except Exception as err:
+            except Exception as err:  # noqa: BLE001
                 raise click.BadOptionUsage("--network", str(err), ctx)
 
             if provider_obj:

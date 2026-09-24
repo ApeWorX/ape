@@ -40,17 +40,20 @@ In Ape, it is easy to extend the CLI context object and use the extended version
 from ape.cli import ApeCliContextObject, ape_cli_context
 import click
 
+
 class MyManager:
-   """My custom manager."""
+    """My custom manager."""
+
 
 class CustomContext(ApeCliContextObject):
-   my_manager: MyManager = MyManager()
-   """Add new managers to your custom context"""
-   
-   @property
-   def signer(self):
-      """Utilize existing managers in your custom context."""
-      return self.account_manager.load("my_account")
+    my_manager: MyManager = MyManager()
+    """Add new managers to your custom context"""
+
+    @property
+    def signer(self):
+        """Utilize existing managers in your custom context."""
+        return self.account_manager.load("my_account")
+
 
 @click.command()
 @ape_cli_context(obj_type=CustomContext)
@@ -82,19 +85,21 @@ Use `ecosystem`, `network`, and `provider` argument names in your command implem
 import click
 from ape.cli import network_option
 
+
 @click.command()
 @network_option()
 def cmd(provider):
-   # This command only needs the provider.
-   click.echo(provider.name)
+    # This command only needs the provider.
+    click.echo(provider.name)
+
 
 @click.command()
 @network_option()
 def cmd_2(ecosystem, network, provider):
-   # This command uses all parts of the parsed network choice.
-   click.echo(ecosystem.name)
-   click.echo(network.name)
-   click.echo(provider.name)
+    # This command uses all parts of the parsed network choice.
+    click.echo(ecosystem.name)
+    click.echo(network.name)
+    click.echo(provider.name)
 ```
 
 The [ConnectedProviderCommand](../methoddocs/cli.html#ape.cli.commands.ConnectedProviderCommand) automatically uses the `--network` option and connects to the network before any of your code executes and then disconnects afterward.
@@ -105,22 +110,26 @@ Additionally, specify `ecosystem`, `network`, or `provider` in your command func
 import click
 from ape.cli import ConnectedProviderCommand
 
+
 @click.group()
 def cli():
     pass
 
+
 @cli.command(cls=ConnectedProviderCommand)
 def cmd_1(network, provider):
-   click.echo(network.name)
-   click.echo(provider.is_connected)  # True
+    click.echo(network.name)
+    click.echo(provider.is_connected)  # True
+
 
 @cli.command(cls=ConnectedProviderCommand)
 def cmd_2(provider):
-   click.echo(provider.is_connected)  # True
+    click.echo(provider.is_connected)  # True
+
 
 @cli.command(cls=ConnectedProviderCommand)
 def cmd_3():
-   click.echo("Using params from ConnectedProviderCommand is optional")
+    click.echo("Using params from ConnectedProviderCommand is optional")
 ```
 
 ## Account Tools
@@ -168,8 +177,8 @@ from ape.cli import select_account
 
 @click.command()
 def cmd():
-   account = select_account("Select an account to use")
-   click.echo(f"You selected {account.address}.")
+    account = select_account("Select an account to use")
+    click.echo(f"You selected {account.address}.")
 ```
 
 Similarly, there are a couple custom arguments for aliases alone that are useful when making CLIs for account creation.
@@ -207,15 +216,18 @@ from ape_accounts.accounts import KeyfileAccount
 # NOTE: This is just an example and not anything specific or recommended.
 APPLICATION_PREFIX = "<FOO_BAR>"
 
+
 @click.command()
 @existing_alias_argument(account_type=KeyfileAccount)
 def cli_0(alias):
-   pass
+    pass
+
 
 @click.command()
 @existing_alias_argument(account_type=lambda a: a.alias.startswith(APPLICATION_PREFIX))
 def cli_1(alias):
-   pass
+    pass
+
 
 # Select from the given accounts directly.
 my_accounts = [accounts.load("me"), accounts.load("me2")]
@@ -235,10 +247,11 @@ import click
 
 from ape.cli import contract_file_paths_argument
 
+
 @click.command()
 @contract_file_paths_argument()
 def cli(file_paths: set[Path]):
-   # Loop through all source files given (or all source files in the project).
+    # Loop through all source files given (or all source files in the project).
     for path in file_paths:
         click.echo(f"Source found: {path}")
 ```

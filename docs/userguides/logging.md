@@ -54,6 +54,7 @@ You can also import and use the logger in your own Python scripts or commands:
 ```python
 from ape.logging import logger, LogLevel
 
+
 def main():
     logger.info("You have entered `main()`.")
     logger.set_level(LogLevel.WARNING)
@@ -63,6 +64,7 @@ You can also use the `.at_level()` context-manager to temporarily change the log
 
 ```python
 from ape.logging import logger, LogLevel
+
 
 def main():
     with logger.at_level(LogLevel.WARNING):
@@ -74,6 +76,7 @@ You can also disable the logger in Python:
 
 ```python
 from ape.logging import logger, LogLevel
+
 
 def main():
     logger.disable()  # Turns off logging entirely.

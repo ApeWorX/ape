@@ -233,10 +233,10 @@ class TransactionError(ApeException):
             return addr
 
         receiver = getattr(self.txn, "receiver", None)
-        if receiver in (None, "0x0000000000000000000000000000000000000000"):
-            # Check if deploy
-            if addr := getattr(self.txn, "contract_address", None):
-                return addr
+        if receiver in (None, "0x0000000000000000000000000000000000000000") and (
+            addr := getattr(self.txn, "contract_address", None)
+        ):
+            return addr
 
         return receiver
 
@@ -289,11 +289,10 @@ class TransactionError(ApeException):
         self._source_traceback = value
 
     def _get_ape_traceback(self) -> TracebackType | None:
-        if src_tb := self.source_traceback:
-            # Create a custom Pythonic traceback using lines from the sources
-            # found from analyzing the trace of the transaction.
-            if py_tb := _get_custom_python_traceback(self, src_tb, project=self._project):
-                return py_tb
+        if (src_tb := self.source_traceback) and (
+            py_tb := _get_custom_python_traceback(self, src_tb, project=self._project)
+        ):
+            return py_tb
 
         return None
 
@@ -340,7 +339,7 @@ class ContractLogicError(VirtualMachineError):
             try:
                 # Attempt to use dev message as main exception message.
                 self.message = dev
-            except Exception:
+            except Exception:  # noqa: BLE001, S110
                 pass
 
     @property
@@ -351,7 +350,7 @@ class ContractLogicError(VirtualMachineError):
     def revert_message(self, value):
         self.message = value
         if args := self.args:
-            self.args = tuple([value, *args[1:]])
+            self.args = (value, *args[1:])
 
     @property
     def dev_message(self) -> str | None:
@@ -936,7 +935,7 @@ def _get_ape_traceback_from_tx(txn: FailedTxn) -> "SourceTraceback | None":
 
     try:
         receipt: ReceiptAPI = txn if isinstance(txn, ReceiptAPI) else txn.receipt  # type: ignore
-    except Exception:
+    except Exception:  # noqa: BLE001
         # Receipt not real enough, maybe was a re-played call.
         return None
 
@@ -972,7 +971,7 @@ def _get_custom_python_traceback(
         # TODO: Add support for manifest-projects.
         return None
 
-    _, exc_value, tb = sys.exc_info()
+    _, _exc_value, tb = sys.exc_info()
     depth = None
     idx = len(ape_traceback) - 1
     frames = []
@@ -1004,7 +1003,7 @@ def _get_custom_python_traceback(
         if exec_item.source_path is None:
             # File is not local. Create a temporary file in its place.
             # This is necessary for tracebacks to work in Python.
-            temp_file = tempfile.NamedTemporaryFile(prefix="unknown_contract_")
+            temp_file = tempfile.NamedTemporaryFile(prefix="unknown_contract_")  # noqa: SIM115
             filename = temp_file.name
         else:
             filename = str(exec_item.source_path)
@@ -1017,8 +1016,8 @@ def _get_custom_python_traceback(
 
         # Execute the new code to get a new (fake) tb with contract source info.
         try:
-            exec(py_code, {"__ape_exception__": err}, {})
-        except BaseException:
+            exec(py_code, {"__ape_exception__": err}, {})  # noqa: S102
+        except BaseException:  # noqa: BLE001
             real_tb = sys.exc_info()[2]
             fake_tb = getattr(real_tb, "tb_next", None)
             if isinstance(fake_tb, TracebackType):

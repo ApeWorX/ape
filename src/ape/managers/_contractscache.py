@@ -2,9 +2,10 @@ import json
 from collections.abc import Collection
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
+from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
-from typing import TYPE_CHECKING, Generic, TypeVar
+from typing import TYPE_CHECKING, ClassVar, Generic, TypeVar
 
 from ethpm_types import ABI, ContractType
 from ethpm_types.contract_type import ABIList
@@ -30,6 +31,12 @@ if TYPE_CHECKING:
 _BASE_MODEL = TypeVar("_BASE_MODEL", bound=BaseModel)
 
 
+@dataclass(frozen=True)
+class ProxyInfoCacheEntry:
+    exists: bool
+    value: ProxyInfoAPI | None = None
+
+
 class ApeDataCache(CacheDirectory, Generic[_BASE_MODEL]):
     """
     A wrapper around some cached models in the data directory,
@@ -47,7 +54,7 @@ class ApeDataCache(CacheDirectory, Generic[_BASE_MODEL]):
         data_folder = base_data_folder / ecosystem_key
         base_path = data_folder / network_key
         self._model_type = model_type
-        self.memory: dict[str, _BASE_MODEL] = {}
+        self.memory: dict[str, _BASE_MODEL | None] = {}
 
         # Only write if we are not testing!
         self._write_to_disk = not network_key.endswith("-fork") and network_key != "local"
@@ -81,15 +88,68 @@ class ApeDataCache(CacheDirectory, Generic[_BASE_MODEL]):
         if model := self.memory.get(key):
             return model
 
+        elif fetch_from_disk and self._read_from_disk and (data := self.get_data(key)):
+            # Found on disk.
+            model = self._model_type.model_validate(data)
+            # Cache locally for next time.
+            self.memory[key] = model
+            return model
+
+        return None
+
+
+class ProxyInfoCache(ApeDataCache[ProxyInfoAPI]):
+    """
+    Cache of proxy detection results.
+
+    A missing file means unchecked, `null` means checked and not a proxy, and a
+    JSON object means checked and proxy info found.
+    """
+
+    def __init__(
+        self,
+        base_data_folder: Path,
+        ecosystem_key: str,
+        network_key: str,
+        key: str,
+        model_type: type[ProxyInfoAPI],
+    ):
+        super().__init__(base_data_folder, ecosystem_key, network_key, key, model_type)
+        self.memory: dict[str, ProxyInfoAPI | None] = {}
+
+    def __setitem__(self, key: str, value: ProxyInfoAPI | None):  # type: ignore
+        self.memory[key] = value
+        if self._write_to_disk:
+            self.cache_data(key, value.model_dump(mode="json") if value is not None else None)
+
+    def __delitem__(self, key: str):
+        super().__delitem__(key)
+
+    def get_type(self, key: str, fetch_from_disk: bool = True) -> ProxyInfoAPI | None:
+        return self.get_entry(key, fetch_from_disk=fetch_from_disk).value
+
+    def get_entry(self, key: str, fetch_from_disk: bool = True) -> ProxyInfoCacheEntry:
+        if key in self.memory:
+            return ProxyInfoCacheEntry(exists=True, value=self.memory[key])
+
         elif fetch_from_disk and self._read_from_disk:
-            if data := self.get_data(key):
-                # Found on disk.
+            file = self.get_file(key)
+            if file.is_file():
+                data = self.get_data(key)
+                if data is None:
+                    self.memory[key] = None
+                    return ProxyInfoCacheEntry(exists=True)
+
+                # Found proxy info on disk.
                 model = self._model_type.model_validate(data)
                 # Cache locally for next time.
                 self.memory[key] = model
-                return model
+                return ProxyInfoCacheEntry(exists=True, value=model)
 
-        return None
+        return ProxyInfoCacheEntry(exists=False)
+
+    def clear_memory(self):
+        self.memory = {}
 
 
 class ContractCache(BaseManager):
@@ -104,19 +164,19 @@ class ContractCache(BaseManager):
     """
 
     # ecosystem_name -> network_name -> cache_name -> cache
-    _caches: dict[str, dict[str, dict[str, ApeDataCache]]] = {}
+    _caches: ClassVar[dict[str, dict[str, dict[str, ApeDataCache]]]] = {}
 
     # chain_id -> address -> custom_err
     # Cached to prevent calling `new_class` multiple times with conflicts.
-    _custom_error_types: dict[int, dict[AddressType, set[type[CustomError]]]] = {}
+    _custom_error_types: ClassVar[dict[int, dict[AddressType, set[type[CustomError]]]]] = {}
 
     @property
     def contract_types(self) -> ApeDataCache[ContractType]:
         return self._get_data_cache("contract_types", ContractType)
 
     @property
-    def proxy_infos(self) -> ApeDataCache[ProxyInfoAPI]:
-        return self._get_data_cache("proxy_info", ProxyInfoAPI)
+    def proxy_infos(self) -> ProxyInfoCache:
+        return self._get_data_cache("proxy_info", ProxyInfoAPI, cache_type=ProxyInfoCache)
 
     @property
     def blueprints(self) -> ApeDataCache[ContractType]:
@@ -132,6 +192,7 @@ class ContractCache(BaseManager):
         model_type: type,
         ecosystem_key: str | None = None,
         network_key: str | None = None,
+        cache_type: type[ApeDataCache] = ApeDataCache,
     ):
         ecosystem_name = ecosystem_key or self.provider.network.ecosystem.name
         network_name = network_key or self.provider.network.name.replace("-fork", "")
@@ -141,7 +202,7 @@ class ContractCache(BaseManager):
         if cache := self._caches[ecosystem_name][network_name].get(key):
             return cache
 
-        self._caches[ecosystem_name][network_name][key] = ApeDataCache(
+        self._caches[ecosystem_name][network_name][key] = cache_type(
             self.config_manager.DATA_FOLDER, ecosystem_name, network_name, key, model_type
         )
         return self._caches[ecosystem_name][network_name][key]
@@ -177,6 +238,15 @@ class ContractCache(BaseManager):
             self.cache_contract_type(address, contract_type)
         else:
             raise TypeError(item)
+
+    def cache_proxy_info_no_hit(self, address: AddressType):
+        """
+        Cache that proxy detection found no proxy information for this address.
+
+        Args:
+            address (AddressType): The address that is not a proxy.
+        """
+        self.proxy_infos[address] = None
 
     def cache_contract_type(
         self,
@@ -245,6 +315,7 @@ class ContractCache(BaseManager):
         Args:
             address (AddressType): The address to remove from the cache.
         """
+        address = self.conversion_manager.convert(address, AddressType)
         del self.contract_types[address]
         self._delete_proxy(address)
         del self.contract_creations[address]
@@ -256,17 +327,19 @@ class ContractCache(BaseManager):
         Useful for testing.
         """
         caches = self._caches
-        self._caches = {}
+        ContractCache._caches = {}
         with self.deployments.use_temporary_cache():
             yield
 
-        self._caches = caches
+        ContractCache._caches = caches
 
     def _delete_proxy(self, address: AddressType):
         if info := self.proxy_infos[address]:
             target = info.target
             del self.proxy_infos[target]
             del self.contract_types[target]
+        else:
+            del self.proxy_infos[address]
 
     def __contains__(self, address: AddressType) -> bool:
         return self.get(address) is not None
@@ -307,6 +380,7 @@ class ContractCache(BaseManager):
 
             else:
                 # Cache as normal.
+                self.cache_proxy_info_no_hit(address)
                 self.contract_types[address] = contract_type
 
         else:
@@ -583,24 +657,31 @@ class ContractCache(BaseManager):
         # Either no cached entry, or `replace=True` so we ignore the cache.
         # Check broader sources, such as an explorer.
         if not proxy_info and detect_proxy:
-            # Proxy info not provided. Attempt to detect.
-            if not (proxy_info := self.proxy_infos[address_key]):
+            cached_proxy_info = self.proxy_infos.get_entry(
+                address_key, fetch_from_disk=fetch_from_disk
+            )
+            if cached_proxy_info.exists:
+                proxy_info = cached_proxy_info.value
+            else:
                 if proxy_info := self.provider.network.ecosystem.get_proxy_info(address_key):
-                    self.proxy_infos[address_key] = proxy_info
+                    self.cache_proxy_info(address_key, proxy_info)
+                else:
+                    self.cache_proxy_info_no_hit(address_key)
 
-        if proxy_info:
-            if proxy_contract_type := self._get_proxy_contract_type(
+        if proxy_info and (
+            proxy_contract_type := self._get_proxy_contract_type(
                 address_key,
                 proxy_info,
                 fetch_from_explorer=fetch_from_explorer,
                 default=default,
                 replace=replace,
-            ):
-                # `proxy_contract_type` is one of the following:
-                # 1. A ContractType with the combined proxy and implementation ABIs
-                # 2. Implementation-only ABI ContractType (like forwarder proxies)
-                # 3. Proxy only ABI (e.g. unverified implementation ContractType)
-                return proxy_contract_type
+            )
+        ):
+            # `proxy_contract_type` is one of the following:
+            # 1. A ContractType with the combined proxy and implementation ABIs
+            # 2. Implementation-only ABI ContractType (like forwarder proxies)
+            # 3. Proxy only ABI (e.g. unverified implementation ContractType)
+            return proxy_contract_type
 
         contract_type = None
         # Also gets cached to disk for faster lookup next time.
@@ -675,9 +756,8 @@ class ContractCache(BaseManager):
         Get the _exact_ ContractType for a given address. For proxy contracts, returns
         the proxy ABIs if there are any and not the implementation ABIs.
         """
-        if not replace:
-            if contract_type := self.contract_types[address]:
-                return contract_type
+        if not replace and (contract_type := self.contract_types[address]):
+            return contract_type
 
         if fetch_from_explorer:
             return self._get_contract_type_from_explorer(address)
@@ -751,7 +831,7 @@ class ContractCache(BaseManager):
             prefix = f"Expected type '{ContractType.__name__}' for argument 'contract_type'"
             try:
                 suffix = f"; Given '{type(contract_type).__name__}'."
-            except Exception:
+            except Exception:  # noqa: BLE001
                 suffix = "."
 
             raise TypeError(f"{prefix}{suffix}")
@@ -917,7 +997,10 @@ class ContractCache(BaseManager):
                 self.contract_creations,
                 self.blueprints,
             ):
-                cache.memory = {}
+                if isinstance(cache, ProxyInfoCache):
+                    cache.clear_memory()
+                else:
+                    cache.memory = {}
 
         self.deployments.clear_local()
 
@@ -927,7 +1010,7 @@ class ContractCache(BaseManager):
 
         try:
             contract_type = self.provider.network.explorer.get_contract_type(address)
-        except Exception as err:
+        except Exception as err:  # noqa: BLE001
             explorer_name = self.provider.network.explorer.name
             if "rate limit" in str(err).lower():
                 # Don't show any additional error message during rate limit errors,

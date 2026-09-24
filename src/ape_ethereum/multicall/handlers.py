@@ -183,7 +183,9 @@ class Call(BaseMulticall):
             raise InvalidOption("value")
 
         super().add(call, *args, **kwargs)
-        self.abis.append(_select_method_abi(call.abis, args))
+        # Must match the overload `super().add` encoded the calldata with, or an overloaded
+        # call is decoded against the wrong return types.
+        self.abis.append(_select_method_abi(call.abis, args, encode_check=call._can_encode))
         return self
 
     @property

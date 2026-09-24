@@ -250,7 +250,7 @@ class PytestApeRunner(ManagerAccessMixin):
         if self._track_fixture_blocks(fixture_name):
             try:
                 block_number = self.chain_manager.blocks.height
-            except Exception:
+            except Exception:  # noqa: BLE001, S110
                 pass
             else:
                 self.fixture_manager.add_fixture_info(fixture_name, setup_block=block_number)
@@ -274,10 +274,7 @@ class PytestApeRunner(ManagerAccessMixin):
             return False
 
         scope = self.fixture_manager.get_fixture_scope(fixture_name)
-        if scope in (None, Scope.FUNCTION):
-            return False
-
-        return True
+        return scope not in (None, Scope.FUNCTION)
 
     @pytest.hookimpl(trylast=True, hookwrapper=True)
     def pytest_collection_finish(self, session):
@@ -363,7 +360,7 @@ class PytestApeRunner(ManagerAccessMixin):
         if self._provider_is_connected and self.config_wrapper.disconnect_providers_after:
             try:
                 self._provider_context.disconnect_all()
-            except Exception as err:
+            except Exception as err:  # noqa: BLE001
                 logger.error(f"Failed to disconnect {self}: {err}")
             else:
                 self._provider_is_connected = False
