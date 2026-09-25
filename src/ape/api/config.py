@@ -281,6 +281,28 @@ def _get_problem_with_config(errors: list, path: Path) -> str | None:
     return f"'{clean_path(path)}' is invalid!\n{final_msg}"
 
 
+class ProxyConfig(PluginConfig):
+    """
+    Configure an HTTP(S) proxy for Ape networking.
+
+    Credentials must not be stored here — use ``~/.netrc`` instead.
+    The schema is intentionally flat (``url`` shared by HTTP and HTTPS)
+    so per-protocol keys such as ``http`` / ``https`` can be added later
+    without breaking existing configs (``PluginConfig`` allows extras).
+    """
+
+    url: str | None = None
+    """
+    Shared proxy URL applied to both HTTP and HTTPS when the corresponding
+    environment variables are unset. Example: ``https://proxy.company.com:8080``.
+    """
+
+    no_proxy: list[str] = []
+    """
+    Hostnames that should bypass the proxy (joined into ``NO_PROXY``).
+    """
+
+
 class DisplayConfig(PluginConfig):
     """
     Configure display settings in Ape.
@@ -356,6 +378,13 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
     """
     Use this when the project's base-path is not the
     root of the project.
+    """
+
+    proxy: ProxyConfig = ProxyConfig()
+    """
+    Configure an HTTP(S) proxy for networking. See
+    :class:`~ape.api.config.ProxyConfig`. Environment variables
+    ``HTTP_PROXY`` / ``HTTPS_PROXY`` / ``NO_PROXY`` always win when set.
     """
 
     request_headers: dict = {}
