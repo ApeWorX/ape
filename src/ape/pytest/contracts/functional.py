@@ -86,7 +86,6 @@ class ContractTestItem(BaseTestItem):
         calldata = self.method.encode_input(*call_args.values())
 
         with self.executor.delegate_to(self.delegate, receiver=0x1) as delegate:
-            breakpoint()
             if raw_revert_msg := self.modifiers.get(TestModifier.CHECK_REVERTS):
                 with RevertsContextManager(raw_revert_msg):
                     delegate(data=calldata)
