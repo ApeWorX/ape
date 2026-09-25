@@ -1,23 +1,23 @@
 from functools import cached_property
 from typing import TYPE_CHECKING, Any, ClassVar, cast
 
-from hypothesis import Phase
 import pytest
 from _pytest.fixtures import TopRequest
+from hypothesis import Phase
 
 from ape.utils import ManagerAccessMixin
 
 from .types import TestModifier
 
 if TYPE_CHECKING:
+    from _pytest._code.code import ExceptionInfo, TerminalRepr, TracebackStyle
+    from _pytest.nodes import Node
     from ethpm_types import ContractType
     from ethpm_types.abi import ABIType
     from hypothesis import settings as HypothesisSettings
-    from _pytest.nodes import Node
-    from _pytest._code.code import ExceptionInfo, TracebackStyle, TerminalRepr
 
-    from ape.contracts.base import ContractInstance
     from ape.api.accounts import TestAccountAPI
+    from ape.contracts.base import ContractInstance
     from ape.types.vm import SnapshotID
 
 
@@ -52,16 +52,46 @@ class BaseTestItem(pytest.Item, ManagerAccessMixin):
         self._fixtureinfo = fixtureinfo
         self.fixturenames = fixtureinfo.names_closure
 
-    # TODO: This is not caching properly...
+    # Cache non-function-scoped fixture values. ``FixtureDef.execute`` via TopRequest
+    # registers ``finish`` finalizers on *this item*, which clear ``cached_result`` on
+    # item teardown — re-deploying session fixtures and breaking ``TEST_AFTER`` chains.
+    _fixture_value_cache: ClassVar[dict[tuple[str, str], Any]] = {}
+
     def get_fixture_value(self, fixture_name: str) -> Any | None:
         # NOTE: Use `_ispytest=True` to avoid `PytestDeprecationWarning`
         # TODO: Refactor to `SubRequest` (avoid typing error below)
+        if not (fixture_defs := self.session._fixturemanager.getfixturedefs(fixture_name, self)):
+            return None
+
+        fixturedef = fixture_defs[0]
+        scope = str(getattr(fixturedef.scope, "value", fixturedef.scope)).lower()
+        cache_key: tuple[str, str] | None = None
+        if scope in {"session", "package"}:
+            cache_key = (scope, fixture_name)
+        elif scope == "module":
+            # NOTE: ``path`` may be on the collector parent for contract tests.
+            mod_path = str(getattr(self, "path", None) or getattr(self.parent, "path", "") or "")
+            cache_key = (f"module:{mod_path}", fixture_name)
+
+        if cache_key and cache_key in self._fixture_value_cache:
+            return self._fixture_value_cache[cache_key]
+
+        if fixturedef.cached_result is not None:
+            result, _key, exc_info = fixturedef.cached_result
+            if exc_info is not None:
+                err, tb = exc_info
+                raise err.with_traceback(tb)
+            if cache_key:
+                type(self)._fixture_value_cache[cache_key] = result
+            return result
+
         request = TopRequest(self, _ispytest=True)
+        result = fixturedef.execute(request)  # type: ignore[arg-type]
 
-        if fixture_defs := self.session._fixturemanager.getfixturedefs(fixture_name, self):
-            return fixture_defs[0].execute(request)  # type: ignore[arg-type]
+        if cache_key:
+            type(self)._fixture_value_cache[cache_key] = result
 
-        return None
+        return result
 
     @property
     def hypothesis_settings(self) -> "HypothesisSettings":
@@ -145,5 +175,5 @@ class BaseTestItem(pytest.Item, ManagerAccessMixin):
         if (excinfo.errisinstance(TransactionError)) and excinfo.value.source_traceback:
             # NOTE: Change the traceback to show the error using the contract's source
             excinfo._traceback = excinfo.value.source_traceback
-        
+
         return super().repr_failure(excinfo, style)

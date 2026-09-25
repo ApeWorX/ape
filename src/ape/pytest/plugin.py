@@ -2,6 +2,7 @@ import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+import pytest
 
 from ape.exceptions import ConfigError
 
@@ -125,18 +126,41 @@ def pytest_configure(config):
 # NOTE: Below is done to support contract-based compiled tests
 def pytest_collect_file(parent, file_path) -> "Collector | None":
     # NOTE: Skip common files we know should not be used with this collector
-    if file_path.suffix in (".py", ".md", ".json"):
-        return None
-
-    # NOTE: Avoid capturing "foundry tests", which follow a paradigm of `.t.sol`
-    elif len(file_path.suffixes) != 1:
-        return None
-
-    # NOTE: All "contract tests" must match `test*.ext`,
-    #       where `.ext` is supported by a registered compiler
-    elif not file_path.name.startswith("test"):
+    if (
+        file_path.suffix in (".py", ".md", ".json")
+        or len(file_path.suffixes) != 1
+        or not file_path.name.startswith("test")
+    ):
         return None
 
     from .contracts.collector import ContractTestCollector
 
     return ContractTestCollector.from_parent(parent, path=file_path)
+
+
+def pytest_collection_modifyitems(session, config, items):
+    """Order contract tests so ``@custom:ape-test-after`` predecessors run first."""
+    from ape.pytest.contracts.ordering import reorder_contract_test_items
+
+    reorder_contract_test_items(items)
+
+
+@pytest.hookimpl(hookwrapper=True, tryfirst=True)
+def pytest_runtest_makereport(item, call):
+    """Record pass/fail/skip on contract tests so ``TEST_AFTER`` followers can skip."""
+    outcome = yield
+    report = outcome.get_result()
+    if report.when != "call" and not (report.when == "setup" and report.skipped):
+        return
+
+    from ape.pytest.contracts.functional import ContractTestItem
+
+    if not isinstance(item, ContractTestItem):
+        return
+
+    if report.skipped:
+        item._ape_test_outcome = "skipped"
+    elif report.passed and report.when == "call":
+        item._ape_test_outcome = "passed"
+    elif report.failed:
+        item._ape_test_outcome = "failed"

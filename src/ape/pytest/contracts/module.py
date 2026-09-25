@@ -46,9 +46,9 @@ class ContractTestModule(pytest.Collector, ManagerAccessMixin):
             return
 
         from .functional import ContractTestItem
-            
-        # TODO: Control snapshot of start via `TestModifier.TEST_AFTER`?
-        # with self.chain_manager.isolate():
+
+        # NOTE: ``TEST_AFTER`` ordering + chain isolation are wired in
+        # ``ordering.reorder_contract_test_items`` / ``ContractTestItem.setup``.
 
         # NOTE: Only mutable calls that have names starting with `test_` will work
         for abi in self.contract_type.mutable_methods:
