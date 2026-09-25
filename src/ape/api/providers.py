@@ -105,7 +105,7 @@ class BlockAPI(BaseInterfaceModel):
         return f"<{repr_str}>"
 
     @property
-    def datetime(self) -> datetime.datetime:
+    def datetime(self) -> "datetime.datetime":
         """
         The block timestamp as a datetime object.
         """
