@@ -107,6 +107,9 @@ class BaseTestItem(pytest.Item, ManagerAccessMixin):
         if deadline := self.modifiers.get(TestModifier.FUZZ_DEADLINE):
             settings_kwargs["deadline"] = deadline
 
+        if step_count := self.modifiers.get(TestModifier.STATEFUL_STEP_COUNT):
+            settings_kwargs["stateful_step_count"] = step_count
+
         from hypothesis import settings
 
         return settings(**settings_kwargs)

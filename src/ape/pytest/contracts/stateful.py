@@ -101,14 +101,33 @@ class StatefulTestItem(BaseTestItem):
     def call_method(self, abi: "MethodABI") -> Callable:
         call_args = self.get_call_args(abi)
 
+        # Resolve once at rule construction; per-rule ``@custom:ape-test-executor``
+        # may select a different account than the default (multiple delegated copies).
         executor = self.load_executor(
             self.get_method_modifiers(abi).get(TestModifier.TEST_EXECUTOR)
         )
-        contract = self.chain_manager.contracts.instance_at(
-            executor.address,
-            contract_type=self.contract_type,
-        )
-        method = getattr(contract, abi.name)
+        # Capture for closures — wrapped ``self`` is the Hypothesis state machine.
+        delegate = self.delegate
+        method_name = abi.name
+        has_outputs = bool(abi.outputs)
+        contracts = self.chain_manager.contracts
+        contract_type = self.contract_type
+
+        def _ensure_delegated(state_machine: RuleBasedStateMachine):
+            """Sticky EIP-7702 delegate per executor for the life of this state machine."""
+            active: dict = getattr(state_machine, "_ape_delegated_executors", None)
+            if active is None:
+                state_machine._ape_delegated_executors = active = {}
+            if executor.address not in active:
+                executor.set_delegate(delegate, receiver=0x1)
+                active[executor.address] = executor
+                # So Receipt.return_value / traces can resolve MethodABI at the EOA.
+                # ``delegate_to`` intentionally does not cache; we do for the SM lifetime.
+                contracts.cache_contract_type(executor.address, contract_type)
+
+            from ape.contracts import ContractInstance
+
+            return ContractInstance(executor.address, contract_type=contract_type)
 
         if abi.stateMutability == "nonpayable":  # (e.g. `initializes`, `rule`)
             # NOTE: This is passed through to another class instance, `self` is treated differently
@@ -116,14 +135,19 @@ class StatefulTestItem(BaseTestItem):
                 # NOTE: Maintain proper ordering from `call_args`
                 args = {k: kwargs.get(k, v) for k, v in call_args.items()}
 
+                # EIP-7702: run as executor (msg.sender == address(this) == executor),
+                # matching ContractTestItem.execute_test.
                 # TODO: How to handle providing other txn_kwargs like `value=`?
-                receipt = method(*args.values(), sender=executor)
+                delegated = _ensure_delegated(self)
+                with executor.account_manager.use_sender(executor):
+                    receipt = getattr(delegated, method_name)(*args.values())
 
-                if isinstance(result := receipt.return_value, list):
+                result = receipt.return_value if has_outputs else None
+                if isinstance(result, (list, tuple)):
                     return multiple(*result)
 
                 # NOTE: Avoid returning empty tuple, when `None` expected
-                return result or None
+                return result if result is not None else None
 
         else:  # view/pure (e.g. `invariant`)
             # NOTE: This is passed through to another class instance, `self` is treated differently
@@ -131,11 +155,15 @@ class StatefulTestItem(BaseTestItem):
                 # NOTE: Maintain proper ordering from `call_args`
                 args = {k: kwargs.get(k, v) for k, v in call_args.items()}
 
-                if isinstance(result := method(*args.values()), list):
+                delegated = _ensure_delegated(self)
+                with executor.account_manager.use_sender(executor):
+                    result = getattr(delegated, method_name)(*args.values())
+
+                if isinstance(result, (list, tuple)):
                     return multiple(*result)
 
                 # NOTE: Avoid returning empty tuple, when `None` expected
-                return result or None
+                return result if result is not None else None
 
         wrapped_method.__name__ = abi.name
         return wrapped_method
@@ -212,8 +240,20 @@ class StatefulTestItem(BaseTestItem):
             def __init__(self):
                 super().__init__()
                 self.snapshot = chain_manager.snapshot()
+                self._ape_delegated_executors: dict = {}
 
             def teardown(self):
+                # Clear sticky EIP-7702 delegates + temporary contract-type cache entries.
+                for address, ex in list(getattr(self, "_ape_delegated_executors", {}).items()):
+                    try:
+                        ex.remove_delegate(receiver=0x1)
+                    except Exception:  # noqa: BLE001
+                        pass
+                    try:
+                        del chain_manager.contracts[address]
+                    except Exception:  # noqa: BLE001
+                        pass
+                self._ape_delegated_executors.clear()
                 chain_manager.restore(self.snapshot)
 
         def add_fields(ns):
