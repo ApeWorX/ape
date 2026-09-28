@@ -88,15 +88,6 @@ class _RpcCursor(CursorAPI):
         # NOTE: Very loose estimate of 100ms per item
         return 0.1  # seconds
 
-    def as_dataframe(self, backend: nw.Implementation) -> "Frame":
-        data: dict[str, list] = {column: [] for column in self.query.columns}
-
-        for item in self.as_model_iter():
-            for column in data:
-                data[column] = getattr(item, column)
-
-        return nw.from_dict(data, backend=backend)
-
 
 class _RpcBlockCursor(_RpcCursor):
     query: BlockQuery

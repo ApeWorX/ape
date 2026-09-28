@@ -2,8 +2,6 @@ from collections.abc import Iterator
 from functools import singledispatchmethod
 from typing import TYPE_CHECKING
 
-import narwhals as nw
-
 from ape.api.query import (
     ContractCreation,
     ContractCreationQuery,
@@ -15,8 +13,6 @@ from ape.exceptions import APINotImplementedError, ProviderError, QueryEngineErr
 from ape.types import AddressType
 
 if TYPE_CHECKING:
-    from narwhals.typing import Frame
-
     try:
         # Only on Python 3.11
         from typing import Self  # type: ignore
@@ -136,17 +132,6 @@ class ContractCreationCursor(CursorAPI[ContractCreation]):
 
         else:
             yield from self._find_creation_in_block_via_parity(block, self.query.contract)
-
-    def as_dataframe(self, backend: nw.Implementation) -> "Frame":
-        data: dict[str, list] = {column: [] for column in self.query.columns}
-
-        # NOTE: Only 1 item
-        item = next(self.as_model_iter())
-        for column in data:
-            data[column] = getattr(item, column)
-
-        return nw.from_dict(data, backend=backend)
-
 
 class EthereumQueryProvider(QueryEngineAPI):
     """

@@ -1,8 +1,5 @@
 from collections.abc import Iterator
 from functools import singledispatchmethod
-from typing import TYPE_CHECKING
-
-import narwhals as nw
 
 from ape.api.query import (
     ContractCreation,
@@ -14,9 +11,6 @@ from ape.api.query import (
 from ape.exceptions import QueryEngineError
 from ape.types import AddressType
 from ape_ethereum.provider import EthereumNodeProvider
-
-if TYPE_CHECKING:
-    from narwhals.typing import Frame
 
 
 class ContractCreationCursor(CursorAPI):
@@ -50,9 +44,6 @@ class ContractCreationCursor(CursorAPI):
             deployer=receipt.sender,
             factory=creator if creator != receipt.sender else None,
         )
-
-    def as_dataframe(self, backend: nw.Implementation) -> "Frame":
-        return nw.from_dict(self._get_ots_contract_creation().model_dump(), backend=backend)
 
     def as_model_iter(self) -> Iterator[ContractCreation]:
         yield self._get_ots_contract_creation()
