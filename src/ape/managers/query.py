@@ -430,12 +430,15 @@ class QueryManager(ManagerAccessMixin):
         engine_to_use: str | None = None,
     ) -> QueryResult:
         if not engine_to_use:
-            # Sort by earliest point in cursor window (then by longest coverage if same start)
-            # NOTE: We will iterate over this >1 times, so collect our iterator here
-            all_cursors = sorted(
-                (c for engine in self.engines.values() for c in engine.exec(query)),
-                key=lambda c: c.query,
-            )
+            # One engine failing to plan must not drop every other engine.
+            all_cursors = []
+            for engine in self.engines.values():
+                try:
+                    all_cursors.extend(engine.exec(query))
+                except Exception as err:  # noqa: BLE001 - a plugin must not abort planning
+                    logger.debug(f"Skipping {type(engine).__name__} while planning: {err}")
+
+            all_cursors.sort(key=lambda cursor: cursor.query)
 
         elif selected_engine := self.engines.get(engine_to_use):
             all_cursors = list(selected_engine.exec(query))
