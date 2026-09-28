@@ -1,4 +1,3 @@
-from importlib import import_module
 from typing import TYPE_CHECKING
 
 import click
@@ -30,15 +29,14 @@ def cli():
 @network_option(required=True)
 def init(cli_ctx, ecosystem, network):
     """
-    Initializes an SQLite database and creates a file to store data
-    from the provider.
+    Create the file cache directory for a network.
 
-    Note that ape cannot store local data in this database. You have to
-    give an ecosystem name and a network name to initialize the database.
+    Ape cannot store local chain data here. Pass an ecosystem and a network.
     """
 
-    get_engine().init_database(ecosystem.name, network.name)
-    logger.success(f"Caching database initialized for {ecosystem.name}:{network.name}.")
+    folder = get_engine().cache_folder(ecosystem.name, network.name)
+    folder.mkdir(parents=True, exist_ok=True)
+    logger.success(f"Query cache ready for {ecosystem.name}:{network.name}.")
 
 
 @cli.command(
@@ -48,20 +46,15 @@ def init(cli_ctx, ecosystem, network):
 @click.argument("query_str")
 def query(query_str):
     """
-    Allows for a query of the database from an SQL statement.
+    SQL queries against the old cache database are no longer supported.
 
-    Note that without an SQL statement, this method will not return
-    any data from the caching database.
-
-    Also note that an ecosystem name and a network name are required
-    to make the correct connection to the database.
+    Read cached chain data with ``.query`` in Python instead.
     """
 
-    with get_engine().database_connection as conn:
-        results = conn.execute(query_str).fetchall()
-        if results:
-            pd = import_module("pandas")
-            click.echo(pd.DataFrame(results))
+    raise click.ClickException(
+        f"SQL cache queries were removed, so {query_str!r} was not run. "
+        "Use `.query` in Python to read chain data."
+    )
 
 
 @cli.command(short_help="Purges entire database")
@@ -69,15 +62,11 @@ def query(query_str):
 @network_option(required=True)
 def purge(cli_ctx, ecosystem, network):
     """
-    Purges data from the selected database instance.
+    Delete the file cache for a network.
 
-    Note that this is a destructive purge, and will remove the database file from disk.
-    If you want to store data in the caching system, you will have to
-    re-initiate the database following a purge.
-
-    Note that an ecosystem name and network name are required to
-    purge the database of choice.
+    This removes cached query data from disk. Chain data outside the query
+    cache is left in place.
     """
 
-    get_engine().purge_database(ecosystem.name, network.name)
-    logger.success(f"Caching database purged for {ecosystem.name}:{network.name}.")
+    get_engine().prune_database(ecosystem.name, network.name)
+    logger.success(f"Query cache purged for {ecosystem.name}:{network.name}.")

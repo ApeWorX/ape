@@ -15,6 +15,7 @@ from ape.exceptions import QueryEngineError
 from ape.managers.query import QueryManager
 from ape.managers.query import _experimental_query_enabled as _flag
 from ape.utils import DEFAULT_TEST_CHAIN_ID, BaseInterfaceModel
+from ape_cache.query import CacheQueryProvider
 
 
 def test_basic_query(chain, eth_tester_provider):
@@ -212,6 +213,16 @@ def test_method_query_columns_are_not_block_fields():
         stop_block=1,
     )
     assert query.columns == ["foo_return"]
+
+
+def test_find_ranges_keeps_cached_runs(tmp_path):
+    index = tmp_path / ".number"
+    index.mkdir()
+    for number in (1, 2, 3, 5):
+        (index / str(number)).write_text("{}")
+
+    assert list(CacheQueryProvider.find_ranges(None, index, start=0, end=10)) == [(1, 3), (5, 5)]
+    assert list(CacheQueryProvider.find_ranges(None, index, start=0, end=0)) == []
 
 
 def test_experimental_flag(monkeypatch):
