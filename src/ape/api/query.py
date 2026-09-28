@@ -203,7 +203,13 @@ class _BaseQuery(BaseModel, Generic[ModelType]):
         raise NotImplementedError()
 
     def __len__(self) -> int:
-        return self.end_index - self.start_index
+        # Ranges are inclusive. An empty span (such as a block with no transactions)
+        # has ``end_index < start_index`` and length 0.
+        if self.end_index < self.start_index:
+            return 0
+
+        step = getattr(self, "step", 1) or 1
+        return (self.end_index - self.start_index) // step + 1
 
     def __contains__(self, other: Any) -> bool:
         if not isinstance(other, _BaseQuery):
@@ -393,8 +399,8 @@ class ContractCreationQuery(_BaseQuery[ContractCreation]):
 
     @property
     def end_index(self) -> int:
-        # TODO: Can this support multiple instances? Do we care anymore?
-        return 1
+        # One creation record occupies a single index.
+        return 0
 
 
 class ContractEventQuery(_BaseBlockQuery, _BaseQuery[ContractLog]):
@@ -455,7 +461,7 @@ class CursorAPI(BaseInterfaceModel, Generic[ModelType]):
         Returns:
             float: Time (in seconds) that the query should take to execute fully.
         """
-        return (self.query.end_index - self.query.start_index) * (self.time_per_row)
+        return len(self.query) * self.time_per_row
 
     @property
     @abstractmethod
