@@ -42,6 +42,26 @@ if TYPE_CHECKING:
         from typing_extensions import Self  # type: ignore
 
 
+def _query_step(query: QueryType) -> int:
+    return getattr(query, "step", 1) or 1
+
+
+def _on_step(index: int, start: int, step: int) -> bool:
+    return (index - start) % step == 0
+
+
+def _cursor_covers(cursor: CursorAPI, start: int, end: int) -> bool:
+    if cursor.query.start_index > start or cursor.query.end_index < end:
+        return False
+
+    try:
+        cursor.shrink(start_index=start, end_index=end)
+    except NotImplementedError:
+        return False
+
+    return True
+
+
 class _RpcCursor(CursorAPI):
     def shrink(
         self,
@@ -265,7 +285,13 @@ class QueryResult(CursorAPI[ModelType]):
     def validate_coverage(self):
         # NOTE: This is done to assert that we have full coverage of queries during testing
         #       (both testing Core and in 2nd/3rd party plugins)
+        step = _query_step(self.query)
         current_pos = self.query.start_index
+        if self.query.end_index < current_pos:
+            if self.cursors:
+                raise QueryEngineError(f"{type(self.query).__name__} is empty but has cursors.")
+            return self
+
         for i, cursor in enumerate(self.cursors):
             logger.debug(
                 "Start:",
@@ -276,13 +302,18 @@ class QueryResult(CursorAPI[ModelType]):
                 cursor.total_time,
                 "seconds",
             )
+            if cursor.query.end_index < cursor.query.start_index:
+                raise QueryEngineError(
+                    f"Cursor {i} has an empty window "
+                    f"[{cursor.query.start_index}:{cursor.query.end_index}]."
+                )
             assert cursor.query.start_index == current_pos, (
                 f"Cursor {i} starts at {cursor.query.start_index}, expected {current_pos}"
             )
-            current_pos = cursor.query.end_index + 1
+            current_pos = cursor.query.end_index + step
 
-        assert current_pos == self.query.end_index + 1, (
-            f"Coverage ended at {current_pos - 1}, expected {self.query.end_index}"
+        assert current_pos == self.query.end_index + step, (
+            f"Coverage ended at {current_pos - step}, expected {self.query.end_index}"
         )
 
         return self
@@ -293,7 +324,11 @@ class QueryResult(CursorAPI[ModelType]):
 
     @property
     def time_per_row(self) -> float:
-        return self.total_time / sum(len(c.query) for c in self.cursors)
+        rows = sum(len(c.query) for c in self.cursors)
+        if not rows:
+            return 0.0
+
+        return self.total_time / rows
 
     # Conversion out to fulfill user query requirements
     def as_dataframe(
@@ -346,67 +381,43 @@ class QueryManager(ManagerAccessMixin):
         query: QueryType,
         all_cursors: list[CursorAPI],
     ) -> Iterator[CursorAPI]:
-        # NOTE: Use this to reduce the amount of brute force iteration over query window
-        query_segments = sorted(
-            set(
-                [c.query.start_index for c in all_cursors]
-                + [c.query.end_index for c in all_cursors]
-            )
-        )
+        step = _query_step(query)
+        if query.end_index < query.start_index:
+            return
 
-        # Find the best cursor that fits each path segment in `cursor_to_use`
-        # NOTE: Prime these variables for every time "best cursor" gets yielded
-        last_start_index = query.start_index
-        # NOTE: Start with smallest cursor by coverage and total time
-        #       (resolves corner case when `query.start_index` == `query.end_index`)
-        last_best_cursor = min(all_cursors, key=lambda c: (c.query, c.total_time))
-        for start_index, end_index in pairwise(query_segments):
-            lowest_unit_time = float("inf")
-            best_cursor = None
-            for cursor in all_cursors:
-                # NOTE: Cursor window must at least contain path segment
-                if cursor.query.start_index <= start_index and cursor.query.end_index >= end_index:
-                    # NOTE: Allow cursor to use previous segment(s) if it was the last best
-                    #       since time should typically be better with larger coverage
-                    shrunk_cursor = cursor.shrink(
-                        start_index=(
-                            last_start_index
-                            if last_best_cursor and last_best_cursor is cursor
-                            else start_index
-                        )
-                    )
-                    if shrunk_cursor.time_per_row < lowest_unit_time:
-                        lowest_unit_time = shrunk_cursor.time_per_row
-                        # NOTE: Save original cursor to shrink later (not shrunk one)
-                        best_cursor = cursor
+        # Boundaries are on the query's step grid. A segment is the inclusive span
+        # from one boundary up to, but not including, the next.
+        boundaries = {query.start_index, query.end_index + step}
+        for cursor in all_cursors:
+            for index in (cursor.query.start_index, cursor.query.end_index + step):
+                if query.start_index <= index <= query.end_index + step and _on_step(
+                    index, query.start_index, step
+                ):
+                    boundaries.add(index)
 
-            if best_cursor is None:
-                # NOTE: `AssertionError` because this should not be possible due to RPC engine
-                raise AssertionError(
-                    f"Could not solve, missing coverage in window [{start_index}:{end_index}]."
+        pieces: list[tuple[CursorAPI, int, int]] = []
+        for seg_start, seg_next in pairwise(sorted(boundaries)):
+            seg_end = seg_next - step
+            if seg_end < seg_start:
+                continue
+
+            candidates = [
+                cursor for cursor in all_cursors if _cursor_covers(cursor, seg_start, seg_end)
+            ]
+            if not candidates:
+                raise QueryEngineError(
+                    f"Could not solve, missing coverage in window [{seg_start}:{seg_end}]."
                 )
-            logger.debug(f"Best cursor for segment [{start_index}:{end_index}]: {best_cursor}")
 
-            if last_best_cursor is None:
-                # NOTE: Should only execute first time
-                last_best_cursor = best_cursor
+            best = min(candidates, key=lambda cursor: (cursor.time_per_row, cursor.total_time))
+            if pieces and pieces[-1][0] is best and pieces[-1][2] + step == seg_start:
+                previous, previous_start, _ = pieces[-1]
+                pieces[-1] = (previous, previous_start, seg_end)
+            else:
+                pieces.append((best, seg_start, seg_end))
 
-            elif last_best_cursor != best_cursor:
-                # NOTE: Yield whatever the last "best cursor" was,
-                #       shrunk up to just before current segment
-                yield last_best_cursor.shrink(
-                    start_index=last_start_index,
-                    end_index=start_index - 1,
-                )
-                # NOTE: Update our yield variables for next time
-                last_start_index = start_index
-                last_best_cursor = best_cursor
-
-            # else: last best is also current best, keep iterating until better one is found
-
-        # NOTE: Always yield last best after loop ends, which contain the final part of query
-        assert last_best_cursor, "This shouldn't happen best >2 endpoints exist"  # mypy happy
-        yield last_best_cursor.shrink(start_index=last_start_index)
+        for cursor, seg_start, seg_end in pieces:
+            yield cursor.shrink(start_index=seg_start, end_index=seg_end)
 
     def _experimental_query(
         self,

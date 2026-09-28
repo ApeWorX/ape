@@ -12,6 +12,7 @@ from ape.api.query import (
     validate_and_expand_columns,
 )
 from ape.exceptions import QueryEngineError
+from ape.managers.query import QueryManager
 from ape.utils import DEFAULT_TEST_CHAIN_ID, BaseInterfaceModel
 
 
@@ -142,6 +143,56 @@ def test_query_missing_dataframe_library():
         to_dataframe({"number": [0]}, "cudf", None)
 
 
+class _Window:
+    def __init__(self, start, end, step=1):
+        self.start_index = start
+        self.end_index = end
+        self.step = step
+
+
+class _Cursor:
+    def __init__(self, start, end, cost, step=1, shrinkable=True):
+        self.query = _Window(start, end, step)
+        self.time_per_row = cost
+        self.total_time = cost
+        self.shrinkable = shrinkable
+
+    def shrink(self, start_index=None, end_index=None):
+        start = self.query.start_index if start_index is None else start_index
+        end = self.query.end_index if end_index is None else end_index
+        if not self.shrinkable and (start != self.query.start_index or end != self.query.end_index):
+            raise NotImplementedError
+
+        return _Cursor(start, end, self.time_per_row, self.query.step, self.shrinkable)
+
+
+def _solve(query, cursors):
+    return list(QueryManager._solve_optimal_coverage(None, query, cursors))
+
+
+def test_solver_prefers_one_cheap_cursor():
+    query = _Window(0, 10)
+    fast = _Cursor(0, 10, cost=0.01)
+    slow = _Cursor(0, 5, cost=0.5)
+    pieces = _solve(query, [fast, slow])
+    assert [(piece.query.start_index, piece.query.end_index) for piece in pieces] == [(0, 10)]
+
+
+def test_solver_stitches_abutting_ranges():
+    query = _Window(0, 10)
+    pieces = _solve(query, [_Cursor(0, 4, cost=1), _Cursor(5, 10, cost=1)])
+    assert [(piece.query.start_index, piece.query.end_index) for piece in pieces] == [
+        (0, 4),
+        (5, 10),
+    ]
+
+
+def test_solver_single_index_is_not_inverted():
+    query = _Window(3, 3)
+    pieces = _solve(query, [_Cursor(3, 3, cost=1)])
+    assert [(piece.query.start_index, piece.query.end_index) for piece in pieces] == [(3, 3)]
+
+
 def test_columns_keep_caller_order():
     query = BlockQuery(columns=["timestamp", "number"], start_block=0, stop_block=1)
     assert query.columns[:2] == ["timestamp", "number"]
@@ -160,6 +211,14 @@ def test_method_query_columns_are_not_block_fields():
         stop_block=1,
     )
     assert query.columns == ["foo_return"]
+
+
+def test_experimental_block_query(chain, eth_tester_provider, monkeypatch):
+    monkeypatch.setenv("APE_ENABLE_EXPERIMENTAL_QUERY_BACKEND", "true")
+    chain.mine(2)
+    numbers = chain.blocks.query("number")["number"].to_list()
+    assert numbers[0] == 0
+    assert numbers[-1] == chain.blocks.height
 
 
 def test_specify_engine(chain, eth_tester_provider):
