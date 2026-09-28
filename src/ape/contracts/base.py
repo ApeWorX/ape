@@ -4,7 +4,7 @@ from collections.abc import Callable, Iterator
 from functools import cached_property, singledispatchmethod
 from itertools import islice
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any
 
 import click
 import narwhals.stable.v1 as nw
@@ -15,7 +15,12 @@ from ethpm_types.abi import EventABI
 
 from ape.api.accounts import AccountAPI
 from ape.api.address import Address, BaseAddress
-from ape.api.query import ContractCreation, ContractEventQuery, validate_and_expand_columns
+from ape.api.query import (
+    ContractCreation,
+    ContractEventQuery,
+    to_dataframe,
+    validate_and_expand_columns,
+)
 from ape.exceptions import (
     ApeAttributeError,
     ArgumentsLengthError,
@@ -763,11 +768,16 @@ class ContractEvent(BaseInterfaceModel):
               Defaults to ``1``.
             engine_to_use (str | None): query engine to use, bypasses query
               engine selection algorithm.
-            backend (str | :class:`~narwhals.Implementation` | None): A Narwhals-compatible
-                backend. See: https://narwhals-dev.github.io/narwhals/api-reference/implementation
+            backend (str | :class:`~narwhals.Implementation` | None): Dataframe library
+              that stores the result. When omitted, Ape uses an installed library
+              and prefers Polars. The return value is always a Narwhals DataFrame.
+
+        Raises:
+            :class:`~ape.exceptions.QueryEngineError`: When no dataframe library is
+              installed and ``backend`` was not passed.
 
         Returns:
-            :class:`~narwhals.typing.Frame`
+            :class:`~narwhals.dataframe.DataFrame`
         """
         HEAD = self.chain_manager.blocks.height
         if start_block < 0:
@@ -806,13 +816,7 @@ class ContractEvent(BaseInterfaceModel):
             for column in data:
                 data[column].append(getattr(log, column))
 
-        if backend is None:
-            backend = cast(nw.Implementation, self.config_manager.query.backend)
-
-        elif isinstance(backend, str):
-            backend = nw.Implementation.from_backend(backend)
-
-        return nw.from_dict(data=data, backend=backend)
+        return to_dataframe(data, backend, self.config_manager.query.backend)
 
     def range(
         self,

@@ -4,7 +4,7 @@ import time
 from collections.abc import Iterator
 from functools import cached_property, singledispatchmethod
 from itertools import pairwise, tee
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 
 import narwhals as nw
 from pydantic import model_validator
@@ -21,6 +21,7 @@ from ape.api.query import (
     QueryAPI,
     QueryEngineAPI,
     QueryType,
+    resolve_dataframe_backend,
 )
 from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.contracts.base import ContractLog, LogFilter
@@ -299,14 +300,8 @@ class QueryResult(CursorAPI[ModelType]):
         self,
         backend: str | nw.Implementation | None = None,
     ) -> "Frame":
-        if backend is None:
-            backend = cast(nw.Implementation, self.config_manager.query.backend)
-
-        elif isinstance(backend, str):
-            backend = nw.Implementation.from_backend(backend)
-
-        # TODO: Source `backend` from core `query:` config if defaulted to `None`
-        return nw.concat([c.as_dataframe(backend=backend) for c in self.cursors], how="vertical")
+        resolved = resolve_dataframe_backend(backend, self.config_manager.query.backend)
+        return nw.concat([c.as_dataframe(backend=resolved) for c in self.cursors], how="vertical")
 
     def as_model_iter(self) -> Iterator[ModelType]:
         for result in self.cursors:

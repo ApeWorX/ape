@@ -3,7 +3,9 @@ import time
 import narwhals as nw
 import pytest
 
-from ape.api.query import validate_and_expand_columns
+from ape.api import query as query_api
+from ape.api.query import to_dataframe, validate_and_expand_columns
+from ape.exceptions import QueryEngineError
 from ape.utils import DEFAULT_TEST_CHAIN_ID, BaseInterfaceModel
 
 
@@ -93,6 +95,45 @@ def test_column_validation(eth_tester_provider, ape_caplog):
 
     validate_and_expand_columns(["number", "timestamp", "number"], Model)
     assert "Duplicate fields in ['number', 'timestamp', 'number']" in ape_caplog.messages[-1]
+
+
+def test_query_uses_configured_dataframe_backend():
+    frame = to_dataframe({"number": [1]}, None, "pandas")
+    assert frame.get_column("number").to_list() == [1]
+
+
+def test_query_autodetects_installed_backend():
+    frame = to_dataframe({"number": [1]}, None, None)
+    assert frame.get_column("number").to_list() == [1]
+
+
+def test_query_prefers_polars_when_installed(monkeypatch):
+    monkeypatch.setattr(
+        query_api,
+        "find_spec",
+        lambda name: object() if name in {"polars", "pandas"} else None,
+    )
+    query_api._detected_dataframe_backend.cache_clear()
+    try:
+        assert query_api._detected_dataframe_backend() is nw.Implementation.POLARS
+    finally:
+        query_api._detected_dataframe_backend.cache_clear()
+
+
+def test_query_requires_a_dataframe_library(monkeypatch):
+    monkeypatch.setattr(query_api, "_detected_dataframe_backend", lambda: None)
+    with pytest.raises(QueryEngineError, match="needs a dataframe library"):
+        to_dataframe({"number": [0]}, None, None)
+
+
+def test_query_unknown_dataframe_backend():
+    with pytest.raises(QueryEngineError, match="not a Narwhals dataframe backend"):
+        to_dataframe({"number": [0]}, "not-a-library", None)
+
+
+def test_query_missing_dataframe_library():
+    with pytest.raises(QueryEngineError, match="not installed"):
+        to_dataframe({"number": [0]}, "cudf", None)
 
 
 def test_specify_engine(chain, eth_tester_provider):

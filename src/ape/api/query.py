@@ -1,12 +1,14 @@
 from abc import abstractmethod
 from collections.abc import Iterator, Sequence
 from functools import cache, cached_property
+from importlib.util import find_spec
 from typing import TYPE_CHECKING, Any, ClassVar, Generic, TypeAlias, TypeVar
 
 import narwhals as nw
 from ethpm_types.abi import EventABI, MethodABI
 from pydantic import NonNegativeInt, PositiveInt, field_validator, model_validator
 
+from ape.exceptions import QueryEngineError
 from ape.logging import logger
 from ape.types import ContractLog
 from ape.types.address import AddressType
@@ -25,6 +27,83 @@ if TYPE_CHECKING:
         from typing import Self  # type: ignore
     except ImportError:
         from typing_extensions import Self  # type: ignore
+
+
+_DATAFRAME_BACKEND_HELP = (
+    "Install a Narwhals-supported dataframe library (for example `polars` or `pandas`), "
+    "or pass `backend=`."
+)
+
+# `from_dict` only accepts eager backends. Polars is preferred when several are installed.
+_EAGER_DATAFRAME_BACKENDS: tuple[tuple[str, str], ...] = (
+    ("polars", "polars"),
+    ("pandas", "pandas"),
+    ("pyarrow", "pyarrow"),
+    ("modin", "modin.pandas"),
+    ("cudf", "cudf"),
+)
+
+
+@cache
+def _detected_dataframe_backend() -> nw.Implementation | None:
+    """Return the first installed eager dataframe library, without importing it."""
+    for name, module in _EAGER_DATAFRAME_BACKENDS:
+        if find_spec(module) is not None:
+            return nw.Implementation.from_backend(name)
+
+    return None
+
+
+def resolve_dataframe_backend(
+    backend: str | nw.Implementation | None,
+    configured: str | nw.Implementation | None,
+) -> nw.Implementation:
+    """Select the dataframe library `.query` will use to build a Narwhals frame.
+
+    An explicit `backend` wins, then `query.backend` when it is set. Otherwise
+    Ape uses an installed library, preferring Polars. The choice is cached for
+    the process. Protocol SDKs use the Narwhals API and do not pin a library.
+    """
+    chosen = configured if backend is None else backend
+    if chosen is None:
+        chosen = _detected_dataframe_backend()
+
+    if chosen is None:
+        raise QueryEngineError(
+            "`.query` returns a Narwhals DataFrame and needs a dataframe library. "
+            f"{_DATAFRAME_BACKEND_HELP}"
+        )
+
+    if not isinstance(chosen, nw.Implementation):
+        chosen = nw.Implementation.from_backend(chosen)
+
+    if chosen is nw.Implementation.UNKNOWN:
+        raise QueryEngineError(
+            f"{backend!r} is not a Narwhals dataframe backend. {_DATAFRAME_BACKEND_HELP}"
+        )
+
+    try:
+        # Import happens here so a missing library fails before any query work,
+        # and so the rest of Ape never imports a dataframe package.
+        chosen.to_native_namespace()
+    except ModuleNotFoundError as err:
+        raise QueryEngineError(
+            f"`.query` is set to use the {chosen.value!r} dataframe backend, "
+            "but that library is not installed. "
+            f"{_DATAFRAME_BACKEND_HELP}"
+        ) from err
+
+    return chosen
+
+
+def to_dataframe(
+    data: dict[str, list],
+    backend: str | nw.Implementation | None,
+    configured: str | nw.Implementation | None,
+) -> nw.DataFrame:
+    """Build the Narwhals DataFrame returned by `.query`."""
+    resolved = resolve_dataframe_backend(backend, configured)
+    return nw.from_dict(data, backend=resolved)
 
 
 @cache

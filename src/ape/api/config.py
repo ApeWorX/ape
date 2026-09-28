@@ -206,12 +206,31 @@ class DeploymentConfig(PluginConfig):
 class QueryConfig(PluginConfig):
     """Add 'query:' key to your config."""
 
-    backend: DataframeImplementation = DataframeImplementation.PANDAS
-    """Which Narwhals backend implementation to use."""
+    backend: DataframeImplementation | None = None
+    """
+    Optional dataframe library for `.query`.
+
+    When unset, Ape uses an installed Narwhals backend and prefers Polars.
+    Set this, or pass ``backend=`` to `.query`, to override that choice.
+    """
 
     @field_validator("backend", mode="before")
-    def convert_backend_str(cls, value: Any) -> DataframeImplementation:
-        return DataframeImplementation.from_backend(value)
+    def convert_backend_str(cls, value: Any) -> DataframeImplementation | None:
+        if value is None:
+            return None
+
+        implementation = (
+            value
+            if isinstance(value, DataframeImplementation)
+            else DataframeImplementation.from_backend(value)
+        )
+        if implementation is DataframeImplementation.UNKNOWN:
+            raise ValueError(
+                f"{value!r} is not a Narwhals dataframe backend. "
+                "Use a supported library name such as 'pandas' or 'polars'."
+            )
+
+        return implementation
 
 
 def _get_problem_with_config(errors: list, path: Path) -> str | None:

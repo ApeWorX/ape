@@ -13,7 +13,12 @@ from rich.table import Table
 
 from ape.api.address import Address, BaseAddress
 from ape.api.providers import BlockAPI
-from ape.api.query import AccountTransactionQuery, BlockQuery, validate_and_expand_columns
+from ape.api.query import (
+    AccountTransactionQuery,
+    BlockQuery,
+    to_dataframe,
+    validate_and_expand_columns,
+)
 from ape.api.transactions import ReceiptAPI
 from ape.exceptions import (
     APINotImplementedError,
@@ -145,11 +150,16 @@ class BlockContainer(BaseManager):
               Defaults to ``1``.
             engine_to_use (str | None): query engine to use, bypasses query
               engine selection algorithm.
-            backend (str | :class:`~narwhals.Implementation` | None): A Narwhals-compatible
-                backend. See: https://narwhals-dev.github.io/narwhals/api-reference/implementation
+            backend (str | :class:`~narwhals.Implementation` | None): Dataframe library
+              that stores the result. When omitted, Ape uses an installed library
+              and prefers Polars. The return value is always a Narwhals DataFrame.
+
+        Raises:
+            :class:`~ape.exceptions.QueryEngineError`: When no dataframe library is
+              installed and ``backend`` was not passed.
 
         Returns:
-            :class:`~narwhals.typing.Frame`
+            :class:`~narwhals.dataframe.DataFrame`
         """
 
         if start_block < 0:
@@ -183,13 +193,7 @@ class BlockContainer(BaseManager):
             for column in data:
                 data[column].append(getattr(block, column))
 
-        if backend is None:
-            backend = cast(nw.Implementation, self.config_manager.query.backend)
-
-        elif isinstance(backend, str):
-            backend = nw.Implementation.from_backend(backend)
-
-        return nw.from_dict(data=data, backend=backend)
+        return to_dataframe(data, backend, self.config_manager.query.backend)
 
     def range(
         self,
@@ -382,11 +386,16 @@ class AccountHistory(BaseInterfaceModel):
               in the query. Defaults to the latest transaction.
             engine_to_use (str | None): query engine to use, bypasses query
               engine selection algorithm.
-            backend (str | :class:`~narwhals.Implementation` | None): A Narwhals-compatible
-                backend. See: https://narwhals-dev.github.io/narwhals/api-reference/implementation
+            backend (str | :class:`~narwhals.Implementation` | None): Dataframe library
+              that stores the result. When omitted, Ape uses an installed library
+              and prefers Polars. The return value is always a Narwhals DataFrame.
+
+        Raises:
+            :class:`~ape.exceptions.QueryEngineError`: When no dataframe library is
+              installed and ``backend`` was not passed.
 
         Returns:
-            :class:`~narwhals.typing.Frame`
+            :class:`~narwhals.dataframe.DataFrame`
         """
 
         if start_nonce < 0:
@@ -418,13 +427,7 @@ class AccountHistory(BaseInterfaceModel):
             for column in data:
                 data[column].append(getattr(txn, column))
 
-        if backend is None:
-            backend = cast(nw.Implementation, self.config_manager.query.backend)
-
-        elif isinstance(backend, str):
-            backend = nw.Implementation.from_backend(backend)
-
-        return nw.from_dict(data=data, backend=backend)
+        return to_dataframe(data, backend, self.config_manager.query.backend)
 
     def __iter__(self) -> Iterator[ReceiptAPI]:  # type: ignore[override]
         yield from self.outgoing
