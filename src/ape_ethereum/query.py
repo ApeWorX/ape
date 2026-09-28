@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 class ContractCreationCursor(CursorAPI[ContractCreation]):
     query: ContractCreationQuery
 
-    use_debug_trace: bool
+    use_debug_trace: bool = False
 
     def shrink(
         self,
@@ -103,10 +103,31 @@ class ContractCreationCursor(CursorAPI[ContractCreation]):
                         ),
                     )
 
+    def _has_method(self, rpc_method: str) -> bool:
+        try:
+            self.provider.make_request(rpc_method, [])
+            return True
+        except APINotImplementedError:
+            return False
+        except ProviderError as err:
+            return "Method not found" not in str(err)
+
     def as_model_iter(self) -> Iterator[ContractCreation]:
+        # Probes run only if this cursor is selected, so a missing trace API
+        # does not abort planning for every other engine.
+        try:
+            client = self.provider.client_version.lower()
+            use_debug = "geth" in client and self._has_method("debug_traceBlockByNumber")
+            use_parity = self._has_method("trace_replayBlockTransactions")
+        except (APINotImplementedError, AttributeError, ProviderError):
+            return
+
+        if not use_debug and not use_parity:
+            return
+
         # skip the search if there is still no code at address at head
         if not self.chain_manager.get_code(self.query.contract):
-            return None
+            return
 
         def find_creation_block(lo, hi):
             # perform a binary search to find the block when the contract was deployed.
@@ -124,14 +145,22 @@ class ContractCreationCursor(CursorAPI[ContractCreation]):
 
             return None
 
-        if not (block := find_creation_block(0, self.chain_manager.blocks.height)):
+        try:
+            block = find_creation_block(0, self.chain_manager.blocks.height)
+        except ProviderError:
             return
 
-        if self.use_debug_trace:
-            yield from self._find_creation_in_block_via_geth(block, self.query.contract)
+        if block is None:
+            return
 
-        else:
-            yield from self._find_creation_in_block_via_parity(block, self.query.contract)
+        try:
+            if use_debug:
+                yield from self._find_creation_in_block_via_geth(block, self.query.contract)
+            else:
+                yield from self._find_creation_in_block_via_parity(block, self.query.contract)
+        except (ProviderError, APINotImplementedError):
+            return
+
 
 class EthereumQueryProvider(QueryEngineAPI):
     """
@@ -167,8 +196,8 @@ class EthereumQueryProvider(QueryEngineAPI):
     def exec_contract_creation(
         self, query: ContractCreationQuery
     ) -> Iterator[ContractCreationCursor]:
-        if (use_debug_trace := self.use_debug_trace) or self.use_trace_replay:
-            yield ContractCreationCursor(query=query, use_debug_trace=use_debug_trace)
+        # Trace support is checked when the cursor runs, not while planning.
+        yield ContractCreationCursor(query=query)
 
     # TODO: Delete all of below in v0.9
     def __init__(self):
