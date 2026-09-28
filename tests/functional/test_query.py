@@ -4,7 +4,11 @@ import narwhals as nw
 import pytest
 
 from ape.api import query as query_api
-from ape.api.query import to_dataframe, validate_and_expand_columns
+from ape.api.query import (
+    BlockQuery,
+    to_dataframe,
+    validate_and_expand_columns,
+)
 from ape.exceptions import QueryEngineError
 from ape.utils import DEFAULT_TEST_CHAIN_ID, BaseInterfaceModel
 
@@ -134,6 +138,11 @@ def test_query_unknown_dataframe_backend():
 def test_query_missing_dataframe_library():
     with pytest.raises(QueryEngineError, match="not installed"):
         to_dataframe({"number": [0]}, "cudf", None)
+
+
+def test_columns_keep_caller_order():
+    query = BlockQuery(columns=["timestamp", "number"], start_block=0, stop_block=1)
+    assert query.columns[:2] == ["timestamp", "number"]
 
 
 def test_specify_engine(chain, eth_tester_provider):

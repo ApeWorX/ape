@@ -158,10 +158,10 @@ def validate_and_expand_columns(
             err_msg = _unrecognized_columns(deduped_columns, all_columns)
             logger.warning(err_msg)
 
-        # NOTE: Only select recognized fields and return them (in sorted order)
-        selected_fields = all_columns.intersection(deduped_columns)
+        # Keep the caller's order. Drop names this model does not have.
+        selected_fields = [column for column in columns if column in all_columns]
         if len(selected_fields) > 0:
-            return sorted(selected_fields)
+            return list(dict.fromkeys(selected_fields))
 
     # NOTE: No recognized fields available to query, so raise ValueError
     err_msg = _unrecognized_columns(deduped_columns, all_columns)
@@ -184,7 +184,7 @@ ModelType = TypeVar("ModelType", bound=BaseInterfaceModel)
 class _BaseQuery(BaseModel, Generic[ModelType]):
     Model: ClassVar[type[BaseInterfaceModel] | None] = None
 
-    columns: set[str]
+    columns: list[str]
 
     @field_validator("columns", mode="before")
     def expand_wildcard(cls, value: Any) -> Any:
