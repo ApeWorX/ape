@@ -42,6 +42,11 @@ if TYPE_CHECKING:
         from typing_extensions import Self  # type: ignore
 
 
+def _experimental_query_enabled() -> bool:
+    raw = os.environ.get("APE_ENABLE_EXPERIMENTAL_QUERY_BACKEND", "")
+    return raw.strip().lower() in {"1", "true", "yes", "on"}
+
+
 def _query_step(query: QueryType) -> int:
     return getattr(query, "step", 1) or 1
 
@@ -478,7 +483,7 @@ class QueryManager(ManagerAccessMixin):
         Returns:
             Iterator[``BaseInterfaceModel``]
         """
-        if os.environ.get("APE_ENABLE_EXPERIMENTAL_QUERY_BACKEND", False):
+        if _experimental_query_enabled():
             return self._experimental_query(query, engine_to_use=engine_to_use).as_model_iter()
 
         if engine_to_use:

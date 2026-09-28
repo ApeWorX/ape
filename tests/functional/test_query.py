@@ -13,6 +13,7 @@ from ape.api.query import (
 )
 from ape.exceptions import QueryEngineError
 from ape.managers.query import QueryManager
+from ape.managers.query import _experimental_query_enabled as _flag
 from ape.utils import DEFAULT_TEST_CHAIN_ID, BaseInterfaceModel
 
 
@@ -211,6 +212,17 @@ def test_method_query_columns_are_not_block_fields():
         stop_block=1,
     )
     assert query.columns == ["foo_return"]
+
+
+def test_experimental_flag(monkeypatch):
+    monkeypatch.delenv("APE_ENABLE_EXPERIMENTAL_QUERY_BACKEND", raising=False)
+    assert _flag() is False
+    for value in ("false", "0", "no", ""):
+        monkeypatch.setenv("APE_ENABLE_EXPERIMENTAL_QUERY_BACKEND", value)
+        assert _flag() is False
+
+    monkeypatch.setenv("APE_ENABLE_EXPERIMENTAL_QUERY_BACKEND", "true")
+    assert _flag() is True
 
 
 def test_experimental_block_query(chain, eth_tester_provider, monkeypatch):
