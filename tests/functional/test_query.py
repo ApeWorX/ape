@@ -2,10 +2,12 @@ import time
 
 import narwhals as nw
 import pytest
+from ethpm_types.abi import MethodABI
 
 from ape.api import query as query_api
 from ape.api.query import (
     BlockQuery,
+    ContractMethodQuery,
     to_dataframe,
     validate_and_expand_columns,
 )
@@ -143,6 +145,21 @@ def test_query_missing_dataframe_library():
 def test_columns_keep_caller_order():
     query = BlockQuery(columns=["timestamp", "number"], start_block=0, stop_block=1)
     assert query.columns[:2] == ["timestamp", "number"]
+
+
+def test_method_query_columns_are_not_block_fields():
+    method = MethodABI.model_validate(
+        {"type": "function", "name": "foo", "inputs": [], "outputs": [], "stateMutability": "view"}
+    )
+    query = ContractMethodQuery(
+        columns=["foo_return"],
+        contract="0x" + "00" * 20,
+        method=method,
+        method_args={},
+        start_block=0,
+        stop_block=1,
+    )
+    assert query.columns == ["foo_return"]
 
 
 def test_specify_engine(chain, eth_tester_provider):

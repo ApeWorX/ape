@@ -422,6 +422,9 @@ class ContractMethodQuery(_BaseBlockQuery, _BaseQuery[Any]):
     over a range of blocks between ``start_block`` and ``stop_block``.
     """
 
+    # Return columns are method outputs, not block fields.
+    Model = None
+
     contract: AddressType
     method: MethodABI
     method_args: dict[str, Any]
