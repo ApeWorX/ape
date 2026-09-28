@@ -110,11 +110,10 @@ class _RpcBlockTransactionCursor(_RpcCursor):
         start_index: int | None = None,
         end_index: int | None = None,
     ) -> "Self":
-        if (start_index and start_index != 0) or (
-            end_index and end_index != self.query.num_transactions
-        ):
-            # NOTE: Not possible to shrink this query (also, should never need to be shrunk unless
-            #       different Engines mismatch block on number of transactions in block)
+        start = self.query.start_index if start_index is None else start_index
+        end = self.query.end_index if end_index is None else end_index
+        if start != self.query.start_index or end != self.query.end_index:
+            # A block's transactions are one window. Partial cuts are not representable.
             raise NotImplementedError
 
         return self

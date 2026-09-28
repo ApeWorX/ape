@@ -21,7 +21,9 @@ class ContractCreationCursor(CursorAPI):
         start_index: int | None = None,
         end_index: int | None = None,
     ) -> "ContractCreationCursor":
-        if start_index or end_index:
+        start = self.query.start_index if start_index is None else start_index
+        end = self.query.end_index if end_index is None else end_index
+        if start != self.query.start_index or end != self.query.end_index:
             raise NotImplementedError
 
         return self
