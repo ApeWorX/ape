@@ -586,7 +586,6 @@ class QueryEngineAPI(BaseInterface):
         """
 
     # TODO: Deprecate below in v0.9
-    @abstractmethod
     def estimate_query(self, query: QueryType) -> int | None:
         """
         Estimation of time needed to complete the query. The estimation is returned
@@ -600,8 +599,8 @@ class QueryEngineAPI(BaseInterface):
             Optional[int]: Represents milliseconds, returns ``None`` if unable to execute.
 
         """
+        return None
 
-    @abstractmethod
     def perform_query(self, query: QueryType) -> Iterator:
         """
         Executes the query using best performing ``estimate_query`` query engine.
@@ -612,6 +611,7 @@ class QueryEngineAPI(BaseInterface):
         Returns:
             Iterator
         """
+        raise QueryEngineError(f"Cannot handle '{type(query).__name__}'.")
 
     def update_cache(self, query: QueryType, result: Iterator[BaseInterfaceModel]):
         """
