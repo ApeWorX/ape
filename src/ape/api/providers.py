@@ -155,11 +155,8 @@ class BlockAPI(BaseInterfaceModel):
         """
         from ape.api.query import BlockTransactionQuery
 
-        if self.hash is None:
-            # NOTE: Only "unsealed" blocks do not have a hash
-            raise ProviderError("Unable to find block transactions: not sealed yet")
-
-        elif self.num_transactions == 0:
+        if self.hash is None or self.num_transactions == 0:
+            # Unsealed blocks have no hash yet, and an empty block has nothing to fetch.
             return []
 
         try:

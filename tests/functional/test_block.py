@@ -18,6 +18,13 @@ def test_block(eth_tester_provider, minimal_proxy):
     assert actual.number == data["number"]
 
 
+def test_unsealed_block_has_no_transactions(block):
+    data = block.model_dump()
+    data["hash"] = None
+    pending = type(block).model_validate(data)
+    assert pending.transactions == []
+
+
 def test_repr(block):
     actual = repr(block)
     expected = f"<Block number={block.number} hash={to_hex(block.hash)}>"
