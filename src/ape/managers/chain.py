@@ -13,12 +13,7 @@ from rich.table import Table
 
 from ape.api.address import Address, BaseAddress
 from ape.api.providers import BlockAPI
-from ape.api.query import (
-    AccountTransactionQuery,
-    BlockQuery,
-    to_dataframe,
-    validate_and_expand_columns,
-)
+from ape.api.query import AccountTransactionQuery, BlockQuery
 from ape.api.transactions import ReceiptAPI
 from ape.exceptions import (
     APINotImplementedError,
@@ -182,18 +177,9 @@ class BlockContainer(BaseManager):
             stop_block=stop_block,
             step=step,
         )
-
-        # TODO: In v0.9, just use `result.as_dataframe(backend=backend)` API
-        blocks = self.query_manager.query(query, engine_to_use=engine_to_use)
-        columns: list[str] = validate_and_expand_columns(  # type: ignore
-            columns, self.head.__class__
+        return self.query_manager.query(query, engine_to_use=engine_to_use).as_dataframe(
+            backend=backend
         )
-        data: dict[str, list] = {column: [] for column in columns}
-        for block in blocks:
-            for column in data:
-                data[column].append(getattr(block, column))
-
-        return to_dataframe(data, backend, self.config_manager.query.backend)
 
     def range(
         self,
@@ -246,13 +232,13 @@ class BlockContainer(BaseManager):
         # Note: the range `stop_block` is a non-inclusive stop, while the
         #       `.query` method uses an inclusive stop, so we must adjust downwards.
         query = BlockQuery(
-            columns=list(self.head.model_fields),  # TODO: fetch the block fields from EcosystemAPI
+            columns=["*"],
             start_block=start,
             stop_block=stop - 1,
             step=step,
         )
 
-        blocks = self.query_manager.query(query, engine_to_use=engine_to_use)
+        blocks = self.query_manager.query(query, engine_to_use=engine_to_use).as_model_iter()
         yield from cast(Iterator[BlockAPI], blocks)
 
     def poll_blocks(
@@ -418,16 +404,9 @@ class AccountHistory(BaseInterfaceModel):
             start_nonce=start_nonce,
             stop_nonce=stop_nonce,
         )
-
-        # TODO: In v0.9, just use `result.as_dataframe(backend=backend)` API
-        txns = self.query_manager.query(query, engine_to_use=engine_to_use)
-        columns = validate_and_expand_columns(columns, ReceiptAPI)  # type: ignore
-        data: dict[str, list] = {column: [] for column in columns}
-        for txn in txns:
-            for column in data:
-                data[column].append(getattr(txn, column))
-
-        return to_dataframe(data, backend, self.config_manager.query.backend)
+        return self.query_manager.query(query, engine_to_use=engine_to_use).as_dataframe(
+            backend=backend
+        )
 
     def __iter__(self) -> Iterator[ReceiptAPI]:  # type: ignore[override]
         yield from self.outgoing
@@ -454,12 +433,12 @@ class AccountHistory(BaseInterfaceModel):
                 next(
                     self.query_manager.query(
                         AccountTransactionQuery(
-                            columns=list(ReceiptAPI.__pydantic_fields__),
+                            columns=["*"],
                             account=self.address,
                             start_nonce=index,
                             stop_nonce=index,
                         )
-                    )
+                    ).as_model_iter()
                 ),
             )
         except StopIteration as e:
@@ -492,13 +471,13 @@ class AccountHistory(BaseInterfaceModel):
             list(
                 self.query_manager.query(
                     AccountTransactionQuery(
-                        columns=list(ReceiptAPI.__pydantic_fields__),
+                        columns=["*"],
                         account=self.address,
                         start_nonce=start,
                         stop_nonce=stop - 1,
                         step=step,
                     )
-                )
+                ).as_model_iter()
             ),
         )
 

@@ -14,7 +14,6 @@ from ape.api.query import (
 )
 from ape.exceptions import QueryEngineError
 from ape.managers.query import QueryManager, QueryResult
-from ape.managers.query import _experimental_query_enabled as _flag
 from ape.utils import DEFAULT_TEST_CHAIN_ID, BaseInterfaceModel
 from ape_cache.query import CacheQueryProvider
 
@@ -82,22 +81,7 @@ def test_transaction_contract_event_query_starts_query_at_deploy_tx(
     assert df_events["event_name"][0] == "FooHappened"
 
 
-def test_experimental_contract_event_query(
-    contract_instance, owner, eth_tester_provider, monkeypatch
-):
-    monkeypatch.setenv("APE_ENABLE_EXPERIMENTAL_QUERY_BACKEND", "true")
-    contract_instance.fooAndBar(sender=owner)
-    time.sleep(0.1)
-    df_events = contract_instance.FooHappened.query("*", start_block=-1)
-    assert isinstance(df_events, nw.DataFrame)
-    assert df_events["event_name"][0] == "FooHappened"
-
-
-@pytest.mark.parametrize("experimental", [False, True])
-def test_account_history_query(sender, receiver, eth_tester_provider, monkeypatch, experimental):
-    if experimental:
-        monkeypatch.setenv("APE_ENABLE_EXPERIMENTAL_QUERY_BACKEND", "true")
-
+def test_account_history_query(sender, receiver, eth_tester_provider):
     receipt = sender.transfer(receiver, 100)
     # The next nonce is len(history). The transfer itself is receipt.nonce.
     df = sender.history.query("nonce", "value", stop_nonce=receipt.nonce)
@@ -106,11 +90,7 @@ def test_account_history_query(sender, receiver, eth_tester_provider, monkeypatc
     assert [int(value) for value in df["value"].to_list()] == [100]
 
 
-@pytest.mark.parametrize("experimental", [False, True])
-def test_block_query_step(chain, eth_tester_provider, monkeypatch, experimental):
-    if experimental:
-        monkeypatch.setenv("APE_ENABLE_EXPERIMENTAL_QUERY_BACKEND", "true")
-
+def test_block_query_step(chain, eth_tester_provider):
     start = chain.blocks.height
     chain.mine(4)
     stop = chain.blocks.height
@@ -140,15 +120,9 @@ def test_contract_creation_metadata_reads_as_a_frame(chain, vyper_contract_insta
     assert frame["deployer"][0] == owner.address
 
 
-@pytest.mark.parametrize("experimental", [False, True])
-def test_contract_creation_query_is_empty_without_traces(
-    chain, vyper_contract_instance, monkeypatch, experimental
-):
+def test_contract_creation_query_is_empty_without_traces(chain, vyper_contract_instance):
     # Eth-tester has no trace API. The deploy cache is the creation record;
     # asking the engine after that cache is cleared returns nothing.
-    if experimental:
-        monkeypatch.setenv("APE_ENABLE_EXPERIMENTAL_QUERY_BACKEND", "true")
-
     address = vyper_contract_instance.address
     del chain.contracts.contract_creations[address]
     assert chain.contracts.get_creation_metadata(address) is None
@@ -444,25 +418,6 @@ def test_find_ranges_keeps_cached_runs(tmp_path):
 
     assert list(CacheQueryProvider.find_ranges(None, index, start=0, end=10)) == [(1, 3), (5, 5)]
     assert list(CacheQueryProvider.find_ranges(None, index, start=0, end=0)) == []
-
-
-def test_experimental_flag(monkeypatch):
-    monkeypatch.delenv("APE_ENABLE_EXPERIMENTAL_QUERY_BACKEND", raising=False)
-    assert _flag() is False
-    for value in ("false", "0", "no", ""):
-        monkeypatch.setenv("APE_ENABLE_EXPERIMENTAL_QUERY_BACKEND", value)
-        assert _flag() is False
-
-    monkeypatch.setenv("APE_ENABLE_EXPERIMENTAL_QUERY_BACKEND", "true")
-    assert _flag() is True
-
-
-def test_experimental_block_query(chain, eth_tester_provider, monkeypatch):
-    monkeypatch.setenv("APE_ENABLE_EXPERIMENTAL_QUERY_BACKEND", "true")
-    chain.mine(2)
-    numbers = chain.blocks.query("number")["number"].to_list()
-    assert numbers[0] == 0
-    assert numbers[-1] == chain.blocks.height
 
 
 def test_specify_engine(chain, eth_tester_provider):

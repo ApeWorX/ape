@@ -15,12 +15,7 @@ from ethpm_types.abi import EventABI
 
 from ape.api.accounts import AccountAPI
 from ape.api.address import Address, BaseAddress
-from ape.api.query import (
-    ContractCreation,
-    ContractEventQuery,
-    to_dataframe,
-    validate_and_expand_columns,
-)
+from ape.api.query import ContractCreation, ContractEventQuery
 from ape.exceptions import (
     ApeAttributeError,
     ArgumentsLengthError,
@@ -794,7 +789,7 @@ class ContractEvent(BaseInterfaceModel):
                 f"'stop={stop_block}' cannot be greater than the chain length ({HEAD})."
             )
         query: dict = {
-            "columns": (list(ContractLog.__pydantic_fields__) if columns[0] == "*" else columns),
+            "columns": list(columns),
             "event": self.abi,
             "start_block": start_block,
             "stop_block": stop_block,
@@ -804,19 +799,9 @@ class ContractEvent(BaseInterfaceModel):
             # Only query for a specific contract when checking an instance.
             query["contract"] = self.contract.address
 
-        # TODO: In v0.9, just use `result.as_dataframe(backend=backend)` API
-        contract_event_query = ContractEventQuery(**query)
-        contract_events = self.query_manager.query(
-            contract_event_query, engine_to_use=engine_to_use
-        )
-        columns_ls = validate_and_expand_columns(columns, ContractLog)
-
-        data: dict[str, list] = {column: [] for column in columns_ls}
-        for log in contract_events:
-            for column in data:
-                data[column].append(getattr(log, column))
-
-        return to_dataframe(data, backend, self.config_manager.query.backend)
+        return self.query_manager.query(
+            ContractEventQuery(**query), engine_to_use=engine_to_use
+        ).as_dataframe(backend=backend)
 
     def range(
         self,
@@ -898,7 +883,7 @@ class ContractEvent(BaseInterfaceModel):
 
         # Construct the event query
         contract_event_query = ContractEventQuery(
-            columns=list(ContractLog.__pydantic_fields__),  # Ensure all necessary columns
+            columns=["*"],
             contract=addresses,
             event=self.abi,
             search_topics=search_topics,
@@ -907,7 +892,7 @@ class ContractEvent(BaseInterfaceModel):
         )
 
         # Execute the query and yield results
-        yield from self.query_manager.query(contract_event_query)  # type: ignore
+        yield from self.query_manager.query(contract_event_query).as_model_iter()
 
     def from_receipt(self, receipt: "ReceiptAPI") -> list[ContractLog]:
         """

@@ -12,7 +12,7 @@ from ape.exceptions import QueryEngineError
 from ape.logging import logger
 from ape.types import ContractLog
 from ape.types.address import AddressType
-from ape.utils.basemodel import BaseInterface, BaseInterfaceModel, BaseModel
+from ape.utils.basemodel import BaseInterface, BaseInterfaceModel, BaseModel, ManagerAccessMixin
 
 from .providers import BlockAPI
 from .transactions import ReceiptAPI, TransactionAPI
@@ -106,33 +106,86 @@ def to_dataframe(
     return nw.from_dict(data, backend=resolved)
 
 
-@cache
-def _basic_columns(Model: type[BaseInterfaceModel]) -> set[str]:
-    columns = set(Model.__pydantic_fields__)
+def _subclass_tree(model: type[BaseInterfaceModel]) -> list[type[BaseInterfaceModel]]:
+    found: list[type[BaseInterfaceModel]] = []
+    stack: list[type] = list(model.__subclasses__())
+    while stack:
+        cls = stack.pop()
+        if cls in found or not issubclass(cls, BaseInterfaceModel):
+            continue
 
-    # TODO: Remove once `ReceiptAPI` fields cleaned up for better processing
-    if Model == ReceiptAPI:
-        columns.remove("transaction")
-        columns |= _basic_columns(TransactionAPI)
+        found.append(cls)
+        stack.extend(cls.__subclasses__())
 
-    return columns
+    return found
 
 
-@cache
-def _all_columns(Model: type[BaseInterfaceModel]) -> set[str]:
-    columns = _basic_columns(Model)
-    # NOTE: Iterate down the series of subclasses of `Model` (e.g. Block and BlockAPI)
-    #       and get all of the public property methods of each class (which are valid columns)
-    columns |= {
-        field_name
-        for cls in Model.__mro__
-        if issubclass(cls, BaseInterfaceModel) and cls is not BaseInterfaceModel
-        for field_name, field in vars(cls).items()
-        if not field_name.startswith("_") and isinstance(field, (property, cached_property))
-    }
+def _ecosystem_packages() -> set[str] | None:
+    """Packages that define the connected ecosystem's models.
 
-    # TODO: Remove once `ReceiptAPI` fields cleaned up for better processing
-    if Model == ReceiptAPI:
+    The ecosystem class and the classes it extends are included, stopping at
+    ``EcosystemAPI``. A chain that subclasses Ethereum and declares no model of
+    its own still uses the Ethereum block and receipt.
+    """
+    networks = ManagerAccessMixin.network_manager
+    if not networks.connected:
+        return None
+
+    packages: set[str] = set()
+    for cls in type(networks.ecosystem).__mro__:
+        if cls.__name__ == "EcosystemAPI":
+            break
+
+        packages.add(cls.__module__.split(".", 1)[0])
+
+    return packages
+
+
+def _concrete_model(model: type[BaseInterfaceModel]) -> type[BaseInterfaceModel]:
+    """The connected ecosystem's model for ``model``.
+
+    The most general class in that ecosystem's packages is the one every row
+    has. A more specific variant, such as a blob receipt, is not used for ``*``.
+    """
+    packages = _ecosystem_packages()
+    if not packages:
+        return model
+
+    candidates = [
+        cls for cls in _subclass_tree(model) if cls.__module__.split(".", 1)[0] in packages
+    ]
+    general = [
+        cls
+        for cls in candidates
+        if not any(cls is not other and issubclass(cls, other) for other in candidates)
+    ]
+    if len(general) == 1:
+        return general[0]
+
+    return model
+
+
+def _basic_columns(model: type[BaseInterfaceModel]) -> set[str]:
+    # Constructor fields of the ecosystem model. Enough to build a row, and not
+    # properties that fetch more data.
+    return set(_concrete_model(model).model_fields)
+
+
+def _all_columns(model: type[BaseInterfaceModel]) -> set[str]:
+    concrete = _concrete_model(model)
+    columns = set(concrete.model_fields)
+    for cls in concrete.__mro__:
+        if cls is BaseInterfaceModel or not issubclass(cls, BaseInterfaceModel):
+            continue
+
+        columns.update(
+            field_name
+            for field_name, field in vars(cls).items()
+            if not field_name.startswith("_") and isinstance(field, (property, cached_property))
+        )
+
+    # Receipt rows expose the nested transaction's fields, such as nonce.
+    if issubclass(concrete, ReceiptAPI):
         columns |= _all_columns(TransactionAPI)
 
     return columns
@@ -293,13 +346,13 @@ class BlockTransactionQuery(_BaseQuery[TransactionAPI]):
         return self.num_transactions - 1
 
 
-class AccountTransactionQuery(_BaseQuery[TransactionAPI]):
+class AccountTransactionQuery(_BaseQuery[ReceiptAPI]):
     """
-    A ``QueryType`` that collects properties of ``TransactionAPI`` over a range
+    A ``QueryType`` that collects properties of ``ReceiptAPI`` over a range
     of transactions made by ``account`` between ``start_nonce`` and ``stop_nonce``.
     """
 
-    Model = TransactionAPI
+    Model = ReceiptAPI
 
     account: AddressType
     start_nonce: NonNegativeInt = 0
@@ -586,44 +639,6 @@ class QueryEngineAPI(BaseInterface):
                 the data that most efficiently covers the original `~QueryType`.
         """
 
-    # TODO: Deprecate below in v0.9
-    def estimate_query(self, query: QueryType) -> int | None:
-        """
-        Estimation of time needed to complete the query. The estimation is returned
-        as an int representing milliseconds. A value of None indicates that the
-        query engine is not available for use or is unable to complete the query.
 
-        Args:
-            query (``QueryType``): Query to estimate.
-
-        Returns:
-            Optional[int]: Represents milliseconds, returns ``None`` if unable to execute.
-
-        """
-        return None
-
-    def perform_query(self, query: QueryType) -> Iterator:
-        """
-        Executes the query using best performing ``estimate_query`` query engine.
-
-        Args:
-            query (``QueryType``): query to execute
-
-        Returns:
-            Iterator
-        """
-        raise QueryEngineError(f"Cannot handle '{type(query).__name__}'.")
-
-    def update_cache(self, query: QueryType, result: Iterator[BaseInterfaceModel]):
-        """
-        Allows a query plugin the chance to update any cache using the results obtained
-        from other query plugins. Defaults to doing nothing, override to store cache data.
-
-        Args:
-            query (``QueryType``): query that was executed
-            result (``Iterator``): the result of the query
-        """
-
-
-# TODO: Remove in v0.9
+# TODO: Remove in v1. Plugins should import ``QueryEngineAPI``.
 QueryAPI = QueryEngineAPI

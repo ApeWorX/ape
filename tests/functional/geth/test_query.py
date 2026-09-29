@@ -12,10 +12,8 @@ def _hex(value: object) -> str:
 def test_mainnet_history_is_served_from_the_file_cache(
     chain, networks, monkeypatch, mocker, tmp_path
 ):
-    # The file cache only runs on the cursor planner. Keep it in a temp folder
-    # so this test does not write into the shared data directory.
-    monkeypatch.setenv("APE_ENABLE_EXPERIMENTAL_QUERY_BACKEND", "true")
-
+    # Keep the file cache in a temp folder so this test does not write into
+    # the shared data directory.
     def cache_folder(self, ecosystem_name=None, network_name=None):
         if ecosystem_name is None or network_name is None:
             ecosystem_name = self.provider.network.ecosystem.name
@@ -109,11 +107,18 @@ def test_get_contract_metadata(
     finally:
         chain.network_manager.active_provider._web3 = orig_web3
 
-    call_args = mock_geth._web3.provider.make_request.call_args_list
+    # The cursor checks that the RPC method exists before tracing, so those
+    # probes use an empty argument list. The search itself carries the tracer.
+    def traced(method: str) -> list:
+        return [
+            call.args
+            for call in mock_geth._web3.provider.make_request.call_args_list
+            if call.args and call.args[0] == method and len(call.args) > 1 and call.args[1]
+        ]
 
-    # geth
-    assert call_args[-2][0][0] == "debug_traceBlockByNumber"
-    assert call_args[-2][0][1][1] == {"tracer": "callTracer"}
-    # parity
-    assert call_args[-1][0][0] == "trace_replayBlockTransactions"
-    assert call_args[-1][0][1][1] == ["trace"]
+    debug = traced("debug_traceBlockByNumber")
+    parity = traced("trace_replayBlockTransactions")
+    assert len(debug) == 1
+    assert debug[0][1][1] == {"tracer": "callTracer"}
+    assert len(parity) == 1
+    assert parity[0][1][1] == ["trace"]

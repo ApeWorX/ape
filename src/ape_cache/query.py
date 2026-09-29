@@ -6,8 +6,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from ape.api.providers import BlockAPI
-from ape.api.query import BaseInterfaceModel, BlockQuery, CursorAPI, QueryEngineAPI, QueryType
-from ape.exceptions import QueryEngineError
+from ape.api.query import BlockQuery, CursorAPI, QueryEngineAPI
 
 if TYPE_CHECKING:
     try:
@@ -140,13 +139,3 @@ class CacheQueryProvider(QueryEngineAPI):
         path = self.cache_folder(ecosystem_name, network_name)
         if path.is_dir():
             shutil.rmtree(path)
-
-    # NOTE: Delete below after v0.9
-    def estimate_query(self, query: QueryType) -> int | None:
-        return None
-
-    def perform_query(self, query: QueryType) -> Iterator:
-        raise QueryEngineError("Cannot use this engine in legacy mode")
-
-    def update_cache(self, query: QueryType, result: Iterator[BaseInterfaceModel]):
-        pass

@@ -165,7 +165,7 @@ class BlockAPI(BaseInterfaceModel):
                 num_transactions=self.num_transactions,
                 block_id=self.hash,
             )
-            return cast(list[TransactionAPI], list(self.query_manager.query(query)))
+            return cast(list[TransactionAPI], list(self.query_manager.query(query).as_model_iter()))
         except QueryEngineError as err:
             # NOTE: Re-raising a better error here because was confusing
             #  when doing anything with fields, and this would fail.
