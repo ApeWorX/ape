@@ -3,11 +3,12 @@ from types import SimpleNamespace
 
 import narwhals as nw
 import pytest
-from ethpm_types.abi import MethodABI
+from ethpm_types.abi import EventABI, MethodABI
 
 from ape.api import query as query_api
 from ape.api.query import (
     BlockQuery,
+    ContractEventQuery,
     ContractMethodQuery,
     to_dataframe,
     validate_and_expand_columns,
@@ -69,6 +70,12 @@ def test_transaction_contract_event_query(contract_instance, owner, eth_tester_p
     df_events = contract_instance.FooHappened.query("*", start_block=-1)
     assert isinstance(df_events, nw.DataFrame)
     assert df_events["event_name"][0] == "FooHappened"
+    assert df_events.columns[-1] == "foo"
+    assert int(df_events["foo"][0]) == 0
+
+    picked = contract_instance.FooHappened.query("foo", "event_name", start_block=-1)
+    assert picked.columns == ["foo", "event_name"]
+    assert int(picked["foo"][0]) == 0
 
 
 def test_transaction_contract_event_query_starts_query_at_deploy_tx(
@@ -388,6 +395,41 @@ def test_validate_coverage_rejects_a_short_plan():
 
 def test_result_time_per_row_is_zero_without_rows():
     assert QueryResult.time_per_row.fget(SimpleNamespace(cursors=[])) == 0.0
+
+
+def test_event_query_expands_argument_columns():
+    event = EventABI.model_validate(
+        {
+            "type": "event",
+            "name": "Transfer",
+            "inputs": [
+                {"name": "src", "type": "address", "indexed": True},
+                {"name": "dst", "type": "address", "indexed": True},
+                {"name": "wad", "type": "uint256"},
+                {"name": "block_number", "type": "uint256"},
+                {"name": "", "type": "uint256"},
+            ],
+        }
+    )
+    query = ContractEventQuery(
+        columns=["*"],
+        contract="0x" + "00" * 20,
+        event=event,
+        start_block=1,
+        stop_block=2,
+    )
+    assert query.columns[-3:] == ["src", "dst", "wad"]
+    assert "event_arguments" in query.columns
+    assert query.columns.count("block_number") == 1
+
+    picked = ContractEventQuery(
+        columns=["wad", "src", "wad"],
+        contract="0x" + "00" * 20,
+        event=event,
+        start_block=1,
+        stop_block=2,
+    )
+    assert picked.columns == ["wad", "src"]
 
 
 def test_columns_keep_caller_order():

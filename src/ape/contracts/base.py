@@ -754,7 +754,8 @@ class ContractEvent(BaseInterfaceModel):
 
         Args:
             *columns (str): ``*``-based argument for columns in the DataFrame to
-              return.
+              return. ``*`` includes the log fields and each event input.
+              Name an input, such as ``wad``, to select that column.
             start_block (int): The first block, by number, to include in the
               query. Defaults to ``0``.
             stop_block (int | None): The last block, by number, to include

@@ -191,6 +191,24 @@ def _all_columns(model: type[BaseInterfaceModel]) -> set[str]:
     return columns
 
 
+def _select_columns(columns: Sequence[str], allowed: set[str]) -> list[str]:
+    deduped_columns = set(columns)
+    if len(deduped_columns) != len(columns):
+        logger.warning(f"Duplicate fields in {list(columns)}")
+
+    # NOTE: Some unrecognized fields, but can still provide the rest of the data
+    if len(deduped_columns - allowed) > 0:
+        logger.warning(_unrecognized_columns(deduped_columns, allowed))
+
+    # Keep the caller's order. Drop names this model does not have.
+    selected_fields = list(dict.fromkeys(column for column in columns if column in allowed))
+    if len(selected_fields) > 0:
+        return selected_fields
+
+    # NOTE: No recognized fields available to query, so raise ValueError
+    raise ValueError(_unrecognized_columns(deduped_columns, allowed))
+
+
 def validate_and_expand_columns(
     columns: Sequence[str], Model: type[BaseInterfaceModel]
 ) -> list[str]:
@@ -199,26 +217,33 @@ def validate_and_expand_columns(
         #       (because they are cheap to pull, but properties might not be)
         return sorted(_basic_columns(Model))
 
-    else:
-        # NOTE: Validate if selected columns in the total set of fields + properties
-        all_columns = _all_columns(Model)
-        deduped_columns = set(columns)
-        if len(deduped_columns) != len(columns):
-            logger.warning(f"Duplicate fields in {columns}")
+    return _select_columns(columns, _all_columns(Model))
 
-        # NOTE: Some unrecognized fields, but can still provide the rest of the data
-        if len(deduped_columns - all_columns) > 0:
-            err_msg = _unrecognized_columns(deduped_columns, all_columns)
-            logger.warning(err_msg)
 
-        # Keep the caller's order. Drop names this model does not have.
-        selected_fields = [column for column in columns if column in all_columns]
-        if len(selected_fields) > 0:
-            return list(dict.fromkeys(selected_fields))
+def _event_argument_names(event: EventABI) -> list[str]:
+    """Event inputs that can be their own columns, in ABI order.
 
-    # NOTE: No recognized fields available to query, so raise ValueError
-    err_msg = _unrecognized_columns(deduped_columns, all_columns)
-    raise ValueError(err_msg)
+    An input with no name is skipped. An input that shares a name with a log
+    field stays inside ``event_arguments``, because that column is the log field.
+    """
+    occupied = _all_columns(ContractLog)
+    names: list[str] = []
+    for abi_input in event.inputs:
+        name = abi_input.name
+        if not name or name in occupied or name in names:
+            continue
+
+        names.append(name)
+
+    return names
+
+
+def _expand_event_columns(columns: Sequence[str], event: EventABI) -> list[str]:
+    arguments = _event_argument_names(event)
+    if len(columns) == 1 and columns[0] == "*":
+        return sorted(_basic_columns(ContractLog)) + arguments
+
+    return _select_columns(columns, _all_columns(ContractLog) | set(arguments))
 
 
 def _unrecognized_columns(selected_columns: set[str], all_columns: set[str]) -> str:
@@ -460,6 +485,9 @@ class ContractEventQuery(_BaseBlockQuery, _BaseQuery[ContractLog]):
     """
     A ``QueryType`` that collects members from ``event`` over a range of
     logs emitted by ``contract`` between ``start_block`` and ``stop_block``.
+
+    ``*`` includes the log fields and each event input, in ABI order.
+    An input can also be requested by name, such as ``wad``.
     """
 
     Model = ContractLog
@@ -467,6 +495,29 @@ class ContractEventQuery(_BaseBlockQuery, _BaseQuery[ContractLog]):
     contract: list[AddressType] | AddressType
     event: EventABI
     search_topics: dict[str, Any] | None = None
+
+    @field_validator("columns", mode="before")
+    @classmethod
+    def expand_wildcard(cls, value: Any) -> Any:
+        # Argument names come from the event ABI. ``include_event_arguments``
+        # selects columns first, and the base validator would drop those names.
+        return value
+
+    @model_validator(mode="before")
+    @classmethod
+    def include_event_arguments(cls, value: Any) -> Any:
+        if not isinstance(value, dict):
+            return value
+
+        columns = value.get("columns")
+        event = value.get("event")
+        if isinstance(columns, str) or not isinstance(columns, Sequence) or event is None:
+            return value
+
+        if not isinstance(event, EventABI):
+            event = EventABI.model_validate(event)
+
+        return {**value, "columns": _expand_event_columns(columns, event)}
 
 
 class ContractMethodQuery(_BaseBlockQuery, _BaseQuery[Any]):
