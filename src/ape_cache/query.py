@@ -1,3 +1,4 @@
+import json
 import shutil
 from collections.abc import Iterator
 from functools import singledispatchmethod
@@ -44,14 +45,14 @@ class BlockCursor(_BaseCursor):
 
     def as_model_iter(self) -> Iterator[BlockAPI]:
         block_index_folder = self.cache_folder / ".number"
-        block_class = self.provider.network.ecosystem.block_class
+        decode_block = self.provider.network.ecosystem.decode_block
         step = self.query.step or 1
         for block_number in range(self.query.start_block, self.query.stop_block + 1, step):
             path = block_index_folder / str(block_number)
             if not path.is_file():
                 continue
 
-            yield block_class.model_validate_json(path.read_text())
+            yield decode_block(json.loads(path.read_text()))
 
 
 class CacheQueryProvider(QueryEngineAPI):

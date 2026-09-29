@@ -1,4 +1,5 @@
 import time
+from types import SimpleNamespace
 
 import narwhals as nw
 import pytest
@@ -12,7 +13,7 @@ from ape.api.query import (
     validate_and_expand_columns,
 )
 from ape.exceptions import QueryEngineError
-from ape.managers.query import QueryManager
+from ape.managers.query import QueryManager, QueryResult
 from ape.managers.query import _experimental_query_enabled as _flag
 from ape.utils import DEFAULT_TEST_CHAIN_ID, BaseInterfaceModel
 from ape_cache.query import CacheQueryProvider
@@ -79,6 +80,78 @@ def test_transaction_contract_event_query_starts_query_at_deploy_tx(
     df_events = contract_instance.FooHappened.query("*")
     assert isinstance(df_events, nw.DataFrame)
     assert df_events["event_name"][0] == "FooHappened"
+
+
+def test_experimental_contract_event_query(
+    contract_instance, owner, eth_tester_provider, monkeypatch
+):
+    monkeypatch.setenv("APE_ENABLE_EXPERIMENTAL_QUERY_BACKEND", "true")
+    contract_instance.fooAndBar(sender=owner)
+    time.sleep(0.1)
+    df_events = contract_instance.FooHappened.query("*", start_block=-1)
+    assert isinstance(df_events, nw.DataFrame)
+    assert df_events["event_name"][0] == "FooHappened"
+
+
+@pytest.mark.parametrize("experimental", [False, True])
+def test_account_history_query(sender, receiver, eth_tester_provider, monkeypatch, experimental):
+    if experimental:
+        monkeypatch.setenv("APE_ENABLE_EXPERIMENTAL_QUERY_BACKEND", "true")
+
+    receipt = sender.transfer(receiver, 100)
+    # The next nonce is len(history). The transfer itself is receipt.nonce.
+    df = sender.history.query("nonce", "value", stop_nonce=receipt.nonce)
+    assert isinstance(df, nw.DataFrame)
+    assert [int(value) for value in df["nonce"].to_list()] == [int(receipt.nonce)]
+    assert [int(value) for value in df["value"].to_list()] == [100]
+
+
+@pytest.mark.parametrize("experimental", [False, True])
+def test_block_query_step(chain, eth_tester_provider, monkeypatch, experimental):
+    if experimental:
+        monkeypatch.setenv("APE_ENABLE_EXPERIMENTAL_QUERY_BACKEND", "true")
+
+    start = chain.blocks.height
+    chain.mine(4)
+    stop = chain.blocks.height
+    numbers = chain.blocks.query("number", start_block=start, stop_block=stop, step=2)[
+        "number"
+    ].to_list()
+    assert [int(number) for number in numbers] == list(range(start, stop + 1, 2))
+
+
+def test_contract_creation_metadata_reads_as_a_frame(chain, vyper_contract_instance, owner):
+    creation = vyper_contract_instance.creation_metadata
+    assert creation is not None
+    assert creation.deployer == owner.address
+
+    frame = to_dataframe(
+        {
+            "txn_hash": [creation.txn_hash],
+            "block": [creation.block],
+            "deployer": [creation.deployer],
+        },
+        None,
+        chain.config_manager.query.backend,
+    )
+    assert isinstance(frame, nw.DataFrame)
+    assert frame["txn_hash"].to_list() == [creation.txn_hash]
+    assert int(frame["block"][0]) == creation.block
+    assert frame["deployer"][0] == owner.address
+
+
+@pytest.mark.parametrize("experimental", [False, True])
+def test_contract_creation_query_is_empty_without_traces(
+    chain, vyper_contract_instance, monkeypatch, experimental
+):
+    # Eth-tester has no trace API. The deploy cache is the creation record;
+    # asking the engine after that cache is cleared returns nothing.
+    if experimental:
+        monkeypatch.setenv("APE_ENABLE_EXPERIMENTAL_QUERY_BACKEND", "true")
+
+    address = vyper_contract_instance.address
+    del chain.contracts.contract_creations[address]
+    assert chain.contracts.get_creation_metadata(address) is None
 
 
 class Model(BaseInterfaceModel):
@@ -153,10 +226,10 @@ class _Window:
 
 
 class _Cursor:
-    def __init__(self, start, end, cost, step=1, shrinkable=True):
+    def __init__(self, start, end, cost, step=1, shrinkable=True, total_time=None):
         self.query = _Window(start, end, step)
         self.time_per_row = cost
-        self.total_time = cost
+        self.total_time = cost if total_time is None else total_time
         self.shrinkable = shrinkable
 
     def shrink(self, start_index=None, end_index=None):
@@ -193,6 +266,154 @@ def test_solver_single_index_is_not_inverted():
     query = _Window(3, 3)
     pieces = _solve(query, [_Cursor(3, 3, cost=1)])
     assert [(piece.query.start_index, piece.query.end_index) for piece in pieces] == [(3, 3)]
+
+
+def test_solver_empty_query_yields_nothing():
+    assert _solve(_Window(5, 4), [_Cursor(0, 10, cost=1)]) == []
+
+
+def test_solver_missing_coverage_raises():
+    with pytest.raises(QueryEngineError, match=r"missing coverage in window \[5:10\]"):
+        _solve(_Window(0, 10), [_Cursor(0, 4, cost=1)])
+
+
+def test_solver_merges_adjacent_segments_of_the_same_cursor():
+    query = _Window(0, 10)
+    wide = _Cursor(0, 10, cost=1)
+    # The partial cursor only adds a boundary. It loses both segments on cost.
+    pieces = _solve(query, [wide, _Cursor(0, 5, cost=5)])
+    assert [(piece.query.start_index, piece.query.end_index) for piece in pieces] == [(0, 10)]
+
+
+def test_solver_breaks_ties_on_total_time():
+    query = _Window(0, 10)
+    pieces = _solve(
+        query,
+        [
+            _Cursor(0, 10, cost=1, total_time=100),
+            _Cursor(0, 10, cost=1, total_time=1),
+        ],
+    )
+    assert [(piece.query.start_index, piece.query.end_index) for piece in pieces] == [(0, 10)]
+    assert pieces[0].total_time == 1
+
+
+def test_solver_uses_a_rigid_cursor_for_its_whole_window():
+    pieces = _solve(_Window(0, 10), [_Cursor(0, 10, cost=1, shrinkable=False)])
+    assert [(piece.query.start_index, piece.query.end_index) for piece in pieces] == [(0, 10)]
+
+
+def test_solver_keeps_a_rigid_cursor_on_its_exact_segment():
+    pieces = _solve(
+        _Window(0, 10),
+        [_Cursor(0, 4, cost=1, shrinkable=False), _Cursor(5, 10, cost=1)],
+    )
+    assert [(piece.query.start_index, piece.query.end_index) for piece in pieces] == [
+        (0, 4),
+        (5, 10),
+    ]
+
+
+def test_solver_cannot_cut_a_rigid_cursor():
+    # A boundary inside a cursor that refuses to shrink drops that cursor.
+    with pytest.raises(QueryEngineError, match=r"missing coverage in window \[5:10\]"):
+        _solve(
+            _Window(0, 10),
+            [_Cursor(0, 10, cost=1, shrinkable=False), _Cursor(0, 4, cost=5)],
+        )
+
+
+def test_solver_ignores_off_grid_cursor_edges():
+    query = _Window(0, 10, step=2)
+    pieces = _solve(query, [_Cursor(0, 10, cost=1, step=2), _Cursor(1, 9, cost=0.01, step=2)])
+    assert [(piece.query.start_index, piece.query.end_index) for piece in pieces] == [(0, 10)]
+
+
+def test_solver_splits_on_the_step_grid():
+    pieces = _solve(
+        _Window(0, 10, step=2),
+        [_Cursor(0, 10, cost=1, step=2), _Cursor(4, 10, cost=0.1, step=2)],
+    )
+    assert [(piece.query.start_index, piece.query.end_index) for piece in pieces] == [
+        (0, 2),
+        (4, 10),
+    ]
+
+
+def test_solver_clips_a_cursor_wider_than_the_query():
+    pieces = _solve(_Window(2, 8), [_Cursor(0, 20, cost=1)])
+    assert [(piece.query.start_index, piece.query.end_index) for piece in pieces] == [(2, 8)]
+
+
+def test_solver_ignores_a_cursor_outside_the_query():
+    pieces = _solve(_Window(0, 10), [_Cursor(0, 10, cost=1), _Cursor(20, 30, cost=0.01)])
+    assert [(piece.query.start_index, piece.query.end_index) for piece in pieces] == [(0, 10)]
+
+
+def test_solver_outside_cursor_is_not_coverage():
+    with pytest.raises(QueryEngineError, match=r"missing coverage in window \[0:10\]"):
+        _solve(_Window(0, 10), [_Cursor(20, 30, cost=1)])
+
+
+def test_solver_uses_a_cheap_middle_between_the_same_wide_cursor():
+    pieces = _solve(_Window(0, 10), [_Cursor(0, 10, cost=1), _Cursor(3, 6, cost=0.1)])
+    assert [(piece.query.start_index, piece.query.end_index) for piece in pieces] == [
+        (0, 2),
+        (3, 6),
+        (7, 10),
+    ]
+
+
+def _coverage(query, cursors):
+    result = SimpleNamespace(query=query, cursors=cursors)
+    return QueryResult.validate_coverage(result)
+
+
+def test_validate_coverage_accepts_abutting_cursors():
+    query = _Window(0, 10)
+    cursors = [_Cursor(0, 4, cost=1), _Cursor(5, 10, cost=1)]
+    result = SimpleNamespace(query=query, cursors=cursors)
+    assert QueryResult.validate_coverage(result) is result
+
+
+def test_validate_coverage_follows_the_step():
+    query = _Window(0, 10, step=2)
+    cursors = [_Cursor(0, 2, cost=1), _Cursor(4, 10, cost=1)]
+    assert _coverage(query, cursors).query is query
+
+
+def test_validate_coverage_accepts_an_empty_query_with_no_cursors():
+    query = _Window(5, 4)
+    assert _coverage(query, []).query is query
+
+
+def test_validate_coverage_rejects_cursors_on_an_empty_query():
+    with pytest.raises(QueryEngineError, match="empty but has cursors"):
+        _coverage(_Window(5, 4), [_Cursor(0, 0, cost=1)])
+
+
+def test_validate_coverage_rejects_an_empty_cursor_window():
+    with pytest.raises(QueryEngineError, match="empty window"):
+        _coverage(_Window(0, 10), [_Cursor(0, -1, cost=1)])
+
+
+def test_validate_coverage_rejects_a_gap():
+    with pytest.raises(AssertionError, match="starts at 6, expected 5"):
+        _coverage(_Window(0, 10), [_Cursor(0, 4, cost=1), _Cursor(6, 10, cost=1)])
+
+
+def test_validate_coverage_rejects_an_overlap():
+    with pytest.raises(AssertionError, match="starts at 4, expected 6"):
+        _coverage(_Window(0, 10), [_Cursor(0, 5, cost=1), _Cursor(4, 10, cost=1)])
+
+
+def test_validate_coverage_rejects_a_short_plan():
+    with pytest.raises(AssertionError, match="ended at 4, expected 10"):
+        _coverage(_Window(0, 10), [_Cursor(0, 4, cost=1)])
+
+
+def test_result_time_per_row_is_zero_without_rows():
+    assert QueryResult.time_per_row.fget(SimpleNamespace(cursors=[])) == 0.0
 
 
 def test_columns_keep_caller_order():
