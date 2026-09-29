@@ -53,14 +53,14 @@ class ContractCreationCursor(CursorAPI):
 
 class OtterscanQueryEngine(QueryEngineAPI):
     @singledispatchmethod
-    def exec(self, query: QueryType) -> Iterator[CursorAPI]:  # type: ignore[override]
-        return super().exec(query)
+    def execute(self, query: QueryType) -> Iterator[CursorAPI]:  # type: ignore[override]
+        return super().execute(query)
 
     @property
     def supports_ots_namespace(self) -> bool:
         return getattr(self.provider, "_ots_api_level", None) is not None
 
-    @exec.register
+    @execute.register
     def exec_creation_query(self, query: ContractCreationQuery) -> Iterator[ContractCreationCursor]:
         if self.supports_ots_namespace:
             yield ContractCreationCursor(query=query)

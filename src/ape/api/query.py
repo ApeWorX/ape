@@ -531,7 +531,7 @@ QueryType: TypeAlias = (
 
 
 class QueryEngineAPI(BaseInterface):
-    def exec(self, query: QueryType) -> Iterator[CursorAPI]:
+    def execute(self, query: QueryType) -> Iterator[CursorAPI]:
         """
         Obtain `CursorAPI` object(s) that may covers (subset of) `query`. A plugin should yield
         one or more cursor(s) that covers some subset of the length of `query`'s row-space, as
@@ -544,8 +544,9 @@ class QueryEngineAPI(BaseInterface):
         which will cause it to skip using this plugin for non-overriden queries by default, as this
         method yields an empty iterator which will indicate that your plugin can be skipped.
 
-        Add `exec = functools.singledispatchmethod(QueryEngineAPI.exec)` to your subclass, and then
-        `@exec.register` as a decorator on your method in order to support particular query types.
+        Add `execute = functools.singledispatchmethod(QueryEngineAPI.execute)` to your subclass,
+        and then `@execute.register` as a decorator on your method in order to support particular
+        query types.
 
         Args:
             query (`~QueryType`): The query being handled by this method.
@@ -562,9 +563,9 @@ class QueryEngineAPI(BaseInterface):
             ...     ...  # See `CursorAPI`'s documentation for methods to implement
             >>> class PluginQueryEngine(QueryEngineAPI):
             ...     # NOTE: Do this if you want to define multiple dispatch handlers easily
-            ...     exec = singledispatchmethod(QueryEngineAPI.exec)
-            ...     # NOTE: Do *not* use the name `exec` for the dispatch method's name!
-            ...     @exec.register
+            ...     execute = singledispatchmethod(QueryEngineAPI.execute)
+            ...     # NOTE: Do *not* use the name `execute` for the dispatch method's name!
+            ...     @execute.register
             ...     def exec_queryX(self, query: SomethingQuery) -> Iterator[PluginCursor]:
             ...         yield PluginCursor(query=query, ...)
             ...         # NOTE: Can yield more cursors if plugin does not have full coverage,

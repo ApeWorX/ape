@@ -189,10 +189,10 @@ class EthereumQueryProvider(QueryEngineAPI):
         return self._has_method("trace_replayBlockTransactions")
 
     @singledispatchmethod
-    def exec(self, query: QueryType) -> Iterator[CursorAPI]:  # type: ignore[override]
-        return super().exec(query)
+    def execute(self, query: QueryType) -> Iterator[CursorAPI]:  # type: ignore[override]
+        return super().execute(query)
 
-    @exec.register
+    @execute.register
     def exec_contract_creation(
         self, query: ContractCreationQuery
     ) -> Iterator[ContractCreationCursor]:

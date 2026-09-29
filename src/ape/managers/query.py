@@ -178,26 +178,26 @@ class DefaultQueryProvider(QueryEngineAPI):
     """
 
     @singledispatchmethod
-    def exec(self, query: QueryType) -> Iterator[CursorAPI]:  # type: ignore[override]
-        return super().exec(query)
+    def execute(self, query: QueryType) -> Iterator[CursorAPI]:  # type: ignore[override]
+        return super().execute(query)
 
-    @exec.register
+    @execute.register
     def exec_block_query(self, query: BlockQuery) -> Iterator[_RpcBlockCursor]:
         yield _RpcBlockCursor(query=query)
 
-    @exec.register
+    @execute.register
     def exec_block_transaction_query(
         self, query: BlockTransactionQuery
     ) -> Iterator[_RpcBlockTransactionCursor]:
         yield _RpcBlockTransactionCursor(query=query)
 
-    @exec.register
+    @execute.register
     def exec_contract_event_query(
         self, query: ContractEventQuery
     ) -> Iterator[_RpcContractEventCursor]:
         yield _RpcContractEventCursor(query=query)
 
-    @exec.register
+    @execute.register
     def exec_account_transaction_query(
         self, query: AccountTransactionQuery
     ) -> Iterator[_RpcAccountTransactionCursor]:
@@ -424,14 +424,14 @@ class QueryManager(ManagerAccessMixin):
             all_cursors = []
             for engine in self.engines.values():
                 try:
-                    all_cursors.extend(engine.exec(query))
+                    all_cursors.extend(engine.execute(query))
                 except Exception as err:  # noqa: BLE001 - a plugin must not abort planning
                     logger.debug(f"Skipping {type(engine).__name__} while planning: {err}")
 
             all_cursors.sort(key=lambda cursor: cursor.query)
 
         elif selected_engine := self.engines.get(engine_to_use):
-            all_cursors = list(selected_engine.exec(query))
+            all_cursors = list(selected_engine.execute(query))
 
         else:
             raise QueryEngineError(

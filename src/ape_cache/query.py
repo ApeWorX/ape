@@ -60,7 +60,7 @@ class CacheQueryProvider(QueryEngineAPI):
     Allows for the query of blockchain data using a connected provider.
     """
 
-    exec = singledispatchmethod(QueryEngineAPI.exec)
+    execute = singledispatchmethod(QueryEngineAPI.execute)
 
     def cache_folder(
         self, ecosystem_name: str | None = None, network_name: str | None = None
@@ -98,7 +98,7 @@ class CacheQueryProvider(QueryEngineAPI):
 
         yield run_start, previous
 
-    @exec.register
+    @execute.register
     def exec_block_query(self, query: BlockQuery) -> Iterator[BlockCursor]:
         index_folder = self.cache_folder() / "blocks" / ".number"
         try:
