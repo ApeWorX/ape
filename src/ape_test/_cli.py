@@ -42,7 +42,7 @@ def _is_ape_loglevel(value: Any) -> bool:
     elif isinstance(value, str):
         return (
             value.upper() in [x.name for x in LogLevel]
-            or (value.isnumeric() and int(value) in LogLevel)
+            or (value.isnumeric() and int(value) in [x.value for x in LogLevel])
             or value.lower().startswith("loglevel.")
         )
 
