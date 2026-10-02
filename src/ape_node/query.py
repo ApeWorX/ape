@@ -6,7 +6,6 @@ from ape.api.query import (
     ContractCreationQuery,
     CursorAPI,
     QueryEngineAPI,
-    QueryType,
 )
 from ape.types import AddressType
 
@@ -50,9 +49,7 @@ class ContractCreationCursor(CursorAPI):
 
 
 class OtterscanQueryEngine(QueryEngineAPI):
-    @singledispatchmethod
-    def execute(self, query: QueryType) -> Iterator[CursorAPI]:  # type: ignore[override]
-        return super().execute(query)
+    execute = singledispatchmethod(QueryEngineAPI.execute)
 
     @property
     def supports_ots_namespace(self) -> bool:

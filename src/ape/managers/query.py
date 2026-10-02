@@ -169,9 +169,7 @@ class DefaultQueryProvider(QueryEngineAPI):
     Allows for the query of blockchain data using connected provider.
     """
 
-    @singledispatchmethod
-    def execute(self, query: QueryType) -> Iterator[CursorAPI]:  # type: ignore[override]
-        return super().execute(query)
+    execute = singledispatchmethod(QueryEngineAPI.execute)
 
     @execute.register
     def exec_block_query(self, query: BlockQuery) -> Iterator[_RpcBlockCursor]:

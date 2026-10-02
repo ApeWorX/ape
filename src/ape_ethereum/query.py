@@ -7,7 +7,6 @@ from ape.api.query import (
     ContractCreationQuery,
     CursorAPI,
     QueryEngineAPI,
-    QueryType,
 )
 from ape.exceptions import APINotImplementedError, ProviderError
 from ape.types import AddressType
@@ -167,9 +166,7 @@ class EthereumQueryProvider(QueryEngineAPI):
     Implements more advanced queries specific to Ethereum clients.
     """
 
-    @singledispatchmethod
-    def execute(self, query: QueryType) -> Iterator[CursorAPI]:  # type: ignore[override]
-        return super().execute(query)
+    execute = singledispatchmethod(QueryEngineAPI.execute)
 
     @execute.register
     def exec_contract_creation(
