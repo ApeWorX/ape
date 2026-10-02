@@ -25,9 +25,11 @@ def test_mainnet_history_is_served_from_the_file_cache(
 
     with networks.ethereum.mainnet.use_provider("node") as provider:
         assert provider.chain_id == 1
-        # Public mainnet nodes often prune ancient blocks. Stay behind head so the
-        # window is sealed history that a pruned node still serves.
-        stop = chain.blocks.height - 256
+        # ``chain.blocks.height`` turns a failed head request into block 0.
+        # Ask for the number directly so that failure stays an RPC error.
+        head = int(provider.web3.eth.block_number)
+        # Stay behind head so the window is sealed history that a pruned node still serves.
+        stop = head - 256
         start = stop - 3
         prefix_stop = start + 1
         assert start > 15_000_000
