@@ -659,6 +659,10 @@ class QueryEngineAPI(BaseInterface):
         and then `@execute.register` as a decorator on your method in order to support particular
         query types.
 
+        ``@execute.register`` uses the first annotation on the method as the dispatch key.
+        Leave ``self`` unannotated. Annotating it registers the engine class, and the handler
+        never runs for a query.
+
         Args:
             query (`~QueryType`): The query being handled by this method.
 
@@ -676,6 +680,7 @@ class QueryEngineAPI(BaseInterface):
             ...     # NOTE: Do this if you want to define multiple dispatch handlers easily
             ...     execute = singledispatchmethod(QueryEngineAPI.execute)
             ...     # NOTE: Do *not* use the name `execute` for the dispatch method's name!
+            ...     # NOTE: Do *not* annotate `self`. The first annotation is the dispatch key.
             ...     @execute.register
             ...     def exec_queryX(self, query: SomethingQuery) -> Iterator[PluginCursor]:
             ...         yield PluginCursor(query=query, ...)
