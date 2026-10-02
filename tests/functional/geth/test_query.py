@@ -47,6 +47,7 @@ def test_mainnet_history_is_served_from_the_file_cache(
 
         stored = Block.model_validate_json((cache_dir / str(start)).read_text())
         live = provider.get_block(start)
+        assert stored.number is not None
         assert int(stored.number) == start
         assert _hex(stored.hash) == _hex(live.hash)
         assert int(stored.timestamp) == int(live.timestamp)

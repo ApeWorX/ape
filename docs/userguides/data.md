@@ -34,9 +34,7 @@ Run block queries:
 df = chain.blocks.query("*", stop_block=20)
 
 # Get specific fields from blocks
-df = chain.blocks.query(
-    "number,timestamp,gas_used", start_block=16_000_000, stop_block=16_000_100
-)
+df = chain.blocks.query("number,timestamp,gas_used", start_block=16_000_000, stop_block=16_000_100)
 total_gas = df["gas_used"].sum()
 
 # Access individual blocks
@@ -83,9 +81,7 @@ df = contract_instance.Transfer.query("from_,to,value", start_block=-1000)
 high_value_transfers = df.filter(df["value"] > 1_000_000)
 
 # Query by block range
-events = contract_instance.FooHappened.query(
-    "*", start_block=15_000_000, stop_block=15_100_000
-)
+events = contract_instance.FooHappened.query("*", start_block=15_000_000, stop_block=15_100_000)
 ```
 
 Where `contract_instance` is the return value of `owner.deploy(MyContract)` or `Contract("0x...")`

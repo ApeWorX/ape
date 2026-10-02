@@ -291,7 +291,7 @@ class _BaseQuery(BaseModel, Generic[ModelType]):
 
     def __contains__(self, other: Any) -> bool:
         if not isinstance(other, _BaseQuery):
-            raise ValueError()
+            raise TypeError(other)
 
         # NOTE: Return True if `other` is "covered by" `self`
         return other.start_index >= self.start_index and other.end_index <= self.end_index
@@ -299,7 +299,7 @@ class _BaseQuery(BaseModel, Generic[ModelType]):
     # Methods for determining query "ordering"
     def __lt__(self, other: Any) -> bool:
         if not isinstance(other, _BaseQuery):
-            raise ValueError()
+            raise TypeError(other)
 
         if self.start_index < other.start_index:
             return True
@@ -313,7 +313,9 @@ class _BaseQuery(BaseModel, Generic[ModelType]):
 
 
 class _BaseBlockQuery(_BaseQuery):
-    Model = BlockAPI
+    # Subclasses such as method queries set this to ``None`` so return columns
+    # are not validated as block fields.
+    Model: ClassVar[type[Any] | None] = BlockAPI
     start_block: NonNegativeInt = 0
     stop_block: NonNegativeInt
     step: PositiveInt = 1
@@ -606,8 +608,8 @@ class CursorAPI(BaseInterfaceModel, Generic[ModelType]):
         data: dict[str, list] = {column: [] for column in self.query.columns}
 
         for item in self.as_model_iter():
-            for column in data:
-                data[column].append(getattr(item, column))
+            for column, values in data.items():
+                values.append(getattr(item, column))
 
         return nw.from_dict(data, backend=backend)
 

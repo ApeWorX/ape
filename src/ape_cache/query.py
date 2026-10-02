@@ -71,9 +71,8 @@ class CacheQueryProvider(QueryEngineAPI):
 
         return self.config_manager.DATA_FOLDER / ecosystem_name / network_name / "query-cache"
 
-    def find_ranges(
-        self, index_folder: Path, start: int = 0, end: int = -1
-    ) -> Iterator[tuple[int, int]]:
+    @staticmethod
+    def find_ranges(index_folder: Path, start: int = 0, end: int = -1) -> Iterator[tuple[int, int]]:
         """Yield inclusive runs of cached indexes that exist inside ``[start, end]``."""
         if not index_folder.is_dir():
             return

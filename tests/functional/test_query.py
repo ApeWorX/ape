@@ -1,5 +1,6 @@
 import time
 from types import SimpleNamespace
+from typing import Any, cast
 
 import narwhals as nw
 import pytest
@@ -223,7 +224,7 @@ class _Cursor:
 
 
 def _solve(query, cursors):
-    return list(QueryManager._solve_optimal_coverage(None, query, cursors))
+    return list(QueryManager._solve_optimal_coverage(query, cursors))
 
 
 def test_solver_prefers_one_cheap_cursor():
@@ -346,15 +347,19 @@ def test_solver_uses_a_cheap_middle_between_the_same_wide_cursor():
 
 
 def _coverage(query, cursors):
+    # The validator is a Pydantic descriptor. Call the wrapped check with a stand-in result.
     result = SimpleNamespace(query=query, cursors=cursors)
-    return QueryResult.validate_coverage(result)
+    validate = cast(Any, QueryResult.validate_coverage)
+    assert validate(result) is result
+    return result
 
 
 def test_validate_coverage_accepts_abutting_cursors():
     query = _Window(0, 10)
     cursors = [_Cursor(0, 4, cost=1), _Cursor(5, 10, cost=1)]
-    result = SimpleNamespace(query=query, cursors=cursors)
-    assert QueryResult.validate_coverage(result) is result
+    result = _coverage(query, cursors)
+    assert result.query is query
+    assert result.cursors is cursors
 
 
 def test_validate_coverage_follows_the_step():
@@ -394,7 +399,9 @@ def test_validate_coverage_rejects_a_short_plan():
 
 
 def test_result_time_per_row_is_zero_without_rows():
-    assert QueryResult.time_per_row.fget(SimpleNamespace(cursors=[])) == 0.0
+    query = BlockQuery(columns=["number"], start_block=0, stop_block=0)
+    result = QueryResult.model_construct(query=query, cursors=[])
+    assert result.time_per_row == 0.0
 
 
 def test_event_query_expands_argument_columns():
@@ -458,8 +465,8 @@ def test_find_ranges_keeps_cached_runs(tmp_path):
     for number in (1, 2, 3, 5):
         (index / str(number)).write_text("{}")
 
-    assert list(CacheQueryProvider.find_ranges(None, index, start=0, end=10)) == [(1, 3), (5, 5)]
-    assert list(CacheQueryProvider.find_ranges(None, index, start=0, end=0)) == []
+    assert list(CacheQueryProvider.find_ranges(index, start=0, end=10)) == [(1, 3), (5, 5)]
+    assert list(CacheQueryProvider.find_ranges(index, start=0, end=0)) == []
 
 
 def test_specify_engine(chain, eth_tester_provider):

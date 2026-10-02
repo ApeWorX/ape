@@ -2,7 +2,7 @@ import difflib
 from collections.abc import Iterator
 from functools import cached_property, singledispatchmethod
 from itertools import pairwise
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, cast
 
 import narwhals as nw
 from pydantic import model_validator
@@ -18,6 +18,7 @@ from ape.api.query import (
     QueryAPI,
     QueryEngineAPI,
     QueryType,
+    _BaseQuery,
     resolve_dataframe_backend,
 )
 from ape.api.transactions import TransactionAPI
@@ -39,7 +40,7 @@ if TYPE_CHECKING:
         from typing_extensions import Self  # type: ignore
 
 
-def _query_step(query: QueryType) -> int:
+def _query_step(query: _BaseQuery[Any]) -> int:
     return getattr(query, "step", 1) or 1
 
 
@@ -201,7 +202,7 @@ class QueryResult(CursorAPI[ModelType]):
     """The optimal set of cursors (in sorted order) that fulfill this query."""
 
     @model_validator(mode="after")
-    def validate_coverage(self):
+    def validate_coverage(self) -> "Self":
         # NOTE: This is done to assert that we have full coverage of queries during testing
         #       (both testing Core and in 2nd/3rd party plugins)
         step = _query_step(self.query)
@@ -255,7 +256,9 @@ class QueryResult(CursorAPI[ModelType]):
         backend: str | nw.Implementation | None = None,
     ) -> "Frame":
         resolved = resolve_dataframe_backend(backend, self.config_manager.query.backend)
-        return nw.concat([c.as_dataframe(backend=resolved) for c in self.cursors], how="vertical")
+        # A cursor frame is eager or lazy. ``concat`` cannot take that union as its type variable.
+        frames = [cursor.as_dataframe(backend=resolved) for cursor in self.cursors]
+        return nw.concat(cast("list[nw.DataFrame[Any]]", frames), how="vertical")
 
     def as_model_iter(self) -> Iterator[ModelType]:
         for result in self.cursors:
@@ -295,8 +298,8 @@ class QueryManager(ManagerAccessMixin):
     def _suggest_engines(self, engine_selection):
         return difflib.get_close_matches(engine_selection, list(self.engines), cutoff=0.6)
 
+    @staticmethod
     def _solve_optimal_coverage(
-        self,
         query: QueryType,
         all_cursors: list[CursorAPI],
     ) -> Iterator[CursorAPI]:
@@ -364,7 +367,7 @@ class QueryManager(ManagerAccessMixin):
         """
         if not engine_to_use:
             # One engine failing to plan must not drop every other engine.
-            all_cursors = []
+            all_cursors: list[CursorAPI] = []
             for engine in self.engines.values():
                 try:
                     all_cursors.extend(engine.execute(query))
