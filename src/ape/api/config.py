@@ -7,7 +7,7 @@ from typing import Any, TypeVar, cast
 
 import yaml
 from ethpm_types import PackageManifest, PackageMeta, Source
-from narwhals.stable.v1 import Implementation as DataframeImplementation
+from narwhals.stable.v2 import Implementation as DataframeImplementation
 from pydantic import ConfigDict, Field, ValidationError, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 

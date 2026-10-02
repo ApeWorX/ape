@@ -4,10 +4,9 @@ from functools import cached_property, singledispatchmethod
 from itertools import pairwise
 from typing import TYPE_CHECKING, Any, cast
 
-import narwhals as nw
+import narwhals.stable.v2 as nw
 from pydantic import model_validator
 
-# TODO: Switch to `import narwhals.v1 as nw` per narwhals documentation
 from ape.api.query import (
     AccountTransactionQuery,
     BlockQuery,
@@ -29,7 +28,7 @@ from ape.plugins._utils import clean_plugin_name
 from ape.utils.basemodel import ManagerAccessMixin
 
 if TYPE_CHECKING:
-    from narwhals.typing import Frame
+    from narwhals.stable.v2.typing import Frame
 
     from ape.api.providers import BlockAPI
 

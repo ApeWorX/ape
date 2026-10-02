@@ -2,9 +2,9 @@ from abc import abstractmethod
 from collections.abc import Iterator, Sequence
 from functools import cache, cached_property
 from importlib.util import find_spec
-from typing import TYPE_CHECKING, Any, ClassVar, Generic, TypeAlias, TypeVar
+from typing import TYPE_CHECKING, Any, ClassVar, Generic, TypeAlias, TypeVar, cast
 
-import narwhals as nw
+import narwhals.stable.v2 as nw
 from ethpm_types.abi import EventABI, MethodABI
 from pydantic import NonNegativeInt, PositiveInt, field_validator, model_validator
 
@@ -18,7 +18,7 @@ from .providers import BlockAPI
 from .transactions import ReceiptAPI, TransactionAPI
 
 if TYPE_CHECKING:
-    from narwhals.typing import Frame
+    from narwhals.stable.v2.typing import Frame
 
     from ape.managers.query import QueryResult
 
@@ -49,7 +49,7 @@ def _detected_dataframe_backend() -> nw.Implementation | None:
     """Return the first installed eager dataframe library, without importing it."""
     for name, module in _EAGER_DATAFRAME_BACKENDS:
         if find_spec(module) is not None:
-            return nw.Implementation.from_backend(name)
+            return nw.Implementation.from_string(name)
 
     return None
 
@@ -75,7 +75,7 @@ def resolve_dataframe_backend(
         )
 
     if not isinstance(chosen, nw.Implementation):
-        chosen = nw.Implementation.from_backend(chosen)
+        chosen = nw.Implementation.from_string(chosen)
 
     if chosen is nw.Implementation.UNKNOWN:
         raise QueryEngineError(
@@ -103,7 +103,8 @@ def to_dataframe(
 ) -> nw.DataFrame:
     """Build the Narwhals DataFrame returned by `.query`."""
     resolved = resolve_dataframe_backend(backend, configured)
-    return nw.from_dict(data, backend=resolved)
+    # Narwhals types `backend` as one eager member, not the Implementation enum.
+    return nw.from_dict(data, backend=cast(Any, resolved))
 
 
 def _subclass_tree(model: type[BaseInterfaceModel]) -> list[type[BaseInterfaceModel]]:
@@ -588,22 +589,25 @@ class CursorAPI(BaseInterfaceModel, Generic[ModelType]):
     # Conversion out to fulfill user query requirements
     def as_dataframe(self, backend: nw.Implementation) -> "Frame":
         """
-        Execute and return this Cursor as a `~narwhals.v1.DataFrame` or `~narwhals.v1.LazyFrame`
-        object. The use of `backend is exactly as it is mentioned in the `narwhals` documentation:
+        Execute and return this Cursor as a Narwhals stable v2 DataFrame or LazyFrame.
+        ``backend`` selects the library, as described in the Narwhals documentation:
         https://narwhals-dev.github.io/narwhals/api-reference/typing/#narwhals.typing.Frame
 
         It is recommended to use whatever method of conversion makes sense within your query
-        plugin, for example you can use `~narwhals.from_dict` to convert results into a Frame:
+        plugin, for example you can use ``narwhals.stable.v2.from_dict`` to convert results
+        into a Frame:
         https://narwhals-dev.github.io/narwhals/api-reference/narwhals/#narwhals.from_dict
 
         Default implementation of this method uses `.as_model_iter()` to fulfill this requirement.
 
         Args:
-            backend (:object:`~narwhals.Implementation): A Narwhals-compatible backend specifier.
+            backend (:object:`~narwhals.stable.v2.Implementation`): A Narwhals-compatible
+                backend specifier.
                 See: https://narwhals-dev.github.io/narwhals/api-reference/implementation/
 
         Returns:
-            (`~narwhals.v1.DataFrame` | `~narwhals.v1.LazyFrame`): A narwhals dataframe.
+            (:class:`~narwhals.stable.v2.DataFrame` | :class:`~narwhals.stable.v2.LazyFrame`):
+                A narwhals dataframe.
         """
         data: dict[str, list] = {column: [] for column in self.query.columns}
 
@@ -611,7 +615,8 @@ class CursorAPI(BaseInterfaceModel, Generic[ModelType]):
             for column, values in data.items():
                 values.append(getattr(item, column))
 
-        return nw.from_dict(data, backend=backend)
+        # Narwhals types `backend` as one eager member, not the Implementation enum.
+        return nw.from_dict(data, backend=cast(Any, backend))
 
     @abstractmethod
     def as_model_iter(self) -> Iterator[ModelType]:

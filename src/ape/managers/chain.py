@@ -6,7 +6,7 @@ from functools import cached_property, singledispatchmethod
 from statistics import mean, median
 from typing import IO, TYPE_CHECKING, ClassVar, cast
 
-import narwhals.stable.v1 as nw
+import narwhals.stable.v2 as nw
 from pydantic import Field
 from rich.box import SIMPLE
 from rich.table import Table
@@ -33,7 +33,7 @@ from ape.utils.basemodel import BaseInterfaceModel
 from ape.utils.misc import ZERO_ADDRESS, is_evm_precompile, is_zero_hex, log_instead_of_fail
 
 if TYPE_CHECKING:
-    from narwhals.typing import Frame
+    from narwhals.stable.v2.typing import Frame
     from rich.console import Console as RichConsole
 
     from ape.api.providers import ProviderAPI
@@ -145,7 +145,7 @@ class BlockContainer(BaseManager):
               Defaults to ``1``.
             engine_to_use (str | None): query engine to use, bypasses query
               engine selection algorithm.
-            backend (str | :class:`~narwhals.Implementation` | None): Dataframe library
+            backend (str | :class:`~narwhals.stable.v2.Implementation` | None): Dataframe library
               that stores the result. When omitted, Ape uses an installed library
               and prefers Polars. The return value is always a Narwhals DataFrame.
 
@@ -154,7 +154,7 @@ class BlockContainer(BaseManager):
               installed and ``backend`` was not passed.
 
         Returns:
-            :class:`~narwhals.dataframe.DataFrame`
+            :class:`~narwhals.stable.v2.DataFrame`
         """
 
         if start_block < 0:
@@ -372,7 +372,7 @@ class AccountHistory(BaseInterfaceModel):
               in the query. Defaults to the latest transaction.
             engine_to_use (str | None): query engine to use, bypasses query
               engine selection algorithm.
-            backend (str | :class:`~narwhals.Implementation` | None): Dataframe library
+            backend (str | :class:`~narwhals.stable.v2.Implementation` | None): Dataframe library
               that stores the result. When omitted, Ape uses an installed library
               and prefers Polars. The return value is always a Narwhals DataFrame.
 
@@ -381,7 +381,7 @@ class AccountHistory(BaseInterfaceModel):
               installed and ``backend`` was not passed.
 
         Returns:
-            :class:`~narwhals.dataframe.DataFrame`
+            :class:`~narwhals.stable.v2.DataFrame`
         """
 
         if start_nonce < 0:

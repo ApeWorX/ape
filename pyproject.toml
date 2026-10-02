@@ -42,7 +42,7 @@ dependencies = [
     "lazyasd>=0.1.4",
     "asttokens>=2.4.1,<3",  # Peer dependency; w/o pin container build fails.
     "cchecksum>=0.0.3,<1",
-    "narwhals>=1.29,<2",
+    "narwhals>=2,<3",
     "packaging>=23.0,<24",
     "pluggy>=1.3,<2",
     "pydantic>=2.10,<3",
@@ -120,7 +120,8 @@ test = [  # `test` GitHub Action jobs use this
     "pytest-timeout>=2.2.0,<3",  # For avoiding timing out during tests
     "hypothesis>=6.2.0,<7.0",  # Strategy-based fuzzer
     "hypothesis-jsonschema==0.19.0",  # JSON Schema fuzzer extension
-    "pandas",  # Needed to test w/ narwhals
+    "polars",  # Default dataframe library exercised by `.query` tests
+    "pandas",  # Installed with Polars to test backend hand-off
     "ape-vyper>=0.8.10,<0.9",  # Needed for compiling test contracts
     "vyper>=0.4.3,<0.5",  # Avoid having to download Vyper binaries
     "ape-solidity>=0.8.5,<0.9",  # Needed for compiling test contracts

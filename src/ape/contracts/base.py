@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import click
-import narwhals.stable.v1 as nw
+import narwhals.stable.v2 as nw
 from eth_abi.exceptions import EncodingError
 from eth_pydantic_types import HexBytes
 from eth_utils import to_hex
@@ -46,7 +46,7 @@ from ape.utils.misc import log_instead_of_fail
 if TYPE_CHECKING:
     from ethpm_types.abi import ConstructorABI, ErrorABI, MethodABI
     from ethpm_types.contract_type import ABI_W_SELECTOR_T, ContractType
-    from narwhals.typing import Frame
+    from narwhals.stable.v2.typing import Frame
 
     from ape.api.networks import ProxyInfoAPI
     from ape.api.providers import CallResult
@@ -764,8 +764,8 @@ class ContractEvent(BaseInterfaceModel):
               Defaults to ``1``.
             engine_to_use (str | None): query engine to use, bypasses query
               engine selection algorithm.
-            backend (str | :class:`~narwhals.Implementation` | None): Dataframe library
-              that stores the result. When omitted, Ape uses an installed library
+            backend (str | :class:`~narwhals.stable.v2.Implementation` | None): Dataframe
+              library that stores the result. When omitted, Ape uses an installed library
               and prefers Polars. The return value is always a Narwhals DataFrame.
 
         Raises:
@@ -773,7 +773,7 @@ class ContractEvent(BaseInterfaceModel):
               installed and ``backend`` was not passed.
 
         Returns:
-            :class:`~narwhals.dataframe.DataFrame`
+            :class:`~narwhals.stable.v2.DataFrame`
         """
         HEAD = self.chain_manager.blocks.height
         if start_block < 0:

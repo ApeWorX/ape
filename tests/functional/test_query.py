@@ -2,7 +2,7 @@ import time
 from types import SimpleNamespace
 from typing import Any, cast
 
-import narwhals as nw
+import narwhals.stable.v2 as nw
 import pytest
 from ethpm_types.abi import EventABI, MethodABI
 
@@ -182,6 +182,19 @@ def test_query_prefers_polars_when_installed(monkeypatch):
         assert query_api._detected_dataframe_backend() is nw.Implementation.POLARS
     finally:
         query_api._detected_dataframe_backend.cache_clear()
+
+
+def test_query_hands_off_to_polars_when_pandas_is_installed(chain, eth_tester_provider):
+    import pandas as pd
+    import polars as pl
+
+    chain.mine(1)
+    default = chain.blocks.query("number")
+    explicit = chain.blocks.query("number", backend="pandas")
+
+    assert isinstance(default.to_native(), pl.DataFrame)
+    assert isinstance(explicit.to_native(), pd.DataFrame)
+    assert explicit.get_column("number").to_list() == default.get_column("number").to_list()
 
 
 def test_query_requires_a_dataframe_library(monkeypatch):

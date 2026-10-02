@@ -17,6 +17,8 @@ repos:
     -   id: mypy
         additional_dependencies: [
                 pydantic,
+                "narwhals>=2",
+                polars,
                 pandas-stubs,
                 types-python-dateutil,
                 types-PyYAML,
