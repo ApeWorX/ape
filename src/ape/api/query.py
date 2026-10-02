@@ -546,13 +546,13 @@ class CursorAPI(BaseInterfaceModel, Generic[ModelType]):
         end_index: int | None = None,
     ) -> "Self":
         """
-        Create a copy of this object with the query window shrunk inwards to `start_index` and/or
-        `end_index`. Note that `.shrink` should always be called with strictly less coverage than
-        original query window of this cursor model for use in the `QueryManager`'s solver algorithm.
+        Create a copy of this object with the query window shrunk inwards to ``start_index`` and/or
+        ``end_index``. Note that ``.shrink`` should always be called with strictly less coverage than
+        original query window of this cursor model for use in the ``QueryManager``'s solver algorithm.
 
         Args:
-            start_index (int | None): The new `start_index` that this cursor should start at.
-            end_index (int | None): The new `end_index` that this cursor should start at.
+            start_index (int | None): The new ``start_index`` that this cursor should start at.
+            end_index (int | None): The new ``end_index`` that this cursor should start at.
 
         Returns:
             Self: a copy of itself, only with the smaller query window applied.
