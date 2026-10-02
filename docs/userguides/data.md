@@ -2,17 +2,17 @@
 
 `.query` is Ape's opt-in for working with larger amounts of on-chain data.
 The rest of Ape, including testing, does not need a dataframe library.
-Calling `.query` uses whichever [Narwhals](https://narwhals-dev.github.io/narwhals/)-supported
-library is already installed. Polars is preferred when more than one is present,
-then pandas, PyArrow, Modin, and cuDF. The result is a Narwhals `DataFrame`.
-Select columns with brackets, as in `df["gas_used"].sum()`. Protocol SDKs can
-do the same without pinning a library.
+Calling `.query` uses whichever [Narwhals](https://narwhals-dev.github.io/narwhals/)-supported library is already installed.
+Polars is preferred when more than one is present, then pandas, PyArrow, Modin, and cuDF.
+The result is a Narwhals `DataFrame`.
+Select columns with brackets, as in `df["gas_used"].sum()`.
+Protocol SDKs can do the same without pinning a specific library that is needed.
 
-Nothing is imported until `.query` runs. If no library is installed, `.query`
-raises `QueryEngineError` and tells you to install one. Pass `backend=` to
-select a library for that call. `query.backend` in `ape-config.yaml` does the
-same for every call. `DataFrame.to_native()` returns the underlying object
-when you need it.
+Nothing is imported until `.query` runs.
+If no library is installed, `.query` raises `QueryEngineError` and tells you to install one.
+Pass `backend=` to select a specific library for that call.
+`query.backend` in `ape-config.yaml` will configure the backend for every call as a fallback.
+`DataFrame.to_native()` returns the underlying object when you want to use it.
 
 ```python
 df = chain.blocks.query("number,gas_used", stop_block=20)
