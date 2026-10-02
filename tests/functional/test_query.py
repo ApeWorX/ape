@@ -1,3 +1,4 @@
+import json
 import time
 from types import SimpleNamespace
 from typing import Any, cast
@@ -18,6 +19,7 @@ from ape.exceptions import QueryEngineError
 from ape.managers.query import QueryManager, QueryResult
 from ape.utils import DEFAULT_TEST_CHAIN_ID, BaseInterfaceModel
 from ape_cache.query import CacheQueryProvider
+from ape_ethereum.ecosystem import Block
 
 
 def test_basic_query(chain, eth_tester_provider):
@@ -470,6 +472,31 @@ def test_method_query_columns_are_not_block_fields():
         stop_block=1,
     )
     assert query.columns == ["foo_return"]
+
+
+def test_block_cache_does_not_fetch_transactions(tmp_path, monkeypatch):
+    monkeypatch.setattr(CacheQueryProvider, "cache_folder", lambda self, *args, **kwargs: tmp_path)
+    block = Block.model_validate(
+        {
+            "gasLimit": 1,
+            "gasUsed": 0,
+            "hash": "0x" + "11" * 32,
+            "number": 7,
+            "parentHash": "0x" + "00" * 32,
+            "timestamp": 1,
+            "num_transactions": 4,
+            "size": 1,
+        }
+    )
+    query = BlockQuery(columns=["number"], start_block=7, stop_block=7)
+    result = SimpleNamespace(query=query, as_model_iter=lambda: iter([block]))
+
+    CacheQueryProvider().cache(result)
+
+    payload = json.loads((tmp_path / "blocks" / ".number" / "7").read_text())
+    assert "transactions" not in payload
+    assert payload["number"] == 7
+    assert payload["num_transactions"] == 4
 
 
 def test_find_ranges_keeps_cached_runs(tmp_path):

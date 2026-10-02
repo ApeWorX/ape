@@ -125,7 +125,9 @@ class CacheQueryProvider(QueryEngineAPI):
             if path.exists():
                 continue
 
-            path.write_text(block.model_dump_json())
+            # ``transactions`` loads the block body from the node. The file stores
+            # the header fields that are already on the model.
+            path.write_text(block.model_dump_json(exclude={"transactions"}))
 
     def prune_database(self, ecosystem_name: str, network_name: str):
         """
