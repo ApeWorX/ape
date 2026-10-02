@@ -211,13 +211,8 @@ class QueryResult(CursorAPI[ModelType]):
 
         for i, cursor in enumerate(self.cursors):
             logger.debug(
-                "Start:",
-                cursor.query.start_index,
-                "End:",
-                cursor.query.end_index,
-                "Total:",
-                cursor.total_time,
-                "seconds",
+                f"Start: {cursor.query.start_index} End: {cursor.query.end_index} "
+                f"Total: {cursor.total_time} seconds"
             )
             if cursor.query.end_index < cursor.query.start_index:
                 raise QueryEngineError(
