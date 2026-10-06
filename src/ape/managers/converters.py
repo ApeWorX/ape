@@ -292,7 +292,7 @@ class ConversionManager(BaseManager):
             converter = converter_class()
             if conversion_type is ChecksumAddress:
                 converters[AddressType].append(converter)
-                return converters
+                continue
 
             elif conversion_type not in converters:
                 options = ", ".join([_get_type_name_from_type(t) for t in converters])
