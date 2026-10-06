@@ -29,7 +29,7 @@ Read our [academic platform](https://academy.apeworx.io/) which will help you ma
 In the latest release, Ape requires:
 
 - Linux or macOS
-- Python 3.10 up to 3.13
+- Python 3.10 up to 3.14
 - **Windows**: Install Windows Subsystem Linux [(WSL)](https://docs.microsoft.com/en-us/windows/wsl/install)
 
 Check your python version in a terminal with `python3 --version`.
@@ -82,8 +82,9 @@ $ docker pull ghcr.io/apeworx/ape:latest-slim  # installs ape with required pack
 or build the image locally from source:
 
 ```bash
-$ docker build -t ape:latest-slim -f Dockerfile.slim .
-$ docker build -t ape:latest .
+$ uv lock  # the Dockerfile copies `uv.lock`, which is not checked in
+$ docker build -t ape:latest-slim --target slim .
+$ docker build -t ape:latest --target full .
 ```
 
 An example of running a command from the container would be:
