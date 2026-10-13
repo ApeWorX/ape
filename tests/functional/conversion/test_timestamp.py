@@ -38,3 +38,19 @@ def test_convert_string_bad_timestamp(args, convert):
 def test_convert_timedelta_timestamp(convert):
     delta = timedelta(days=2, hours=2, minutes=12)
     assert convert(delta, int) == int((datetime.now(timezone.utc) + delta).timestamp())
+
+
+@pytest.mark.parametrize(
+    "args",
+    (
+        [
+            "2021-10-15 21:15:12+09:00",
+            "2021-10-15 07:15:12-05:00",
+            datetime(2021, 10, 15, 21, 15, 12, tzinfo=timezone(timedelta(hours=9))),
+            datetime(2021, 10, 15, 12, 15, 12, tzinfo=timezone.utc),
+        ]
+    ),
+)
+def test_convert_timezone_aware_timestamp(args, convert):
+    # The same instant in any timezone must convert to the same timestamp.
+    assert convert(args, int) == 1634300112
