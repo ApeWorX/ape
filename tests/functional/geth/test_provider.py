@@ -11,7 +11,6 @@ from eth_utils import keccak, to_hex
 from hexbytes import HexBytes
 from web3 import AutoProvider, Web3
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
-from web3.exceptions import ExtraDataLengthError
 from web3.middleware import ExtraDataToPOAMiddleware
 from web3.providers import HTTPProvider
 
@@ -283,11 +282,13 @@ def test_connect_to_chain_that_started_poa(mock_web3, web3_factory, ethereum):
     is no longer PoA, we still need the middleware
     to fetch blocks during the PoA portion of the chain.
     """
-    mock_web3.eth.get_block.side_effect = ExtraDataLengthError
 
     def make_request(rpc, arguments):
         if rpc == "eth_chainId":
             return {"result": ethereum.sepolia.chain_id}
+        elif rpc == "eth_getBlockByNumber":
+            # Clique-style extraData (vanity + seal), > 32 bytes.
+            return {"result": {"extraData": "0x" + "00" * 32 + "cd" * 65}}
 
         return None
 

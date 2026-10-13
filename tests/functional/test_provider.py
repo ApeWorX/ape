@@ -8,7 +8,7 @@ from eth_typing import HexStr
 from eth_utils import ValidationError, to_hex
 from hexbytes import HexBytes
 from requests import HTTPError
-from web3.exceptions import ContractPanicError, ExtraDataLengthError, TimeExhausted
+from web3.exceptions import ContractPanicError, TimeExhausted
 
 from ape import convert
 from ape.api.providers import SubprocessProvider
@@ -705,55 +705,76 @@ def test_send_call_when_base_fee_exceeds_1_gwei(eth_tester_provider, owner, ethe
         eth_tester_provider.restore(snapshot)
 
 
-def test_has_poa_history_block_data(mock_web3, ethereum, eth_tester_provider):
+QBFT_EXTRA_DATA = (
+    "0xf87aa00000000000000000000000000000000000000000000000000000000000000000f854"
+    + "94"
+    + "00" * 19
+    + "01"
+    + "94"
+    + "00" * 19
+    + "02"
+    + "94"
+    + "00" * 19
+    + "03"
+    + "94"
+    + "00" * 19
+    + "04"
+    + "c080c0"
+)
+
+
+def _poa_provider(mock_web3, ethereum, blocks):
     class PluginProvider(EthereumNodeProvider):
         pass
 
     provider = PluginProvider(name="prov", network=ethereum.sepolia)
     provider._web3 = mock_web3
 
-    key = "proofOfAuthorityData"
-    mock_web3.eth.get_block.return_value = {key: 123}
+    def make_request(method, params):
+        assert method == "eth_getBlockByNumber"
+        block = blocks.get(params[0])
+        if isinstance(block, Exception):
+            raise block
 
+        return {"jsonrpc": "2.0", "id": 1, "result": block}
+
+    mock_web3.provider.make_request.side_effect = make_request
+    return provider
+
+
+def test_has_poa_history_block_data(mock_web3, ethereum):
+    provider = _poa_provider(mock_web3, ethereum, {"earliest": {"proofOfAuthorityData": "0x"}})
     assert provider.has_poa_history
 
 
-def test_has_poa_history_block_exception(mock_web3, ethereum, eth_tester_provider):
-    class PluginProvider(EthereumNodeProvider):
-        pass
-
-    provider = PluginProvider(name="prov", network=ethereum.sepolia)
-    provider._web3 = mock_web3
-    mock_web3.eth.get_block.side_effect = ExtraDataLengthError
+@pytest.mark.parametrize(
+    "extra_data",
+    (
+        QBFT_EXTRA_DATA,  # Besu QBFT / IBFT2 (RLP-encoded, starts with 0xf8).
+        "0x" + "00" * 32 + "ab" * 20 + "cd" * 65,  # Clique: vanity + signer + seal.
+    ),
+)
+def test_has_poa_history_large_extra_data(mock_web3, ethereum, extra_data):
+    provider = _poa_provider(mock_web3, ethereum, {"earliest": {"extraData": extra_data}})
     assert provider.has_poa_history
 
 
-def test_has_poa_history_checks_earliest_and_latest_block(mock_web3, ethereum, eth_tester_provider):
-    class PluginProvider(EthereumNodeProvider):
-        pass
-
-    provider = PluginProvider(name="prov", network=ethereum.sepolia)
-    provider._web3 = mock_web3
-
-    def get_block_side_effect(block_id):
-        if block_id == "earliest":
-            return {"blockNumber": 0}
-        elif block_id == "latest":
-            return {"blockNumber": 1, "proofOfAuthorityData": 123}
-
-    mock_web3.eth.get_block.side_effect = get_block_side_effect
-    poa_detected = provider.has_poa_history
-    assert mock_web3.eth.get_block.call_count == 2
-    assert poa_detected
+def test_has_poa_history_checks_earliest_and_latest_block(mock_web3, ethereum):
+    blocks = {"earliest": {"extraData": "0x"}, "latest": {"extraData": QBFT_EXTRA_DATA}}
+    provider = _poa_provider(mock_web3, ethereum, blocks)
+    assert provider.has_poa_history
+    assert mock_web3.provider.make_request.call_count == 2
 
 
-def test_has_poa_history_false(mock_web3, ethereum, eth_tester_provider):
-    class PluginProvider(EthereumNodeProvider):
-        pass
+def test_has_poa_history_request_error(mock_web3, ethereum):
+    blocks = {"earliest": ValueError("pruned"), "latest": {"extraData": QBFT_EXTRA_DATA}}
+    provider = _poa_provider(mock_web3, ethereum, blocks)
+    assert provider.has_poa_history
 
-    provider = PluginProvider(name="prov", network=ethereum.sepolia)
-    provider._web3 = mock_web3
-    mock_web3.eth.get_block.return_value = {}
+
+def test_has_poa_history_false(mock_web3, ethereum):
+    blocks = {"earliest": {"extraData": "0x" + "11" * 32}, "latest": {"extraData": "0x"}}
+    provider = _poa_provider(mock_web3, ethereum, blocks)
     assert not provider.has_poa_history
 
 
