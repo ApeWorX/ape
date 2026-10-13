@@ -347,6 +347,7 @@ class EcosystemAPI(ExtraAttributesMixin, BaseInterfaceModel):
             network_api = network_type.model_validate(model_data)
             network_api._default_provider = custom_net.get("default_provider", "node")
             network_api._is_custom = True
+            network_api._inject_poa_middleware = custom_net.get("inject_poa_middleware", False)
             networks[net_name] = network_api
 
         return networks
@@ -896,6 +897,8 @@ class NetworkAPI(BaseInterfaceModel):
 
     _is_custom: bool = False
 
+    _inject_poa_middleware: bool = False
+
     def __repr__(self) -> str:
         try:
             chain_id = self.chain_id
@@ -1118,6 +1121,15 @@ class NetworkAPI(BaseInterfaceModel):
         True when this network is a configured custom network.
         """
         return self._is_custom
+
+    @property
+    def inject_poa_middleware(self) -> bool:
+        """
+        ``True`` when the network is configured to always use the PoA
+        (extra-data) middleware, e.g. via ``inject_poa_middleware`` in a
+        custom network config.
+        """
+        return self._inject_poa_middleware
 
     @cached_property
     def providers(self):  # -> dict[str, Partial[ProviderAPI]]

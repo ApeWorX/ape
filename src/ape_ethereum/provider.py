@@ -24,7 +24,6 @@ from web3 import HTTPProvider, IPCProvider, Web3
 from web3 import __version__ as web3_version
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
 from web3.exceptions import (
-    ExtraDataLengthError,
     MethodUnavailable,
     TimeExhausted,
     TransactionNotFound,
@@ -1621,25 +1620,33 @@ class EthereumNodeProvider(Web3Provider, ABC):
         """
         findings = False
         for option in ("earliest", "latest"):
+            # NOTE: Use a raw request so web3.py's block result formatters (which raise
+            #   a generic ValueError on >32-byte extraData, e.g. Besu QBFT/IBFT2 RLP
+            #   extraData or Clique seals) don't hide the PoA data from us.
             try:
-                block = self.web3.eth.get_block(option)  # type: ignore[arg-type]
-
-            except ExtraDataLengthError:
-                findings = True
-                break
-
+                response = self.web3.provider.make_request(
+                    "eth_getBlockByNumber",  # type: ignore[arg-type]
+                    [option, False],
+                )
             except Exception:  # noqa: BLE001, S112
                 # Some chains are "light" and we may not be able to detect
                 # if it needs PoA middleware.
                 continue
 
-            else:
-                findings = (
-                    "proofOfAuthorityData" in block
-                    or len(block.get("extraData", "")) > MAX_EXTRADATA_LENGTH
-                )
-                if findings:
-                    break
+            block = (response or {}).get("result") or {}
+            if "proofOfAuthorityData" in block:
+                findings = True
+                break
+
+            extra_data = block.get("extraData") or "0x"
+            try:
+                extra_data_size = len(HexBytes(extra_data))
+            except Exception:  # noqa: BLE001, S112
+                continue
+
+            if extra_data_size > MAX_EXTRADATA_LENGTH:
+                findings = True
+                break
 
         return findings
 
@@ -1693,7 +1700,9 @@ class EthereumNodeProvider(Web3Provider, ABC):
         if not self.network.is_dev:
             self.web3.eth.set_gas_price_strategy(rpc_gas_price_strategy)
 
-        if self.has_poa_history and ExtraDataToPOAMiddleware not in self.web3.middleware_onion:
+        if (
+            self.network.inject_poa_middleware or self.has_poa_history
+        ) and ExtraDataToPOAMiddleware not in self.web3.middleware_onion:
             self.web3.middleware_onion.inject(ExtraDataToPOAMiddleware, layer=0)
 
         chain_id = self.chain_id
