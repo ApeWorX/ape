@@ -220,13 +220,21 @@ class TimestampConverter(ConverterAPI):
 
     def convert(self, value: str | datetime | timedelta) -> int:
         if isinstance(value, str):
-            return int(parse(value).replace(tzinfo=timezone.utc).timestamp())
+            return self._datetime_to_timestamp(parse(value))
         elif isinstance(value, datetime):
-            return int(value.replace(tzinfo=timezone.utc).timestamp())
+            return self._datetime_to_timestamp(value)
         elif isinstance(value, timedelta):
             return int((datetime.now(timezone.utc) + value).timestamp())
         else:
             raise ConversionError()
+
+    @staticmethod
+    def _datetime_to_timestamp(value: datetime) -> int:
+        if value.tzinfo is None or value.utcoffset() is None:
+            # Naive datetimes are assumed to be in UTC.
+            value = value.replace(tzinfo=timezone.utc)
+
+        return int(value.timestamp())
 
 
 class StringDecimalConverter(ConverterAPI):

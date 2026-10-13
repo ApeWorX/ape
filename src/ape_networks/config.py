@@ -27,6 +27,12 @@ class CustomNetwork(PluginConfig):
     request_header: dict = Field(default_factory=dict)
     """The HTTP request header."""
 
+    inject_poa_middleware: bool = False
+    """
+    Set to ``True`` to inject web3.py's ``ExtraDataToPOAMiddleware`` when connecting,
+    for networks using extra data in the block header (e.g. some PoA chains).
+    """
+
     model_config = SettingsConfigDict(extra="allow", env_prefix="APE_NETWORKS_")
 
     @property
