@@ -109,6 +109,16 @@ def __getattr__(name: str):
         return getattr(testing_module, name)
 
     elif name in (
+        "apply_proxy_env",
+        "get_httpx_client",
+        "get_proxy_url",
+        "get_requests_proxies",
+    ):
+        import ape.utils.http as http_module
+
+        return getattr(http_module, name)
+
+    elif name in (
         "USER_ASSERT_TAG",
         "TraceStyles",
         "parse_coverage_tables",
@@ -156,6 +166,7 @@ __all__ = [
     "abstractmethod",
     "add_padding_to_strings",
     "allow_disconnected",
+    "apply_proxy_env",
     "as_our_module",
     "cached_property",
     "clean_path",
@@ -168,9 +179,12 @@ __all__ = [
     "get_all_files_in_directory",
     "get_current_timestamp_ms",
     "get_full_extension",
+    "get_httpx_client",
     "get_package_path",
     "get_package_version",
+    "get_proxy_url",
     "get_relative_path",
+    "get_requests_proxies",
     "in_tempdir",
     "injected_before_use",
     "is_array",

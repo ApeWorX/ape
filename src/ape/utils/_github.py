@@ -80,6 +80,12 @@ class _GithubClient:
 
             session = Session()
             session.headers = {**session.headers, **headers}
+            # Belt-and-suspenders: requests also reads HTTP(S)_PROXY from env,
+            # which Ape injects from ``proxy`` config during bootstrap.
+            from ape.utils.http import get_requests_proxies
+
+            if proxies := get_requests_proxies():
+                session.proxies.update(proxies)
             adapter = HTTPAdapter(
                 max_retries=Retry(total=10, backoff_factor=1.0, status_forcelist=[403]),
             )
