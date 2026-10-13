@@ -1693,7 +1693,9 @@ class EthereumNodeProvider(Web3Provider, ABC):
         if not self.network.is_dev:
             self.web3.eth.set_gas_price_strategy(rpc_gas_price_strategy)
 
-        if self.has_poa_history and ExtraDataToPOAMiddleware not in self.web3.middleware_onion:
+        if (
+            self.network.inject_poa_middleware or self.has_poa_history
+        ) and ExtraDataToPOAMiddleware not in self.web3.middleware_onion:
             self.web3.middleware_onion.inject(ExtraDataToPOAMiddleware, layer=0)
 
         chain_id = self.chain_id

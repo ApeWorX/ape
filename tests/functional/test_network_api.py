@@ -440,3 +440,18 @@ def test_explorer_when_adhoc_network_supported(networks, mocker):
 def test_evm_chains_auto_forked_networks_exist(networks):
     # NOTE: Moonbeam networks exist in evmchains only; that is how Ape knows about them.
     assert isinstance(networks.moonbeam.moonriver_fork, ForkedNetworkAPI)
+
+
+def test_inject_poa_middleware_custom_network(project, custom_networks_config_dict, ethereum):
+    config = copy.deepcopy(custom_networks_config_dict)
+    with project.temp_config(**config):
+        assert not ethereum.get_network(
+            config["networks"]["custom"][0]["name"]
+        ).inject_poa_middleware
+
+    config["networks"]["custom"][0]["inject_poa_middleware"] = True
+    with project.temp_config(**config):
+        network = ethereum.get_network(config["networks"]["custom"][0]["name"])
+        assert network.inject_poa_middleware
+        # Also applies to the auto-generated fork.
+        assert ethereum.get_network(f"{network.name}-fork").inject_poa_middleware
