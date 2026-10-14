@@ -52,7 +52,7 @@ def test_deploy_and_publish_local_network(owner, minimal_proxy_container):
 def test_deploy_and_publish_live_network_no_explorer(
     owner, minimal_proxy_container, dummy_live_network, ape_caplog
 ):
-    dummy_live_network.__dict__["explorer"] = None
+    dummy_live_network.__dict__["explorers"] = ()
     expected_message = "Unable to publish contract - no explorer plugin installed."
     contract = minimal_proxy_container.deploy(sender=owner, publish=True, required_confirmations=0)
     assert contract.address
@@ -223,7 +223,7 @@ def test_at_fetch_from_explorer_false(
     project_with_contract.clean()
 
     # Simulate having an explorer plugin installed (e.g. ape-etherscan).
-    eth_tester_provider.network.__dict__["explorer"] = mock_explorer
+    eth_tester_provider.network.__dict__["explorers"] = (mock_explorer,)
 
     # Attempt to create an instance. It should NOT use the explorer at all!
     instance2 = container.at(instance.address, fetch_from_explorer=False)
@@ -233,4 +233,4 @@ def test_at_fetch_from_explorer_false(
     assert mock_explorer.get_contract_type.call_count == 0
 
     # Clean up test.
-    eth_tester_provider.network.__dict__.pop("explorer")
+    eth_tester_provider.network.__dict__.pop("explorers")

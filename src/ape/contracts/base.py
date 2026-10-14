@@ -305,7 +305,7 @@ class ContractMethodHandler(ManagerAccessMixin):
         if not self.contract.is_contract:
             raise ContractNotFoundError(
                 self.contract.address,
-                self.provider.network.explorer is not None,
+                bool(self.provider.network.explorers),
                 self.provider.network_choice,
             )
 

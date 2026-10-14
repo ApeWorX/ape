@@ -375,22 +375,22 @@ def test_is_mainnet_from_config():
     assert network.is_mainnet
 
 
-def test_explorer(networks):
+def test_explorers(networks):
     """
     Local network does not have an explorer, by default.
     """
     network = networks.ethereum.local
-    network.__dict__.pop("explorer", None)  # Ensure not cached yet.
-    assert network.explorer is None
+    network.__dict__.pop("explorers", None)
+    assert network.explorers == ()
 
 
-def test_explorer_when_network_registered(networks, mocker):
+def test_explorers_when_network_registered(networks, mocker):
     """
     Tests the simple flow of having the Explorer plugin register
     the networks it supports.
     """
     network = networks.ethereum.local
-    network.__dict__.pop("explorer", None)  # Ensure not cached yet.
+    network.__dict__.pop("explorers", None)
     name = "my-explorer"
 
     def explorer_cls(*args, **kwargs):
@@ -402,17 +402,115 @@ def test_explorer_when_network_registered(networks, mocker):
         "ape.api.networks.NetworkAPI._plugin_explorers", new_callable=mock.PropertyMock
     )
     mock_plugin_explorers.return_value = [("my-example", ("ethereum", "local", explorer_cls))]
-    assert network.explorer is not None
-    assert network.explorer.name == name
+    try:
+        assert len(network.explorers) == 1
+        assert network.explorers[0].name == name
+    finally:
+        network.__dict__.pop("explorers", None)
 
 
-def test_explorer_when_adhoc_network_supported(networks, mocker):
+def test_explorers_prefer_sourcify_and_deduplicate(networks, mocker):
+    network = networks.ethereum.local
+    network.__dict__.pop("explorers", None)
+
+    class MyExplorer:
+        def __init__(self, name, network):
+            self.name = name
+            self.network = network
+
+        @classmethod
+        def supports_chain(cls, chain_id):
+            return True
+
+    mock_plugin_explorers = mocker.patch(
+        "ape.api.networks.NetworkAPI._plugin_explorers", new_callable=mock.PropertyMock
+    )
+    mock_plugin_explorers.return_value = [
+        ("etherscan", ("ethereum", "local", MyExplorer)),
+        ("sourcify", ("ethereum", "local", MyExplorer)),
+        # The same plugin may also match through ``supports_chain()``.
+        ("sourcify", ("other-ecosystem", "other-network", MyExplorer)),
+    ]
+
+    try:
+        assert [explorer.name for explorer in network.explorers] == ["sourcify", "etherscan"]
+        preferred = network.explorers[0]
+        assert preferred.name == "sourcify"
+        assert network.explorers[0] is preferred
+    finally:
+        network.__dict__.pop("explorers", None)
+
+
+def test_explorers_preserve_registration_order_without_supported_sourcify(networks, mocker):
+    network = networks.ethereum.local
+    network.__dict__.pop("explorers", None)
+
+    class MyExplorer:
+        def __init__(self, name, network):
+            self.name = name
+            self.network = network
+
+        @classmethod
+        def supports_chain(cls, chain_id):
+            return False
+
+    mock_plugin_explorers = mocker.patch(
+        "ape.api.networks.NetworkAPI._plugin_explorers", new_callable=mock.PropertyMock
+    )
+    mock_plugin_explorers.return_value = [
+        ("etherscan", ("ethereum", "local", MyExplorer)),
+        ("blockscout", ("ethereum", "local", MyExplorer)),
+        ("sourcify", ("other-ecosystem", "other-network", MyExplorer)),
+    ]
+
+    try:
+        assert [explorer.name for explorer in network.explorers] == [
+            "etherscan",
+            "blockscout",
+        ]
+    finally:
+        network.__dict__.pop("explorers", None)
+
+
+def test_explorers_when_custom_network_configured(networks, mocker):
+    network = networks.ethereum.local
+    network.__dict__.pop("explorers", None)
+
+    class MyExplorer:
+        def __init__(self, name, network):
+            self.name = name
+            self.network = network
+
+        @classmethod
+        def supports_chain(cls, chain_id):
+            return False
+
+    mocker.patch.object(
+        network.config_manager,
+        "get_config",
+        return_value={"ethereum": {"local": {"uri": "https://example.com"}}},
+    )
+    mock_plugin_explorers = mocker.patch(
+        "ape.api.networks.NetworkAPI._plugin_explorers", new_callable=mock.PropertyMock
+    )
+    mock_plugin_explorers.return_value = [
+        ("custom-explorer", ("ethereum", "other-network", MyExplorer))
+    ]
+
+    try:
+        assert len(network.explorers) == 1
+        assert network.explorers[0].name == "custom-explorer"
+    finally:
+        network.__dict__.pop("explorers", None)
+
+
+def test_explorers_when_adhoc_network_supported(networks, mocker):
     """
     Tests the flow of when a chain is supported by an explorer
     but not registered in the plugin (API-flow).
     """
     network = networks.ethereum.local
-    network.__dict__.pop("explorer", None)  # Ensure not cached yet.
+    network.__dict__.pop("explorers", None)
     NAME = "my-explorer"
 
     class MyExplorer:
@@ -433,8 +531,11 @@ def test_explorer_when_adhoc_network_supported(networks, mocker):
     mock_plugin_explorers.return_value = [
         ("my-example", ("some-other-ecosystem", "local", MyExplorer))
     ]
-    assert network.explorer is not None
-    assert network.explorer.name == NAME
+    try:
+        assert len(network.explorers) == 1
+        assert network.explorers[0].name == NAME
+    finally:
+        network.__dict__.pop("explorers", None)
 
 
 def test_evm_chains_auto_forked_networks_exist(networks):

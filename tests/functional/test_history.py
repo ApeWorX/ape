@@ -46,7 +46,7 @@ def test_history_caches_sender_over_address_key(
             yield from [known_receipt]
 
     mock_explorer.get_account_transactions.side_effect = get_txns_patch
-    network.__dict__["explorer"] = mock_explorer
+    network.__dict__["explorers"] = (mock_explorer,)
     eth_tester_provider.network = network
 
     # Previously, this would error because the receipt was cached with the wrong sender
@@ -56,4 +56,4 @@ def test_history_caches_sender_over_address_key(
         # Actual is 0 because the receipt was cached under the sender.
         assert len(actual) == 0
     finally:
-        network.__dict__.pop("explorer", None)
+        network.__dict__.pop("explorers", None)

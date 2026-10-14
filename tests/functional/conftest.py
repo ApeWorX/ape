@@ -419,9 +419,9 @@ def dummy_live_network(chain, project):
 
 @pytest.fixture
 def dummy_live_network_with_explorer(dummy_live_network, mock_explorer):
-    dummy_live_network.__dict__["explorer"] = mock_explorer
+    dummy_live_network.__dict__["explorers"] = (mock_explorer,)
     yield dummy_live_network
-    dummy_live_network.__dict__.pop("explorer", None)
+    dummy_live_network.__dict__.pop("explorers", None)
 
 
 @pytest.fixture(scope="session")

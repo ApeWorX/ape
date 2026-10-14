@@ -40,14 +40,14 @@ def test_get_proxy_from_explorer(
     with create_mock_sepolia() as network:
         # Set up our network to use our fake explorer.
         mock_explorer.get_contract_type.side_effect = get_contract_type
-        network.__dict__["explorer"] = mock_explorer
+        network.__dict__["explorers"] = (mock_explorer,)
 
         # Typical flow: user attempts to get an un-cached contract type from Etherscan.
         # That contract may be a proxy, in which case we should get a type
         # w/ both proxy ABIs and the target ABIs.
         contract_from_explorer = chain.contracts.instance_at(proxy_contract.address)
 
-        network.__dict__.pop("explorer", None)
+        network.__dict__.pop("explorers", None)
 
         # Ensure we can call proxy methods!
         assert contract_from_explorer.masterCopy  # No attr error!
