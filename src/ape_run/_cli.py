@@ -65,11 +65,18 @@ def wrap_interactive_console(callback: Callable) -> Callable:
         extra_locals: dict = {}
         captured: dict = {}
 
-        def _tracer(frame, event, arg):
-            # Capture locals from the wrapped callback as it returns (success path).
-            if event == "return" and callback_code is not None and frame.f_code is callback_code:
+        def _local_tracer(frame, event, arg):
+            # Only attached to the script callback's frame; grab locals as it returns.
+            if event == "return":
                 captured.update(frame.f_locals)
-            return _tracer
+            return _local_tracer
+
+        def _tracer(frame, event, arg):
+            # Global tracer: only trace the script callback's own frame (success path).
+            # Returning None for every other frame avoids line-tracing the whole process.
+            if callback_code is not None and frame.f_code is callback_code:
+                return _local_tracer
+            return None
 
         try:
             prior_trace = sys.gettrace()
