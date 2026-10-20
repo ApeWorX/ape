@@ -702,21 +702,23 @@ class ReportManager(BaseManager):
 
 class ChainIdCache(dict):
     """
-    A cache of ``chain_id`` keyed by the active network (and, for local
-    networks, also by the provider name).
+    A cache of ``chain_id`` keyed by the active ecosystem and network (and, for
+    local networks, also by the provider name).
     """
 
     @staticmethod
     def key_for(provider: "ProviderAPI") -> str:
         """Return the cache key for ``provider``.
 
-        Named networks key by ``network.name`` (chain_id is a network
-        invariant). Local networks additionally disambiguate by provider name
-        so ape-test (``local:test`` → 1337) and ape-foundry
-        (``local:foundry`` → 31337) don't overwrite each other.
+        Named networks key by ``ecosystem:network`` (chain_id is a network
+        invariant), so ``ethereum:sepolia`` and ``arbitrum:sepolia`` don't
+        overwrite each other. Local networks additionally disambiguate by
+        provider name so ape-test (``ethereum:local:test`` → 1337) and
+        ape-foundry (``ethereum:local:foundry`` → 31337) don't either.
         """
         network = provider.network
-        return f"{network.name}:{provider.name}" if network.is_local else network.name
+        key = f"{network.ecosystem.name}:{network.name}"
+        return f"{key}:{provider.name}" if network.is_local else key
 
     def get_for_provider(self, provider: "ProviderAPI") -> int:
         """Return the chain id for ``provider``, querying and caching if unseen."""
