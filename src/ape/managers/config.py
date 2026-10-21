@@ -101,7 +101,16 @@ class ConfigManager(ExtraAttributesMixin, BaseManager):
         global_data = self.global_config.model_dump(by_alias=True)
         project_data = project_config.model_dump(by_alias=True)
         merged_data = merge_configs(global_data, project_data)
-        return ApeConfig.model_validate(merged_data)
+        config = ApeConfig.model_validate(merged_data)
+        # Apply proxy settings early (before networking) so requests / web3.py
+        # / httpx helpers pick them up. Existing env vars are never overwritten.
+        self._apply_proxy_env(config)
+        return config
+
+    def _apply_proxy_env(self, config: ApeConfig) -> None:
+        from ape.utils.http import apply_proxy_env
+
+        apply_proxy_env(config.proxy)
 
     @classmethod
     def extract_config(cls, manifest: "PackageManifest", **overrides) -> ApeConfig:
