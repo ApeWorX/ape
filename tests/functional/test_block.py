@@ -18,6 +18,13 @@ def test_block(eth_tester_provider, minimal_proxy):
     assert actual.number == data["number"]
 
 
+def test_unsealed_block_has_no_transactions(block):
+    data = block.model_dump()
+    data["hash"] = None
+    pending = type(block).model_validate(data)
+    assert pending.transactions == []
+
+
 def test_repr(block):
     actual = repr(block)
     expected = f"<Block number={block.number} hash={to_hex(block.hash)}>"
@@ -128,14 +135,3 @@ def test_model_validate_web3_block():
     data = BlockData(number=123, timestamp=123, gasLimit=123, gasUsed=100)  # type: ignore
     actual = Block.model_validate(data)
     assert actual.number == 123
-
-
-def test_transactions(block):
-    actual = block.transactions
-    expected: list = []
-    assert actual == expected
-
-    # Ensure still works when hash is None (was a bug where this crashed).
-    block.hash = None
-    block.__dict__.pop("transactions", None)  # Ensure not cached.
-    assert block.transactions == []
