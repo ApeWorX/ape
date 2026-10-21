@@ -10,9 +10,12 @@ from ape.types.address import AddressType
 
 class TestChainIdCache:
     @staticmethod
-    def _make_provider(mocker, network_name, provider_name, chain_id, is_local):
+    def _make_provider(
+        mocker, network_name, provider_name, chain_id, is_local, ecosystem_name="ethereum"
+    ):
         network = mocker.MagicMock()
         network.name = network_name
+        network.ecosystem.name = ecosystem_name
         network.is_local = is_local
         provider = mocker.MagicMock()
         provider.network = network
@@ -39,6 +42,17 @@ class TestChainIdCache:
         assert cache.get_for_provider(infura) == 1
         assert cache.get_for_provider(alchemy) == 1
         assert alchemy.chain_id_prop.call_count == 0
+
+    def test_named_networks_namespaced_by_ecosystem(self, mocker):
+        ethereum_sepolia = self._make_provider(mocker, "sepolia", "node", 11155111, is_local=False)
+        arbitrum_sepolia = self._make_provider(
+            mocker, "sepolia", "node", 421614, is_local=False, ecosystem_name="arbitrum"
+        )
+        cache = ChainIdCache()
+
+        assert cache.get_for_provider(ethereum_sepolia) == 11155111
+        assert cache.get_for_provider(arbitrum_sepolia) == 421614
+        assert cache.get_for_provider(ethereum_sepolia) == 11155111
 
     def test_clear_forces_reread(self, mocker):
         provider = self._make_provider(mocker, "local", "foundry", 31337, is_local=True)
