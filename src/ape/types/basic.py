@@ -40,8 +40,10 @@ class _LazySequence(Sequence[_T]):
         if isinstance(index, int):
             while len(self.cache) <= index:
                 # Catch up the cache.
-                if value := next(self.generator, None):
-                    self.cache.append(value)
+                try:
+                    self.cache.append(next(self.generator))
+                except StopIteration:
+                    break
 
             return self.cache[index]
 
@@ -75,4 +77,4 @@ class _LazySequence(Sequence[_T]):
             self._generator = self._generator()
 
         assert isinstance(self._generator, Iterator)  # For type-checking.
-        yield from self._generator
+        return self._generator
