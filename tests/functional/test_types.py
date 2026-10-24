@@ -234,6 +234,12 @@ class TestCurrencyValueComparable:
             for ex in (value, expected):
                 assert actual == ex
 
+    def test_not_equal(self):
+        value = CurrencyValueComparable(10**18)
+        assert (value != "1 ether") is False
+        assert value != "2 ether"
+        assert (value != 10**18) is False
+
     def test_hashable(self):
         mapping: dict[int, str] = {0: "0", 1: "1"}
         key = CurrencyValueComparable(0)
