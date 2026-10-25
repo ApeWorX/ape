@@ -2771,6 +2771,17 @@ class LocalProject(Project):
         return manifest
 
     def get_contract(self, name: str) -> Any:
+        """
+        Get a contract container by name. Useful for avoiding naming collisions
+        with other properties on the project object, e.g.
+        ``project.get_contract("MyContract")`` is the same as ``project.MyContract``.
+
+        Args:
+            name (str): The name of the contract.
+
+        Returns:
+            ContractContainer | None
+        """
         if name in self._session_source_change_check:
             check_for_changes = False
         else:
