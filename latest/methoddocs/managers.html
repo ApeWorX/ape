@@ -427,6 +427,7 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#ape.managers.project.LocalProject.deployments"><code class="docutils literal notranslate"><span class="pre">LocalProject.deployments</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.project.LocalProject.exclusions"><code class="docutils literal notranslate"><span class="pre">LocalProject.exclusions</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.project.LocalProject.extract_manifest"><code class="docutils literal notranslate"><span class="pre">LocalProject.extract_manifest()</span></code></a></li>
+<li><a class="reference internal" href="#ape.managers.project.LocalProject.get_contract"><code class="docutils literal notranslate"><span class="pre">LocalProject.get_contract()</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.project.LocalProject.in_tempdir"><code class="docutils literal notranslate"><span class="pre">LocalProject.in_tempdir</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.project.LocalProject.interfaces_folder"><code class="docutils literal notranslate"><span class="pre">LocalProject.interfaces_folder</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.project.LocalProject.isolate_in_tempdir"><code class="docutils literal notranslate"><span class="pre">LocalProject.isolate_in_tempdir()</span></code></a></li>
@@ -3535,6 +3536,22 @@ deployments.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>PackageManifest</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.project.LocalProject.get_contract">
+<span class="sig-name descname"><span class="pre">get_contract</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#ape.managers.project.LocalProject.get_contract" title="Link to this definition">#</a></dt>
+<dd><p>Get a contract container by name. Useful for avoiding naming collisions
+with other properties on the project object, e.g.
+<code class="docutils literal notranslate"><span class="pre">project.get_contract(&quot;MyContract&quot;)</span></code> is the same as <code class="docutils literal notranslate"><span class="pre">project.MyContract</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>name</strong> (<em>str</em>) – The name of the contract.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>ContractContainer | None</p>
 </dd>
 </dl>
 </dd></dl>

@@ -359,7 +359,7 @@ You can use all of these together or separately to control the way Ape creates a
 </span><span data-line="6"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Your new account address is: </span><span class="si">{</span><span class="n">account</span><span class="o">.</span><span class="n">address</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </span></pre></div>
 </div>
-<p>See the <a class="reference external" href="../methoddocs/ape_accounts.html#ape_accounts.generate_account">documentation for <code class="docutils literal notranslate"><span class="pre">generate_account()</span></code></a> for more options.</p>
+<p>See the <a class="reference external" href="../methoddocs/ape_accounts.html#ape_accounts.accounts.generate_account">documentation for <code class="docutils literal notranslate"><span class="pre">generate_account()</span></code></a> for more options.</p>
 </section>
 <section id="importing-existing-accounts">
 <h4>Importing Existing Accounts<a class="headerlink" href="#importing-existing-accounts" title="Link to this heading">#</a></h4>
@@ -381,7 +381,7 @@ In addition, you can also use a custom HDPath by using the <code class="docutils
 </div>
 <p>If you use the <code class="docutils literal notranslate"><span class="pre">--hd-path</span></code> option, you will need to pass the <a class="reference external" href="https://help.myetherwallet.com/en/articles/5867305-hd-wallets-and-derivation-paths">HDPath</a> you’d like to use as an argument in the command.
 If you do not use the <code class="docutils literal notranslate"><span class="pre">--hd-path</span></code> option, Ape will use the default HDPath of (Ethereum network, first account).</p>
-<p>You can import an account programmatically using a seed phrase <a class="reference external" href="../methoddocs/ape_accounts.html#ape_accounts.import_account_from_mnemonic">using <code class="docutils literal notranslate"><span class="pre">import_account_from_mnemonic()</span></code></a>:</p>
+<p>You can import an account programmatically using a seed phrase <a class="reference external" href="../methoddocs/ape_accounts.html#ape_accounts.accounts.import_account_from_mnemonic">using <code class="docutils literal notranslate"><span class="pre">import_account_from_mnemonic()</span></code></a>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">ape_accounts</span><span class="w"> </span><span class="kn">import</span> <span class="n">import_account_from_mnemonic</span>
 </span><span data-line="2">
 </span><span data-line="3"><span class="n">alias</span> <span class="o">=</span> <span class="s2">"my-account"</span>
@@ -393,7 +393,7 @@ If you do not use the <code class="docutils literal notranslate"><span class="pr
 </span><span data-line="9"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Your imported account address is: </span><span class="si">{</span><span class="n">account</span><span class="o">.</span><span class="n">address</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </span></pre></div>
 </div>
-<p>Or using a raw private key <a class="reference external" href="../methoddocs/ape_accounts.html#ape_accounts.import_account_from_private_key">using <code class="docutils literal notranslate"><span class="pre">import_account_from_private_key()</span></code></a>:</p>
+<p>Or using a raw private key <a class="reference external" href="../methoddocs/ape_accounts.html#ape_accounts.accounts.import_account_from_private_key">using <code class="docutils literal notranslate"><span class="pre">import_account_from_private_key()</span></code></a>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 </span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">ape_accounts</span><span class="w"> </span><span class="kn">import</span> <span class="n">import_account_from_private_key</span>
 </span><span data-line="3">

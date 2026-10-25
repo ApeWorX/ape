@@ -56,7 +56,7 @@ Ape will automatically convert values in your transactions, thus allowing you to
 That is why, as you can see, the second argument is an `AccountAPI` object for the type `address` in the contract.
 
 Notice in the example, we use `project.MyContract` to access the contract type.
-To avoid naming collisions with other properties on the `project` object, you can alternatively use the [get_contract()](../methoddocs/managers.html#ape.managers.project.manager.ProjectManager.get_contract) method to retrieve contract containers.
+To avoid naming collisions with other properties on the `project` object, you can alternatively use the [get_contract()](../methoddocs/managers.html#ape.managers.project.LocalProject.get_contract) method to retrieve contract containers.
 
 ```python
 from ape import project
