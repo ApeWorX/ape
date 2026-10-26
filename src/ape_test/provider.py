@@ -603,10 +603,10 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         elif isinstance(exception, TransactionFailed):
             err_message = str(exception).split("execution reverted: ")[-1] or None
 
-            if err_message and err_message.startswith("b'") and err_message.endswith("'"):
+            if err_message and (revert_data := _parse_bytes_repr(err_message)) is not None:
                 # Convert stringified bytes str like `"b'\\x82\\xb4)\\x00'"` to `"0x82b42900"`.
                 # (Notice the `b'` is within the `"` on the first str).
-                err_message = to_hex(literal_eval(err_message))
+                err_message = to_hex(revert_data)
 
             err_message = TransactionError.DEFAULT_MESSAGE if err_message == "0x" else err_message
             contract_err = ContractLogicError(
@@ -649,3 +649,15 @@ class EthTesterTransactionTrace(TransactionTrace):
             return tuple([None for _ in range(num_return)])
 
         return self._ecosystem.decode_returndata(abi, returndata)
+
+
+def _parse_bytes_repr(value: str) -> bytes | None:
+    if not value.startswith(("b'", 'b"')):
+        return None
+
+    try:
+        parsed = literal_eval(value)
+    except (SyntaxError, ValueError):
+        return None
+
+    return parsed if isinstance(parsed, bytes) else None
