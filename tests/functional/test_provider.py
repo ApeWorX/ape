@@ -411,6 +411,21 @@ def test_get_virtual_machine_error_when_txn_failed_includes_base_error(
     assert actual.base_err == txn_failed
 
 
+@pytest.mark.parametrize(
+    "revert_data",
+    [
+        pytest.param(bytes.fromhex("82b42900"), id="single-quoted-repr"),
+        pytest.param(bytes.fromhex("27000000"), id="double-quoted-repr"),
+    ],
+)
+def test_get_virtual_machine_error_when_txn_failed_with_revert_data(
+    eth_tester_provider, revert_data
+):
+    exception = TransactionFailed(str(revert_data))
+    actual = eth_tester_provider.get_virtual_machine_error(exception)
+    assert actual.revert_message == to_hex(revert_data)
+
+
 def test_get_virtual_machine_error_panic(eth_tester_provider, mocker):
     data = "0x4e487b710000000000000000000000000000000000000000000000000000000000000032"
     message = "Panic error 0x32: Array index is out of bounds."
