@@ -228,6 +228,8 @@ node:
 
 Now, when using `ethereum:apenet:node`, it will connect to the RPC URL `https://apenet.example.com/rpc`.
 
+The `uri` can also point at a self-hosted RPC proxy, such as [eRPC](https://github.com/erpc/erpc), that spreads requests over several providers with retries and failover, e.g. `uri: http://localhost:4000/main/evm/1`.
+
 #### Forking Custom Networks
 
 You can fork custom networks using providers that support forking, such as `ape-foundry` or `ape-hardhat`.
