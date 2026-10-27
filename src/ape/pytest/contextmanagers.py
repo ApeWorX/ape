@@ -101,17 +101,29 @@ class RevertsContextManager(ManagerAccessMixin):
 
             raise AssertionError(f"{assertion_error_prefix} but got '{actual}'.")
 
-    def _check_custom_error(self, exception: CustomError):
+    def _check_custom_error(self, exception: ContractLogicError):
         # perf: avoid loading from contracts namespace until needed.
         from ape.contracts import ContractInstance
 
         expected_error_cls = self.expected_message
+        expected_abi: ErrorABI | None
 
-        if not isinstance(expected_error_cls, ErrorABI) and not isinstance(
-            expected_error_cls, type
-        ):
+        if isinstance(expected_error_cls, ErrorABI):
+            expected_abi = expected_error_cls
+            expected_name = expected_error_cls.name
+
+        elif isinstance(expected_error_cls, type):
+            expected_abi = getattr(expected_error_cls, "abi", None)
+            expected_name = expected_error_cls.__name__
+
+        else:
             # Not expecting a custom error type.
             return
+
+        if not isinstance(exception, CustomError):
+            raise AssertionError(  # noqa: TRY004
+                f"Expected error '{expected_name}' but got '{exception.revert_message}'."
+            )
 
         elif (
             isinstance(expected_error_cls, type)
@@ -127,6 +139,9 @@ class RevertsContextManager(ManagerAccessMixin):
                 f"Expected error '{expected_error_cls.__name__}' "
                 f"but was '{type(exception).__name__}'"
             )
+
+        elif isinstance(expected_abi, ErrorABI) and expected_abi.selector != exception.abi.selector:
+            raise AssertionError(f"Expected error '{expected_name}' but was '{exception.name}'")
 
         if not self.error_inputs:
             return
@@ -180,8 +195,7 @@ class RevertsContextManager(ManagerAccessMixin):
         if self.expected_message is not None and isinstance(self.expected_message, (str, Pattern)):
             self._check_expected_message(exc_value)
 
-        elif self.expected_message is not None and isinstance(exc_value, CustomError):
-            # Is a custom error type.
+        elif self.expected_message is not None:
             self._check_custom_error(exc_value)
 
         # Returning True causes the expected exception not to get raised
