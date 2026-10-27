@@ -106,6 +106,7 @@ class RevertsContextManager(ManagerAccessMixin):
         from ape.contracts import ContractInstance
 
         expected_error_cls = self.expected_message
+        expected_abi: ErrorABI | None
 
         if isinstance(expected_error_cls, ErrorABI):
             expected_abi = expected_error_cls
