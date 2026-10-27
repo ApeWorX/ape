@@ -438,6 +438,20 @@ signature = account.sign_message(message)
 Alternatively, you may use the `passphrase=` kwarg on methods `account.set_autosign()` and `account.unlock()`, but we highly recommend using the environment variable approach to avoid accidentally leaking your passphrase.
 ```
 
+Autosign does not cover raw message hashes signed with `account.sign_raw_msghash()`, which still prompt for confirmation.
+A raw hash can be a transaction or a permit in disguise, so autosigning them requires a separate opt-in:
+
+```py
+account.set_autosign(True, raw_msghash=True)
+
+# Now, you will not be prompted to sign raw 32-byte hashes either
+signature = account.sign_raw_msghash(msghash)
+```
+
+```{warning}
+Only use `raw_msghash=True` when you trust the origin of every hash the account will sign.
+```
+
 ## Hardware Wallets
 
 Because of the plugin system in Ape, we are able to support other types of accounts including hardware wallet accounts.

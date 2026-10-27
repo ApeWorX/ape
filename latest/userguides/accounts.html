@@ -601,6 +601,18 @@ Now, you can use your account to make any transactions without subsequently prov
 <p class="admonition-title">Note</p>
 <p>Alternatively, you may use the <code class="docutils literal notranslate"><span class="pre">passphrase=</span></code> kwarg on methods <code class="docutils literal notranslate"><span class="pre">account.set_autosign()</span></code> and <code class="docutils literal notranslate"><span class="pre">account.unlock()</span></code>, but we highly recommend using the environment variable approach to avoid accidentally leaking your passphrase.</p>
 </div>
+<p>Autosign does not cover raw message hashes signed with <code class="docutils literal notranslate"><span class="pre">account.sign_raw_msghash()</span></code>, which still prompt for confirmation.
+A raw hash can be a transaction or a permit in disguise, so autosigning them requires a separate opt-in:</p>
+<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">account</span><span class="o">.</span><span class="n">set_autosign</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">raw_msghash</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="c1"># Now, you will not be prompted to sign raw 32-byte hashes either</span>
+</span><span data-line="4"><span class="n">signature</span> <span class="o">=</span> <span class="n">account</span><span class="o">.</span><span class="n">sign_raw_msghash</span><span class="p">(</span><span class="n">msghash</span><span class="p">)</span>
+</span></pre></div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Only use <code class="docutils literal notranslate"><span class="pre">raw_msghash=True</span></code> when you trust the origin of every hash the account will sign.</p>
+</div>
 </section>
 <section id="hardware-wallets">
 <h2>Hardware Wallets<a class="headerlink" href="#hardware-wallets" title="Link to this heading">#</a></h2>

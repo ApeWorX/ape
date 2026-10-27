@@ -472,7 +472,7 @@ kwargs, see <a class="reference internal" href="api.html#ape.api.transactions.Tr
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ape_accounts.accounts.KeyfileAccount.set_autosign">
-<span class="sig-name descname"><span class="pre">set_autosign</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enabled</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">passphrase</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_accounts.accounts.KeyfileAccount.set_autosign" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">set_autosign</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enabled</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">passphrase</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raw_msghash</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape_accounts.accounts.KeyfileAccount.set_autosign" title="Link to this definition">#</a></dt>
 <dd><p>Allow this account to automatically sign messages and transactions.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -480,6 +480,11 @@ kwargs, see <a class="reference internal" href="api.html#ape.api.transactions.Tr
 <li><p><strong>enabled</strong> (<em>bool</em>) – <code class="docutils literal notranslate"><span class="pre">True</span></code> to enable, <code class="docutils literal notranslate"><span class="pre">False</span></code> to disable.</p></li>
 <li><p><strong>passphrase</strong> (<em>str</em><em> | </em><em>None</em>) – Optionally provide the passphrase.
 If not provided, you will be prompted to enter it.</p></li>
+<li><p><strong>raw_msghash</strong> (<em>bool</em>) – <code class="docutils literal notranslate"><span class="pre">True</span></code> to also autosign raw message hashes
+(see <a class="reference internal" href="#ape_accounts.accounts.KeyfileAccount.sign_raw_msghash" title="ape_accounts.accounts.KeyfileAccount.sign_raw_msghash"><code class="xref py py-meth docutils literal notranslate"><span class="pre">sign_raw_msghash()</span></code></a>).
+A raw hash may be a transaction or permit in disguise, so only enable
+this if you trust every hash this account is given.
+Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
 </ul>
 </dd>
 </dl>
