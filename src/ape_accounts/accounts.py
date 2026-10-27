@@ -210,6 +210,7 @@ class KeyfileAccount(AccountAPI):
     keyfile_path: Path
     locked: bool = True
     __autosign: bool = False
+    __autosign_raw_msghash: bool = False
     __cached_signer: ApeSigner | None = None
 
     @log_instead_of_fail(default="<KeyfileAccount>")
@@ -347,14 +348,14 @@ class KeyfileAccount(AccountAPI):
         return self.__signer.sign_transaction(txn, **signer_options)
 
     def sign_raw_msghash(self, msghash: HexBytes) -> MessageSignature | None:
-        logger.warning(
-            "Signing a raw hash directly is a dangerous action which could risk "
-            "substantial losses! Only confirm if you are 100% sure of the origin!"
-        )
-
-        # NOTE: Signing a raw hash is so dangerous, we don't want to allow autosigning it
-        if not click.confirm("Please confirm you wish to sign using `EthAccount.signHash`"):
-            return None
+        # NOTE: Signing a raw hash is so dangerous, it only autosigns when explicitly opted in.
+        if not self.__autosign_raw_msghash:
+            logger.warning(
+                "Signing a raw hash directly is a dangerous action which could risk "
+                "substantial losses! Only confirm if you are 100% sure of the origin!"
+            )
+            if not click.confirm("Please confirm you wish to sign using `EthAccount.signHash`"):
+                return None
 
         # Ignoring misleading deprecated warning from web3.py.
         # Also, we have already warned the user about the safety.
@@ -362,7 +363,7 @@ class KeyfileAccount(AccountAPI):
             warnings.simplefilter("ignore")
             return self.__signer.sign_raw_msghash(msghash)
 
-    def set_autosign(self, enabled: bool, passphrase: str | None = None):
+    def set_autosign(self, enabled: bool, passphrase: str | None = None, raw_msghash: bool = False):
         """
         Allow this account to automatically sign messages and transactions.
 
@@ -370,12 +371,22 @@ class KeyfileAccount(AccountAPI):
             enabled (bool): ``True`` to enable, ``False`` to disable.
             passphrase (str | None): Optionally provide the passphrase.
               If not provided, you will be prompted to enter it.
+            raw_msghash (bool): ``True`` to also autosign raw message hashes
+              (see :meth:`~ape_accounts.accounts.KeyfileAccount.sign_raw_msghash`).
+              A raw hash may be a transaction or permit in disguise, so only enable
+              this if you trust every hash this account is given.
+              Defaults to ``False``.
         """
         if enabled:
             self.unlock(passphrase=passphrase)
             logger.warning("Danger! This account will now sign any transaction it's given.")
+            if raw_msghash:
+                logger.warning(
+                    "Danger! This account will now sign any raw message hash it's given."
+                )
 
         self.__autosign = enabled
+        self.__autosign_raw_msghash = enabled and raw_msghash
         if not enabled:
             # Re-lock if it was turning off
             self.locked = True
