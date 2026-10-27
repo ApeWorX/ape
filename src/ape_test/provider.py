@@ -652,6 +652,7 @@ class EthTesterTransactionTrace(TransactionTrace):
 
 
 def _parse_bytes_repr(value: str) -> bytes | None:
+    # eth-tester keeps only the bytes' repr (`b"..."` when they contain a `'`), so parse it back.
     if not value.startswith(("b'", 'b"')):
         return None
 
