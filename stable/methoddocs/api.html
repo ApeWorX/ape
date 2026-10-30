@@ -422,6 +422,7 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#ape.api.networks.NetworkAPI.ecosystem_config"><code class="docutils literal notranslate"><span class="pre">NetworkAPI.ecosystem_config</span></code></a></li>
 <li><a class="reference internal" href="#ape.api.networks.NetworkAPI.explorer"><code class="docutils literal notranslate"><span class="pre">NetworkAPI.explorer</span></code></a></li>
 <li><a class="reference internal" href="#ape.api.networks.NetworkAPI.get_provider"><code class="docutils literal notranslate"><span class="pre">NetworkAPI.get_provider()</span></code></a></li>
+<li><a class="reference internal" href="#ape.api.networks.NetworkAPI.inject_poa_middleware"><code class="docutils literal notranslate"><span class="pre">NetworkAPI.inject_poa_middleware</span></code></a></li>
 <li><a class="reference internal" href="#ape.api.networks.NetworkAPI.is_adhoc"><code class="docutils literal notranslate"><span class="pre">NetworkAPI.is_adhoc</span></code></a></li>
 <li><a class="reference internal" href="#ape.api.networks.NetworkAPI.is_custom"><code class="docutils literal notranslate"><span class="pre">NetworkAPI.is_custom</span></code></a></li>
 <li><a class="reference internal" href="#ape.api.networks.NetworkAPI.is_dev"><code class="docutils literal notranslate"><span class="pre">NetworkAPI.is_dev</span></code></a></li>
@@ -3425,6 +3426,14 @@ When <code class="docutils literal notranslate"><span class="pre">None</span></c
 <dd class="field-even"><p><a class="reference internal" href="#ape.api.providers.ProviderAPI" title="ape.api.providers.ProviderAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProviderAPI</span></code></a></p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ape.api.networks.NetworkAPI.inject_poa_middleware">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">inject_poa_middleware</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#ape.api.networks.NetworkAPI.inject_poa_middleware" title="Link to this definition">#</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">True</span></code> when the network is configured to always use the PoA
+(extra-data) middleware, e.g. via <code class="docutils literal notranslate"><span class="pre">inject_poa_middleware</span></code> in a
+custom network config.</p>
 </dd></dl>
 
 <dl class="py property">

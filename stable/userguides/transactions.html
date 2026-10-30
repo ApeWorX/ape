@@ -365,7 +365,7 @@ You would do this if <code class="docutils literal notranslate"><span class="pre
 <section id="transaction-logs">
 <h2>Transaction Logs<a class="headerlink" href="#transaction-logs" title="Link to this heading">#</a></h2>
 <p>In Ape, you can easily get all the events on a receipt.
-Use the <code class="docutils literal notranslate"><span class="pre">.events</span></code> property to access the (<a class="reference external" href="../methoddocs/types.html#ape.types.ContractLog">ContractLog</a>) objects.
+Use the <code class="docutils literal notranslate"><span class="pre">.events</span></code> property to access the (<a class="reference external" href="../methoddocs/types.html#ape.types.events.ContractLog">ContractLog</a>) objects.
 Each object represents an event emitted from the call.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">receipt</span> <span class="o">=</span> <span class="n">contract</span><span class="o">.</span><span class="n">fundMyContract</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="s2">"1 gwei"</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">"0x0"</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">sender</span><span class="p">)</span>
 </span><span data-line="2"><span class="nb">print</span><span class="p">(</span><span class="n">receipt</span><span class="o">.</span><span class="n">events</span><span class="p">)</span>

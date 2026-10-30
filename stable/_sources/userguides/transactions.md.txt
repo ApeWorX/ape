@@ -188,7 +188,7 @@ You would do this if `fundMyContract` was a `"payable"` method, e.g. marked `@pa
 ## Transaction Logs
 
 In Ape, you can easily get all the events on a receipt.
-Use the `.events` property to access the ([ContractLog](../methoddocs/types.html#ape.types.ContractLog)) objects.
+Use the `.events` property to access the ([ContractLog](../methoddocs/types.html#ape.types.events.ContractLog)) objects.
 Each object represents an event emitted from the call.
 
 ```python

@@ -542,9 +542,12 @@ fields (e.g. the value of [cached properties][functools.cached_property]).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>update</strong> – Values to change/add in the new model. Note: the data is not validated
-before creating the new model. You should trust this data.</p></li>
-<li><p><strong>deep</strong> – Set to <cite>True</cite> to make a deep copy of the model.</p></li>
+<li><p><strong>update</strong> – A mapping of values to update the copied model. Updates are <em>not</em>
+applied recursively, and no validation is performed on updated values.
+Only the known fields are updated (if unknown keys are being passed and
+the model has [<cite>extra</cite>][pydantic.ConfigDict.extra] set to <cite>‘allow’</cite>, they
+are added as extra data).</p></li>
+<li><p><strong>deep</strong> – Whether a [deep copy][copy.deepcopy] of the model should be performed.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
