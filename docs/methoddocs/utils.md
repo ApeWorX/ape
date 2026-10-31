@@ -16,6 +16,14 @@
     :show-inheritance:
 ```
 
+## HTTP
+
+```{eval-rst}
+.. automodule:: ape.utils.http
+    :members:
+    :show-inheritance:
+```
+
 ## Miscellaneous
 
 ```{eval-rst}
