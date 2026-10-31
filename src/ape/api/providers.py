@@ -21,9 +21,6 @@ from eth_utils import to_hex
 from ethpm_types import MethodABI
 from pydantic import Field, computed_field, field_serializer, model_validator
 
-from ape.api.networks import NetworkAPI, ProviderContextManager
-from ape.api.query import BlockTransactionQuery
-from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.exceptions import (
     APINotImplementedError,
     ContractLogicError,
@@ -46,6 +43,9 @@ from ape.utils.misc import (
 )
 from ape.utils.process import JoinableQueue, spawn
 from ape.utils.rpc import RPCHeaders
+
+from .networks import NetworkAPI, ProviderContextManager
+from .transactions import ReceiptAPI, TransactionAPI
 
 if TYPE_CHECKING:
     from ethpm_types.abi import EventABI
@@ -153,13 +153,19 @@ class BlockAPI(BaseInterfaceModel):
         """
         All transactions in a block.
         """
-        if self.hash is None:
-            # Unable to query transactions.
+        from ape.api.query import BlockTransactionQuery
+
+        if self.hash is None or self.num_transactions == 0:
+            # Unsealed blocks have no hash yet, and an empty block has nothing to fetch.
             return []
 
         try:
-            query = BlockTransactionQuery(columns=["*"], block_id=self.hash)
-            return cast(list[TransactionAPI], list(self.query_manager.query(query)))
+            query = BlockTransactionQuery(
+                columns=["*"],
+                num_transactions=self.num_transactions,
+                block_id=self.hash,
+            )
+            return cast(list[TransactionAPI], list(self.query_manager.query(query).as_model_iter()))
         except QueryEngineError as err:
             # NOTE: Re-raising a better error here because was confusing
             #  when doing anything with fields, and this would fail.

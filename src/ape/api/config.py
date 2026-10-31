@@ -7,7 +7,8 @@ from typing import Any, TypeVar, cast
 
 import yaml
 from ethpm_types import PackageManifest, PackageMeta, Source
-from pydantic import ConfigDict, Field, ValidationError, model_validator
+from narwhals.stable.v2 import Implementation as DataframeImplementation
+from pydantic import ConfigDict, Field, ValidationError, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from ape.exceptions import ConfigError
@@ -202,6 +203,36 @@ class DeploymentConfig(PluginConfig):
     """
 
 
+class QueryConfig(PluginConfig):
+    """Add 'query:' key to your config."""
+
+    backend: DataframeImplementation | None = None
+    """
+    Optional dataframe library for `.query`.
+
+    When unset, Ape uses an installed Narwhals backend and prefers Polars.
+    Set this, or pass ``backend=`` to `.query`, to override that choice.
+    """
+
+    @field_validator("backend", mode="before")
+    def convert_backend_str(cls, value: Any) -> DataframeImplementation | None:
+        if value is None:
+            return None
+
+        implementation = (
+            value
+            if isinstance(value, DataframeImplementation)
+            else DataframeImplementation.from_backend(value)
+        )
+        if implementation is DataframeImplementation.UNKNOWN:
+            raise ValueError(
+                f"{value!r} is not a Narwhals dataframe backend. "
+                "Use a supported library name such as 'pandas' or 'polars'."
+            )
+
+        return implementation
+
+
 def _get_problem_with_config(errors: list, path: Path) -> str | None:
     # Attempt to find line numbers in the config matching.
     cfg_content = Source(content=path.read_text(encoding="utf8")).content
@@ -367,6 +398,8 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
     """
     The version of the project.
     """
+
+    query: QueryConfig = QueryConfig()
 
     # NOTE: Plugin configs are technically "extras".
     model_config = SettingsConfigDict(extra="allow", env_prefix="APE_")
