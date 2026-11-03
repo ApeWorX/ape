@@ -353,6 +353,20 @@ def test_solver_splits_on_the_step_grid():
     ]
 
 
+def test_solver_ends_a_stepped_query_at_its_last_sampled_index():
+    # 0 through 9 with step 2 samples 0, 2, 4, 6 and 8.
+    query = _Window(0, 9, step=2)
+    cached = [_Cursor(index, index, cost=0.01, step=2) for index in range(0, 10, 2)]
+    pieces = _solve(query, [_Cursor(0, 9, cost=1, step=2), *cached])
+    assert [(piece.query.start_index, piece.query.end_index) for piece in pieces] == [
+        (index, index) for index in range(0, 10, 2)
+    ]
+    assert _coverage(query, pieces).query is query
+
+    # Cold, a single cursor covers the window and ends past the last sample.
+    assert _coverage(query, [_Cursor(0, 9, cost=1, step=2)]).query is query
+
+
 def test_solver_clips_a_cursor_wider_than_the_query():
     pieces = _solve(_Window(2, 8), [_Cursor(0, 20, cost=1)])
     assert [(piece.query.start_index, piece.query.end_index) for piece in pieces] == [(2, 8)]

@@ -47,6 +47,11 @@ def _on_step(index: int, start: int, step: int) -> bool:
     return (index - start) % step == 0
 
 
+def _last_on_step(start: int, end: int, step: int) -> int:
+    """The last index in ``[start, end]`` that lies on the step grid from ``start``."""
+    return start + (end - start) // step * step
+
+
 def _cursor_covers(cursor: CursorAPI, start: int, end: int) -> bool:
     if cursor.query.start_index > start or cursor.query.end_index < end:
         return False
@@ -227,10 +232,12 @@ class QueryResult(CursorAPI[ModelType]):
             assert cursor.query.start_index == current_pos, (
                 f"Cursor {i} starts at {cursor.query.start_index}, expected {current_pos}"
             )
-            current_pos = cursor.query.end_index + step
+            current_pos = _last_on_step(current_pos, cursor.query.end_index, step) + step
 
-        assert current_pos == self.query.end_index + step, (
-            f"Coverage ended at {current_pos - step}, expected {self.query.end_index}"
+        # A stepped query ends at its last sampled index, which can be before ``end_index``.
+        last_index = _last_on_step(self.query.start_index, self.query.end_index, step)
+        assert current_pos == last_index + step, (
+            f"Coverage ended at {current_pos - step}, expected {last_index}"
         )
 
         return self
@@ -305,13 +312,13 @@ class QueryManager(ManagerAccessMixin):
             return
 
         # Boundaries are on the query's step grid. A segment is the inclusive span
-        # from one boundary up to, but not including, the next.
-        boundaries = {query.start_index, query.end_index + step}
+        # from one boundary up to, but not including, the next. A stepped query
+        # ends at its last sampled index, which can be before ``end_index``.
+        stop = _last_on_step(query.start_index, query.end_index, step) + step
+        boundaries = {query.start_index, stop}
         for cursor in all_cursors:
             for index in (cursor.query.start_index, cursor.query.end_index + step):
-                if query.start_index <= index <= query.end_index + step and _on_step(
-                    index, query.start_index, step
-                ):
+                if query.start_index <= index <= stop and _on_step(index, query.start_index, step):
                     boundaries.add(index)
 
         pieces: list[tuple[CursorAPI, int, int]] = []
