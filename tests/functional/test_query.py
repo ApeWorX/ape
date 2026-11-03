@@ -367,6 +367,28 @@ def test_solver_ends_a_stepped_query_at_its_last_sampled_index():
     assert _coverage(query, [_Cursor(0, 9, cost=1, step=2)]).query is query
 
 
+def test_solver_checks_only_active_cursors_on_a_warm_stepped_query(monkeypatch):
+    from ape.managers import query as query_manager
+
+    calls = 0
+    covers = query_manager._cursor_covers
+
+    def counting_covers(cursor, start, end):
+        nonlocal calls
+        calls += 1
+        return covers(cursor, start, end)
+
+    monkeypatch.setattr(query_manager, "_cursor_covers", counting_covers)
+    samples = 10_000
+    query = _Window(0, 2 * samples - 1, step=2)
+    cached = [_Cursor(index, index, cost=0.01, step=2) for index in range(0, 2 * samples, 2)]
+    pieces = _solve(query, [_Cursor(0, 2 * samples - 1, cost=1, step=2), *cached])
+
+    assert len(pieces) == samples
+    # The wide cursor and one cached cursor per segment, not every cursor per segment.
+    assert calls <= 2 * samples
+
+
 def test_solver_clips_a_cursor_wider_than_the_query():
     pieces = _solve(_Window(2, 8), [_Cursor(0, 20, cost=1)])
     assert [(piece.query.start_index, piece.query.end_index) for piece in pieces] == [(2, 8)]
@@ -537,6 +559,16 @@ def test_find_ranges_keeps_cached_runs(tmp_path):
 
     assert list(CacheQueryProvider.find_ranges(index, start=0, end=10)) == [(1, 3), (5, 5)]
     assert list(CacheQueryProvider.find_ranges(index, start=0, end=0)) == []
+
+
+def test_find_ranges_joins_runs_on_the_step_grid(tmp_path):
+    index = tmp_path / ".number"
+    index.mkdir()
+    for number in (0, 1, 2, 4, 5, 8):
+        (index / str(number)).write_text("{}")
+
+    assert list(CacheQueryProvider.find_ranges(index, start=0, end=9, step=2)) == [(0, 4), (8, 8)]
+    assert list(CacheQueryProvider.find_ranges(index, start=1, end=9, step=2)) == [(1, 1), (5, 5)]
 
 
 def test_specify_engine(chain, eth_tester_provider):

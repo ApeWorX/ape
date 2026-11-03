@@ -321,15 +321,27 @@ class QueryManager(ManagerAccessMixin):
                 if query.start_index <= index <= stop and _on_step(index, query.start_index, step):
                     boundaries.add(index)
 
+        # Sweep the segments in order. Only cursors that started at or before a
+        # segment and have not ended yet can cover it, so each segment checks the
+        # cursors still active instead of every cursor.
+        pending = sorted(all_cursors, key=lambda cursor: cursor.query.start_index)
+        next_pending = 0
+        active: list[CursorAPI] = []
+
         pieces: list[tuple[CursorAPI, int, int]] = []
         for seg_start, seg_next in pairwise(sorted(boundaries)):
             seg_end = seg_next - step
             if seg_end < seg_start:
                 continue
 
-            candidates = [
-                cursor for cursor in all_cursors if _cursor_covers(cursor, seg_start, seg_end)
-            ]
+            while (
+                next_pending < len(pending) and pending[next_pending].query.start_index <= seg_start
+            ):
+                active.append(pending[next_pending])
+                next_pending += 1
+
+            active = [cursor for cursor in active if cursor.query.end_index >= seg_start]
+            candidates = [cursor for cursor in active if _cursor_covers(cursor, seg_start, seg_end)]
             if not candidates:
                 raise QueryEngineError(
                     f"Could not solve, missing coverage in window [{seg_start}:{seg_end}]."

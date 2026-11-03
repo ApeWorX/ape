@@ -72,23 +72,29 @@ class CacheQueryProvider(QueryEngineAPI):
         return self.config_manager.DATA_FOLDER / ecosystem_name / network_name / "query-cache"
 
     @staticmethod
-    def find_ranges(index_folder: Path, start: int = 0, end: int = -1) -> Iterator[tuple[int, int]]:
-        """Yield inclusive runs of cached indexes that exist inside ``[start, end]``."""
+    def find_ranges(
+        index_folder: Path, start: int = 0, end: int = -1, step: int = 1
+    ) -> Iterator[tuple[int, int]]:
+        """
+        Yield inclusive runs of cached indexes that exist inside ``[start, end]``.
+        Only indexes on the ``step`` grid from ``start`` count, and a run joins
+        indexes that are ``step`` apart.
+        """
         if not index_folder.is_dir():
             return
 
         indices = sorted(int(path.name) for path in index_folder.iterdir() if path.name.isdigit())
-        if end != -1:
-            indices = [index for index in indices if start <= index <= end]
-        else:
-            indices = [index for index in indices if index >= start]
-
+        indices = [
+            index
+            for index in indices
+            if index >= start and (end == -1 or index <= end) and (index - start) % step == 0
+        ]
         if not indices:
             return
 
         run_start = previous = indices[0]
         for index in indices[1:]:
-            if index == previous + 1:
+            if index == previous + step:
                 previous = index
                 continue
 
@@ -102,7 +108,9 @@ class CacheQueryProvider(QueryEngineAPI):
         index_folder = self.cache_folder() / "blocks" / ".number"
         try:
             ranges = list(
-                self.find_ranges(index_folder, start=query.start_block, end=query.stop_block)
+                self.find_ranges(
+                    index_folder, start=query.start_block, end=query.stop_block, step=query.step
+                )
             )
         except OSError:
             return
