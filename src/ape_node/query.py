@@ -33,8 +33,12 @@ class ContractCreationCursor(CursorAPI):
     def time_per_row(self) -> float:
         return 0.25
 
-    def _get_ots_contract_creation(self) -> ContractCreation:
+    def _get_ots_contract_creation(self) -> ContractCreation | None:
         result = self.provider.make_request("ots_getContractCreator", [self.query.contract])
+        if not result:
+            # Otterscan returns ``null`` for an address with no creation, such as an EOA.
+            return None
+
         creator = self.conversion_manager.convert(result["creator"], AddressType)
         receipt = self.provider.get_receipt(result["hash"])
         return ContractCreation(
@@ -45,7 +49,8 @@ class ContractCreationCursor(CursorAPI):
         )
 
     def as_model_iter(self) -> Iterator[ContractCreation]:
-        yield self._get_ots_contract_creation()
+        if creation := self._get_ots_contract_creation():
+            yield creation
 
 
 class OtterscanQueryEngine(QueryEngineAPI):

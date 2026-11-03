@@ -531,3 +531,14 @@ def test_specify_engine(chain, eth_tester_provider):
     actual = chain.blocks.query("*", engine_to_use="__default__")
     expected = offset + 3
     assert len(actual) == expected
+
+
+def test_otterscan_creation_cursor_is_empty_for_a_null_result(eth_tester_provider, mocker):
+    from ape.api.query import ContractCreationQuery
+    from ape_node.query import ContractCreationCursor
+
+    make_request = mocker.patch.object(type(eth_tester_provider), "make_request", return_value=None)
+    query = ContractCreationQuery(columns=["*"], contract="0x" + "00" * 20)
+
+    assert list(ContractCreationCursor(query=query).as_model_iter()) == []
+    make_request.assert_called_once_with("ots_getContractCreator", [query.contract])
