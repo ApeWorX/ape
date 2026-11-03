@@ -155,14 +155,24 @@ class BlockAPI(BaseInterfaceModel):
         """
         from ape.api.query import BlockTransactionQuery
 
-        if self.hash is None or self.num_transactions == 0:
-            # Unsealed blocks have no hash yet, and an empty block has nothing to fetch.
+        if self.hash is None:
+            # Unsealed blocks have no hash yet.
+            return []
+
+        num_transactions = self.num_transactions
+        if "num_transactions" not in self.model_fields_set:
+            # A header-only block (such as from ``newHeads``) omits the count, and
+            # the field then defaults to zero. Fetch the block to learn the real count.
+            num_transactions = self.provider.get_block(self.hash).num_transactions
+
+        if num_transactions == 0:
+            # An empty block has nothing to fetch.
             return []
 
         try:
             query = BlockTransactionQuery(
                 columns=["*"],
-                num_transactions=self.num_transactions,
+                num_transactions=num_transactions,
                 block_id=self.hash,
             )
             return cast(list[TransactionAPI], list(self.query_manager.query(query).as_model_iter()))

@@ -25,6 +25,26 @@ def test_unsealed_block_has_no_transactions(block):
     assert pending.transactions == []
 
 
+def test_header_only_block_fetches_its_transaction_count(eth_tester_provider, sender, receiver):
+    receipt = sender.transfer(receiver, 1)
+    full = eth_tester_provider.get_block(receipt.block_number)
+    assert full.num_transactions == 1
+
+    # A header (such as from ``newHeads``) has no ``transactions``, so the count is unknown.
+    header = full.model_dump(by_alias=True, exclude={"num_transactions", "transactions"})
+    block = type(full).model_validate(header)
+    assert "num_transactions" not in block.model_fields_set
+    assert [to_hex(txn.txn_hash) for txn in block.transactions] == [receipt.txn_hash]
+
+
+def test_block_with_zero_transactions_does_not_fetch(block, mocker):
+    assert "num_transactions" in block.model_fields_set
+    block.__dict__.pop("transactions", None)  # Ensure not cached.
+    get_block = mocker.spy(type(block.provider), "get_block")
+    assert block.transactions == []
+    get_block.assert_not_called()
+
+
 def test_repr(block):
     actual = repr(block)
     expected = f"<Block number={block.number} hash={to_hex(block.hash)}>"
