@@ -175,7 +175,16 @@ def _concrete_model(model: type[BaseInterfaceModel]) -> type[BaseInterfaceModel]
 def _basic_columns(model: type[BaseInterfaceModel]) -> set[str]:
     # Constructor fields of the ecosystem model. Enough to build a row, and not
     # properties that fetch more data.
-    return set(_concrete_model(model).model_fields)
+    concrete = _concrete_model(model)
+    columns = set(concrete.model_fields)
+
+    # Receipt rows flatten the nested transaction, so ``*`` keeps columns such
+    # as nonce, value, sender and receiver instead of one nested object.
+    if issubclass(concrete, ReceiptAPI):
+        columns.discard("transaction")
+        columns |= _basic_columns(TransactionAPI)
+
+    return columns
 
 
 def _all_columns(model: type[BaseInterfaceModel]) -> set[str]:

@@ -100,6 +100,17 @@ def test_account_history_query(sender, receiver, eth_tester_provider):
     assert [int(value) for value in df["value"].to_list()] == [100]
 
 
+def test_account_history_wildcard_flattens_the_transaction(sender, receiver, eth_tester_provider):
+    receipt = sender.transfer(receiver, 100)
+    df = sender.history.query("*", start_nonce=receipt.nonce, stop_nonce=receipt.nonce)
+    assert "transaction" not in df.columns
+    assert {"nonce", "value", "sender", "receiver", "txn_hash", "gas_used"} <= set(df.columns)
+    assert [int(value) for value in df["nonce"].to_list()] == [int(receipt.nonce)]
+    assert [int(value) for value in df["value"].to_list()] == [100]
+    assert df["sender"].to_list() == [sender.address]
+    assert df["receiver"].to_list() == [receiver.address]
+
+
 def test_block_query_step(chain, eth_tester_provider):
     start = chain.blocks.height
     chain.mine(4)
