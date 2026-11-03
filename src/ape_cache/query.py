@@ -124,7 +124,7 @@ class _CachingBlockCursor(CursorAPI):
 
 class CacheQueryProvider(QueryEngineAPI):
     """
-    Default implementation of the :class:`~ape.api.query.QueryAPI`.
+    Default implementation of the :class:`~ape.api.query.QueryEngineAPI`.
     Allows for the query of blockchain data using a connected provider.
     """
 
