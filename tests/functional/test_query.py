@@ -6,6 +6,7 @@ from typing import Any, cast
 import narwhals.stable.v2 as nw
 import pytest
 from ethpm_types.abi import EventABI, MethodABI
+from pydantic import Field
 
 from ape.api import query as query_api
 from ape.api.query import (
@@ -696,29 +697,70 @@ def test_method_query_columns_are_not_block_fields():
     assert query.columns == ["foo_return"]
 
 
-def test_block_cache_does_not_fetch_transactions(tmp_path, monkeypatch):
-    monkeypatch.setattr(CacheQueryProvider, "cache_folder", lambda self, *args, **kwargs: tmp_path)
-    block = Block.model_validate(
+def _header(number: int, **fields) -> Block:
+    return Block.model_validate(
         {
             "gasLimit": 1,
             "gasUsed": 0,
-            "hash": "0x" + "11" * 32,
-            "number": 7,
+            "hash": "0x" + f"{number + 1:064x}",
+            "number": number,
             "parentHash": "0x" + "00" * 32,
-            "timestamp": 1,
-            "num_transactions": 4,
+            "timestamp": number,
+            "num_transactions": 0,
             "size": 1,
+            **fields,
         }
     )
-    query = BlockQuery(columns=["number"], start_block=7, stop_block=7)
-    result = SimpleNamespace(query=query, as_model_iter=lambda: iter([block]))
 
+
+class _CountingBlockCursor(_ListCursor):
+    reads: list[int] = Field(default_factory=list)
+
+    def shrink(self, start_index=None, end_index=None):
+        return self
+
+    def as_model_iter(self):
+        for block in self.items:
+            self.reads.append(block.number)
+            yield block
+
+
+def _cached_result(tmp_path, monkeypatch, blocks):
+    monkeypatch.setattr(CacheQueryProvider, "cache_folder", lambda self, *args, **kwargs: tmp_path)
+    query = BlockQuery(
+        columns=["number"], start_block=blocks[0].number, stop_block=blocks[-1].number
+    )
+    cursor = _CountingBlockCursor(query=query, items=blocks)
+    result: QueryResult = QueryResult(query=query, cursors=[cursor])
     CacheQueryProvider().cache(result)
+    return result, cursor, tmp_path / "blocks" / ".number"
 
-    payload = json.loads((tmp_path / "blocks" / ".number" / "7").read_text())
+
+def test_block_cache_does_not_fetch_transactions(tmp_path, monkeypatch, eth_tester_provider):
+    block = _header(7, num_transactions=4, size=1)
+    result, _, index = _cached_result(tmp_path, monkeypatch, [block])
+    assert list(result.as_model_iter()) == [block]
+
+    payload = json.loads((index / "7").read_text())
     assert "transactions" not in payload
     assert payload["number"] == 7
     assert payload["num_transactions"] == 4
+
+
+def test_block_cache_stores_blocks_as_they_are_read(tmp_path, monkeypatch, eth_tester_provider):
+    blocks = [_header(number) for number in range(2, 6)]
+    result, cursor, index = _cached_result(tmp_path, monkeypatch, blocks)
+    # Planning and the cache hook fetch nothing.
+    assert cursor.reads == []
+
+    rows = result.as_model_iter()
+    assert next(rows).number == 2
+    assert cursor.reads == [2]
+    assert sorted(int(path.name) for path in index.iterdir()) == [2]
+
+    assert [block.number for block in rows] == [3, 4, 5]
+    assert cursor.reads == [2, 3, 4, 5]
+    assert sorted(int(path.name) for path in index.iterdir()) == [2, 3, 4, 5]
 
 
 def test_find_ranges_keeps_cached_runs(tmp_path):

@@ -9,6 +9,8 @@ from ape.api.providers import BlockAPI
 from ape.api.query import BlockQuery, CursorAPI, QueryEngineAPI
 
 if TYPE_CHECKING:
+    from ape.managers.query import QueryResult
+
     try:
         # Only on Python 3.11
         from typing import Self  # type: ignore
@@ -52,6 +54,49 @@ class BlockCursor(_BaseCursor):
                 continue
 
             yield decode_block(json.loads(path.read_text()))
+
+
+def _write_block(index_folder: Path, block: BlockAPI):
+    number = getattr(block, "number", None)
+    if number is None:
+        return
+
+    path = index_folder / str(number)
+    if path.exists():
+        return
+
+    # ``transactions`` loads the block body from the node. The file stores
+    # the header fields that are already on the model.
+    path.write_text(block.model_dump_json(exclude={"transactions"}))
+
+
+class _CachingBlockCursor(CursorAPI):
+    """
+    Wrap a block cursor from another engine, and store each block as the caller
+    reads it. Nothing is fetched or written until the result is consumed.
+    """
+
+    query: BlockQuery
+    inner: CursorAPI
+    index_folder: Path
+
+    def shrink(self, start_index: int | None = None, end_index: int | None = None) -> "Self":
+        inner = self.inner.shrink(start_index=start_index, end_index=end_index)
+        return self.model_copy(update={"inner": inner, "query": inner.query})
+
+    @property
+    def total_time(self) -> float:
+        return self.inner.total_time
+
+    @property
+    def time_per_row(self) -> float:
+        return self.inner.time_per_row
+
+    def as_model_iter(self) -> Iterator[BlockAPI]:
+        self.index_folder.mkdir(parents=True, exist_ok=True)
+        for block in self.inner.as_model_iter():
+            _write_block(self.index_folder, block)
+            yield block
 
 
 class CacheQueryProvider(QueryEngineAPI):
@@ -118,24 +163,25 @@ class CacheQueryProvider(QueryEngineAPI):
         for start, end in ranges:
             yield BlockCursor(query=query, cache_folder=index_folder.parent).shrink(start, end)
 
-    def cache(self, result):
+    def cache(self, result: "QueryResult"):
         if not isinstance(result.query, BlockQuery):
             return
 
-        folder = self.cache_folder() / "blocks" / ".number"
-        folder.mkdir(parents=True, exist_ok=True)
-        for block in result.as_model_iter():
-            number = getattr(block, "number", None)
-            if number is None:
+        # Store blocks as the caller reads them, so the cache never fetches a block
+        # the caller did not ask for, and never fetches one twice.
+        index_folder = self.cache_folder() / "blocks" / ".number"
+        for i, cursor in enumerate(result.cursors):
+            if isinstance(cursor, (BlockCursor, _CachingBlockCursor)):
+                # Already on disk, or already wrapped.
                 continue
 
-            path = folder / str(number)
-            if path.exists():
+            if type(cursor).as_dataframe is not CursorAPI.as_dataframe:
+                # The engine builds its own frame without block models. Keep that path.
                 continue
 
-            # ``transactions`` loads the block body from the node. The file stores
-            # the header fields that are already on the model.
-            path.write_text(block.model_dump_json(exclude={"transactions"}))
+            result.cursors[i] = _CachingBlockCursor(
+                query=cursor.query, inner=cursor, index_folder=index_folder
+            )
 
     def prune_database(self, ecosystem_name: str, network_name: str):
         """
