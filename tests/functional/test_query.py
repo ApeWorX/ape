@@ -327,13 +327,32 @@ def test_solver_keeps_a_rigid_cursor_on_its_exact_segment():
     ]
 
 
-def test_solver_cannot_cut_a_rigid_cursor():
-    # A boundary inside a cursor that refuses to shrink drops that cursor.
-    with pytest.raises(QueryEngineError, match=r"missing coverage in window \[5:10\]"):
-        _solve(
-            _Window(0, 10),
-            [_Cursor(0, 10, cost=1, shrinkable=False), _Cursor(0, 4, cost=5)],
-        )
+def test_solver_keeps_a_rigid_cursor_for_its_whole_window_across_boundaries():
+    # The partial cursor adds a boundary inside the rigid cursor. The rigid cursor
+    # cannot be cut there, but its whole window still covers the query.
+    pieces = _solve(
+        _Window(0, 10),
+        [_Cursor(0, 10, cost=1, shrinkable=False), _Cursor(0, 4, cost=5)],
+    )
+    assert [(piece.query.start_index, piece.query.end_index) for piece in pieces] == [(0, 10)]
+
+
+def test_solver_picks_a_cheaper_cut_over_a_rigid_whole_window():
+    pieces = _solve(
+        _Window(0, 10),
+        [
+            _Cursor(0, 10, cost=5, shrinkable=False),
+            _Cursor(0, 10, cost=1),
+            _Cursor(0, 4, cost=5),
+        ],
+    )
+    assert [(piece.query.start_index, piece.query.end_index) for piece in pieces] == [(0, 10)]
+    assert pieces[0].time_per_row == 1
+
+
+def test_solver_cannot_cut_a_rigid_cursor_wider_than_the_query():
+    with pytest.raises(QueryEngineError, match=r"missing coverage in window \[2:8\]"):
+        _solve(_Window(2, 8), [_Cursor(0, 10, cost=1, shrinkable=False)])
 
 
 def test_solver_ignores_off_grid_cursor_edges():

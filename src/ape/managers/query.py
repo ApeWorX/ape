@@ -317,9 +317,19 @@ class QueryManager(ManagerAccessMixin):
         stop = _last_on_step(query.start_index, query.end_index, step) + step
         boundaries = {query.start_index, stop}
         for cursor in all_cursors:
-            for index in (cursor.query.start_index, cursor.query.end_index + step):
+            cursor_start, cursor_end = cursor.query.start_index, cursor.query.end_index
+            for index in (cursor_start, _last_on_step(cursor_start, cursor_end, step) + step):
                 if query.start_index <= index <= stop and _on_step(index, query.start_index, step):
                     boundaries.add(index)
+
+        ordered_bounds = sorted(boundaries)
+        position = {index: i for i, index in enumerate(ordered_bounds)}
+        segments = [
+            (seg_start, seg_next - step) for seg_start, seg_next in pairwise(ordered_bounds)
+        ]
+
+        def rows(first: int, last: int) -> int:
+            return (last - first) // step + 1
 
         # Sweep the segments in order. Only cursors that started at or before a
         # segment and have not ended yet can cover it, so each segment checks the
@@ -327,13 +337,8 @@ class QueryManager(ManagerAccessMixin):
         pending = sorted(all_cursors, key=lambda cursor: cursor.query.start_index)
         next_pending = 0
         active: list[CursorAPI] = []
-
-        pieces: list[tuple[CursorAPI, int, int]] = []
-        for seg_start, seg_next in pairwise(sorted(boundaries)):
-            seg_end = seg_next - step
-            if seg_end < seg_start:
-                continue
-
+        segment_best: list[CursorAPI | None] = []
+        for seg_start, seg_end in segments:
             while (
                 next_pending < len(pending) and pending[next_pending].query.start_index <= seg_start
             ):
@@ -342,20 +347,83 @@ class QueryManager(ManagerAccessMixin):
 
             active = [cursor for cursor in active if cursor.query.end_index >= seg_start]
             candidates = [cursor for cursor in active if _cursor_covers(cursor, seg_start, seg_end)]
-            if not candidates:
-                raise QueryEngineError(
-                    f"Could not solve, missing coverage in window [{seg_start}:{seg_end}]."
-                )
+            segment_best.append(
+                min(candidates, key=lambda cursor: (cursor.time_per_row, cursor.total_time))
+                if candidates
+                else None
+            )
 
-            best = min(candidates, key=lambda cursor: (cursor.time_per_row, cursor.total_time))
-            if pieces and pieces[-1][0] is best and pieces[-1][2] + step == seg_start:
-                previous, previous_start, _ = pieces[-1]
-                pieces[-1] = (previous, previous_start, seg_end)
+        # A cursor that cannot be cut (``shrink`` raises) can still serve its whole
+        # window, which may span several segments. Offer that window as one step.
+        whole_windows: dict[int, list[tuple[int, CursorAPI]]] = {}
+        for cursor in all_cursors:
+            cursor_start, cursor_end = cursor.query.start_index, cursor.query.end_index
+            first = position.get(cursor_start)
+            after = position.get(_last_on_step(cursor_start, cursor_end, step) + step)
+            if first is not None and after is not None and after - first > 1:
+                whole_windows.setdefault(first, []).append((after, cursor))
+
+        # Cheapest plan from the start to each boundary, in boundary order.
+        # ``plan[i]`` is ``(cost, previous boundary, cursor, whole window)``.
+        plan: list[tuple[float, int, CursorAPI, bool] | None] = [None] * len(ordered_bounds)
+        cost: list[float] = [float("inf")] * len(ordered_bounds)
+        cost[0] = 0.0
+        for i, (seg_start, seg_end) in enumerate(segments):
+            if cost[i] == float("inf"):
+                continue
+
+            if (best := segment_best[i]) is not None:
+                total = cost[i] + rows(seg_start, seg_end) * best.time_per_row
+                if total < cost[i + 1]:
+                    cost[i + 1] = total
+                    plan[i + 1] = (total, i, best, False)
+
+            for after, cursor in whole_windows.get(i, []):
+                last = ordered_bounds[after] - step
+                total = cost[i] + rows(seg_start, last) * cursor.time_per_row
+                # Prefer the segment plan on a tie. It is never worse when the cursor can be cut.
+                if total < cost[after] - 1e-12:
+                    cost[after] = total
+                    plan[after] = (total, i, cursor, True)
+
+        if cost[-1] == float("inf"):
+            reached = max(i for i, value in enumerate(cost) if value != float("inf"))
+            seg_start, seg_end = segments[reached]
+            raise QueryEngineError(
+                f"Could not solve, missing coverage in window [{seg_start}:{seg_end}]."
+            )
+
+        steps: list[tuple[CursorAPI, int, int, bool]] = []
+        i = len(ordered_bounds) - 1
+        while i > 0:
+            entry = plan[i]
+            assert entry is not None  # NOTE: Reachable boundaries always have a plan
+            _, previous, cursor, whole = entry
+            steps.append((cursor, ordered_bounds[previous], ordered_bounds[i] - step, whole))
+            i = previous
+
+        pieces: list[tuple[CursorAPI, int, int, bool]] = []
+        for cursor, seg_start, seg_end, whole in reversed(steps):
+            if (
+                pieces
+                and not whole
+                and not pieces[-1][3]
+                and pieces[-1][0] is cursor
+                and pieces[-1][2] + step == seg_start
+            ):
+                previous_cursor, previous_start, _, _ = pieces[-1]
+                pieces[-1] = (previous_cursor, previous_start, seg_end, False)
             else:
-                pieces.append((best, seg_start, seg_end))
+                pieces.append((cursor, seg_start, seg_end, whole))
 
-        for cursor, seg_start, seg_end in pieces:
-            yield cursor.shrink(start_index=seg_start, end_index=seg_end)
+        for cursor, seg_start, seg_end, whole in pieces:
+            if whole:
+                # Hand back the cursor's own window so a cursor that cannot be cut accepts it.
+                yield cursor.shrink(
+                    start_index=cursor.query.start_index, end_index=cursor.query.end_index
+                )
+            else:
+                yield cursor.shrink(start_index=seg_start, end_index=seg_end)
 
     def query(
         self,
