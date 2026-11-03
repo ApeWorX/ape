@@ -1,5 +1,6 @@
 from eth_utils import to_hex
 
+from ape_cache import query as cache_query
 from ape_cache.query import CacheQueryProvider
 from ape_ethereum.ecosystem import Block
 from tests.conftest import geth_process_test
@@ -9,8 +10,9 @@ def _hex(value: object) -> str:
     return value.lower() if isinstance(value, str) else to_hex(value).lower()
 
 
-def test_mainnet_history_is_served_from_the_file_cache(
-    chain, networks, monkeypatch, mocker, tmp_path
+@geth_process_test
+def test_history_is_served_from_the_file_cache(
+    chain, geth_provider, geth_account, geth_second_account, monkeypatch, mocker, tmp_path
 ):
     # Keep the file cache in a temp folder so this test does not write into
     # the shared data directory.
@@ -23,69 +25,64 @@ def test_mainnet_history_is_served_from_the_file_cache(
 
     monkeypatch.setattr(CacheQueryProvider, "cache_folder", cache_folder)
 
-    with networks.ethereum.mainnet.use_provider("node") as provider:
-        assert provider.chain_id == 1
-        # ``chain.blocks.height`` turns a failed head request into block 0.
-        # Ask for the number directly so that failure stays an RPC error.
-        head = int(provider.web3.eth.block_number)
-        # Stay behind head so the window is sealed history that a pruned node still serves.
-        stop = head - 256
-        start = stop - 3
-        prefix_stop = start + 1
-        assert start > 15_000_000
-        cache_dir = cache_folder(chain.query_manager.engines["cache"]) / "blocks" / ".number"
-        assert "mainnet" in cache_dir.parts
+    # The cache is off for local chains, so treat this node as a public network
+    # whose settled history ends at the window below.
+    # Geth's dev mode seals a block for each transaction.
+    for _ in range(4):
+        geth_account.transfer(geth_second_account, "1 wei")
 
-        prefix = chain.blocks.query(
-            "number", "hash", "timestamp", start_block=start, stop_block=prefix_stop
-        )
-        assert [int(number) for number in prefix["number"].to_list()] == list(
-            range(start, prefix_stop + 1)
-        )
-        assert int(prefix["timestamp"][0]) > 1_600_000_000
-        assert sorted(int(path.name) for path in cache_dir.iterdir()) == list(
-            range(start, prefix_stop + 1)
-        )
+    stop = chain.blocks.height
+    start = stop - 3
+    prefix_stop = start + 1
+    monkeypatch.setattr(CacheQueryProvider, "uses_cache", True)
+    monkeypatch.setattr(cache_query, "_canonical_height", lambda provider: stop)
+    cache_dir = cache_folder(chain.query_manager.engines["cache"]) / "blocks" / ".number"
 
-        stored = Block.model_validate_json((cache_dir / str(start)).read_text())
-        live = provider.get_block(start)
-        assert stored.number is not None
-        assert int(stored.number) == start
-        assert _hex(stored.hash) == _hex(live.hash)
-        assert int(stored.timestamp) == int(live.timestamp)
+    prefix = chain.blocks.query(
+        "number", "hash", "timestamp", start_block=start, stop_block=prefix_stop
+    )
+    assert [int(number) for number in prefix["number"].to_list()] == list(
+        range(start, prefix_stop + 1)
+    )
+    assert sorted(int(path.name) for path in cache_dir.iterdir()) == list(
+        range(start, prefix_stop + 1)
+    )
 
-        # The cached prefix stays on disk. Only the tail should hit the node.
-        # Spy the RPC the provider uses. The node provider is a pydantic model,
-        # so spying its get_block method cannot be torn down.
-        get_block = mocker.spy(provider.web3.eth, "get_block")
-        full = chain.blocks.query("number", "hash", start_block=start, stop_block=stop)
-        fetched = [
-            call.args[0]
-            for call in get_block.call_args_list
-            if call.args and isinstance(call.args[0], int)
-        ]
-        assert [int(number) for number in full["number"].to_list()] == list(range(start, stop + 1))
-        prefix_len = prefix_stop - start + 1
-        assert [_hex(value) for value in full["hash"].to_list()[:prefix_len]] == [
-            _hex(value) for value in prefix["hash"].to_list()
-        ]
-        assert fetched
-        assert set(fetched).isdisjoint(range(start, prefix_stop + 1))
-        assert set(range(prefix_stop + 1, stop + 1)).issubset(fetched)
-        assert sorted(int(path.name) for path in cache_dir.iterdir()) == list(
-            range(start, stop + 1)
-        )
+    stored = Block.model_validate_json((cache_dir / str(start)).read_text())
+    live = geth_provider.get_block(start)
+    assert stored.number is not None
+    assert int(stored.number) == start
+    assert _hex(stored.hash) == _hex(live.hash)
+    assert int(stored.timestamp) == int(live.timestamp)
 
-        get_block.reset_mock()
-        cached = chain.blocks.query("number", "hash", start_block=start, stop_block=stop)
-        assert [int(number) for number in cached["number"].to_list()] == list(
-            range(start, stop + 1)
-        )
-        assert [_hex(value) for value in cached["hash"].to_list()] == [
-            _hex(value) for value in full["hash"].to_list()
-        ]
-        # Those historical numbers come from disk. A head lookup ("latest") is separate.
-        assert {call.args[0] for call in get_block.call_args_list} <= {"latest"}
+    # The cached prefix stays on disk. Only the tail should hit the node.
+    # Spy the RPC the provider uses. The node provider is a pydantic model,
+    # so spying its get_block method cannot be torn down.
+    get_block = mocker.spy(geth_provider.web3.eth, "get_block")
+    full = chain.blocks.query("number", "hash", start_block=start, stop_block=stop)
+    fetched = [
+        call.args[0]
+        for call in get_block.call_args_list
+        if call.args and isinstance(call.args[0], int)
+    ]
+    assert [int(number) for number in full["number"].to_list()] == list(range(start, stop + 1))
+    prefix_len = prefix_stop - start + 1
+    assert [_hex(value) for value in full["hash"].to_list()[:prefix_len]] == [
+        _hex(value) for value in prefix["hash"].to_list()
+    ]
+    assert fetched
+    assert set(fetched).isdisjoint(range(start, prefix_stop + 1))
+    assert set(range(prefix_stop + 1, stop + 1)).issubset(fetched)
+    assert sorted(int(path.name) for path in cache_dir.iterdir()) == list(range(start, stop + 1))
+
+    get_block.reset_mock()
+    cached = chain.blocks.query("number", "hash", start_block=start, stop_block=stop)
+    assert [int(number) for number in cached["number"].to_list()] == list(range(start, stop + 1))
+    assert [_hex(value) for value in cached["hash"].to_list()] == [
+        _hex(value) for value in full["hash"].to_list()
+    ]
+    # Those numbers come from disk. A head lookup ("latest") is separate.
+    assert {call.args[0] for call in get_block.call_args_list} <= {"latest"}
 
 
 @geth_process_test
