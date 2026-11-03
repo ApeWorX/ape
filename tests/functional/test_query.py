@@ -622,6 +622,60 @@ def test_event_frame_keeps_full_width_integers(backend):
     assert wildcard["event_arguments"].to_list() == [{"value": max_uint}]
 
 
+class _FrameCursor(_ListCursor):
+    # A plugin cursor that builds its own frame.
+    def as_dataframe(self, backend):
+        return query_api._from_columns(
+            query_api._column_values(self.query.columns, self.as_model_iter()), backend
+        )
+
+
+@pytest.mark.parametrize("cursor_class", (_ListCursor, _FrameCursor))
+def test_partial_frames_with_an_empty_window_stack(cursor_class, eth_tester_provider):
+    query = _event_query(("value", "uint256"), columns=("value", "block_number"))
+    first = cursor_class(query=query.model_copy(update={"stop_block": 1}), items=[])
+    second = cursor_class(
+        query=query.model_copy(update={"start_block": 2}), items=[_log(block_number=2, value=5)]
+    )
+    result: QueryResult = QueryResult(query=query, cursors=[first, second])
+
+    frame = result.as_dataframe(backend="polars")
+    assert frame["value"].to_list() == [5]
+    assert frame["block_number"].to_list() == [2]
+
+
+def test_partial_block_frames_with_empty_and_populated_uncles(eth_tester_provider):
+    def block(number, uncles):
+        return Block.model_validate(
+            {
+                "gasLimit": 1,
+                "gasUsed": 0,
+                "hash": "0x" + f"{number:064x}",
+                "number": number,
+                "parentHash": "0x" + "00" * 32,
+                "timestamp": number,
+                "num_transactions": 0,
+                "uncles": uncles,
+            }
+        )
+
+    query = BlockQuery(columns=["number", "uncles"], start_block=0, stop_block=1)
+    result: QueryResult = QueryResult(
+        query=query,
+        cursors=[
+            _ListCursor(query=query.model_copy(update={"stop_block": 0}), items=[block(0, [])]),
+            _ListCursor(
+                query=query.model_copy(update={"start_block": 1}),
+                items=[block(1, ["0x" + "22" * 32])],
+            ),
+        ],
+    )
+
+    frame = result.as_dataframe(backend="polars")
+    assert frame["number"].to_list() == [0, 1]
+    assert [len(uncles) for uncles in frame["uncles"].to_list()] == [0, 1]
+
+
 def test_columns_keep_caller_order():
     query = BlockQuery(columns=["timestamp", "number"], start_block=0, stop_block=1)
     assert query.columns[:2] == ["timestamp", "number"]

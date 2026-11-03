@@ -1,7 +1,7 @@
 import difflib
 from collections.abc import Iterator
 from functools import cached_property, singledispatchmethod
-from itertools import pairwise
+from itertools import chain, pairwise
 from typing import TYPE_CHECKING, Any, cast
 
 import narwhals.stable.v2 as nw
@@ -18,6 +18,8 @@ from ape.api.query import (
     QueryEngineAPI,
     QueryType,
     _BaseQuery,
+    _column_values,
+    _from_columns,
     resolve_dataframe_backend,
 )
 from ape.api.transactions import TransactionAPI
@@ -260,8 +262,39 @@ class QueryResult(CursorAPI[ModelType]):
         backend: str | nw.Implementation | None = None,
     ) -> "Frame":
         resolved = resolve_dataframe_backend(backend, self.config_manager.query.backend)
+        frames: list[Frame] = []
+
+        # Cursors that build their frame from models are read into one frame, so
+        # column types are inferred from every row. Separate frames infer ``Null``
+        # for a window with no rows (or only empty lists), and cannot be stacked
+        # onto the typed frames from other windows.
+        batch: list[CursorAPI] = []
+
+        def flush_batch():
+            if batch:
+                items = chain.from_iterable(cursor.as_model_iter() for cursor in batch)
+                frames.append(_from_columns(_column_values(self.query.columns, items), resolved))
+                batch.clear()
+
+        for cursor in self.cursors:
+            if type(cursor).as_dataframe is CursorAPI.as_dataframe:
+                batch.append(cursor)
+            else:
+                flush_batch()
+                frames.append(cursor.as_dataframe(backend=resolved))
+
+        flush_batch()
+        if not frames:
+            return _from_columns({column: [] for column in self.query.columns}, resolved)
+
+        # A plugin's own frame for an empty window has no types to reconcile. Drop it.
+        frames = [
+            frame for frame in frames if not isinstance(frame, nw.DataFrame) or len(frame) > 0
+        ] or frames[:1]
+        if len(frames) == 1:
+            return frames[0]
+
         # A cursor frame is eager or lazy. ``concat`` cannot take that union as its type variable.
-        frames = [cursor.as_dataframe(backend=resolved) for cursor in self.cursors]
         return nw.concat(cast("list[nw.DataFrame[Any]]", frames), how="vertical")
 
     def as_model_iter(self) -> Iterator[ModelType]:
