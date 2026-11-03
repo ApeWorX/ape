@@ -536,6 +536,20 @@ def test_event_query_expands_argument_columns():
     assert picked.columns == ["wad", "src"]
 
 
+def test_columns_come_from_the_most_derived_ecosystem_block(monkeypatch):
+    # A chain such as Sonic extends Ethereum's block with its own field.
+    class ChainBlock(Block):
+        timestamp_nano: int = 0
+
+    package = ChainBlock.__module__.split(".", 1)[0]
+    monkeypatch.setattr(query_api, "_ecosystem_packages", lambda: [package, "ape_ethereum"])
+
+    assert query_api._concrete_model(query_api.BlockAPI) is ChainBlock
+    query = BlockQuery(columns=["timestamp_nano"], start_block=0, stop_block=0)
+    assert query.columns == ["timestamp_nano"]
+    assert "timestamp_nano" in BlockQuery(columns=["*"], start_block=0, stop_block=0).columns
+
+
 def test_columns_keep_caller_order():
     query = BlockQuery(columns=["timestamp", "number"], start_block=0, stop_block=1)
     assert query.columns[:2] == ["timestamp", "number"]

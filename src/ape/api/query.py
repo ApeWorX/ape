@@ -127,8 +127,8 @@ def _subclass_tree(model: type[BaseInterfaceModel]) -> list[type[BaseInterfaceMo
     return found
 
 
-def _ecosystem_packages() -> set[str] | None:
-    """Packages that define the connected ecosystem's models.
+def _ecosystem_packages() -> list[str] | None:
+    """Packages that define the connected ecosystem's models, most derived first.
 
     The ecosystem class and the classes it extends are included, stopping at
     ``EcosystemAPI``. A chain that subclasses Ethereum and declares no model of
@@ -138,12 +138,14 @@ def _ecosystem_packages() -> set[str] | None:
     if not networks.connected:
         return None
 
-    packages: set[str] = set()
+    packages: list[str] = []
     for cls in type(networks.ecosystem).__mro__:
         if cls.__name__ == "EcosystemAPI":
             break
 
-        packages.add(cls.__module__.split(".", 1)[0])
+        package = cls.__module__.split(".", 1)[0]
+        if package not in packages:
+            packages.append(package)
 
     return packages
 
@@ -151,23 +153,27 @@ def _ecosystem_packages() -> set[str] | None:
 def _concrete_model(model: type[BaseInterfaceModel]) -> type[BaseInterfaceModel]:
     """The connected ecosystem's model for ``model``.
 
-    The most general class in that ecosystem's packages is the one every row
-    has. A more specific variant, such as a blob receipt, is not used for ``*``.
+    The most derived ecosystem package that declares a model wins, so a chain
+    that extends Ethereum's block (for example to add a field) uses its own.
+    Within that package, the most general class is the one every row has. A
+    more specific variant, such as a blob receipt, is not used for ``*``.
     """
     packages = _ecosystem_packages()
     if not packages:
         return model
 
-    candidates = [
-        cls for cls in _subclass_tree(model) if cls.__module__.split(".", 1)[0] in packages
-    ]
-    general = [
-        cls
-        for cls in candidates
-        if not any(cls is not other and issubclass(cls, other) for other in candidates)
-    ]
-    if len(general) == 1:
-        return general[0]
+    subclasses = _subclass_tree(model)
+    for package in packages:
+        candidates = [cls for cls in subclasses if cls.__module__.split(".", 1)[0] == package]
+        if not candidates:
+            continue
+
+        general = [
+            cls
+            for cls in candidates
+            if not any(cls is not other and issubclass(cls, other) for other in candidates)
+        ]
+        return general[0] if len(general) == 1 else model
 
     return model
 
