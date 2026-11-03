@@ -102,15 +102,47 @@ def resolve_dataframe_backend(
     return chosen
 
 
+# Dataframe libraries store integers in at most 64 bits. Ethereum values such as
+# ``uint256`` do not fit, so those columns keep the Python ``int`` objects.
+_INT64_MIN = -(2**63)
+_INT64_MAX = 2**63 - 1
+
+
+def _is_wide(value: Any) -> bool:
+    """True if ``value`` is, or contains, an integer outside the signed 64-bit range."""
+    if isinstance(value, int) and not isinstance(value, bool):
+        return not _INT64_MIN <= value <= _INT64_MAX
+
+    if isinstance(value, (list, tuple)):
+        return any(_is_wide(item) for item in value)
+
+    if isinstance(value, dict):
+        return any(_is_wide(item) for item in value.values())
+
+    return False
+
+
+def _from_columns(data: dict[str, list], backend: nw.Implementation) -> nw.DataFrame:
+    """Build an eager frame from ``data`` without losing full-width integers."""
+    schema = {
+        column: nw.Object() if any(map(_is_wide, values)) else None
+        for column, values in data.items()
+    }
+    # Narwhals types `backend` as one eager member, not the Implementation enum.
+    if any(dtype is not None for dtype in schema.values()):
+        # ``None`` keeps the library's own inference for the other columns.
+        return nw.from_dict(data, schema=cast(Any, schema), backend=cast(Any, backend))
+
+    return nw.from_dict(data, backend=cast(Any, backend))
+
+
 def to_dataframe(
     data: dict[str, list],
     backend: str | nw.Implementation | None,
     configured: str | nw.Implementation | None,
 ) -> nw.DataFrame:
     """Build the Narwhals DataFrame returned by `.query`."""
-    resolved = resolve_dataframe_backend(backend, configured)
-    # Narwhals types `backend` as one eager member, not the Implementation enum.
-    return nw.from_dict(data, backend=cast(Any, resolved))
+    return _from_columns(data, resolve_dataframe_backend(backend, configured))
 
 
 def _subclass_tree(model: type[BaseInterfaceModel]) -> list[type[BaseInterfaceModel]]:
@@ -656,10 +688,7 @@ class CursorAPI(BaseInterfaceModel, Generic[ModelType]):
             (:class:`~narwhals.stable.v2.DataFrame` | :class:`~narwhals.stable.v2.LazyFrame`):
                 A narwhals dataframe.
         """
-        data = _column_values(self.query.columns, self.as_model_iter())
-
-        # Narwhals types `backend` as one eager member, not the Implementation enum.
-        return nw.from_dict(data, backend=cast(Any, backend))
+        return _from_columns(_column_values(self.query.columns, self.as_model_iter()), backend)
 
     @abstractmethod
     def as_model_iter(self) -> Iterator[ModelType]:

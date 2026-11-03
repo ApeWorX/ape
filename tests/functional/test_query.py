@@ -600,6 +600,28 @@ def test_event_argument_column_reads_the_decoded_value():
     assert frame["block_number"].to_list() == [1]
 
 
+@pytest.mark.parametrize("backend", ("polars", "pandas"))
+def test_event_frame_keeps_full_width_integers(backend):
+    max_uint = 2**256 - 1
+    query = _event_query(
+        ("value", "uint256"), ("values", "uint256[]"), columns=("value", "values", "block_number")
+    )
+    cursor = _ListCursor(
+        query=query, items=[_log(value=max_uint, values=[max_uint, 1]), _log(value=1, values=[])]
+    )
+    frame = cursor.as_dataframe(nw.Implementation.from_backend(backend))
+    assert frame["value"].to_list() == [max_uint, 1]
+    assert [list(values) for values in frame["values"].to_list()] == [[max_uint, 1], []]
+    # Columns that fit keep the library's own integer type.
+    assert frame.schema["block_number"] == nw.Int64
+
+    wildcard = _ListCursor(
+        query=_event_query(("value", "uint256")), items=[_log(value=max_uint)]
+    ).as_dataframe(nw.Implementation.from_backend(backend))
+    assert wildcard["value"].to_list() == [max_uint]
+    assert wildcard["event_arguments"].to_list() == [{"value": max_uint}]
+
+
 def test_columns_keep_caller_order():
     query = BlockQuery(columns=["timestamp", "number"], start_block=0, stop_block=1)
     assert query.columns[:2] == ["timestamp", "number"]
