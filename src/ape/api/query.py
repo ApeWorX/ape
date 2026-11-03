@@ -268,6 +268,32 @@ def _expand_event_columns(columns: Sequence[str], event: EventABI) -> list[str]:
     return _select_columns(columns, _all_columns(ContractLog) | set(arguments))
 
 
+def _column_values(columns: Sequence[str], items: Iterator[Any]) -> dict[str, list]:
+    """Collect ``columns`` from each model in ``items``, one list per column."""
+    data: dict[str, list] = {column: [] for column in columns}
+    log_fields: set[str] | None = None
+    for item in items:
+        if isinstance(item, ContractLog):
+            if log_fields is None:
+                log_fields = _all_columns(ContractLog)
+
+            # An event input is a column of its own unless a log field has that name.
+            # Read it from ``event_arguments`` so that an input named like a method
+            # (such as ``get``) returns the decoded value, not the bound method.
+            arguments = item.event_arguments
+            for column, values in data.items():
+                if column not in log_fields and column in arguments:
+                    values.append(arguments[column])
+                else:
+                    values.append(getattr(item, column))
+
+        else:
+            for column, values in data.items():
+                values.append(getattr(item, column))
+
+    return data
+
+
 def _unrecognized_columns(selected_columns: set[str], all_columns: set[str]) -> str:
     unrecognized = "', '".join(sorted(selected_columns - all_columns))
     all_cols = ", ".join(sorted(all_columns))
@@ -630,11 +656,7 @@ class CursorAPI(BaseInterfaceModel, Generic[ModelType]):
             (:class:`~narwhals.stable.v2.DataFrame` | :class:`~narwhals.stable.v2.LazyFrame`):
                 A narwhals dataframe.
         """
-        data: dict[str, list] = {column: [] for column in self.query.columns}
-
-        for item in self.as_model_iter():
-            for column, values in data.items():
-                values.append(getattr(item, column))
+        data = _column_values(self.query.columns, self.as_model_iter())
 
         # Narwhals types `backend` as one eager member, not the Implementation enum.
         return nw.from_dict(data, backend=cast(Any, backend))

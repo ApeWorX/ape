@@ -12,11 +12,13 @@ from ape.api.query import (
     BlockQuery,
     ContractEventQuery,
     ContractMethodQuery,
+    CursorAPI,
     to_dataframe,
     validate_and_expand_columns,
 )
 from ape.exceptions import QueryEngineError
 from ape.managers.query import QueryManager, QueryResult
+from ape.types import ContractLog
 from ape.utils import DEFAULT_TEST_CHAIN_ID, BaseInterfaceModel
 from ape_cache.query import CacheQueryProvider
 from ape_ethereum.ecosystem import Block
@@ -548,6 +550,54 @@ def test_columns_come_from_the_most_derived_ecosystem_block(monkeypatch):
     query = BlockQuery(columns=["timestamp_nano"], start_block=0, stop_block=0)
     assert query.columns == ["timestamp_nano"]
     assert "timestamp_nano" in BlockQuery(columns=["*"], start_block=0, stop_block=0).columns
+
+
+class _ListCursor(CursorAPI):
+    items: list[Any]
+
+    @property
+    def time_per_row(self) -> float:
+        return 0.0
+
+    def as_model_iter(self):
+        yield from self.items
+
+
+def _log(block_number: int = 1, **event_arguments) -> ContractLog:
+    return ContractLog(
+        event_name="Thing",
+        event_arguments=event_arguments,
+        transaction_hash="0x" + "00" * 32,
+        block_number=block_number,
+        block_hash="0x" + "00" * 32,
+        log_index=0,
+    )
+
+
+def _event_query(*inputs: tuple[str, str], columns=("*",)) -> ContractEventQuery:
+    event = EventABI.model_validate(
+        {
+            "type": "event",
+            "name": "Thing",
+            "inputs": [{"name": name, "type": type_, "indexed": False} for name, type_ in inputs],
+        }
+    )
+    return ContractEventQuery(
+        columns=list(columns),
+        contract="0x" + "00" * 20,
+        event=event,
+        start_block=1,
+        stop_block=2,
+    )
+
+
+def test_event_argument_column_reads_the_decoded_value():
+    # ``get`` is also a method on ``ContractLog``. The column is the event input.
+    query = _event_query(("get", "uint256"), columns=("get", "block_number"))
+    cursor = _ListCursor(query=query, items=[_log(get=42)])
+    frame = cursor.as_dataframe(nw.Implementation.POLARS)
+    assert frame["get"].to_list() == [42]
+    assert frame["block_number"].to_list() == [1]
 
 
 def test_columns_keep_caller_order():
