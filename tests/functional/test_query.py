@@ -542,3 +542,27 @@ def test_otterscan_creation_cursor_is_empty_for_a_null_result(eth_tester_provide
 
     assert list(ContractCreationCursor(query=query).as_model_iter()) == []
     make_request.assert_called_once_with("ots_getContractCreator", [query.contract])
+
+
+def test_account_cursor_stops_at_its_stop_nonce(eth_tester_provider, mocker):
+    from ape.api.query import AccountTransactionQuery
+    from ape.managers.query import _RpcAccountTransactionCursor
+
+    # Nonces 0 and 1 were mined in the same block, so a search for nonce 0 sees both.
+    receipts = [SimpleNamespace(nonce=0), SimpleNamespace(nonce=1)]
+    mocker.patch.object(
+        type(eth_tester_provider),
+        "get_transactions_by_account_nonce",
+        side_effect=lambda account, start, stop: iter(receipts),
+    )
+    account = "0x" + "11" * 20
+
+    def nonces(start, stop):
+        query = AccountTransactionQuery(
+            columns=["nonce"], account=account, start_nonce=start, stop_nonce=stop
+        )
+        return [
+            receipt.nonce for receipt in _RpcAccountTransactionCursor(query=query).as_model_iter()
+        ]
+
+    assert nonces(0, 0) + nonces(1, 1) == [0, 1]

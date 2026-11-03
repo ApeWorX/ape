@@ -158,9 +158,14 @@ class _RpcAccountTransactionCursor(_RpcCursor):
         return 5.0
 
     def as_model_iter(self) -> Iterator[TransactionAPI]:
-        yield from self.provider.get_transactions_by_account_nonce(
-            self.query.account, self.query.start_nonce, self.query.stop_nonce
-        )
+        start_nonce, stop_nonce = self.query.start_nonce, self.query.stop_nonce
+        for receipt in self.provider.get_transactions_by_account_nonce(
+            self.query.account, start_nonce, stop_nonce
+        ):
+            # A provider can return every matching transaction in the last block it
+            # searched, including later nonces. Neighboring cursors own those rows.
+            if start_nonce <= receipt.nonce <= stop_nonce:
+                yield receipt
 
 
 class DefaultQueryProvider(QueryEngineAPI):
