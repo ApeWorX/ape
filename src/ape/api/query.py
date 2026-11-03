@@ -48,7 +48,13 @@ _EAGER_DATAFRAME_BACKENDS: tuple[tuple[str, str], ...] = (
 def _detected_dataframe_backend() -> nw.Implementation | None:
     """Return the first installed eager dataframe library, without importing it."""
     for name, module in _EAGER_DATAFRAME_BACKENDS:
-        if find_spec(module) is not None:
+        try:
+            spec = find_spec(module)
+        except ModuleNotFoundError:
+            # ``find_spec("modin.pandas")`` imports ``modin`` and raises when it is absent.
+            continue
+
+        if spec is not None:
             return nw.Implementation.from_string(name)
 
     return None

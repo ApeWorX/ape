@@ -186,6 +186,22 @@ def test_query_prefers_polars_when_installed(monkeypatch):
         query_api._detected_dataframe_backend.cache_clear()
 
 
+def test_query_detects_backend_after_a_missing_parent_package(monkeypatch):
+    def find_spec(name):
+        if name == "modin.pandas":
+            # What ``find_spec`` does for a submodule whose parent is not installed.
+            raise ModuleNotFoundError("No module named 'modin'")
+
+        return object() if name == "cudf" else None
+
+    monkeypatch.setattr(query_api, "find_spec", find_spec)
+    query_api._detected_dataframe_backend.cache_clear()
+    try:
+        assert query_api._detected_dataframe_backend() is nw.Implementation.CUDF
+    finally:
+        query_api._detected_dataframe_backend.cache_clear()
+
+
 def test_query_hands_off_to_polars_when_pandas_is_installed(chain, eth_tester_provider):
     import pandas as pd
     import polars as pl
