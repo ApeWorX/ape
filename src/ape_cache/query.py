@@ -9,6 +9,7 @@ from ape.api.providers import BlockAPI
 from ape.api.query import BlockQuery, CursorAPI, QueryEngineAPI
 
 if TYPE_CHECKING:
+    from ape.api.providers import ProviderAPI
     from ape.managers.query import QueryResult
 
     try:
@@ -70,6 +71,24 @@ def _write_block(index_folder: Path, block: BlockAPI):
     path.write_text(block.model_dump_json(exclude={"transactions"}))
 
 
+def _canonical_height(provider: "ProviderAPI") -> int:
+    """
+    The highest block that is part of settled history. That is the finalized
+    block when the node reports one, or else the head less the network's
+    required confirmations. Blocks above it can still be reorganized away.
+    """
+    try:
+        finalized = provider.get_block("finalized").number  # type: ignore[arg-type]
+    except Exception:  # noqa: BLE001 - not every node supports the ``finalized`` tag
+        finalized = None
+
+    if finalized is not None:
+        return finalized
+
+    head = provider.get_block("latest").number or 0
+    return head - provider.network.required_confirmations
+
+
 class _CachingBlockCursor(CursorAPI):
     """
     Wrap a block cursor from another engine, and store each block as the caller
@@ -94,8 +113,12 @@ class _CachingBlockCursor(CursorAPI):
 
     def as_model_iter(self) -> Iterator[BlockAPI]:
         self.index_folder.mkdir(parents=True, exist_ok=True)
+        # Files are keyed by height, so only store blocks that cannot be replaced.
+        canonical_height = _canonical_height(self.provider)
         for block in self.inner.as_model_iter():
-            _write_block(self.index_folder, block)
+            if block.number is not None and block.number <= canonical_height:
+                _write_block(self.index_folder, block)
+
             yield block
 
 
@@ -148,8 +171,19 @@ class CacheQueryProvider(QueryEngineAPI):
 
         yield run_start, previous
 
+    @property
+    def uses_cache(self) -> bool:
+        """
+        Local chains (including forks) are reset, reverted and re-mined between
+        sessions, so a height does not identify one block there. Those are not cached.
+        """
+        return not self.provider.network.is_dev
+
     @execute.register
     def exec_block_query(self, query: BlockQuery) -> Iterator[BlockCursor]:
+        if not self.uses_cache:
+            return
+
         index_folder = self.cache_folder() / "blocks" / ".number"
         try:
             ranges = list(
@@ -164,7 +198,7 @@ class CacheQueryProvider(QueryEngineAPI):
             yield BlockCursor(query=query, cache_folder=index_folder.parent).shrink(start, end)
 
     def cache(self, result: "QueryResult"):
-        if not isinstance(result.query, BlockQuery):
+        if not isinstance(result.query, BlockQuery) or not self.uses_cache:
             return
 
         # Store blocks as the caller reads them, so the cache never fetches a block

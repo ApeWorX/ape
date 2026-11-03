@@ -21,6 +21,7 @@ from ape.exceptions import QueryEngineError
 from ape.managers.query import QueryManager, QueryResult
 from ape.types import ContractLog
 from ape.utils import DEFAULT_TEST_CHAIN_ID, BaseInterfaceModel
+from ape_cache import query as cache_query
 from ape_cache.query import CacheQueryProvider
 from ape_ethereum.ecosystem import Block
 
@@ -725,8 +726,11 @@ class _CountingBlockCursor(_ListCursor):
             yield block
 
 
-def _cached_result(tmp_path, monkeypatch, blocks):
+def _cached_result(tmp_path, monkeypatch, blocks, canonical_height=1_000_000):
+    # Act like a public network, with settled history up to ``canonical_height``.
     monkeypatch.setattr(CacheQueryProvider, "cache_folder", lambda self, *args, **kwargs: tmp_path)
+    monkeypatch.setattr(CacheQueryProvider, "uses_cache", True)
+    monkeypatch.setattr(cache_query, "_canonical_height", lambda provider: canonical_height)
     query = BlockQuery(
         columns=["number"], start_block=blocks[0].number, stop_block=blocks[-1].number
     )
@@ -761,6 +765,36 @@ def test_block_cache_stores_blocks_as_they_are_read(tmp_path, monkeypatch, eth_t
     assert [block.number for block in rows] == [3, 4, 5]
     assert cursor.reads == [2, 3, 4, 5]
     assert sorted(int(path.name) for path in index.iterdir()) == [2, 3, 4, 5]
+
+
+def test_block_cache_skips_blocks_that_can_still_reorganize(
+    tmp_path, monkeypatch, eth_tester_provider
+):
+    blocks = [_header(number) for number in range(2, 6)]
+    result, _, index = _cached_result(tmp_path, monkeypatch, blocks, canonical_height=3)
+    assert [block.number for block in result.as_model_iter()] == [2, 3, 4, 5]
+    assert sorted(int(path.name) for path in index.iterdir()) == [2, 3]
+
+
+def test_block_cache_is_off_for_a_local_chain(chain, eth_tester_provider, tmp_path, monkeypatch):
+    # A snapshot restore and a new block at the same height must not serve the old block.
+    monkeypatch.setattr(CacheQueryProvider, "cache_folder", lambda self, *args, **kwargs: tmp_path)
+    engine = chain.query_manager.engines["cache"]
+    assert not engine.uses_cache
+
+    snapshot = chain.snapshot()
+    chain.mine()
+    height = chain.blocks.height
+    first = chain.blocks.query("hash", start_block=height, stop_block=height)["hash"].to_list()
+    chain.restore(snapshot)
+    chain.mine(timestamp=chain.pending_timestamp + 100)
+    second = chain.blocks.query("hash", start_block=height, stop_block=height)["hash"].to_list()
+
+    assert first != second
+    assert second == [chain.blocks[height].hash]
+    assert not (tmp_path / "blocks").exists()
+    query = BlockQuery(columns=["number"], start_block=0, stop_block=height)
+    assert list(engine.execute(query)) == []
 
 
 def test_find_ranges_keeps_cached_runs(tmp_path):
