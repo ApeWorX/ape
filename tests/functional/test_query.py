@@ -366,6 +366,28 @@ def test_solver_picks_a_cheaper_cut_over_a_rigid_whole_window():
     assert pieces[0].time_per_row == 1
 
 
+def test_solver_accepts_a_sole_rigid_cursor_on_a_stepped_query():
+    # 0 through 9 with step 2 samples 0, 2, 4, 6 and 8. The cursor's window ends at 9,
+    # past the last sample, but it still covers every requested index.
+    query = _Window(0, 9, step=2)
+    pieces = _solve(query, [_Cursor(0, 9, cost=1, step=2, shrinkable=False)])
+    assert [(piece.query.start_index, piece.query.end_index) for piece in pieces] == [(0, 9)]
+    assert _coverage(query, pieces).query is query
+
+
+def test_solver_accepts_a_sole_rigid_block_cursor_on_a_stepped_block_query():
+    class RigidBlockCursor(_ListCursor):
+        def shrink(self, start_index=None, end_index=None):
+            if (start_index, end_index) != (self.query.start_index, self.query.end_index):
+                raise NotImplementedError
+
+            return self
+
+    query = BlockQuery(columns=["number"], start_block=0, stop_block=9, step=2)
+    cursor = RigidBlockCursor(query=query, items=[])
+    assert _solve(query, [cursor]) == [cursor]
+
+
 def test_solver_cannot_cut_a_rigid_cursor_wider_than_the_query():
     with pytest.raises(QueryEngineError, match=r"missing coverage in window \[2:8\]"):
         _solve(_Window(2, 8), [_Cursor(0, 10, cost=1, shrinkable=False)])

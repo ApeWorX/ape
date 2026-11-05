@@ -387,13 +387,15 @@ class QueryManager(ManagerAccessMixin):
             )
 
         # A cursor that cannot be cut (``shrink`` raises) can still serve its whole
-        # window, which may span several segments. Offer that window as one step.
+        # window, which may span one or more segments. Offer that window as one step.
+        # Even a single segment needs this: on a stepped query the segment ends at
+        # the last sampled index, which can be before the cursor's own end.
         whole_windows: dict[int, list[tuple[int, CursorAPI]]] = {}
         for cursor in all_cursors:
             cursor_start, cursor_end = cursor.query.start_index, cursor.query.end_index
             first = position.get(cursor_start)
             after = position.get(_last_on_step(cursor_start, cursor_end, step) + step)
-            if first is not None and after is not None and after - first > 1:
+            if first is not None and after is not None and after > first:
                 whole_windows.setdefault(first, []).append((after, cursor))
 
         # Cheapest plan from the start to each boundary, in boundary order.
