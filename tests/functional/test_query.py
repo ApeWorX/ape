@@ -954,6 +954,10 @@ def test_block_cache_is_off_for_a_local_chain(chain, eth_tester_provider, tmp_pa
     engine = chain.query_manager.engines["cache"]
     assert not engine.uses_cache
 
+    # Snapshot IDs are block hashes. Mine first, so this snapshot is not the test
+    # isolation's own snapshot. Restoring it would drop that one, and the chain
+    # would stay advanced for later tests (such as block serialization).
+    chain.mine()
     snapshot = chain.snapshot()
     chain.mine()
     height = chain.blocks.height
@@ -1034,6 +1038,12 @@ def test_block_cache_is_off_when_the_chain_is_unknown(tmp_path, monkeypatch, eth
     result: QueryResult = QueryResult(query=query, cursors=[cursor])
     engine.cache(result)
     assert result.cursors == [cursor]
+
+
+def test_block_cache_local_chain_test_leaves_the_chain_as_it_found_it(chain):
+    # Runs after ``test_block_cache_is_off_for_a_local_chain``. Its snapshot restore
+    # must not leave blocks behind for the tests that follow.
+    assert chain.blocks.height == 0
 
 
 def test_find_ranges_keeps_cached_runs(tmp_path):
