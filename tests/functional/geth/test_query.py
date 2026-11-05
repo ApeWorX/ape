@@ -36,7 +36,12 @@ def test_history_is_served_from_the_file_cache(
     prefix_stop = start + 1
     monkeypatch.setattr(CacheQueryProvider, "uses_cache", True)
     monkeypatch.setattr(cache_query, "_canonical_height", lambda provider: stop)
-    cache_dir = cache_folder(chain.query_manager.engines["cache"]) / "blocks" / ".number"
+    chain_folder = chain.query_manager.engines["cache"].chain_cache_folder()
+    assert chain_folder is not None
+    assert chain_folder.parent == cache_folder(chain.query_manager.engines["cache"]) / str(
+        chain.chain_id
+    )
+    cache_dir = chain_folder / "blocks" / ".number"
 
     prefix = chain.blocks.query(
         "number", "hash", "timestamp", start_block=start, stop_block=prefix_stop

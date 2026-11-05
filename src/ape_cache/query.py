@@ -3,7 +3,9 @@ import shutil
 from collections.abc import Iterator
 from functools import singledispatchmethod
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
+
+from eth_utils import to_hex
 
 from ape.api.providers import BlockAPI
 from ape.api.query import BlockQuery, CursorAPI, QueryEngineAPI
@@ -130,14 +132,44 @@ class CacheQueryProvider(QueryEngineAPI):
 
     execute = singledispatchmethod(QueryEngineAPI.execute)
 
+    # Genesis hash per (connection, chain ID), so planning does not fetch block 0 every query.
+    _genesis_hashes: ClassVar[dict[tuple[str, int], str]] = {}
+
     def cache_folder(
         self, ecosystem_name: str | None = None, network_name: str | None = None
     ) -> Path:
+        """
+        The cache folder for one network. Data for each chain on that network is
+        kept in its own folder below it (see :meth:`chain_cache_folder`).
+        """
         if ecosystem_name is None or network_name is None:
             ecosystem_name = self.provider.network.ecosystem.name
             network_name = self.provider.network.name
 
         return self.config_manager.DATA_FOLDER / ecosystem_name / network_name / "query-cache"
+
+    def chain_cache_folder(self) -> Path | None:
+        """
+        The cache folder for the connected chain, keyed by its chain ID and genesis
+        hash. Several chains can share one network name (for example custom networks
+        on different URIs), and a block height only identifies a block within one chain.
+
+        Returns ``None`` when the chain cannot be identified. Nothing is cached then.
+        """
+        try:
+            chain_id = self.provider.chain_id
+            key = (self.provider.connection_str, chain_id)
+            if (genesis_hash := self._genesis_hashes.get(key)) is None:
+                if not (genesis := self.provider.get_block(0).hash):
+                    return None
+
+                genesis_hash = to_hex(genesis).lower().removeprefix("0x")
+                self._genesis_hashes[key] = genesis_hash
+
+        except Exception:  # noqa: BLE001 - an unidentified chain is not cached
+            return None
+
+        return self.cache_folder() / str(chain_id) / genesis_hash
 
     @staticmethod
     def find_ranges(
@@ -184,7 +216,10 @@ class CacheQueryProvider(QueryEngineAPI):
         if not self.uses_cache:
             return
 
-        index_folder = self.cache_folder() / "blocks" / ".number"
+        if (chain_folder := self.chain_cache_folder()) is None:
+            return
+
+        index_folder = chain_folder / "blocks" / ".number"
         try:
             ranges = list(
                 self.find_ranges(
@@ -201,9 +236,12 @@ class CacheQueryProvider(QueryEngineAPI):
         if not isinstance(result.query, BlockQuery) or not self.uses_cache:
             return
 
+        if (chain_folder := self.chain_cache_folder()) is None:
+            return
+
         # Store blocks as the caller reads them, so the cache never fetches a block
         # the caller did not ask for, and never fetches one twice.
-        index_folder = self.cache_folder() / "blocks" / ".number"
+        index_folder = chain_folder / "blocks" / ".number"
         for i, cursor in enumerate(result.cursors):
             if isinstance(cursor, (BlockCursor, _CachingBlockCursor)):
                 # Already on disk, or already wrapped.

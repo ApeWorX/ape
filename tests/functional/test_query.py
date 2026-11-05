@@ -5,6 +5,7 @@ from typing import Any, cast
 
 import narwhals.stable.v2 as nw
 import pytest
+from eth_utils import to_hex
 from ethpm_types.abi import EventABI, MethodABI
 from pydantic import Field
 
@@ -728,7 +729,7 @@ class _CountingBlockCursor(_ListCursor):
 
 def _cached_result(tmp_path, monkeypatch, blocks, canonical_height=1_000_000):
     # Act like a public network, with settled history up to ``canonical_height``.
-    monkeypatch.setattr(CacheQueryProvider, "cache_folder", lambda self, *args, **kwargs: tmp_path)
+    monkeypatch.setattr(CacheQueryProvider, "chain_cache_folder", lambda self: tmp_path)
     monkeypatch.setattr(CacheQueryProvider, "uses_cache", True)
     monkeypatch.setattr(cache_query, "_canonical_height", lambda provider: canonical_height)
     query = BlockQuery(
@@ -779,6 +780,7 @@ def test_block_cache_skips_blocks_that_can_still_reorganize(
 def test_block_cache_is_off_for_a_local_chain(chain, eth_tester_provider, tmp_path, monkeypatch):
     # A snapshot restore and a new block at the same height must not serve the old block.
     monkeypatch.setattr(CacheQueryProvider, "cache_folder", lambda self, *args, **kwargs: tmp_path)
+    monkeypatch.setattr(CacheQueryProvider, "chain_cache_folder", lambda self: tmp_path)
     engine = chain.query_manager.engines["cache"]
     assert not engine.uses_cache
 
@@ -795,6 +797,73 @@ def test_block_cache_is_off_for_a_local_chain(chain, eth_tester_provider, tmp_pa
     assert not (tmp_path / "blocks").exists()
     query = BlockQuery(columns=["number"], start_block=0, stop_block=height)
     assert list(engine.execute(query)) == []
+
+
+def test_block_cache_is_kept_per_chain(tmp_path, monkeypatch, eth_tester_provider, mocker):
+    # Two custom networks with the same name, but different chains, share a network folder.
+    monkeypatch.setattr(CacheQueryProvider, "cache_folder", lambda self, *args, **kwargs: tmp_path)
+    monkeypatch.setattr(CacheQueryProvider, "uses_cache", True)
+    monkeypatch.setattr(CacheQueryProvider, "_genesis_hashes", {})
+    monkeypatch.setattr(cache_query, "_canonical_height", lambda provider: 1_000_000)
+    provider_class = type(eth_tester_provider)
+    chain_id = mocker.patch.object(provider_class, "chain_id", new_callable=mocker.PropertyMock)
+    genesis = {1111: _header(0, hash="0x" + "aa" * 32), 2222: _header(0, hash="0x" + "bb" * 32)}
+    mocker.patch.object(
+        provider_class, "get_block", side_effect=lambda block_id: genesis[chain_id.return_value]
+    )
+    engine = CacheQueryProvider()
+    query = BlockQuery(columns=["hash"], start_block=0, stop_block=0)
+
+    def cached_hashes():
+        return [
+            to_hex(block.hash)
+            for cursor in engine.execute(query)
+            for block in cursor.as_model_iter()
+        ]
+
+    def read_through(block):
+        cursor = _CountingBlockCursor(query=query, items=[block])
+        result: QueryResult = QueryResult(query=query, cursors=[cursor])
+        engine.cache(result)
+        return list(result.as_model_iter())
+
+    chain_id.return_value = 1111
+    read_through(genesis[1111])
+    assert cached_hashes() == ["0x" + "aa" * 32]
+
+    # Another chain on the same network name does not see the first chain's blocks.
+    chain_id.return_value = 2222
+    assert cached_hashes() == []
+    read_through(genesis[2222])
+    assert cached_hashes() == ["0x" + "bb" * 32]
+
+    chain_id.return_value = 1111
+    assert cached_hashes() == ["0x" + "aa" * 32]
+    assert engine.chain_cache_folder() == tmp_path / "1111" / ("aa" * 32)
+
+    # The same chain ID with another genesis block is another chain too.
+    monkeypatch.setattr(CacheQueryProvider, "_genesis_hashes", {})
+    genesis[1111] = _header(0, hash="0x" + "cc" * 32)
+    assert cached_hashes() == []
+
+
+def test_block_cache_is_off_when_the_chain_is_unknown(tmp_path, monkeypatch, eth_tester_provider):
+    monkeypatch.setattr(CacheQueryProvider, "cache_folder", lambda self, *args, **kwargs: tmp_path)
+    monkeypatch.setattr(CacheQueryProvider, "uses_cache", True)
+    monkeypatch.setattr(CacheQueryProvider, "_genesis_hashes", {})
+
+    def no_genesis(*args, **kwargs):
+        raise ValueError("no genesis")
+
+    monkeypatch.setattr(type(eth_tester_provider), "get_block", no_genesis)
+    engine = CacheQueryProvider()
+    query = BlockQuery(columns=["hash"], start_block=0, stop_block=0)
+    assert engine.chain_cache_folder() is None
+    assert list(engine.execute(query)) == []
+    cursor = _CountingBlockCursor(query=query, items=[_header(0)])
+    result: QueryResult = QueryResult(query=query, cursors=[cursor])
+    engine.cache(result)
+    assert result.cursors == [cursor]
 
 
 def test_find_ranges_keeps_cached_runs(tmp_path):
