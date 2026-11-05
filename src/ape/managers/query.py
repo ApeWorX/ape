@@ -2,7 +2,7 @@ import difflib
 from collections.abc import Iterator
 from functools import cached_property, singledispatchmethod
 from itertools import chain, pairwise
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any
 
 import narwhals.stable.v2 as nw
 from pydantic import model_validator
@@ -64,6 +64,136 @@ def _cursor_covers(cursor: CursorAPI, start: int, end: int) -> bool:
         return False
 
     return True
+
+
+_SIGNED_INTEGERS: tuple[tuple[int, Any], ...] = (
+    (8, nw.Int8),
+    (16, nw.Int16),
+    (32, nw.Int32),
+    (64, nw.Int64),
+    (128, nw.Int128),
+)
+_UNSIGNED_INTEGERS: tuple[tuple[int, Any], ...] = (
+    (8, nw.UInt8),
+    (16, nw.UInt16),
+    (32, nw.UInt32),
+    (64, nw.UInt64),
+    (128, nw.UInt128),
+)
+
+
+def _integer_bits(dtype: Any) -> int:
+    for bits, integer in (*_SIGNED_INTEGERS, *_UNSIGNED_INTEGERS):
+        if dtype == integer:
+            return bits
+
+    raise ValueError(dtype)
+
+
+def _common_dtype(dtypes: list[Any]) -> Any | None:
+    """
+    A type every one of ``dtypes`` casts to without losing integer values, or
+    ``None`` when there is no simple one. ``Unknown`` (such as an all-null
+    column) takes the other frames' type.
+    """
+    known: list[Any] = []
+    for dtype in dtypes:
+        if dtype != nw.Unknown and not any(dtype == other for other in known):
+            known.append(dtype)
+
+    if not known:
+        return None
+
+    if len(known) == 1:
+        return known[0]
+
+    if all(dtype.is_integer() for dtype in known):
+        signed = [_integer_bits(dtype) for dtype in known if dtype.is_signed_integer()]
+        unsigned = [_integer_bits(dtype) for dtype in known if dtype.is_unsigned_integer()]
+        if not signed:
+            bits, table = max(unsigned), _UNSIGNED_INTEGERS
+        else:
+            # A signed type needs one more bit than the widest unsigned type it holds.
+            bits = max(signed + [2 * width for width in unsigned])
+            table = _SIGNED_INTEGERS
+
+        return next((integer for width, integer in table if width >= bits), None)
+
+    if all(dtype.is_integer() or dtype.is_float() for dtype in known):
+        return nw.Float64
+
+    return None
+
+
+def _rebuild_frame(
+    frames: list["nw.DataFrame[Any]"], columns: list[str], backend: nw.Implementation
+) -> "nw.DataFrame[Any]":
+    # Read every row back to Python values and infer one schema over all of them.
+    data: dict[str, list] = {column: [] for column in columns}
+    for frame in frames:
+        for column, values in frame.to_dict(as_series=False).items():
+            data[column].extend(values)
+
+    return _from_columns(data, backend)
+
+
+def _concat_frames(
+    frames: list["Frame"], columns: list[str], backend: nw.Implementation
+) -> "nw.DataFrame[Any]":
+    """
+    Stack the frames from several cursors into one frame.
+
+    A plugin's frame and Ape's own frame for another window can disagree on the
+    column order, on a column's type (such as ``Int32`` and ``Int64``), on being
+    lazy, and even on the dataframe library. Those are reconciled first, so the
+    stack does not raise a ``SchemaError``. Types with no common type (such as a
+    string and an integer) raise :class:`~ape.exceptions.QueryEngineError`.
+    """
+    eager = [
+        # A cursor frame is eager or lazy. ``concat`` takes all of one kind.
+        (frame.collect() if isinstance(frame, nw.LazyFrame) else frame).select(columns)
+        for frame in frames
+    ]
+    if any(frame.implementation is not backend for frame in eager):
+        return _rebuild_frame(eager, columns, backend)
+
+    schemas = [frame.schema for frame in eager]
+    casts: dict[str, Any] = {}
+    for column in columns:
+        dtypes = [schema[column] for schema in schemas]
+        if all(dtype == dtypes[0] for dtype in dtypes):
+            continue
+
+        if any(dtype == nw.Object for dtype in dtypes):
+            # Python objects (such as integers wider than the library holds) stay as they are.
+            return _rebuild_frame(eager, columns, backend)
+
+        if (common := _common_dtype(dtypes)) is None:
+            # Such as a string column from one engine and an integer from another.
+            found = ", ".join(dict.fromkeys(str(dtype) for dtype in dtypes))
+            raise QueryEngineError(
+                f"Query engines returned incompatible types for column '{column}': {found}."
+            )
+
+        casts[column] = common
+
+    try:
+        if casts:
+            eager = [
+                frame.with_columns(
+                    nw.col(column).cast(dtype)
+                    for column, dtype in casts.items()
+                    if frame.schema[column] != dtype
+                )
+                for frame in eager
+            ]
+
+        return nw.concat(eager, how="vertical")
+
+    except Exception as err:  # noqa: BLE001 - a backend without a cast falls back to Python values
+        logger.debug(f"Rebuilding the query frame from Python values: {err}")
+
+    return _rebuild_frame(eager, columns, backend)
 
 
 class _RpcCursor(CursorAPI):
@@ -294,8 +424,7 @@ class QueryResult(CursorAPI[ModelType]):
         if len(frames) == 1:
             return frames[0]
 
-        # A cursor frame is eager or lazy. ``concat`` cannot take that union as its type variable.
-        return nw.concat(cast("list[nw.DataFrame[Any]]", frames), how="vertical")
+        return _concat_frames(frames, self.query.columns, resolved)
 
     def as_model_iter(self) -> Iterator[ModelType]:
         for result in self.cursors:

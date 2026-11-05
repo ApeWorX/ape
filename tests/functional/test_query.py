@@ -669,6 +669,69 @@ def test_partial_frames_with_an_empty_window_stack(cursor_class, eth_tester_prov
     assert frame["block_number"].to_list() == [2]
 
 
+class _NativeFrameCursor(_ListCursor):
+    # A plugin cursor that hands back a frame it built with its own types.
+    native: Any
+
+    def as_dataframe(self, backend):
+        return nw.from_native(self.native)
+
+
+def _plugin_frame(kind: str):
+    import pandas as pd
+    import polars as pl
+
+    if kind == "int32":
+        return pl.DataFrame({"number": pl.Series([2, 3], dtype=pl.Int32), "gas_used": [5, 6]})
+    elif kind == "uint64":
+        return pl.DataFrame({"number": pl.Series([2, 3], dtype=pl.UInt64), "gas_used": [5, 6]})
+    elif kind == "column_order":
+        return pl.DataFrame({"gas_used": [5, 6], "number": [2, 3]})
+    elif kind == "lazy":
+        return pl.LazyFrame({"number": [2, 3], "gas_used": [5, 6]})
+    elif kind == "string":
+        return pl.DataFrame({"number": [2, 3], "gas_used": ["5", "6"]})
+    elif kind == "pandas":
+        return pd.DataFrame({"number": [2, 3], "gas_used": [5, 6]})
+
+    raise ValueError(kind)
+
+
+@pytest.mark.parametrize("kind", ("int32", "uint64", "column_order", "lazy", "pandas"))
+def test_plugin_and_rpc_frames_stack(kind, eth_tester_provider):
+    query = BlockQuery(columns=["number", "gas_used"], start_block=0, stop_block=3)
+    rpc = _ListCursor(
+        query=query.model_copy(update={"stop_block": 1}),
+        items=[_header(0, gasUsed=3), _header(1, gasUsed=4)],
+    )
+    plugin = _NativeFrameCursor(
+        query=query.model_copy(update={"start_block": 2}), items=[], native=_plugin_frame(kind)
+    )
+    result: QueryResult = QueryResult(query=query, cursors=[rpc, plugin])
+
+    frame = result.as_dataframe(backend="polars")
+    assert frame.implementation is nw.Implementation.POLARS
+    assert frame.columns == ["number", "gas_used"]
+    assert frame["number"].to_list() == [0, 1, 2, 3]
+    assert frame["gas_used"].to_list() == [3, 4, 5, 6]
+    assert frame.schema["gas_used"].is_integer()
+    assert frame["gas_used"].sum() == 18
+
+
+def test_plugin_and_rpc_frames_with_incompatible_types(eth_tester_provider):
+    query = BlockQuery(columns=["number", "gas_used"], start_block=0, stop_block=3)
+    rpc = _ListCursor(
+        query=query.model_copy(update={"stop_block": 1}),
+        items=[_header(0, gasUsed=3), _header(1, gasUsed=4)],
+    )
+    plugin = _NativeFrameCursor(
+        query=query.model_copy(update={"start_block": 2}), items=[], native=_plugin_frame("string")
+    )
+    result: QueryResult = QueryResult(query=query, cursors=[rpc, plugin])
+    with pytest.raises(QueryEngineError, match="incompatible types for column 'gas_used'"):
+        result.as_dataframe(backend="polars")
+
+
 def test_partial_block_frames_with_empty_and_populated_uncles(eth_tester_provider):
     def block(number, uncles):
         return Block.model_validate(
