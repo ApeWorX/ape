@@ -163,7 +163,13 @@ class BlockAPI(BaseInterfaceModel):
         if "num_transactions" not in self.model_fields_set:
             # A header-only block (such as from ``newHeads``) omits the count, and
             # the field then defaults to zero. Fetch the block to learn the real count.
-            num_transactions = self.provider.get_block(self.hash).num_transactions
+            block = self.provider.get_block(self.hash)
+            if "num_transactions" not in block.model_fields_set:
+                # Some providers (such as Titanoboa) never report the count. Without
+                # it the query has no window, so ask the provider for the body directly.
+                return list(self.provider.get_transactions_by_block(self.hash))
+
+            num_transactions = block.num_transactions
 
         if num_transactions == 0:
             # An empty block has nothing to fetch.

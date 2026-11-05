@@ -37,6 +37,24 @@ def test_header_only_block_fetches_its_transaction_count(eth_tester_provider, se
     assert [to_hex(txn.txn_hash) for txn in block.transactions] == [receipt.txn_hash]
 
 
+def test_header_only_block_without_a_count_from_the_provider(
+    eth_tester_provider, sender, receiver, mocker
+):
+    # A provider such as Titanoboa returns blocks that never carry the count,
+    # not even when the block is fetched again.
+    receipt = sender.transfer(receiver, 1)
+    full = eth_tester_provider.get_block(receipt.block_number)
+    header = full.model_dump(by_alias=True, exclude={"num_transactions", "transactions"})
+    block = type(full).model_validate(header)
+    mocker.patch.object(
+        type(eth_tester_provider),
+        "get_block",
+        side_effect=lambda block_id: type(full).model_validate(header),
+    )
+    assert "num_transactions" not in eth_tester_provider.get_block(block.hash).model_fields_set
+    assert [to_hex(txn.txn_hash) for txn in block.transactions] == [receipt.txn_hash]
+
+
 def test_block_with_zero_transactions_does_not_fetch(block, mocker):
     assert "num_transactions" in block.model_fields_set
     block.__dict__.pop("transactions", None)  # Ensure not cached.
