@@ -23,7 +23,7 @@ from ape.managers.query import QueryManager, QueryResult
 from ape.types import ContractLog
 from ape.utils import DEFAULT_TEST_CHAIN_ID, BaseInterfaceModel
 from ape_cache import query as cache_query
-from ape_cache.query import CacheQueryProvider
+from ape_cache.query import CacheQueryProvider, _canonical_height
 from ape_ethereum.ecosystem import Block
 
 
@@ -775,6 +775,50 @@ def test_block_cache_skips_blocks_that_can_still_reorganize(
     result, _, index = _cached_result(tmp_path, monkeypatch, blocks, canonical_height=3)
     assert [block.number for block in result.as_model_iter()] == [2, 3, 4, 5]
     assert sorted(int(path.name) for path in index.iterdir()) == [2, 3]
+
+
+def _provider(finalized=None, latest=None, required_confirmations=0):
+    def get_block(block_id):
+        number = {"finalized": finalized, "latest": latest}[block_id]
+        if isinstance(number, Exception):
+            raise number
+
+        return SimpleNamespace(number=number)
+
+    network = SimpleNamespace(required_confirmations=required_confirmations)
+    return cast(Any, SimpleNamespace(get_block=get_block, network=network))
+
+
+def test_canonical_height_is_the_finalized_block():
+    provider = _provider(finalized=5, latest=10, required_confirmations=2)
+    assert cache_query._canonical_height(provider) == 5
+
+
+@pytest.mark.parametrize("finalized", (ValueError("finalized not supported"), None))
+def test_canonical_height_without_finality_uses_confirmations(finalized):
+    provider = _provider(finalized=finalized, latest=10, required_confirmations=2)
+    assert cache_query._canonical_height(provider) == 8
+
+
+@pytest.mark.parametrize("finalized", (ValueError("finalized not supported"), None))
+def test_canonical_height_without_finality_or_confirmations_settles_nothing(finalized):
+    # The head is not settled, so it must not be cached and later served after a reorg.
+    provider = _provider(finalized=finalized, latest=10, required_confirmations=0)
+    assert cache_query._canonical_height(provider) == -1
+
+    provider = _provider(finalized=finalized, latest=ValueError("down"), required_confirmations=2)
+    assert cache_query._canonical_height(provider) == -1
+
+
+def test_block_cache_skips_unsettled_blocks_when_finality_fails(
+    tmp_path, monkeypatch, eth_tester_provider
+):
+    blocks = [_header(number) for number in range(2, 6)]
+    result, _, index = _cached_result(tmp_path, monkeypatch, blocks)
+    provider = _provider(finalized=ValueError("finalized not supported"), latest=5)
+    monkeypatch.setattr(cache_query, "_canonical_height", lambda _: _canonical_height(provider))
+    assert [block.number for block in result.as_model_iter()] == [2, 3, 4, 5]
+    assert not index.exists() or list(index.iterdir()) == []
 
 
 def test_block_cache_is_off_for_a_local_chain(chain, eth_tester_provider, tmp_path, monkeypatch):

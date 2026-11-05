@@ -78,6 +78,9 @@ def _canonical_height(provider: "ProviderAPI") -> int:
     The highest block that is part of settled history. That is the finalized
     block when the node reports one, or else the head less the network's
     required confirmations. Blocks above it can still be reorganized away.
+
+    Returns ``-1`` (nothing is settled) when neither is known, so a failed
+    finality lookup never lets an unsettled block into the cache.
     """
     try:
         finalized = provider.get_block("finalized").number  # type: ignore[arg-type]
@@ -87,8 +90,17 @@ def _canonical_height(provider: "ProviderAPI") -> int:
     if finalized is not None:
         return finalized
 
-    head = provider.get_block("latest").number or 0
-    return head - provider.network.required_confirmations
+    confirmations = provider.network.required_confirmations
+    if confirmations <= 0:
+        # The head of a chain with no required confirmations can still be replaced.
+        return -1
+
+    try:
+        head = provider.get_block("latest").number
+    except Exception:  # noqa: BLE001 - an unknown head settles nothing
+        return -1
+
+    return -1 if head is None else head - confirmations
 
 
 class _CachingBlockCursor(CursorAPI):
