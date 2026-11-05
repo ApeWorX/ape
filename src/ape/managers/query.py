@@ -168,6 +168,13 @@ def _concat_frames(
             # Python objects (such as integers wider than the library holds) stay as they are.
             return _rebuild_frame(eager, columns, backend)
 
+        if all(dtype == nw.Unknown or dtype.is_integer() for dtype in dtypes) and (
+            _common_dtype(dtypes) is None
+        ):
+            # No integer type holds every value (such as ``UInt128`` with ``Int64``).
+            # Rebuilding picks the type for the values themselves.
+            return _rebuild_frame(eager, columns, backend)
+
         if (common := _common_dtype(dtypes)) is None:
             # Such as a string column from one engine and an integer from another.
             found = ", ".join(dict.fromkeys(str(dtype) for dtype in dtypes))

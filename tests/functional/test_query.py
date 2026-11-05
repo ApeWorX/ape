@@ -647,6 +647,47 @@ def test_event_frame_keeps_full_width_integers(backend):
     assert wildcard["event_arguments"].to_list() == [{"value": max_uint}]
 
 
+@pytest.mark.parametrize("backend", ("polars", "pandas"))
+def test_event_frame_keeps_wide_integers_numeric(backend):
+    ten_ether = 10 * 10**18  # Wider than a signed 64-bit integer.
+    query = _event_query(("value", "uint256"), columns=("value", "block_number"))
+    cursor = _ListCursor(
+        query=query,
+        items=[_log(value=ten_ether), _log(value=ten_ether), _log(value=1)],
+    )
+    frame = cursor.as_dataframe(nw.Implementation.from_backend(backend))
+    assert frame["value"].to_list() == [ten_ether, ten_ether, 1]
+    assert frame["value"].sum() == 2 * ten_ether + 1
+    assert frame.filter(nw.col("value") > 10**18)["value"].to_list() == [ten_ether, ten_ether]
+    if backend == "polars":
+        assert frame.schema["value"] == nw.Int128
+
+
+def test_frame_keeps_python_ints_wider_than_128_bits():
+    frame = query_api._from_columns({"value": [2**200, None]}, nw.Implementation.POLARS)
+    assert frame.schema["value"] == nw.Object
+    assert frame["value"].to_list() == [2**200, None]
+
+    unsigned = query_api._from_columns({"value": [2**127, 1]}, nw.Implementation.POLARS)
+    assert unsigned.schema["value"] == nw.UInt128
+    assert unsigned["value"].to_list() == [2**127, 1]
+
+
+@pytest.mark.parametrize("values", ([10 * 10**18], [2**127], [-1], [2**200]))
+def test_wide_integer_windows_stack_with_narrow_windows(values, eth_tester_provider):
+    query = _event_query(("value", "int256"), columns=("value", "block_number"))
+    narrow = _FrameCursor(
+        query=query.model_copy(update={"stop_block": 1}), items=[_log(block_number=1, value=1)]
+    )
+    wide = _FrameCursor(
+        query=query.model_copy(update={"start_block": 2}),
+        items=[_log(block_number=2, value=value) for value in values],
+    )
+    result: QueryResult = QueryResult(query=query, cursors=[narrow, wide])
+    frame = result.as_dataframe(backend="polars")
+    assert frame["value"].to_list() == [1, *values]
+
+
 class _FrameCursor(_ListCursor):
     # A plugin cursor that builds its own frame.
     def as_dataframe(self, backend):

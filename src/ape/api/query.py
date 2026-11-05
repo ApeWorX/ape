@@ -102,15 +102,22 @@ def resolve_dataframe_backend(
     return chosen
 
 
-# Dataframe libraries store integers in at most 64 bits. Ethereum values such as
-# ``uint256`` do not fit, so those columns keep the Python ``int`` objects.
+# Dataframe libraries infer integers as at most 64 bits. Ethereum values such as
+# ``uint256`` (for example 10 ETH in wei) do not fit, so those columns get a wider type.
 _INT64_MIN = -(2**63)
 _INT64_MAX = 2**63 - 1
+_INT128_MIN = -(2**127)
+_INT128_MAX = 2**127 - 1
+_UINT128_MAX = 2**128 - 1
+
+
+def _is_int(value: Any) -> bool:
+    return isinstance(value, int) and not isinstance(value, bool)
 
 
 def _is_wide(value: Any) -> bool:
     """True if ``value`` is, or contains, an integer outside the signed 64-bit range."""
-    if isinstance(value, int) and not isinstance(value, bool):
+    if _is_int(value):
         return not _INT64_MIN <= value <= _INT64_MAX
 
     if isinstance(value, (list, tuple)):
@@ -122,10 +129,32 @@ def _is_wide(value: Any) -> bool:
     return False
 
 
+def _wide_dtype(values: list, backend: nw.Implementation) -> Any:
+    """
+    The type for a column with integers wider than 64 bits.
+
+    Polars has 128-bit integers, which keep sums and filters numeric. Values that
+    do not fit (such as the largest ``uint256``), nested values, and libraries
+    without 128-bit integers keep the Python ``int`` objects. A pandas ``object``
+    column of Python ints still sums and compares exactly.
+    """
+    if backend is nw.Implementation.POLARS and all(
+        value is None or _is_int(value) for value in values
+    ):
+        integers = [value for value in values if value is not None]
+        if all(_INT128_MIN <= value <= _INT128_MAX for value in integers):
+            return nw.Int128()
+
+        if all(0 <= value <= _UINT128_MAX for value in integers):
+            return nw.UInt128()
+
+    return nw.Object()
+
+
 def _from_columns(data: dict[str, list], backend: nw.Implementation) -> nw.DataFrame:
     """Build an eager frame from ``data`` without losing full-width integers."""
     schema = {
-        column: nw.Object() if any(map(_is_wide, values)) else None
+        column: _wide_dtype(values, backend) if any(map(_is_wide, values)) else None
         for column, values in data.items()
     }
     # Narwhals types `backend` as one eager member, not the Implementation enum.
