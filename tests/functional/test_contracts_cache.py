@@ -48,6 +48,21 @@ def test_instance_at_when_given_contract_type(chain, contract_instance):
     assert contract.contract_type == contract_instance.contract_type
 
 
+def test_instance_at_marks_explicit_contract_type(chain, vyper_contract_instance):
+    # ApeWorX/ape#2705: the type was explicitly provided by the caller.
+    address = "0x0000000000000000000000000000000000000807"
+    contract = chain.contracts.instance_at(
+        address, contract_type=vyper_contract_instance.contract_type
+    )
+    assert contract.explicit_contract_type is True
+
+
+def test_instance_at_without_explicit_contract_type(chain, vyper_contract_instance):
+    # The type was discovered (cached), not explicitly provided.
+    contract = chain.contracts.instance_at(str(vyper_contract_instance.address))
+    assert contract.explicit_contract_type is False
+
+
 def test_instance_at_when_given_name_as_contract_type(chain, contract_instance):
     expected_match = "Expected type 'ContractType' for argument 'contract_type'; Given 'str'."
     with pytest.raises(TypeError, match=expected_match):
