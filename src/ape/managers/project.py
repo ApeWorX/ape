@@ -2882,21 +2882,22 @@ class LocalProject(Project):
             on_pop=self._handle_path_restored,
         )
 
+    def _pop_cached_properties(self) -> dict:
+        return {
+            attr: self.__dict__.pop(attr)
+            for attr in list(self.__dict__.keys())
+            if isinstance(getattr(type(self), attr, None), cached_property)
+        }
+
     def _handle_path_changed(self, path: Path) -> dict:
         cache: dict = {
-            "__dict__": {},
+            "__dict__": self._pop_cached_properties(),
             "_session_source_change_check": self._session_source_change_check,
             "_config_override": self._config_override,
             "_base_path": self._base_path,
             "manifest_path": self.manifest_path,
             "_manifest": self._manifest,
         }
-
-        # New path: clear cached properties.
-        for attr in list(self.__dict__.keys()):
-            if isinstance(getattr(type(self), attr, None), cached_property):
-                cache["__dict__"][attr] = self.__dict__.pop(attr)
-
         self._session_source_change_check = set()
         self._config_override = {}
         self._base_path = Path(path).resolve()
@@ -2908,10 +2909,11 @@ class LocalProject(Project):
         return cache
 
     def _handle_path_restored(self, cache: dict) -> None:
-        self.__dict__ = {**(self.__dict__ or {}), **cache.get("__dict__", {})}
+        self._pop_cached_properties()
+        self.__dict__.update(cache.get("__dict__", {}))
         self._session_source_change_check = cache.get("_session_source_change_check", set())
         self._config_override = cache.get("_config_override", {})
-        if base_path := self._base_path:
+        if base_path := cache.get("_base_path"):
             self._base_path = base_path
 
         if manifest_path := cache.get("manifest_path"):

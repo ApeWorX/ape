@@ -1170,6 +1170,15 @@ def test_chdir(smaller_project):
         # It should have automatically undone.
         assert smaller_project.path == original_path
 
+        fresh_project = Project(original_path)
+        original_name = fresh_project.name
+        with fresh_project.chdir(new_path):
+            assert fresh_project.path == new_path
+            assert fresh_project.name != original_name
+
+        assert fresh_project.path == original_path
+        assert fresh_project.name == original_name
+
 
 def test_within_project_path():
     start_cwd = Path.cwd()
