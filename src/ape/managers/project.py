@@ -35,7 +35,12 @@ from ape.utils.basemodel import (
     get_attribute_with_extras,
     only_raise_attribute_error,
 )
-from ape.utils.misc import SOURCE_EXCLUDE_PATTERNS, cached_path_property, log_instead_of_fail
+from ape.utils.misc import (
+    SOURCE_EXCLUDE_PATTERNS,
+    cached_path_property,
+    log_instead_of_fail,
+    pop_cached_path_properties,
+)
 from ape.utils.os import (
     ChangeDirectory,
     clean_path,
@@ -2882,16 +2887,9 @@ class LocalProject(Project):
             on_pop=self._handle_path_restored,
         )
 
-    def _pop_cached_path_properties(self) -> dict:
-        return {
-            attr: self.__dict__.pop(attr)
-            for attr in list(self.__dict__.keys())
-            if isinstance(getattr(type(self), attr, None), cached_path_property)
-        }
-
     def _handle_path_changed(self, path: Path) -> dict:
         cache: dict = {
-            "__dict__": self._pop_cached_path_properties(),
+            "__dict__": pop_cached_path_properties(self),
             "_session_source_change_check": self._session_source_change_check,
             "_config_override": self._config_override,
             "_base_path": self._base_path,
@@ -2909,7 +2907,7 @@ class LocalProject(Project):
         return cache
 
     def _handle_path_restored(self, cache: dict) -> None:
-        self._pop_cached_path_properties()
+        pop_cached_path_properties(self)
         self.__dict__.update(cache.get("__dict__", {}))
         self._session_source_change_check = cache.get("_session_source_change_check", set())
         self._config_override = cache.get("_config_override", {})

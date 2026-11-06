@@ -74,6 +74,15 @@ class cached_path_property(cached_property):
     """A ``cached_property`` derived from a project's path, cleared when the path changes."""
 
 
+def pop_cached_path_properties(instance: Any) -> dict:
+    """Remove and return the ``cached_path_property`` values cached on ``instance``."""
+    return {
+        attr: instance.__dict__.pop(attr)
+        for attr in list(instance.__dict__.keys())
+        if isinstance(getattr(type(instance), attr, None), cached_path_property)
+    }
+
+
 @functools.cache
 def _get_distributions(pkg_name: str | None = None) -> list:
     """
@@ -561,6 +570,7 @@ __all__ = [
     "load_config",
     "log_instead_of_fail",
     "nonreentrant",
+    "pop_cached_path_properties",
     "pragma_str_to_specifier_set",
     "raises_not_implemented",
     "run_until_complete",
