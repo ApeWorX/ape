@@ -836,6 +836,12 @@ class ContractCache(BaseManager):
 
             raise TypeError(f"{prefix}{suffix}")
 
+        # Whether the caller explicitly provided the contract type (or ABI),
+        # rather than it being discovered. Such instances (e.g. precompiles
+        # loaded via `.at()`) may have no on-chain bytecode yet still be
+        # callable with the provided ABI.
+        explicit_contract_type = contract_type is not None or abi is not None
+
         try:
             contract_address = self.conversion_manager.convert(address, AddressType)
         except ConversionError:
@@ -918,7 +924,12 @@ class ContractCache(BaseManager):
                     txn_hash = deployment.transaction_hash
                     break
 
-        return ContractInstance(contract_address, contract_type, txn_hash=txn_hash)
+        return ContractInstance(
+            contract_address,
+            contract_type,
+            txn_hash=txn_hash,
+            explicit_contract_type=explicit_contract_type,
+        )
 
     @classmethod
     def instance_from_receipt(
