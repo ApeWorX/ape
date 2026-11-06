@@ -70,6 +70,10 @@ _python_version: str = (
 )
 
 
+class cached_path_property(cached_property):
+    """A ``cached_property`` derived from a project's path, cleared when the path changes."""
+
+
 @functools.cache
 def _get_distributions(pkg_name: str | None = None) -> list:
     """
@@ -546,6 +550,7 @@ def derive_public_key(private_key: bytes) -> HexBytes:
 __all__ = [
     "LOCAL_NETWORK_NAME",
     "_dict_overlay",
+    "cached_path_property",
     "cached_property",
     "extract_nested_value",
     "gas_estimation_error_message",

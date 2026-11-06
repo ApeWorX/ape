@@ -35,7 +35,7 @@ from ape.utils.basemodel import (
     get_attribute_with_extras,
     only_raise_attribute_error,
 )
-from ape.utils.misc import SOURCE_EXCLUDE_PATTERNS, log_instead_of_fail
+from ape.utils.misc import SOURCE_EXCLUDE_PATTERNS, cached_path_property, log_instead_of_fail
 from ape.utils.os import (
     ChangeDirectory,
     clean_path,
@@ -1932,7 +1932,7 @@ class Project(ProjectManager):
     def manifest(self) -> PackageManifest:
         return self._manifest
 
-    @cached_property
+    @cached_path_property
     def dependencies(self) -> DependencyManager:
         """
         Project dependencies.
@@ -2478,7 +2478,7 @@ class LocalProject(Project):
             #   BaseModel internals).
             raise AttributeError(message)
 
-    @cached_property
+    @cached_path_property
     def path(self) -> Path:
         """
         The path to the project's "base" (where contract source IDs are relative to).
@@ -2494,7 +2494,7 @@ class LocalProject(Project):
 
         return sources
 
-    @cached_property
+    @cached_path_property
     def _deduced_contracts_folder(self) -> Path:
         # NOTE: This helper is only called if not configured and not ordinary.
         return self._deduce_contracts_folder()
@@ -2531,7 +2531,7 @@ class LocalProject(Project):
         # Doesn't exist. Return non-existent default directory.
         return self.path / "contracts"
 
-    @cached_property
+    @cached_path_property
     def project_api(self) -> ProjectAPI:
         """
         The 'type' of project this is, such as an Ape project
@@ -2589,7 +2589,7 @@ class LocalProject(Project):
 
         return self._base_path.name.replace("_", "-").lower()
 
-    @cached_property
+    @cached_path_property
     def config(self) -> ApeConfig:
         """
         The project configuration (including global defaults).
@@ -2599,7 +2599,7 @@ class LocalProject(Project):
         project_config = self.project_api.extract_config(**self._config_override)
         return self.config_manager.merge_with_global(project_config)
 
-    @cached_property
+    @cached_path_property
     def contracts(self) -> ContractManager:  # type: ignore[override]
         """
         Container for managing contracts from local sources.
@@ -2616,7 +2616,7 @@ class LocalProject(Project):
 
         return self._deduced_contracts_folder
 
-    @cached_property
+    @cached_path_property
     def deployments(self) -> DeploymentManager:
         """
         Project deployment manager for adding and reading
@@ -2631,7 +2631,7 @@ class LocalProject(Project):
         """
         return {*self.config.compile.exclude, *SOURCE_EXCLUDE_PATTERNS}
 
-    @cached_property
+    @cached_path_property
     def interfaces_folder(self) -> Path:
         """
         The root interface source directory.
@@ -2671,7 +2671,7 @@ class LocalProject(Project):
     def scripts_folder(self) -> Path:
         return self.path / "scripts"
 
-    @cached_property
+    @cached_path_property
     def sources(self) -> SourceManager:  # type: ignore[override]
         """
         All the sources in the project.
@@ -2882,16 +2882,16 @@ class LocalProject(Project):
             on_pop=self._handle_path_restored,
         )
 
-    def _pop_cached_properties(self) -> dict:
+    def _pop_cached_path_properties(self) -> dict:
         return {
             attr: self.__dict__.pop(attr)
             for attr in list(self.__dict__.keys())
-            if isinstance(getattr(type(self), attr, None), cached_property)
+            if isinstance(getattr(type(self), attr, None), cached_path_property)
         }
 
     def _handle_path_changed(self, path: Path) -> dict:
         cache: dict = {
-            "__dict__": self._pop_cached_properties(),
+            "__dict__": self._pop_cached_path_properties(),
             "_session_source_change_check": self._session_source_change_check,
             "_config_override": self._config_override,
             "_base_path": self._base_path,
@@ -2909,7 +2909,7 @@ class LocalProject(Project):
         return cache
 
     def _handle_path_restored(self, cache: dict) -> None:
-        self._pop_cached_properties()
+        self._pop_cached_path_properties()
         self.__dict__.update(cache.get("__dict__", {}))
         self._session_source_change_check = cache.get("_session_source_change_check", set())
         self._config_override = cache.get("_config_override", {})
