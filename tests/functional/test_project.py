@@ -1180,6 +1180,19 @@ def test_chdir(smaller_project):
         assert fresh_project.name == original_name
 
 
+def test_chdir_nested(smaller_project):
+    original_path = smaller_project.path
+    with create_tempdir() as outer_path, create_tempdir() as inner_path:
+        with smaller_project.chdir(outer_path):
+            with smaller_project.chdir(inner_path):
+                assert smaller_project.path == inner_path
+
+            assert smaller_project.path == outer_path
+            assert smaller_project._base_path == outer_path
+
+        assert smaller_project.path == original_path
+
+
 def test_within_project_path():
     start_cwd = Path.cwd()
     with create_tempdir() as new_path:

@@ -70,16 +70,15 @@ _python_version: str = (
 )
 
 
-class cached_path_property(cached_property):
-    """A ``cached_property`` derived from a project's path, cleared when the path changes."""
+class cached_cwd_dependent_property(cached_property):
+    """A ``cached_property`` derived from the working directory, cleared on ``chdir``."""
 
 
-def pop_cached_path_properties(instance: Any) -> dict:
-    """Remove and return the ``cached_path_property`` values cached on ``instance``."""
+def pop_cached_cwd_dependent_properties(instance: Any) -> dict:
     return {
         attr: instance.__dict__.pop(attr)
         for attr in list(instance.__dict__.keys())
-        if isinstance(getattr(type(instance), attr, None), cached_path_property)
+        if isinstance(getattr(type(instance), attr, None), cached_cwd_dependent_property)
     }
 
 
@@ -559,7 +558,7 @@ def derive_public_key(private_key: bytes) -> HexBytes:
 __all__ = [
     "LOCAL_NETWORK_NAME",
     "_dict_overlay",
-    "cached_path_property",
+    "cached_cwd_dependent_property",
     "cached_property",
     "extract_nested_value",
     "gas_estimation_error_message",
@@ -570,7 +569,7 @@ __all__ = [
     "load_config",
     "log_instead_of_fail",
     "nonreentrant",
-    "pop_cached_path_properties",
+    "pop_cached_cwd_dependent_properties",
     "pragma_str_to_specifier_set",
     "raises_not_implemented",
     "run_until_complete",
