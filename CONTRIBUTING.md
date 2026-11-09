@@ -11,8 +11,8 @@ cd ape
 python3 -m venv venv
 source venv/bin/activate
 
-# install the developer dependencies (-e is editable mode)
-pip install -e .[dev]
+# install the developer dependencies (-e is editable mode, `--group` requires pip>=25.1)
+pip install -e . --group dev
 ```
 
 ```{note}
@@ -52,7 +52,7 @@ export GITHUB_ACCESS_TOKEN=<your-token>
 First, make sure you have the docs-related tooling installed:
 
 ```bash
-pip install -e .[doc]
+pip install -e . --group docs
 ```
 
 Then, run the following from the root project directory:
