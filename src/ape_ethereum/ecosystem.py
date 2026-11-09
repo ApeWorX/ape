@@ -1573,7 +1573,7 @@ class Ethereum(EcosystemAPI):
 
     def _decode_custom_error_by_selector(self, data: HexBytes, **kwargs) -> CustomError | None:
         selector = data[:4]
-        matches_by_signature: dict[str, tuple["ContractType", ErrorABI]] = {}
+        matches_by_signature: dict[str, tuple[ContractType, ErrorABI]] = {}
         for contract_type in self._get_known_contract_types():
             if selector in contract_type.errors:
                 abi = contract_type.errors[selector]
