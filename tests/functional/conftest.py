@@ -487,8 +487,8 @@ def error_caller_contract(owner, project):
 
 
 @pytest.fixture
-def nested_error_txn(owner, error_contract, error_caller_contract):
-    return error_caller_contract.callWithdraw.as_transaction(error_contract, sender=owner)
+def nested_error_txn(owner, error_caller_contract):
+    return error_caller_contract.callWithdraw.as_transaction(sender=owner)
 
 
 @pytest.fixture

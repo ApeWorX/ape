@@ -1168,8 +1168,9 @@ def colliding_error_contract_types():
 
 
 def test_decode_custom_error_from_nested_call_on_gas_estimation(
-    eth_tester_provider, error_caller_contract, nested_error_txn
+    chain, eth_tester_provider, error_caller_contract, nested_error_txn
 ):
+    assert error_caller_contract.target() not in chain.contracts.contract_types.memory
     with pytest.raises(CustomError) as err:
         eth_tester_provider.estimate_gas_cost(nested_error_txn)
 

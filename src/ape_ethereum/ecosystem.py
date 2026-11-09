@@ -1588,8 +1588,19 @@ class Ethereum(EcosystemAPI):
         return error_cls(abi, inputs, **_get_custom_error_kwargs(kwargs))
 
     def _get_known_contract_types(self) -> Iterator["ContractType"]:
-        yield from (self.local_project.manifest.contract_types or {}).values()
-        yield from filter(None, self.chain_manager.contracts.contract_types.memory.values())
+        """
+        The local project's compiled contract types, then the types cached at addresses
+        this session, each yielded once.
+        """
+        local_types = (self.local_project.manifest.contract_types or {}).values()
+        cached_types = filter(None, self.chain_manager.contracts.contract_types.memory.values())
+        seen_ids: set[int] = set()
+        for contract_type in (*local_types, *cached_types):
+            if id(contract_type) in seen_ids:
+                continue
+
+            seen_ids.add(id(contract_type))
+            yield contract_type
 
     def get_deployment_address(self, address: AddressType, nonce: int) -> AddressType:
         """
