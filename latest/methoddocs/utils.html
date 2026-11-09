@@ -186,6 +186,7 @@ data-aria-dark="Switch to auto color mode">
 </ul>
 </li>
 <li><a class="reference internal" href="#module-ape.utils.misc">Miscellaneous</a><ul>
+<li><a class="reference internal" href="#ape.utils.misc.cached_cwd_dependent_property"><code class="docutils literal notranslate"><span class="pre">cached_cwd_dependent_property</span></code></a></li>
 <li><a class="reference internal" href="#ape.utils.misc.extract_nested_value"><code class="docutils literal notranslate"><span class="pre">extract_nested_value()</span></code></a></li>
 <li><a class="reference internal" href="#ape.utils.misc.gas_estimation_error_message"><code class="docutils literal notranslate"><span class="pre">gas_estimation_error_message()</span></code></a></li>
 <li><a class="reference internal" href="#ape.utils.misc.get_current_timestamp_ms"><code class="docutils literal notranslate"><span class="pre">get_current_timestamp_ms()</span></code></a></li>
@@ -717,6 +718,13 @@ we can show a more accurate exception message.</p>
 </section>
 <section id="module-ape.utils.misc">
 <span id="miscellaneous"></span><h2>Miscellaneous<a class="headerlink" href="#module-ape.utils.misc" title="Link to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="ape.utils.misc.cached_cwd_dependent_property">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.utils.misc.</span></span><span class="sig-name descname"><span class="pre">cached_cwd_dependent_property</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ape.utils.misc.cached_cwd_dependent_property" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">cached_property</span></code></p>
+<p>A <code class="docutils literal notranslate"><span class="pre">cached_property</span></code> derived from the working directory, cleared on <code class="docutils literal notranslate"><span class="pre">chdir</span></code>.</p>
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="ape.utils.misc.extract_nested_value">
 <span class="sig-prename descclassname"><span class="pre">ape.utils.misc.</span></span><span class="sig-name descname"><span class="pre">extract_nested_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mapping</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#ape.utils.misc.extract_nested_value" title="Link to this definition">#</a></dt>
