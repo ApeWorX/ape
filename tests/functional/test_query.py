@@ -1113,6 +1113,23 @@ def test_specify_engine(chain, eth_tester_provider):
     assert len(actual) == expected
 
 
+def test_planning_warns_when_a_plugin_raises(chain, eth_tester_provider, ape_caplog, monkeypatch):
+    class BrokenEngine:
+        def execute(self, query):
+            raise RuntimeError("boom")
+
+        def cache(self, result):
+            return None
+
+    engines = {**chain.query_manager.engines, "broken": BrokenEngine()}
+    monkeypatch.setattr(chain.query_manager, "engines", engines, raising=False)
+
+    # The default engine still covers the query; the broken plugin is skipped.
+    df = chain.blocks.query("number", start_block=0, stop_block=0)
+    assert [int(number) for number in df["number"].to_list()] == [0]
+    assert any("Skipping BrokenEngine while planning" in message for message in ape_caplog.messages)
+
+
 def test_otterscan_creation_cursor_is_empty_for_a_null_result(eth_tester_provider, mocker):
     from ape.api.query import ContractCreationQuery
     from ape_node.query import ContractCreationCursor

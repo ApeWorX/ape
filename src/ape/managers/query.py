@@ -634,7 +634,9 @@ class QueryManager(ManagerAccessMixin):
                 try:
                     all_cursors.extend(engine.execute(query))
                 except Exception as err:  # noqa: BLE001 - a plugin must not abort planning
-                    logger.debug(f"Skipping {type(engine).__name__} while planning: {err}")
+                    logger.warn_from_exception(
+                        err, f"Skipping {type(engine).__name__} while planning"
+                    )
 
             all_cursors.sort(key=lambda cursor: cursor.query)
 
