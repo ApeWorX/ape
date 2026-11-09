@@ -21,14 +21,14 @@ from eth_utils import (
     to_bytes,
     to_hex,
 )
-from ethpm_types.abi import ABIType, ConstructorABI, EventABI, MethodABI
+from ethpm_types.abi import ABIType, ConstructorABI, ErrorABI, EventABI, MethodABI
 from pydantic import Field, PrivateAttr, computed_field, field_validator, model_validator
 from pydantic_settings import SettingsConfigDict
 
 from ape.api.config import PluginConfig
 from ape.api.networks import EcosystemAPI
 from ape.api.providers import BlockAPI
-from ape.contracts.base import ContractCall
+from ape.contracts.base import ContractCall, ContractContainer
 from ape.exceptions import (
     ApeException,
     APINotImplementedError,
@@ -751,7 +751,7 @@ class Ethereum(EcosystemAPI):
         encoded_calldata = encode(input_types, converted_args)
         return HexBytes(encoded_calldata)
 
-    def decode_calldata(self, abi: ConstructorABI | MethodABI, calldata: bytes) -> dict:
+    def decode_calldata(self, abi: ConstructorABI | MethodABI | ErrorABI, calldata: bytes) -> dict:
         raw_input_types = [i.canonical_type for i in abi.inputs]
         input_types = [parse_type(i.model_dump()) for i in abi.inputs]
 
@@ -1518,6 +1518,15 @@ class Ethereum(EcosystemAPI):
         address: AddressType,
         **kwargs,
     ) -> CustomError | None:
+        return (
+            self._decode_custom_error_at(data, address, **kwargs)
+            or self._decode_custom_error_from_trace(data, address, **kwargs)
+            or self._decode_custom_error_by_selector(data, **kwargs)
+        )
+
+    def _decode_custom_error_at(
+        self, data: HexBytes, address: AddressType, **kwargs
+    ) -> CustomError | None:
         # Use an instance (required for proper error caching).
         try:
             contract = self.chain_manager.contracts.instance_at(address)
@@ -1525,20 +1534,17 @@ class Ethereum(EcosystemAPI):
             return None
 
         selector = data[:4]
-        input_data = data[4:]
-        if selector in contract.contract_type.errors:
-            abi = contract.contract_type.errors[selector]
-            error_cls = contract.get_error_by_signature(abi.signature)
-            inputs = self.decode_calldata(abi, input_data)
-            kwargs["contract_address"] = address
-            error_kwargs = {
-                k: v
-                for k, v in kwargs.items()
-                if k in ("trace", "txn", "contract_address", "source_traceback")
-            }
-            return error_cls(abi, inputs, **error_kwargs)
+        if selector not in contract.contract_type.errors:
+            return None
 
-        # ABI not found. Try looking at the "last" contract.
+        abi = contract.contract_type.errors[selector]
+        error_cls = contract.get_error_by_signature(abi.signature)
+        inputs = self.decode_calldata(abi, data[4:])
+        return error_cls(abi, inputs, **_get_custom_error_kwargs(kwargs, contract_address=address))
+
+    def _decode_custom_error_from_trace(
+        self, data: HexBytes, address: AddressType, **kwargs
+    ) -> CustomError | None:
         if not (tx := kwargs.get("txn")) or not self.network_manager.active_provider:
             return None
 
@@ -1563,15 +1569,27 @@ class Ethereum(EcosystemAPI):
             # Avoid checking same address twice.
             return None
 
-        try:
-            if cerr := self.decode_custom_error(data, last_addr, **kwargs):
-                return cerr
+        return self._decode_custom_error_at(data, last_addr, **kwargs)
 
-        except NotImplementedError:
+    def _decode_custom_error_by_selector(self, data: HexBytes, **kwargs) -> CustomError | None:
+        selector = data[:4]
+        matches_by_signature: dict[str, tuple["ContractType", ErrorABI]] = {}
+        for contract_type in self._get_known_contract_types():
+            if selector in contract_type.errors:
+                abi = contract_type.errors[selector]
+                matches_by_signature.setdefault(abi.selector, (contract_type, abi))
+
+        if len(matches_by_signature) != 1:
             return None
 
-        # error never found.
-        return None
+        contract_type, abi = next(iter(matches_by_signature.values()))
+        error_cls = ContractContainer(contract_type)._create_custom_error_type(abi)
+        inputs = self.decode_calldata(abi, data[4:])
+        return error_cls(abi, inputs, **_get_custom_error_kwargs(kwargs))
+
+    def _get_known_contract_types(self) -> Iterator["ContractType"]:
+        yield from (self.local_project.manifest.contract_types or {}).values()
+        yield from filter(None, self.chain_manager.contracts.contract_types.memory.values())
 
     def get_deployment_address(self, address: AddressType, nonce: int) -> AddressType:
         """
@@ -1583,6 +1601,18 @@ class Ethereum(EcosystemAPI):
         encoded = rlp.encode([sender_bytes, nonce])
         address_bytes = keccak(encoded)[12:]
         return self.decode_address(address_bytes)
+
+
+def _get_custom_error_kwargs(
+    kwargs: dict, contract_address: AddressType | None = None
+) -> dict[str, Any]:
+    error_kwargs = {
+        key: value for key, value in kwargs.items() if key in ("trace", "txn", "source_traceback")
+    }
+    if contract_address:
+        error_kwargs["contract_address"] = contract_address
+
+    return error_kwargs
 
 
 def parse_type(type_: dict[str, Any]) -> str | tuple | list:

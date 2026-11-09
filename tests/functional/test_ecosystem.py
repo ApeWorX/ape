@@ -1126,7 +1126,7 @@ def test_decode_custom_error(chain, ethereum):
 
 
 def test_decode_custom_error_contract_type_not_found(ethereum):
-    data = HexBytes("0x6a12f104")
+    data = HexBytes("0xdeadbeef")
     # not known
     addr = cast(AddressType, "0x4fC92A3afd70395Cd496C647d5a6CC9D4B2b7FAD")
     actual = ethereum.decode_custom_error(data, addr)
@@ -1134,7 +1134,7 @@ def test_decode_custom_error_contract_type_not_found(ethereum):
 
 
 def test_decode_custom_error_tx_unsigned(ethereum):
-    data = HexBytes("0x6a12f104")
+    data = HexBytes("0xdeadbeef")
     # not known
     addr = cast(AddressType, "0x4fC92A3afd70395Cd496C647d5a6CC9D4B2b7FAD")
     actual = ethereum.decode_custom_error(data, addr)
@@ -1142,7 +1142,7 @@ def test_decode_custom_error_tx_unsigned(ethereum):
 
 
 def test_decode_custom_error_selector_not_found(chain, ethereum):
-    data = HexBytes("0x6a12f104")
+    data = HexBytes("0xdeadbeef")
     abi: list = []
     contract_type = ContractType(abi=abi)
     addr = cast(AddressType, "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD")
@@ -1153,6 +1153,42 @@ def test_decode_custom_error_selector_not_found(chain, ethereum):
     tx = ethereum.create_transaction()
     actual = ethereum.decode_custom_error(data, addr, txn=tx)
     assert actual is None
+
+
+@pytest.fixture
+def colliding_error_contract_types():
+    # `burn(uint256)` and `collate_propagate_storage(bytes16)` share selector `0x42966c68`.
+    burn = ErrorABI(type="error", name="burn", inputs=[ABIType(name="amount", type="uint256")])
+    collate = ErrorABI(
+        type="error",
+        name="collate_propagate_storage",
+        inputs=[ABIType(name="data", type="bytes16")],
+    )
+    return ContractType(abi=[burn]), ContractType(abi=[collate])
+
+
+def test_decode_custom_error_from_nested_call_on_gas_estimation(
+    eth_tester_provider, error_caller_contract, nested_error_txn
+):
+    with pytest.raises(CustomError) as err:
+        eth_tester_provider.estimate_gas_cost(nested_error_txn)
+
+    assert err.value.name == "Unauthorized"
+    assert err.value.inputs == {"addr": error_caller_contract.address, "counter": 123}
+
+
+def test_decode_custom_error_ambiguous_selector(chain, ethereum, colliding_error_contract_types):
+    data = HexBytes(f"0x42966c68{5:064x}")
+    target = cast(AddressType, "0x5fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD")
+    burn_type, collate_type = colliding_error_contract_types
+
+    chain.contracts.contract_types["0x6fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD"] = burn_type
+    actual = ethereum.decode_custom_error(data, target)
+    assert isinstance(actual, CustomError)
+    assert actual.inputs == {"amount": 5}
+
+    chain.contracts.contract_types["0x7fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD"] = collate_type
+    assert ethereum.decode_custom_error(data, target) is None
 
 
 def test_enrich_trace(ethereum, vyper_contract_instance, owner):

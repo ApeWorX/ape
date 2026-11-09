@@ -15,7 +15,7 @@ import ijson  # type: ignore
 import requests
 from eth_pydantic_types import HexBytes
 from eth_typing import HexStr
-from eth_utils import add_0x_prefix, is_hex, to_hex
+from eth_utils import add_0x_prefix, is_0x_prefixed, is_hex, to_hex
 from evmchains import PUBLIC_CHAIN_META, get_random_rpc
 from pydantic import Field, PrivateAttr
 from pydantic.dataclasses import dataclass
@@ -1474,6 +1474,10 @@ class Web3Provider(ProviderAPI, ABC):
 
         if not (err_msg := err_data.get("message")):
             return VirtualMachineError(base_err=exception, **kwargs)
+
+        elif isinstance(err_msg, str) and is_0x_prefixed(err_msg) and is_hex(err_msg):
+            # Some nodes return the revert data as the error message.
+            return self._handle_execution_reverted(err_msg, **kwargs)
 
         elif txn is not None and "nonce too low" in str(err_msg):
             txn = cast(TransactionAPI, txn)
