@@ -274,7 +274,14 @@ class _RpcContractEventCursor(_RpcCursor):
             start_block=self.query.start_block,
             stop_block=self.query.stop_block,
         )
-        return self.provider.get_contract_logs(log_filter)
+        logs = self.provider.get_contract_logs(log_filter)
+        step = _query_step(self.query)
+        if step == 1:
+            return logs
+
+        # eth_getLogs has no step. Keep only logs whose block lies on the query grid.
+        start = self.query.start_block
+        return (log for log in logs if _on_step(log.block_number, start, step))
 
 
 class _RpcAccountTransactionCursor(_RpcCursor):

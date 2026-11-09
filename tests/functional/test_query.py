@@ -96,6 +96,21 @@ def test_transaction_contract_event_query_starts_query_at_deploy_tx(
     assert df_events["event_name"][0] == "FooHappened"
 
 
+def test_contract_event_query_step(contract_instance, owner, chain, eth_tester_provider):
+    # Emit one event per block across a contiguous window, then sample every other block.
+    start = chain.blocks.height + 1
+    for _ in range(4):
+        contract_instance.fooAndBar(sender=owner)
+
+    stop = chain.blocks.height
+    df = contract_instance.FooHappened.query(
+        "block_number", start_block=start, stop_block=stop, step=2
+    )
+    assert [int(number) for number in df["block_number"].to_list()] == list(
+        range(start, stop + 1, 2)
+    )
+
+
 def test_account_history_query(sender, receiver, eth_tester_provider):
     receipt = sender.transfer(receiver, 100)
     # The next nonce is len(history). The transfer itself is receipt.nonce.
