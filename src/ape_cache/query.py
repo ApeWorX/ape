@@ -26,9 +26,8 @@ if TYPE_CHECKING:
 class _BaseCursor(CursorAPI):
     cache_folder: Path
 
-    @property
-    def total_time(self) -> float:
-        return (self.query.end_index - self.query.start_index) * (self.time_per_row)
+    # ``total_time`` comes from ``CursorAPI``: ``len(query) * time_per_row``,
+    # which counts the inclusive span and honors ``step=``.
 
     @property
     def time_per_row(self) -> float:

@@ -23,7 +23,7 @@ from ape.managers.query import QueryManager, QueryResult
 from ape.types import ContractLog
 from ape.utils import DEFAULT_TEST_CHAIN_ID, BaseInterfaceModel
 from ape_cache import query as cache_query
-from ape_cache.query import CacheQueryProvider, _canonical_height
+from ape_cache.query import BlockCursor, CacheQueryProvider, _canonical_height
 from ape_ethereum.ecosystem import Block
 
 
@@ -1090,6 +1090,19 @@ def test_find_ranges_joins_runs_on_the_step_grid(tmp_path):
 
     assert list(CacheQueryProvider.find_ranges(index, start=0, end=9, step=2)) == [(0, 4), (8, 8)]
     assert list(CacheQueryProvider.find_ranges(index, start=1, end=9, step=2)) == [(1, 1), (5, 5)]
+
+
+def test_cache_cursor_total_time_counts_stepped_rows(tmp_path, eth_tester_provider):
+    # Inclusive span with step 2 samples five rows (0, 2, 4, 6, 8), not nine.
+    query = BlockQuery(columns=["number"], start_block=0, stop_block=9, step=2)
+    cursor = BlockCursor(query=query, cache_folder=tmp_path)
+    assert cursor.total_time == pytest.approx(5 * cursor.time_per_row)
+
+    # A single-block cursor costs one row, not zero.
+    single = BlockQuery(columns=["number"], start_block=5, stop_block=5)
+    assert BlockCursor(query=single, cache_folder=tmp_path).total_time == pytest.approx(
+        cursor.time_per_row
+    )
 
 
 def test_specify_engine(chain, eth_tester_provider):
