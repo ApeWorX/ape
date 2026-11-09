@@ -230,7 +230,7 @@ With our <a class="reference external" href="#plugin-system">modular plugin syst
 <p>In the latest release, Ape requires:</p>
 <ul class="simple">
 <li><p>Linux or macOS</p></li>
-<li><p>Python 3.10 up to 3.13</p></li>
+<li><p>Python 3.10 up to 3.14</p></li>
 <li><p><strong>Windows</strong>: Install Windows Subsystem Linux <a class="reference external" href="https://docs.microsoft.com/en-us/windows/wsl/install">(WSL)</a></p></li>
 </ul>
 <p>Check your python version in a terminal with <code class="docutils literal notranslate"><span class="pre">python3</span> <span class="pre">--version</span></code>.</p>
@@ -275,8 +275,9 @@ This image is meant for production support and must be further configured if any
 </span></pre></div>
 </div>
 <p>or build the image locally from source:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">$<span class="w"> </span>docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>ape:latest-slim<span class="w"> </span>-f<span class="w"> </span>Dockerfile.slim<span class="w"> </span>.
-</span><span data-line="2">$<span class="w"> </span>docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>ape:latest<span class="w"> </span>.
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">$<span class="w"> </span>uv<span class="w"> </span>lock<span class="w">  </span><span class="c1"># the Dockerfile copies `uv.lock`, which is not checked in</span>
+</span><span data-line="2">$<span class="w"> </span>docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>ape:latest-slim<span class="w"> </span>--target<span class="w"> </span>slim<span class="w"> </span>.
+</span><span data-line="3">$<span class="w"> </span>docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>ape:latest<span class="w"> </span>--target<span class="w"> </span>full<span class="w"> </span>.
 </span></pre></div>
 </div>
 <p>An example of running a command from the container would be:</p>
