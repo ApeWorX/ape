@@ -129,6 +129,36 @@ def test_at_level():
     assert logger.level == initial_level
 
 
+@pytest.mark.parametrize("mode", ("at_level", "disabled", "silenced"))
+def test_log_level_after_exception(mode, ape_caplog):
+    initial_level = logger.level
+    error = ValueError("command failed")
+
+    def fail():
+        raise error
+
+    try:
+        with logger.at_level(LogLevel.WARNING):
+            with pytest.raises(ValueError) as caught:
+                if mode == "at_level":
+                    with logger.at_level(LogLevel.DEBUG):
+                        fail()
+                elif mode == "disabled":
+                    with logger.disabled():
+                        fail()
+                else:
+                    silenced(fail)()
+
+            assert caught.value is error
+            assert logger.level == LogLevel.WARNING
+            logger.error("Logging after the failed command")
+            assert "Logging after the failed command" in ape_caplog.head
+
+        assert logger.level == initial_level
+    finally:
+        logger.set_level(initial_level)
+
+
 @pytest.mark.parametrize(
     "url", ("https://user:password@example.com/v1/API_KEY", "https://example.com/v1/API_KEY")
 )

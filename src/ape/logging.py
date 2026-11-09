@@ -217,8 +217,10 @@ class ApeLogger:
         """
         initial_level = self.level
         self.set_level(level)
-        yield
-        self.set_level(initial_level)
+        try:
+            yield
+        finally:
+            self.set_level(initial_level)
 
     def disable(self):
         self.set_level(self.DISABLE_LEVEL)
