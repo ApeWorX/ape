@@ -1594,12 +1594,13 @@ class Ethereum(EcosystemAPI):
         """
         local_types = (self.local_project.manifest.contract_types or {}).values()
         cached_types = filter(None, self.chain_manager.contracts.contract_types.memory.values())
-        seen_ids: set[int] = set()
+        seen: set[tuple[str | None, str | None]] = set()
         for contract_type in (*local_types, *cached_types):
-            if id(contract_type) in seen_ids:
+            key = (contract_type.source_id, contract_type.name)
+            if key in seen:
                 continue
 
-            seen_ids.add(id(contract_type))
+            seen.add(key)
             yield contract_type
 
     def get_deployment_address(self, address: AddressType, nonce: int) -> AddressType:

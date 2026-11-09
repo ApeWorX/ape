@@ -1115,7 +1115,7 @@ def test_default_network_name_when_not_set_and_no_local_uses_only(
 def test_decode_custom_error(chain, ethereum):
     data = HexBytes("0x6a12f104")
     abi = [ErrorABI(type="error", name="InsufficientETH")]
-    contract_type = ContractType(abi=abi)
+    contract_type = ContractType(contractName="ErrorRaiser", abi=abi)
     addr = cast(AddressType, "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD")
 
     # Hack in contract-type.
@@ -1144,7 +1144,7 @@ def test_decode_custom_error_tx_unsigned(ethereum):
 def test_decode_custom_error_selector_not_found(chain, ethereum):
     data = HexBytes("0xdeadbeef")
     abi: list = []
-    contract_type = ContractType(abi=abi)
+    contract_type = ContractType(contractName="UnknownSelectorRaiser", abi=abi)
     addr = cast(AddressType, "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD")
 
     # Hack in contract-type.
@@ -1164,7 +1164,10 @@ def colliding_error_contract_types():
         name="collate_propagate_storage",
         inputs=[ABIType(name="data", type="bytes16")],
     )
-    return ContractType(abi=[burn]), ContractType(abi=[collate])
+    return (
+        ContractType(contractName="Burner", abi=[burn]),
+        ContractType(contractName="Collator", abi=[collate]),
+    )
 
 
 def test_decode_custom_error_from_nested_call_on_gas_estimation(
