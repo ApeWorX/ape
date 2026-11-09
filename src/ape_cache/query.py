@@ -1,5 +1,7 @@
 import json
+import os
 import shutil
+import tempfile
 from collections.abc import Iterator
 from functools import singledispatchmethod
 from pathlib import Path
@@ -70,7 +72,19 @@ def _write_block(index_folder: Path, block: BlockAPI):
 
     # ``transactions`` loads the block body from the node. The file stores
     # the header fields that are already on the model.
-    path.write_text(block.model_dump_json(exclude={"transactions"}))
+    # Write to a sibling tempfile first, then rename into place so an
+    # interrupted write never leaves truncated JSON for a later read.
+    fd, tmp_name = tempfile.mkstemp(dir=index_folder, prefix=f".{number}.", suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w") as handle:
+            handle.write(block.model_dump_json(exclude={"transactions"}))
+        os.replace(tmp_name, path)
+    except BaseException:
+        try:
+            os.unlink(tmp_name)
+        except OSError:
+            pass
+        raise
 
 
 def _canonical_height(provider: "ProviderAPI") -> int:

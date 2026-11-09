@@ -893,6 +893,17 @@ def test_block_cache_does_not_fetch_transactions(tmp_path, monkeypatch, eth_test
     assert payload["num_transactions"] == 4
 
 
+def test_write_block_leaves_no_tempfile(tmp_path, eth_tester_provider):
+    cache_query._write_block(tmp_path, _header(3))
+    assert json.loads((tmp_path / "3").read_text())["number"] == 3
+    assert list(tmp_path.glob(".*")) == []
+
+    # An existing file is left alone, so a partial rename never clobbers it.
+    (tmp_path / "3").write_text("keep")
+    cache_query._write_block(tmp_path, _header(3))
+    assert (tmp_path / "3").read_text() == "keep"
+
+
 def test_block_cache_stores_blocks_as_they_are_read(tmp_path, monkeypatch, eth_tester_provider):
     blocks = [_header(number) for number in range(2, 6)]
     result, cursor, index = _cached_result(tmp_path, monkeypatch, blocks)
