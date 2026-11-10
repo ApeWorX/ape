@@ -1404,9 +1404,8 @@ class Web3Provider(ProviderAPI, ABC):
                     f"RPC method '{rpc}' is not implemented by this node instance."
                 )
 
-            if rpc in REVERTING_RPCS and isinstance(error, dict):
-                if revert_error := get_contract_logic_error(error):
-                    raise revert_error
+            if rpc in REVERTING_RPCS and (revert_error := get_contract_logic_error(error)):
+                raise revert_error
 
             raise ProviderError(message)
 

@@ -1,5 +1,10 @@
+from typing import TYPE_CHECKING
+
 from eth_utils import is_0x_prefixed, is_hex
 from web3.exceptions import ContractCustomError, ContractLogicError
+
+if TYPE_CHECKING:
+    from web3.types import RPCError
 
 COMPILER_METADATA_KEY_PREFIXES = (
     b"\x64ipfs",
@@ -56,11 +61,14 @@ def strip_push_data(bytecode: bytes) -> bytes:
     return bytes(result)
 
 
-def get_contract_logic_error(rpc_error: dict) -> ContractLogicError | None:
+def get_contract_logic_error(rpc_error: "RPCError | str") -> ContractLogicError | None:
     """
     The web3 revert error a JSON-RPC error from ``eth_call`` or ``eth_estimateGas``
     describes, or ``None`` when it is not a revert.
     """
+    if isinstance(rpc_error, str):
+        return None
+
     message = rpc_error.get("message") or "execution reverted"
     data = rpc_error.get("data")
     if is_custom_error_data(data):
