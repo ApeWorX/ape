@@ -23,7 +23,6 @@ from requests import HTTPError
 from web3 import HTTPProvider, IPCProvider, Web3
 from web3 import __version__ as web3_version
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
-from web3._utils.error_formatters_utils import raise_contract_logic_error_on_revert
 from web3.exceptions import (
     MethodUnavailable,
     TimeExhausted,
@@ -74,6 +73,7 @@ from ape.utils.rpc import request_with_retry
 from ape_ethereum._print import CONSOLE_ADDRESS, console_contract
 from ape_ethereum.trace import CallTrace, TraceApproach, TransactionTrace
 from ape_ethereum.transactions import AccessList, AccessListTransaction, TransactionStatusEnum
+from ape_ethereum.utils import get_contract_logic_error
 
 WEB3_PROVIDER_URI_ENV_VAR_NAME = "WEB3_PROVIDER_URI"
 
@@ -89,7 +89,7 @@ DEFAULT_PORT = 8545
 DEFAULT_HOSTNAME = "localhost"
 DEFAULT_HTTP_URI = f"http://{DEFAULT_HOSTNAME}:{DEFAULT_PORT}"
 DEFAULT_SETTINGS = {"uri": DEFAULT_HTTP_URI}
-# RPCs whose error responses web3 turns into contract revert exceptions.
+# RPCs whose error responses can describe a contract revert.
 REVERTING_RPCS = ("eth_call", "eth_estimateGas")
 
 
@@ -1394,7 +1394,8 @@ class Web3Provider(ProviderAPI, ABC):
                 )
 
             if rpc in REVERTING_RPCS and isinstance(error, dict):
-                raise_contract_logic_error_on_revert(result)
+                if revert_error := get_contract_logic_error(error):
+                    raise revert_error
 
             raise ProviderError(message)
 
