@@ -637,9 +637,9 @@ class ReceiptAPI(ExtraAttributesMixin, BaseInterfaceModel):
             (contract_type := self.chain_manager.contracts.get(address))
             and contract_type.source_id
             and (method := self.method_called)
+            # Can only track top-level gas.
             and (contract := self.local_project._create_contract_source(contract_type))
         ):
-            # Can only track top-level gas.
             self._test_runner.gas_tracker.append_toplevel_gas(contract, method, self.gas_used)
 
     def track_coverage(self):
