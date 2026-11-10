@@ -137,6 +137,10 @@ class Web3Provider(ProviderAPI, ABC):
 
     _web3: Web3 | None = None
     _client_version: str | None = None
+    _revert_errors: tuple[type[Exception], ...] = (Web3ContractLogicError,)
+    """
+    The exceptions a request raises when the call it makes reverts.
+    """
 
     _call_trace_approach: TraceApproach | None = None
     """
@@ -768,7 +772,7 @@ class Web3Provider(ProviderAPI, ABC):
 
         arguments[0] = txn_dict
         try:
-            result = self.make_request("eth_call", arguments)
+            result = self._make_request_with_retry("eth_call", arguments)
         except Exception as err:
             contract_address = arguments[0].get("to")
             _lazy_call_trace = _LazyCallTrace(arguments)
@@ -1355,6 +1359,13 @@ class Web3Provider(ProviderAPI, ABC):
         )
 
     def make_request(self, rpc: str, parameters: Iterable | None = None) -> Any:
+        try:
+            return self._make_request_with_retry(rpc, parameters)
+        except self._revert_errors as err:
+            address = _get_call_address(parameters)
+            raise self.get_virtual_machine_error(err, contract_address=address) from err
+
+    def _make_request_with_retry(self, rpc: str, parameters: Iterable | None = None) -> Any:
         return request_with_retry(lambda: self._make_request(rpc, parameters=parameters))
 
     def _make_request(self, rpc: str, parameters: Iterable | None = None) -> Any:
@@ -1873,3 +1884,8 @@ class _LazyCallTrace(ManagerAccessMixin):
             return SourceTraceback.create(contract_src, self.trace, method_id)
 
         return None
+
+
+def _get_call_address(parameters: Iterable | None) -> "AddressType | None":
+    call = next(iter(parameters or []), None)
+    return call.get("to") if isinstance(call, dict) else None

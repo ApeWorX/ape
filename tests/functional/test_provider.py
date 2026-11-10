@@ -8,7 +8,7 @@ from eth_typing import HexStr
 from eth_utils import ValidationError, keccak, to_hex
 from hexbytes import HexBytes
 from requests import HTTPError
-from web3.exceptions import ContractCustomError, ContractPanicError, TimeExhausted, Web3RPCError
+from web3.exceptions import ContractPanicError, TimeExhausted, Web3RPCError
 
 from ape import convert
 from ape.api.providers import SubprocessProvider
@@ -613,22 +613,16 @@ def test_make_request_handles_http_error_method_not_allowed(eth_tester_provider,
 
 
 @pytest.mark.parametrize("rpc", ("eth_call", "eth_estimateGas"))
-def test_make_request_custom_error_revert_data(ethereum, mock_web3, rpc):
-    revert_data = "0x92069c8c" + "07".rjust(64, "0")
-    mock_web3.provider.make_request.return_value = {
-        "error": {
-            "code": 3,
-            "message": "execution reverted: custom error 0x92069c8c: \x07",
-            "data": revert_data,
-        }
+def test_make_request_custom_error(eth_tester_provider, error_contract, not_owner, rpc):
+    call = {
+        "to": error_contract.address,
+        "from": not_owner.address,
+        "data": to_hex(error_contract.withdraw.encode_input()),
     }
-    provider = EthereumNodeProvider(network=ethereum.local)
-    provider._web3 = mock_web3
+    with pytest.raises(error_contract.Unauthorized) as err:
+        eth_tester_provider.make_request(rpc, [call])
 
-    with pytest.raises(ContractCustomError) as info:
-        provider.make_request(rpc, [{}])
-
-    assert info.value.data == revert_data
+    assert err.value.inputs == {"addr": not_owner.address, "counter": 123}
 
 
 def test_make_request_rate_limiting(mocker, ethereum, mock_web3):
