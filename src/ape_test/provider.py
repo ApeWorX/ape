@@ -160,6 +160,7 @@ class ApeTester(EthereumTesterProvider):
 
 class LocalProvider(TestProviderAPI, Web3Provider):
     _evm_backend: PyEVMBackend | None = None
+    _revert_errors = (TransactionFailed, Web3ContractLogicError)
     _CANNOT_AFFORD_GAS_PATTERN: Pattern = re.compile(
         r"Sender b'[\\*|\w]*' cannot afford txn gas (\d+) with account balance (\d+)"
     )

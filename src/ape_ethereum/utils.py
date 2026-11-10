@@ -1,3 +1,11 @@
+from typing import TYPE_CHECKING
+
+from eth_utils import is_0x_prefixed, is_hex
+from web3.exceptions import ContractCustomError, ContractLogicError
+
+if TYPE_CHECKING:
+    from web3.types import RPCError
+
 COMPILER_METADATA_KEY_PREFIXES = (
     b"\x64ipfs",
     b"\x65bzzr0",
@@ -5,6 +13,9 @@ COMPILER_METADATA_KEY_PREFIXES = (
     b"\x64solc",
     b"\x65vyper",
 )
+# Selectors of Solidity's built-in `Error(string)` and `Panic(uint256)` reverts.
+REVERT_STRING_SELECTOR = "0x08c379a0"
+PANIC_SELECTOR = "0x4e487b71"
 
 
 def strip_compiler_metadata(bytecode: bytes) -> bytes:
@@ -48,3 +59,33 @@ def strip_push_data(bytecode: bytes) -> bytes:
             index += opcode - 0x5F
 
     return bytes(result)
+
+
+def get_contract_logic_error(rpc_error: "RPCError | str") -> ContractLogicError | None:
+    """
+    The web3 revert error a JSON-RPC error from ``eth_call`` or ``eth_estimateGas``
+    describes, or ``None`` when it is not a revert.
+    """
+    if isinstance(rpc_error, str):
+        return None
+
+    message = rpc_error.get("message") or "execution reverted"
+    data = rpc_error.get("data")
+    if is_custom_error_data(data):
+        return ContractCustomError(data, data=data)
+
+    is_revert = isinstance(data, str) or rpc_error.get("code") == 3
+    if is_revert or "execution reverted" in message:
+        return ContractLogicError(message, data=data)
+
+    return None
+
+
+def is_custom_error_data(data) -> bool:
+    """
+    Whether ``data`` is revert data from a custom error rather than a built-in revert.
+    """
+    if not isinstance(data, str) or len(data) < 10 or not (is_0x_prefixed(data) and is_hex(data)):
+        return False
+
+    return data[:10] not in (REVERT_STRING_SELECTOR, PANIC_SELECTOR)

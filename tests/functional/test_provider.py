@@ -612,6 +612,19 @@ def test_make_request_handles_http_error_method_not_allowed(eth_tester_provider,
         eth_tester_provider._web3 = real_web3
 
 
+@pytest.mark.parametrize("rpc", ("eth_call", "eth_estimateGas"))
+def test_make_request_custom_error(eth_tester_provider, error_contract, not_owner, rpc):
+    call = {
+        "to": error_contract.address,
+        "from": not_owner.address,
+        "data": to_hex(error_contract.withdraw.encode_input()),
+    }
+    with pytest.raises(error_contract.Unauthorized) as err:
+        eth_tester_provider.make_request(rpc, [call])
+
+    assert err.value.inputs == {"addr": not_owner.address, "counter": 123}
+
+
 def test_make_request_rate_limiting(mocker, ethereum, mock_web3):
     provider = EthereumNodeProvider(network=ethereum.local)
     provider._web3 = mock_web3
