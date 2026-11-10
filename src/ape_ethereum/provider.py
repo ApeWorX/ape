@@ -23,8 +23,8 @@ from requests import HTTPError
 from web3 import HTTPProvider, IPCProvider, Web3
 from web3 import __version__ as web3_version
 from web3.exceptions import ContractLogicError as Web3ContractLogicError
+from web3._utils.error_formatters_utils import raise_contract_logic_error_on_revert
 from web3.exceptions import (
-    ContractCustomError,
     MethodUnavailable,
     TimeExhausted,
     TransactionNotFound,
@@ -89,8 +89,8 @@ DEFAULT_PORT = 8545
 DEFAULT_HOSTNAME = "localhost"
 DEFAULT_HTTP_URI = f"http://{DEFAULT_HOSTNAME}:{DEFAULT_PORT}"
 DEFAULT_SETTINGS = {"uri": DEFAULT_HTTP_URI}
-# Selectors of Solidity's built-in `Error(string)` and `Panic(uint256)` reverts.
-BUILTIN_REVERT_SELECTORS = ("0x08c379a0", "0x4e487b71")
+# RPCs whose error responses web3 turns into contract revert exceptions.
+REVERTING_RPCS = ("eth_call", "eth_estimateGas")
 
 
 def _sanitize_web3_url(msg: str) -> str:
@@ -1393,8 +1393,8 @@ class Web3Provider(ProviderAPI, ABC):
                     f"RPC method '{rpc}' is not implemented by this node instance."
                 )
 
-            if custom_error_data := _get_custom_error_data(error):
-                raise ContractCustomError(custom_error_data, data=custom_error_data)
+            if rpc in REVERTING_RPCS and isinstance(error, dict):
+                raise_contract_logic_error_on_revert(result)
 
             raise ProviderError(message)
 
@@ -1872,12 +1872,3 @@ class _LazyCallTrace(ManagerAccessMixin):
             return SourceTraceback.create(contract_src, self.trace, method_id)
 
         return None
-
-
-def _get_custom_error_data(error: Any) -> str | None:
-    """The revert data of a custom error in a JSON-RPC error, if it carries one."""
-    data = error.get("data") if isinstance(error, dict) else None
-    if not isinstance(data, str) or len(data) < 10 or not (is_0x_prefixed(data) and is_hex(data)):
-        return None
-
-    return None if data[:10] in BUILTIN_REVERT_SELECTORS else data
