@@ -8,7 +8,7 @@ from eth_typing import HexStr
 from eth_utils import ValidationError, keccak, to_hex
 from hexbytes import HexBytes
 from requests import HTTPError
-from web3.exceptions import ContractPanicError, TimeExhausted, Web3RPCError
+from web3.exceptions import ContractCustomError, ContractPanicError, TimeExhausted, Web3RPCError
 
 from ape import convert
 from ape.api.providers import SubprocessProvider
@@ -610,6 +610,24 @@ def test_make_request_handles_http_error_method_not_allowed(eth_tester_provider,
             eth_tester_provider.make_request("ape_thisDoesNotExist")
     finally:
         eth_tester_provider._web3 = real_web3
+
+
+def test_make_request_custom_error_revert_data(ethereum, mock_web3):
+    revert_data = "0x92069c8c" + "07".rjust(64, "0")
+    mock_web3.provider.make_request.return_value = {
+        "error": {
+            "code": 3,
+            "message": "execution reverted: custom error 0x92069c8c: \x07",
+            "data": revert_data,
+        }
+    }
+    provider = EthereumNodeProvider(network=ethereum.local)
+    provider._web3 = mock_web3
+
+    with pytest.raises(ContractCustomError) as info:
+        provider.make_request("eth_call", [{}])
+
+    assert info.value.data == revert_data
 
 
 def test_make_request_rate_limiting(mocker, ethereum, mock_web3):
