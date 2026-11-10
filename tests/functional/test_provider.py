@@ -612,7 +612,8 @@ def test_make_request_handles_http_error_method_not_allowed(eth_tester_provider,
         eth_tester_provider._web3 = real_web3
 
 
-def test_make_request_custom_error_revert_data(ethereum, mock_web3):
+@pytest.mark.parametrize("rpc", ("eth_call", "eth_estimateGas"))
+def test_make_request_custom_error_revert_data(ethereum, mock_web3, rpc):
     revert_data = "0x92069c8c" + "07".rjust(64, "0")
     mock_web3.provider.make_request.return_value = {
         "error": {
@@ -625,7 +626,7 @@ def test_make_request_custom_error_revert_data(ethereum, mock_web3):
     provider._web3 = mock_web3
 
     with pytest.raises(ContractCustomError) as info:
-        provider.make_request("eth_call", [{}])
+        provider.make_request(rpc, [{}])
 
     assert info.value.data == revert_data
 
