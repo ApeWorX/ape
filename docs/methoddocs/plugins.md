@@ -69,3 +69,11 @@
     :members:
     :show-inheritance:
 ```
+
+## Scripts
+
+```{eval-rst}
+.. automodule:: ape.plugins.scripts
+    :members:
+    :show-inheritance:
+```
