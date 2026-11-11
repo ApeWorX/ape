@@ -5,10 +5,10 @@ import pytest
 from eth_pydantic_types import HexBytes32
 from eth_tester.exceptions import TransactionFailed  # type: ignore
 from eth_typing import HexStr
-from eth_utils import ValidationError, to_hex
+from eth_utils import ValidationError, keccak, to_hex
 from hexbytes import HexBytes
 from requests import HTTPError
-from web3.exceptions import ContractPanicError, TimeExhausted
+from web3.exceptions import ContractPanicError, TimeExhausted, Web3RPCError
 
 from ape import convert
 from ape.api.providers import SubprocessProvider
@@ -16,6 +16,7 @@ from ape.exceptions import (
     APINotImplementedError,
     BlockNotFoundError,
     ContractLogicError,
+    CustomError,
     ProviderError,
     TransactionError,
     TransactionNotFoundError,
@@ -411,6 +412,35 @@ def test_get_virtual_machine_error_when_txn_failed_includes_base_error(
     assert actual.base_err == txn_failed
 
 
+@pytest.mark.parametrize(
+    "revert_data",
+    [
+        pytest.param(bytes.fromhex("82b42900"), id="single-quoted-repr"),
+        pytest.param(bytes.fromhex("27000000"), id="double-quoted-repr"),
+    ],
+)
+def test_get_virtual_machine_error_when_txn_failed_with_revert_data(
+    eth_tester_provider, revert_data
+):
+    exception = TransactionFailed(str(revert_data))
+    actual = eth_tester_provider.get_virtual_machine_error(exception)
+    assert actual.revert_message == to_hex(revert_data)
+
+
+def test_get_virtual_machine_error_revert_data_message(
+    ethereum, error_contract, error_caller_contract, nested_error_txn
+):
+    abi = error_contract.Unauthorized.abi
+    revert_data = keccak(text=abi.selector)[:4] + ethereum.encode_calldata(
+        abi, error_caller_contract.address, 123
+    )
+    exception = Web3RPCError(repr({"code": -32_000, "message": to_hex(revert_data)}))
+    provider = EthereumNodeProvider(network=ethereum.local)
+    actual = provider.get_virtual_machine_error(exception, txn=nested_error_txn)
+    assert isinstance(actual, CustomError)
+    assert actual.inputs == {"addr": error_caller_contract.address, "counter": 123}
+
+
 def test_get_virtual_machine_error_panic(eth_tester_provider, mocker):
     data = "0x4e487b710000000000000000000000000000000000000000000000000000000000000032"
     message = "Panic error 0x32: Array index is out of bounds."
@@ -580,6 +610,19 @@ def test_make_request_handles_http_error_method_not_allowed(eth_tester_provider,
             eth_tester_provider.make_request("ape_thisDoesNotExist")
     finally:
         eth_tester_provider._web3 = real_web3
+
+
+@pytest.mark.parametrize("rpc", ("eth_call", "eth_estimateGas"))
+def test_make_request_custom_error(eth_tester_provider, error_contract, not_owner, rpc):
+    call = {
+        "to": error_contract.address,
+        "from": not_owner.address,
+        "data": to_hex(error_contract.withdraw.encode_input()),
+    }
+    with pytest.raises(error_contract.Unauthorized) as err:
+        eth_tester_provider.make_request(rpc, [call])
+
+    assert err.value.inputs == {"addr": not_owner.address, "counter": 123}
 
 
 def test_make_request_rate_limiting(mocker, ethereum, mock_web3):

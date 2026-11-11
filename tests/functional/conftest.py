@@ -482,6 +482,16 @@ def error_contract(owner, project):
 
 
 @pytest.fixture
+def error_caller_contract(owner, project):
+    return owner.deploy(project.HasErrorCaller)
+
+
+@pytest.fixture
+def nested_error_txn(owner, error_caller_contract):
+    return error_caller_contract.callWithdraw.as_transaction(sender=owner)
+
+
+@pytest.fixture
 def vyper_factory(owner, project):
     return owner.deploy(project.VyperFactory)
 

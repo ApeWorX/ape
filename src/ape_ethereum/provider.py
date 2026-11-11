@@ -15,7 +15,7 @@ import ijson  # type: ignore
 import requests
 from eth_pydantic_types import HexBytes
 from eth_typing import HexStr
-from eth_utils import add_0x_prefix, is_hex, to_hex
+from eth_utils import add_0x_prefix, is_0x_prefixed, is_hex, to_hex
 from evmchains import PUBLIC_CHAIN_META, get_random_rpc
 from pydantic import Field, PrivateAttr
 from pydantic.dataclasses import dataclass
@@ -73,6 +73,7 @@ from ape.utils.rpc import request_with_retry
 from ape_ethereum._print import CONSOLE_ADDRESS, console_contract
 from ape_ethereum.trace import CallTrace, TraceApproach, TransactionTrace
 from ape_ethereum.transactions import AccessList, AccessListTransaction, TransactionStatusEnum
+from ape_ethereum.utils import get_contract_logic_error
 
 WEB3_PROVIDER_URI_ENV_VAR_NAME = "WEB3_PROVIDER_URI"
 
@@ -88,6 +89,8 @@ DEFAULT_PORT = 8545
 DEFAULT_HOSTNAME = "localhost"
 DEFAULT_HTTP_URI = f"http://{DEFAULT_HOSTNAME}:{DEFAULT_PORT}"
 DEFAULT_SETTINGS = {"uri": DEFAULT_HTTP_URI}
+# RPCs whose error responses can describe a contract revert.
+REVERTING_RPCS = ("eth_call", "eth_estimateGas")
 
 
 def _sanitize_web3_url(msg: str) -> str:
@@ -134,6 +137,10 @@ class Web3Provider(ProviderAPI, ABC):
 
     _web3: Web3 | None = None
     _client_version: str | None = None
+    _revert_errors: tuple[type[Exception], ...] = (Web3ContractLogicError,)
+    """
+    The exceptions a request raises when the call it makes reverts.
+    """
 
     _call_trace_approach: TraceApproach | None = None
     """
@@ -765,7 +772,7 @@ class Web3Provider(ProviderAPI, ABC):
 
         arguments[0] = txn_dict
         try:
-            result = self.make_request("eth_call", arguments)
+            result = self._make_request_with_retry("eth_call", arguments)
         except Exception as err:
             contract_address = arguments[0].get("to")
             _lazy_call_trace = _LazyCallTrace(arguments)
@@ -1352,6 +1359,13 @@ class Web3Provider(ProviderAPI, ABC):
         )
 
     def make_request(self, rpc: str, parameters: Iterable | None = None) -> Any:
+        try:
+            return self._make_request_with_retry(rpc, parameters)
+        except self._revert_errors as err:
+            address = _get_call_address(parameters)
+            raise self.get_virtual_machine_error(err, contract_address=address) from err
+
+    def _make_request_with_retry(self, rpc: str, parameters: Iterable | None = None) -> Any:
         return request_with_retry(lambda: self._make_request(rpc, parameters=parameters))
 
     def _make_request(self, rpc: str, parameters: Iterable | None = None) -> Any:
@@ -1389,6 +1403,9 @@ class Web3Provider(ProviderAPI, ABC):
                 raise APINotImplementedError(
                     f"RPC method '{rpc}' is not implemented by this node instance."
                 )
+
+            if rpc in REVERTING_RPCS and (revert_error := get_contract_logic_error(error)):
+                raise revert_error
 
             raise ProviderError(message)
 
@@ -1474,6 +1491,10 @@ class Web3Provider(ProviderAPI, ABC):
 
         if not (err_msg := err_data.get("message")):
             return VirtualMachineError(base_err=exception, **kwargs)
+
+        elif isinstance(err_msg, str) and is_0x_prefixed(err_msg) and is_hex(err_msg):
+            # Some nodes return the revert data as the error message.
+            return self._handle_execution_reverted(err_msg, **kwargs)
 
         elif txn is not None and "nonce too low" in str(err_msg):
             txn = cast(TransactionAPI, txn)
@@ -1862,3 +1883,8 @@ class _LazyCallTrace(ManagerAccessMixin):
             return SourceTraceback.create(contract_src, self.trace, method_id)
 
         return None
+
+
+def _get_call_address(parameters: Iterable | None) -> "AddressType | None":
+    call = next(iter(parameters or []), None)
+    return call.get("to") if isinstance(call, dict) else None

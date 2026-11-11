@@ -567,6 +567,30 @@ def test_autosign_transactions(runner, keyfile_account, receiver):
         assert keyfile_account.transfer(receiver, "1 gwei")
 
 
+def test_autosign_raw_msghash(runner, keyfile_account, ape_caplog):
+    msghash = b"\xab" * 32
+    keyfile_account.set_autosign(True, passphrase=PASSPHRASE, raw_msghash=True)
+    assert "sign any raw message hash" in ape_caplog.head
+
+    # No input: any prompt would abort.
+    with runner.isolation(input=""):
+        signature = keyfile_account.sign_raw_msghash(msghash)
+        assert keyfile_account.check_signature(msghash, signature, recover_using_eip191=False)
+
+    # Disabling brings back the confirmation prompt.
+    keyfile_account.set_autosign(False)
+    with runner.isolation(input="n\n"):
+        assert keyfile_account.sign_raw_msghash(msghash) is None
+
+
+def test_autosign_raw_msghash_not_implied_by_autosign(runner, keyfile_account):
+    keyfile_account.set_autosign(True, passphrase=PASSPHRASE)
+    with runner.isolation(input="n\n"):
+        assert keyfile_account.sign_raw_msghash(b"\xab" * 32) is None
+
+    keyfile_account.set_autosign(False)
+
+
 def test_impersonate_not_implemented(accounts, address):
     expected_err_msg = (
         r"Provider 'test' does not support impersonating accounts:\\n"

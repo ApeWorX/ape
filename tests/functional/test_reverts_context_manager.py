@@ -88,6 +88,32 @@ def test_revert_unexpected_error(error_contract, not_owner):
         error_contract.withdraw(sender=not_owner)
 
 
+def test_revert_error_when_not_custom_error_fails(owner, error_contract, reverts_contract_instance):
+    """
+    Test that ``AssertionError`` is raised if a custom error is expected but the revert is not a
+    custom error, such as a revert the provider could not decode.
+    """
+    with pytest.raises(AssertionError), reverts(error_contract.Unauthorized):
+        reverts_contract_instance.revertStrings(0, sender=owner)
+
+
+@pytest.mark.parametrize(
+    "get_expected",
+    [
+        pytest.param(lambda project, contract: project.HasError.OtherError, id="container"),
+        pytest.param(lambda project, contract: contract.OtherError.abi, id="abi"),
+    ],
+)
+def test_revert_unexpected_error_from_abi(project, error_contract, not_owner, get_expected):
+    """
+    Test when a different error type was raised than the one given by a container or an ABI,
+    which carry no contract instance to compare.
+    """
+    expected = get_expected(project, error_contract)
+    with pytest.raises(AssertionError), reverts(expected):
+        error_contract.withdraw(sender=not_owner)
+
+
 def test_revert_error_inputs(error_contract, not_owner):
     """
     Test matching a revert custom Solidity error with inputs.
