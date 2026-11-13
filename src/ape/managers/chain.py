@@ -1019,10 +1019,8 @@ class ChainManager(BaseManager):
         elif deltatime:
             self.pending_timestamp += deltatime
 
-        if interval is None:
-            self.provider.mine(num_blocks)
-        else:
-            self.provider.mine(num_blocks, interval=interval)
+        mine_kwargs = {} if interval is None else {"interval": interval}
+        self.provider.mine(num_blocks, **mine_kwargs)
 
     def get_balance(
         self, address: BaseAddress | AddressType | str, block_id: "BlockID | None" = None
