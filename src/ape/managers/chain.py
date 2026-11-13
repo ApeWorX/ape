@@ -994,6 +994,7 @@ class ChainManager(BaseManager):
         num_blocks: int = 1,
         timestamp: int | None = None,
         deltatime: int | None = None,
+        interval: int | None = None,
     ) -> None:
         """
         Mine any given number of blocks.
@@ -1008,6 +1009,8 @@ class ChainManager(BaseManager):
                 Defaults to None.
             deltatime (int | None): Designate a change in time (in seconds) to begin mining.
                 Defaults to None.
+            interval (int | None): Seconds between the mined blocks' timestamps.
+                Defaults to the provider's own spacing.
         """
         if timestamp and deltatime:
             raise ValueError("Cannot give both `timestamp` and `deltatime` arguments together.")
@@ -1015,7 +1018,11 @@ class ChainManager(BaseManager):
             self.pending_timestamp = timestamp
         elif deltatime:
             self.pending_timestamp += deltatime
-        self.provider.mine(num_blocks)
+
+        if interval is None:
+            self.provider.mine(num_blocks)
+        else:
+            self.provider.mine(num_blocks, interval=interval)
 
     def get_balance(
         self, address: BaseAddress | AddressType | str, block_id: "BlockID | None" = None

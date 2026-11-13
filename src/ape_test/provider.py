@@ -480,8 +480,19 @@ class LocalProvider(TestProviderAPI, Web3Provider):
 
             raise ProviderError(f"Failed to time travel: {err}") from err
 
-    def mine(self, num_blocks: int = 1):
-        self.evm_backend.mine_blocks(num_blocks)
+    def mine(self, num_blocks: int = 1, interval: int | None = None):
+        if interval is None:
+            self.evm_backend.mine_blocks(num_blocks)
+            return
+
+        if interval < 1:
+            raise ProviderError("EthTester blocks must be at least 1 second apart.")
+
+        first_timestamp = self.get_block("pending").timestamp
+        chain = self.evm_backend.chain
+        for index in range(num_blocks):
+            chain.header = chain.header.copy(timestamp=first_timestamp + index * interval)
+            self.evm_backend.mine_blocks()
 
     def get_balance(self, address: AddressType, block_id: "BlockID | None" = None) -> int:
         # perf: Using evm_backend directly instead of going through web3.
