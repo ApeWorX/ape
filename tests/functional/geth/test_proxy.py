@@ -123,3 +123,190 @@ def test_aragon_app_upgradeable(project, geth_contract, owner, ethereum):
     assert actual is not None
     assert actual.type == ProxyType.AragonAppUpgradeable
     assert actual.target == target
+
+
+def _deploy_runtime(owner, deployer, runtime: bytes):
+    n = len(runtime)
+    init = (
+        bytes([0x61])
+        + n.to_bytes(2, "big")
+        + bytes([0x80, 0x60, 15, 0x60, 0, 0x39, 0x61])
+        + n.to_bytes(2, "big")
+        + bytes([0x60, 0, 0xF3])
+    )
+    tx = deployer.deploy(init + runtime, sender=owner)
+    return tx.return_value
+
+
+@geth_process_test
+def test_clones(project, geth_contract, owner, ethereum):
+    target = geth_contract.address
+    factory = owner.deploy(project.ClonesFactory)
+    tx = factory.deployClonesProxy(target, sender=owner)
+    actual = ethereum.get_proxy_info(tx.return_value)
+    assert actual is not None
+    assert actual.type == ProxyType.Clones
+    assert actual.target == target
+
+
+@geth_process_test
+def test_cwia(project, geth_contract, owner, ethereum):
+    target = geth_contract.address
+    factory = owner.deploy(project.ExampleCloneFactory, target)
+    tx = factory.createClone(0, 0, 0, 0, sender=owner)
+    actual = ethereum.get_proxy_info(tx.return_value)
+    assert actual is not None
+    assert actual.type == ProxyType.CWIA
+    assert actual.target == target
+
+
+@geth_process_test
+def test_solady_push0(project, geth_contract, owner, ethereum):
+    target = geth_contract.address
+    factory = owner.deploy(project.SoladyFactory)
+    tx = factory.deploySoladyPush(target, sender=owner)
+    actual = ethereum.get_proxy_info(tx.return_value)
+    assert actual is not None
+    assert actual.type == ProxyType.SoladyPush0
+    assert actual.target == target
+
+
+@geth_process_test
+def test_solady_cwia_factory(project, geth_contract, owner, ethereum):
+    target = geth_contract.address
+    factory = owner.deploy(project.SoladyFactory)
+    tx = factory.deploySoladyCWIA(target, sender=owner)
+    actual = ethereum.get_proxy_info(tx.return_value)
+    assert actual is not None
+    assert actual.type == ProxyType.Minimal
+    assert actual.target == target
+
+
+@geth_process_test
+def test_solady_cwia(project, geth_contract, owner, ethereum):
+    target = geth_contract.address
+    addr = target[2:]
+    runtime = (
+        "36602c57343d527f9e4ac34f21c619cefc926c8bd93b54bf5a39c7ab2127a895af1cc0691d7e3dff"
+        "593da1005b363d3d373d3d3d3d610000806062363936013d73"
+        f"{addr}"
+        "5af43d3d93803e606057fd5bf3"
+    )
+    deployer = owner.deploy(project.RawDeployer)
+    proxy = _deploy_runtime(owner, deployer, bytes.fromhex(runtime))
+    actual = ethereum.get_proxy_info(proxy)
+    assert actual is not None
+    assert actual.type == ProxyType.SoladyCWIA
+    assert actual.target == target
+
+
+@geth_process_test
+def test_old_cwia(project, geth_contract, owner, ethereum):
+    target = geth_contract.address
+    factory = owner.deploy(project.Template)
+    tx = factory.clone2(target, b"\x00", sender=owner)
+    actual = ethereum.get_proxy_info(tx.return_value)
+    assert actual is not None
+    assert actual.type == ProxyType.OldCWIA
+    assert actual.target == target
+
+
+@geth_process_test
+def test_vyper_forwarder(project, geth_contract, owner, ethereum):
+    target = geth_contract.address
+    factory = owner.deploy(project.VyperFactory)
+    tx = factory.create_proxy(target, sender=owner)
+    actual = ethereum.get_proxy_info(tx.return_value)
+    assert actual is not None
+    assert actual.type == ProxyType.Minimal
+    assert actual.target == target
+
+
+@geth_process_test
+def test_vyper(project, geth_contract, owner, ethereum):
+    target = geth_contract.address
+    addr = target[2:]
+    runtime = f"366000600037611000600036600073{addr}5af4602c57600080fd5b6110006000f3"
+    deployer = owner.deploy(project.RawDeployer)
+    proxy = _deploy_runtime(owner, deployer, bytes.fromhex(runtime))
+    actual = ethereum.get_proxy_info(proxy)
+    assert actual is not None
+    assert actual.type == ProxyType.Vyper
+    assert actual.target == target
+
+
+@geth_process_test
+def test_vyper_beta(project, geth_contract, owner, ethereum):
+    target = geth_contract.address
+    addr = target[2:]
+    runtime = f"366000600037611000600036600073{addr}5af41558576110006000f3"
+    deployer = owner.deploy(project.RawDeployer)
+    proxy = _deploy_runtime(owner, deployer, bytes.fromhex(runtime))
+    actual = ethereum.get_proxy_info(proxy)
+    assert actual is not None
+    assert actual.type == ProxyType.VyperBeta
+    assert actual.target == target
+
+
+@geth_process_test
+def test_zero_age(project, geth_contract, owner, ethereum):
+    target = geth_contract.address
+    addr = target[2:]
+    runtime = f"3d3d3d3d363d3d37363d73{addr}5af43d3d93803e602a57fd5bf3"
+    deployer = owner.deploy(project.RawDeployer)
+    proxy = _deploy_runtime(owner, deployer, bytes.fromhex(runtime))
+    actual = ethereum.get_proxy_info(proxy)
+    assert actual is not None
+    assert actual.type == ProxyType.ZeroAge
+    assert actual.target == target
+
+
+@geth_process_test
+def test_sudoswap_cwia(project, geth_contract, owner, ethereum):
+    target = geth_contract.address
+    factory = owner.deploy(project.SudoswapCWIAFactory)
+    tx = factory.deploycloneERC721ETHPair(target, 0, 0, 0, 0, 0, sender=owner)
+    actual = ethereum.get_proxy_info(tx.return_value)
+    assert actual is not None
+    assert actual.type == ProxyType.SudoswapCWIA
+    assert actual.target == target
+
+
+@geth_process_test
+def test_splits_cwia(project, geth_contract, owner, ethereum):
+    target = geth_contract.address
+    factory = owner.deploy(project.SplitsCloneFactory, target)
+    tx = factory.createClone(0, 0, 0, 0, sender=owner)
+    actual = ethereum.get_proxy_info(tx.return_value)
+    assert actual is not None
+    assert actual.type == ProxyType.SplitsCWIA
+    assert actual.target == target
+
+
+@geth_process_test
+def test_splits_cwia_legacy(project, geth_contract, owner, ethereum):
+    target = geth_contract.address
+    addr = target[2:]
+    runtime = (
+        "36602f57343d527f9e4ac34f21c619cefc926c8bd93b54bf5a39c7ab2127a895af1cc0691d7e3dff"
+        "60203da13d3df35b3d3d3d3d363d3d376100006067363936610000013d73"
+        f"{addr}"
+        "5af43d3d93803e606557fd5bf3"
+    )
+    deployer = owner.deploy(project.RawDeployer)
+    proxy = _deploy_runtime(owner, deployer, bytes.fromhex(runtime))
+    actual = ethereum.get_proxy_info(proxy)
+    assert actual is not None
+    assert actual.type == ProxyType.SplitsCWIA
+    assert actual.target == target
+
+
+@geth_process_test
+def test_sequence(project, geth_contract, owner, ethereum):
+    target = geth_contract.address
+    factory = owner.deploy(project.SequenceFactory)
+    tx = factory.deploy(target, b"\x00" * 32, sender=owner)
+    actual = ethereum.get_proxy_info(tx.return_value)
+    assert actual is not None
+    assert actual.type == ProxyType.Sequence
+    assert actual.target == target
