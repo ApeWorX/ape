@@ -483,8 +483,10 @@ class LocalProvider(TestProviderAPI, Web3Provider):
     def mine(self, num_blocks: int = 1, interval: int | None = None):
         if interval is None:
             self.evm_backend.mine_blocks(num_blocks)
-            return
+        else:
+            self._mine_with_interval(num_blocks, interval)
 
+    def _mine_with_interval(self, num_blocks: int, interval: int):
         if interval < 1:
             raise ProviderError("EthTester blocks must be at least 1 second apart.")
 
