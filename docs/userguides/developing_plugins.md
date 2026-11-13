@@ -190,6 +190,65 @@ def cli():
     """Utilities for my plugin"""
 ```
 
+## Query Engine Plugins
+
+A query plugin registers one or more `QueryEngineAPI` subclasses with the `query_engines` hook.
+For each query, an engine's `execute` yields `CursorAPI` objects that cover some or all of the query's range, without fetching anything yet.
+Ape plans the cheapest set of cursors from every installed engine that covers the whole query, then reads from them.
+An engine only has to serve the part of the history it has, such as a cache or an indexer that lags behind head.
+
+```python
+from collections.abc import Iterator
+from functools import singledispatchmethod
+
+from ape import plugins
+from ape.api import BlockAPI, CursorAPI, QueryEngineAPI
+from ape.api.query import BlockQuery
+
+
+class MyBlockCursor(CursorAPI[BlockAPI]):
+    @property
+    def time_per_row(self) -> float:
+        return 0.001  # Estimated seconds per row, used to pick the cheapest cursors.
+
+    def shrink(self, start_index=None, end_index=None) -> "MyBlockCursor":
+        # Return a copy covering the narrower window. Leave this unimplemented
+        # if the cursor can only serve its whole window.
+        ...
+
+    def as_model_iter(self) -> Iterator[BlockAPI]:
+        # Fetch and yield the blocks in `self.query`'s window.
+        ...
+
+
+class MyQueryEngine(QueryEngineAPI):
+    execute = singledispatchmethod(QueryEngineAPI.execute)
+
+    @execute.register
+    def exec_block_query(self, query: BlockQuery) -> Iterator[MyBlockCursor]:
+        # Yield one cursor per range this engine can serve (none if it has no data).
+        yield MyBlockCursor(query=query)
+
+
+@plugins.register(plugins.QueryPlugin)
+def query_engines():
+    yield MyQueryEngine
+```
+
+Override `CursorAPI.as_dataframe` when your source can build a [Narwhals](https://narwhals-dev.github.io/narwhals/) frame faster than going through models.
+Override `QueryEngineAPI.cache` to run logic after a query is planned, such as storing results.
+
+### Migrating query engines from Ape 0.8 to 0.9
+
+Ape 0.9 replaces the query engine API, which is a breaking change for query plugins.
+Ape no longer calls `estimate_query` or `perform_query`, so an engine that only implements those methods is ignored.
+To migrate:
+
+- Subclass `QueryEngineAPI` (`QueryAPI` remains an alias for now).
+- Move the work in `perform_query` into a `CursorAPI` subclass's `as_model_iter` (and optionally `as_dataframe`).
+- Replace `estimate_query` with the cursor's `time_per_row` (or `total_time`) estimate.
+- Implement `execute` to yield cursors for the parts of each query the engine can serve, instead of handling the whole query or nothing.
+
 ## Logging
 
 Use Ape's logger in your plugin by importing it from the `ape.logging` module or by using it off the CLI context (from using the `@ape_cli_context` decorator).

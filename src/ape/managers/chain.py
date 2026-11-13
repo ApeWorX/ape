@@ -2,23 +2,18 @@ from collections import defaultdict
 from collections.abc import Iterator
 from contextlib import contextmanager
 from datetime import datetime
-from functools import cached_property, partial, singledispatchmethod
+from functools import cached_property, singledispatchmethod
 from statistics import mean, median
 from typing import IO, TYPE_CHECKING, ClassVar, cast
 
-import pandas as pd
+import narwhals.stable.v2 as nw
 from pydantic import Field
 from rich.box import SIMPLE
 from rich.table import Table
 
 from ape.api.address import Address, BaseAddress
 from ape.api.providers import BlockAPI
-from ape.api.query import (
-    AccountTransactionQuery,
-    BlockQuery,
-    extract_fields,
-    validate_and_expand_columns,
-)
+from ape.api.query import AccountTransactionQuery, BlockQuery
 from ape.api.transactions import ReceiptAPI
 from ape.exceptions import (
     APINotImplementedError,
@@ -38,6 +33,7 @@ from ape.utils.basemodel import BaseInterfaceModel
 from ape.utils.misc import ZERO_ADDRESS, is_evm_precompile, is_zero_hex, log_instead_of_fail
 
 if TYPE_CHECKING:
+    from narwhals.stable.v2.typing import Frame
     from rich.console import Console as RichConsole
 
     from ape.api.providers import ProviderAPI
@@ -127,7 +123,8 @@ class BlockContainer(BaseManager):
         stop_block: int | None = None,
         step: int = 1,
         engine_to_use: str | None = None,
-    ) -> pd.DataFrame:
+        backend: str | nw.Implementation | None = None,
+    ) -> "Frame":
         """
         A method for querying blocks and returning an Iterator. If you
         do not provide a starting block, the 0 block is assumed. If you do not
@@ -148,9 +145,16 @@ class BlockContainer(BaseManager):
               Defaults to ``1``.
             engine_to_use (str | None): query engine to use, bypasses query
               engine selection algorithm.
+            backend (str | :class:`~narwhals.stable.v2.Implementation` | None): Dataframe library
+              that stores the result. When omitted, Ape uses an installed library
+              and prefers Polars. The return value is always a Narwhals DataFrame.
+
+        Raises:
+            :class:`~ape.exceptions.QueryEngineError`: When no dataframe library is
+              installed and ``backend`` was not passed.
 
         Returns:
-            pd.DataFrame
+            :class:`~narwhals.stable.v2.DataFrame`
         """
 
         if start_block < 0:
@@ -173,14 +177,9 @@ class BlockContainer(BaseManager):
             stop_block=stop_block,
             step=step,
         )
-
-        blocks = self.query_manager.query(query, engine_to_use=engine_to_use)
-        columns: list[str] = validate_and_expand_columns(  # type: ignore
-            columns, self.head.__class__
+        return self.query_manager.query(query, engine_to_use=engine_to_use).as_dataframe(
+            backend=backend
         )
-        extraction = partial(extract_fields, columns=columns)
-        data = (extraction(b) for b in blocks)
-        return pd.DataFrame(columns=columns, data=data)
 
     def range(
         self,
@@ -233,13 +232,13 @@ class BlockContainer(BaseManager):
         # Note: the range `stop_block` is a non-inclusive stop, while the
         #       `.query` method uses an inclusive stop, so we must adjust downwards.
         query = BlockQuery(
-            columns=list(self.head.model_fields),  # TODO: fetch the block fields from EcosystemAPI
+            columns=["*"],
             start_block=start,
             stop_block=stop - 1,
             step=step,
         )
 
-        blocks = self.query_manager.query(query, engine_to_use=engine_to_use)
+        blocks = self.query_manager.query(query, engine_to_use=engine_to_use).as_model_iter()
         yield from cast(Iterator[BlockAPI], blocks)
 
     def poll_blocks(
@@ -353,7 +352,8 @@ class AccountHistory(BaseInterfaceModel):
         start_nonce: int = 0,
         stop_nonce: int | None = None,
         engine_to_use: str | None = None,
-    ) -> pd.DataFrame:
+        backend: str | nw.Implementation | None = None,
+    ) -> "Frame":
         """
         A method for querying transactions made by an account and returning an Iterator.
         If you do not provide a starting nonce, the first transaction is assumed.
@@ -372,9 +372,16 @@ class AccountHistory(BaseInterfaceModel):
               in the query. Defaults to the latest transaction.
             engine_to_use (str | None): query engine to use, bypasses query
               engine selection algorithm.
+            backend (str | :class:`~narwhals.stable.v2.Implementation` | None): Dataframe library
+              that stores the result. When omitted, Ape uses an installed library
+              and prefers Polars. The return value is always a Narwhals DataFrame.
+
+        Raises:
+            :class:`~ape.exceptions.QueryEngineError`: When no dataframe library is
+              installed and ``backend`` was not passed.
 
         Returns:
-            pd.DataFrame
+            :class:`~narwhals.stable.v2.DataFrame`
         """
 
         if start_nonce < 0:
@@ -397,12 +404,9 @@ class AccountHistory(BaseInterfaceModel):
             start_nonce=start_nonce,
             stop_nonce=stop_nonce,
         )
-
-        txns = self.query_manager.query(query, engine_to_use=engine_to_use)
-        columns = validate_and_expand_columns(columns, ReceiptAPI)  # type: ignore
-        extraction = partial(extract_fields, columns=columns)
-        data = (extraction(tx) for tx in txns)
-        return pd.DataFrame(columns=columns, data=data)
+        return self.query_manager.query(query, engine_to_use=engine_to_use).as_dataframe(
+            backend=backend
+        )
 
     def __iter__(self) -> Iterator[ReceiptAPI]:  # type: ignore[override]
         yield from self.outgoing
@@ -429,12 +433,12 @@ class AccountHistory(BaseInterfaceModel):
                 next(
                     self.query_manager.query(
                         AccountTransactionQuery(
-                            columns=list(ReceiptAPI.__pydantic_fields__),
+                            columns=["*"],
                             account=self.address,
                             start_nonce=index,
                             stop_nonce=index,
                         )
-                    )
+                    ).as_model_iter()
                 ),
             )
         except StopIteration as e:
@@ -467,13 +471,13 @@ class AccountHistory(BaseInterfaceModel):
             list(
                 self.query_manager.query(
                     AccountTransactionQuery(
-                        columns=list(ReceiptAPI.__pydantic_fields__),
+                        columns=["*"],
                         account=self.address,
                         start_nonce=start,
                         stop_nonce=stop - 1,
                         step=step,
                     )
-                )
+                ).as_model_iter()
             ),
         )
 

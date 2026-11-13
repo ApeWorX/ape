@@ -1,12 +1,13 @@
 import difflib
 import types
 from collections.abc import Callable, Iterator
-from functools import cached_property, partial, singledispatchmethod
+from functools import cached_property, singledispatchmethod
 from itertools import islice
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import click
+import narwhals.stable.v2 as nw
 from eth_abi.exceptions import EncodingError
 from eth_pydantic_types import HexBytes
 from eth_utils import to_hex
@@ -14,12 +15,7 @@ from ethpm_types.abi import EventABI
 
 from ape.api.accounts import AccountAPI
 from ape.api.address import Address, BaseAddress
-from ape.api.query import (
-    ContractCreation,
-    ContractEventQuery,
-    extract_fields,
-    validate_and_expand_columns,
-)
+from ape.api.query import ContractCreation, ContractEventQuery
 from ape.exceptions import (
     ApeAttributeError,
     ArgumentsLengthError,
@@ -50,7 +46,7 @@ from ape.utils.misc import log_instead_of_fail
 if TYPE_CHECKING:
     from ethpm_types.abi import ConstructorABI, ErrorABI, MethodABI
     from ethpm_types.contract_type import ABI_W_SELECTOR_T, ContractType
-    from pandas import DataFrame
+    from narwhals.stable.v2.typing import Frame
 
     from ape.api.networks import ProxyInfoAPI
     from ape.api.providers import CallResult
@@ -751,13 +747,15 @@ class ContractEvent(BaseInterfaceModel):
         stop_block: int | None = None,
         step: int = 1,
         engine_to_use: str | None = None,
-    ) -> "DataFrame":
+        backend: str | nw.Implementation | None = None,
+    ) -> "Frame":
         """
         Iterate through blocks for log events
 
         Args:
             *columns (str): ``*``-based argument for columns in the DataFrame to
-              return.
+              return. ``*`` includes the log fields and each event input.
+              Name an input, such as ``wad``, to select that column.
             start_block (int): The first block, by number, to include in the
               query. Defaults to ``0``.
             stop_block (int | None): The last block, by number, to include
@@ -766,13 +764,17 @@ class ContractEvent(BaseInterfaceModel):
               Defaults to ``1``.
             engine_to_use (str | None): query engine to use, bypasses query
               engine selection algorithm.
+            backend (str | :class:`~narwhals.stable.v2.Implementation` | None): Dataframe
+              library that stores the result. When omitted, Ape uses an installed library
+              and prefers Polars. The return value is always a Narwhals DataFrame.
+
+        Raises:
+            :class:`~ape.exceptions.QueryEngineError`: When no dataframe library is
+              installed and ``backend`` was not passed.
 
         Returns:
-            pd.DataFrame
+            :class:`~narwhals.stable.v2.DataFrame`
         """
-        # perf: pandas import is really slow. Avoid importing at module level.
-        import pandas as pd
-
         HEAD = self.chain_manager.blocks.height
         if start_block < 0:
             start_block = HEAD + start_block
@@ -788,7 +790,7 @@ class ContractEvent(BaseInterfaceModel):
                 f"'stop={stop_block}' cannot be greater than the chain length ({HEAD})."
             )
         query: dict = {
-            "columns": (list(ContractLog.__pydantic_fields__) if columns[0] == "*" else columns),
+            "columns": list(columns),
             "event": self.abi,
             "start_block": start_block,
             "stop_block": stop_block,
@@ -798,13 +800,9 @@ class ContractEvent(BaseInterfaceModel):
             # Only query for a specific contract when checking an instance.
             query["contract"] = self.contract.address
 
-        contract_event_query = ContractEventQuery(**query)
-        contract_events = self.query_manager.query(
-            contract_event_query, engine_to_use=engine_to_use
-        )
-        columns_ls = validate_and_expand_columns(columns, ContractLog)
-        data = map(partial(extract_fields, columns=columns_ls), contract_events)
-        return pd.DataFrame(columns=columns_ls, data=data)
+        return self.query_manager.query(
+            ContractEventQuery(**query), engine_to_use=engine_to_use
+        ).as_dataframe(backend=backend)
 
     def range(
         self,
@@ -886,7 +884,7 @@ class ContractEvent(BaseInterfaceModel):
 
         # Construct the event query
         contract_event_query = ContractEventQuery(
-            columns=list(ContractLog.__pydantic_fields__),  # Ensure all necessary columns
+            columns=["*"],
             contract=addresses,
             event=self.abi,
             search_topics=search_topics,
@@ -895,7 +893,7 @@ class ContractEvent(BaseInterfaceModel):
         )
 
         # Execute the query and yield results
-        yield from self.query_manager.query(contract_event_query)  # type: ignore
+        yield from self.query_manager.query(contract_event_query).as_model_iter()
 
     def from_receipt(self, receipt: "ReceiptAPI") -> list[ContractLog]:
         """

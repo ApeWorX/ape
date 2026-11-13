@@ -974,7 +974,7 @@ class Web3Provider(ProviderAPI, ABC):
             # Honed in on one block where there's a delta in nonce, so must be the right block
             for txn in self.get_transactions_by_block(stop_block):
                 assert isinstance(txn.nonce, int)  # NOTE: just satisfying mypy here
-                if txn.sender == account and txn.nonce >= start_nonce:
+                if txn.sender == account and start_nonce <= txn.nonce <= stop_nonce:
                     yield self.get_receipt(to_hex(txn.txn_hash))
 
             # Nothing else to search for

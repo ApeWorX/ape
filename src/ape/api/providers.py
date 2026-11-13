@@ -21,9 +21,6 @@ from eth_utils import to_hex
 from ethpm_types import MethodABI
 from pydantic import Field, computed_field, field_serializer, model_validator
 
-from ape.api.networks import NetworkAPI, ProviderContextManager
-from ape.api.query import BlockTransactionQuery
-from ape.api.transactions import ReceiptAPI, TransactionAPI
 from ape.exceptions import (
     APINotImplementedError,
     ContractLogicError,
@@ -46,6 +43,9 @@ from ape.utils.misc import (
 )
 from ape.utils.process import JoinableQueue, spawn
 from ape.utils.rpc import RPCHeaders
+
+from .networks import NetworkAPI, ProviderContextManager
+from .transactions import ReceiptAPI, TransactionAPI
 
 if TYPE_CHECKING:
     from ethpm_types.abi import EventABI
@@ -153,13 +153,35 @@ class BlockAPI(BaseInterfaceModel):
         """
         All transactions in a block.
         """
+        from ape.api.query import BlockTransactionQuery
+
         if self.hash is None:
-            # Unable to query transactions.
+            # Unsealed blocks have no hash yet.
+            return []
+
+        num_transactions = self.num_transactions
+        if "num_transactions" not in self.model_fields_set:
+            # A header-only block (such as from ``newHeads``) omits the count, and
+            # the field then defaults to zero. Fetch the block to learn the real count.
+            block = self.provider.get_block(self.hash)
+            if "num_transactions" not in block.model_fields_set:
+                # Some providers (such as Titanoboa) never report the count. Without
+                # it the query has no window, so ask the provider for the body directly.
+                return list(self.provider.get_transactions_by_block(self.hash))
+
+            num_transactions = block.num_transactions
+
+        if num_transactions == 0:
+            # An empty block has nothing to fetch.
             return []
 
         try:
-            query = BlockTransactionQuery(columns=["*"], block_id=self.hash)
-            return cast(list[TransactionAPI], list(self.query_manager.query(query)))
+            query = BlockTransactionQuery(
+                columns=["*"],
+                num_transactions=num_transactions,
+                block_id=self.hash,
+            )
+            return cast(list[TransactionAPI], list(self.query_manager.query(query).as_model_iter()))
         except QueryEngineError as err:
             # NOTE: Re-raising a better error here because was confusing
             #  when doing anything with fields, and this would fail.
