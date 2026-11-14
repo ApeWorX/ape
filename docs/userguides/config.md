@@ -349,6 +349,60 @@ Install these plugins by running command:
 ape plugins install .
 ```
 
+## Proxy
+
+Route HTTP(S) traffic through a proxy. Useful for corporate networks and privacy setups (for example a local Tor HTTP proxy).
+
+```yaml
+proxy:
+  url: https://proxy.company.com:8080
+  no_proxy:
+    - localhost
+    - 127.0.0.1
+    - internal-rpc.company.com
+```
+
+Or the equivalent TOML:
+
+```toml
+[tool.ape.proxy]
+url = "https://proxy.company.com:8080"
+no_proxy = ["localhost", "127.0.0.1", "internal-rpc.company.com"]
+```
+
+**Precedence** (highest first):
+
+1. Existing environment variables `HTTP_PROXY` / `HTTPS_PROXY` / `NO_PROXY` / `ALL_PROXY` (and lowercase variants) — **always win**; Ape never overwrites them
+2. The `proxy` section in `ape-config` / `[tool.ape.proxy]` (project overrides global)
+3. No proxy
+
+When Ape loads configuration (CLI or `import ape`), it writes the config values into `os.environ` only for variables that are not already set. That covers `requests`, `web3.py`'s HTTP provider, and most plugins automatically.
+
+**Authentication**: do **not** put proxy credentials in config. Use `~/.netrc` instead:
+
+```
+machine proxy.company.com
+  login myuser
+  password mypassword
+```
+
+`requests` reads `.netrc` automatically. For `httpx`, use Ape's helper which opts into `.netrc` support:
+
+```python
+from ape.utils import get_httpx_client
+
+with get_httpx_client() as client:
+    response = client.get("https://example.com")
+```
+
+**Corporate TLS / custom CA**: many enterprise proxies perform TLS interception and require trusting a corporate root CA. Point the standard env vars at that CA bundle so `requests` / `urllib3` (and tools that honor them) validate correctly:
+
+```bash
+export REQUESTS_CA_BUNDLE=/path/to/corporate-root-ca.pem
+# or
+export SSL_CERT_FILE=/path/to/corporate-root-ca.pem
+```
+
 ## Request Headers
 
 For Ape's HTTP usage, such as requests made via `web3.py`, optionally specify extra request headers.
