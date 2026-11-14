@@ -3,9 +3,10 @@ import os
 import sys
 import traceback
 from contextlib import contextmanager
+from functools import cached_property
 from pathlib import Path
 from runpy import run_module
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import click
 
@@ -13,6 +14,11 @@ from ape.cli.commands import ConnectedProviderCommand
 from ape.cli.options import _VERBOSITY_VALUES, _create_verbosity_kwargs, verbosity_option
 from ape.exceptions import ApeException, handle_ape_exception
 from ape.logging import logger
+
+if TYPE_CHECKING:
+    from ape.api.scripts import ScriptRunnerAPI
+
+PYTHON_SCRIPTS_FOLDER_NAME = "scripts"
 
 
 @contextmanager
@@ -176,17 +182,44 @@ class ScriptCommand(click.MultiCommand):
 
             return call
 
+    @cached_property
+    def script_runners(self) -> dict[str, "ScriptRunnerAPI"]:
+        """
+        Each plugin-registered script extension mapped to the runner for it.
+        """
+        from ape.utils.basemodel import ManagerAccessMixin as access
+
+        script_runners: dict[str, ScriptRunnerAPI] = {}
+        for _, (extensions, runner_class) in access.plugin_manager.register_script_runner:
+            runner = runner_class()
+            for extension in extensions:
+                script_runners.setdefault(extension, runner)
+
+        return script_runners
+
     @property
     def commands(self) -> dict[str, click.Command | click.Group]:
         # perf: Don't reference `.local_project.scripts_folder` here;
         #   it's too slow when doing just doing `--help`.
-        scripts_folder = Path.cwd() / "scripts"
-        if not scripts_folder.is_dir():
-            return {}
+        commands: dict[str, click.Command | click.Group] = {}
+        for folder_name in self._get_scripts_folder_names():
+            scripts_folder = Path.cwd() / folder_name
+            if scripts_folder.is_dir():
+                runs_python = folder_name == PYTHON_SCRIPTS_FOLDER_NAME
+                commands = {**self._get_cli_commands(scripts_folder, runs_python), **commands}
 
-        return self._get_cli_commands(scripts_folder)
+        return commands
 
-    def _get_cli_commands(self, base_path: Path) -> dict:
+    def _get_scripts_folder_names(self) -> list[str]:
+        runner_folder_names = {
+            runner.scripts_folder_name for runner in self.script_runners.values()
+        }
+        return [
+            PYTHON_SCRIPTS_FOLDER_NAME,
+            *sorted(runner_folder_names - {PYTHON_SCRIPTS_FOLDER_NAME}),
+        ]
+
+    def _get_cli_commands(self, base_path: Path, runs_python: bool = True) -> dict:
         commands: dict[str, click.Command] = {}
 
         for filepath in base_path.iterdir():
@@ -197,25 +230,45 @@ class ScriptCommand(click.MultiCommand):
                 group = click.Group(
                     name=filepath.stem, short_help=f"Run a script from '{filepath.stem}'"
                 )
-                subcommands = self._get_cli_commands(filepath)
+                subcommands = self._get_cli_commands(filepath, runs_python)
                 for subcommand in subcommands.values():
                     group.add_command(subcommand)
 
                 commands[filepath.stem] = group
 
-            if filepath.suffix == ".py":
+            if filepath.suffix == ".py" and runs_python:
                 cmd = self._get_command(filepath)
                 if cmd:  # NOTE: Don't allow calling commands that failed to load
                     commands[filepath.stem] = cmd
 
+            elif runner_command := self._get_runner_command(filepath):
+                name, cmd = runner_command
+                commands[name] = cmd
+
         return commands
+
+    def _get_runner_command(self, filepath: Path) -> tuple[str, click.Command] | None:
+        if not filepath.is_file() or not (script_runner := self._find_script_runner(filepath)):
+            return None
+
+        name, runner = script_runner
+        cmd = runner.get_command(filepath, name)
+        return (name, cmd) if cmd else None
+
+    def _find_script_runner(self, filepath: Path) -> tuple[str, "ScriptRunnerAPI"] | None:
+        for extension, runner in self.script_runners.items():
+            if filepath.name.endswith(extension):
+                return filepath.name.removesuffix(extension), runner
+
+        return None
 
     def list_commands(self, ctx):
         return sorted(self.commands)
 
     def get_command(self, ctx, name):
-        if Path(name).exists():
-            name = Path(name).stem
+        script_path = Path(name)
+        if script_path.exists():
+            name, _ = self._find_script_runner(script_path) or (script_path.stem, None)
 
         if name in self.commands:
             self._command_called = name
