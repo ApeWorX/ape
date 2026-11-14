@@ -4,7 +4,8 @@ Testing an ape project is important and easy.
 
 ## Pytest
 
-Before learning how testing works in Ape, you should have an understanding of [the pytest framework](https://docs.pytest.org/en/7.4.x/) and its concepts such as fixtures, mark-decorators, and pytest plugins such as x-dist, pytest-mock, and pytest-cov.
+Before learning how testing works in Ape, you should have an understanding of the [pytest framework](https://pytest.org)
+and its concepts such as fixtures, markers, and plugins (such as pytest-xdist, pytest-mock, and pytest-cov).
 Once you have learned about pytest, Ape testing becomes intuitive because it is built on top of pytest.
 In fact, `ape-test` is itself a `pytest` plugin!
 
