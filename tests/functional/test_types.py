@@ -7,7 +7,7 @@ from hexbytes import HexBytes
 from pydantic import BaseModel, Field, ValidationError
 
 from ape.types.address import AddressType
-from ape.types.basic import HexInt
+from ape.types.basic import HexInt, _LazySequence
 from ape.types.events import ContractLog, LogFilter
 from ape.types.private_mempool import SimulationReport
 from ape.types.units import CurrencyValueComparable
@@ -178,6 +178,19 @@ class TestHexInt:
         expected = ".*Input should be a valid integer.*"
         with pytest.raises(ValidationError, match=expected):
             _ = MyModel(an_int=None)
+
+
+class TestLazySequence:
+    def test_getitem(self):
+        seq = _LazySequence(x for x in ("foo", "bar", "baz"))
+        assert seq[0] == "foo"
+        assert seq[2] == "baz"
+        assert seq[1] == "bar"
+
+    def test_getitem_out_of_range(self):
+        seq = _LazySequence(x for x in ("foo", "bar"))
+        with pytest.raises(IndexError):
+            _ = seq[2]
 
 
 class TestCurrencyValueComparable:
