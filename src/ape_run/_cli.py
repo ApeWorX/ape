@@ -1,8 +1,9 @@
 import inspect
-import os
 import sys
 import traceback
+from collections.abc import Callable
 from contextlib import contextmanager
+from functools import wraps
 from pathlib import Path
 from runpy import run_module
 from typing import Any
@@ -10,9 +11,103 @@ from typing import Any
 import click
 
 from ape.cli.commands import ConnectedProviderCommand
-from ape.cli.options import _VERBOSITY_VALUES, _create_verbosity_kwargs, verbosity_option
+from ape.cli.options import _VERBOSITY_VALUES, _create_verbosity_kwargs
 from ape.exceptions import ApeException, handle_ape_exception
 from ape.logging import logger
+from ape.utils.basemodel import ManagerAccessMixin
+
+
+def get_locals_from_trace(trace):
+    from ape.utils.basemodel import ManagerAccessMixin as access
+
+    extra_locals = {}
+    trace_frames = [
+        x for x in trace if x.filename.startswith(str(access.local_project.scripts_folder))
+    ]
+    if not trace_frames:
+        # Error from Ape internals; avoid launching console.
+        sys.exit(1)
+
+    # Use most recently matching frame.
+    frame = trace_frames[-1].frame
+
+    extra_locals.update({k: v for k, v in frame.f_globals.items() if not k.startswith("_")})
+    extra_locals.update(frame.f_locals)
+
+    # Avoid keeping a reference to a frame to avoid reference cycles.
+    del frame
+
+    return extra_locals
+
+
+def _console_locals(raw: dict) -> dict:
+    """Filter frame locals to values safe for ``ApeConsoleNamespace``."""
+    return {
+        k: v
+        for k, v in raw.items()
+        if k not in {"self", "cls", "args", "kwargs"} and not k.startswith("_")
+    }
+
+
+def wrap_interactive_console(callback: Callable) -> Callable:
+    """
+    Wrap callback (either ``main()`` from script or ``click.Command.callback``)
+    with launching an interactive console on failure or success.
+    """
+
+    from ape.utils.basemodel import ManagerAccessMixin as access
+
+    callback_code = getattr(callback, "__code__", None)
+
+    @wraps(callback)
+    def wrapper(*args, **kwargs) -> Any:
+        result = None
+        extra_locals: dict = {}
+        captured: dict = {}
+
+        def _local_tracer(frame, event, arg):
+            # Only attached to the script callback's frame; grab locals as it returns.
+            if event == "return":
+                captured.update(frame.f_locals)
+            return _local_tracer
+
+        def _tracer(frame, event, arg):
+            # Global tracer: only trace the script callback's own frame (success path).
+            # Returning None for every other frame avoids line-tracing the whole process.
+            if callback_code is not None and frame.f_code is callback_code:
+                return _local_tracer
+            return None
+
+        try:
+            prior_trace = sys.gettrace()
+            sys.settrace(_tracer)
+            try:
+                result = callback(*args, **kwargs)
+            finally:
+                sys.settrace(prior_trace)
+
+        except Exception as err:  # noqa: BLE001
+            extra_locals.update(_console_locals(get_locals_from_trace(inspect.trace())))
+
+            # Print the exception trace and then launch the console
+            # Attempt to use source-traceback style printing.
+            path = access.local_project.path
+            assert isinstance(path, Path)  # For mypy.
+            if not isinstance(err, ApeException) or not handle_ape_exception(err, (path,)):
+                err_info = traceback.format_exc()
+                click.echo(err_info)
+
+        else:  # Function succeeded
+            extra_locals.update(_console_locals(captured))
+
+        finally:
+            from ape_console._cli import console
+
+            console(extra_locals=extra_locals, embed=True)
+
+        return result
+
+    return wrapper
 
 
 @contextmanager
@@ -47,222 +142,246 @@ def use_scripts_sys_path(path: Path):
         sys.modules["scripts"] = scripts
 
 
-def get_module(script_path: Path) -> str:
-    mod_name = ".".join(
-        str(script_path).replace(os.path.sep, ".").split("scripts.")[-1].split(".")[:-1]
-    )
-    return mod_name if "." in mod_name else f"scripts.{mod_name}"
+def get_module_name(script_path: Path, scripts_folder: Path) -> str:
+    """
+    Return a fully-qualified module name under the ``scripts`` namespace.
+
+    Loading as ``scripts.<name>`` (with the project root on ``sys.path``) avoids
+    colliding with installed packages that share a script stem (e.g. ``click.py``)
+    and preserves relative imports like ``from ._utils import ...``.
+    """
+    rel = script_path.with_suffix("").relative_to(scripts_folder)
+    return "scripts." + ".".join(rel.parts)
 
 
-def run_script_module(script_path: Path):
-    mod_name = get_module(script_path)
+def run_script_module(script_path: Path, scripts_folder: Path):
+    mod_name = get_module_name(script_path, scripts_folder)
     return run_module(mod_name)
 
 
-class ScriptCommand(click.MultiCommand):
-    def __init__(self, *args, **kwargs):
-        if "result_callback" not in kwargs:
-            kwargs["result_callback"] = self.result_callback
+def _ensure_verbosity_option(cli_obj: click.Command) -> None:
+    params = [getattr(x, "name", None) for x in cli_obj.params]
+    if "verbosity" not in params:
+        option_kwargs = _create_verbosity_kwargs()
+        option = click.Option(_VERBOSITY_VALUES, **option_kwargs)
+        cli_obj.params.append(option)
 
-        super().__init__(*args, **kwargs)
-        self._namespace = {}
-        self._command_called = None
-        self._has_warned_missing_hook: set[Path] = set()
 
-    def invoke(self, ctx: click.Context) -> Any:
-        from ape.utils.basemodel import ManagerAccessMixin as access
+class MainScript(ConnectedProviderCommand, ManagerAccessMixin):
+    """
+    A script file that contains a singular ``main()`` method to execute.
 
-        try:
-            return super().invoke(ctx)
-        except Exception as err:
-            if ctx.params["interactive"]:
-                # Print the exception trace and then launch the console
-                # Attempt to use source-traceback style printing.
-                network_value = (
-                    ctx.params.get("network") or access.network_manager.default_ecosystem.name
-                )
-                with access.network_manager.parse_network_choice(
-                    network_value, disconnect_on_exit=False
-                ):
-                    path = ctx.obj.local_project.path
-                    assert isinstance(path, Path)  # For mypy.
-                    if not isinstance(err, ApeException) or not handle_ape_exception(err, (path,)):
-                        err_info = traceback.format_exc()
-                        click.echo(err_info)
+    Note: by subclassing ``ConnectedProviderCommand`` we get network auto-loading.
+    """
 
-                    self._launch_console()
-            else:
-                # Don't handle error - raise exception as normal.
-                raise
+    def __init__(
+        self, path: Path, scripts_folder: Path, *args, interactive: bool = False, **kwargs
+    ):
+        self.path = path
+        self.scripts_folder = scripts_folder
+        self.interactive = interactive
 
-    def _get_command(self, filepath: Path) -> click.Command | click.Group | None:
-        scripts_folder = Path.cwd() / "scripts"
-        relative_filepath = filepath.relative_to(scripts_folder)
+        if not kwargs.get("help"):
+            kwargs["help"] = f"Run '{self.relative_path}:main'"
 
-        # First load the code module by compiling it
-        # NOTE: This does not execute the module
-        logger.debug(f"Parsing module: {relative_filepath}")
-        try:
-            code = compile(filepath.read_text(encoding="utf8"), filepath, "exec")
-        except SyntaxError as e:
-            logger.error_from_exception(e, f"Exception while parsing script: {relative_filepath}")
-            return None  # Prevents stalling scripts
+        def callback(network=None):
+            _ = network  # Downstream might use this
+            with use_scripts_sys_path(self.scripts_folder.parent):
+                main_ns = run_script_module(self.path, self.scripts_folder)
+            main_fn = main_ns["main"]
+            if self.interactive:
+                main_fn = wrap_interactive_console(main_fn)
+            main_fn()
 
-        # NOTE: Introspect code structure only for given patterns (do not execute it to find hooks)
-        if "cli" in code.co_names:
-            # If the module contains a click cli subcommand, process it and return the subcommand
-            logger.debug(f"Found 'cli' command in script: {relative_filepath}")
-
-            with use_scripts_sys_path(filepath.parent.parent):
-                try:
-                    cli_ns = run_script_module(filepath)
-                except Exception as e:  # noqa: BLE001
-                    logger.error_from_exception(
-                        e, f"Exception while parsing script: {relative_filepath}"
-                    )
-                    return None  # Prevents stalling scripts
-
-            self._namespace[filepath.stem] = cli_ns
-            cli_obj = cli_ns["cli"]
-            if not isinstance(cli_obj, click.Command):
-                logger.warning("Found `cli()` method but it is not a click command.")
-                return None
-
-            params = [getattr(x, "name", None) for x in cli_obj.params]
-            if "verbosity" not in params:
-                option_kwargs = _create_verbosity_kwargs()
-                option = click.Option(_VERBOSITY_VALUES, **option_kwargs)
-                cli_obj.params.append(option)
-
-            cli_obj.name = filepath.stem if cli_obj.name in ("cli", "", None) else cli_obj.name
-            return cli_obj
-
-        elif "main" in code.co_names:
-            logger.debug(f"Found 'main' method in script: {relative_filepath}")
-
-            @click.command(
-                cls=ConnectedProviderCommand,
-                short_help=f"Run '{relative_filepath}:main'",
-                name=relative_filepath.stem,
-            )
-            @verbosity_option()
-            def call(network):
-                _ = network  # Downstream might use this
-                with use_scripts_sys_path(filepath.parent.parent):
-                    main_ns = run_script_module(filepath)
-
-                main_ns["main"]()  # Execute the script
-                self._namespace[filepath.stem] = main_ns
-
-            return call
-
-        else:
-            if relative_filepath not in self._has_warned_missing_hook:
-                # Not a script solely to be run by Ape; ignore.
-                logger.debug(f"No 'main' method or 'cli' command in script: {relative_filepath}")
-                self._has_warned_missing_hook.add(relative_filepath)
-
-            @click.command(
-                cls=ConnectedProviderCommand,
-                short_help=f"Run '{relative_filepath}:main'",
-                name=relative_filepath.stem,
-            )
-            def call():
-                with use_scripts_sys_path(filepath.parent.parent):
-                    empty_ns = run_script_module(filepath)
-
-                # Nothing to call, everything executes on loading
-                self._namespace[filepath.stem] = empty_ns
-
-            return call
+        super().__init__(*args, name=path.stem, callback=callback, **kwargs)
 
     @property
-    def commands(self) -> dict[str, click.Command | click.Group]:
-        # perf: Don't reference `.local_project.scripts_folder` here;
-        #   it's too slow when doing just doing `--help`.
+    def relative_path(self) -> Path:
+        """Path to script file relative to project root"""
+
+        return self.path.relative_to(self.local_project.path)
+
+
+class SideEffectScript(ConnectedProviderCommand, ManagerAccessMixin):
+    """Script with neither ``main`` nor ``cli``: execute module body on invoke."""
+
+    def __init__(
+        self, path: Path, scripts_folder: Path, *args, interactive: bool = False, **kwargs
+    ):
+        self.path = path
+        self.scripts_folder = scripts_folder
+        self.interactive = interactive
+
+        if not kwargs.get("help"):
+            kwargs["help"] = f"Run '{self.relative_path}'"
+
+        def callback(network=None):
+            _ = network
+
+            def run():
+                with use_scripts_sys_path(self.scripts_folder.parent):
+                    run_script_module(self.path, self.scripts_folder)
+
+            if self.interactive:
+                wrap_interactive_console(run)()
+            else:
+                run()
+
+        super().__init__(*args, name=path.stem, callback=callback, **kwargs)
+
+    @property
+    def relative_path(self) -> Path:
+        return self.path.relative_to(self.local_project.path)
+
+
+ScriptCommand = click.Group | click.Command | MainScript | SideEffectScript
+
+
+def extract_python_command(
+    script_path: Path, scripts_folder: Path, interactive: bool = False
+) -> ScriptCommand | None:
+    relative_filepath = script_path.relative_to(scripts_folder)
+
+    # First load the code module by compiling it
+    # NOTE: This does not execute the module
+    logger.debug(f"Parsing module: {relative_filepath}")
+    try:
+        code = compile(script_path.read_text(encoding="utf8"), script_path, "exec")
+    except SyntaxError as e:
+        logger.error_from_exception(e, f"Exception while parsing script: {relative_filepath}")
+        return None  # Prevents stalling scripts
+
+    # NOTE: Introspect code structure only for given patterns (do not execute it to find hooks)
+    if "cli" in code.co_names:
+        # If the module contains a click cli subcommand, process it and return the subcommand
+        logger.debug(f"Found 'cli' command in script: {relative_filepath}")
+
+        with use_scripts_sys_path(scripts_folder.parent):
+            try:
+                cli_ns = run_script_module(script_path, scripts_folder)
+            except Exception as e:  # noqa: BLE001
+                logger.error_from_exception(
+                    e, f"Exception while parsing script: {relative_filepath}"
+                )
+                return None  # Prevents stalling scripts
+
+        cli_obj = cli_ns.get("cli")
+        if not isinstance(cli_obj, click.Command):
+            logger.warning("Found `cli()` method but it is not a click command.")
+            return None
+
+        _ensure_verbosity_option(cli_obj)
+        cli_obj.name = script_path.stem if cli_obj.name in ("cli", "", None) else cli_obj.name
+
+        if interactive:
+            if isinstance(cli_obj, click.Group):
+                for cmd_name, cmd in cli_obj.commands.items():
+                    if cmd.callback:
+                        logger.debug(
+                            f"Wrapping '{cmd_name}' callback from '{script_path.name}:cli'"
+                        )
+                        cmd.callback = wrap_interactive_console(cmd.callback)
+            elif cli_obj.callback:
+                logger.debug(f"Wrapping 'cli' callback from '{script_path.name}'")
+                cli_obj.callback = wrap_interactive_console(cli_obj.callback)
+
+        return cli_obj
+
+    elif "main" in code.co_names:
+        logger.debug(f"Found 'main' method in script: {relative_filepath}")
+        return MainScript(script_path, scripts_folder, interactive=interactive)
+
+    else:
+        # Not a script solely to be run by Ape; still allow module-level execution on invoke.
+        logger.debug(f"No 'main' method or 'cli' command in script: {relative_filepath}")
+        return SideEffectScript(script_path, scripts_folder, interactive=interactive)
+
+
+class ScriptSubfolder(click.Group, ManagerAccessMixin):
+    """
+    If there is a folder under ``scripts/`` (or recursively under those),
+    this command group represents executing scripts from those files.
+    """
+
+    def __init__(self, path: Path, *args, interactive: bool = False, **kwargs):
+        self.path = path
+        self.interactive = interactive
+
+        if not kwargs.get("help"):
+            if (readme_file := path / "README.md").exists():
+                kwargs["help"] = readme_file.read_text()
+            else:
+                kwargs["help"] = f"Run script(s) from '{path.name}'"
+
+        super().__init__(*args, **kwargs)
+
+    @property
+    def relative_path(self) -> Path:
+        """Path to folder relative to project root"""
+
+        return self.path.relative_to(self.local_project.path)
+
+    @property
+    def scripts_folder(self) -> Path:
+        return self.local_project.scripts_folder
+
+    def __repr__(self) -> str:
+        return f"<{self.__class__.__name__} path={self.relative_path}>"
+
+    def list_commands(self, ctx: click.Context) -> list[str]:
+        if not self.path.exists():
+            return []
+
+        # NOTE: Skip "private" modules/folders
+        return sorted(path.stem for path in self.path.iterdir() if not path.stem.startswith("_"))
+
+    def get_command(
+        self, ctx: click.Context, cmd_name: str
+    ) -> "ScriptSubfolder | ScriptCommand | None":
+        # TODO: Run remote scripts? (seems bad)
+        # TODO: Run scripts from dependencies?
+
+        interactive = ctx.params.get("interactive", self.interactive)
+
+        if (path := self.path / cmd_name).is_dir() and not (path / "__init__.py").exists():
+            # NOTE: `path` is a non-module folder
+            logger.debug(
+                f"Parsing as script-containing subfolder: '{self.relative_path}/{path.name}'"
+            )
+            return ScriptSubfolder(path, name=cmd_name, interactive=interactive)
+
+        elif path.is_dir() and (path / "__init__.py").exists():
+            # NOTE: `path` is a Python package module
+            logger.debug(f"Parsing as script-containing module: '{self.relative_path}/{path.name}'")
+            return extract_python_command(path, self.scripts_folder, interactive=interactive)
+
+        elif (path := self.path / f"{cmd_name}.py").exists():
+            logger.debug(f"Parsing as script-containing module: '{self.relative_path}/{path.name}'")
+            return extract_python_command(path, self.scripts_folder, interactive=interactive)
+
+        # TODO: Non-python scripts? (e.g. smart contract scripts a la Foundry)
+        # for ext in self.compiler_manager.registered_compilers:
+        #     if (path := self.path / f"{cmd_name}{ext}").exists():
+        #        return ContractScript(path, interactive=ctx.params.get("interactive"))
+
+        # NOTE: This shouldn't actually happen if you use one of `.list_commands(ctx)`
+        return None  # Click will display error about "command not available"
+
+
+class ScriptManager(ScriptSubfolder):
+    def __init__(self, *args, **kwargs):
+        # perf: prefer cwd/scripts for --help speed when possible; fall back to project.
         scripts_folder = Path.cwd() / "scripts"
         if not scripts_folder.is_dir():
-            return {}
+            scripts_folder = self.local_project.scripts_folder
+        super().__init__(scripts_folder, *args, **kwargs)
 
-        return self._get_cli_commands(scripts_folder)
 
-    def _get_cli_commands(self, base_path: Path) -> dict:
-        commands: dict[str, click.Command] = {}
-
-        for filepath in base_path.iterdir():
-            if filepath.stem.startswith("_"):
-                continue  # Ignore any "private" files
-
-            elif filepath.is_dir():
-                group = click.Group(
-                    name=filepath.stem, short_help=f"Run a script from '{filepath.stem}'"
-                )
-                subcommands = self._get_cli_commands(filepath)
-                for subcommand in subcommands.values():
-                    group.add_command(subcommand)
-
-                commands[filepath.stem] = group
-
-            if filepath.suffix == ".py":
-                cmd = self._get_command(filepath)
-                if cmd:  # NOTE: Don't allow calling commands that failed to load
-                    commands[filepath.stem] = cmd
-
-        return commands
-
-    def list_commands(self, ctx):
-        return sorted(self.commands)
-
-    def get_command(self, ctx, name):
-        if Path(name).exists():
-            name = Path(name).stem
-
-        if name in self.commands:
-            self._command_called = name
-            return self.commands[name]
-
-        # NOTE: don't return anything so Click displays proper error
-
-    def result_callback(self, result, interactive: bool):  # type: ignore[override]
-        if interactive:
-            return self._launch_console()
-
-        return result
-
-    def _launch_console(self):
-        from ape.utils.basemodel import ManagerAccessMixin as access
-
-        trace = inspect.trace()
-        trace_frames = [
-            x for x in trace if x.filename.startswith(str(access.local_project.scripts_folder))
-        ]
-        if not trace_frames:
-            # Error from Ape internals; avoid launching console.
-            sys.exit(1)
-
-        # Use most recently matching frame.
-        frame = trace_frames[-1].frame
-
-        try:
-            globals_dict = {k: v for k, v in frame.f_globals.items() if not k.startswith("__")}
-            extra_locals = {
-                **self._namespace.get(self._command_called, {}),
-                **globals_dict,
-                **frame.f_locals,
-            }
-
-        finally:
-            # Avoid keeping a reference to a frame to avoid reference cycles.
-            if frame:
-                del frame
-
-        from ape_console._cli import console
-
-        return console(project=access.local_project, extra_locals=extra_locals, embed=True)
+# TODO: Script testing pytest plugin?
 
 
 @click.command(
-    cls=ScriptCommand,
+    cls=ScriptManager,
     short_help="Run scripts from the `scripts/` folder",
 )
 @click.option(
@@ -272,12 +391,12 @@ class ScriptCommand(click.MultiCommand):
     default=False,
     help="Drop into interactive console session after running",
 )
-def cli(interactive):
+def cli(**_):  # NOTE: options get used from context
     """
-    Run scripts from the "scripts/" folder of a project. A script must either define a ``main()``
-    method, or define a command named ``cli`` that is a ``click.Command`` or ``click.Group`` object.
-    Scripts with only a ``main()`` method will be called with a network option given to the command.
-    Scripts with a ``cli`` command should import any mix-ins necessary to operate from the
-    ``ape.cli`` package.
+    Run scripts from the "scripts/" folder of a project.
+
+    A script must either define a ``main()`` method, or define a command named ``cli`` that is a
+    ``click.Command`` or ``click.Group`` object. Scripts with only a ``main()`` method will be
+    called with a network option given to the command. Scripts with a ``cli`` command should
+    import any mix-ins necessary to operate from the ``ape.cli`` package.
     """
-    _ = interactive  # NOTE: Used in above callback handler
