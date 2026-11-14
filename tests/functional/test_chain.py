@@ -3,7 +3,12 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from ape.exceptions import APINotImplementedError, ChainError, UnknownSnapshotError
+from ape.exceptions import (
+    APINotImplementedError,
+    ChainError,
+    ProviderError,
+    UnknownSnapshotError,
+)
 from ape.managers.chain import AccountHistory, ChainIdCache
 from ape.types.address import AddressType
 
@@ -247,6 +252,21 @@ def test_set_pending_timestamp_with_deltatime(chain):
     new_timestamp = chain.pending_timestamp
     actual = new_timestamp - start_timestamp - 5
     assert actual <= 1
+
+
+def test_mine_interval(chain):
+    first_timestamp = chain.pending_timestamp
+    chain.mine(3, interval=10)
+    assert [chain.blocks[index].timestamp for index in (-3, -2, -1)] == [
+        first_timestamp,
+        first_timestamp + 10,
+        first_timestamp + 20,
+    ]
+
+
+def test_mine_interval_below_one_second(chain):
+    with pytest.raises(ProviderError, match="at least 1 second apart"):
+        chain.mine(2, interval=0)
 
 
 def test_set_pending_timestamp_failure(chain):
