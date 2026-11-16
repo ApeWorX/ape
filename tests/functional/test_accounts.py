@@ -86,6 +86,7 @@ class Ed25519KeyfileAccount(BaseKeyfileAccount):
     """
 
     passphrase_env_prefix = "APE_ED25519"
+    __cached_seed: bytes | None = None
 
     @classmethod
     def encrypt_secret(cls, secret: bytes, passphrase: str) -> dict:
@@ -97,11 +98,15 @@ class Ed25519KeyfileAccount(BaseKeyfileAccount):
     def address(self) -> str:  # type: ignore[override]
         return self.keyfile["address"]
 
+    def unlock(self, passphrase: str | None = None):
+        self.__cached_seed = self._request_secret(passphrase)
+        self.locked = False
+
     def sign_message(self, msg: bytes, **signer_options) -> bytes | None:  # type: ignore[override]
-        if not self._confirm_signing(f"Signing raw bytes: '{msg.hex()}'"):
+        if self.locked or self.__cached_seed is None:
             return None
 
-        signing_key = ECC.construct(curve="ed25519", seed=self._secret)
+        signing_key = ECC.construct(curve="ed25519", seed=self.__cached_seed)
         return eddsa.new(signing_key, "rfc8032").sign(msg)
 
     def sign_transaction(self, txn, **signer_options):
@@ -1270,7 +1275,7 @@ def test_create_account_custom_keyfile_account(ed25519_container):
     assert isinstance(account, Ed25519KeyfileAccount)
     assert "ed25519account" not in AccountContainer.loaded_accounts
 
-    account.set_autosign(True, passphrase=PASSPHRASE)
+    account.unlock(passphrase=PASSPHRASE)
     signature = account.sign_message(b"gm")
     eddsa.new(signing_key.public_key(), "rfc8032").verify(b"gm", signature)
     assert account.address == signing_key.public_key().export_key(format="raw").hex()
