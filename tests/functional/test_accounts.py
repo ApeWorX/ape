@@ -3,8 +3,9 @@ from typing import Any
 
 import pytest
 from cchecksum import to_checksum_address
-from cryptography.exceptions import InvalidSignature
-from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey, Ed25519PublicKey
+from Crypto.PublicKey import ECC
+from Crypto.PublicKey.ECC import EccKey
+from Crypto.Signature import eddsa
 from eip712.messages import EIP712Domain, EIP712Message
 from eth_account.messages import encode_defunct
 from eth_pydantic_types import HexBytes, abi
@@ -98,24 +99,24 @@ class Ed25519Account(AccountAPI):
     A Solana-style account whose address is its ed25519 public key.
     """
 
-    private_key: bytes
+    seed: bytes
 
     @property
-    def verify_key(self) -> Ed25519PublicKey:
-        return Ed25519PrivateKey.from_private_bytes(self.private_key).public_key()
+    def signing_key(self) -> EccKey:
+        return ECC.construct(curve="ed25519", seed=self.seed)
 
     @property
     def public_key(self) -> HexBytes:
-        return HexBytes(self.verify_key.public_bytes_raw())
+        return HexBytes(self.signing_key.public_key().export_key(format="raw"))
 
     @property
     def address(self) -> str:  # type: ignore[override]
         return self.public_key.hex()
 
-    def sign_message(self, msg: Any, **signer_options) -> Ed25519Signature:
+    def sign_message(self, msg: Any, **signer_options) -> Ed25519Signature:  # type: ignore[override]
         message_bytes = msg.encode("utf8") if isinstance(msg, str) else msg
-        private_key = Ed25519PrivateKey.from_private_bytes(self.private_key)
-        return Ed25519Signature(private_key.sign(message_bytes))
+        signer = eddsa.new(self.signing_key, "rfc8032")
+        return Ed25519Signature(signer.sign(message_bytes))
 
     def sign_transaction(self, txn, **signer_options):
         raise APINotImplementedError("Example account does not sign transactions.")
@@ -130,9 +131,10 @@ class Ed25519Account(AccountAPI):
             raise AccountsError("Parameter 'signature' required when verifying a message.")
 
         message_bytes = data.encode("utf8") if isinstance(data, str) else data
+        verifier = eddsa.new(self.signing_key.public_key(), "rfc8032")
         try:
-            self.verify_key.verify(bytes(signature), message_bytes)
-        except InvalidSignature:
+            verifier.verify(message_bytes, bytes(signature))
+        except ValueError:
             return False
 
         return True
@@ -140,8 +142,7 @@ class Ed25519Account(AccountAPI):
 
 @pytest.fixture
 def ed25519_account():
-    private_key = Ed25519PrivateKey.generate().private_bytes_raw()
-    return Ed25519Account(private_key=private_key)
+    return Ed25519Account(seed=ECC.generate(curve="ed25519").seed)
 
 
 def test_sign_message(signer, message):
