@@ -4,7 +4,7 @@ from collections.abc import Iterator
 from functools import cached_property
 from os import environ
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar, cast
 
 import click
 from eip712.messages import EIP712Message
@@ -32,6 +32,7 @@ from ape_ethereum.transactions import TransactionType
 
 if TYPE_CHECKING:
     from eth_account.signers.local import LocalAccount
+    from typing_extensions import Self
 
     from ape.api.transactions import TransactionAPI
 
@@ -46,7 +47,15 @@ class InvalidPasswordError(AccountsError):
 
 
 class AccountContainer(AccountContainerAPI):
-    loaded_accounts: ClassVar[dict[str, "KeyfileAccount"]] = {}
+    """
+    A folder of encrypted keyfiles, each loaded as this container's ``account_type``.
+    """
+
+    loaded_accounts: ClassVar[dict[str, "BaseKeyfileAccount"]] = {}
+
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        cls.loaded_accounts = {}
 
     @property
     def _keyfiles(self) -> Iterator[Path]:
@@ -61,13 +70,26 @@ class AccountContainer(AccountContainerAPI):
     def accounts(self) -> Iterator[AccountAPI]:
         for keyfile in self._keyfiles:
             if keyfile.stem not in self.loaded_accounts:
-                keyfile_account = KeyfileAccount(keyfile_path=keyfile)
+                keyfile_account = self.keyfile_account_type(keyfile_path=keyfile)
                 self.loaded_accounts[keyfile.stem] = keyfile_account
 
             yield self.loaded_accounts[keyfile.stem]
 
     def __len__(self) -> int:
         return len([*self._keyfiles])
+
+    @property
+    def keyfile_account_type(self) -> type["BaseKeyfileAccount"]:
+        return cast(type[BaseKeyfileAccount], self.account_type)
+
+    def create_account(self, alias: str, passphrase: str, secret: bytes) -> "BaseKeyfileAccount":
+        """
+        Encrypt ``secret`` into a new keyfile named ``alias`` and return its account.
+        """
+        alias = _validate_account_alias(alias)
+        passphrase = _validate_account_passphrase(passphrase)
+        path = self.data_folder.joinpath(f"{alias}.json")
+        return self.keyfile_account_type.write_keyfile(path, secret, passphrase)
 
 
 class ApeSigner(AccountAPI):
@@ -205,15 +227,18 @@ class ApeSigner(AccountAPI):
         return self.call(tx)
 
 
-# NOTE: `AccountAPI` is an BaseInterfaceModel
-class KeyfileAccount(AccountAPI):
+class BaseKeyfileAccount(AccountAPI):
+    """
+    An account whose secret key lives in an encrypted keyfile.
+    """
+
     keyfile_path: Path
     locked: bool = True
-    __autosign: bool = False
-    __autosign_raw_msghash: bool = False
-    __cached_signer: ApeSigner | None = None
+    passphrase_env_prefix: ClassVar[str] = "APE_ACCOUNTS"
+    _autosign: bool = False
+    _cached_secret: bytes | None = None
 
-    @log_instead_of_fail(default="<KeyfileAccount>")
+    @log_instead_of_fail(default="<BaseKeyfileAccount>")
     def __repr__(self) -> str:
         # NOTE: Prevent errors from preventing repr from working.
         address_str = f" address={self.address}" if self.address else ""
@@ -228,63 +253,54 @@ class KeyfileAccount(AccountAPI):
     def keyfile(self) -> dict:
         return json.loads(self.keyfile_path.read_text())
 
-    @property
-    def address(self) -> AddressType:
-        return self.network_manager.ethereum.decode_address(self.keyfile["address"])
+    @classmethod
+    def encrypt_secret(cls, secret: bytes, passphrase: str) -> dict:
+        """
+        The keyfile contents storing ``secret`` encrypted with ``passphrase``.
+        """
+        return EthAccount.encrypt(secret, passphrase)
+
+    @classmethod
+    def write_keyfile(cls, path: Path, secret: bytes, passphrase: str) -> "Self":
+        path.write_text(json.dumps(cls.encrypt_secret(secret, passphrase)), encoding="utf8")
+        return cls(keyfile_path=path)
 
     @property
-    def __signer(self) -> ApeSigner:
-        if self.__cached_signer is not None:
+    def _secret(self) -> bytes:
+        if self._cached_secret is not None:
             if not self.locked:
                 logger.warning("Using cached key for %s", self.alias)
-                return self.__cached_signer
+                return self._cached_secret
 
-            self.__cached_signer = None
+            self._cached_secret = None
 
         passphrase = self._prompt_for_passphrase(default="")
-        key = self.__decrypt_keyfile(passphrase)
-        signer = ApeSigner(private_key=key)
-
+        secret = self._decrypt_keyfile(passphrase)
         if click.confirm(f"Leave '{self.alias}' unlocked?"):
             self.locked = False
-            self.__cached_signer = signer
+            self._cached_secret = secret
 
-        return signer
-
-    @property
-    def public_key(self) -> HexBytes | None:
-        keyfile_data = self.keyfile
-        if "public_key" in keyfile_data:
-            return HexBytes(bytes.fromhex(keyfile_data["public_key"]))
-
-        # Derive the public key from the private key
-        public_key = self.__signer.public_key
-        keyfile_data["public_key"] = remove_0x_prefix(HexStr(public_key.hex()))
-
-        # Store the public key so we don't have to derive it again.
-        self.keyfile_path.write_text(json.dumps(keyfile_data), encoding="utf8")
-
-        return public_key
+        return secret
 
     def unlock(self, passphrase: str | None = None):
-        private_key: bytes = b""
+        secret: bytes = b""
         if passphrase:
             # NOTE: Try only once, if it fails it was given incorrectly and we should not prompt
-            private_key = self.__decrypt_keyfile(passphrase)
+            secret = self._decrypt_keyfile(passphrase)
 
-        elif passphrase := environ.get(f"APE_ACCOUNTS_{self.alias}_PASSPHRASE"):
+        elif passphrase := environ.get(f"{self.passphrase_env_prefix}_{self.alias}_PASSPHRASE"):
             logger.info(f"Using passphrase for account '{self.alias}' from environment variable")
             # NOTE: Try only once, if it fails then we are non-interactive, so we can't prompt
-            private_key = self.__decrypt_keyfile(passphrase)
+            secret = self._decrypt_keyfile(passphrase)
 
         attempts = 1
-        while not private_key:
+        while not secret:
             # Passphrase not found, prompt for it up to 3 times.
             passphrase = self._prompt_for_passphrase(
                 f"Enter passphrase to permanently unlock '{self.alias}'"
             )
             try:
-                private_key = self.__decrypt_keyfile(passphrase)
+                secret = self._decrypt_keyfile(passphrase)
 
             except InvalidPasswordError as err:
                 if attempts < 3:
@@ -293,7 +309,7 @@ class KeyfileAccount(AccountAPI):
                 else:
                     raise AccountsError(f"Failed to unlock after {attempts} attempts.") from err
 
-        self.__cached_signer = ApeSigner(private_key=private_key)
+        self._cached_secret = secret
         self.locked = False
 
     def lock(self):
@@ -301,19 +317,82 @@ class KeyfileAccount(AccountAPI):
 
     def change_password(self):
         self.locked = True  # force entering passphrase to get key
-        key = self.__signer.private_key
+        secret = self._secret
 
         passphrase = self._prompt_for_passphrase("Create new passphrase", confirmation_prompt=True)
         self.keyfile_path.write_text(
-            json.dumps(EthAccount.encrypt(key, passphrase)), encoding="utf8"
+            json.dumps(self.encrypt_secret(secret, passphrase)), encoding="utf8"
         )
 
     def delete(self):
         passphrase = self._prompt_for_passphrase(
             f"Enter passphrase to delete '{self.alias}'", default=""
         )
-        self.__decrypt_keyfile(passphrase)
+        self._decrypt_keyfile(passphrase)
         self.keyfile_path.unlink()
+
+    def set_autosign(self, enabled: bool, passphrase: str | None = None):
+        """
+        Allow this account to automatically sign messages and transactions.
+
+        Args:
+            enabled (bool): ``True`` to enable, ``False`` to disable.
+            passphrase (str | None): Optionally provide the passphrase.
+              If not provided, you will be prompted to enter it.
+        """
+        if enabled:
+            self.unlock(passphrase=passphrase)
+            logger.warning("Danger! This account will now sign any transaction it's given.")
+
+        self._autosign = enabled
+        if not enabled:
+            # Re-lock if it was turning off
+            self.locked = True
+            self._cached_secret = None
+
+    def _confirm_signing(self, display_msg: str) -> bool:
+        return self._autosign or click.confirm(f"{display_msg}\n\nSign: ")
+
+    def _prompt_for_passphrase(self, message: str | None = None, **kwargs) -> str:
+        message = message or f"Enter passphrase to unlock '{self.alias}'"
+        return click.prompt(
+            message,
+            hide_input=True,
+            **kwargs,
+        )
+
+    def _decrypt_keyfile(self, passphrase: str) -> bytes:
+        try:
+            return EthAccount.decrypt(self.keyfile, passphrase)
+        except ValueError as err:
+            raise InvalidPasswordError() from err
+
+
+class KeyfileAccount(BaseKeyfileAccount):
+    _autosign_raw_msghash: bool = False
+
+    @property
+    def address(self) -> AddressType:
+        return self.network_manager.ethereum.decode_address(self.keyfile["address"])
+
+    @property
+    def _signer(self) -> ApeSigner:
+        return ApeSigner(private_key=self._secret)
+
+    @property
+    def public_key(self) -> HexBytes | None:
+        keyfile_data = self.keyfile
+        if "public_key" in keyfile_data:
+            return HexBytes(bytes.fromhex(keyfile_data["public_key"]))
+
+        # Derive the public key from the private key
+        public_key = self._signer.public_key
+        keyfile_data["public_key"] = remove_0x_prefix(HexStr(public_key.hex()))
+
+        # Store the public key so we don't have to derive it again.
+        self.keyfile_path.write_text(json.dumps(keyfile_data), encoding="utf8")
+
+        return public_key
 
     def sign_authorization(
         self,
@@ -328,7 +407,7 @@ class KeyfileAccount(AccountAPI):
         if not click.confirm(click.style(f"{display_msg}\n\nAcknowledge: ", fg="yellow")):
             return None
 
-        return self.__signer.sign_authorization(address=address, chain_id=chain_id, nonce=nonce)
+        return self._signer.sign_authorization(address=address, chain_id=chain_id, nonce=nonce)
 
     def sign_message(self, msg: Any, **signer_options) -> MessageSignature | None:
         display_msg, msg = _get_signing_message_with_display(msg)
@@ -336,20 +415,20 @@ class KeyfileAccount(AccountAPI):
             logger.warning("Unsupported message type, (type=%r, msg=%r)", type(msg), msg)
             return None
 
-        if self.__autosign or click.confirm(f"{display_msg}\n\nSign: "):
-            return self.__signer.sign_message(msg, **signer_options)
+        if self._confirm_signing(display_msg):
+            return self._signer.sign_message(msg, **signer_options)
 
         return None
 
     def sign_transaction(self, txn: "TransactionAPI", **signer_options) -> "TransactionAPI | None":
-        if not (self.__autosign or click.confirm(f"{txn}\n\nSign: ")):
+        if not self._confirm_signing(f"{txn}"):
             return None
 
-        return self.__signer.sign_transaction(txn, **signer_options)
+        return self._signer.sign_transaction(txn, **signer_options)
 
     def sign_raw_msghash(self, msghash: HexBytes) -> MessageSignature | None:
         # NOTE: Signing a raw hash is so dangerous, it only autosigns when explicitly opted in.
-        if not self.__autosign_raw_msghash:
+        if not self._autosign_raw_msghash:
             logger.warning(
                 "Signing a raw hash directly is a dangerous action which could risk "
                 "substantial losses! Only confirm if you are 100% sure of the origin!"
@@ -361,7 +440,7 @@ class KeyfileAccount(AccountAPI):
         # Also, we have already warned the user about the safety.
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            return self.__signer.sign_raw_msghash(msghash)
+            return self._signer.sign_raw_msghash(msghash)
 
     def set_autosign(self, enabled: bool, passphrase: str | None = None, raw_msghash: bool = False):
         """
@@ -377,52 +456,25 @@ class KeyfileAccount(AccountAPI):
               this if you trust every hash this account is given.
               Defaults to ``False``.
         """
-        if enabled:
-            self.unlock(passphrase=passphrase)
-            logger.warning("Danger! This account will now sign any transaction it's given.")
-            if raw_msghash:
-                logger.warning(
-                    "Danger! This account will now sign any raw message hash it's given."
-                )
+        super().set_autosign(enabled, passphrase=passphrase)
+        if enabled and raw_msghash:
+            logger.warning("Danger! This account will now sign any raw message hash it's given.")
 
-        self.__autosign = enabled
-        self.__autosign_raw_msghash = enabled and raw_msghash
-        if not enabled:
-            # Re-lock if it was turning off
-            self.locked = True
-            self.__cached_signer = None
-
-    def _prompt_for_passphrase(self, message: str | None = None, **kwargs) -> str:
-        message = message or f"Enter passphrase to unlock '{self.alias}'"
-        return click.prompt(
-            message,
-            hide_input=True,
-            **kwargs,
-        )
-
-    def __decrypt_keyfile(self, passphrase: str) -> bytes:
-        try:
-            return EthAccount.decrypt(self.keyfile, passphrase)
-        except ValueError as err:
-            raise InvalidPasswordError() from err
+        self._autosign_raw_msghash = enabled and raw_msghash
 
     def set_delegate(self, contract: BaseAddress | AddressType | str, **txn_kwargs):
-        return self.__signer.set_delegate(contract, **txn_kwargs)
+        return self._signer.set_delegate(contract, **txn_kwargs)
 
     def remove_delegate(self, **txn_kwargs):
-        return self.__signer.remove_delegate(**txn_kwargs)
+        return self._signer.remove_delegate(**txn_kwargs)
 
 
 def _write_and_return_account(
     alias: str, passphrase: str, account: "LocalAccount"
 ) -> KeyfileAccount:
     """Write an account to disk and return an Ape KeyfileAccount"""
-    path = ManagerAccessMixin.account_manager.containers["accounts"].data_folder.joinpath(
-        f"{alias}.json"
-    )
-    path.write_text(json.dumps(EthAccount.encrypt(account.key, passphrase)), encoding="utf8")
-
-    return KeyfileAccount(keyfile_path=path)
+    container = ManagerAccessMixin.account_manager.containers["accounts"]
+    return cast(KeyfileAccount, container.create_account(alias, passphrase, account.key))
 
 
 def generate_account(
