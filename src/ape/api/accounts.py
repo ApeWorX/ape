@@ -145,6 +145,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
             f"Authorization signing is not supported by '{self.__class__.__name__}'"
         )
 
+    # TODO: In 0.9, change the return type to `BaseSignature | None`.
     @abstractmethod
     def sign_message(self, msg: Any, **signer_options) -> MessageSignature | None:
         """
