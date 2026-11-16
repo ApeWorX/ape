@@ -28,7 +28,7 @@ from ape.exceptions import (
 )
 from ape.logging import logger
 from ape.types.address import AddressType
-from ape.types.signatures import MessageSignature, SignableMessage
+from ape.types.signatures import BaseSignature, MessageSignature, SignableMessage, _Signature
 from ape.utils.basemodel import BaseInterfaceModel
 from ape.utils.misc import raises_not_implemented
 from ape.utils.testing import (
@@ -146,7 +146,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         )
 
     @abstractmethod
-    def sign_message(self, msg: Any, **signer_options) -> MessageSignature | None:
+    def sign_message(self, msg: Any, **signer_options) -> BaseSignature | None:
         """
         Sign a message.
 
@@ -160,7 +160,8 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
           **signer_options: Additional kwargs given to the signer to modify the signing operation.
 
         Returns:
-          :class:`~ape.types.signatures.MessageSignature` (optional): The signature corresponding to the message.
+          :class:`~ape.types.signatures.BaseSignature` (optional): The signature corresponding
+          to the message, such as a :class:`~ape.types.signatures.MessageSignature` for ECDSA.
         """
 
     @abstractmethod
@@ -416,7 +417,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
     def check_signature(
         self,
         data: SignableMessage | TransactionAPI | str | EIP712Message | int | bytes,
-        signature: MessageSignature | None = None,  # TransactionAPI doesn't need it
+        signature: BaseSignature | None = None,  # TransactionAPI doesn't need it
         recover_using_eip191: bool = True,
     ) -> bool:
         """
@@ -425,9 +426,10 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         Args:
             data (Union[:class:`~ape.types.signatures.SignableMessage`, :class:`~ape.api.transactions.TransactionAPI`]):  # noqa: E501
               The message or transaction to verify.
-            signature (MessageSignature | None):
+            signature (:class:`~ape.types.signatures.BaseSignature` | None):
               The signature to check. Defaults to ``None`` and is not needed when the first
-              argument is a transaction class.
+              argument is a transaction class. Only ECDSA signatures are recoverable here;
+              accounts using another scheme override this method.
             recover_using_eip191 (bool):
               Perform recovery using EIP-191 signed message check. If set False, then will attempt
               recovery as raw hash. `data`` must be a 32 byte hash if this is set False.
@@ -436,6 +438,11 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         Returns:
             bool: ``True`` if the data was signed by this account. ``False`` otherwise.
         """
+        if signature is not None and not isinstance(signature, _Signature):
+            raise AccountsError(
+                f"'{type(self).__name__}' cannot verify '{type(signature).__name__}' signatures."
+            )
+
         if isinstance(data, str):
             data = encode_defunct(text=data)
         elif isinstance(data, int):

@@ -47,6 +47,7 @@ def test_signature_from_rsv_and_vrs(signature):
     from_rsv: MessageSignature = signature.from_rsv(rsv)
     from_vrs: MessageSignature = signature.from_vrs(vrs)
     assert from_rsv == from_vrs == signature
+    assert bytes(signature) == rsv
 
 
 def test_signable_message_module(signable_message):
