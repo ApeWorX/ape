@@ -3,10 +3,12 @@ from typing import TYPE_CHECKING, Annotated, Any, TypeAlias
 from eth_pydantic_types import Address as _Address
 from eth_pydantic_types import HexBytes20, HexStr20
 from eth_typing import ChecksumAddress
+from pydantic_core.core_schema import str_schema, with_info_before_validator_function
 
 from ape.utils.basemodel import ManagerAccessMixin
 
 if TYPE_CHECKING:
+    from pydantic_core import CoreSchema
     from pydantic_core.core_schema import ValidationInfo
 
 
@@ -26,6 +28,10 @@ class _AddressValidator(_Address, ManagerAccessMixin):
     """
 
     @classmethod
+    def __get_pydantic_core_schema__(cls, value, handler=None) -> "CoreSchema":
+        return with_info_before_validator_function(cls.__eth_pydantic_validate__, str_schema())
+
+    @classmethod
     def __eth_pydantic_validate__(cls, value: Any, info: "ValidationInfo | None" = None) -> str:
         if type(value) in (list, tuple):
             return cls.conversion_manager.convert(value, list[AddressType])
@@ -37,6 +43,7 @@ class _AddressValidator(_Address, ManagerAccessMixin):
         )
 
 
+# TODO: In 0.9, annotate `str` instead of `ChecksumAddress` so non-EVM addresses type-check.
 AddressType = Annotated[ChecksumAddress, _AddressValidator]
 """
 "A checksum address in Ape."
