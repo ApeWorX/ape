@@ -235,8 +235,8 @@ class BaseKeyfileAccount(AccountAPI):
     keyfile_path: Path
     locked: bool = True
     passphrase_env_prefix: ClassVar[str] = "APE_ACCOUNTS"
-    _autosign: bool = False
-    _cached_secret: bytes | None = None
+    __autosign: bool = False
+    __cached_secret: bytes | None = None
 
     @log_instead_of_fail(default="<BaseKeyfileAccount>")
     def __repr__(self) -> str:
@@ -267,18 +267,18 @@ class BaseKeyfileAccount(AccountAPI):
 
     @property
     def _secret(self) -> bytes:
-        if self._cached_secret is not None:
+        if self.__cached_secret is not None:
             if not self.locked:
                 logger.warning("Using cached key for %s", self.alias)
-                return self._cached_secret
+                return self.__cached_secret
 
-            self._cached_secret = None
+            self.__cached_secret = None
 
         passphrase = self._prompt_for_passphrase(default="")
         secret = self._decrypt_keyfile(passphrase)
         if click.confirm(f"Leave '{self.alias}' unlocked?"):
             self.locked = False
-            self._cached_secret = secret
+            self.__cached_secret = secret
 
         return secret
 
@@ -309,7 +309,7 @@ class BaseKeyfileAccount(AccountAPI):
                 else:
                     raise AccountsError(f"Failed to unlock after {attempts} attempts.") from err
 
-        self._cached_secret = secret
+        self.__cached_secret = secret
         self.locked = False
 
     def lock(self):
@@ -344,14 +344,14 @@ class BaseKeyfileAccount(AccountAPI):
             self.unlock(passphrase=passphrase)
             logger.warning("Danger! This account will now sign any transaction it's given.")
 
-        self._autosign = enabled
+        self.__autosign = enabled
         if not enabled:
             # Re-lock if it was turning off
             self.locked = True
-            self._cached_secret = None
+            self.__cached_secret = None
 
     def _confirm_signing(self, display_msg: str) -> bool:
-        return self._autosign or click.confirm(f"{display_msg}\n\nSign: ")
+        return self.__autosign or click.confirm(f"{display_msg}\n\nSign: ")
 
     def _prompt_for_passphrase(self, message: str | None = None, **kwargs) -> str:
         message = message or f"Enter passphrase to unlock '{self.alias}'"
@@ -369,7 +369,7 @@ class BaseKeyfileAccount(AccountAPI):
 
 
 class KeyfileAccount(BaseKeyfileAccount):
-    _autosign_raw_msghash: bool = False
+    __autosign_raw_msghash: bool = False
 
     @property
     def address(self) -> AddressType:
@@ -428,7 +428,7 @@ class KeyfileAccount(BaseKeyfileAccount):
 
     def sign_raw_msghash(self, msghash: HexBytes) -> MessageSignature | None:
         # NOTE: Signing a raw hash is so dangerous, it only autosigns when explicitly opted in.
-        if not self._autosign_raw_msghash:
+        if not self.__autosign_raw_msghash:
             logger.warning(
                 "Signing a raw hash directly is a dangerous action which could risk "
                 "substantial losses! Only confirm if you are 100% sure of the origin!"
@@ -460,7 +460,7 @@ class KeyfileAccount(BaseKeyfileAccount):
         if enabled and raw_msghash:
             logger.warning("Danger! This account will now sign any raw message hash it's given.")
 
-        self._autosign_raw_msghash = enabled and raw_msghash
+        self.__autosign_raw_msghash = enabled and raw_msghash
 
     def set_delegate(self, contract: BaseAddress | AddressType | str, **txn_kwargs):
         return self._signer.set_delegate(contract, **txn_kwargs)
