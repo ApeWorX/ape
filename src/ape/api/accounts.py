@@ -146,7 +146,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
         )
 
     @abstractmethod
-    def sign_message(self, msg: Any, **signer_options) -> BaseSignature | None:
+    def sign_message(self, msg: Any, **signer_options) -> MessageSignature | None:
         """
         Sign a message.
 
@@ -160,8 +160,7 @@ class AccountAPI(BaseInterfaceModel, BaseAddress):
           **signer_options: Additional kwargs given to the signer to modify the signing operation.
 
         Returns:
-          :class:`~ape.types.signatures.BaseSignature` (optional): The signature corresponding
-          to the message, such as a :class:`~ape.types.signatures.MessageSignature` for ECDSA.
+          :class:`~ape.types.signatures.MessageSignature` (optional): The signature corresponding to the message.
         """
 
     @abstractmethod
