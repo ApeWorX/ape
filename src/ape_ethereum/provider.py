@@ -39,8 +39,7 @@ except ImportError:
 from web3.gas_strategies.rpc import rpc_gas_price_strategy
 from web3.middleware import ExtraDataToPOAMiddleware
 from web3.middleware.validation import MAX_EXTRADATA_LENGTH
-from web3.providers import AutoProvider
-from web3.providers import WebSocketProvider as WebsocketProvider
+from web3.providers import AutoProvider, LegacyWebSocketProvider
 from web3.providers.auto import load_provider_from_environment
 from web3.types import FeeHistory, RPCEndpoint, TxParams
 
@@ -1819,7 +1818,8 @@ def _create_web3(
 
         providers.append(lambda: HTTPProvider(endpoint_uri=http, request_kwargs=request_kwargs))
     if ws := ws_uri:
-        providers.append(lambda: WebsocketProvider(endpoint_uri=ws))
+        # Must be sync: AutoProvider calls is_connected() and make_request() without awaiting.
+        providers.append(lambda: LegacyWebSocketProvider(endpoint_uri=ws))
 
     provider = AutoProvider(potential_providers=providers)
 
