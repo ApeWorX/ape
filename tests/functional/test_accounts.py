@@ -90,7 +90,7 @@ class Ed25519KeyfileAccount(BaseKeyfileAccount):
 
     @classmethod
     def encrypt_secret(cls, secret: bytes, passphrase: str) -> dict:
-        signing_key = ECC.construct(curve="ed25519", seed=secret)
+        signing_key = eddsa.import_private_key(secret)
         public_key = signing_key.public_key().export_key(format="raw")
         return {**super().encrypt_secret(secret, passphrase), "address": public_key.hex()}
 
@@ -106,7 +106,7 @@ class Ed25519KeyfileAccount(BaseKeyfileAccount):
         if self.locked or self.__cached_seed is None:
             return None
 
-        signing_key = ECC.construct(curve="ed25519", seed=self.__cached_seed)
+        signing_key = eddsa.import_private_key(self.__cached_seed)
         return eddsa.new(signing_key, "rfc8032").sign(msg)
 
     def sign_transaction(self, txn, **signer_options):
@@ -1277,5 +1277,6 @@ def test_create_account_custom_keyfile_account(ed25519_container):
 
     account.unlock(passphrase=PASSPHRASE)
     signature = account.sign_message(b"gm")
+    assert signature is not None
     eddsa.new(signing_key.public_key(), "rfc8032").verify(b"gm", signature)
     assert account.address == signing_key.public_key().export_key(format="raw").hex()
