@@ -270,6 +270,45 @@ def test_encode_calldata_nested_structs(ethereum):
     assert actual == expected
 
 
+def test_encode_calldata_struct_with_struct_array_field(ethereum):
+    # A ``struct Row { uint256 id; Point[3] cells; }`` the way solc emits it.
+    point_components = [
+        ABIType(name="x", type="uint256", components=None, internal_type="uint256"),
+        ABIType(name="y", type="uint256", components=None, internal_type="uint256"),
+    ]
+    abi = make_method_abi(
+        "useRow",
+        inputs=[
+            ABIType(
+                name="row",
+                type="tuple",
+                components=[
+                    ABIType(name="id", type="uint256", components=None, internal_type="uint256"),
+                    ABIType(
+                        name="cells",
+                        type="tuple[3]",
+                        components=point_components,
+                        internal_type="struct Nested.Point[3]",
+                    ),
+                ],
+                internal_type="struct Nested.Row",
+            )
+        ],
+    )
+    calldata = {"id": 7, "cells": [{"x": 1, "y": 2}, {"x": 3, "y": 4}, {"x": 5, "y": 6}]}
+    actual = ethereum.encode_calldata(abi, calldata)
+    expected = HexBytes(
+        "0x0000000000000000000000000000000000000000000000000000000000000007"
+        "0000000000000000000000000000000000000000000000000000000000000001"
+        "0000000000000000000000000000000000000000000000000000000000000002"
+        "0000000000000000000000000000000000000000000000000000000000000003"
+        "0000000000000000000000000000000000000000000000000000000000000004"
+        "0000000000000000000000000000000000000000000000000000000000000005"
+        "0000000000000000000000000000000000000000000000000000000000000006"
+    )
+    assert actual == expected
+
+
 def test_block_handles_snake_case_parent_hash(eth_tester_provider, sender, receiver):
     # Transaction to change parent hash of next block
     sender.transfer(receiver, "1 gwei")
