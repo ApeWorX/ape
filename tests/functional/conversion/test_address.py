@@ -1,6 +1,6 @@
 from typing import Any
 
-import base58
+import base58  # type: ignore[import-untyped]
 import pytest
 from pydantic import BaseModel
 
