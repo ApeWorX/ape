@@ -103,7 +103,7 @@ class Ed25519Account(AccountAPI):
 
     @property
     def signing_key(self) -> EccKey:
-        return ECC.construct(curve="ed25519", seed=self.seed)
+        return eddsa.import_private_key(self.seed)
 
     @property
     def public_key(self) -> HexBytes:
