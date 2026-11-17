@@ -3,9 +3,9 @@ from copy import deepcopy
 
 import pytest
 from eth_pydantic_types import HexBytes
-from ethpm_types.abi import ABIType, EventABI, EventABIType
+from ethpm_types.abi import ABIType, EventABI, EventABIType, MethodABI
 
-from ape.utils.abi import LogInputABICollection, create_struct
+from ape.utils.abi import LogInputABICollection, StructParser, create_struct
 
 
 @pytest.fixture
@@ -162,3 +162,164 @@ class TestStruct:
             "MyStruct", (ABIType(name="values", type="string"),), ("output_value_0",)
         )
         assert struct.values == "output_value_0"  # Is the field, not the method.
+
+
+def _point_type(name: str, type_: str) -> ABIType:
+    """A ``struct Point { uint256 x; uint256 y; }`` the way solc emits it."""
+    return ABIType(
+        name=name,
+        type=type_,
+        internalType=f"struct Multi.Point{type_[len('tuple') :]}",
+        components=[
+            ABIType(name="x", type="uint256", internalType="uint256"),
+            ABIType(name="y", type="uint256", internalType="uint256"),
+        ],
+    )
+
+
+def _method_abi(inputs=None, outputs=None) -> MethodABI:
+    return MethodABI(
+        type="function",
+        name="grid",
+        stateMutability="pure",
+        inputs=inputs or [],
+        outputs=outputs or [],
+    )
+
+
+class TestStructParser:
+    @pytest.mark.parametrize(
+        "array_type,value,expected",
+        [
+            # 1-dimensional, the case that already worked.
+            (
+                "tuple[3]",
+                [{"x": 1, "y": 2}, {"x": 3, "y": 4}, {"x": 5, "y": 6}],
+                [(1, 2), (3, 4), (5, 6)],
+            ),
+            (
+                "tuple[2][3]",
+                [
+                    [{"x": 1, "y": 2}, {"x": 3, "y": 4}],
+                    [{"x": 5, "y": 6}, {"x": 7, "y": 8}],
+                    [{"x": 9, "y": 10}, {"x": 11, "y": 12}],
+                ],
+                [[(1, 2), (3, 4)], [(5, 6), (7, 8)], [(9, 10), (11, 12)]],
+            ),
+            (
+                "tuple[][]",
+                [[{"x": 1, "y": 2}, {"x": 3, "y": 4}], [{"x": 5, "y": 6}]],
+                [[(1, 2), (3, 4)], [(5, 6)]],
+            ),
+            (
+                "tuple[2][]",
+                [[{"x": 1, "y": 2}, {"x": 3, "y": 4}]],
+                [[(1, 2), (3, 4)]],
+            ),
+            (
+                "tuple[1][2][3]",
+                [[[{"x": 1, "y": 2}], [{"x": 3, "y": 4}]]] * 3,
+                [[[(1, 2)], [(3, 4)]]] * 3,
+            ),
+        ],
+    )
+    def test_encode_input_struct_array(self, array_type, value, expected):
+        """
+        Every array dimension has to be peeled, else the structs underneath the
+        outer-most one never get turned into tuples and encoding blows up.
+        """
+        parser = StructParser(_method_abi(inputs=[_point_type("grid", array_type)]))
+        assert parser.encode_input([value]) == [expected]
+
+    @pytest.mark.parametrize(
+        "array_type,value,expected",
+        [
+            # 1-dimensional, the case that already worked.
+            ("tuple[3]", ((1, 2), (3, 4), (5, 6)), [(1, 2), (3, 4), (5, 6)]),
+            (
+                "tuple[2][3]",
+                (((1, 2), (3, 4)), ((5, 6), (7, 8)), ((9, 10), (11, 12))),
+                [[(1, 2), (3, 4)], [(5, 6), (7, 8)], [(9, 10), (11, 12)]],
+            ),
+            (
+                "tuple[][]",
+                (((1, 2), (3, 4)), ((5, 6),)),
+                [[(1, 2), (3, 4)], [(5, 6)]],
+            ),
+            # An empty inner array stays an empty list rather than a nested one.
+            ("tuple[][]", ((), ((1, 2),)), [[], [(1, 2)]]),
+            (
+                "tuple[1][2][3]",
+                ((((1, 2),), ((3, 4),)),) * 3,
+                [[[(1, 2)], [(3, 4)]]] * 3,
+            ),
+        ],
+    )
+    def test_decode_output_struct_array(self, array_type, value, expected):
+        parser = StructParser(_method_abi(outputs=[_point_type("", array_type)]))
+        actual = parser.decode_output([value])
+        assert _shape(actual) == expected
+
+    @pytest.mark.parametrize(
+        "array_type,value,expected",
+        [
+            (
+                "tuple[2][3]",
+                (((1, 2), (3, 4)), ((5, 6), (7, 8)), ((9, 10), (11, 12))),
+                [[(1, 2), (3, 4)], [(5, 6), (7, 8)], [(9, 10), (11, 12)]],
+            ),
+            # An empty inner array stays an empty list rather than a nested one.
+            ("tuple[][]", ((), ((1, 2),)), [[], [(1, 2)]]),
+        ],
+    )
+    def test_decode_output_struct_array_with_other_outputs(self, array_type, value, expected):
+        """
+        The multi-output path strips dimensions in a different place than the
+        single-array-return path does.
+        """
+        parser = StructParser(
+            _method_abi(
+                outputs=[
+                    ABIType(name="", type="uint256", internalType="uint256"),
+                    _point_type("", array_type),
+                ]
+            )
+        )
+        actual = parser.decode_output([42, value])
+        assert actual[0] == 42
+        assert _shape(actual[1]) == expected
+
+    @pytest.mark.parametrize(
+        "array_type,value,expected",
+        [
+            # 1-dimensional, the case that already worked.
+            ("tuple[3]", ((1, 2), (3, 4), (5, 6)), [(1, 2), (3, 4), (5, 6)]),
+            (
+                "tuple[2][3]",
+                (((1, 2), (3, 4)), ((5, 6), (7, 8)), ((9, 10), (11, 12))),
+                [[(1, 2), (3, 4)], [(5, 6), (7, 8)], [(9, 10), (11, 12)]],
+            ),
+        ],
+    )
+    def test_decode_output_struct_with_struct_array_field(self, array_type, value, expected):
+        grid = ABIType(
+            name="",
+            type="tuple",
+            internalType="struct Multi.Grid",
+            components=[
+                ABIType(name="id", type="uint256", internalType="uint256"),
+                _point_type("cells", array_type),
+            ],
+        )
+        parser = StructParser(_method_abi(outputs=[grid]))
+        actual = parser.decode_output([(99, value)])
+        assert actual.id == 99
+        assert _shape(actual.cells) == expected
+
+
+def _shape(value):
+    """Turn nested structs back into nested tuples of their field values."""
+    if isinstance(value, (list, tuple)):
+        return [_shape(v) for v in value]
+
+    return (value.x, value.y)

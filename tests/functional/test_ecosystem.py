@@ -15,7 +15,13 @@ from ape.types.address import AddressType
 from ape.types.gas import AutoGasLimit
 from ape.types.units import CurrencyValueComparable
 from ape.utils.misc import DEFAULT_LOCAL_TRANSACTION_ACCEPTANCE_TIMEOUT, LOCAL_NETWORK_NAME
-from ape_ethereum.ecosystem import BLUEPRINT_HEADER, BaseEthereumConfig, Block, Ethereum
+from ape_ethereum.ecosystem import (
+    BLUEPRINT_HEADER,
+    BaseEthereumConfig,
+    Block,
+    Ethereum,
+    parse_type,
+)
 from ape_ethereum.trace import TransactionTrace
 from ape_ethereum.transactions import (
     DynamicFeeTransaction,
@@ -747,6 +753,34 @@ def test_encode_blueprint_contract(ethereum, project):
     )
 
     assert actual.data == HexBytes(expected)
+
+
+@pytest.mark.parametrize(
+    "type_,expected",
+    [
+        ("tuple", ("uint256", "uint256")),
+        ("tuple[]", [("uint256", "uint256")]),
+        ("tuple[3]", [("uint256", "uint256")]),
+        ("tuple[2][3]", [[("uint256", "uint256")]]),
+        ("tuple[][]", [[("uint256", "uint256")]]),
+        ("tuple[1][2][3]", [[[("uint256", "uint256")]]]),
+    ],
+)
+def test_parse_type_struct_array(type_, expected):
+    """
+    One level of nesting per array dimension, else decoding a multi-dimensional
+    struct array zips the wrong things together.
+    """
+    abi_type = {
+        "name": "grid",
+        "type": type_,
+        "internalType": f"struct Multi.Point{type_[len('tuple') :]}",
+        "components": [
+            {"name": "x", "type": "uint256", "internalType": "uint256"},
+            {"name": "y", "type": "uint256", "internalType": "uint256"},
+        ],
+    }
+    assert parse_type(abi_type) == expected
 
 
 def test_decode_returndata(ethereum):
