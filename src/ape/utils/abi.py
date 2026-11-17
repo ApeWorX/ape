@@ -445,6 +445,14 @@ def is_dynamic_sized_type(abi_type: ABIType | str) -> bool:
     return parsed.is_dynamic
 
 
+def _is_hashed_topic_type(abi_type: str) -> bool:
+    # Indexed reference types (arrays, even static ones, structs, string and bytes)
+    # are written as the keccak256 hash of their encoding.
+    # https://docs.soliditylang.org/en/latest/abi-spec.html#encoding-of-indexed-event-parameters
+    parsed = grammar.parse(abi_type)
+    return parsed.is_dynamic or parsed.is_array or isinstance(parsed, grammar.TupleType)
+
+
 class LogInputABICollection:
     def __init__(self, abi: EventABI):
         self.abi = abi
@@ -462,9 +470,9 @@ class LogInputABICollection:
     def decode(self, topics: list[str], data: str | bytes, use_hex_on_fail: bool = False) -> dict:
         decoded = {}
         for abi, topic_value in zip(self.topic_abi_types, topics[1:], strict=True):
-            # reference types as indexed arguments are written as a hash
-            # https://docs.soliditylang.org/en/v0.8.15/contracts.html#events
-            abi_type = "bytes32" if is_dynamic_sized_type(abi.type) else abi.canonical_type
+            abi_type = (
+                "bytes32" if _is_hashed_topic_type(abi.canonical_type) else abi.canonical_type
+            )
             hex_value = decode_hex(topic_value)
 
             try:
