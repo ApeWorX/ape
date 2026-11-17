@@ -486,6 +486,31 @@ def test_custom_networks_defined_in_non_local_project(custom_networks_config_dic
         assert network.name == net_name
 
 
+def test_custom_networks_defined_in_non_local_project_recreated(
+    networks, custom_networks_config_dict
+):
+    """
+    Showing re-creating a project with custom networks (as isolating or installing
+    it does) does not make its networks clash with themselves.
+    """
+    net_name = "customnetdefinedinrecreatedproj"
+    custom_networks = copy.deepcopy(custom_networks_config_dict)
+    custom_networks["networks"]["custom"] = [custom_networks["networks"]["custom"][0]]
+    custom_networks["networks"]["custom"][0]["name"] = net_name
+    custom_networks["networks"]["custom"][0]["ecosystem"] = "ethereum"
+
+    try:
+        with ape.Project.create_temporary_project(config_override=custom_networks) as temp_project:
+            registered = len(networks.custom_networks)
+            _ = ape.Project(temp_project.path, config_override=custom_networks)
+            assert networks.ethereum.get_network(LOCAL_NETWORK_NAME).name == LOCAL_NETWORK_NAME
+            assert networks.ethereum.get_network(net_name).name == net_name
+            assert len(networks.custom_networks) == registered
+    finally:
+        # Don't leave the network registered in `ethereum` for other tests.
+        networks._invalidate_cache()
+
+
 def test_get_ecosystem(networks):
     ethereum = networks.get_ecosystem("ethereum")
     assert isinstance(ethereum, EcosystemAPI)
