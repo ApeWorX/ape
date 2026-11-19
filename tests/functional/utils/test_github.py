@@ -1,11 +1,14 @@
+import zipfile
+from io import BytesIO
 from pathlib import Path
 
 import pytest
 from requests.exceptions import ConnectTimeout, HTTPError
 
 from ape.exceptions import ProjectError
-from ape.utils._github import _GithubClient
+from ape.utils._github import _GithubClient, read_gitlink_from_index
 from ape.utils.os import create_tempdir
+from tests.functional.conftest import GitIndexEntry
 
 ORG_NAME = "test"
 REPO_NAME = "path"
@@ -33,6 +36,25 @@ def mock_release(mocker):
     release = mocker.MagicMock()
     release.json.return_value = {"name": REPO_NAME}
     return release
+
+
+@pytest.fixture(scope="session")
+def commit_sha():
+    return "1" * 40
+
+
+@pytest.fixture(scope="session")
+def commit_zipball(commit_sha):
+    content = BytesIO()
+    with zipfile.ZipFile(content, "w") as archive:
+        archive.writestr(f"{ORG_NAME}-{REPO_NAME}-{commit_sha[:7]}/foundry.toml", "")
+
+    return content.getvalue()
+
+
+@pytest.fixture
+def mock_stream_response(mocker, commit_zipball):
+    return mocker.patch("ape.utils._github.stream_response", return_value=commit_zipball)
 
 
 @pytest.fixture
@@ -73,6 +95,13 @@ class TestGithubClient:
         # cmd[5] is the temporary output path
         assert cmd[6] == "--branch"
         assert cmd[7] == "master"
+
+    def test_download_ref_commit(self, github_client, mock_stream_response, tmp_path, commit_sha):
+        github_client.download_ref(ORG_NAME, REPO_NAME, commit_sha, tmp_path)
+
+        expected_uri = f"https://api.github.com/repos/{ORG_NAME}/{REPO_NAME}/zipball/{commit_sha}"
+        assert mock_stream_response.call_args[0] == (expected_uri,)
+        assert (tmp_path / "foundry.toml").is_file()
 
     def test_get_release(self, github_client, mock_session):
         version = "0.1.0"
@@ -168,3 +197,67 @@ class TestGithubClient:
             "GitHub authorization, try resetting your token."
         )
         assert ape_caplog.head == expected
+
+
+class TestReadGitlinkFromIndex:
+    @pytest.fixture(scope="session")
+    def gitlink(self, commit_sha):
+        return GitIndexEntry("lib/dependency", 0o160000, commit_sha)
+
+    @pytest.fixture(scope="session")
+    def regular_file(self):
+        return GitIndexEntry("readme.md", 0o100644, "2" * 40)
+
+    def test_read_gitlink_from_index_gitlink(self, tmp_path, write_git_index, gitlink):
+        write_git_index(tmp_path, [gitlink])
+        assert read_gitlink_from_index(tmp_path, "lib/dependency") == gitlink.sha
+
+    def test_read_gitlink_from_index_subdirectory(self, tmp_path, write_git_index, gitlink):
+        write_git_index(tmp_path, [gitlink])
+        assert read_gitlink_from_index(tmp_path / "lib", "dependency") == gitlink.sha
+
+    def test_read_gitlink_from_index_not_a_gitlink(
+        self, tmp_path, write_git_index, gitlink, regular_file
+    ):
+        write_git_index(tmp_path, [regular_file, gitlink])
+        assert read_gitlink_from_index(tmp_path, "readme.md") is None
+        assert read_gitlink_from_index(tmp_path, "missing") is None
+
+    @pytest.mark.parametrize(
+        "earlier_entry",
+        [
+            pytest.param(GitIndexEntry("a.txt", 0o100644, "2" * 40, extended=True), id="extended"),
+            pytest.param(GitIndexEntry("a-\u00e9t\u00e9.txt", 0o100644, "2" * 40), id="non-ascii"),
+            pytest.param(GitIndexEntry("a" * 0x1000 + ".txt", 0o100644, "2" * 40), id="long-path"),
+        ],
+    )
+    def test_read_gitlink_from_index_after_unusual_entry(
+        self, tmp_path, write_git_index, gitlink, earlier_entry
+    ):
+        write_git_index(tmp_path, [earlier_entry, gitlink], version=3)
+        assert read_gitlink_from_index(tmp_path, "lib/dependency") == gitlink.sha
+
+    def test_read_gitlink_from_index_gitdir_file(self, tmp_path, write_git_index, gitlink):
+        project = tmp_path / "project"
+        project.mkdir()
+        write_git_index(project, [gitlink], gitdir=tmp_path / "modules" / "project")
+        assert read_gitlink_from_index(project, "lib/dependency") == gitlink.sha
+
+    def test_read_gitlink_from_index_version_4(self, tmp_path, write_git_index, gitlink):
+        write_git_index(tmp_path, [gitlink], version=4)
+        assert read_gitlink_from_index(tmp_path, "lib/dependency") is None
+
+    def test_read_gitlink_from_index_unreadable(self, tmp_path, write_git_index, gitlink):
+        project = tmp_path / "project"
+        project.mkdir()
+        index_file = write_git_index(project, [gitlink])
+        index_file.write_bytes(b"XXXX" + index_file.read_bytes()[4:])
+        assert read_gitlink_from_index(project, "lib/dependency") is None
+        no_repo = tmp_path / "no-repo"
+        no_repo.mkdir()
+        assert read_gitlink_from_index(no_repo, "lib/dependency") is None
+
+    def test_read_gitlink_from_index_merge_conflict(self, tmp_path, write_git_index, gitlink):
+        conflict = [gitlink._replace(stage=stage, sha=str(stage) * 40) for stage in (1, 2, 3)]
+        write_git_index(tmp_path, conflict)
+        assert read_gitlink_from_index(tmp_path, "lib/dependency") is None
