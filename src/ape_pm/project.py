@@ -3,7 +3,12 @@ from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
 
-from ape.utils._github import _GithubClient, github_client
+from ape.utils._github import (
+    GitProcessWrapper,
+    _GithubClient,
+    github_client,
+    read_gitlink_from_index,
+)
 
 if sys.version_info >= (3, 11):
     # 3.11 or greater
@@ -122,6 +127,7 @@ class FoundryProject(ProjectAPI):
     """
 
     _github_client: _GithubClient = github_client
+    _git: GitProcessWrapper = GitProcessWrapper()
 
     @property
     def foundry_config_file(self) -> Path:
@@ -180,22 +186,34 @@ class FoundryProject(ProjectAPI):
             return []
 
         dependencies: list[dict] = []
-        module_data = self._parse_gitmodules()
-        for module in module_data:
-            if not (url := module.get("url")):
-                continue
-            elif not url.startswith("https://github.com/"):
-                # Not from GitHub.
-                continue
+        for module in self._parse_gitmodules():
+            lib_path = self.path / module["path"] if "path" in module else None
+            if lib_path is not None and self._is_checked_out(lib_path):
+                dependencies.append(self._build_local_dependency(module, lib_path))
 
-            github = url.replace("https://github.com/", "").replace(".git", "")
-            dependency = {"github": github}
-            version_type, version = self._parse_version_from_module(module)
-            dependency[version_type] = version
-            dependency["name"] = github.split("/")[-1].lower().replace("_", "-")
-            dependencies.append(dependency)
+            elif github := _parse_github_repo(module.get("url", "")):
+                dependencies.append(self._build_github_dependency(module, github))
 
         return dependencies
+
+    def _build_local_dependency(self, module: dict[str, str], lib_path: Path) -> dict:
+        return {
+            "name": _get_dependency_name(module),
+            "local": str(lib_path),
+            "config_override": {"contracts_folder": self._get_lib_contracts_folder(lib_path)},
+        }
+
+    def _build_github_dependency(self, module: dict[str, str], github: str) -> dict:
+        version_type, version = self._parse_version_from_module(module)
+        return {"github": github, version_type: version, "name": _get_dependency_name(module)}
+
+    def _is_checked_out(self, lib_path: Path) -> bool:
+        return lib_path.is_dir() and any(lib_path.iterdir())
+
+    def _get_lib_contracts_folder(self, lib_path: Path) -> str:
+        lib_project = FoundryProject(path=lib_path)
+        lib_data = lib_project._parse_foundry_toml() if lib_project.is_valid else {}
+        return lib_data.get("src", "src")
 
     def _parse_gitmodules(self) -> list[dict[str, str]]:
         submodules: list[dict[str, str]] = []
@@ -224,7 +242,13 @@ class FoundryProject(ProjectAPI):
     def _parse_version_from_module(
         self, module: dict, default_version: str = "main"
     ) -> tuple[str, str]:
-        if "release" in module:
+        if "path" in module and (
+            commit := read_gitlink_from_index(self.path, module["path"])
+            or self._git.get_submodule_commit(self.path, module["path"])
+        ):
+            return ("ref", commit)
+
+        elif "release" in module:
             # Use GitHub version API.
             return ("version", module["release"])
 
@@ -232,13 +256,8 @@ class FoundryProject(ProjectAPI):
             # Use clone-by-reference.
             return ("ref", module["branch"])
 
-        elif "url" not in module:
-            return ("ref", default_version)
-
-        url = module["url"]
-        github = url.replace("https://github.com/", "").replace(".git", "")
-        gh_parts = github.split("/")
-        if len(gh_parts) != 2:
+        github = _parse_github_repo(module.get("url", ""))
+        if github is None or len(github.split("/")) != 2:
             # Likely not possible, but just try `main`.
             return ("ref", default_version)
 
@@ -320,7 +339,7 @@ class FoundryProject(ProjectAPI):
                 # NOTE: There appears to be no rhyme or reason to
                 # dependency short-names in foundry.
                 if (
-                    not dependency["github"].endswith(clean_key)
+                    not dependency.get("github", "").endswith(clean_key)
                     and dependency["name"] != clean_key
                     and dependency["name"] != repo
                 ):
@@ -328,7 +347,7 @@ class FoundryProject(ProjectAPI):
 
                 # Matching dependency found.
                 dependency["name"] = clean_key
-                version = dependency.get("version") or dependency.get("ref")
+                version = dependency.get("version") or dependency.get("ref") or "local"
                 prefix = f"{sep}.cache{sep}"
                 if contracts_folder:
                     prefix = f"{contracts_folder}{prefix}"
@@ -356,3 +375,15 @@ class FoundryProject(ProjectAPI):
                 ape_sol_remappings.add(f_remap)
 
         return sorted(ape_sol_remappings)
+
+
+def _parse_github_repo(url: str) -> str | None:
+    if not url.startswith("https://github.com/"):
+        return None
+
+    return url.removeprefix("https://github.com/").removesuffix(".git")
+
+
+def _get_dependency_name(module: dict[str, str]) -> str:
+    source = _parse_github_repo(module.get("url", "")) or module.get("path", "")
+    return source.split("/")[-1].lower().replace("_", "-")
