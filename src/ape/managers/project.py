@@ -491,12 +491,34 @@ class ContractManager(BaseManager):
         self._compile_contracts(non_compiled_sources)
 
     def _get_needs_compile(self, paths: Iterable[Path | str]) -> Iterable[Path]:
-        for path in paths:
-            if self._detect_change(path):
-                if isinstance(path, str):
-                    yield self.sources._get_path(path)
-                else:
-                    yield path
+        requested = [
+            self.sources._get_path(path) if isinstance(path, str) else path for path in paths
+        ]
+        edited = set(self._get_edited_paths(requested))
+        importer_source_ids = self._get_importer_source_ids(edited) if edited else set()
+        yield from (
+            path
+            for path in requested
+            if path in edited
+            or self._detect_new(path)
+            or self.sources._get_source_id(path) in importer_source_ids
+        )
+
+    def _get_edited_paths(self, paths: Iterable[Path]) -> Iterator[Path]:
+        yield from (path for path in {*paths, *self.sources.paths} if self._detect_edit(path))
+
+    def _get_importer_source_ids(self, paths: set[Path]) -> set[str]:
+        """Source IDs that import any of ``paths``, directly or through other imports."""
+        imports = self.compiler_manager.get_imports(list(self.sources.paths), project=self.project)
+        references = self.compiler_manager.get_references(imports)
+        importer_source_ids: set[str] = set()
+        pending_source_ids = [self.sources._get_source_id(path) for path in paths]
+        while pending_source_ids:
+            new_source_ids = set(references.get(pending_source_ids.pop(), [])) - importer_source_ids
+            importer_source_ids |= new_source_ids
+            pending_source_ids.extend(new_source_ids)
+
+        return importer_source_ids
 
     def _compile_contracts(
         self,
@@ -561,32 +583,29 @@ class ContractManager(BaseManager):
                 yield ContractContainer(contract_type)
 
     def _detect_change(self, path: Path | str) -> bool:
+        source_path = self.sources._get_path(path) if isinstance(path, str) else path
+        return self._detect_new(source_path) or self._detect_edit(source_path)
+
+    def _detect_new(self, path: Path) -> bool:
         if not (existing_types := (self.project.manifest.contract_types or {}).values()):
             return True  # Nothing compiled yet.
 
-        source_id: str
-        if isinstance(path, Path):
-            source_id = self.sources._get_source_id(path)
-        else:
-            source_id = str(path)  # str wrap for mypy
-            path = self.sources._get_path(path)
-
-        if source_id not in (self.project.manifest.sources or {}) or source_id not in (
+        source_id = self.sources._get_source_id(path)
+        return source_id not in (self.project.manifest.sources or {}) or source_id not in (
             x.source_id for x in existing_types if x.source_id
-        ):
-            return True  # New file.
+        )
 
-        elif not path.is_file():
-            return False  # No longer exists.
+    def _detect_edit(self, path: Path) -> bool:
+        source_id = self.sources._get_source_id(path)
+        cached_source = (self.project.manifest.sources or {}).get(source_id)
+        if cached_source is None or not path.is_file():
+            return False
 
         # ethpm_types strips trailing white space and ensures
         # a newline at the end so content so `splitlines()` works.
         # We need to do the same here for to prevent the endless recompiling bug.
         text = path.read_text("utf8").rstrip()
         content = f"{text}\n" if text else ""
-
-        cached_source = (self.project.manifest.sources or {}).get(source_id)
-        assert cached_source is not None
         missing_source_text = cached_source.content in (None, "")
 
         # NOTE: Have to handle this case separately because otherwise
