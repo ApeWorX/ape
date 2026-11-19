@@ -351,6 +351,26 @@ def test_all_when_contains_corrupt_dependency(project):
     assert not deps[0].installed
 
 
+@pytest.mark.parametrize(
+    "api_file_fixture,kept",
+    [
+        pytest.param("unavailable_api_file", True, id="unknown_type"),
+        pytest.param("invalid_json_api_file", False, id="invalid_json"),
+    ],
+)
+def test_all_when_contains_unavailable_api_file(
+    project, request, ape_caplog, api_file_fixture, kept
+):
+    api_file = request.getfixturevalue(api_file_fixture)
+    # List twice to show the warning is only logged once.
+    _ = [*project.dependencies.all]
+    deps = [*project.dependencies.all]
+    warnings = [msg for msg in ape_caplog.messages if str(api_file) in msg]
+    assert len(warnings) == 1
+    assert api_file.exists() is kept
+    assert any(dep.package_id == api_file.parent.name for dep in deps) is kept
+
+
 class TestPackagesCache:
     @pytest.fixture
     def cache(self):
