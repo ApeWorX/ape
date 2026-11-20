@@ -1,3 +1,6 @@
+import pytest
+
+from ape.exceptions import ChainError
 from ape_ethereum.transactions import Receipt, TransactionStatusEnum
 from tests.conftest import explorer_test
 
@@ -14,6 +17,45 @@ def test_history(sender, receiver, chain):
     txn = transactions_from_cache[-1]
     assert txn.sender == receipt.sender == sender
     assert txn.receiver == receipt.receiver == receiver
+
+
+@pytest.mark.parametrize(
+    "index",
+    (slice(None, 0), slice(0, 0), slice(None, None, -1), slice(None, None, 2), slice(1, 3)),
+)
+def test_history_slice_access_matches_list(sender, receiver, index):
+    # Need a few transactions for steps and reversal to be meaningful.
+    while len(sender.history) < 3:
+        sender.transfer(receiver, 1)
+
+    expected = list(sender.history)[index]
+    assert [r.txn_hash for r in sender.history[index]] == [r.txn_hash for r in expected]
+
+
+def test_history_slice_access_stop_greater_than_nonce(sender):
+    with pytest.raises(ChainError, match="cannot be greater than account's current nonce"):
+        _ = sender.history[: len(sender.history) + 1]
+
+
+def test_history_slice_access_sparse_query_result(mocker, sender, receiver):
+    # A query engine is not guaranteed to answer with exactly one receipt per nonce
+    # in the requested span, so receipts must be selected by their own nonce and
+    # not by their position in the result.
+    while len(sender.history) < 4:
+        sender.transfer(receiver, 1)
+
+    receipts = list(sender.history)[:4]
+    assert [r.nonce for r in receipts] == [0, 1, 2, 3]
+    query_manager = mocker.MagicMock()
+    query_manager.query.side_effect = lambda *a, **k: iter(
+        [r for r in receipts if r.nonce != 1]  # The engine skips nonce 1.
+    )
+    mocker.patch.object(type(sender.history), "query_manager", query_manager)
+
+    # Nonce 1 is simply absent; nonce 2 is not mistaken for nonce 3.
+    assert [r.nonce for r in sender.history[0:4]] == [0, 2, 3]
+    assert [r.nonce for r in sender.history[0:4:2]] == [0, 2]
+    assert [r.nonce for r in sender.history[3:0:-1]] == [3, 2]
 
 
 @explorer_test

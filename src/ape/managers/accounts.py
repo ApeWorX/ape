@@ -129,14 +129,7 @@ class TestAccountManager(list, ManagerAccessMixin):
 
     @__getitem__.register
     def __getitem_slice(self, account_id: slice):
-        start_idx = account_id.start or 0
-        if start_idx < 0:
-            start_idx += len(self)
-        stop_idx = account_id.stop or len(self)
-        if stop_idx < 0:
-            stop_idx += len(self)
-        step_size = account_id.step or 1
-        return [self[i] for i in range(start_idx, stop_idx, step_size)]
+        return [self[i] for i in range(*account_id.indices(len(self)))]
 
     @__getitem__.register
     def __getitem_str(self, account_str: str):
@@ -396,14 +389,7 @@ class AccountManager(BaseManager):
             list[:class:`~ape.api.accounts.AccountAPI`]
         """
 
-        start_idx = account_id.start or 0
-        if start_idx < 0:
-            start_idx += len(self)
-        stop_idx = account_id.stop or len(self)
-        if stop_idx < 0:
-            stop_idx += len(self)
-        step_size = account_id.step or 1
-        return [self[i] for i in range(start_idx, stop_idx, step_size)]
+        return [self[i] for i in range(*account_id.indices(len(self)))]
 
     @__getitem__.register
     def __getitem_str(self, account_str: str) -> AccountAPI:

@@ -442,40 +442,36 @@ class AccountHistory(BaseInterfaceModel):
 
     @__getitem__.register
     def __getitem_slice(self, indices: slice) -> list[ReceiptAPI]:
-        start, stop, step = (
-            indices.start or 0,
-            indices.stop or len(self),
-            indices.step or 1,
-        )
-
-        if start < 0:
-            start += len(self)
-
-        if stop < 0:
-            stop += len(self)
-
-        elif stop > len(self):
+        length = len(self)
+        if indices.stop is not None and indices.stop > length:
             raise ChainError(
-                f"'stop={stop}' cannot be greater than account's current nonce ({len(self)})."
+                f"'stop={indices.stop}' cannot be greater than account's current nonce ({length})."
             )
 
-        if stop <= start:
+        nonces = range(*indices.indices(length))
+        if not nonces:
             return []  # nothing to query
 
-        return cast(
+        # NOTE: The query takes an ascending, inclusive nonce range, so ask for the
+        #       span the slice covers and then apply the slice's step and direction.
+        receipts = cast(
             list[ReceiptAPI],
             list(
                 self.query_manager.query(
                     AccountTransactionQuery(
                         columns=list(ReceiptAPI.__pydantic_fields__),
                         account=self.address,
-                        start_nonce=start,
-                        stop_nonce=stop - 1,
-                        step=step,
+                        start_nonce=min(nonces[0], nonces[-1]),
+                        stop_nonce=max(nonces[0], nonces[-1]),
                     )
                 )
             ),
         )
+        # NOTE: Select by each receipt's own nonce: an engine may answer with gaps,
+        #       duplicates, or extras, so positions in the result are not nonces.
+        #       Nonces the engine did not answer for are skipped.
+        receipts_by_nonce = {r.nonce: r for r in receipts if r.nonce is not None}
+        return [receipts_by_nonce[n] for n in nonces if n in receipts_by_nonce]
 
     def append(self, receipt: ReceiptAPI):
         """
