@@ -10,7 +10,7 @@ from ethpm_types import PackageManifest, PackageMeta, Source
 from pydantic import ConfigDict, Field, ValidationError, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from ape.exceptions import ConfigError
+from ape.exceptions import ConfigError, NetworkError
 from ape.logging import logger
 from ape.types.address import AddressType
 from ape.utils.abi import CalldataRepr
@@ -422,7 +422,13 @@ class ApeConfig(ExtraAttributesMixin, BaseSettings, ManagerAccessMixin):
         # Lazily validated.
         for ecosystem_name, ecosystem_deploys in self.deployment_data.items():
             if ecosystem_name not in self.network_manager.ecosystems:
-                raise ConfigError(f"Invalid ecosystem '{ecosystem_name}' in deployments config.")
+                message = f"Invalid ecosystem '{ecosystem_name}' in deployments config."
+                try:
+                    self.network_manager._check_bad_custom_ecosystem(ecosystem_name)
+                except NetworkError as err:
+                    message = f"{message} {err}"
+
+                raise ConfigError(message)
 
             ecosystem = self.network_manager.ecosystems[ecosystem_name]
             for network_name in ecosystem_deploys:

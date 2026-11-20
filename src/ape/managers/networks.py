@@ -10,6 +10,7 @@ from pydantic import Field, ValidationError
 
 from ape.api.networks import ProviderContextManager
 from ape.exceptions import EcosystemNotFoundError, NetworkError, NetworkNotFoundError
+from ape.logging import logger
 from ape.managers.base import BaseManager
 from ape.utils.basemodel import (
     BaseModel,
@@ -183,6 +184,9 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
     # For adhoc adding custom networks, or incorporating some defined
     # in other projects' configs.
     _custom_networks: ClassVar[list[dict]] = []
+
+    # Custom ecosystems that failed to load, mapped to the error message.
+    _bad_custom_ecosystems: dict[str, str] = {}
 
     @log_instead_of_fail(default="<NetworkManager>")
     def __repr__(self) -> str:
@@ -486,12 +490,14 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         plugin_ecosystems = self._plugin_ecosystems
         evm_chains = self._evmchains_ecosystems
         custom_ecosystems: dict[str, EcosystemAPI] = {}
+        bad_ecosystems: dict[str, str] = {}
         for custom_network in custom_networks:
             ecosystem_name = custom_network["ecosystem"]
             if (
                 ecosystem_name in plugin_ecosystems
                 or ecosystem_name in evm_chains
                 or ecosystem_name in custom_ecosystems
+                or ecosystem_name in bad_ecosystems
             ):
                 # Already included in a prior network.
                 continue
@@ -509,7 +515,11 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
                     f"Custom network '{name}' specified unknown base-ecosystem class "
                     f"'{base_ecosystem_name}'. Are you missing plugin 'ape-{base_ecosystem_name}'?"
                 )
-                raise NetworkError(msg)
+                # NOTE: Only fail when this ecosystem is requested, so that
+                #   it doesn't break every other ecosystem.
+                logger.warning(msg)
+                bad_ecosystems[ecosystem_name] = msg
+                continue
 
             existing_cls = plugin_ecosystems[base_ecosystem_name]
             ecosystem_cls = existing_cls.model_copy(
@@ -518,7 +528,13 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
             )
             custom_ecosystems[ecosystem_name] = ecosystem_cls
 
+        self._bad_custom_ecosystems = bad_ecosystems
         return custom_ecosystems
+
+    def _check_bad_custom_ecosystem(self, ecosystem_name: str):
+        _ = self._custom_ecosystems  # Ensure loaded.
+        if msg := self._bad_custom_ecosystems.get(ecosystem_name):
+            raise NetworkError(msg)
 
     @cached_property
     def _evmchains_ecosystems(self) -> dict[str, "EcosystemAPI"]:
@@ -632,7 +648,16 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
 
             eth = networks.ethereum
         """
-        return get_attribute_with_extras(self, attr_name)
+        try:
+            return get_attribute_with_extras(self, attr_name)
+        except AttributeError as err:
+            attr_err = err
+
+        # NOTE: Show the real reason when it is a custom ecosystem that failed to load.
+        if not attr_name.startswith("_"):
+            self._check_bad_custom_ecosystem(attr_name)
+
+        raise attr_err
 
     def get_network_choices(
         self,
@@ -663,6 +688,12 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         Returns:
             Iterator[str]: An iterator over all the network-choice possibilities.
         """
+
+        if isinstance(ecosystem_filter, str):
+            ecosystem_filter = [ecosystem_filter]
+
+        for ecosystem_name in ecosystem_filter or []:
+            self._check_bad_custom_ecosystem(ecosystem_name)
 
         ecosystem_filter = _validate_filter(ecosystem_filter, self.ecosystem_names)
         network_filter = _validate_filter(network_filter, self.network_names)
@@ -746,6 +777,7 @@ class NetworkManager(BaseManager, ExtraAttributesMixin):
         except KeyError:
             pass
 
+        self._check_bad_custom_ecosystem(ecosystem_name)
         if ecosystem := self._get_ecosystem_from_evmchains(ecosystem_name):
             return ecosystem
 

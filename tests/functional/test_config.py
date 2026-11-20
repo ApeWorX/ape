@@ -325,6 +325,23 @@ def test_deployments_bad_ecosystem(project):
         _ = project.config.deployments
 
 
+def test_deployments_custom_ecosystem_bad_base(project):
+    custom = {
+        "ecosystem": "custom-ecosystem-bad",
+        "name": "apenet",
+        "chain_id": 944898498948934528628,
+        "base_ecosystem_plugin": "plugin-ecosystem-not-installed",
+    }
+    deployments = _create_deployments(ecosystem_name="custom-ecosystem-bad", network_name="apenet")
+    with (
+        project.temp_config(deployments=deployments, networks={"custom": [custom]}),
+        pytest.raises(
+            ConfigError, match=r"Are you missing plugin 'ape-plugin-ecosystem-not-installed'\?"
+        ),
+    ):
+        _ = project.config.deployments
+
+
 def test_deployments_bad_network(project):
     deployments = _create_deployments(network_name="madeup")
     with (
