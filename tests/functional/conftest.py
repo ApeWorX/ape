@@ -577,6 +577,19 @@ def mock_compiler(make_mock_compiler):
 
 
 @pytest.fixture
+def mock_compiler_skipping_structs(compilers, mock_compiler):
+    """A registered mock compiler where ``structs.__mock__`` compiles to no contract types."""
+    compile_all = mock_compiler.compile.side_effect
+
+    def compile_without_structs(paths, **kwargs):
+        yield from (ct for ct in compile_all(paths, **kwargs) if ct.name != "structs")
+
+    mock_compiler.compile.side_effect = compile_without_structs
+    compilers.registered_compilers[".__mock__"] = mock_compiler
+    return mock_compiler
+
+
+@pytest.fixture
 def make_mock_compiler(mocker):
     def fn(name="mock"):
         mock = mocker.MagicMock()
