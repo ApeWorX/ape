@@ -54,7 +54,7 @@ def __getattr__(name: str):
 
         return getattr(gas_module, name)
 
-    elif name in ("MessageSignature", "SignableMessage", "TransactionSignature"):
+    elif name in ("BaseSignature", "MessageSignature", "SignableMessage", "TransactionSignature"):
         import ape.types.signatures as sig_module
 
         return getattr(sig_module, name)
@@ -100,6 +100,7 @@ __all__ = [
     "BaseInterface",
     "BaseInterfaceModel",
     "BaseModel",
+    "BaseSignature",
     "BlockID",
     "Bytecode",
     "Checksum",
