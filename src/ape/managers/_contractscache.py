@@ -466,7 +466,7 @@ class ContractCache(BaseManager):
 
         # Query and cache.
         query = ContractCreationQuery(columns=["*"], contract=address)
-        get_creation = self.query_manager.query(query)
+        get_creation = self.query_manager.query(query).as_model_iter()
 
         try:
             if not (creation := next(get_creation, None)):  # type: ignore[arg-type]

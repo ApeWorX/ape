@@ -1,47 +1,295 @@
 from abc import abstractmethod
 from collections.abc import Iterator, Sequence
 from functools import cache, cached_property
-from typing import Any, TypeAlias
+from importlib.util import find_spec
+from typing import TYPE_CHECKING, Any, ClassVar, Generic, TypeAlias, TypeVar, cast
 
+import narwhals.stable.v2 as nw
 from ethpm_types.abi import EventABI, MethodABI
-from pydantic import NonNegativeInt, PositiveInt, model_validator
+from pydantic import NonNegativeInt, PositiveInt, field_validator, model_validator
 
-from ape.api.transactions import ReceiptAPI, TransactionAPI
+from ape.exceptions import QueryEngineError
 from ape.logging import logger
+from ape.types import ContractLog
 from ape.types.address import AddressType
-from ape.utils.basemodel import BaseInterface, BaseInterfaceModel, BaseModel
+from ape.utils.basemodel import BaseInterface, BaseInterfaceModel, BaseModel, ManagerAccessMixin
+
+from .providers import BlockAPI
+from .transactions import ReceiptAPI, TransactionAPI
+
+if TYPE_CHECKING:
+    from narwhals.stable.v2.typing import Frame
+
+    from ape.managers.query import QueryResult
+
+    try:
+        # Only on Python 3.11
+        from typing import Self  # type: ignore
+    except ImportError:
+        from typing_extensions import Self  # type: ignore
+
+
+_DATAFRAME_BACKEND_HELP = (
+    "Install a Narwhals-supported dataframe library (for example `polars` or `pandas`), "
+    "or pass `backend=`."
+)
+
+# `from_dict` only accepts eager backends. Polars is preferred when several are installed.
+_EAGER_DATAFRAME_BACKENDS: tuple[tuple[str, str], ...] = (
+    ("polars", "polars"),
+    ("pandas", "pandas"),
+    ("pyarrow", "pyarrow"),
+    ("modin", "modin.pandas"),
+    ("cudf", "cudf"),
+)
 
 
 @cache
-def _basic_columns(Model: type[BaseInterfaceModel]) -> set[str]:
-    columns = set(Model.__pydantic_fields__)
+def _detected_dataframe_backend() -> nw.Implementation | None:
+    """Return the first installed eager dataframe library, without importing it."""
+    for name, module in _EAGER_DATAFRAME_BACKENDS:
+        try:
+            spec = find_spec(module)
+        except ModuleNotFoundError:
+            # ``find_spec("modin.pandas")`` imports ``modin`` and raises when it is absent.
+            continue
 
-    # TODO: Remove once `ReceiptAPI` fields cleaned up for better processing
-    if Model == ReceiptAPI:
-        columns.remove("transaction")
+        if spec is not None:
+            return nw.Implementation.from_string(name)
+
+    return None
+
+
+def resolve_dataframe_backend(
+    backend: str | nw.Implementation | None,
+    configured: str | nw.Implementation | None,
+) -> nw.Implementation:
+    """Select the dataframe library `.query` will use to build a Narwhals frame.
+
+    An explicit `backend` wins, then `query.backend` when it is set. Otherwise
+    Ape uses an installed library, preferring Polars. The choice is cached for
+    the process. Protocol SDKs use the Narwhals API and do not pin a library.
+    """
+    chosen = configured if backend is None else backend
+    if chosen is None:
+        chosen = _detected_dataframe_backend()
+
+    if chosen is None:
+        raise QueryEngineError(
+            "`.query` returns a Narwhals DataFrame and needs a dataframe library. "
+            f"{_DATAFRAME_BACKEND_HELP}"
+        )
+
+    if not isinstance(chosen, nw.Implementation):
+        chosen = nw.Implementation.from_string(chosen)
+
+    if chosen is nw.Implementation.UNKNOWN:
+        raise QueryEngineError(
+            f"{backend!r} is not a Narwhals dataframe backend. {_DATAFRAME_BACKEND_HELP}"
+        )
+
+    try:
+        # Import happens here so a missing library fails before any query work,
+        # and so the rest of Ape never imports a dataframe package.
+        chosen.to_native_namespace()
+    except ModuleNotFoundError as err:
+        raise QueryEngineError(
+            f"`.query` is set to use the {chosen.value!r} dataframe backend, "
+            "but that library is not installed. "
+            f"{_DATAFRAME_BACKEND_HELP}"
+        ) from err
+
+    return chosen
+
+
+# Dataframe libraries infer integers as at most 64 bits. Ethereum values such as
+# ``uint256`` (for example 10 ETH in wei) do not fit, so those columns get a wider type.
+_INT64_MIN = -(2**63)
+_INT64_MAX = 2**63 - 1
+_INT128_MIN = -(2**127)
+_INT128_MAX = 2**127 - 1
+_UINT128_MAX = 2**128 - 1
+
+
+def _is_int(value: Any) -> bool:
+    return isinstance(value, int) and not isinstance(value, bool)
+
+
+def _is_wide(value: Any) -> bool:
+    """True if ``value`` is, or contains, an integer outside the signed 64-bit range."""
+    if _is_int(value):
+        return not _INT64_MIN <= value <= _INT64_MAX
+
+    if isinstance(value, (list, tuple)):
+        return any(_is_wide(item) for item in value)
+
+    if isinstance(value, dict):
+        return any(_is_wide(item) for item in value.values())
+
+    return False
+
+
+def _wide_dtype(values: list, backend: nw.Implementation) -> Any:
+    """
+    The type for a column with integers wider than 64 bits.
+
+    Polars has 128-bit integers, which keep sums and filters numeric. Values that
+    do not fit (such as the largest ``uint256``), nested values, and libraries
+    without 128-bit integers keep the Python ``int`` objects. A pandas ``object``
+    column of Python ints still sums and compares exactly.
+    """
+    if backend is nw.Implementation.POLARS and all(
+        value is None or _is_int(value) for value in values
+    ):
+        integers = [value for value in values if value is not None]
+        if all(_INT128_MIN <= value <= _INT128_MAX for value in integers):
+            return nw.Int128()
+
+        if all(0 <= value <= _UINT128_MAX for value in integers):
+            return nw.UInt128()
+
+    return nw.Object()
+
+
+def _from_columns(data: dict[str, list], backend: nw.Implementation) -> nw.DataFrame:
+    """Build an eager frame from ``data`` without losing full-width integers."""
+    schema = {
+        column: _wide_dtype(values, backend) if any(map(_is_wide, values)) else None
+        for column, values in data.items()
+    }
+    # Narwhals types `backend` as one eager member, not the Implementation enum.
+    if any(dtype is not None for dtype in schema.values()):
+        # ``None`` keeps the library's own inference for the other columns.
+        return nw.from_dict(data, schema=cast(Any, schema), backend=cast(Any, backend))
+
+    return nw.from_dict(data, backend=cast(Any, backend))
+
+
+def to_dataframe(
+    data: dict[str, list],
+    backend: str | nw.Implementation | None,
+    configured: str | nw.Implementation | None,
+) -> nw.DataFrame:
+    """Build the Narwhals DataFrame returned by `.query`."""
+    return _from_columns(data, resolve_dataframe_backend(backend, configured))
+
+
+def _subclass_tree(model: type[BaseInterfaceModel]) -> list[type[BaseInterfaceModel]]:
+    found: list[type[BaseInterfaceModel]] = []
+    stack: list[type] = list(model.__subclasses__())
+    while stack:
+        cls = stack.pop()
+        if cls in found or not issubclass(cls, BaseInterfaceModel):
+            continue
+
+        found.append(cls)
+        stack.extend(cls.__subclasses__())
+
+    return found
+
+
+def _ecosystem_packages() -> list[str] | None:
+    """Packages that define the connected ecosystem's models, most derived first.
+
+    The ecosystem class and the classes it extends are included, stopping at
+    ``EcosystemAPI``. A chain that subclasses Ethereum and declares no model of
+    its own still uses the Ethereum block and receipt.
+    """
+    networks = ManagerAccessMixin.network_manager
+    if not networks.connected:
+        return None
+
+    packages: list[str] = []
+    for cls in type(networks.ecosystem).__mro__:
+        if cls.__name__ == "EcosystemAPI":
+            break
+
+        package = cls.__module__.split(".", 1)[0]
+        if package not in packages:
+            packages.append(package)
+
+    return packages
+
+
+def _concrete_model(model: type[BaseInterfaceModel]) -> type[BaseInterfaceModel]:
+    """The connected ecosystem's model for ``model``.
+
+    The most derived ecosystem package that declares a model wins, so a chain
+    that extends Ethereum's block (for example to add a field) uses its own.
+    Within that package, the most general class is the one every row has. A
+    more specific variant, such as a blob receipt, is not used for ``*``.
+    """
+    packages = _ecosystem_packages()
+    if not packages:
+        return model
+
+    subclasses = _subclass_tree(model)
+    for package in packages:
+        candidates = [cls for cls in subclasses if cls.__module__.split(".", 1)[0] == package]
+        if not candidates:
+            continue
+
+        general = [
+            cls
+            for cls in candidates
+            if not any(cls is not other and issubclass(cls, other) for other in candidates)
+        ]
+        return general[0] if len(general) == 1 else model
+
+    return model
+
+
+def _basic_columns(model: type[BaseInterfaceModel]) -> set[str]:
+    # Constructor fields of the ecosystem model. Enough to build a row, and not
+    # properties that fetch more data.
+    concrete = _concrete_model(model)
+    columns = set(concrete.model_fields)
+
+    # Receipt rows flatten the nested transaction, so ``*`` keeps columns such
+    # as nonce, value, sender and receiver instead of one nested object.
+    if issubclass(concrete, ReceiptAPI):
+        columns.discard("transaction")
         columns |= _basic_columns(TransactionAPI)
 
     return columns
 
 
-@cache
-def _all_columns(Model: type[BaseInterfaceModel]) -> set[str]:
-    columns = _basic_columns(Model)
-    # NOTE: Iterate down the series of subclasses of `Model` (e.g. Block and BlockAPI)
-    #       and get all of the public property methods of each class (which are valid columns)
-    columns |= {
-        field_name
-        for cls in Model.__mro__
-        if issubclass(cls, BaseInterfaceModel) and cls is not BaseInterfaceModel
-        for field_name, field in vars(cls).items()
-        if not field_name.startswith("_") and isinstance(field, (property, cached_property))
-    }
+def _all_columns(model: type[BaseInterfaceModel]) -> set[str]:
+    concrete = _concrete_model(model)
+    columns = set(concrete.model_fields)
+    for cls in concrete.__mro__:
+        if cls is BaseInterfaceModel or not issubclass(cls, BaseInterfaceModel):
+            continue
 
-    # TODO: Remove once `ReceiptAPI` fields cleaned up for better processing
-    if Model == ReceiptAPI:
+        columns.update(
+            field_name
+            for field_name, field in vars(cls).items()
+            if not field_name.startswith("_") and isinstance(field, (property, cached_property))
+        )
+
+    # Receipt rows expose the nested transaction's fields, such as nonce.
+    if issubclass(concrete, ReceiptAPI):
         columns |= _all_columns(TransactionAPI)
 
     return columns
+
+
+def _select_columns(columns: Sequence[str], allowed: set[str]) -> list[str]:
+    deduped_columns = set(columns)
+    if len(deduped_columns) != len(columns):
+        logger.warning(f"Duplicate fields in {list(columns)}")
+
+    # NOTE: Some unrecognized fields, but can still provide the rest of the data
+    if len(deduped_columns - allowed) > 0:
+        logger.warning(_unrecognized_columns(deduped_columns, allowed))
+
+    # Keep the caller's order. Drop names this model does not have.
+    selected_fields = list(dict.fromkeys(column for column in columns if column in allowed))
+    if len(selected_fields) > 0:
+        return selected_fields
+
+    # NOTE: No recognized fields available to query, so raise ValueError
+    raise ValueError(_unrecognized_columns(deduped_columns, allowed))
 
 
 def validate_and_expand_columns(
@@ -52,26 +300,59 @@ def validate_and_expand_columns(
         #       (because they are cheap to pull, but properties might not be)
         return sorted(_basic_columns(Model))
 
-    else:
-        # NOTE: Validate if selected columns in the total set of fields + properties
-        all_columns = _all_columns(Model)
-        deduped_columns = set(columns)
-        if len(deduped_columns) != len(columns):
-            logger.warning(f"Duplicate fields in {columns}")
+    return _select_columns(columns, _all_columns(Model))
 
-        # NOTE: Some unrecognized fields, but can still provide the rest of the data
-        if len(deduped_columns - all_columns) > 0:
-            err_msg = _unrecognized_columns(deduped_columns, all_columns)
-            logger.warning(err_msg)
 
-        # NOTE: Only select recognized fields and return them (in sorted order)
-        selected_fields = all_columns.intersection(deduped_columns)
-        if len(selected_fields) > 0:
-            return sorted(selected_fields)
+def _event_argument_names(event: EventABI) -> list[str]:
+    """Event inputs that can be their own columns, in ABI order.
 
-    # NOTE: No recognized fields available to query, so raise ValueError
-    err_msg = _unrecognized_columns(deduped_columns, all_columns)
-    raise ValueError(err_msg)
+    An input with no name is skipped. An input that shares a name with a log
+    field stays inside ``event_arguments``, because that column is the log field.
+    """
+    occupied = _all_columns(ContractLog)
+    names: list[str] = []
+    for abi_input in event.inputs:
+        name = abi_input.name
+        if not name or name in occupied or name in names:
+            continue
+
+        names.append(name)
+
+    return names
+
+
+def _expand_event_columns(columns: Sequence[str], event: EventABI) -> list[str]:
+    arguments = _event_argument_names(event)
+    if len(columns) == 1 and columns[0] == "*":
+        return sorted(_basic_columns(ContractLog)) + arguments
+
+    return _select_columns(columns, _all_columns(ContractLog) | set(arguments))
+
+
+def _column_values(columns: Sequence[str], items: Iterator[Any]) -> dict[str, list]:
+    """Collect ``columns`` from each model in ``items``, one list per column."""
+    data: dict[str, list] = {column: [] for column in columns}
+    log_fields: set[str] | None = None
+    for item in items:
+        if isinstance(item, ContractLog):
+            if log_fields is None:
+                log_fields = _all_columns(ContractLog)
+
+            # An event input is a column of its own unless a log field has that name.
+            # Read it from ``event_arguments`` so that an input named like a method
+            # (such as ``get``) returns the decoded value, not the bound method.
+            arguments = item.event_arguments
+            for column, values in data.items():
+                if column not in log_fields and column in arguments:
+                    values.append(arguments[column])
+                else:
+                    values.append(getattr(item, column))
+
+        else:
+            for column, values in data.items():
+                values.append(getattr(item, column))
+
+    return data
 
 
 def _unrecognized_columns(selected_columns: set[str], all_columns: set[str]) -> str:
@@ -84,13 +365,66 @@ def extract_fields(item: BaseInterfaceModel, columns: Sequence[str]) -> list[Any
     return [getattr(item, col, None) for col in columns]
 
 
-class _BaseQuery(BaseModel):
-    columns: Sequence[str]
+ModelType = TypeVar("ModelType", bound=BaseInterfaceModel)
 
-    # TODO: Support "*" from getting the EcosystemAPI fields
+
+class _BaseQuery(BaseModel, Generic[ModelType]):
+    Model: ClassVar[type[BaseInterfaceModel] | None] = None
+
+    columns: list[str]
+
+    @field_validator("columns", mode="before")
+    def expand_wildcard(cls, value: Any) -> Any:
+        if cls.Model:
+            return validate_and_expand_columns(value, cls.Model)
+
+        return value
+
+    # Methods for determining query "coverage" and constraining search
+    @property
+    def start_index(self) -> int:
+        raise NotImplementedError()
+
+    @property
+    def end_index(self) -> int:
+        raise NotImplementedError()
+
+    def __len__(self) -> int:
+        # Ranges are inclusive. An empty span (such as a block with no transactions)
+        # has ``end_index < start_index`` and length 0.
+        if self.end_index < self.start_index:
+            return 0
+
+        step = getattr(self, "step", 1) or 1
+        return (self.end_index - self.start_index) // step + 1
+
+    def __contains__(self, other: Any) -> bool:
+        if not isinstance(other, _BaseQuery):
+            raise TypeError(other)
+
+        # NOTE: Return True if `other` is "covered by" `self`
+        return other.start_index >= self.start_index and other.end_index <= self.end_index
+
+    # Methods for determining query "ordering"
+    def __lt__(self, other: Any) -> bool:
+        if not isinstance(other, _BaseQuery):
+            raise TypeError(other)
+
+        if self.start_index < other.start_index:
+            return True
+
+        elif self.start_index == other.start_index:
+            # NOTE: If start matches, return True for smaller range covered
+            return self.end_index < other.end_index
+
+        else:
+            return False
 
 
 class _BaseBlockQuery(_BaseQuery):
+    # Subclasses such as method queries set this to ``None`` so return columns
+    # are not validated as block fields.
+    Model: ClassVar[type[Any] | None] = BlockAPI
     start_block: NonNegativeInt = 0
     stop_block: NonNegativeInt
     step: PositiveInt = 1
@@ -112,35 +446,55 @@ class _BaseBlockQuery(_BaseQuery):
 
         return values
 
+    @property
+    def start_index(self) -> int:
+        return self.start_block
 
-class BlockQuery(_BaseBlockQuery):
+    @property
+    def end_index(self) -> int:
+        return self.stop_block
+
+
+class BlockQuery(_BaseBlockQuery, _BaseQuery[BlockAPI]):
     """
     A ``QueryType`` that collects properties of ``BlockAPI`` over a range of
     blocks between ``start_block`` and ``stop_block``.
     """
 
 
-class BlockTransactionQuery(_BaseQuery):
+class BlockTransactionQuery(_BaseQuery[TransactionAPI]):
     """
     A ``QueryType`` that collects properties of ``TransactionAPI`` over a range of
     transactions collected inside the ``BlockAPI` object represented by ``block_id``.
     """
 
+    Model = TransactionAPI
+
     block_id: Any
+    num_transactions: NonNegativeInt
+
+    @property
+    def start_index(self) -> int:
+        return 0
+
+    @property
+    def end_index(self) -> int:
+        return self.num_transactions - 1
 
 
-class AccountTransactionQuery(_BaseQuery):
+class AccountTransactionQuery(_BaseQuery[ReceiptAPI]):
     """
-    A ``QueryType`` that collects properties of ``TransactionAPI`` over a range
+    A ``QueryType`` that collects properties of ``ReceiptAPI`` over a range
     of transactions made by ``account`` between ``start_nonce`` and ``stop_nonce``.
     """
+
+    Model = ReceiptAPI
 
     account: AddressType
     start_nonce: NonNegativeInt = 0
     stop_nonce: NonNegativeInt
 
     @model_validator(mode="before")
-    @classmethod
     def check_start_nonce_before_stop_nonce(cls, values: dict) -> dict:
         if values["stop_nonce"] < values["start_nonce"]:
             raise ValueError(
@@ -150,17 +504,16 @@ class AccountTransactionQuery(_BaseQuery):
 
         return values
 
+    @property
+    def start_index(self) -> int:
+        return self.start_nonce
 
-class ContractCreationQuery(_BaseQuery):
-    """
-    A ``QueryType`` that obtains information about contract deployment.
-    Returns ``ContractCreation(txn_hash, block, deployer, factory)``.
-    """
-
-    contract: AddressType
+    @property
+    def end_index(self) -> int:
+        return self.stop_nonce
 
 
-class ContractCreation(BaseModel, BaseInterface):
+class ContractCreation(BaseInterfaceModel):
     """
     Contract-creation metadata, such as the transaction
     and deployer. Useful for contract-verification,
@@ -219,72 +572,237 @@ class ContractCreation(BaseModel, BaseInterface):
         )
 
 
-class ContractEventQuery(_BaseBlockQuery):
+class ContractCreationQuery(_BaseQuery[ContractCreation]):
+    """
+    A ``QueryType`` that obtains information about contract deployment.
+    Returns ``ContractCreation(txn_hash, block, deployer, factory)``.
+    """
+
+    Model = ContractCreation
+
+    contract: AddressType
+
+    @property
+    def start_index(self) -> int:
+        return 0
+
+    @property
+    def end_index(self) -> int:
+        # One creation record occupies a single index.
+        return 0
+
+
+class ContractEventQuery(_BaseBlockQuery, _BaseQuery[ContractLog]):
     """
     A ``QueryType`` that collects members from ``event`` over a range of
     logs emitted by ``contract`` between ``start_block`` and ``stop_block``.
+
+    ``*`` includes the log fields and each event input, in ABI order.
+    An input can also be requested by name, such as ``wad``.
     """
+
+    Model = ContractLog
 
     contract: list[AddressType] | AddressType
     event: EventABI
     search_topics: dict[str, Any] | None = None
 
+    @field_validator("columns", mode="before")
+    @classmethod
+    def expand_wildcard(cls, value: Any) -> Any:
+        # Argument names come from the event ABI. ``include_event_arguments``
+        # selects columns first, and the base validator would drop those names.
+        return value
 
-class ContractMethodQuery(_BaseBlockQuery):
+    @model_validator(mode="before")
+    @classmethod
+    def include_event_arguments(cls, value: Any) -> Any:
+        if not isinstance(value, dict):
+            return value
+
+        columns = value.get("columns")
+        event = value.get("event")
+        if isinstance(columns, str) or not isinstance(columns, Sequence) or event is None:
+            return value
+
+        if not isinstance(event, EventABI):
+            event = EventABI.model_validate(event)
+
+        return {**value, "columns": _expand_event_columns(columns, event)}
+
+
+class ContractMethodQuery(_BaseBlockQuery, _BaseQuery[Any]):
     """
     A ``QueryType`` that collects return values from calling ``method`` in ``contract``
     over a range of blocks between ``start_block`` and ``stop_block``.
     """
+
+    # Return columns are method outputs, not block fields.
+    Model = None
 
     contract: AddressType
     method: MethodABI
     method_args: dict[str, Any]
 
 
+class CursorAPI(BaseInterfaceModel, Generic[ModelType]):
+    query: _BaseQuery[ModelType]
+
+    def shrink(
+        self,
+        start_index: int | None = None,
+        end_index: int | None = None,
+    ) -> "Self":
+        """
+        Create a copy of this object with the query window shrunk inwards to ``start_index`` and/or
+        ``end_index``. Note that ``.shrink`` should always be called with strictly less coverage than
+        original query window of this cursor model for use in the ``QueryManager``'s solver algorithm.
+
+        Args:
+            start_index (int | None): The new ``start_index`` that this cursor should start at.
+            end_index (int | None): The new ``end_index`` that this cursor should start at.
+
+        Returns:
+            Self: a copy of itself, only with the smaller query window applied.
+        """
+        raise NotImplementedError
+
+    @property
+    def total_time(self) -> float:
+        """
+        The estimated total time that this cursor would take to execute. Note that this is only an
+        approximation, but should be relatively accurate for the `QueryManager`'s solver algorithm
+        to work well. Is used for printing metrics to the user.
+
+        Default implementation of this property is the span of this cursor times `.time_per_row`.
+
+        Returns:
+            float: Time (in seconds) that the query should take to execute fully.
+        """
+        return len(self.query) * self.time_per_row
+
+    @property
+    @abstractmethod
+    def time_per_row(self) -> float:
+        """
+        The estimated average time spent (per row) that this cursor would take to execute. Note
+        that this is only an approximation, but should be relatively accurate for the
+        `QueryManager`'s solver algorithm to work well. Is used for determining the correct
+        ordering of cursor's within the solver algorithm.
+
+        Returns:
+            float: Average time (in seconds) that the query should take to execute a single row.
+        """
+
+    # Conversion out to fulfill user query requirements
+    def as_dataframe(self, backend: nw.Implementation) -> "Frame":
+        """
+        Execute and return this Cursor as a Narwhals stable v2 DataFrame or LazyFrame.
+        ``backend`` selects the library, as described in the Narwhals documentation:
+        https://narwhals-dev.github.io/narwhals/api-reference/typing/#narwhals.typing.Frame
+
+        It is recommended to use whatever method of conversion makes sense within your query
+        plugin, for example you can use ``narwhals.stable.v2.from_dict`` to convert results
+        into a Frame:
+        https://narwhals-dev.github.io/narwhals/api-reference/narwhals/#narwhals.from_dict
+
+        Default implementation of this method uses `.as_model_iter()` to fulfill this requirement.
+
+        Args:
+            backend (:object:`~narwhals.stable.v2.Implementation`): A Narwhals-compatible
+                backend specifier.
+                See: https://narwhals-dev.github.io/narwhals/api-reference/implementation/
+
+        Returns:
+            (:class:`~narwhals.stable.v2.DataFrame` | :class:`~narwhals.stable.v2.LazyFrame`):
+                A narwhals dataframe.
+        """
+        return _from_columns(_column_values(self.query.columns, self.as_model_iter()), backend)
+
+    @abstractmethod
+    def as_model_iter(self) -> Iterator[ModelType]:
+        """
+        Execute and return this Cursor as an iterated sequence of `ModelType` objects. This will
+        be used for Ape's internal APIs in order to fulfill certain higher-level use cases within
+        Ape. Note that a plugin is expected to assemble this iterated sequence in the most
+        efficient manner possible.
+
+        Returns:
+            `Iterator[ModelType]`: A sequence of Ape API models.
+        """
+
+
 QueryType: TypeAlias = (
-    BlockQuery
+    AccountTransactionQuery
+    | BlockQuery
     | BlockTransactionQuery
-    | AccountTransactionQuery
     | ContractCreationQuery
     | ContractEventQuery
     | ContractMethodQuery
 )
 
 
-class QueryAPI(BaseInterface):
-    @abstractmethod
-    def estimate_query(self, query: QueryType) -> int | None:
+class QueryEngineAPI(BaseInterface):
+    def execute(self, query: QueryType) -> Iterator[CursorAPI]:
         """
-        Estimation of time needed to complete the query. The estimation is returned
-        as an int representing milliseconds. A value of None indicates that the
-        query engine is not available for use or is unable to complete the query.
+        Obtain `CursorAPI` object(s) that may covers (subset of) `query`. A plugin should yield
+        one or more cursor(s) that covers some subset of the length of `query`'s row-space, as
+        indicated by `QueryType.start_index` and `QueryType.end_index`. These query types will
+        either be fed into an algorithm to determine the cheapest possible coverage of the query,
+        or be sourced directly from the provider in response to a user-specified query.
+
+        Note that this method encourages the use of `@singledispatchmethod` decorator to make it
+        possible to specify only certain types of queries that your plugin might be able to handle,
+        which will cause it to skip using this plugin for non-overriden queries by default, as this
+        method yields an empty iterator which will indicate that your plugin can be skipped.
+
+        Add `execute = functools.singledispatchmethod(QueryEngineAPI.execute)` to your subclass,
+        and then `@execute.register` as a decorator on your method in order to support particular
+        query types.
+
+        ``@execute.register`` uses the first annotation on the method as the dispatch key.
+        Leave ``self`` unannotated. Annotating it registers the engine class, and the handler
+        never runs for a query.
 
         Args:
-            query (``QueryType``): Query to estimate.
+            query (`~QueryType`): The query being handled by this method.
 
         Returns:
-            Optional[int]: Represents milliseconds, returns ``None`` if unable to execute.
+            Iterator[`~CursorAPI`]: Zero (or more) cursor(s) that provide data for a portion of
+                `query`'s range. Defaults to not providing any coverage.
+
+        Usage example::
+
+            >>> from functools import singledispatchmethod
+            >>> from ape.api import CursorAPI, QueryEngineAPI
+            >>> class PluginCursor(CursorAPI):
+            ...     ...  # See `CursorAPI`'s documentation for methods to implement
+            >>> class PluginQueryEngine(QueryEngineAPI):
+            ...     # NOTE: Do this if you want to define multiple dispatch handlers easily
+            ...     execute = singledispatchmethod(QueryEngineAPI.execute)
+            ...     # NOTE: Do *not* use the name `execute` for the dispatch method's name!
+            ...     # NOTE: Do *not* annotate `self`. The first annotation is the dispatch key.
+            ...     @execute.register
+            ...     def exec_queryX(self, query: SomethingQuery) -> Iterator[PluginCursor]:
+            ...         yield PluginCursor(query=query, ...)
+            ...         # NOTE: Can yield more cursors if plugin does not have full coverage,
+            ...         #       or has piece-wise coverage of the query space
 
         """
+        return iter([])  # Will avoid using any cursors from this plugin for querying this type
 
-    @abstractmethod
-    def perform_query(self, query: QueryType) -> Iterator:
+    def cache(self, result: "QueryResult"):
         """
-        Executes the query using best performing ``estimate_query`` query engine.
+        Once a query is solved, this method will be called on every query plugin as a callback for
+        whatever application logic you might want to perform using the final `QueryResult` cursor.
+        By default, this method does nothing, so only override if it is needed to perform specific
+        application logic for your plugin (caching, pre-indexing, etc.)
 
         Args:
-            query (``QueryType``): query to execute
-
-        Returns:
-            Iterator
+            result (`~ape.managers.query.QueryResult`): the final solved Cursor representing all
+                the data that most efficiently covers the original `~QueryType`.
         """
 
-    def update_cache(self, query: QueryType, result: Iterator[BaseInterfaceModel]):
-        """
-        Allows a query plugin the chance to update any cache using the results obtained
-        from other query plugins. Defaults to doing nothing, override to store cache data.
 
-        Args:
-            query (``QueryType``): query that was executed
-            result (``Iterator``): the result of the query
-        """
+# TODO: Remove in v1. Plugins should import ``QueryEngineAPI``.
+QueryAPI = QueryEngineAPI

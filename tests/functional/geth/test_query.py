@@ -1,4 +1,93 @@
+from eth_utils import to_hex
+
+from ape_cache import query as cache_query
+from ape_cache.query import CacheQueryProvider
+from ape_ethereum.ecosystem import Block
 from tests.conftest import geth_process_test
+
+
+def _hex(value: object) -> str:
+    return value.lower() if isinstance(value, str) else to_hex(value).lower()
+
+
+@geth_process_test
+def test_history_is_served_from_the_file_cache(
+    chain, geth_provider, geth_account, geth_second_account, monkeypatch, mocker, tmp_path
+):
+    # Keep the file cache in a temp folder so this test does not write into
+    # the shared data directory.
+    def cache_folder(self, ecosystem_name=None, network_name=None):
+        if ecosystem_name is None or network_name is None:
+            ecosystem_name = self.provider.network.ecosystem.name
+            network_name = self.provider.network.name
+
+        return tmp_path / ecosystem_name / network_name / "query-cache"
+
+    monkeypatch.setattr(CacheQueryProvider, "cache_folder", cache_folder)
+
+    # The cache is off for local chains, so treat this node as a public network
+    # whose settled history ends at the window below.
+    # Geth's dev mode seals a block for each transaction.
+    for _ in range(4):
+        geth_account.transfer(geth_second_account, "1 wei")
+
+    stop = chain.blocks.height
+    start = stop - 3
+    prefix_stop = start + 1
+    monkeypatch.setattr(CacheQueryProvider, "uses_cache", True)
+    monkeypatch.setattr(cache_query, "_canonical_height", lambda provider: stop)
+    chain_folder = chain.query_manager.engines["cache"].chain_cache_folder()
+    assert chain_folder is not None
+    assert chain_folder.parent == cache_folder(chain.query_manager.engines["cache"]) / str(
+        chain.chain_id
+    )
+    cache_dir = chain_folder / "blocks" / ".number"
+
+    prefix = chain.blocks.query(
+        "number", "hash", "timestamp", start_block=start, stop_block=prefix_stop
+    )
+    assert [int(number) for number in prefix["number"].to_list()] == list(
+        range(start, prefix_stop + 1)
+    )
+    assert sorted(int(path.name) for path in cache_dir.iterdir()) == list(
+        range(start, prefix_stop + 1)
+    )
+
+    stored = Block.model_validate_json((cache_dir / str(start)).read_text())
+    live = geth_provider.get_block(start)
+    assert stored.number is not None
+    assert int(stored.number) == start
+    assert _hex(stored.hash) == _hex(live.hash)
+    assert int(stored.timestamp) == int(live.timestamp)
+
+    # The cached prefix stays on disk. Only the tail should hit the node.
+    # Spy the RPC the provider uses. The node provider is a pydantic model,
+    # so spying its get_block method cannot be torn down.
+    get_block = mocker.spy(geth_provider.web3.eth, "get_block")
+    full = chain.blocks.query("number", "hash", start_block=start, stop_block=stop)
+    fetched = [
+        call.args[0]
+        for call in get_block.call_args_list
+        if call.args and isinstance(call.args[0], int)
+    ]
+    assert [int(number) for number in full["number"].to_list()] == list(range(start, stop + 1))
+    prefix_len = prefix_stop - start + 1
+    assert [_hex(value) for value in full["hash"].to_list()[:prefix_len]] == [
+        _hex(value) for value in prefix["hash"].to_list()
+    ]
+    assert fetched
+    assert set(fetched).isdisjoint(range(start, prefix_stop + 1))
+    assert set(range(prefix_stop + 1, stop + 1)).issubset(fetched)
+    assert sorted(int(path.name) for path in cache_dir.iterdir()) == list(range(start, stop + 1))
+
+    get_block.reset_mock()
+    cached = chain.blocks.query("number", "hash", start_block=start, stop_block=stop)
+    assert [int(number) for number in cached["number"].to_list()] == list(range(start, stop + 1))
+    assert [_hex(value) for value in cached["hash"].to_list()] == [
+        _hex(value) for value in full["hash"].to_list()
+    ]
+    # Those numbers come from disk. A head lookup ("latest") is separate.
+    assert {call.args[0] for call in get_block.call_args_list} <= {"latest"}
 
 
 @geth_process_test
@@ -23,11 +112,18 @@ def test_get_contract_metadata(
     finally:
         chain.network_manager.active_provider._web3 = orig_web3
 
-    call_args = mock_geth._web3.provider.make_request.call_args_list
+    # The cursor checks that the RPC method exists before tracing, so those
+    # probes use an empty argument list. The search itself carries the tracer.
+    def traced(method: str) -> list:
+        return [
+            call.args
+            for call in mock_geth._web3.provider.make_request.call_args_list
+            if call.args and call.args[0] == method and len(call.args) > 1 and call.args[1]
+        ]
 
-    # geth
-    assert call_args[-2][0][0] == "debug_traceBlockByNumber"
-    assert call_args[-2][0][1][1] == {"tracer": "callTracer"}
-    # parity
-    assert call_args[-1][0][0] == "trace_replayBlockTransactions"
-    assert call_args[-1][0][1][1] == ["trace"]
+    debug = traced("debug_traceBlockByNumber")
+    parity = traced("trace_replayBlockTransactions")
+    assert len(debug) == 1
+    assert debug[0][1][1] == {"tracer": "callTracer"}
+    assert len(parity) == 1
+    assert parity[0][1][1] == ["trace"]
