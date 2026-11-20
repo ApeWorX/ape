@@ -68,6 +68,15 @@ def is_array(abi_type: str | ABIType) -> bool:
     return ARRAY_PATTERN.match(str(abi_type)) is not None
 
 
+def _strip_array_dimension(abi_type: str) -> str:
+    """
+    Remove the outer-most array dimension from an ABI type, e.g. ``tuple[2][3]``
+    (an array of 3 ``tuple[2]``) becomes ``tuple[2]`` and ``tuple[3]`` becomes ``tuple``.
+    """
+
+    return abi_type.rpartition("[")[0] or abi_type
+
+
 def returns_array(abi: MethodABI) -> bool:
     """
     Returns ``True`` if the given method ABI likely returns an array.
@@ -157,10 +166,10 @@ class StructParser:
             and isinstance(value, (list, tuple))
             and len(_type.components or []) > 0
         ):
-            non_array_type_data = _type.model_dump()
-            non_array_type_data["type"] = "tuple"
-            non_array_type = ABIType(**non_array_type_data)
-            return [self._encode(non_array_type, v) for v in value]
+            item_type_data = _type.model_dump()
+            item_type_data["type"] = _strip_array_dimension(str(_type.type))
+            item_type = ABIType(**item_type_data)
+            return [self._encode(item_type, v) for v in value]
 
         return value
 
@@ -201,7 +210,7 @@ class StructParser:
             return values
 
         elif has_array_of_tuples_return:
-            item_type_str = str(_types[0].type).partition("[")[0]
+            item_type_str = _strip_array_dimension(str(_types[0].type))
             data = {
                 **_types[0].model_dump(),
                 "type": item_type_str,
@@ -214,16 +223,15 @@ class StructParser:
                 return_values.append([])
 
             elif isinstance(values, (list, tuple)):
-                for value in values[0]:
-                    item = self._decode([output_type], [value])
-                    return_values.append(item)
+                return_values.extend(self._decode_array(output_type, values[0]))
 
         else:
             for output_type, value in zip(_types, values, strict=True):
                 if isinstance(value, (tuple, list)):
-                    item_type_str = str(output_type.type).partition("[")[0]
-                    if item_type_str == "tuple":
+                    type_str = str(output_type.type)
+                    if type_str.partition("[")[0] == "tuple":
                         # Either an array of structs or nested structs.
+                        item_type_str = _strip_array_dimension(type_str)
                         item_type_data = {
                             **output_type.model_dump(),
                             "type": item_type_str,
@@ -235,7 +243,7 @@ class StructParser:
                             parsed_item = self._decode([item_type], [value])
                         else:
                             # Is array of structs.
-                            parsed_item = [self._decode([item_type], [v]) for v in value]
+                            parsed_item = self._decode_array(item_type, value)
 
                         # If it's an empty dynamic array of structs, replace `None` with empty list
                         output_raw_type = output_type.type
@@ -255,6 +263,20 @@ class StructParser:
                     return_values.append(value)
 
         return return_values
+
+    def _decode_array(self, item_type: ABIType, values: Sequence) -> list:
+        item_is_array = is_array(item_type.type)
+        decoded: list = []
+        for value in values:
+            if item_is_array and not value:
+                # An empty inner array, e.g. a row of ``tuple[][]``. NOTE: decoding it
+                # instead hits the "only returned an empty list" case, which wraps it
+                # for `decode_returndata()` to unwrap at the top level.
+                decoded.append([])
+            else:
+                decoded.append(self._decode([item_type], [value]))
+
+        return decoded
 
     def _create_struct(self, out_abi: ABIType, out_value: Any) -> Any | None:
         if not out_abi.components or not out_value[0]:
@@ -281,12 +303,19 @@ class StructParser:
                 new_value = self._create_struct(component, (value,))
                 parsed_values.append(new_value)
             elif is_array(component.type) and "tuple" in component.type and component.components:
-                new_value = [self._decode(component.components, v) for v in value]
+                dimensions = str(component.type).count("[")
+                new_value = self._decode_struct_array(component, value, dimensions)
                 parsed_values.append(new_value)
             else:
                 parsed_values.append(value)
 
         return parsed_values
+
+    def _decode_struct_array(self, component: ABIType, values, dimensions: int) -> list:
+        if dimensions > 1:
+            return [self._decode_struct_array(component, v, dimensions - 1) for v in values]
+
+        return [self._decode(component.components or [], v) for v in values]
 
 
 def is_struct(outputs: ABIType | Sequence[ABIType]) -> bool:
