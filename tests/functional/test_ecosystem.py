@@ -498,6 +498,60 @@ def test_decode_logs_topics_not_first(ethereum):
     assert actual
 
 
+@pytest.mark.parametrize("topics_as_bytes", (False, True))
+def test_decode_logs_skips_logs_without_topics(ethereum, topics_as_bytes):
+    """
+    A LOG0 has no topics, so it cannot match the given ABI.
+    It used to raise ``IndexError`` on ``topics[0]`` and fail the whole batch.
+    Logs are from mainnet tx
+    0x638bade6d09cf9718c301be8ba0de96235749d73ce7f340c9921e31fae89d855.
+    """
+    abi = EventABI.model_validate(
+        {
+            "anonymous": False,
+            "inputs": [
+                {"indexed": True, "name": "from", "type": "address"},
+                {"indexed": True, "name": "to", "type": "address"},
+                {"indexed": False, "name": "value", "type": "uint256"},
+            ],
+            "name": "Transfer",
+            "type": "event",
+        }
+    )
+    base = {
+        "blockHash": "0x3866f4c2cf1db8b25680ec98e511be74549e0ad6c5996d15dd8b88cd4cbf7b41",
+        "blockNumber": "0x19354d2",
+        "removed": False,
+        "transactionHash": "0x638bade6d09cf9718c301be8ba0de96235749d73ce7f340c9921e31fae89d855",
+        "transactionIndex": "0x0",
+    }
+    transfer_log = {
+        **base,
+        "address": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+        "data": "0x00000000000000000000000000000000000000000000000000000000007281e7",
+        "logIndex": "0x0",
+        "topics": [
+            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+            "0x000000000000000000000000000000000004444c5dc75cb358380d2e3de08a90",
+            "0x0000000000000000000000000000000aa232009084bd71a5797d089aa4edfad4",
+        ],
+    }
+    anonymous_log = {
+        **base,
+        "address": "0x0000000aa232009084bd71a5797d089aa4edfad4",
+        "data": "0x446bafda108633e865799c45ed4f7ca77fa0707d3122b194735f709a5c132560",
+        "logIndex": "0x3",
+        "topics": [],
+    }
+    if topics_as_bytes:
+        transfer_log["topics"] = [HexBytes(t) for t in transfer_log["topics"]]
+
+    actual = list(ethereum.decode_logs([anonymous_log, transfer_log], abi))
+    assert len(actual) == 1
+    assert actual[0].event_name == "Transfer"
+    assert actual[0].value == 0x7281E7
+
+
 def test_decode_receipt(eth_tester_provider, ethereum):
     receipt_data = {
         "provider": eth_tester_provider,
