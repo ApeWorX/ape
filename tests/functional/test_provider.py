@@ -9,6 +9,7 @@ from eth_utils import ValidationError, keccak, to_hex
 from hexbytes import HexBytes
 from requests import HTTPError
 from web3.exceptions import ContractPanicError, TimeExhausted, Web3RPCError
+from web3.providers import AutoProvider, LegacyWebSocketProvider
 
 from ape import convert
 from ape.api.providers import SubprocessProvider
@@ -27,6 +28,7 @@ from ape.utils.testing import DEFAULT_TEST_CHAIN_ID
 from ape_ethereum.provider import (
     EthereumNodeProvider,
     Web3Provider,
+    _create_web3,
     _get_trace_from_revert_kwargs,
     _sanitize_web3_url,
 )
@@ -904,6 +906,15 @@ def test_node_http_uri_with_ws_uri(project, http_key):
         assert node.uri == http
         assert node.http_uri == http
         assert node.ws_uri == ws
+
+
+def test_create_web3_uses_sync_ws_provider():
+    web3 = _create_web3(ws_uri="ws://example.com")
+    assert isinstance(web3.provider, AutoProvider)
+
+    ws_provider = web3.provider._potential_providers[-1]()
+    assert isinstance(ws_provider, LegacyWebSocketProvider)
+    assert ws_provider.is_async is False
 
 
 @pytest.mark.parametrize("key", ("uri", "ipc_path"))
