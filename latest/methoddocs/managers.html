@@ -393,6 +393,7 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#ape.managers.project.DependencyManager.add"><code class="docutils literal notranslate"><span class="pre">DependencyManager.add()</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.project.DependencyManager.all"><code class="docutils literal notranslate"><span class="pre">DependencyManager.all</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.project.DependencyManager.decode_dependency"><code class="docutils literal notranslate"><span class="pre">DependencyManager.decode_dependency()</span></code></a></li>
+<li><a class="reference internal" href="#ape.managers.project.DependencyManager.find_unavailable"><code class="docutils literal notranslate"><span class="pre">DependencyManager.find_unavailable()</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.project.DependencyManager.get_dependency"><code class="docutils literal notranslate"><span class="pre">DependencyManager.get_dependency()</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.project.DependencyManager.get_dependency_api"><code class="docutils literal notranslate"><span class="pre">DependencyManager.get_dependency_api()</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.project.DependencyManager.get_project_dependencies"><code class="docutils literal notranslate"><span class="pre">DependencyManager.get_project_dependencies()</span></code></a></li>
@@ -455,7 +456,9 @@ data-aria-dark="Switch to auto color mode">
 </ul>
 </li>
 <li><a class="reference internal" href="#ape.managers.project.PackagesCache"><code class="docutils literal notranslate"><span class="pre">PackagesCache</span></code></a><ul>
+<li><a class="reference internal" href="#ape.managers.project.PackagesCache.api_files"><code class="docutils literal notranslate"><span class="pre">PackagesCache.api_files</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.project.PackagesCache.cache_api"><code class="docutils literal notranslate"><span class="pre">PackagesCache.cache_api()</span></code></a></li>
+<li><a class="reference internal" href="#ape.managers.project.PackagesCache.find_package"><code class="docutils literal notranslate"><span class="pre">PackagesCache.find_package()</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.project.PackagesCache.get_api_path"><code class="docutils literal notranslate"><span class="pre">PackagesCache.get_api_path()</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.project.PackagesCache.get_manifest_path"><code class="docutils literal notranslate"><span class="pre">PackagesCache.get_manifest_path()</span></code></a></li>
 <li><a class="reference internal" href="#ape.managers.project.PackagesCache.get_project_path"><code class="docutils literal notranslate"><span class="pre">PackagesCache.get_project_path()</span></code></a></li>
@@ -3221,11 +3224,16 @@ installed.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ape.managers.project.DependencyManager.decode_dependency">
-<span class="sig-name descname"><span class="pre">decode_dependency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">item</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="api.html#ape.api.projects.DependencyAPI" title="ape.api.projects.DependencyAPI"><span class="pre">DependencyAPI</span></a></span></span><a class="headerlink" href="#ape.managers.project.DependencyManager.decode_dependency" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">decode_dependency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">api_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">item</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="api.html#ape.api.projects.DependencyAPI" title="ape.api.projects.DependencyAPI"><span class="pre">DependencyAPI</span></a></span></span><a class="headerlink" href="#ape.managers.project.DependencyManager.decode_dependency" title="Link to this definition">#</a></dt>
 <dd><p>Decode data into a <a class="reference internal" href="api.html#ape.api.projects.DependencyAPI" title="ape.api.projects.DependencyAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">DependencyAPI</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>**item</strong> – The same data you put in your <code class="docutils literal notranslate"><span class="pre">dependencies:</span></code> config.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>api_file</strong> (<a class="reference internal" href="cli.html#ape.cli.paramtype.Path" title="ape.cli.paramtype.Path"><em>Path</em></a><em> | </em><em>None</em>) – The cached API file the data was read from. When
+given, data no installed plugin supports decodes to an
+<a class="reference internal" href="api.html#ape.api.projects.UnavailableDependency" title="ape.api.projects.UnavailableDependency"><code class="xref py py-class docutils literal notranslate"><span class="pre">UnavailableDependency</span></code></a> instead of raising.</p></li>
+<li><p><strong>**item</strong> – The same data you put in your <code class="docutils literal notranslate"><span class="pre">dependencies:</span></code> config.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="exceptions.html#ape.exceptions.ProjectError" title="ape.exceptions.ProjectError"><strong>ProjectError</strong></a> – When unable to handle the
@@ -3233,6 +3241,22 @@ installed.</p>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="api.html#ape.api.projects.DependencyAPI" title="ape.api.projects.DependencyAPI"><code class="xref py py-class docutils literal notranslate"><span class="pre">DependencyAPI</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.project.DependencyManager.find_unavailable">
+<span class="sig-name descname"><span class="pre">find_unavailable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">package_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#ape.managers.project.DependencyManager.find_unavailable" title="Link to this definition">#</a></dt>
+<dd><p>The package IDs of cached dependencies whose plugin is not installed and that
+look like <code class="docutils literal notranslate"><span class="pre">package_key</span></code>, such as <code class="docutils literal notranslate"><span class="pre">OpenZeppelin_openzeppelin-contracts</span></code> for
+<code class="docutils literal notranslate"><span class="pre">openzeppelin</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>package_key</strong> (<em>str</em>) – A dependency name or package ID.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Iterator[str]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -3731,10 +3755,24 @@ Ape understands the dependencies and how to compile everything.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="ape.managers.project.PackagesCache">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ape.managers.project.</span></span><span class="sig-name descname"><span class="pre">PackagesCache</span></span><a class="headerlink" href="#ape.managers.project.PackagesCache" title="Link to this definition">#</a></dt>
-<dd><dl class="py method">
+<dd><dl class="py property">
+<dt class="sig sig-object py" id="ape.managers.project.PackagesCache.api_files">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">api_files</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">Path</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ape.managers.project.PackagesCache.api_files" title="Link to this definition">#</a></dt>
+<dd><p>The cached API files, one per dependency version, always at
+<code class="docutils literal notranslate"><span class="pre">&lt;package_id&gt;/&lt;version&gt;.json</span></code> (<code class="docutils literal notranslate"><span class="pre">/</span></code> in either part is written as <code class="docutils literal notranslate"><span class="pre">_</span></code>).</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="ape.managers.project.PackagesCache.cache_api">
 <span class="sig-name descname"><span class="pre">cache_api</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">api</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="api.html#ape.api.projects.DependencyAPI" title="ape.api.projects.DependencyAPI"><span class="pre">DependencyAPI</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Path</span></span></span><a class="headerlink" href="#ape.managers.project.PackagesCache.cache_api" title="Link to this definition">#</a></dt>
 <dd><p>Cache a dependency JSON for usage outside the project.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ape.managers.project.PackagesCache.find_package">
+<span class="sig-name descname"><span class="pre">find_package</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">package_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#ape.managers.project.PackagesCache.find_package" title="Link to this definition">#</a></dt>
+<dd><p>The cached API file <code class="docutils literal notranslate"><span class="pre">version</span></code> of <code class="docutils literal notranslate"><span class="pre">package_id</span></code> refers to, or <code class="docutils literal notranslate"><span class="pre">None</span></code> when
+it is not cached.</p>
 </dd></dl>
 
 <dl class="py method">
