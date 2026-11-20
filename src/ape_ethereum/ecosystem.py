@@ -1093,7 +1093,8 @@ class Ethereum(EcosystemAPI):
                 elif _type == "address":
                     converted_arguments[key] = self.decode_address(value)
 
-                elif is_array(_type):
+                elif is_array(_type) and isinstance(value, (list, tuple)):
+                    # NOTE: Indexed arrays are hashed, so those are left as-is.
                     sub_type = "[".join(_type.split("[")[:-1])
                     converted_arguments[key] = (
                         [self.decode_address(v) for v in value] if sub_type == "address" else value
