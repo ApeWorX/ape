@@ -67,6 +67,11 @@ def __getattr__(name: str):
 
         return getattr(query_module, name)
 
+    elif name in ("ScriptRunnerAPI",):
+        import ape.api.scripts as scripts_module
+
+        return getattr(scripts_module, name)
+
     elif name in ("TraceAPI",):
         import ape.api.trace as trace_module
 
@@ -103,6 +108,7 @@ __all__ = [
     "QueryAPI",
     "QueryType",
     "ReceiptAPI",
+    "ScriptRunnerAPI",
     "SubprocessProvider",
     "TestAccountAPI",
     "TestAccountContainerAPI",
