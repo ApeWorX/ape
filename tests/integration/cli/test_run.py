@@ -129,9 +129,25 @@ def test_run_interactive(scripts_runner, integ_project):
     result = scripts_runner.invoke("--interactive", scripts[0].stem, input=user_input)
     assert result.exit_code == 0, result.output
 
+    # Traceback is shown before dropping into the console.
+    assert "Expected exception" in result.output
     # From script: local_variable = "test foo bar"
     assert "test foo bar" in result.output
     assert "timestamp=123123123123123" in result.output
+
+
+@skip_projects_except("script")
+@pytest.mark.parametrize("script_name", ("error_cli", "error_no_def"))
+def test_run_interactive_on_failure(scripts_runner, integ_project, script_name):
+    """--interactive drops into the console after a failing cli/no-def script, with its locals."""
+    scripts_runner.project = integ_project
+    result = scripts_runner.invoke(
+        "--interactive", script_name, input="print(local_variable)\nexit\n"
+    )
+    assert result.exit_code == 0, result.output
+    assert "Expected exception" in result.output
+    # From script: local_variable = "test foo bar"
+    assert "test foo bar" in result.output
 
 
 @skip_projects_except("script")
@@ -215,3 +231,29 @@ def test_run_recompiles_if_needed(runner, ape_cli, scripts_runner, integ_project
     # Run the script. It better recompile first!
     result = scripts_runner.invoke("output_contract_view_methods")
     assert new_method_name in result.output
+
+
+@skip_projects_except("script")
+def test_run_interactive_on_success(scripts_runner, integ_project):
+    """--interactive drops into the console after a successful script, with its locals."""
+    scripts_runner.project = integ_project
+    user_input = "print(local_variable)\nexit\n"
+    result = scripts_runner.invoke("--interactive", "success_main", input=user_input)
+    assert result.exit_code == 0, result.output
+    assert "Super secret script output" in result.output
+    # From script: local_variable = "success foo bar"
+    assert "success foo bar" in result.output
+
+
+@skip_projects_except("script")
+def test_run_nested_script_groups(scripts_runner, integ_project):
+    scripts_runner.project = integ_project
+    result = scripts_runner.invoke("nested", "--help")
+    assert result.exit_code == 0, result.output
+    assert "Nested scripts README help" in result.output
+    assert "level2" in result.output
+
+    for name in ("deep_main", "deep_click"):
+        result = scripts_runner.invoke("nested", "level2", name)
+        assert result.exit_code == 0, f"Unexpected exit code for '{name}'\n{result.output}"
+        assert "Super secret script output" in result.output
