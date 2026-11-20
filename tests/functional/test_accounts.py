@@ -2,6 +2,8 @@ from os import environ
 
 import pytest
 from cchecksum import to_checksum_address
+from Crypto.PublicKey import ECC
+from Crypto.Signature import eddsa
 from eip712.messages import EIP712Domain, EIP712Message
 from eth_account.messages import encode_defunct
 from eth_pydantic_types import HexBytes, abi
@@ -24,7 +26,9 @@ from ape.types.gas import AutoGasLimit
 from ape.types.signatures import recover_signer
 from ape.utils.testing import DEFAULT_TEST_MNEMONIC
 from ape_accounts.accounts import (
+    AccountContainer,
     ApeSigner,
+    BaseKeyfileAccount,
     KeyfileAccount,
     _get_signing_message_with_display,
     generate_account,
@@ -74,6 +78,51 @@ class Foo(EIP712Message):
 
     bar: abi.address
     baz: Baz
+
+
+class Ed25519KeyfileAccount(BaseKeyfileAccount):
+    """
+    A Solana-style keyfile account whose address is its ed25519 public key.
+    """
+
+    passphrase_env_prefix = "APE_ED25519"
+    __cached_seed: bytes | None = None
+
+    @classmethod
+    def encrypt_secret(cls, secret: bytes, passphrase: str) -> dict:
+        signing_key = eddsa.import_private_key(secret)
+        public_key = signing_key.public_key().export_key(format="raw")
+        return {**super().encrypt_secret(secret, passphrase), "address": public_key.hex()}
+
+    @property
+    def address(self) -> str:  # type: ignore[override]
+        return self.keyfile["address"]
+
+    def unlock(self, passphrase: str | None = None):
+        self.__cached_seed = self._request_secret(passphrase)
+        self.locked = False
+
+    def sign_message(self, msg: bytes, **signer_options) -> bytes | None:  # type: ignore[override]
+        if self.locked or self.__cached_seed is None:
+            return None
+
+        signing_key = eddsa.import_private_key(self.__cached_seed)
+        return eddsa.new(signing_key, "rfc8032").sign(msg)
+
+    def sign_transaction(self, txn, **signer_options):
+        return None
+
+
+class Ed25519AccountContainer(AccountContainer):
+    pass
+
+
+@pytest.fixture
+def ed25519_container():
+    container = Ed25519AccountContainer(name="ed25519", account_type=Ed25519KeyfileAccount)
+    yield container
+    for keyfile in container.data_folder.glob("*.json"):
+        keyfile.unlink()
 
 
 def test_sign_message(signer, message):
@@ -1216,3 +1265,18 @@ def test_use_ape_signer(accounts, project):
     assert isinstance(signer, ApeSigner)
     contract = project.VyperContract.deploy(1012, sender=signer)
     assert contract.is_contract
+
+
+def test_create_account_custom_keyfile_account(ed25519_container):
+    signing_key = ECC.generate(curve="ed25519")
+    account = ed25519_container.create_account("ed25519account", PASSPHRASE, signing_key.seed)
+
+    assert list(ed25519_container.accounts) == [account]
+    assert isinstance(account, Ed25519KeyfileAccount)
+    assert "ed25519account" not in AccountContainer.loaded_accounts
+
+    account.unlock(passphrase=PASSPHRASE)
+    signature = account.sign_message(b"gm")
+    assert signature is not None
+    eddsa.new(signing_key.public_key(), "rfc8032").verify(b"gm", signature)
+    assert account.address == signing_key.public_key().export_key(format="raw").hex()

@@ -4,7 +4,7 @@ from collections.abc import Iterator
 from functools import cached_property
 from os import environ
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar, cast
 
 import click
 from eip712.messages import EIP712Message
@@ -32,6 +32,7 @@ from ape_ethereum.transactions import TransactionType
 
 if TYPE_CHECKING:
     from eth_account.signers.local import LocalAccount
+    from typing_extensions import Self
 
     from ape.api.transactions import TransactionAPI
 
@@ -46,7 +47,15 @@ class InvalidPasswordError(AccountsError):
 
 
 class AccountContainer(AccountContainerAPI):
-    loaded_accounts: ClassVar[dict[str, "KeyfileAccount"]] = {}
+    """
+    A folder of encrypted keyfiles, each loaded as this container's ``account_type``.
+    """
+
+    loaded_accounts: ClassVar[dict[str, "BaseKeyfileAccount"]] = {}
+
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        cls.loaded_accounts = {}
 
     @property
     def _keyfiles(self) -> Iterator[Path]:
@@ -61,13 +70,26 @@ class AccountContainer(AccountContainerAPI):
     def accounts(self) -> Iterator[AccountAPI]:
         for keyfile in self._keyfiles:
             if keyfile.stem not in self.loaded_accounts:
-                keyfile_account = KeyfileAccount(keyfile_path=keyfile)
+                keyfile_account = self.keyfile_account_type(keyfile_path=keyfile)
                 self.loaded_accounts[keyfile.stem] = keyfile_account
 
             yield self.loaded_accounts[keyfile.stem]
 
     def __len__(self) -> int:
         return len([*self._keyfiles])
+
+    @property
+    def keyfile_account_type(self) -> type["BaseKeyfileAccount"]:
+        return cast(type[BaseKeyfileAccount], self.account_type)
+
+    def create_account(self, alias: str, passphrase: str, secret: bytes) -> "BaseKeyfileAccount":
+        """
+        Encrypt ``secret`` into a new keyfile named ``alias`` and return its account.
+        """
+        alias = _validate_account_alias(alias)
+        passphrase = _validate_account_passphrase(passphrase)
+        path = self.data_folder.joinpath(f"{alias}.json")
+        return self.keyfile_account_type.write_keyfile(path, secret, passphrase)
 
 
 class ApeSigner(AccountAPI):
@@ -205,15 +227,16 @@ class ApeSigner(AccountAPI):
         return self.call(tx)
 
 
-# NOTE: `AccountAPI` is an BaseInterfaceModel
-class KeyfileAccount(AccountAPI):
+class BaseKeyfileAccount(AccountAPI):
+    """
+    An account whose secret key lives in an encrypted keyfile.
+    """
+
     keyfile_path: Path
     locked: bool = True
-    __autosign: bool = False
-    __autosign_raw_msghash: bool = False
-    __cached_signer: ApeSigner | None = None
+    passphrase_env_prefix: ClassVar[str] = "APE_ACCOUNTS"
 
-    @log_instead_of_fail(default="<KeyfileAccount>")
+    @log_instead_of_fail(default="<BaseKeyfileAccount>")
     def __repr__(self) -> str:
         # NOTE: Prevent errors from preventing repr from working.
         address_str = f" address={self.address}" if self.address else ""
@@ -227,6 +250,80 @@ class KeyfileAccount(AccountAPI):
     @property
     def keyfile(self) -> dict:
         return json.loads(self.keyfile_path.read_text())
+
+    @classmethod
+    def encrypt_secret(cls, secret: bytes, passphrase: str) -> dict:
+        """
+        The keyfile contents storing ``secret`` encrypted with ``passphrase``.
+        """
+        return EthAccount.encrypt(secret, passphrase)
+
+    @classmethod
+    def write_keyfile(cls, path: Path, secret: bytes, passphrase: str) -> "Self":
+        path.write_text(json.dumps(cls.encrypt_secret(secret, passphrase)), encoding="utf8")
+        return cls(keyfile_path=path)
+
+    def lock(self):
+        self.locked = True
+
+    def delete(self):
+        passphrase = self._prompt_for_passphrase(
+            f"Enter passphrase to delete '{self.alias}'", default=""
+        )
+        self._decrypt_keyfile(passphrase)
+        self.keyfile_path.unlink()
+
+    def _request_secret(self, passphrase: str | None = None) -> bytes:
+        """
+        Decrypt the keyfile using ``passphrase``, the environment, or up to three prompts.
+        """
+        secret: bytes = b""
+        if passphrase:
+            # NOTE: Try only once, if it fails it was given incorrectly and we should not prompt
+            secret = self._decrypt_keyfile(passphrase)
+
+        elif passphrase := environ.get(f"{self.passphrase_env_prefix}_{self.alias}_PASSPHRASE"):
+            logger.info(f"Using passphrase for account '{self.alias}' from environment variable")
+            # NOTE: Try only once, if it fails then we are non-interactive, so we can't prompt
+            secret = self._decrypt_keyfile(passphrase)
+
+        attempts = 1
+        while not secret:
+            # Passphrase not found, prompt for it up to 3 times.
+            passphrase = self._prompt_for_passphrase(
+                f"Enter passphrase to permanently unlock '{self.alias}'"
+            )
+            try:
+                secret = self._decrypt_keyfile(passphrase)
+
+            except InvalidPasswordError as err:
+                if attempts < 3:
+                    logger.error("Invalid password")
+                    attempts += 1
+                else:
+                    raise AccountsError(f"Failed to unlock after {attempts} attempts.") from err
+
+        return secret
+
+    def _prompt_for_passphrase(self, message: str | None = None, **kwargs) -> str:
+        message = message or f"Enter passphrase to unlock '{self.alias}'"
+        return click.prompt(
+            message,
+            hide_input=True,
+            **kwargs,
+        )
+
+    def _decrypt_keyfile(self, passphrase: str) -> bytes:
+        try:
+            return EthAccount.decrypt(self.keyfile, passphrase)
+        except ValueError as err:
+            raise InvalidPasswordError() from err
+
+
+class KeyfileAccount(BaseKeyfileAccount):
+    __autosign: bool = False
+    __autosign_raw_msghash: bool = False
+    __cached_signer: ApeSigner | None = None
 
     @property
     def address(self) -> AddressType:
@@ -242,7 +339,7 @@ class KeyfileAccount(AccountAPI):
             self.__cached_signer = None
 
         passphrase = self._prompt_for_passphrase(default="")
-        key = self.__decrypt_keyfile(passphrase)
+        key = self._decrypt_keyfile(passphrase)
         signer = ApeSigner(private_key=key)
 
         if click.confirm(f"Leave '{self.alias}' unlocked?"):
@@ -267,37 +364,8 @@ class KeyfileAccount(AccountAPI):
         return public_key
 
     def unlock(self, passphrase: str | None = None):
-        private_key: bytes = b""
-        if passphrase:
-            # NOTE: Try only once, if it fails it was given incorrectly and we should not prompt
-            private_key = self.__decrypt_keyfile(passphrase)
-
-        elif passphrase := environ.get(f"APE_ACCOUNTS_{self.alias}_PASSPHRASE"):
-            logger.info(f"Using passphrase for account '{self.alias}' from environment variable")
-            # NOTE: Try only once, if it fails then we are non-interactive, so we can't prompt
-            private_key = self.__decrypt_keyfile(passphrase)
-
-        attempts = 1
-        while not private_key:
-            # Passphrase not found, prompt for it up to 3 times.
-            passphrase = self._prompt_for_passphrase(
-                f"Enter passphrase to permanently unlock '{self.alias}'"
-            )
-            try:
-                private_key = self.__decrypt_keyfile(passphrase)
-
-            except InvalidPasswordError as err:
-                if attempts < 3:
-                    logger.error("Invalid password")
-                    attempts += 1
-                else:
-                    raise AccountsError(f"Failed to unlock after {attempts} attempts.") from err
-
-        self.__cached_signer = ApeSigner(private_key=private_key)
+        self.__cached_signer = ApeSigner(private_key=self._request_secret(passphrase))
         self.locked = False
-
-    def lock(self):
-        self.locked = True
 
     def change_password(self):
         self.locked = True  # force entering passphrase to get key
@@ -305,15 +373,8 @@ class KeyfileAccount(AccountAPI):
 
         passphrase = self._prompt_for_passphrase("Create new passphrase", confirmation_prompt=True)
         self.keyfile_path.write_text(
-            json.dumps(EthAccount.encrypt(key, passphrase)), encoding="utf8"
+            json.dumps(self.encrypt_secret(key, passphrase)), encoding="utf8"
         )
-
-    def delete(self):
-        passphrase = self._prompt_for_passphrase(
-            f"Enter passphrase to delete '{self.alias}'", default=""
-        )
-        self.__decrypt_keyfile(passphrase)
-        self.keyfile_path.unlink()
 
     def sign_authorization(
         self,
@@ -392,20 +453,6 @@ class KeyfileAccount(AccountAPI):
             self.locked = True
             self.__cached_signer = None
 
-    def _prompt_for_passphrase(self, message: str | None = None, **kwargs) -> str:
-        message = message or f"Enter passphrase to unlock '{self.alias}'"
-        return click.prompt(
-            message,
-            hide_input=True,
-            **kwargs,
-        )
-
-    def __decrypt_keyfile(self, passphrase: str) -> bytes:
-        try:
-            return EthAccount.decrypt(self.keyfile, passphrase)
-        except ValueError as err:
-            raise InvalidPasswordError() from err
-
     def set_delegate(self, contract: BaseAddress | AddressType | str, **txn_kwargs):
         return self.__signer.set_delegate(contract, **txn_kwargs)
 
@@ -417,12 +464,8 @@ def _write_and_return_account(
     alias: str, passphrase: str, account: "LocalAccount"
 ) -> KeyfileAccount:
     """Write an account to disk and return an Ape KeyfileAccount"""
-    path = ManagerAccessMixin.account_manager.containers["accounts"].data_folder.joinpath(
-        f"{alias}.json"
-    )
-    path.write_text(json.dumps(EthAccount.encrypt(account.key, passphrase)), encoding="utf8")
-
-    return KeyfileAccount(keyfile_path=path)
+    container = ManagerAccessMixin.account_manager.containers["accounts"]
+    return cast(KeyfileAccount, container.create_account(alias, passphrase, account.key))
 
 
 def generate_account(
