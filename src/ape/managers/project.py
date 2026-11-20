@@ -1,3 +1,4 @@
+import difflib
 import json
 import random
 import shutil
@@ -17,7 +18,7 @@ from ethpm_types.utils import compute_checksum
 from pydantic import Field
 from pydantic_core import Url
 
-from ape.api.projects import ApeProject, DependencyAPI, ProjectAPI
+from ape.api.projects import ApeProject, DependencyAPI, ProjectAPI, UnavailableDependency
 from ape.contracts import ContractContainer, ContractInstance
 from ape.exceptions import (
     APINotImplementedError,
@@ -1071,6 +1072,23 @@ class PackagesCache(ManagerAccessMixin):
     def installed_package_names(self) -> set[str]:
         return {x.name for x in self.projects_folder.iterdir()}
 
+    @property
+    def api_files(self) -> Iterator[Path]:
+        """
+        The cached API files, one per dependency version, always at
+        ``<package_id>/<version>.json`` (``/`` in either part is written as ``_``).
+        """
+        if self.api_folder.is_dir():
+            yield from (path for path in self.api_folder.glob("*/*.json") if path.is_file())
+
+    def find_package(self, package_id: str, version: str) -> Path | None:
+        """
+        The cached API file ``version`` of ``package_id`` refers to, or ``None`` when
+        it is not cached.
+        """
+        api_file = self.get_api_path(package_id, version)
+        return api_file if api_file.is_file() else None
+
     def get_project_versions_path(self, package_id: str) -> Path:
         """
         The path to all the versions (projects) of a dependency.
@@ -1229,6 +1247,8 @@ class DependencyManager(BaseManager):
 
     def __init__(self, project: "ProjectManager | None" = None):
         self.project = project or self.local_project
+        # Valid JSON files but don't match to any installed DependencyAPI.
+        self._unavailable_api_files: set[Path] = set()
 
     @log_instead_of_fail(default="<DependencyManager>")
     def __repr__(self) -> str:
@@ -1394,25 +1414,73 @@ class DependencyManager(BaseManager):
         However, it does not guarantee the project is
         installed.
         """
-        if not self.packages_cache.api_folder.is_dir():
-            return
-
-        for package_versions in self.packages_cache.api_folder.iterdir():
-            if not package_versions.is_dir():
+        for api in self._decode_api_files():
+            if api.matches_by_package_key(self.project.name):
+                # Don't include self as a dependency
+                # (happens when compiling a dependency)
                 continue
 
-            for api_file in package_versions.iterdir():
-                if not api_file.is_file():
-                    continue
+            yield self._create_dependency(api)
 
+    def find_unavailable(self, package_key: str) -> Iterator[str]:
+        """
+        The package IDs of cached dependencies whose plugin is not installed and that
+        look like ``package_key``, such as ``OpenZeppelin_openzeppelin-contracts`` for
+        ``openzeppelin``.
+
+        Args:
+            package_key (str): A dependency name or package ID.
+
+        Returns:
+            Iterator[str]
+        """
+        package_ids = {
+            dependency.package_id
+            for dependency in self.all
+            if isinstance(dependency.api, UnavailableDependency)
+        }
+        dependency_name = DependencyAPI.validate_name(package_key)
+        matches = {
+            package_id
+            for package_id in package_ids
+            if dependency_name in DependencyAPI.validate_name(package_id)
+        }
+        matches.update(difflib.get_close_matches(package_key, package_ids, cutoff=0.6))
+        yield from sorted(matches)
+
+    def _decode_api_files(self) -> Iterator[DependencyAPI]:
+        for api_file in self.packages_cache.api_files:
+            try:
                 data = json.loads(api_file.read_text(encoding="utf-8"))
-                api = self.decode_dependency(**data)
-                if api.name == self.project.name:
-                    # Don't include self as a dependency
-                    # (happens when compiling a dependency)
-                    continue
+            except json.JSONDecodeError:
+                self._delete_invalid_api_file(api_file)
+                continue
 
-                yield self._create_dependency(api)
+            yield self.decode_dependency(api_file=api_file, **data)
+
+    def _delete_invalid_api_file(self, api_file: Path):
+        try:
+            self.packages_cache.remove(api_file.parent.name, api_file.stem)
+        except OSError as err:
+            logger.warning(
+                f"Skipping cached dependency '{api_file}', it is not valid JSON "
+                f"and could not be deleted: {err}"
+            )
+            return
+
+        if not api_file.is_file():
+            logger.warning(f"Deleted cached dependency '{api_file}', it is not valid JSON.")
+
+    def _warn_unavailable_api_file(self, api_file: Path, reason: str):
+        # Avoid logging warning more than once.
+        if api_file in self._unavailable_api_files:
+            return
+
+        self._unavailable_api_files.add(api_file)
+        logger.warning(
+            f"Cached dependency '{api_file}' is unavailable: {reason}. "
+            f"To remove it, run `ape pm uninstall {api_file.parent.name}`."
+        )
 
     # TODO: Remove this in 0.9.
     @property
@@ -1669,11 +1737,14 @@ class DependencyManager(BaseManager):
 
         raise ProjectError(f"Dependency '{dependency_id}' with version '{version}' not found.")
 
-    def decode_dependency(self, **item: Any) -> DependencyAPI:
+    def decode_dependency(self, *, api_file: Path | None = None, **item: Any) -> DependencyAPI:
         """
         Decode data into a :class:`~ape.api.projects.DependencyAPI`.
 
         Args:
+            api_file (Path | None): The cached API file the data was read from. When
+              given, data no installed plugin supports decodes to an
+              :class:`~ape.api.projects.UnavailableDependency` instead of raising.
             **item: The same data you put in your ``dependencies:`` config.
 
         Raises:
@@ -1688,10 +1759,16 @@ class DependencyManager(BaseManager):
                 return cls.model_validate(item)
 
         name = item.get("name") or f"{item}"  # NOTE: Using 'or' for short-circuit eval
-        raise ProjectError(
+        reason = (
             f"No installed dependency API that supports '{name}'. "
             f"Keys={', '.join([x for x in item])}"
         )
+        if api_file is None:
+            raise ProjectError(reason)
+
+        self._warn_unavailable_api_file(api_file, reason)
+        name = item.get("name") or api_file.parent.name
+        return UnavailableDependency(name=name, api_file=api_file, data=item)
 
     def add(self, dependency: dict | DependencyAPI) -> Dependency:
         """

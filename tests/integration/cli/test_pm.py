@@ -275,6 +275,61 @@ def test_uninstall_not_exists(pm_runner, integ_project):
 
 
 @skip_projects_except("only-dependencies")
+@pytest.mark.parametrize(
+    "api_file_fixture,uninstall_args",
+    [
+        pytest.param("unavailable_api_file", ("Example/unavailable", "1.0.0"), id="package_id"),
+        pytest.param("unavailable_named_api_file", ("named",), id="short_name"),
+    ],
+)
+def test_uninstall_unavailable(pm_runner, integ_project, request, api_file_fixture, uninstall_args):
+    """
+    A cached dependency whose plugin is no longer installed cannot be decoded,
+    but it must still be removable by its package ID and version as the user would
+    type them (``Example/unavailable 1.0.0``, stored as ``Example_unavailable/1_0_0.json``),
+    or by its short name when the cached file stores one. Otherwise uninstalling a
+    plugin strands its cached dependencies, and they break every later listing.
+    """
+    api_file = request.getfixturevalue(api_file_fixture)
+    pm_runner.project = integ_project
+    result = pm_runner.invoke("uninstall", *uninstall_args, "--yes")
+    assert result.exit_code == 0, result.output
+    assert not api_file.exists()
+
+
+@skip_projects_except("only-dependencies")
+@pytest.mark.parametrize(
+    "extra_args,user_input,removed",
+    [
+        pytest.param(("--yes",), None, True, id="yes"),
+        pytest.param((), "y\n", True, id="prompt_accepted"),
+        pytest.param((), "n\n", False, id="prompt_declined"),
+    ],
+)
+def test_uninstall_unavailable_by_name(
+    pm_runner,
+    integ_project,
+    unavailable_api_file,
+    unavailable_named_api_file,
+    extra_args,
+    user_input,
+    removed,
+):
+    """
+    A cached dependency whose plugin did not store its short name (e.g. openzeppelin)
+    cannot be found by that name. Uninstall offers the package ID that looks like the
+    name instead, and removes it once the user confirms, or right away with ``--yes``.
+    An unrelated unavailable dependency is never offered or removed.
+    """
+    pm_runner.project = integ_project
+    result = pm_runner.invoke("uninstall", "unavailable", *extra_args, input=user_input)
+    assert "Example_unavailable" in result.output
+    # Only a single close match is ever removed, so `Example_named` was not one.
+    assert unavailable_api_file.exists() is not removed
+    assert unavailable_named_api_file.exists()
+
+
+@skip_projects_except("only-dependencies")
 def test_uninstall_specific_version(pm_runner, integ_project):
     pm_runner.project = integ_project
     package_name = "dependency-in-project-only"

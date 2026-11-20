@@ -5,6 +5,7 @@ from pathlib import Path
 from pydantic import Field, field_validator
 
 from ape.api.config import ApeConfig
+from ape.exceptions import ProjectError
 from ape.utils.basemodel import BaseInterfaceModel
 
 
@@ -62,8 +63,63 @@ class DependencyAPI(BaseInterfaceModel):
     def validate_name(cls, value):
         return (value or "").lower().replace("_", "-")
 
+    def matches_by_package_key(self, package_key: str) -> bool:
+        """
+        Whether ``package_key`` refers to this dependency, by its name or package ID.
+
+        Args:
+            package_key (str): A dependency name or package ID, such as one given to ``ape pm uninstall``.
+
+        Returns:
+            bool
+        """
+        return self.validate_name(package_key) == self.name or package_key == self.package_id
+
     def __hash__(self) -> int:
         return hash(f"{self.package_id}@{self.version_id}")
+
+
+class UnavailableDependency(DependencyAPI):
+    """
+    A cached dependency whose type no installed plugin supports. It can be
+    listed and uninstalled, but not fetched. Used when project-api specific
+    features do not require loading e.g. when uninstalling.
+    """
+
+    api_file: Path
+    """
+    The cached API file this dependency was read from.
+    """
+
+    data: dict
+    """
+    The cached API file's JSON.
+    """
+
+    @property
+    def package_id(self) -> str:
+        return self.api_file.parent.name
+
+    @property
+    def version_id(self) -> str:
+        return self.api_file.stem
+
+    @property
+    def uri(self) -> str:
+        return self.api_file.as_uri()
+
+    def fetch(self, destination: Path):
+        raise ProjectError(
+            f"No installed plugin supports dependency '{self.name}' "
+            f"(keys: {', '.join(self.data)}). Install its plugin to use it."
+        )
+
+    def matches_by_package_key(self, package_key: str) -> bool:
+        # The package ID is only known as written on disk, with ``/`` as ``_``.
+        return (
+            super().matches_by_package_key(package_key)
+            or package_key.replace("/", "_") == self.package_id
+        )
 
 
 class ProjectAPI(BaseInterfaceModel):
