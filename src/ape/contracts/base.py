@@ -636,7 +636,7 @@ class ContractEvent(BaseInterfaceModel):
             Iterator[:class:`~ape.contracts.base.ContractLog`]
         """
         logs = self.provider.get_contract_logs(self.log_filter)
-        return list(islice(logs, value.start, value.stop, value.step))
+        return list(logs)[value]
 
     def __len__(self):
         logs = self.provider.get_contract_logs(self.log_filter)
