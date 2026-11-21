@@ -122,6 +122,23 @@ def test_splicing(contract_instance, owner, assert_log_values):
     log = event_type[1]
     assert_log_values(log, 2)
 
+    # Negative bounds match list slices. itertools.islice rejects them.
+    logs = event_type[-2:]
+    assert len(logs) == 2
+    assert_log_values(logs[0], 2)
+    assert_log_values(logs[1], 3)
+
+    logs = event_type[:-1]
+    assert len(logs) == 2
+    assert_log_values(logs[0], 1)
+    assert_log_values(logs[1], 2)
+
+    logs = event_type[::-1]
+    assert len(logs) == 3
+    assert_log_values(logs[0], 3)
+    assert_log_values(logs[1], 2)
+    assert_log_values(logs[2], 1)
+
 
 def test_range(chain, contract_instance, owner, assert_log_values):
     contract_instance.setNumber(1, sender=owner)
