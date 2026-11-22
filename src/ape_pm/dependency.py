@@ -31,6 +31,10 @@ def _fetch_local(src: Path, destination: Path, config_override: dict | None = No
         destination.write_text(src.read_text(), encoding="utf8")
 
 
+def _is_commit_sha(value: str) -> bool:
+    return len(value) == 40 and all(char in "0123456789abcdef" for char in value.lower())
+
+
 class LocalDependency(DependencyAPI):
     """
     A dependency located on the local machine.
@@ -212,8 +216,13 @@ class GithubDependency(DependencyAPI):
             if destination.is_dir():
                 shutil.rmtree(destination)
 
-            # Fetch using git-clone approach (by git-reference).
-            self._fetch_ref(ref, destination)
+            if _is_commit_sha(ref):
+                destination.mkdir(parents=True)
+                self._github_client.download_ref(self.org_name, self.repo_name, ref, destination)
+
+            else:
+                # Fetch using git-clone approach (by git-reference).
+                self._fetch_ref(ref, destination)
         else:
             # Fetch using Version API from GitHub.
             version = self.version or "latest"

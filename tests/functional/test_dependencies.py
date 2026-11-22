@@ -661,6 +661,20 @@ class TestGitHubDependency:
         assert calls[1][0] == ("ApeWorX", "ApeNotAThing", path)
         assert calls[1][1] == {"branch": "3.0.0", "scheme": "https"}
 
+    def test_fetch_ref_commit(self, mock_client):
+        commit = "1" * 40
+        dependency = GithubDependency(github="ApeWorX/ApeNotAThing", ref=commit, name="apetestdep")
+        dependency._github_client = mock_client
+
+        with create_tempdir() as path:
+            destination = path / "apetestdep"
+            dependency.fetch(destination)
+
+        mock_client.download_ref.assert_called_once_with(
+            "ApeWorX", "ApeNotAThing", commit, destination
+        )
+        mock_client.clone_repo.assert_not_called()
+
     def test_fetch_ref(self, mock_client):
         """
         When specifying ref, it does not try version API at all.

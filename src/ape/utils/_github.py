@@ -1,12 +1,13 @@
 import os
 import shutil
+import struct
 import subprocess
 import tempfile
 import zipfile
 from collections.abc import Iterator
 from io import BytesIO
 from pathlib import Path
-from typing import Any, ClassVar
+from typing import Any, ClassVar, NamedTuple
 
 from requests import HTTPError, Session
 from requests.adapters import HTTPAdapter
@@ -16,6 +17,15 @@ from ape.exceptions import CompilerError, ProjectError, UnknownVersionError
 from ape.logging import logger
 from ape.utils.misc import cached_property
 from ape.utils.rpc import USER_AGENT, stream_response
+
+_GITLINK_MODE = 0o160000
+"""The git index entry mode of a submodule: a gitlink to a commit in another repository."""
+
+_INDEX_EXTENDED_FLAG = 0x4000
+"""The git index entry flag that adds 2 extended flag bytes before the entry's path."""
+
+_INDEX_STAGE_MASK = 0x3000
+"""The git index entry flag bits holding the merge stage, 0 outside a merge conflict."""
 
 
 class GitProcessWrapper:
@@ -54,6 +64,102 @@ class GitProcessWrapper:
             # Shouldn't really happen.
             # User will have to run command separately to debug.
             raise ProjectError(fail_msg)
+
+    def get_submodule_commit(self, repo_path: Path, submodule_path: str) -> str | None:
+        command = [self.git, "-C", str(repo_path), "ls-tree", "HEAD", submodule_path]
+        result = subprocess.run(command, check=False, capture_output=True, text=True)
+        if result.returncode != 0:
+            return None
+
+        # Output format: `<mode> <type> <object>\t<path>`.
+        parts = result.stdout.split()
+        return parts[2] if len(parts) >= 3 and parts[1] == "commit" else None
+
+
+def read_gitlink_from_index(repo_path: Path, submodule_path: str) -> str | None:
+    """
+    The commit a git submodule is pinned to, read from the parent repository's index file
+    without running ``git``.
+
+    A submodule is stored in its parent repository as a "gitlink": an index entry with mode
+    ``160000`` whose object ID is the pinned commit of the submodule, not a file blob. This is
+    the commit ``git submodule update`` checks out. See the
+    `index format <https://git-scm.com/docs/index-format>`__, which defines mode ``160000`` as
+    a gitlink (versions 2 and 3 are read here), and
+    `submodules <https://git-scm.com/book/en/v2/Git-Tools-Submodules>`__. When ``.git`` is a
+    ``gitdir:`` pointer file, as inside a submodule or worktree, the index is read from the
+    directory it points to (`repository layout <https://git-scm.com/docs/gitrepository-layout>`__).
+
+    Args:
+        repo_path (Path): A directory inside the parent repository.
+        submodule_path (str): The submodule's path, relative to ``repo_path``.
+
+    Returns:
+        str | None: The pinned commit SHA, or ``None`` when there is no git repository, the
+        index is a version this does not read, the path is not a submodule, or its pin is
+        in a merge conflict.
+    """
+    root = next(
+        (path for path in (repo_path, *repo_path.parents) if (path / ".git").exists()), None
+    )
+    if root is None:
+        return None
+
+    git_dir = root / ".git"
+    if git_dir.is_file():
+        pointer = git_dir.read_text(encoding="utf8").strip()
+        if not pointer.startswith("gitdir:"):
+            return None
+
+        git_dir = root / pointer.removeprefix("gitdir:").strip()
+
+    index_file = git_dir / "index"
+    if not index_file.is_file():
+        return None
+
+    try:
+        entry_path = (repo_path / submodule_path).resolve().relative_to(root.resolve()).as_posix()
+    except ValueError:
+        return None
+
+    data = index_file.read_bytes()
+    if data[:4] != b"DIRC":
+        return None
+
+    (version,) = struct.unpack(">I", data[4:8])
+    if version not in (2, 3):
+        return None
+
+    for entry in _read_index_entries(data):
+        if entry.path == entry_path and entry.stage == 0:
+            return entry.sha if entry.mode == _GITLINK_MODE else None
+
+    return None
+
+
+class _IndexEntry(NamedTuple):
+    """One file or submodule entry of a git index."""
+
+    path: str
+    mode: int
+    sha: str
+    stage: int
+
+
+def _read_index_entries(data: bytes) -> Iterator[_IndexEntry]:
+    """The entries of a version 2 or 3 git index file, in index order."""
+    (entry_count,) = struct.unpack(">I", data[8:12])
+    offset = 12
+    for _ in range(entry_count):
+        (mode,) = struct.unpack(">I", data[offset + 24 : offset + 28])
+        (flags,) = struct.unpack(">H", data[offset + 60 : offset + 62])
+        path_start = offset + 62 + (2 if flags & _INDEX_EXTENDED_FLAG else 0)
+        path_end = data.index(b"\0", path_start)
+        path = data[path_start:path_end].decode("utf8")
+        stage = (flags & _INDEX_STAGE_MASK) >> 12
+        yield _IndexEntry(path, mode, data[offset + 40 : offset + 60].hex(), stage)
+        # Entries are padded with NULs to a multiple of 8 bytes.
+        offset += (path_end - offset + 8) // 8 * 8
 
 
 # NOTE: This client is only meant to be used internally for ApeWorX projects.
@@ -198,20 +304,27 @@ class _GithubClient:
     def download_package(
         self, org_name: str, repo_name: str, version: str, target_path: Path | str
     ):
+        release = self.get_release(org_name, repo_name, version)
+        self._download_zipball(release["zipball_url"], org_name, repo_name, version, target_path)
+
+    def download_ref(self, org_name: str, repo_name: str, ref: str, target_path: Path | str):
+        url = f"{self.API_URL_PREFIX}/repos/{org_name}/{repo_name}/zipball/{ref}"
+        self._download_zipball(url, org_name, repo_name, ref, target_path)
+
+    def _download_zipball(
+        self, url: str, org_name: str, repo_name: str, version: str, target_path: Path | str
+    ):
         target_path = Path(target_path)  # Handles str
         if not target_path or not target_path.is_dir():
             raise ValueError(f"'target_path' must be a valid directory (got '{target_path}').")
 
-        release = self.get_release(org_name, repo_name, version)
         description = f"Downloading {org_name}/{repo_name}@{version}"
-        release_content = stream_response(
-            release["zipball_url"], progress_bar_description=description
-        )
+        zipball_content = stream_response(url, progress_bar_description=description)
 
         # Use temporary path to isolate a package when unzipping
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             temp_path = Path(tmp)
-            with zipfile.ZipFile(BytesIO(release_content)) as zf:
+            with zipfile.ZipFile(BytesIO(zipball_content)) as zf:
                 zf.extractall(temp_path)
 
             # Copy the directory contents into the target path.
