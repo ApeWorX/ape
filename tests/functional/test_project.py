@@ -444,6 +444,41 @@ def test_load_contracts_detect_change(small_temp_project, ape_caplog):
         ape_caplog.assert_last_log("Compiling")
 
 
+@pytest.mark.parametrize(
+    "imports,edited,expected",
+    [
+        pytest.param({"user": ["lib"], "app": ["user"]}, "lib", {"lib", "user", "app"}, id="chain"),
+        pytest.param({"user": ["lib"], "lib": ["user"]}, "lib", {"lib", "user"}, id="cycle"),
+        pytest.param({"lib": ["lib"], "user": ["lib"]}, "lib", {"lib", "user"}, id="self_import"),
+        pytest.param({"user": ["lib", "gone"]}, "lib", {"lib", "user"}, id="missing_import"),
+        pytest.param({"user": ["structs"]}, None, set(), id="structs_unedited"),
+        pytest.param({"user": ["structs"]}, "structs", {"user"}, id="structs_edited"),
+    ],
+)
+def test_load_contracts_detect_change_in_import(
+    empty_project, mock_compiler_skipping_structs, imports, edited, expected
+):
+    folder = empty_project.contracts_folder
+    folder.mkdir(parents=True, exist_ok=True)
+    for name in ("lib", "user", "app", "structs"):
+        (folder / f"{name}.__mock__").write_text(name, encoding="utf8")
+
+    mock_compiler_skipping_structs.get_imports.return_value = {
+        f"{folder.name}/{name}.__mock__": [f"{folder.name}/{dep}.__mock__" for dep in deps]
+        for name, deps in imports.items()
+    }
+    empty_project.load_contracts()
+    if edited:
+        (folder / f"{edited}.__mock__").write_text("changed", encoding="utf8")
+
+    mock_compiler_skipping_structs.compile.reset_mock()
+    empty_project.load_contracts()
+
+    calls = mock_compiler_skipping_structs.compile.call_args_list
+    # NOTE: `structs` has no contract types, so it always recompiles, alone.
+    assert {path.stem for call in calls for path in call.args[0]} == expected | {"structs"}
+
+
 def test_load_contracts_after_deleting_same_named_contract(empty_project, compilers, mock_compiler):
     """
     Tests against a scenario where you:
