@@ -71,6 +71,17 @@ def test_transact_revert_custom_error(error_contract_geth, geth_second_account):
 
 
 @geth_process_test
+@pytest.mark.parametrize("method_name", ("call", "estimate_gas_cost"))
+def test_custom_error_without_transacting(error_contract_geth, geth_second_account, method_name):
+    contract = error_contract_geth
+    method = getattr(contract.withdraw, method_name)
+    with pytest.raises(contract.Unauthorized) as err:
+        method(sender=geth_second_account)
+
+    assert err.value.inputs == {"addr": geth_second_account.address, "counter": 123}
+
+
+@geth_process_test
 def test_transact_revert_custom_error_deploy(project, geth_account, chain, geth_provider):
     with pytest.raises(Exception) as err:
         geth_account.deploy(project.HasError, 0)

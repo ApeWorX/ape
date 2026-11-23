@@ -109,6 +109,41 @@ def data_folder(config):
     return DATA_FOLDER
 
 
+@pytest.fixture
+def make_cached_project_api_file(data_folder):
+    package_folders = []
+
+    def make(package_folder: str, content: str) -> Path:
+        api_file = data_folder / "packages" / "api" / package_folder / "1_0_0.json"
+        api_file.parent.mkdir(parents=True, exist_ok=True)
+        api_file.write_text(content, encoding="utf8")
+        package_folders.append(api_file.parent)
+        return api_file
+
+    yield make
+    for package_folder in package_folders:
+        shutil.rmtree(package_folder, ignore_errors=True)
+
+
+@pytest.fixture
+def unavailable_api_file(make_cached_project_api_file):
+    """A cached dependency API file whose dependency type has no installed plugin."""
+    return make_cached_project_api_file("Example_unavailable", json.dumps({"unavailable": "1.0.0"}))
+
+
+@pytest.fixture
+def unavailable_named_api_file(make_cached_project_api_file):
+    """A cached dependency API file with a name, whose dependency type has no installed plugin."""
+    data = {"name": "named", "unavailable": "1.0.0"}
+    return make_cached_project_api_file("Example_named", json.dumps(data))
+
+
+@pytest.fixture
+def invalid_json_api_file(make_cached_project_api_file):
+    """A cached dependency API file that is not valid JSON."""
+    return make_cached_project_api_file("Example_invalid-json", "{not json")
+
+
 @pytest.fixture(scope="session")
 def projects_path():
     return Path(__file__).parent / "integration" / "cli" / "projects"

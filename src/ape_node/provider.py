@@ -760,7 +760,7 @@ class GethDev(EthereumNodeProvider, TestProviderAPI, SubprocessProvider):
         pass
 
     @raises_not_implemented
-    def mine(self, num_blocks: int = 1):
+    def mine(self, num_blocks: int = 1, interval: int | None = None):
         pass
 
     def build_command(self) -> list[str]:

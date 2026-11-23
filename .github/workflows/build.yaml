@@ -143,8 +143,9 @@ jobs:
           account: ApeWorX
           token: ${{ secrets.GITHUB_TOKEN }}
           image-names: "ape"
-          # NOTE: Keep stable/stable-slim, latest/latest-slim, all v0.8.x series, and last in v0.7.x series
-          image-tags: "!stable* !latest* !v0.8* !v0.7.23*"
+          # NOTE: Keep stable/latest (incl. python3.x- prefixed + -slim), all v0.8.x series, and last in v0.7.x series
+          # NOTE: Leading `*` is required, otherwise `python3.x-stable[-slim]` tags (used as base by Silverback) get pruned
+          image-tags: "!*stable* !*latest* !*v0.8* !*v0.7.23*"
           tag-selection: both
           cut-off: 4w
           dry-run: ${{ github.ref != 'refs/heads/main' }}
@@ -269,8 +270,9 @@ jobs:
           account: ApeWorX
           token: ${{ secrets.GITHUB_TOKEN }}
           image-names: "ape"
-          # NOTE: Keep stable/stable-slim, latest/latest-slim, all v0.8.x series, and last in v0.7.x series
-          image-tags: "!stable* !latest* !v0.8* !v0.7.23*"
+          # NOTE: Keep stable/latest (incl. python3.x- prefixed + -slim), all v0.8.x series, and last in v0.7.x series
+          # NOTE: Leading `*` is required, otherwise `python3.x-stable[-slim]` tags (used as base by Silverback) get pruned
+          image-tags: "!*stable* !*latest* !*v0.8* !*v0.7.23*"
           tag-selection: both
           cut-off: 4w
           dry-run: ${{ github.ref != 'refs/heads/main' }}

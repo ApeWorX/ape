@@ -171,7 +171,7 @@ print(f"Save your mnemonic: {mnemonic}")
 print(f"Your new account address is: {account.address}")
 ```
 
-See the [documentation for `generate_account()`](../methoddocs/ape_accounts.html#ape_accounts.generate_account) for more options.
+See the [documentation for `generate_account()`](../methoddocs/ape_accounts.html#ape_accounts.accounts.generate_account) for more options.
 
 #### Importing Existing Accounts
 
@@ -200,7 +200,7 @@ ape accounts import <ALIAS> --use-mnemonic --hd-path <HDPATH>
 If you use the `--hd-path` option, you will need to pass the [HDPath](https://help.myetherwallet.com/en/articles/5867305-hd-wallets-and-derivation-paths) you'd like to use as an argument in the command.
 If you do not use the `--hd-path` option, Ape will use the default HDPath of (Ethereum network, first account).
 
-You can import an account programmatically using a seed phrase [using `import_account_from_mnemonic()`](../methoddocs/ape_accounts.html#ape_accounts.import_account_from_mnemonic):
+You can import an account programmatically using a seed phrase [using `import_account_from_mnemonic()`](../methoddocs/ape_accounts.html#ape_accounts.accounts.import_account_from_mnemonic):
 
 ```python
 from ape_accounts import import_account_from_mnemonic
@@ -214,7 +214,7 @@ account = import_account_from_mnemonic(alias, passphrase, mnemonic)
 print(f"Your imported account address is: {account.address}")
 ```
 
-Or using a raw private key [using `import_account_from_private_key()`](../methoddocs/ape_accounts.html#ape_accounts.import_account_from_private_key):
+Or using a raw private key [using `import_account_from_private_key()`](../methoddocs/ape_accounts.html#ape_accounts.accounts.import_account_from_private_key):
 
 ```python
 import os
@@ -436,6 +436,20 @@ signature = account.sign_message(message)
 
 ```{note}
 Alternatively, you may use the `passphrase=` kwarg on methods `account.set_autosign()` and `account.unlock()`, but we highly recommend using the environment variable approach to avoid accidentally leaking your passphrase.
+```
+
+Autosign does not cover raw message hashes signed with `account.sign_raw_msghash()`, which still prompt for confirmation.
+A raw hash can be a transaction or a permit in disguise, so autosigning them requires a separate opt-in:
+
+```py
+account.set_autosign(True, raw_msghash=True)
+
+# Now, you will not be prompted to sign raw 32-byte hashes either
+signature = account.sign_raw_msghash(msghash)
+```
+
+```{warning}
+Only use `raw_msghash=True` when you trust the origin of every hash the account will sign.
 ```
 
 ## Hardware Wallets

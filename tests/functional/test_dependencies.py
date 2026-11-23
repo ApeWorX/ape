@@ -322,13 +322,9 @@ def test_unpack_no_contracts_folder(project, with_dependencies_project_path):
         assert "empty-dependency" in subdirs
 
 
-def test_all(project):
+def test_all(project, make_cached_project_api_file):
     # Set up an installed dependency.
-    packages_cache = project.dependencies.packages_cache
-    corrupt_file = packages_cache.api_folder / "dep123" / "0_4_0.json"
-    corrupt_file.parent.mkdir(exist_ok=True, parents=True)
-    corrupt_api = {"name": "dep123", "local": "."}
-    corrupt_file.write_text(json.dumps(corrupt_api), encoding="utf8")
+    make_cached_project_api_file("dep123", json.dumps({"name": "dep123", "local": "."}))
 
     # Iterate through the installed list.
     deps = [x for x in project.dependencies.all if x.name == "dep123"]
@@ -339,16 +335,32 @@ def test_all(project):
     assert not deps[0].installed
 
 
-def test_all_when_contains_corrupt_dependency(project):
-    packages_cache = project.dependencies.packages_cache
+def test_all_when_contains_corrupt_dependency(project, make_cached_project_api_file):
     name = "anothermissingpackagefromanapietest"
-    corrupt_file = packages_cache.api_folder / name / "0_1_0.json"
-    corrupt_file.parent.mkdir(exist_ok=True, parents=True)
-    corrupt_api = {"name": name, "site_package": name}
-    corrupt_file.write_text(json.dumps(corrupt_api), encoding="utf8")
+    make_cached_project_api_file(name, json.dumps({"name": name, "site_package": name}))
     deps = [x for x in project.dependencies.all if x.name == name]
-    assert len(deps) > -1
+    assert len(deps) == 1
     assert not deps[0].installed
+
+
+@pytest.mark.parametrize(
+    "api_file_fixture,kept",
+    [
+        pytest.param("unavailable_api_file", True, id="unknown_type"),
+        pytest.param("invalid_json_api_file", False, id="invalid_json"),
+    ],
+)
+def test_all_when_contains_unavailable_api_file(
+    project, request, ape_caplog, api_file_fixture, kept
+):
+    api_file = request.getfixturevalue(api_file_fixture)
+    # List twice to show the warning is only logged once.
+    _ = [*project.dependencies.all]
+    deps = [*project.dependencies.all]
+    warnings = [msg for msg in ape_caplog.messages if str(api_file) in msg]
+    assert len(warnings) == 1
+    assert api_file.exists() is kept
+    assert any(dep.package_id == api_file.parent.name for dep in deps) is kept
 
 
 class TestPackagesCache:
@@ -648,6 +660,20 @@ class TestGitHubDependency:
         # The second call does not have the v!
         assert calls[1][0] == ("ApeWorX", "ApeNotAThing", path)
         assert calls[1][1] == {"branch": "3.0.0", "scheme": "https"}
+
+    def test_fetch_ref_commit(self, mock_client):
+        commit = "1" * 40
+        dependency = GithubDependency(github="ApeWorX/ApeNotAThing", ref=commit, name="apetestdep")
+        dependency._github_client = mock_client
+
+        with create_tempdir() as path:
+            destination = path / "apetestdep"
+            dependency.fetch(destination)
+
+        mock_client.download_ref.assert_called_once_with(
+            "ApeWorX", "ApeNotAThing", commit, destination
+        )
+        mock_client.clone_repo.assert_not_called()
 
     def test_fetch_ref(self, mock_client):
         """

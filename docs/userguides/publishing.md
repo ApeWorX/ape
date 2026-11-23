@@ -16,7 +16,7 @@ Once your project has successfully compiled, you will have the start of your `Pa
 
 ## Tracking Deployments
 
-If your project contains deployments that you wish to include in its package manifest, use the [project.deployments.track](../methoddocs/managers.html#ape.managers.project.manager.DeploymentManager.track) method.
+If your project contains deployments that you wish to include in its package manifest, use the [project.deployments.track](../methoddocs/managers.html#ape.managers.project.DeploymentManager.track) method.
 Example:
 
 ```python
@@ -42,7 +42,7 @@ For more information on accessing contract instances, follow [this guide](./cont
 
 ## Publishing to Explorer
 
-If you want to publish your contracts to an explorer, you can use the [publish_contract](../methoddocs/api.html#ape.explorers.ExplorerAPI.publish_contract) on the `ExplorerAPI`.
+If you want to publish your contracts to an explorer, you can use the [publish_contract](../methoddocs/api.html#ape.api.explorers.ExplorerAPI.publish_contract) on the `ExplorerAPI`.
 
 ```python
 from ape import networks

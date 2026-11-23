@@ -31,6 +31,7 @@ from ape.logging import get_rich_console, logger
 from ape.utils.misc import ZERO_ADDRESS, is_evm_precompile, is_zero_hex, log_instead_of_fail
 from ape.utils.trace import TraceStyles, _exclude_gas, prettify_function, prettify_inputs
 from ape_ethereum._print import extract_debug_logs
+from ape_ethereum.utils import REVERT_STRING_SELECTOR
 
 if TYPE_CHECKING:
     from ethpm_types import ContractType, MethodABI
@@ -42,7 +43,7 @@ if TYPE_CHECKING:
 
 _INDENT = 2
 _WRAP_THRESHOLD = 50
-_REVERT_PREFIX = "0x08c379a00000000000000000000000000000000000000000000000000000000000000020"
+_REVERT_PREFIX = f"{REVERT_STRING_SELECTOR}{'0' * 62}20"
 
 
 class TraceApproach(Enum):

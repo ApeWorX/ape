@@ -14,7 +14,13 @@ from ape.exceptions import ConfigError, ProjectError
 from ape.logging import LogLevel
 from ape.managers.project import MultiProject
 from ape.utils import create_tempdir
-from ape_pm.project import BrownieProject, FoundryProject
+from ape_pm.project import (
+    BrownieProject,
+    FoundryProject,
+    _get_dependency_name,
+    _parse_github_repo,
+)
+from tests.functional.conftest import GitIndexEntry
 
 
 @pytest.fixture
@@ -438,6 +444,41 @@ def test_load_contracts_detect_change(small_temp_project, ape_caplog):
         ape_caplog.assert_last_log("Compiling")
 
 
+@pytest.mark.parametrize(
+    "imports,edited,expected",
+    [
+        pytest.param({"user": ["lib"], "app": ["user"]}, "lib", {"lib", "user", "app"}, id="chain"),
+        pytest.param({"user": ["lib"], "lib": ["user"]}, "lib", {"lib", "user"}, id="cycle"),
+        pytest.param({"lib": ["lib"], "user": ["lib"]}, "lib", {"lib", "user"}, id="self_import"),
+        pytest.param({"user": ["lib", "gone"]}, "lib", {"lib", "user"}, id="missing_import"),
+        pytest.param({"user": ["structs"]}, None, set(), id="structs_unedited"),
+        pytest.param({"user": ["structs"]}, "structs", {"user"}, id="structs_edited"),
+    ],
+)
+def test_load_contracts_detect_change_in_import(
+    empty_project, mock_compiler_skipping_structs, imports, edited, expected
+):
+    folder = empty_project.contracts_folder
+    folder.mkdir(parents=True, exist_ok=True)
+    for name in ("lib", "user", "app", "structs"):
+        (folder / f"{name}.__mock__").write_text(name, encoding="utf8")
+
+    mock_compiler_skipping_structs.get_imports.return_value = {
+        f"{folder.name}/{name}.__mock__": [f"{folder.name}/{dep}.__mock__" for dep in deps]
+        for name, deps in imports.items()
+    }
+    empty_project.load_contracts()
+    if edited:
+        (folder / f"{edited}.__mock__").write_text("changed", encoding="utf8")
+
+    mock_compiler_skipping_structs.compile.reset_mock()
+    empty_project.load_contracts()
+
+    calls = mock_compiler_skipping_structs.compile.call_args_list
+    # NOTE: `structs` has no contract types, so it always recompiles, alone.
+    assert {path.stem for call in calls for path in call.args[0]} == expected | {"structs"}
+
+
 def test_load_contracts_after_deleting_same_named_contract(empty_project, compilers, mock_compiler):
     """
     Tests against a scenario where you:
@@ -852,7 +893,15 @@ class TestBrownieProject:
 class TestFoundryProject:
     @pytest.fixture
     def mock_github(self, mocker):
-        return mocker.MagicMock()
+        mock_client = mocker.MagicMock()
+        mock_client.get_repo.return_value = {"default_branch": "main"}
+        return mock_client
+
+    @pytest.fixture
+    def mock_git(self, mocker):
+        mock_wrapper = mocker.MagicMock()
+        mock_wrapper.get_submodule_commit.return_value = None
+        return mock_wrapper
 
     @pytest.fixture(scope="class")
     def gitmodules(self):
@@ -871,47 +920,129 @@ class TestFoundryProject:
     url = https://github.com/a16z/erc4626-tests.git
 """.lstrip().replace("    ", "\t")
 
-    def test_extract_config(self, foundry_toml, gitmodules, mock_github):
-        with create_tempdir() as temp_dir:
-            cfg_file = temp_dir / "foundry.toml"
-            cfg_file.write_text(foundry_toml, encoding="utf8")
-            gitmodules_file = temp_dir / ".gitmodules"
-            gitmodules_file.write_text(gitmodules, encoding="utf8")
-            temp_project = Project(temp_dir)
+    @pytest.fixture
+    def make_foundry_project(self, tmp_path, foundry_toml, gitmodules, mock_github, mock_git):
+        """Writes a Foundry project, with checked-out libs mapped to their ``src`` or ``None``."""
 
-            api = temp_project.project_api
-            mock_github.get_repo.return_value = {"default_branch": "main"}
+        def make(checked_out_libs: dict[str, str | None] | None = None) -> FoundryProject:
+            (tmp_path / "foundry.toml").write_text(foundry_toml, encoding="utf8")
+            (tmp_path / ".gitmodules").write_text(gitmodules, encoding="utf8")
+            for lib_name, src in (checked_out_libs or {}).items():
+                lib_path = tmp_path / "lib" / lib_name
+                lib_path.mkdir(parents=True)
+                (lib_path / "README.md").write_text("", encoding="utf8")
+                if src is not None:
+                    lib_toml = f"[profile.default]\nsrc = '{src}'\n"
+                    (lib_path / "foundry.toml").write_text(lib_toml, encoding="utf8")
+
+            api = FoundryProject(path=tmp_path)
             api._github_client = mock_github  # type: ignore
-            assert isinstance(api, FoundryProject)
+            api._git = mock_git  # type: ignore
+            return api
 
-            # Ensure solidity config migrated.
-            actual = temp_project.config.model_dump(
-                by_alias=True
-            )  # Is result of ``api.extract_config()``.
-            assert actual["contracts_folder"] == "src"
-            assert "solidity" in actual, "Solidity failed to migrate"
-            actual_sol = actual["solidity"]
-            assert actual_sol["import_remapping"] == [
-                "@openzeppelin=src/.cache/openzeppelin/v4.9.5/",
-                "forge-std=src/.cache/forge-std/v1.5.2/src",
-            ]
-            assert actual_sol["version"] == "0.8.18"
-            assert actual_sol["evm_version"] == "cancun"
-            assert actual_sol["via_ir"] is True
+        return make
 
-            # Ensure dependencies migrated from .gitmodules.
-            assert "dependencies" in actual, "Dependencies failed to migrate"
-            actual_dependencies = actual["dependencies"]
-            expected_dependencies = [
-                {"github": "foundry-rs/forge-std", "name": "forge-std", "ref": "v1.5.2"},
-                {
-                    "github": "OpenZeppelin/openzeppelin-contracts",
-                    "name": "openzeppelin",
-                    "version": "v4.9.5",
-                },
-                {"github": "a16z/erc4626-tests", "name": "erc4626-tests", "ref": "main"},
-            ]
-            assert actual_dependencies == expected_dependencies
+    def test_extract_config(self, make_foundry_project, mock_github, mock_git):
+        temp_project = Project(make_foundry_project().path)
+        api = temp_project.project_api
+        api._github_client = mock_github  # type: ignore
+        api._git = mock_git  # type: ignore
+        assert isinstance(api, FoundryProject)
+
+        # Ensure solidity config migrated.
+        actual = temp_project.config.model_dump(
+            by_alias=True
+        )  # Is result of ``api.extract_config()``.
+        assert actual["contracts_folder"] == "src"
+        assert "solidity" in actual, "Solidity failed to migrate"
+        actual_sol = actual["solidity"]
+        assert actual_sol["import_remapping"] == [
+            "@openzeppelin=src/.cache/openzeppelin/v4.9.5/",
+            "forge-std=src/.cache/forge-std/v1.5.2/src",
+        ]
+        assert actual_sol["version"] == "0.8.18"
+        assert actual_sol["evm_version"] == "cancun"
+        assert actual_sol["via_ir"] is True
+
+        # Ensure dependencies migrated from .gitmodules.
+        assert "dependencies" in actual, "Dependencies failed to migrate"
+        actual_dependencies = actual["dependencies"]
+        expected_dependencies = [
+            {"github": "foundry-rs/forge-std", "name": "forge-std", "ref": "v1.5.2"},
+            {
+                "github": "OpenZeppelin/openzeppelin-contracts",
+                "name": "openzeppelin",
+                "version": "v4.9.5",
+            },
+            {"github": "a16z/erc4626-tests", "name": "erc4626-tests", "ref": "main"},
+        ]
+        assert actual_dependencies == expected_dependencies
+
+    def test_extract_config_checked_out_submodule(self, make_foundry_project):
+        api = make_foundry_project({"forge-std": "source", "openzeppelin-contracts": None})
+
+        config = api.extract_config()
+
+        assert config.dependencies[:2] == [
+            {
+                "name": "forge-std",
+                "local": str(api.path / "lib" / "forge-std"),
+                "config_override": {"contracts_folder": "source"},
+            },
+            {
+                "name": "openzeppelin",
+                "local": str(api.path / "lib" / "openzeppelin-contracts"),
+                "config_override": {"contracts_folder": "src"},
+            },
+        ]
+        assert "forge-std=src/.cache/forge-std/local/src" in config.solidity["import_remapping"]
+
+    def test_extract_config_pinned_submodule(
+        self, make_foundry_project, write_git_index, mock_github, mock_git
+    ):
+        api = make_foundry_project()
+        pinned_commit = "1" * 40
+        write_git_index(api.path, [GitIndexEntry("lib/erc4626-tests", 0o160000, pinned_commit)])
+
+        config = api.extract_config()
+
+        assert config.dependencies[2] == {
+            "github": "a16z/erc4626-tests",
+            "name": "erc4626-tests",
+            "ref": pinned_commit,
+        }
+        mock_github.get_repo.assert_not_called()
+        git_lookups = [call.args[1] for call in mock_git.get_submodule_commit.call_args_list]
+        assert "lib/erc4626-tests" not in git_lookups
+
+    @pytest.mark.parametrize(
+        "url,expected",
+        [
+            pytest.param("https://github.com/org/repo.git", "org/repo", id="dot-git"),
+            pytest.param("https://github.com/org/repo", "org/repo", id="no-dot-git"),
+            pytest.param("https://gitlab.com/org/repo", None, id="not-github"),
+            pytest.param("", None, id="no-url"),
+        ],
+    )
+    def test_parse_github_repo(self, url, expected):
+        assert _parse_github_repo(url) == expected
+
+    @pytest.mark.parametrize(
+        "module,expected",
+        [
+            pytest.param(
+                {"path": "lib/x", "url": "https://github.com/org/My_Lib.git"}, "my-lib", id="github"
+            ),
+            pytest.param(
+                {"path": "lib/Other_Lib", "url": "https://gitlab.com/org/x"},
+                "other-lib",
+                id="not-github",
+            ),
+            pytest.param({"path": "lib/Other_Lib"}, "other-lib", id="no-url"),
+        ],
+    )
+    def test_get_dependency_name(self, module, expected):
+        assert _get_dependency_name(module) == expected
 
 
 class TestSourceManager:
@@ -1168,6 +1299,28 @@ def test_chdir(smaller_project):
             assert smaller_project.path == new_path
 
         # It should have automatically undone.
+        assert smaller_project.path == original_path
+
+        fresh_project = Project(original_path)
+        original_name = fresh_project.name
+        with fresh_project.chdir(new_path):
+            assert fresh_project.path == new_path
+            assert fresh_project.name != original_name
+
+        assert fresh_project.path == original_path
+        assert fresh_project.name == original_name
+
+
+def test_chdir_nested(smaller_project):
+    original_path = smaller_project.path
+    with create_tempdir() as outer_path, create_tempdir() as inner_path:
+        with smaller_project.chdir(outer_path):
+            with smaller_project.chdir(inner_path):
+                assert smaller_project.path == inner_path
+
+            assert smaller_project.path == outer_path
+            assert smaller_project._base_path == outer_path
+
         assert smaller_project.path == original_path
 
 

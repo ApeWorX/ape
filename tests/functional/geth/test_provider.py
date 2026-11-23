@@ -929,7 +929,7 @@ def test_auto_mine(geth_provider, geth_account, geth_contract):
     provider = MyEthereumTestProvider(network=geth_provider.network)
     provider._web3 = geth_provider.web3  # Borrow connection.
 
-    tx = geth_contract.setNumber.as_transaction(123)
+    tx = geth_contract.setNumber.as_transaction(123, gas="auto")
     tx = geth_account.prepare_transaction(tx)
     tx = geth_account.sign_transaction(tx)
     receipt = provider.send_transaction(tx)

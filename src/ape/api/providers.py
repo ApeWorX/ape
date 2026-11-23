@@ -770,7 +770,7 @@ class ProviderAPI(BaseInterfaceModel):
         """
 
     @raises_not_implemented
-    def mine(self, num_blocks: int = 1):
+    def mine(self, num_blocks: int = 1, interval: int | None = None):
         """
         Defined to make the ``ProviderAPI`` interchangeable with a
         :class:`~ape.api.providers.TestProviderAPI`, as in
@@ -1026,12 +1026,14 @@ class TestProviderAPI(ProviderAPI):
         """
 
     @abstractmethod
-    def mine(self, num_blocks: int = 1):
+    def mine(self, num_blocks: int = 1, interval: int | None = None):
         """
         Advance by the given number of blocks.
 
         Args:
             num_blocks (int): The number of blocks allotted to mine. Defaults to ``1``.
+            interval (int | None): Seconds between the mined blocks' timestamps.
+              Defaults to the provider's own spacing.
         """
 
     @property

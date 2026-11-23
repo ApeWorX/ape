@@ -1,7 +1,39 @@
-import pytest
+from typing import Any
 
+import base58  # type: ignore[import-untyped]
+import pytest
+from pydantic import BaseModel
+
+from ape.api import ConverterAPI
 from ape.managers.converters import HexAddressConverter, IntAddressConverter
 from ape.types.address import AddressType
+
+
+class Base58AddressConverter(ConverterAPI):
+    """
+    A Solana-style converter for base58-encoded 32-byte public keys.
+    """
+
+    def is_convertible(self, value: Any) -> bool:
+        if not isinstance(value, str) or value.startswith("0x"):
+            return False
+
+        try:
+            return len(base58.b58decode(value)) == 32
+        except ValueError:
+            return False
+
+    def convert(self, value: str) -> str:
+        return value
+
+
+@pytest.fixture
+def base58_address_converter(conversion_manager):
+    address_converters = conversion_manager._converters[AddressType]
+    converter = Base58AddressConverter()
+    address_converters.append(converter)
+    yield converter
+    address_converters.remove(converter)
 
 
 def test_convert_keyfile_account_to_address(convert, keyfile_account):
@@ -26,6 +58,15 @@ def test_convert_account_to_int(convert, owner):
 
 def test_convert_0_to_address(convert, zero_address):
     assert convert(0, AddressType) == zero_address
+
+
+def test_address_type_non_evm_address(base58_address_converter):
+    class Transfer(BaseModel):
+        receiver: AddressType
+
+    solana_address = base58.b58encode(bytes(range(32))).decode()
+
+    assert Transfer(receiver=solana_address).receiver == solana_address
 
 
 class TestHexAddressConverter:

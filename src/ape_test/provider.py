@@ -160,6 +160,7 @@ class ApeTester(EthereumTesterProvider):
 
 class LocalProvider(TestProviderAPI, Web3Provider):
     _evm_backend: PyEVMBackend | None = None
+    _revert_errors = (TransactionFailed, Web3ContractLogicError)
     _CANNOT_AFFORD_GAS_PATTERN: Pattern = re.compile(
         r"Sender b'[\\*|\w]*' cannot afford txn gas (\d+) with account balance (\d+)"
     )
@@ -479,8 +480,21 @@ class LocalProvider(TestProviderAPI, Web3Provider):
 
             raise ProviderError(f"Failed to time travel: {err}") from err
 
-    def mine(self, num_blocks: int = 1):
-        self.evm_backend.mine_blocks(num_blocks)
+    def mine(self, num_blocks: int = 1, interval: int | None = None):
+        if interval is None:
+            self.evm_backend.mine_blocks(num_blocks)
+        else:
+            self._mine_with_interval(num_blocks, interval)
+
+    def _mine_with_interval(self, num_blocks: int, interval: int):
+        if interval < 1:
+            raise ProviderError("EthTester blocks must be at least 1 second apart.")
+
+        first_timestamp = self.get_block("pending").timestamp
+        chain = self.evm_backend.chain
+        for index in range(num_blocks):
+            chain.header = chain.header.copy(timestamp=first_timestamp + index * interval)
+            self.evm_backend.mine_blocks()
 
     def get_balance(self, address: AddressType, block_id: "BlockID | None" = None) -> int:
         # perf: Using evm_backend directly instead of going through web3.
@@ -603,10 +617,10 @@ class LocalProvider(TestProviderAPI, Web3Provider):
         elif isinstance(exception, TransactionFailed):
             err_message = str(exception).split("execution reverted: ")[-1] or None
 
-            if err_message and err_message.startswith("b'") and err_message.endswith("'"):
+            if err_message and (revert_data := _parse_bytes_repr(err_message)) is not None:
                 # Convert stringified bytes str like `"b'\\x82\\xb4)\\x00'"` to `"0x82b42900"`.
                 # (Notice the `b'` is within the `"` on the first str).
-                err_message = to_hex(literal_eval(err_message))
+                err_message = to_hex(revert_data)
 
             err_message = TransactionError.DEFAULT_MESSAGE if err_message == "0x" else err_message
             contract_err = ContractLogicError(
@@ -649,3 +663,16 @@ class EthTesterTransactionTrace(TransactionTrace):
             return tuple([None for _ in range(num_return)])
 
         return self._ecosystem.decode_returndata(abi, returndata)
+
+
+def _parse_bytes_repr(value: str) -> bytes | None:
+    # eth-tester keeps only the bytes' repr (`b"..."` when they contain a `'`), so parse it back.
+    if not value.startswith(("b'", 'b"')):
+        return None
+
+    try:
+        parsed = literal_eval(value)
+    except (SyntaxError, ValueError):
+        return None
+
+    return parsed if isinstance(parsed, bytes) else None

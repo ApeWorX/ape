@@ -1,3 +1,4 @@
+import difflib
 import json
 import random
 import shutil
@@ -17,7 +18,7 @@ from ethpm_types.utils import compute_checksum
 from pydantic import Field
 from pydantic_core import Url
 
-from ape.api.projects import ApeProject, DependencyAPI, ProjectAPI
+from ape.api.projects import ApeProject, DependencyAPI, ProjectAPI, UnavailableDependency
 from ape.contracts import ContractContainer, ContractInstance
 from ape.exceptions import (
     APINotImplementedError,
@@ -35,7 +36,12 @@ from ape.utils.basemodel import (
     get_attribute_with_extras,
     only_raise_attribute_error,
 )
-from ape.utils.misc import SOURCE_EXCLUDE_PATTERNS, log_instead_of_fail
+from ape.utils.misc import (
+    SOURCE_EXCLUDE_PATTERNS,
+    cached_cwd_dependent_property,
+    log_instead_of_fail,
+    pop_cached_cwd_dependent_properties,
+)
 from ape.utils.os import (
     ChangeDirectory,
     clean_path,
@@ -486,12 +492,34 @@ class ContractManager(BaseManager):
         self._compile_contracts(non_compiled_sources)
 
     def _get_needs_compile(self, paths: Iterable[Path | str]) -> Iterable[Path]:
-        for path in paths:
-            if self._detect_change(path):
-                if isinstance(path, str):
-                    yield self.sources._get_path(path)
-                else:
-                    yield path
+        requested = [
+            self.sources._get_path(path) if isinstance(path, str) else path for path in paths
+        ]
+        edited = set(self._get_edited_paths(requested))
+        importer_source_ids = self._get_importer_source_ids(edited) if edited else set()
+        yield from (
+            path
+            for path in requested
+            if path in edited
+            or self._detect_new(path)
+            or self.sources._get_source_id(path) in importer_source_ids
+        )
+
+    def _get_edited_paths(self, paths: Iterable[Path]) -> Iterator[Path]:
+        yield from (path for path in {*paths, *self.sources.paths} if self._detect_edit(path))
+
+    def _get_importer_source_ids(self, paths: set[Path]) -> set[str]:
+        """Source IDs that import any of ``paths``, directly or through other imports."""
+        imports = self.compiler_manager.get_imports(list(self.sources.paths), project=self.project)
+        references = self.compiler_manager.get_references(imports)
+        importer_source_ids: set[str] = set()
+        pending_source_ids = [self.sources._get_source_id(path) for path in paths]
+        while pending_source_ids:
+            new_source_ids = set(references.get(pending_source_ids.pop(), [])) - importer_source_ids
+            importer_source_ids |= new_source_ids
+            pending_source_ids.extend(new_source_ids)
+
+        return importer_source_ids
 
     def _compile_contracts(
         self,
@@ -556,32 +584,29 @@ class ContractManager(BaseManager):
                 yield ContractContainer(contract_type)
 
     def _detect_change(self, path: Path | str) -> bool:
+        source_path = self.sources._get_path(path) if isinstance(path, str) else path
+        return self._detect_new(source_path) or self._detect_edit(source_path)
+
+    def _detect_new(self, path: Path) -> bool:
         if not (existing_types := (self.project.manifest.contract_types or {}).values()):
             return True  # Nothing compiled yet.
 
-        source_id: str
-        if isinstance(path, Path):
-            source_id = self.sources._get_source_id(path)
-        else:
-            source_id = str(path)  # str wrap for mypy
-            path = self.sources._get_path(path)
-
-        if source_id not in (self.project.manifest.sources or {}) or source_id not in (
+        source_id = self.sources._get_source_id(path)
+        return source_id not in (self.project.manifest.sources or {}) or source_id not in (
             x.source_id for x in existing_types if x.source_id
-        ):
-            return True  # New file.
+        )
 
-        elif not path.is_file():
-            return False  # No longer exists.
+    def _detect_edit(self, path: Path) -> bool:
+        source_id = self.sources._get_source_id(path)
+        cached_source = (self.project.manifest.sources or {}).get(source_id)
+        if cached_source is None or not path.is_file():
+            return False
 
         # ethpm_types strips trailing white space and ensures
         # a newline at the end so content so `splitlines()` works.
         # We need to do the same here for to prevent the endless recompiling bug.
         text = path.read_text("utf8").rstrip()
         content = f"{text}\n" if text else ""
-
-        cached_source = (self.project.manifest.sources or {}).get(source_id)
-        assert cached_source is not None
         missing_source_text = cached_source.content in (None, "")
 
         # NOTE: Have to handle this case separately because otherwise
@@ -1047,6 +1072,23 @@ class PackagesCache(ManagerAccessMixin):
     def installed_package_names(self) -> set[str]:
         return {x.name for x in self.projects_folder.iterdir()}
 
+    @property
+    def api_files(self) -> Iterator[Path]:
+        """
+        The cached API files, one per dependency version, always at
+        ``<package_id>/<version>.json`` (``/`` in either part is written as ``_``).
+        """
+        if self.api_folder.is_dir():
+            yield from (path for path in self.api_folder.glob("*/*.json") if path.is_file())
+
+    def find_package(self, package_id: str, version: str) -> Path | None:
+        """
+        The cached API file ``version`` of ``package_id`` refers to, or ``None`` when
+        it is not cached.
+        """
+        api_file = self.get_api_path(package_id, version)
+        return api_file if api_file.is_file() else None
+
     def get_project_versions_path(self, package_id: str) -> Path:
         """
         The path to all the versions (projects) of a dependency.
@@ -1205,6 +1247,8 @@ class DependencyManager(BaseManager):
 
     def __init__(self, project: "ProjectManager | None" = None):
         self.project = project or self.local_project
+        # Valid JSON files but don't match to any installed DependencyAPI.
+        self._unavailable_api_files: set[Path] = set()
 
     @log_instead_of_fail(default="<DependencyManager>")
     def __repr__(self) -> str:
@@ -1370,25 +1414,73 @@ class DependencyManager(BaseManager):
         However, it does not guarantee the project is
         installed.
         """
-        if not self.packages_cache.api_folder.is_dir():
-            return
-
-        for package_versions in self.packages_cache.api_folder.iterdir():
-            if not package_versions.is_dir():
+        for api in self._decode_api_files():
+            if api.matches_by_package_key(self.project.name):
+                # Don't include self as a dependency
+                # (happens when compiling a dependency)
                 continue
 
-            for api_file in package_versions.iterdir():
-                if not api_file.is_file():
-                    continue
+            yield self._create_dependency(api)
 
+    def find_unavailable(self, package_key: str) -> Iterator[str]:
+        """
+        The package IDs of cached dependencies whose plugin is not installed and that
+        look like ``package_key``, such as ``OpenZeppelin_openzeppelin-contracts`` for
+        ``openzeppelin``.
+
+        Args:
+            package_key (str): A dependency name or package ID.
+
+        Returns:
+            Iterator[str]
+        """
+        package_ids = {
+            dependency.package_id
+            for dependency in self.all
+            if isinstance(dependency.api, UnavailableDependency)
+        }
+        dependency_name = DependencyAPI.validate_name(package_key)
+        matches = {
+            package_id
+            for package_id in package_ids
+            if dependency_name in DependencyAPI.validate_name(package_id)
+        }
+        matches.update(difflib.get_close_matches(package_key, package_ids, cutoff=0.6))
+        yield from sorted(matches)
+
+    def _decode_api_files(self) -> Iterator[DependencyAPI]:
+        for api_file in self.packages_cache.api_files:
+            try:
                 data = json.loads(api_file.read_text(encoding="utf-8"))
-                api = self.decode_dependency(**data)
-                if api.name == self.project.name:
-                    # Don't include self as a dependency
-                    # (happens when compiling a dependency)
-                    continue
+            except json.JSONDecodeError:
+                self._delete_invalid_api_file(api_file)
+                continue
 
-                yield self._create_dependency(api)
+            yield self.decode_dependency(api_file=api_file, **data)
+
+    def _delete_invalid_api_file(self, api_file: Path):
+        try:
+            self.packages_cache.remove(api_file.parent.name, api_file.stem)
+        except OSError as err:
+            logger.warning(
+                f"Skipping cached dependency '{api_file}', it is not valid JSON "
+                f"and could not be deleted: {err}"
+            )
+            return
+
+        if not api_file.is_file():
+            logger.warning(f"Deleted cached dependency '{api_file}', it is not valid JSON.")
+
+    def _warn_unavailable_api_file(self, api_file: Path, reason: str):
+        # Avoid logging warning more than once.
+        if api_file in self._unavailable_api_files:
+            return
+
+        self._unavailable_api_files.add(api_file)
+        logger.warning(
+            f"Cached dependency '{api_file}' is unavailable: {reason}. "
+            f"To remove it, run `ape pm uninstall {api_file.parent.name}`."
+        )
 
     # TODO: Remove this in 0.9.
     @property
@@ -1645,11 +1737,14 @@ class DependencyManager(BaseManager):
 
         raise ProjectError(f"Dependency '{dependency_id}' with version '{version}' not found.")
 
-    def decode_dependency(self, **item: Any) -> DependencyAPI:
+    def decode_dependency(self, *, api_file: Path | None = None, **item: Any) -> DependencyAPI:
         """
         Decode data into a :class:`~ape.api.projects.DependencyAPI`.
 
         Args:
+            api_file (Path | None): The cached API file the data was read from. When
+              given, data no installed plugin supports decodes to an
+              :class:`~ape.api.projects.UnavailableDependency` instead of raising.
             **item: The same data you put in your ``dependencies:`` config.
 
         Raises:
@@ -1664,10 +1759,16 @@ class DependencyManager(BaseManager):
                 return cls.model_validate(item)
 
         name = item.get("name") or f"{item}"  # NOTE: Using 'or' for short-circuit eval
-        raise ProjectError(
+        reason = (
             f"No installed dependency API that supports '{name}'. "
             f"Keys={', '.join([x for x in item])}"
         )
+        if api_file is None:
+            raise ProjectError(reason)
+
+        self._warn_unavailable_api_file(api_file, reason)
+        name = item.get("name") or api_file.parent.name
+        return UnavailableDependency(name=name, api_file=api_file, data=item)
 
     def add(self, dependency: dict | DependencyAPI) -> Dependency:
         """
@@ -1932,7 +2033,7 @@ class Project(ProjectManager):
     def manifest(self) -> PackageManifest:
         return self._manifest
 
-    @cached_property
+    @cached_cwd_dependent_property
     def dependencies(self) -> DependencyManager:
         """
         Project dependencies.
@@ -2478,7 +2579,7 @@ class LocalProject(Project):
             #   BaseModel internals).
             raise AttributeError(message)
 
-    @cached_property
+    @cached_cwd_dependent_property
     def path(self) -> Path:
         """
         The path to the project's "base" (where contract source IDs are relative to).
@@ -2494,7 +2595,7 @@ class LocalProject(Project):
 
         return sources
 
-    @cached_property
+    @cached_cwd_dependent_property
     def _deduced_contracts_folder(self) -> Path:
         # NOTE: This helper is only called if not configured and not ordinary.
         return self._deduce_contracts_folder()
@@ -2531,7 +2632,7 @@ class LocalProject(Project):
         # Doesn't exist. Return non-existent default directory.
         return self.path / "contracts"
 
-    @cached_property
+    @cached_cwd_dependent_property
     def project_api(self) -> ProjectAPI:
         """
         The 'type' of project this is, such as an Ape project
@@ -2589,7 +2690,7 @@ class LocalProject(Project):
 
         return self._base_path.name.replace("_", "-").lower()
 
-    @cached_property
+    @cached_cwd_dependent_property
     def config(self) -> ApeConfig:
         """
         The project configuration (including global defaults).
@@ -2599,7 +2700,7 @@ class LocalProject(Project):
         project_config = self.project_api.extract_config(**self._config_override)
         return self.config_manager.merge_with_global(project_config)
 
-    @cached_property
+    @cached_cwd_dependent_property
     def contracts(self) -> ContractManager:  # type: ignore[override]
         """
         Container for managing contracts from local sources.
@@ -2616,7 +2717,7 @@ class LocalProject(Project):
 
         return self._deduced_contracts_folder
 
-    @cached_property
+    @cached_cwd_dependent_property
     def deployments(self) -> DeploymentManager:
         """
         Project deployment manager for adding and reading
@@ -2631,7 +2732,7 @@ class LocalProject(Project):
         """
         return {*self.config.compile.exclude, *SOURCE_EXCLUDE_PATTERNS}
 
-    @cached_property
+    @cached_cwd_dependent_property
     def interfaces_folder(self) -> Path:
         """
         The root interface source directory.
@@ -2671,7 +2772,7 @@ class LocalProject(Project):
     def scripts_folder(self) -> Path:
         return self.path / "scripts"
 
-    @cached_property
+    @cached_cwd_dependent_property
     def sources(self) -> SourceManager:  # type: ignore[override]
         """
         All the sources in the project.
@@ -2771,6 +2872,17 @@ class LocalProject(Project):
         return manifest
 
     def get_contract(self, name: str) -> Any:
+        """
+        Get a contract container by name. Useful for avoiding naming collisions
+        with other properties on the project object, e.g.
+        ``project.get_contract("MyContract")`` is the same as ``project.MyContract``.
+
+        Args:
+            name (str): The name of the contract.
+
+        Returns:
+            ContractContainer | None
+        """
         if name in self._session_source_change_check:
             check_for_changes = False
         else:
@@ -2873,19 +2985,13 @@ class LocalProject(Project):
 
     def _handle_path_changed(self, path: Path) -> dict:
         cache: dict = {
-            "__dict__": {},
+            "__dict__": pop_cached_cwd_dependent_properties(self),
             "_session_source_change_check": self._session_source_change_check,
             "_config_override": self._config_override,
             "_base_path": self._base_path,
             "manifest_path": self.manifest_path,
             "_manifest": self._manifest,
         }
-
-        # New path: clear cached properties.
-        for attr in list(self.__dict__.keys()):
-            if isinstance(getattr(type(self), attr, None), cached_property):
-                cache["__dict__"][attr] = self.__dict__.pop(attr)
-
         self._session_source_change_check = set()
         self._config_override = {}
         self._base_path = Path(path).resolve()
@@ -2897,10 +3003,11 @@ class LocalProject(Project):
         return cache
 
     def _handle_path_restored(self, cache: dict) -> None:
-        self.__dict__ = {**(self.__dict__ or {}), **cache.get("__dict__", {})}
+        pop_cached_cwd_dependent_properties(self)
+        self.__dict__.update(cache.get("__dict__", {}))
         self._session_source_change_check = cache.get("_session_source_change_check", set())
         self._config_override = cache.get("_config_override", {})
-        if base_path := self._base_path:
+        if base_path := cache.get("_base_path"):
             self._base_path = base_path
 
         if manifest_path := cache.get("manifest_path"):

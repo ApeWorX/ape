@@ -1,4 +1,5 @@
 import asyncio
+from functools import cached_property
 
 import pytest
 from eth_pydantic_types import HexBytes
@@ -10,11 +11,13 @@ from ape.utils.misc import (
     ZERO_ADDRESS,
     _dict_overlay,
     add_padding_to_strings,
+    cached_cwd_dependent_property,
     extract_nested_value,
     get_package_version,
     is_evm_precompile,
     is_zero_hex,
     log_instead_of_fail,
+    pop_cached_cwd_dependent_properties,
     pragma_str_to_specifier_set,
     raises_not_implemented,
     run_until_complete,
@@ -175,3 +178,22 @@ def test_log_instead_of_fail(ape_caplog):
 
     my_method()
     assert "Oh no!" in ape_caplog.head
+
+
+def test_pop_cached_cwd_dependent_properties_skips_cached_property():
+    class Holder:
+        @cached_cwd_dependent_property
+        def cwd_dependent_value(self) -> int:
+            return 1
+
+        @cached_property
+        def plain_value(self) -> int:
+            return 2
+
+    holder = Holder()
+    assert holder.cwd_dependent_value == 1
+    assert holder.plain_value == 2
+
+    assert pop_cached_cwd_dependent_properties(holder) == {"cwd_dependent_value": 1}
+    assert "cwd_dependent_value" not in holder.__dict__
+    assert holder.__dict__["plain_value"] == 2
