@@ -10,7 +10,8 @@ from ape.exceptions import ProjectError
 from ape.logging import logger
 
 if TYPE_CHECKING:
-    from ape.managers.project import Dependency
+    from ape.cli.options import ApeCliContextObject
+    from ape.managers.project import Dependency, PackagesCache, ProjectManager
 
 
 @click.group()
@@ -239,12 +240,12 @@ def install(cli_ctx, package, name, version, ref, force, config_override, no_rec
 
 @cli.command()
 @ape_cli_context()
-@click.argument("name", required=False)
+@click.argument("package_key", required=False)
 @click.argument("versions", nargs=-1, required=False)
 @click.option(
     "-y", "--yes", is_flag=True, help="Automatically confirm the removal of the package(s)"
 )
-def uninstall(cli_ctx, name, versions, yes):
+def uninstall(cli_ctx, package_key, versions, yes):
     """
     Uninstall a package
 
@@ -255,9 +256,9 @@ def uninstall(cli_ctx, name, versions, yes):
     versions to remove. You can also choose to remove all versions of the package.
 
     Examples:\n
-    - Remove specific versions: ape pm uninstall <PackageName> "1.0.0" "2.0.0"\n
-    - Prompt to choose versions: ape pm uninstall <PackageName>\n
-    - Remove all versions: ape pm uninstall <PackageName> -y
+    - Remove specific versions: ape pm uninstall <PackageKey> "1.0.0" "2.0.0"\n
+    - Prompt to choose versions: ape pm uninstall <PackageKey>\n
+    - Remove all versions: ape pm uninstall <PackageKey> -y
     """
 
     pm = cli_ctx.local_project
@@ -269,7 +270,7 @@ def uninstall(cli_ctx, name, versions, yes):
     did_error = False
     did_find = False
 
-    if not name or name == ".":
+    if not package_key or package_key == ".":
         if versions:
             cli_ctx.abort("Cannot specify version when uninstalling from config.")
 
@@ -286,22 +287,23 @@ def uninstall(cli_ctx, name, versions, yes):
                     did_error = True
 
     else:
-        deps_to_remove = {
-            d
-            for d in installed
-            if (d.name == name or d.package_id == name)
-            and (d.version in versions if versions else True)
-        }
-        for dependency in deps_to_remove:
-            did_find = True
-            res = _uninstall(dependency, yes=yes)
-            if res is False:
-                did_error = True
+        results = _uninstall_by_package_key(pm, installed, package_key, versions, yes=yes)
+        if not results and (
+            close_match := _confirm_unavailable_close_match(cli_ctx, package_key, yes=yes)
+        ):
+            results = _uninstall_by_package_key(pm, installed, close_match, versions, yes=True)
+
+        did_find = bool(results)
+        did_error = not all(results)
 
     if not did_find:
-        if name:
-            name = ", ".join([f"{name}={v}" for v in versions]) if versions else name
-            cli_ctx.logger.error(f"Package(s) '{name}' not installed.")
+        if package_key:
+            packages = (
+                ", ".join(f"{package_key}={version}" for version in versions)
+                if versions
+                else package_key
+            )
+            cli_ctx.logger.error(f"Package(s) '{packages}' not installed.")
         else:
             cli_ctx.logger.error(
                 "No package(s) installed in local project. "
@@ -311,6 +313,54 @@ def uninstall(cli_ctx, name, versions, yes):
         did_error = True
 
     sys.exit(int(did_error))
+
+
+def _uninstall_by_package_key(
+    pm: "ProjectManager",
+    installed: set["Dependency"],
+    package_key: str,
+    versions: tuple[str, ...],
+    yes: bool = False,
+) -> list[bool]:
+    cache = pm.dependencies.packages_cache
+    return [
+        _uninstall(dependency, yes=yes)
+        for dependency in installed
+        if dependency.api.matches_by_package_key(package_key)
+        and (not versions or _matches_version(cache, dependency, versions))
+    ]
+
+
+def _confirm_unavailable_close_match(
+    cli_ctx: "ApeCliContextObject", package_key: str, yes: bool = False
+) -> str | None:
+    # A dependency whose plugin is missing may not store its short name, e.g. openzeppelin.
+    if not (close_matches := [*cli_ctx.local_project.dependencies.find_unavailable(package_key)]):
+        return None
+
+    if len(close_matches) == 1 and (
+        yes or click.confirm(f"Uninstall '{close_matches[0]}' instead?")
+    ):
+        return close_matches[0]
+
+    cli_ctx.abort(
+        f"Unable to uninstall '{package_key}' - dependency unavailable and could not accurately "
+        f"locate file. Best guess(es): {', '.join(close_matches)}\n"
+        "If any of those match, run cmd: `ape pm uninstall <package-id>` with the full package ID."
+    )
+
+
+def _matches_version(
+    cache: "PackagesCache", dependency: "Dependency", versions: tuple[str, ...]
+) -> bool:
+    if dependency.version in versions:
+        return True
+
+    # A typed version like ``4.0.0`` matches when it finds the same cached file.
+    api_file = cache.find_package(dependency.package_id, dependency.version)
+    return api_file is not None and any(
+        cache.find_package(dependency.package_id, version) == api_file for version in versions
+    )
 
 
 def _uninstall(dependency: "Dependency", yes: bool = False) -> bool:

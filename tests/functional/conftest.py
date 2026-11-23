@@ -1,8 +1,11 @@
+import hashlib
+import struct
 import threading
 import time
+from collections.abc import Sequence
 from contextlib import contextmanager
 from pathlib import Path
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, NamedTuple, cast
 
 import pytest
 from eth_pydantic_types import HexBytes
@@ -577,6 +580,19 @@ def mock_compiler(make_mock_compiler):
 
 
 @pytest.fixture
+def mock_compiler_skipping_structs(compilers, mock_compiler):
+    """A registered mock compiler where ``structs.__mock__`` compiles to no contract types."""
+    compile_all = mock_compiler.compile.side_effect
+
+    def compile_without_structs(paths, **kwargs):
+        yield from (ct for ct in compile_all(paths, **kwargs) if ct.name != "structs")
+
+    mock_compiler.compile.side_effect = compile_without_structs
+    compilers.registered_compilers[".__mock__"] = mock_compiler
+    return mock_compiler
+
+
+@pytest.fixture
 def make_mock_compiler(mocker):
     def fn(name="mock"):
         mock = mocker.MagicMock()
@@ -735,3 +751,47 @@ def setup_custom_error(chain):
         chain.contracts.contract_types[addr] = contract_type
 
     return fn
+
+
+class GitIndexEntry(NamedTuple):
+    path: str
+    mode: int
+    sha: str
+    stage: int = 0
+    extended: bool = False
+
+
+@pytest.fixture(scope="session")
+def write_git_index():
+    """Writes a ``.git/index`` in the layout from https://git-scm.com/docs/index-format."""
+
+    def write(
+        repo_path: Path,
+        entries: Sequence[GitIndexEntry],
+        version: int = 2,
+        gitdir: Path | None = None,
+    ) -> Path:
+        content = b"DIRC" + struct.pack(">II", version, len(entries))
+        for entry in entries:
+            path = entry.path.encode("utf8")
+            flags = (entry.stage << 12) | min(len(path), 0xFFF)
+            if entry.extended:
+                flags |= 0x4000
+
+            stat = struct.pack(">10I", 0, 0, 0, 0, 0, 0, entry.mode, 0, 0, 0)
+            extended_flags = b"\0\0" if entry.extended else b""
+            body = stat + bytes.fromhex(entry.sha) + struct.pack(">H", flags)
+            body += extended_flags + path
+            content += body + b"\0" * (8 - len(body) % 8)
+
+        if gitdir is None:
+            gitdir = repo_path / ".git"
+        else:
+            (repo_path / ".git").write_text(f"gitdir: {gitdir}\n", encoding="utf8")
+
+        gitdir.mkdir(parents=True, exist_ok=True)
+        index_file = gitdir / "index"
+        index_file.write_bytes(content + hashlib.sha1(content).digest())
+        return index_file
+
+    return write
