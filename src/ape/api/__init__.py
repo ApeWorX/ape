@@ -57,7 +57,7 @@ def __getattr__(name: str):
 
         return getattr(network_module, name)
 
-    elif name in ("DependencyAPI", "ProjectAPI"):
+    elif name in ("DependencyAPI", "ProjectAPI", "UnavailableDependency"):
         import ape.api.projects as project_module
 
         return getattr(project_module, name)
@@ -109,6 +109,7 @@ __all__ = [
     "TestProviderAPI",
     "TraceAPI",
     "TransactionAPI",
+    "UnavailableDependency",
     "UpstreamProvider",
     "create_network_type",
 ]
