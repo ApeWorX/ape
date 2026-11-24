@@ -1,3 +1,5 @@
+from fractions import Fraction
+
 import pytest
 from eth_typing import ChecksumAddress
 from hypothesis import given
@@ -22,10 +24,14 @@ TEN_THOUSAND_ETHER_IN_WEI = 10_000_000_000_000_000_000_000
 def test_ether_conversions(value, unit, convert):
     currency_str = f"{value} {unit}"
     actual = convert(currency_str, int)
-    expected = int(value * ETHER_UNITS[unit])
+    expected = int(Fraction(value) * ETHER_UNITS[unit])
     assert actual == expected
     # Also show can compare directly with str.
     assert actual == currency_str
+
+
+def test_large_wei_value(convert):
+    assert convert(f"{2**256 - 1} wei", int) == 2**256 - 1
 
 
 def test_bad_type(convert):

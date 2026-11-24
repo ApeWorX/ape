@@ -1,5 +1,5 @@
 import re
-from decimal import Decimal
+from fractions import Fraction
 
 from ape.api.convert import ConverterAPI
 from ape.types.units import CurrencyValue
@@ -35,6 +35,6 @@ class WeiConversions(ConverterAPI):
     def convert(self, value: str) -> int:
         value, unit = value.split(" ")
         converted_value = int(
-            Decimal(value.replace("_", "").replace(",", "")) * ETHER_UNITS[unit.lower()]
+            Fraction(value.replace("_", "").replace(",", "")) * ETHER_UNITS[unit.lower()]
         )
         return CurrencyValue(converted_value)
