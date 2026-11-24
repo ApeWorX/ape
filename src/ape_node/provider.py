@@ -47,6 +47,7 @@ if TYPE_CHECKING:
     from ape.api.transactions import ReceiptAPI, TransactionAPI
     from ape.types.vm import SnapshotID
 
+DEFAULT_TEST_GAS_LIMIT = 11_500_000
 
 Alloc = dict[str, dict[str, Any]]
 
@@ -86,7 +87,7 @@ def create_genesis_data(alloc: Alloc, chain_id: int) -> "GenesisDataTypedDict":
         },
         "coinbase": ZERO_ADDRESS,
         "difficulty": "0x0",
-        "gasLimit": "0x0",
+        "gasLimit": to_hex(DEFAULT_TEST_GAS_LIMIT),
         "extraData": "0x",
         "mixHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
         "nonce": "0x0",
@@ -241,6 +242,8 @@ class GethDevProcess(BaseGethProcess):
         # Correct multi-word executable.
         idx = self.command.index(executable[0])
         self.command = self.command[:idx] + executable + self.command[idx + 1 :]
+        if not is_reth:
+            self.command.extend(("--miner.gaslimit", f"{DEFAULT_TEST_GAS_LIMIT}"))
 
     @classmethod
     def from_uri(cls, uri: str, data_folder: Path, **kwargs):
