@@ -509,6 +509,31 @@ def test_accounts_splice_access(accounts):
     assert len(accounts[::2]) == expected
 
 
+@pytest.mark.parametrize(
+    "index",
+    (slice(None, 0), slice(0, 0), slice(2, 1), slice(None, None, -1), slice(None, None, -2)),
+)
+def test_accounts_splice_access_matches_list(accounts, index):
+    # Slicing the test-accounts must behave the same as slicing a list of them.
+    assert accounts[index] == list(accounts)[index]
+
+
+@pytest.mark.parametrize(
+    "index",
+    (slice(None, 0), slice(0, 0), slice(None, None, -1), slice(None, None, -2), slice(None, None)),
+)
+def test_account_manager_splice_access_matches_list(account_manager, keyfile_account, index):
+    assert account_manager[index] == list(account_manager)[index]
+
+
+def test_accounts_splice_access_oversized_stop(accounts):
+    # Like a list, a stop past the end clamps: it does not raise and does not
+    # generate accounts beyond the configured `number_of_accounts`.
+    index = slice(None, len(accounts) + 10)
+    assert accounts[index] == list(accounts)[index]
+    assert len(accounts[index]) == len(accounts)
+
+
 def test_accounts_address_access(owner, accounts):
     assert accounts[owner.address] == owner
 
