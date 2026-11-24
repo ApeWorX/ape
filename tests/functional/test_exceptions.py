@@ -7,6 +7,7 @@ from ape.api.transactions import ReceiptAPI
 from ape.exceptions import (
     Abort,
     ContractLogicError,
+    ContractNotDeployedError,
     ContractNotFoundError,
     NetworkNotFoundError,
     TransactionError,
@@ -224,6 +225,32 @@ class TestContractLogicError:
         actual = error.message
         expected = "CUSTOM_ERROR"
         assert actual == expected
+
+
+class TestContractNotDeployedError:
+    def test_local_network(self):
+        err = ContractNotDeployedError(ZERO_ADDRESS, f"ethereum:{LOCAL_NETWORK_NAME}:test")
+        assert str(err) == (
+            f"No contract code at address '{ZERO_ADDRESS}' "
+            f"on network 'ethereum:{LOCAL_NETWORK_NAME}:test'."
+        )
+
+    def test_fork_network(self):
+        """
+        On a fork, the most common cause is forking from a block before the
+        contract was deployed (https://github.com/ApeWorX/ape/issues/2715).
+        """
+        err = ContractNotDeployedError(ZERO_ADDRESS, "ethereum:mainnet-fork:foundry")
+        assert str(err) == (
+            f"No contract code at address '{ZERO_ADDRESS}' "
+            "on network 'ethereum:mainnet-fork:foundry'. "
+            "The fork may start at a block before the contract was deployed. "
+            "Try forking from a later block."
+        )
+
+    def test_is_contract_not_found_error(self):
+        err = ContractNotDeployedError(ZERO_ADDRESS, "ethereum:mainnet:node")
+        assert isinstance(err, ContractNotFoundError)
 
 
 class TestContractNotFoundError:

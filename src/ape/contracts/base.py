@@ -26,7 +26,7 @@ from ape.exceptions import (
     ChainError,
     ContractDataError,
     ContractLogicError,
-    ContractNotFoundError,
+    ContractNotDeployedError,
     ConversionError,
     CustomError,
     MethodNonPayableError,
@@ -303,11 +303,7 @@ class ContractMethodHandler(ManagerAccessMixin):
 
     def _validate_is_contract(self):
         if not self.contract.is_contract:
-            raise ContractNotFoundError(
-                self.contract.address,
-                self.provider.network.explorer is not None,
-                self.provider.network_choice,
-            )
+            raise ContractNotDeployedError(self.contract.address, self.provider.network_choice)
 
 
 class ContractCallHandler(ContractMethodHandler):

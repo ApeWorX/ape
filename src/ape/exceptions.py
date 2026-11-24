@@ -644,6 +644,29 @@ class ContractNotFoundError(ChainError):
         super().__init__(msg)
 
 
+class ContractNotDeployedError(ContractNotFoundError):
+    """
+    Raised when calling or transacting a contract method at an address
+    with no contract code, such as on a forked network that starts at a
+    block before the contract was deployed.
+    """
+
+    def __init__(self, address: "AddressType", network_choice: str):
+        msg = f"No contract code at address '{address}' on network '{network_choice}'."
+
+        choice_parts = network_choice.split(":")
+        network_name = choice_parts[1] if len(choice_parts) > 1 else network_choice
+        if network_name.endswith("-fork"):
+            msg += (
+                " The fork may start at a block before the contract was deployed. "
+                "Try forking from a later block."
+            )
+
+        # NOTE: Skip `ContractNotFoundError.__init__()`, which describes a
+        #   missing contract type rather than missing contract code.
+        ChainError.__init__(self, msg)
+
+
 class UnknownSnapshotError(ChainError):
     """
     Raised when given an unknown snapshot ID.
