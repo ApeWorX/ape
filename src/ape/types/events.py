@@ -59,7 +59,7 @@ class LogFilter(BaseModel):
         return FilterParams(
             address=self.addresses,
             fromBlock=to_hex(self.start_block),
-            toBlock=to_hex(self.stop_block or self.start_block),
+            toBlock=to_hex(self.stop_block if self.stop_block is not None else self.start_block),
             topics=self.topic_filter,  # type: ignore
         )
 

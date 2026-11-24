@@ -134,6 +134,13 @@ def test_log_filter_model_validate_coerces_nones():
     assert log_filter.selectors == {}
 
 
+def test_log_filter_model_dump_preserves_stop_block_zero():
+    log_filter = LogFilter(start_block=5, stop_block=0)
+    params = log_filter.model_dump()
+    assert params["fromBlock"] == "0x5"
+    assert params["toBlock"] == "0x0"
+
+
 def test_address_type(owner):
     class MyModel(BaseModel):
         addr: AddressType
