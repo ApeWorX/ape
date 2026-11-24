@@ -1631,8 +1631,13 @@ def parse_type(type_: dict[str, Any]) -> str | tuple | list:
     if "tuple" not in type_["type"]:
         return type_["type"]
 
-    result = tuple([parse_type(c) for c in type_["components"]])
-    return [result] if is_array(type_["type"]) else result
+    result: str | tuple | list = tuple([parse_type(c) for c in type_["components"]])
+
+    # Nest once per array dimension, e.g. ``tuple[2][3]`` -> ``[[(...)]]``.
+    for _ in range(str(type_["type"]).count("[")):
+        result = [result]
+
+    return result
 
 
 def _correct_key(key: str, data: dict, alt_keys: tuple[str, ...]) -> dict:
