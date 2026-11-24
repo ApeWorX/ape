@@ -1074,6 +1074,15 @@ def test_is_contract_when_code_is_str(mock_provider, owner):
     assert not owner.is_contract
 
 
+@pytest.mark.parametrize("code,expected", [("0x", 0), ("0x00", 1), ("0x0012", 2), ("0x0102", 2)])
+def test_codesize_when_code_is_str(mock_provider, owner, code, expected):
+    """
+    Tests that leading zeros are counted when an ecosystem uses str for ContractCode.
+    """
+    mock_provider._web3.eth.get_code.return_value = code
+    assert owner.codesize == expected
+
+
 def test_custom_error(error_contract, not_owner):
     contract = error_contract
     unauthorized = contract.Unauthorized
