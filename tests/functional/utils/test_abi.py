@@ -3,9 +3,10 @@ from copy import deepcopy
 
 import pytest
 from eth_pydantic_types import HexBytes
-from ethpm_types.abi import ABIType, EventABI, EventABIType
+from ethpm_types.abi import ABIType, EventABI, EventABIType, MethodABI
 
-from ape.utils.abi import LogInputABICollection, create_struct
+from ape.exceptions import MissingStructFieldError
+from ape.utils.abi import LogInputABICollection, StructParser, create_struct
 
 
 @pytest.fixture
@@ -112,6 +113,170 @@ def test_decode_topics_missing_leading_zeroes(project):
 
     actual = collection.decode(topics, data)
     assert actual["newNum"] == 321  # NOTE: Was a bug where this causes issues.
+
+
+_ID_COMPONENT = {"name": "id", "type": "uint256", "internalType": "uint256"}
+_POINT_COMPONENTS = [
+    {"name": "x", "type": "uint256", "internalType": "uint256"},
+    {"name": "y", "type": "uint256", "internalType": "uint256"},
+]
+# struct Point { uint256 x; uint256 y; }
+_POINT = {
+    "name": "point",
+    "type": "tuple",
+    "internalType": "struct Nested.Point",
+    "components": _POINT_COMPONENTS,
+}
+_POINT_ARRAY = {
+    **_POINT,
+    "name": "cells",
+    "type": "tuple[3]",
+    "internalType": "struct Nested.Point[3]",
+}
+_DYNAMIC_POINT_ARRAY = {
+    **_POINT_ARRAY,
+    "type": "tuple[]",
+    "internalType": "struct Nested.Point[]",
+}
+# struct Row { uint256 id; Point[3] cells; }
+_ROW = {
+    "name": "row",
+    "type": "tuple",
+    "internalType": "struct Nested.Row",
+    "components": [_ID_COMPONENT, _POINT_ARRAY],
+}
+_ROW_ARRAY = {**_ROW, "type": "tuple[2]", "internalType": "struct Nested.Row[2]"}
+# struct DynRow { uint256 id; Point[] cells; }
+_DYN_ROW = {
+    **_ROW,
+    "internalType": "struct Nested.DynRow",
+    "components": [_ID_COMPONENT, _DYNAMIC_POINT_ARRAY],
+}
+# struct Deep { uint256 id; DynRow[2] rows; }
+_DEEP = {
+    "name": "deep",
+    "type": "tuple",
+    "internalType": "struct Nested.Deep",
+    "components": [
+        _ID_COMPONENT,
+        {**_DYN_ROW, "name": "rows", "type": "tuple[2]"},
+    ],
+}
+# struct Wrapper { uint256 id; Point point; }
+_WRAPPER = {
+    "name": "wrapper",
+    "type": "tuple",
+    "internalType": "struct Nested.Wrapper",
+    "components": [_ID_COMPONENT, _POINT],
+}
+# struct NumRow { uint256 id; uint256[3] nums; }
+_NUM_ROW = {
+    "name": "numRow",
+    "type": "tuple",
+    "internalType": "struct Nested.NumRow",
+    "components": [
+        _ID_COMPONENT,
+        {"name": "nums", "type": "uint256[3]", "internalType": "uint256[3]"},
+    ],
+}
+_POINT_DICTS = [{"x": 1, "y": 2}, {"x": 3, "y": 4}, {"x": 5, "y": 6}]
+_ENCODED_ROW = (1, [(1, 2), (3, 4), (5, 6)])
+
+
+def _point_struct(x, y):
+    types = [ABIType.model_validate(c) for c in _POINT_COMPONENTS]
+    return create_struct("Point", types, (x, y))
+
+
+def _row_struct(id_, cells):
+    types = [ABIType.model_validate(c) for c in (_ID_COMPONENT, _POINT_ARRAY)]
+    return create_struct("Row", types, (id_, cells))
+
+
+def _encode_input(input_type, value):
+    abi = MethodABI.model_validate(
+        {
+            "type": "function",
+            "name": "useStruct",
+            "stateMutability": "nonpayable",
+            "inputs": [input_type],
+            "outputs": [],
+        }
+    )
+    return StructParser(abi).encode_input([value])
+
+
+class TestStructParserEncodeInput:
+    @pytest.mark.parametrize(
+        "input_type,value,expected",
+        [
+            # A struct field that is an array of structs, fixed and dynamic sized.
+            (_ROW, {"id": 1, "cells": _POINT_DICTS}, _ENCODED_ROW),
+            (_DYN_ROW, {"id": 1, "cells": _POINT_DICTS}, _ENCODED_ROW),
+            (_ROW, {"id": 1, "cells": tuple(_POINT_DICTS)}, _ENCODED_ROW),
+            # An array of structs that each have a struct-array field.
+            (
+                _ROW_ARRAY,
+                [{"id": 1, "cells": _POINT_DICTS}, {"id": 1, "cells": _POINT_DICTS}],
+                [_ENCODED_ROW, _ENCODED_ROW],
+            ),
+            # A struct-array field whose structs have a struct-array field themselves.
+            (
+                _DEEP,
+                {
+                    "id": 1,
+                    "rows": [
+                        {"id": 2, "cells": [{"x": 3, "y": 4}]},
+                        {"id": 5, "cells": [{"x": 6, "y": 7}]},
+                    ],
+                },
+                (1, [(2, [(3, 4)]), (5, [(6, 7)])]),
+            ),
+            # The same fields given as structs instead of dicts.
+            (_ROW, {"id": 1, "cells": [_point_struct(1, 2), *_POINT_DICTS[1:]]}, _ENCODED_ROW),
+            (
+                _ROW,
+                _row_struct(1, [_point_struct(x, y) for x, y in ((1, 2), (3, 4), (5, 6))]),
+                _ENCODED_ROW,
+            ),
+            (_WRAPPER, {"id": 1, "point": _point_struct(2, 3)}, (1, (2, 3))),
+        ],
+    )
+    def test_struct_field_of_structs(self, input_type, value, expected):
+        actual = _encode_input(input_type, value)
+        assert actual == [expected]
+        # NOTE: A struct is equal to the tuple it represents, so ``==`` alone
+        #   would not notice a field that was left as a struct or a dict.
+        assert repr(actual) == repr([expected])
+
+    @pytest.mark.parametrize(
+        "input_type,value,expected",
+        [
+            # A plain array field is not a struct array.
+            (_NUM_ROW, {"id": 1, "nums": [2, 3, 4]}, (1, [2, 3, 4])),
+            # A single nested struct given as a dict.
+            (_WRAPPER, {"id": 1, "point": {"x": 2, "y": 3}}, (1, (2, 3))),
+            # An empty dynamic struct-array field.
+            (_DYN_ROW, {"id": 1, "cells": []}, (1, [])),
+            # A struct array given directly as an argument.
+            (_POINT_ARRAY, _POINT_DICTS, [(1, 2), (3, 4), (5, 6)]),
+            # A struct given positionally keeps its members in order, as-is.
+            (_ROW, [1, [[1, 2], [3, 4], [5, 6]]], (1, [[1, 2], [3, 4], [5, 6]])),
+        ],
+    )
+    def test_unaffected_shapes(self, input_type, value, expected):
+        actual = _encode_input(input_type, value)
+        assert actual == [expected]
+
+    def test_struct_field_of_positional_structs(self):
+        # Elements given positionally come back as tuples, which eth-abi accepts
+        # the same as the lists it was given before.
+        actual = _encode_input(_ROW, {"id": 1, "cells": [[1, 2], [3, 4], [5, 6]]})
+        assert actual == [_ENCODED_ROW]
+
+    def test_missing_struct_field(self):
+        with pytest.raises(MissingStructFieldError):
+            _encode_input(_ROW, {"id": 1})
 
 
 class TestStruct:

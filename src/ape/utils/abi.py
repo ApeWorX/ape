@@ -135,21 +135,17 @@ class StructParser:
                 if missing:
                     raise MissingStructFieldError(missing)
 
-                return tuple(
-                    (
-                        self._encode(m, value[m.name])
-                        if isinstance(value[m.name], dict)
-                        else value[m.name]
-                    )
-                    for m in _type.components
-                )
+                # NOTE: Recurse into every component: a component may itself be a
+                #   struct or an array of structs.
+                return tuple(self._encode(m, value[m.name]) for m in _type.components)
 
             elif isinstance(value, (list, tuple)):
-                # NOTE: Args must be passed in correct order.
+                # NOTE: Args must be passed in correct order. They are left as given,
+                #   since a sequence does not have to contain every component.
                 return tuple(value)
 
             else:
-                arg = [getattr(value, m.name) for m in _type.components if m.name]
+                arg = [self._encode(m, getattr(value, m.name)) for m in _type.components if m.name]
                 return tuple(arg)
 
         elif (
