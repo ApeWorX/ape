@@ -30,6 +30,16 @@ def test_contract_interaction(geth_provider, geth_account, geth_contract, mocker
 
 
 @geth_process_test
+def test_contract_interaction_after_new_block(
+    geth_provider, geth_account, geth_second_account, geth_contract
+):
+    max_gas = geth_provider.max_gas
+    geth_account.transfer(geth_second_account, 1)
+    receipt = geth_contract.setNumber(103, sender=geth_account)
+    assert receipt.gas_limit == max_gas
+
+
+@geth_process_test
 def test_call_show_trace(geth_contract, geth_account):
     """
     Show the `show_trace=True` does not corrupt the value.
