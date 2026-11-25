@@ -1,8 +1,11 @@
+import importlib
 import inspect
 import os
 import sys
 import traceback
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
+from importlib.abc import MetaPathFinder
+from importlib.machinery import ModuleSpec, PathFinder
 from pathlib import Path
 from runpy import run_module
 from typing import Any
@@ -15,36 +18,79 @@ from ape.exceptions import ApeException, handle_ape_exception
 from ape.logging import logger
 
 
+class _LocalNamespacePath(list[str]):
+    """Fixed namespace search path pinned to a project's `scripts/` directory."""
+
+    def __repr__(self) -> str:
+        return f"_NamespacePath({super().__repr__()})"
+
+
+class _LocalScriptsFinder(MetaPathFinder):
+    """Prioritize the project's local `scripts/` directory over any installed `scripts` package."""
+
+    def __init__(self, project_root: Path):
+        self.project_root = str(project_root)
+        self.project_root_resolved = project_root.resolve()
+
+    def find_spec(self, fullname: str, path: Any = None, target: Any = None) -> ModuleSpec | None:
+        if fullname != "scripts":
+            return None
+
+        spec = PathFinder.find_spec(fullname, [self.project_root], target)
+        if spec is not None and spec.loader is None and spec.submodule_search_locations is not None:
+            # Pin namespace search locations to the project's `scripts/` folder so later
+            # `sys.path` mutations cannot re-scan into site-packages.
+            spec.submodule_search_locations = _LocalNamespacePath(spec.submodule_search_locations)
+
+        return spec
+
+
 @contextmanager
 def use_scripts_sys_path(path: Path):
     # perf: avoid importing at top of module so `--help` is faster.
     from ape.utils.os import use_temp_sys_path
 
-    # First, ensure there is not an existing scripts module.
-    scripts = sys.modules.get("scripts")
-    if scripts:
-        del sys.modules["scripts"]
+    path_ctx = nullcontext() if str(path) in sys.path else use_temp_sys_path(path)
+    scripts_dir = path / "scripts"
+    if not scripts_dir.is_dir():
+        with path_ctx:
+            yield
+        return
 
-        # Sometimes, an installed module is somehow missing a __file__
-        # and mistaken by Python to be a system module. We can handle
-        # that by also checking some internal properties for the right path.
-        excl_paths = (
-            [Path(scripts.__file__).parent]
-            if scripts.__file__
-            else [
-                Path(p).parent
-                for p in getattr(getattr(scripts, "__path__", None), "_path", []) or []
-            ]
-        )
+    resolved_path = path.resolve()
+    if any(
+        isinstance(f, _LocalScriptsFinder) and f.project_root_resolved == resolved_path
+        for f in sys.meta_path
+    ):
+        with path_ctx:
+            yield
+        return
 
-    else:
-        excl_paths = None
+    # Temporarily shadow any pre-existing `scripts` package (and submodules) in `sys.modules`
+    # and prioritize the project's local `scripts/` directory on `sys.meta_path` so an installed
+    # `scripts` package cannot shadow local scripts (including regular vs. namespace precedence).
+    saved_modules = {
+        name: mod
+        for name, mod in list(sys.modules.items())
+        if name == "scripts" or name.startswith("scripts.")
+    }
+    for name in saved_modules:
+        sys.modules.pop(name, None)
 
-    with use_temp_sys_path(path, exclude=excl_paths):
-        yield
+    finder = _LocalScriptsFinder(path)
+    sys.meta_path.insert(0, finder)
+    importlib.invalidate_caches()
+    try:
+        with path_ctx:
+            yield
+    finally:
+        if finder in sys.meta_path:
+            sys.meta_path.remove(finder)
 
-    if scripts and sys.modules.get("scripts") != scripts:
-        sys.modules["scripts"] = scripts
+        for name in [k for k in list(sys.modules) if k == "scripts" or k.startswith("scripts.")]:
+            sys.modules.pop(name, None)
+
+        sys.modules.update(saved_modules)
 
 
 def get_module(script_path: Path) -> str:
@@ -72,28 +118,31 @@ class ScriptCommand(click.MultiCommand):
     def invoke(self, ctx: click.Context) -> Any:
         from ape.utils.basemodel import ManagerAccessMixin as access
 
-        try:
-            return super().invoke(ctx)
-        except Exception as err:
-            if ctx.params["interactive"]:
-                # Print the exception trace and then launch the console
-                # Attempt to use source-traceback style printing.
-                network_value = (
-                    ctx.params.get("network") or access.network_manager.default_ecosystem.name
-                )
-                with access.network_manager.parse_network_choice(
-                    network_value, disconnect_on_exit=False
-                ):
-                    path = ctx.obj.local_project.path
-                    assert isinstance(path, Path)  # For mypy.
-                    if not isinstance(err, ApeException) or not handle_ape_exception(err, (path,)):
-                        err_info = traceback.format_exc()
-                        click.echo(err_info)
+        with use_scripts_sys_path(Path.cwd()):
+            try:
+                return super().invoke(ctx)
+            except Exception as err:
+                if ctx.params["interactive"]:
+                    # Print the exception trace and then launch the console
+                    # Attempt to use source-traceback style printing.
+                    network_value = (
+                        ctx.params.get("network") or access.network_manager.default_ecosystem.name
+                    )
+                    with access.network_manager.parse_network_choice(
+                        network_value, disconnect_on_exit=False
+                    ):
+                        path = ctx.obj.local_project.path
+                        assert isinstance(path, Path)  # For mypy.
+                        if not isinstance(err, ApeException) or not handle_ape_exception(
+                            err, (path,)
+                        ):
+                            err_info = traceback.format_exc()
+                            click.echo(err_info)
 
-                    self._launch_console()
-            else:
-                # Don't handle error - raise exception as normal.
-                raise
+                        self._launch_console()
+                else:
+                    # Don't handle error - raise exception as normal.
+                    raise
 
     def _get_command(self, filepath: Path) -> click.Command | click.Group | None:
         scripts_folder = Path.cwd() / "scripts"
@@ -150,9 +199,8 @@ class ScriptCommand(click.MultiCommand):
                 _ = network  # Downstream might use this
                 with use_scripts_sys_path(filepath.parent.parent):
                     main_ns = run_script_module(filepath)
-
-                main_ns["main"]()  # Execute the script
-                self._namespace[filepath.stem] = main_ns
+                    self._namespace[filepath.stem] = main_ns
+                    main_ns["main"]()  # Execute the script
 
             return call
 
@@ -184,7 +232,16 @@ class ScriptCommand(click.MultiCommand):
         if not scripts_folder.is_dir():
             return {}
 
-        return self._get_cli_commands(scripts_folder)
+        with use_scripts_sys_path(scripts_folder.parent):
+            return self._get_cli_commands(scripts_folder)
+
+    def _get_commands(self, ctx: click.Context) -> dict[str, click.Command | click.Group]:
+        scripts_folder = Path.cwd() / "scripts"
+        cache_key = f"{__name__}.commands:{scripts_folder}"
+        if cache_key not in ctx.meta:
+            ctx.meta[cache_key] = self.commands
+
+        return ctx.meta[cache_key]
 
     def _get_cli_commands(self, base_path: Path) -> dict:
         commands: dict[str, click.Command] = {}
@@ -211,15 +268,16 @@ class ScriptCommand(click.MultiCommand):
         return commands
 
     def list_commands(self, ctx):
-        return sorted(self.commands)
+        return sorted(self._get_commands(ctx))
 
     def get_command(self, ctx, name):
         if Path(name).exists():
             name = Path(name).stem
 
-        if name in self.commands:
+        commands = self._get_commands(ctx)
+        if name in commands:
             self._command_called = name
-            return self.commands[name]
+            return commands[name]
 
         # NOTE: don't return anything so Click displays proper error
 
