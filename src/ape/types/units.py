@@ -37,6 +37,11 @@ class CurrencyValueComparable(int):
         # Try from the other end, if hasn't already.
         return NotImplemented
 
+    def __ne__(self, other: object) -> bool:
+        # NOTE: `int.__ne__` would not use our `__eq__`.
+        is_equal = self.__eq__(other)
+        return NotImplemented if is_equal is NotImplemented else not is_equal
+
     def __hash__(self) -> int:
         return hash(int(self))
 
