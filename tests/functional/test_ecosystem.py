@@ -5,6 +5,7 @@ from typing import Any, ClassVar, cast
 import pytest
 from eth_pydantic_types import HexBytes, HexBytes32
 from eth_typing import HexAddress, HexStr
+from eth_utils import encode_hex, keccak
 from ethpm_types import ContractType, ErrorABI
 from ethpm_types.abi import ABIType, EventABI, MethodABI
 from evm_trace import CallTreeNode, CallType
@@ -387,6 +388,79 @@ def test_decode_logs_with_struct_from_interface(ethereum):
             "4550e2cc369010139a1d3a5a6ec6d65910379e0ee35a7c3cdf24cb12a7"
         ),
     ]
+
+
+@pytest.mark.parametrize(
+    "input_abi,topic",
+    [
+        (
+            {"name": "xs", "type": "uint256[2]"},
+            "0xae6299332bcd708cd60e3a8defa55de28078a50a4cf2b3de3a546253240ff9e1",
+        ),
+        (
+            {
+                "name": "p",
+                "type": "tuple",
+                "components": [
+                    {"name": "a", "type": "uint256"},
+                    {"name": "b", "type": "address"},
+                ],
+            },
+            "0x6e34d48e6c189b6316c0dc69278f7052e7faca4f115cf729e597986a65ab6dd0",
+        ),
+        (
+            {"name": "q", "type": "tuple", "components": [{"name": "a", "type": "uint256"}]},
+            "0xa66cc928b5edb82af9bd49922954155ab7b0942694bea4ce44661d9a8736c688",
+        ),
+        (
+            {"name": "xs", "type": "address[2]"},
+            "0xa0ba882e59c222b5b97e6c80d5ee586dcb6aadfc3ffb7a43e3be291a09fa12e1",
+        ),
+        (
+            {"name": "xs", "type": "address[]"},
+            "0xa0ba882e59c222b5b97e6c80d5ee586dcb6aadfc3ffb7a43e3be291a09fa12e1",
+        ),
+        (
+            {"name": "s", "type": "string"},
+            "0x1c8aff950685c2ed4bc3174f3472287b56d9517b9c948127319a09a7a36deac8",
+        ),
+        (
+            {"name": "b", "type": "bytes"},
+            "0x7924f890e12acdf516d6278e342cd34550e3bafe0a3dec1b9c2c3e991733711a",
+        ),
+    ],
+)
+def test_decode_logs_indexed_reference_types(ethereum, input_abi, topic):
+    """
+    Solidity stores indexed arrays (static ones too), structs, strings and bytes
+    as the keccak256 of their encoding, so the topic is the only value we have.
+    Topics are from solc 0.8.30 emitting ``[7, 9]``, ``P(5, 0xdEaD)``, ``Q(7)``,
+    ``[0xdEaD, 0xbEEF]``, ``"hello"`` and ``0xc0ffee``.
+    Each equals ``keccak256(abi.encode(value))`` (no length word for ``address[]``).
+    """
+    abi = EventABI.model_validate(
+        {
+            "type": "event",
+            "name": "Indexed",
+            "inputs": [
+                {**input_abi, "indexed": True},
+                {"name": "marker", "type": "uint256", "indexed": False},
+            ],
+            "anonymous": False,
+        }
+    )
+    log = {
+        "address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+        "topics": [encode_hex(keccak(text=abi.selector)), topic],
+        "data": "0x" + "00" * 31 + "01",
+        "blockNumber": 2,
+        "logIndex": 0,
+        "transactionIndex": 0,
+    }
+    actual = [x for x in ethereum.decode_logs([log], abi)]
+    assert len(actual) == 1
+    assert actual[0].event_arguments == {input_abi["name"]: HexBytes(topic), "marker": 1}
+    assert isinstance(actual[0].event_arguments[input_abi["name"]], HexBytes)
 
 
 def test_decode_block_when_hash_is_none(ethereum):
