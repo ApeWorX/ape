@@ -323,7 +323,7 @@ def test_ecosystems_include_custom(networks, custom_networks_config_dict, projec
 
 
 def test_ecosystems_when_custom_has_bad_base_ecosystem(
-    networks, custom_networks_config_dict, project
+    networks, custom_networks_config_dict, project, ape_caplog
 ):
     data = copy.deepcopy(custom_networks_config_dict)
     eco_name = "custom-ecosystem-bad"
@@ -333,13 +333,32 @@ def test_ecosystems_when_custom_has_bad_base_ecosystem(
     # The plugin base is for the class-implementation. If it is not a real plugin,
     # it should fail nicely.
     data["networks"]["custom"][0]["base_ecosystem_plugin"] = eco_plugin_name
+    # The first entry decides the ecosystem class, so a later valid one doesn't load it.
+    data["networks"]["custom"].append(
+        {**data["networks"]["custom"][0], "name": "apenet2", "base_ecosystem_plugin": "ethereum"}
+    )
     expected = (
         rf"Custom network '{eco_name}:apenet' specified unknown "
         rf"base-ecosystem class '{eco_plugin_name}'\. "
         rf"Are you missing plugin 'ape-{eco_plugin_name}'\?"
     )
-    with project.temp_config(**data), pytest.raises(NetworkError, match=expected):
-        _ = networks.ecosystems
+    with project.temp_config(**data):
+        # Other ecosystems still work.
+        assert eco_name not in networks.ecosystems
+        assert any(f"'ape-{eco_plugin_name}'?" in m for m in ape_caplog.messages)
+        assert networks.ethereum.name == "ethereum"
+        assert networks.get_ecosystem("arbitrum").name == "arbitrum"
+        assert "ethereum:local:test" in networks.get_network_choices()
+
+        # Only fails when requesting the bad ecosystem.
+        with pytest.raises(NetworkError, match=expected):
+            networks.get_ecosystem(eco_name)
+        with pytest.raises(AttributeError, match=expected):
+            _ = getattr(networks, eco_name)
+        with pytest.raises(NetworkError, match=expected):
+            _ = list(networks.get_network_choices(ecosystem_filter=eco_name))
+        with pytest.raises(NetworkError, match=expected):
+            networks.get_provider_from_choice(f"{eco_name}:apenet")
 
 
 def test_fork_network_not_forkable(networks, eth_tester_provider):
