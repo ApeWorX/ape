@@ -2522,7 +2522,11 @@ class LocalProject(Project):
         # Ensure any custom networks will work, otherwise Ape's network manager
         # only knows about the "local" project's.
         if custom_nets := (config_override or {}).get("networks", {}).get("custom", []):
-            self.network_manager._custom_networks.extend(custom_nets)
+            for custom_net in custom_nets:
+                # NOTE: Re-creating a project (e.g. unpacking it) must not register its
+                #   networks twice, else they clash with themselves.
+                if custom_net not in self.network_manager._custom_networks:
+                    self.network_manager._custom_networks.append(custom_net)
 
     @log_instead_of_fail(default="<ProjectManager>")
     def __repr__(self):
