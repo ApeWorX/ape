@@ -1,7 +1,11 @@
 from os import environ
+from typing import Any
 
 import pytest
 from cchecksum import to_checksum_address
+from Crypto.PublicKey import ECC
+from Crypto.PublicKey.ECC import EccKey
+from Crypto.Signature import eddsa
 from eip712.messages import EIP712Domain, EIP712Message
 from eth_account.messages import encode_defunct
 from eth_pydantic_types import HexBytes, abi
@@ -11,17 +15,19 @@ from pydantic import BaseModel
 
 import ape
 from ape.api import ImpersonatedAccount
+from ape.api.accounts import AccountAPI
 from ape.contracts import ContractContainer
 from ape.exceptions import (
     AccountsError,
     AliasAlreadyInUseError,
+    APINotImplementedError,
     MethodNonPayableError,
     MissingDeploymentBytecodeError,
     ProjectError,
     SignatureError,
 )
 from ape.types.gas import AutoGasLimit
-from ape.types.signatures import recover_signer
+from ape.types.signatures import BaseSignature, recover_signer
 from ape.utils.testing import DEFAULT_TEST_MNEMONIC
 from ape_accounts.accounts import (
     ApeSigner,
@@ -74,6 +80,69 @@ class Foo(EIP712Message):
 
     bar: abi.address
     baz: Baz
+
+
+class Ed25519Signature(BaseSignature):
+    """
+    A Solana-style signature: 64 raw bytes with no recovery id.
+    """
+
+    def __init__(self, raw_signature: bytes):
+        self.raw_signature = raw_signature
+
+    def __bytes__(self) -> bytes:
+        return self.raw_signature
+
+
+class Ed25519Account(AccountAPI):
+    """
+    A Solana-style account whose address is its ed25519 public key.
+    """
+
+    seed: bytes
+
+    @property
+    def signing_key(self) -> EccKey:
+        return eddsa.import_private_key(self.seed)
+
+    @property
+    def public_key(self) -> HexBytes:
+        return HexBytes(self.signing_key.public_key().export_key(format="raw"))
+
+    @property
+    def address(self) -> str:  # type: ignore[override]
+        return self.public_key.hex()
+
+    def sign_message(self, msg: Any, **signer_options) -> Ed25519Signature:  # type: ignore[override]
+        message_bytes = msg.encode("utf8") if isinstance(msg, str) else msg
+        signer = eddsa.new(self.signing_key, "rfc8032")
+        return Ed25519Signature(signer.sign(message_bytes))
+
+    def sign_transaction(self, txn, **signer_options):
+        raise APINotImplementedError("Example account does not sign transactions.")
+
+    def check_signature(  # type: ignore[override]
+        self,
+        data: str | bytes,
+        signature: BaseSignature | None = None,
+        recover_using_eip191: bool = True,
+    ) -> bool:
+        if signature is None:
+            raise AccountsError("Parameter 'signature' required when verifying a message.")
+
+        message_bytes = data.encode("utf8") if isinstance(data, str) else data
+        verifier = eddsa.new(self.signing_key.public_key(), "rfc8032")
+        try:
+            verifier.verify(message_bytes, bytes(signature))
+        except ValueError:
+            return False
+
+        return True
+
+
+@pytest.fixture
+def ed25519_account():
+    return Ed25519Account(seed=ECC.generate(curve="ed25519").seed)
 
 
 def test_sign_message(signer, message):
@@ -1216,3 +1285,18 @@ def test_use_ape_signer(accounts, project):
     assert isinstance(signer, ApeSigner)
     contract = project.VyperContract.deploy(1012, sender=signer)
     assert contract.is_contract
+
+
+def test_check_signature_ed25519_scheme(ed25519_account):
+    signature = ed25519_account.sign_message("gm")
+
+    assert len(bytes(signature)) == 64
+    assert ed25519_account.check_signature("gm", signature)
+    assert not ed25519_account.check_signature("gn", signature)
+
+
+def test_check_signature_ecdsa_account_rejects_ed25519(owner, ed25519_account):
+    signature = ed25519_account.sign_message("gm")
+
+    with pytest.raises(AccountsError, match="cannot verify 'Ed25519Signature' signatures"):
+        owner.check_signature("gm", signature)

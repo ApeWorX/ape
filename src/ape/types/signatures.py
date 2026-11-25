@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 from collections.abc import Iterator
 from typing import TYPE_CHECKING
 
@@ -67,8 +68,20 @@ def _left_pad_bytes(val: bytes, num_bytes: int) -> bytes:
     return b"\x00" * (num_bytes - len(val)) + val if len(val) < num_bytes else val
 
 
+class BaseSignature(ABC):
+    """
+    A signature from any signing scheme.
+    """
+
+    @abstractmethod
+    def __bytes__(self) -> bytes:
+        """
+        The signature in its scheme's canonical encoding.
+        """
+
+
 @dataclass(frozen=True)
-class _Signature:
+class _Signature(BaseSignature):
     v: int
     """
     The version byte (``v``) in an Ethereum-style ECDSA signature.
@@ -117,6 +130,9 @@ class _Signature:
     def encode_rsv(self) -> bytes:
         return _left_pad_bytes(self.r, 32) + _left_pad_bytes(self.s, 32) + to_bytes(self.v)
 
+    def __bytes__(self) -> bytes:
+        return self.encode_rsv()
+
 
 class MessageSignature(_Signature):
     """
@@ -145,4 +161,4 @@ class TransactionSignature(_Signature):
     """
 
 
-__all__ = ["MessageSignature", "SignableMessage", "TransactionSignature"]
+__all__ = ["BaseSignature", "MessageSignature", "SignableMessage", "TransactionSignature"]
