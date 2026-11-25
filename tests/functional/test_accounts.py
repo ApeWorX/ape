@@ -984,6 +984,7 @@ def test_sign_authorization_defaults_to_account_nonce(owner, vyper_contract_inst
     )
     assert int.from_bytes(signature.r, "big") == expected.r
     assert int.from_bytes(signature.s, "big") == expected.s
+    assert signature.v == expected.y_parity
 
 
 def test_public_key(runner, keyfile_account, owner):
