@@ -3,6 +3,7 @@ from os import environ
 import pytest
 from cchecksum import to_checksum_address
 from eip712.messages import EIP712Domain, EIP712Message
+from eth_account import Account as EthAccount
 from eth_account.messages import encode_defunct
 from eth_pydantic_types import HexBytes, abi
 from eth_utils import keccak, to_hex
@@ -952,6 +953,37 @@ def test_authorizations_transaction(sender, vyper_contract_instance):
 
     sender.remove_delegate()
     assert not sender.delegate
+
+
+@pytest.mark.parametrize("offset", (None, 5))
+def test_sign_authorization_uses_given_nonce(owner, vyper_contract_instance, offset):
+    if owner.nonce == 0:
+        # An explicit nonce of 0 must differ from the account's current nonce to be tested.
+        owner.transfer(owner, 0)
+
+    nonce = 0 if offset is None else owner.nonce + offset
+    address = vyper_contract_instance.address
+
+    signature = owner.sign_authorization(address, chain_id=0, nonce=nonce)
+
+    expected = EthAccount.sign_authorization(
+        {"chainId": 0, "address": HexBytes(address), "nonce": nonce}, owner.private_key
+    )
+    assert int.from_bytes(signature.r, "big") == expected.r
+    assert int.from_bytes(signature.s, "big") == expected.s
+    assert signature.v == expected.y_parity
+
+
+def test_sign_authorization_defaults_to_account_nonce(owner, vyper_contract_instance):
+    address = vyper_contract_instance.address
+
+    signature = owner.sign_authorization(address, chain_id=0)
+
+    expected = EthAccount.sign_authorization(
+        {"chainId": 0, "address": HexBytes(address), "nonce": owner.nonce}, owner.private_key
+    )
+    assert int.from_bytes(signature.r, "big") == expected.r
+    assert int.from_bytes(signature.s, "big") == expected.s
 
 
 def test_public_key(runner, keyfile_account, owner):

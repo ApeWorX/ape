@@ -94,7 +94,7 @@ class ApeSigner(AccountAPI):
             {
                 "chainId": chain_id,
                 "address": to_canonical_address(address),
-                "nonce": nonce or self.nonce,
+                "nonce": self.nonce if nonce is None else nonce,
             },
             self.private_key,
         )
