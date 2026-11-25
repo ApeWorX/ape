@@ -10,6 +10,7 @@ from .pluggy_patch import PluginType, hookimpl
 from .pluggy_patch import plugin_manager as pluggy_manager
 from .project import DependencyPlugin, ProjectPlugin
 from .query import QueryPlugin
+from .scripts import ScriptRunnerPlugin
 
 
 class PluginError(Exception):
@@ -29,6 +30,7 @@ class AllPluginHooks(
     ProjectPlugin,
     ProviderPlugin,
     QueryPlugin,
+    ScriptRunnerPlugin,
 ):
     pass
 

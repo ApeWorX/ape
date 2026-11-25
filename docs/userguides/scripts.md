@@ -195,3 +195,16 @@ ape run foobar --network polygon:amoy:alchemy
 
 You can also change networks within the script using the `ProviderContextManager` (see examples in the CLI-script section above).
 For multi-chain use-cases, we recommend sticking to the CLI based scripts to avoid the initial connection `main`-method scripts make.
+
+## Scripts in Other Languages
+
+Plugins can teach `ape run` to run scripts written in another language.
+For example, a plugin that registers a runner for Foundry's `.s.sol` scripts makes `script/Deploy.s.sol` runnable as:
+
+```shell
+ape run Deploy --network ethereum:sepolia:alchemy
+```
+
+A runner picks up its scripts from `scripts/` and from its own folder, such as Foundry's `script/`.
+The command name is the file name without the runner's extension.
+To write one, implement {class}`~ape.api.scripts.ScriptRunnerAPI` and register it with the `register_script_runner` hook of {class}`~ape.plugins.scripts.ScriptRunnerPlugin`.

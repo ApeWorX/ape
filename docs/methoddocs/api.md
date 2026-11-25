@@ -98,3 +98,11 @@
     :show-inheritance:
     :special-members:
 ```
+
+## Scripts
+
+```{eval-rst}
+.. automodule:: ape.api.scripts
+    :members:
+    :show-inheritance:
+```
