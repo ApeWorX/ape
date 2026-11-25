@@ -1057,12 +1057,13 @@ class Ethereum(EcosystemAPI):
                     "decoding anonymous logs is not supported with this method"
                 )
             topics = log["topics"]
-            # web3.py converts topics to HexBytes, data is always a HexStr
-            if isinstance(log["topics"][0], bytes):
-                topics = [encode_hex(t) for t in log["topics"]]
-
-            elif not topics:
+            if not topics:
+                # No topics (LOG0), so there is no selector to match.
                 continue
+
+            # web3.py converts topics to HexBytes, data is always a HexStr
+            if isinstance(topics[0], bytes):
+                topics = [encode_hex(t) for t in topics]
 
             if not (abi := get_abi(topics[0])):
                 continue
