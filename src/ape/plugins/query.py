@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 from .pluggy_patch import PluginType, hookspec
 
 if TYPE_CHECKING:
-    from ape.api.query import QueryAPI
+    from ape.api.query import QueryEngineAPI
 
 
 class QueryPlugin(PluginType):
@@ -13,9 +13,9 @@ class QueryPlugin(PluginType):
     """
 
     @hookspec
-    def query_engines(self) -> Iterator[type["QueryAPI"]]:  # type: ignore[empty-body]
+    def query_engines(self) -> Iterator[type["QueryEngineAPI"]]:  # type: ignore[empty-body]
         """
-        A hook that returns an iterator of types of a ``QueryAPI`` subclasses
+        A hook that returns an iterator of types of ``QueryEngineAPI`` subclasses
 
         Usage example::
 
@@ -24,5 +24,5 @@ class QueryPlugin(PluginType):
                 yield PostgresEngine
 
         Returns:
-            Iterator[type[:class:`~ape.api.query.QueryAPI`]]
+            Iterator[type[:class:`~ape.api.query.QueryEngineAPI`]]
         """

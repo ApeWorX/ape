@@ -62,7 +62,7 @@ def __getattr__(name: str):
 
         return getattr(project_module, name)
 
-    elif name in ("QueryAPI", "QueryType"):
+    elif name in ("CursorAPI", "QueryAPI", "QueryEngineAPI", "QueryType"):
         import ape.api.query as query_module
 
         return getattr(query_module, name)
@@ -90,6 +90,7 @@ __all__ = [
     "ConfigDict",
     "ConfigEnum",
     "ConverterAPI",
+    "CursorAPI",
     "DependencyAPI",
     "EcosystemAPI",
     "ExplorerAPI",
@@ -101,6 +102,7 @@ __all__ = [
     "ProviderAPI",
     "ProviderContextManager",
     "QueryAPI",
+    "QueryEngineAPI",
     "QueryType",
     "ReceiptAPI",
     "SubprocessProvider",
