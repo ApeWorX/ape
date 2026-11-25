@@ -302,6 +302,12 @@ class ContractMethodHandler(ManagerAccessMixin):
         raise err
 
     def _validate_is_contract(self):
+        if isinstance(self.contract, ContractInstance) and self.contract.explicit_contract_type:
+            # The contract type was explicitly provided by the user (e.g. via
+            # `project.MyContract.at()`), such as for a precompile that has no
+            # on-chain bytecode. Trust the provided ABI and allow the call.
+            return
+
         if not self.contract.is_contract:
             raise ContractNotFoundError(
                 self.contract.address,
@@ -1153,10 +1159,16 @@ class ContractInstance(BaseAddress, ContractTypeWrapper):
         address: "AddressType",
         contract_type: "ContractType",
         txn_hash: str | HexBytes | None = None,
+        explicit_contract_type: bool = False,
     ) -> None:
         super().__init__()
         self._address = address
         self.contract_type = contract_type
+        # NOTE: `True` when the caller explicitly provided the contract type
+        # (e.g. via `project.MyContract.at()`), rather than it being
+        # discovered from disk or an explorer. Such contracts may have no
+        # on-chain bytecode (e.g. precompiles) yet still be callable.
+        self.explicit_contract_type = explicit_contract_type
         self.txn_hash = (
             (txn_hash if isinstance(txn_hash, str) else to_hex(txn_hash)) if txn_hash else None
         )
@@ -1645,6 +1657,10 @@ class ContractContainer(ContractTypeWrapper, ExtraAttributesMixin):
             from ape import project
 
             my_contract = project.MyContract.at("0xAbC1230001112223334445566611855443322111")
+
+        **NOTE**: When the contract type is provided here, the resulting instance
+          remains callable even if the address has no on-chain bytecode, such as
+          for precompiles.
 
         Args:
             address (str): The address to initialize a contract.
