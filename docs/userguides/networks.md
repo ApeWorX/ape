@@ -170,10 +170,17 @@ networks:
        ecosystem: shibarium            # The ecosystem name, can either be new or an existing
        base_ecosystem_plugin: polygon  # The ecosystem base-class, defaults to the default ecosystem
        default_provider: node          # Default is the generic node provider
-       block_time: 2                   # Block time in seconds (optional)
-       transaction_type: 0             # Default transaction type (optional)
-       gas_limit: 30000000             # Default gas limit (optional)
+
+# Network properties, such as the block time, go under the ecosystem key (optional).
+shibarium:
+  mainnet:
+    block_time: 2                      # Block time in seconds
+    default_transaction_type: 0        # Default transaction type
+    gas_limit: 30000000                # Default gas limit
 ```
+
+Network properties, such as `block_time`, `default_transaction_type` and `gas_limit`, are not read from the `networks.custom` entry.
+Set them under the ecosystem key instead, as shown above and explained in [this section](#block-time-transaction-type-and-more-config).
 
 The following paragraphs explain the different parameters of the custom network config.
 
