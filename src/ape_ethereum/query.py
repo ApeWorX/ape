@@ -103,17 +103,17 @@ class EthereumQueryProvider(QueryAPI):
         )
 
         def flatten(call):
+            # A failed frame reverts everything it (and its sub-calls) created.
+            if "error" in call:
+                return
+
             if call["type"] in ["CREATE", "CREATE2"]:
                 yield call["from"], call["to"]
 
-            if "error" in call or "calls" not in call:
-                return
-
-            for sub in call["calls"]:
-                if sub["type"] in ["CREATE", "CREATE2"]:
-                    yield sub["from"], sub["to"]
-                else:
-                    yield from flatten(sub)
+            # NOTE: Recurse into creation frames too, so contracts deployed
+            #  from within a constructor are found (like the parity path).
+            for sub in call.get("calls", []):
+                yield from flatten(sub)
 
         for tx in traces:
             call = tx["result"]

@@ -101,3 +101,51 @@ def test_specify_engine(chain, eth_tester_provider):
     actual = chain.blocks.query("*", engine_to_use="__default__")
     expected = offset + 3
     assert len(actual) == expected
+
+
+def test_find_creation_in_block_via_geth_nested(monkeypatch, owner):
+    """
+    Contracts deployed from within a constructor (CREATE inside CREATE) are found,
+    and creations inside reverted frames are ignored.
+    """
+    from unittest.mock import MagicMock
+
+    from ape_ethereum.query import EthereumQueryProvider
+
+    factory = "0x" + "aa" * 20
+    child = "0x" + "bb" * 20
+    grandchild = "0x" + "cc" * 20
+    reverted = "0x" + "dd" * 20
+    sender = owner.address.lower()
+    traces = [
+        {
+            "txHash": "0x" + "11" * 32,
+            "result": {
+                "type": "CALL",
+                "from": sender,
+                "to": factory,
+                "calls": [
+                    {
+                        "type": "CREATE",
+                        "from": factory,
+                        "to": child,
+                        "calls": [{"type": "CREATE2", "from": child, "to": grandchild}],
+                    },
+                    {"type": "CREATE", "from": factory, "to": reverted, "error": "reverted"},
+                ],
+            },
+        }
+    ]
+    provider = MagicMock()
+    provider.make_request.return_value = traces
+    monkeypatch.setattr(EthereumQueryProvider, "provider", provider)
+    engine = EthereumQueryProvider()
+
+    actual = list(engine._find_creation_in_block_via_geth(5, grandchild))
+    assert len(actual) == 1
+    assert actual[0].deployer == owner.address
+    assert actual[0].factory.lower() == child
+
+    (creation,) = engine._find_creation_in_block_via_geth(5, child)
+    assert creation.factory.lower() == factory
+    assert list(engine._find_creation_in_block_via_geth(5, reverted)) == []
