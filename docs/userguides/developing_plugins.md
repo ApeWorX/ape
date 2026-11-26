@@ -3,7 +3,7 @@
 Your plugin project can be any type of python project, so long as its package name starts with `ape-` (such as `ape-ethereum`).
 The module and plugin directory names must start with `ape_` (such as `ape_ethereum`).
 To create an `ape` plugin, implement one or more API classes from the `ape.api` namespace and/or add key
-`ape_cli_subcommands` to your entry-points list in your project's `setup.py`, depending on what type of plugin you want to create.
+`ape_cli_subcommands` to your entry-points list in your project's `setup.py` (or `pyproject.toml`), depending on what type of plugin you want to create.
 This guide is intended to assist in both of those use cases.
 
 The following is a list of example plugins to use as a reference when developing plugins:
@@ -114,6 +114,17 @@ entry_points = (
 )
 ...
 ```
+
+If your project uses `pyproject.toml` instead of `setup.py`, declare the same entry-point in the `project.entry-points.ape_cli_subcommands` table:
+
+`pyproject.toml`:
+
+```toml
+[project.entry-points.ape_cli_subcommands]
+ape_myplugin = "ape_myplugin._cli:cli"
+```
+
+Ape names the command after the entry-point, without the `ape_` prefix and with underscores turned into dashes, so the entry-point above adds the command `ape myplugin`.
 
 ```{note}
 Typically, a `_cli.py` module is used instead of a `__init__.py` module for the location of the Click CLI group because it is logically separate from the Python module loading process.
