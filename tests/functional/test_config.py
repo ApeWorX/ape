@@ -304,6 +304,31 @@ def test_deployments(networks_connected_to_tester, owner, project):
     assert deployment.address == instance.address
 
 
+def test_deployments_fork(networks, project, mock_sepolia, mock_fork_provider):
+    upstream_address = "0x0c25212c557d00024b7Ca3df3238683A35541354"
+    fork_address = "0x274b028b03A250cA03644E6c578D81f019eE1323"
+    contract_name = project.VyperContract.contract_type.name
+    upstream_only = _create_deployments(
+        network_name="sepolia",
+        address=upstream_address,
+        contract_name=contract_name,
+    )
+    with networks.fork():
+        with project.temp_config(deployments=upstream_only):
+            deployments = project.VyperContract.deployments
+            assert [d.address for d in deployments] == [upstream_address]
+
+        both = {
+            "ethereum": {
+                "sepolia": [{"address": upstream_address, "contract_type": contract_name}],
+                "sepolia-fork": [{"address": fork_address, "contract_type": contract_name}],
+            }
+        }
+        with project.temp_config(deployments=both):
+            deployments = project.VyperContract.deployments
+            assert [d.address for d in deployments] == [upstream_address, fork_address]
+
+
 def test_deployments_integer_type_addresses(networks, project):
     deploys = {
         **_create_deployments(address=0x0C25212C557D00024B7CA3DF3238683A35541354),
