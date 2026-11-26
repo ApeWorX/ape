@@ -11,7 +11,7 @@ from ethpm_types import ABI, ContractType
 from ethpm_types.contract_type import ABIList
 from pydantic import BaseModel
 
-from ape.api.networks import ProxyInfoAPI
+from ape.api.networks import ForkedNetworkAPI, ProxyInfoAPI
 from ape.api.query import ContractCreation, ContractCreationQuery
 from ape.contracts.base import ContractContainer, ContractInstance
 from ape.exceptions import ApeException, ContractNotFoundError, ConversionError, CustomError
@@ -973,13 +973,23 @@ class ContractCache(BaseManager):
         if not self.network_manager.connected:
             return []
 
-        ecosystem_name = self.provider.network.ecosystem.name
-        network_name = self.provider.network.name
+        network = self.provider.network
+        ecosystem_name = network.ecosystem.name
         all_config_deployments = (
             self.config_manager.deployments if self.config_manager.deployments else {}
         )
         ecosystem_deployments = all_config_deployments.get(ecosystem_name, {})
-        network_deployments = ecosystem_deployments.get(network_name, {})
+        network_names = [network.name]
+        if isinstance(network, ForkedNetworkAPI):
+            network_names.insert(0, network.upstream_network.name)
+        elif network.is_fork:
+            network_names.insert(0, network.name.replace("-fork", "").replace("_fork", ""))
+
+        network_deployments = [
+            deployment
+            for network_name in dict.fromkeys(network_names)
+            for deployment in ecosystem_deployments.get(network_name, [])
+        ]
         return [
             Deployment(address=c["address"], transaction_hash=c.get("transaction_hash"))
             for c in network_deployments
