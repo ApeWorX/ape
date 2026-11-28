@@ -137,12 +137,10 @@ class use_temp_sys_path:
         self.exclude = [str(p) for p in exclude or []]
 
     def __enter__(self):
+        # Only track the paths that are present, to prevent re-adding the others during exit.
+        self.exclude = [p for p in self.exclude if p in sys.path]
         for path in self.exclude:
-            if path in sys.path:
-                sys.path.remove(path)
-            else:
-                # Preventing trying to re-add during exit.
-                self.exclude.remove(path)
+            sys.path.remove(path)
 
         if self.temp_path not in sys.path:
             sys.path.append(self.temp_path)
