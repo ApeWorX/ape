@@ -1,4 +1,5 @@
 import io
+import sys
 import tarfile
 import zipfile
 from pathlib import Path
@@ -15,6 +16,7 @@ from ape.utils.os import (
     get_relative_path,
     path_match,
     run_in_tempdir,
+    use_temp_sys_path,
 )
 
 _TEST_DIRECTORY_PATH = Path("/This/is/a/test/")
@@ -214,6 +216,21 @@ def test_clean_path_not_relative_to_home():
     path = Path(name)
     actual = clean_path(path)
     assert actual == name
+
+
+def test_use_temp_sys_path_excludes_path_after_missing_one(monkeypatch):
+    missing = Path("/__canary_ape_test__/missing")
+    present = Path("/__canary_ape_test__/present")
+    temp = Path("/__canary_ape_test__/temp")
+    monkeypatch.setattr(sys, "path", [*sys.path, str(present)])
+
+    with use_temp_sys_path(temp, exclude=[missing, present]):
+        assert str(temp) in sys.path
+        assert str(present) not in sys.path
+
+    assert str(temp) not in sys.path
+    assert str(present) in sys.path
+    assert str(missing) not in sys.path
 
 
 def test_extract_archive_zip_strips_top_level_dir():
